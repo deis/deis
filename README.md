@@ -1,4 +1,5 @@
 deis
 ====
 
-Chef-based application fabric for private platform-as-a-service (PaaS)
+Deis is an open source application platform for private and public clouds.
+Your PaaS. Your Rules.
