@@ -28,12 +28,12 @@ end
 
 # write out local settings for db access, etc.
 
-template "#{controller_dir}/deis/local_settings.py" do
+template "#{controller_dir}/controller/deis/local_settings.py" do
   user username
   group group
   mode 0644
   source 'local_settings.py.erb'
-  variables :debug => node.deis.controller.debug, 
+  variables :debug => node.deis.controller.debug,
             :secret_key => node.deis.controller.secret_key,
             :db_name => node.deis.database.name,
             :db_user => node.deis.database.user
@@ -51,7 +51,7 @@ bash 'deis-controller-virtualenv' do
   code "virtualenv --distribute venv"
   creates "#{controller_dir}/venv"
   action :nothing
-  subscribes :run, "git[#{controller_dir}]", :immediately 
+  subscribes :run, "git[#{controller_dir}]", :immediately
 end
 
 bash 'deis-controller-pip-install' do
@@ -60,7 +60,7 @@ bash 'deis-controller-pip-install' do
   cwd controller_dir
   code "source venv/bin/activate && pip install -r requirements.txt"
   action :nothing
-  subscribes :run, "git[#{controller_dir}]", :immediately 
+  subscribes :run, "git[#{controller_dir}]", :immediately
 end
 
 # NOTE: collectstatic and other subcommands must be run after local_settings
@@ -71,7 +71,7 @@ bash 'deis-controller-collectstatic' do
   cwd controller_dir
   code "source venv/bin/activate && ./manage.py collectstatic --noinput"
   action :nothing
-  subscribes :run, "git[#{controller_dir}]", :immediately 
+  subscribes :run, "git[#{controller_dir}]", :immediately
 end
 
 # write out upstart daemon
@@ -100,7 +100,7 @@ template '/etc/init/deis-worker.conf' do
   mode 0644
   source 'deis-worker.conf.erb'
   variables :home => node.deis.controller.dir
-  notifies :restart, "service[deis-worker]", :delayed            
+  notifies :restart, "service[deis-worker]", :delayed
 end
 
 service 'deis-worker' do

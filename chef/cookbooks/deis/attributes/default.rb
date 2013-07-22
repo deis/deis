@@ -41,7 +41,7 @@ default.deis.registry.repository = 'https://github.com/dynport/docker-private-re
 
 # server/api
 default.deis.controller.dir = '/opt/deis/controller'
-default.deis.controller.repository = 'git@github.com:opdemand/deis-controller.git'
+default.deis.controller.repository = 'https://github.com/opdemand/deis.git'
 default.deis.controller.secret_key = 'atotallysecretkey9876543210!'
 default.deis.controller.debug = 'False'
 default.deis.controller.workers = 4
@@ -51,4 +51,4 @@ default.deis.controller.https_port = 443
 
 # client
 default.deis.client.dir = '/opt/deis/client'
-default.deis.client.repository = 'git@github.com:opdemand/deis-cli.git'
+default.deis.client.repository = 'https://github.com/opdemand/deis.git'
