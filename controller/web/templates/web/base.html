@@ -1,0 +1,51 @@
+{% load staticfiles %}
+{% load gravatar_tags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Deis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" media="screen">
+  <link href="{% static "css/deis.css" %}" rel="stylesheet">
+  <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
+  <link rel="shortcut icon" href="{% static "favicon.ico" %}">
+</head>
+
+<body>
+  <div class="container">
+    <div class="navbar">
+      <div class="navbar-inner">
+        <a class="brand" href="{% url "dashboard" %}"><img src="{% static 'img/logo.png' %}" height="16" width="40"></a>
+        {% if request.user.is_authenticated %}
+        <ul class="nav pull-right">
+          <li {% ifequal current_page 'formations' %}class="active"{% endifequal %}><a href="{% url "formations" %}">Formations</a></li>
+          <li {% ifequal current_page 'docs' %}class="active"{% endifequal %}><a href="{% url "docs" %}">Documentation</a></li>
+          <li {% ifequal current_page 'support' %}class="active"{% endifequal %}><a href="{% url "support" %}">Support</a></li>
+          <li class="dropdown{% ifequal current_page 'account' %} active{% endifequal %}">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <img src="{% gravatar_url request.user.email %}" class="img-avatar" height="24" width="24">&nbsp;<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="{% url "account" %}">Account</a></li>
+              <li><a href="{% url "account_logout" %}">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+        {% endif %}
+      </div>
+    </div>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+  	{% block content %}{% endblock %}
+  </div>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="{% static "js/jquery-2.0.3.min.js" %}"><\/script>')</script>
+  <script src="{% static "js/bootstrap.min.js" %}"></script>
+</body>
+
+</html>

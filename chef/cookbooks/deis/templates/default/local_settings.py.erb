@@ -1,0 +1,19 @@
+import os.path
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '<%= @db_name %>',
+        'USER': '<%= @db_user %>',
+        'PASSWORD': '',
+        'HOST': '/var/run/postgresql'
+    }
+}
+
+SECRET_KEY = '<%= @secret_key %>'
+
+DEBUG = <%= @debug %>
+
+# SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
+# see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
+ALLOWED_HOSTS = ['*']

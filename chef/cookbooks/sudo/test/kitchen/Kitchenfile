@@ -1,0 +1,10 @@
+cookbook 'sudo' do
+  configuration "default"
+  configuration "cook-1892"
+  configuration "cook-2022"
+  configuration "cook-2119"
+  # https://gist.github.com/4227915
+  # preflight_command "knife cookbook test -o .. sudo" +
+  #   "&& foodcritic -f ~FC007 -f correctness ." +
+  #   "&& rspec spec"
+end

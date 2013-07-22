@@ -1,0 +1,6 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<p>You have <a href="{% url "formations" %}">{{ formations | length }} formations</a>.</p>
+{% endblock %}

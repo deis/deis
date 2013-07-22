@@ -1,0 +1,16 @@
+boto>=2.9.8
+Django>=1.5.1
+django-allauth>=0.12.0
+django-celery>=3.0.17
+django-json-field>=0.5.4
+django-yamlfield>=0.4
+djangorestframework>=2.3.6
+docutils>=0.10
+gevent==0.13.8
+gunicorn>=0.17.5
+PIL>=1.1.7
+paramiko>=1.10.1
+psycopg2>=2.5.1
+pyCrypto>=2.6
+PyYAML>=3.10
+South>=0.8.1

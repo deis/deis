@@ -1,0 +1,37 @@
+pre-start script
+
+bash << "EOF"
+  mkdir -p <%= @log_dir %>
+  chown -R <%= @user %> <%= @log_dir %>
+EOF
+
+end script
+
+start on (local-filesystems and net-device-up and runlevel [2345])
+stop on runlevel [!2345]
+
+respawn
+respawn limit 2 10   # stop if there are 2 respawns in 10 seconds
+
+setuid root
+setgid root
+
+script
+  exec docker run -p :<%= @port %> -e PORT=<%= @port %> <% if not @slug_dir.nil? %>-v <%= @slug_dir %>/app:/app<% end %> <% @env.each_pair do |k,v| %> -e <%= k.upcase %>=<%= v %><% end %> <%= @image %> <% if ! @command.nil? %>/bin/sh -c 'cd /app && <%= @command %>'<% end %> > <%= @log_dir %>/<%=@c_type%>-<%= @c_num %>.log 2>&1
+end script
+
+post-start script
+  for attempt in 1 2 3 4 5; do
+    CONTAINER_ID=$(docker ps | grep "<%= @port %>-><%= @port %>" | awk {'print $1'})
+    if [ ! -z $CONTAINER_ID ]; then
+      echo $CONTAINER_ID > /var/run/<%= @c_type %>.<%= @c_num %>.container
+      exit 0
+    fi
+  done
+  exit 1
+end script
+
+post-stop script
+  docker kill $(cat /var/run/<%= @c_type %>.<%= @c_num %>.container)
+  rm /var/run/<%= @c_type %>.<%= @c_num %>.container
+end script

@@ -1,0 +1,32 @@
+description "Deis Controller API"
+version "1.0"
+author "Gabriel Monroy"
+
+start on runlevel [2345]
+stop on runlevel [016]
+
+# uncomment once the daemon is working
+#respawn 
+#respawn limit 10 5
+
+setuid deis
+setgid deis
+
+# set environment variables
+env DJANGO_HOME=<%= @home %>
+env DJANGO_PORT=<%= @port %>
+env DJANGO_BIND=<%= @bind %>
+env DJANGO_WORKERS=<%= @workers %>
+
+pre-start script
+cd $DJANGO_HOME
+. venv/bin/activate
+./manage.py syncdb --noinput
+./manage.py migrate --noinput
+end script
+
+script
+cd $DJANGO_HOME
+. venv/bin/activate
+exec gunicorn deis.wsgi -b $DJANGO_BIND:$DJANGO_PORT -w $DJANGO_WORKERS -k gevent -n deis --access-logfile /var/log/deis/access.log --error-logfile /var/log/deis/server.log --log-level debug
+end script

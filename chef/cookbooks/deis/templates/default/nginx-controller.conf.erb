@@ -1,0 +1,42 @@
+# upstream servers are assumed to be local
+upstream api_server {
+    server 127.0.0.1:8000 fail_timeout=0;
+}
+
+server {
+    listen <%= @http_port %> default_server;
+    server_name localhost;
+
+    location /static {
+        root <%= @server_root %>;
+    }
+
+    location / {
+        # checks for static file, if not found proxy to app
+        try_files $uri @proxy_to_api;
+    }
+
+    location @proxy_to_api {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_buffering off;
+
+        # TODO: decrease upstream timeout when
+        # better status polling is in place
+        proxy_read_timeout 600;
+
+        proxy_pass   http://api_server;
+    }
+    
+    # serve up application slugs from build system
+    location /slugs/ {
+    	autoindex on;
+    	alias <%= @slug_root %>/;
+    }
+
+    error_page 500 502 503 504 /500.html;
+    location = /500.html {
+        root <%= @server_root %>/static;
+    }
+}

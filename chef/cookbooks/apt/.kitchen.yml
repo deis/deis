@@ -1,0 +1,33 @@
+---
+driver_plugin: vagrant
+platforms:
+- name: ubuntu-12.04
+  driver_config:
+    box: canonical-ubuntu-12.04
+    box_url: http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box
+    require_chef_omnibus: 11.4.0
+  run_list:
+  - recipe[apt]
+- name: ubuntu-10.04
+  driver_config:
+    box: opscode-ubuntu-10.04
+    box_url: http://opscode-vm.s3.amazonaws.com/vagrant/opscode_ubuntu-10.04_chef-11.2.0.box
+    require_chef_omnibus: 11.4.0
+  run_list:
+  - recipe[apt]
+suites:
+- name: default
+  run_list:
+  - recipe[minitest-handler]
+  - recipe[apt_test]
+  attributes: {}
+- name: cacher-ng
+  run_list:
+  - recipe[minitest-handler]
+  - recipe[apt_test::cacher-ng]
+  attributes: {}
+- name: lwrps
+  run_list:
+  - recipe[minitest-handler]
+  - recipe[apt_test::lwrps]
+  attributes: {}

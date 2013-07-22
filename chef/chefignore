@@ -1,0 +1,11 @@
+# Put files/directories that should be ignored in this file.
+# Lines that start with '# ' are comments.
+
+# emacs
+*~
+
+# vim
+*.sw[a-z]
+
+# subversion
+*/.svn/*

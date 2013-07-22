@@ -1,0 +1,10 @@
+{% extends "web/base.html" %}
+
+{% block content %}
+<h2>{{ apps | length }} Formations</a></h2>
+<ul>
+  {% for formation in formations %}
+  <li>{{ formation }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,148 @@
+#!/usr/bin/python
+from yaml.error import YAMLError
+import argparse
+import getpass
+import json
+import os
+import socket
+import subprocess
+import sys
+import urllib2 as urllib
+import uuid
+import yaml
+
+def parse_args():
+    desc = """
+Process a git push by running it through the buildpack process
+
+Note this script must be run as the `git` user.
+"""
+    parser = argparse.ArgumentParser(description=desc,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('src', action='store',
+                        help='path to source repository')
+    parser.add_argument('user', action='store',
+                        help='name of user who started build',
+                        default='system')
+    # check execution environment
+    if getpass.getuser() != 'git':
+        sys.stderr.write('This script must be run as the "git" user\n')
+        parser.print_help()
+        sys.exit(1)
+    args = parser.parse_args()
+    args.src = os.path.abspath(args.src)
+    # store formation ID
+    args.formation = '/'.join(args.src.split(os.path.sep)[-1:]).replace('.git', '')
+    return args
+
+def _sizeof_fmt(num):
+    for x in ['bytes','KB','MB','GB','TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+
+def puts_step(s):
+    sys.stdout.write("-----> %s\n" % s)
+    sys.stdout.flush()
+
+def puts_line():
+    sys.stdout.write("\n")
+    sys.stdout.flush()
+
+def puts(s):
+    sys.stdout.write("       " + s)
+    sys.stdout.flush()
+
+def exit_on_error(error_code, msg):
+    sys.stderr.write(msg)
+    sys.stderr.write('\n')
+    sys.stderr.flush()
+    sys.exit(error_code)
+    
+if __name__ == '__main__':
+    args = parse_args()
+    # get sha of master
+    with open(os.path.join(args.src, 'refs/heads/master')) as f:
+        sha = f.read().strip('\n')
+    # prepare for buildpack run
+    slug_path = os.path.join('<%= @slug_dir %>', '{0}-{1}.tar.gz'.format(args.formation, sha))
+    tag = uuid.uuid4().hex[:4]
+    image = '{0}:{1}'.format(args.formation, tag)
+    try:
+        # build/compile
+        cmd = 'git archive master | <%= @buildstep_dir %>/buildstep {0} {1}'.format(args.formation, tag)
+        p = subprocess.Popen(cmd, cwd=args.src, shell=True)
+        rc = p.wait()
+        if rc != 0:
+            exit_on_error(rc, 'Build failed, leaving current release in place')
+        # extract slug
+        cmd = 'docker run {0} tar -C / -cz app > {1}'.format(image, slug_path)
+        p = subprocess.Popen(cmd, cwd=args.src, shell=True)
+        rc = p.wait()
+        if rc != 0:
+            exit_on_error(rc, 'Could not extract slug from {0}'.format(image))
+        # extract procfile
+        cmd = 'docker run {0} cat /app/Procfile'.format(image)
+        p = subprocess.Popen(cmd, cwd=args.src, shell=True, stdout=subprocess.PIPE)
+        rc = p.wait()
+        if rc != 0:
+            exit_on_error(rc, 'Could not extract Procfile from {0}'.format(image))
+        try:
+            procfile = yaml.safe_load(p.stdout.read())
+        except YAMLError as e:
+            exit_on_error(1, 'Invalid Procfile format: {0}'.format(e))
+        # release
+        cmd = 'docker run {0} /build/release'.format(image)
+        p = subprocess.Popen(cmd, cwd=args.src, shell=True, stdout=subprocess.PIPE)
+        rc = p.wait()
+        if rc != 0:
+            exit_on_error(rc, 'Release failed, leaving current release in place')
+        try:
+            release = yaml.safe_load(p.stdout.read())
+        except YAMLError as e:
+            exit_on_error(1, 'Invalid release format: {0}'.format(e))
+    finally:
+        p = subprocess.Popen(['docker', 'rmi', image], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        rc = p.wait()
+        if rc != 0:
+            exit_on_error(rc, 'Warning: could not clean up image {0}'.format(image))
+    # calculate checksum
+    p = subprocess.Popen(['sha256sum', slug_path], stdout=subprocess.PIPE)
+    rc = p.wait()
+    if rc != 0:
+        exit_on_error(rc, 'Could not calculate SHA of slug')
+    checksum = p.stdout.read().split(' ')[0]
+    # run
+    build = {'formation': args.formation, 'sha': sha, 'checksum': checksum}
+    build['config'] = release.get('config_vars', {})
+    # TODO: replace with actual user
+    build['ssh_key'] = args.user
+    # TODO: figure out better controller fqdn lookup or switch to mandatory S3 hosting
+    ip = json.loads(urllib.urlopen('http://jsonip.com').read())['ip']
+    fqdn = socket.gethostbyaddr(ip)[0]
+    build['url'] = "http://{fqdn}/slugs/{args.formation}-{sha}.tar.gz".format(**locals())
+    build['procfile'] = procfile
+    # calculate slug size
+    build['size'] = os.stat(slug_path).st_size
+    puts_line()
+    puts_step("Compiled slug size: %s" % _sizeof_fmt(build['size']))
+    # run
+    sys.stdout.write("       " + "Launching... ")
+    sys.stdout.flush()
+    p = subprocess.Popen(['sudo', '-u', 'deis', '<%= @controller_dir %>/bin/build-release-run'], 
+                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate(json.dumps(build))
+    rc = p.wait()
+    if rc != 0:
+        raise RuntimeError('Build creation error {0}'.format(stderr))
+    databag = json.loads(stdout)
+    sys.stdout.write("done\n")
+    sys.stdout.flush()
+    puts_line()
+    puts_step("{args.formation} deployed to Deis".format(**locals()))
+    proxies = databag['nodes']['proxies'].values()
+    if proxies:
+        for proxy_fqdn in proxies:
+            puts("http://{proxy_fqdn}\n".format(**locals()))
+    else:
+        puts('No proxies found, use `deis scale proxies=N backends=N` to scale your formation\n\n')

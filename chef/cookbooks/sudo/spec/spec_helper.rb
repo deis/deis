@@ -1,0 +1,2 @@
+require 'chefspec'
+require 'fauxhai'

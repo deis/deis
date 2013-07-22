@@ -1,0 +1,51 @@
+
+<% if @backends.length > 0 %>
+upstream <%= @formation %>-backends {
+	<% if @algorithm == "least_conn" %>
+	# route requests based on least number of connections
+	# see http://nginx.org/en/docs/http/ngx_http_upstream_module.html#least_conn
+	least_conn;
+	<% elsif @algorithm == "ip_hash" %>
+	# route requests to the same web worker based on hash of their IP addr
+	# see http://nginx.org/en/docs/http/ngx_http_upstream_module.html#ip_hash
+	ip_hash;	
+	<% else %>
+	# route requests using a simple round robin scheme
+	<% end %>
+	
+	# web worker format: public_fqdn:public_port
+	<% @backends.each do |backend| %>
+	server <%= backend %>;
+	<% end %>
+}
+<% end %>
+
+server {
+	listen <%= @port %> default_server;
+
+	# Make site accessible from http://localhost/
+	server_name localhost;
+
+	<% if @backends.length > 0 %>
+	location / {
+		proxy_pass http://<%= @formation %>-backends;
+		<% if @firewall %>
+		# Nginx Anti XSS & SQL Injection (Web Application Firewall)
+		# see https://code.google.com/p/naxsi/ for more info
+		include /etc/nginx/naxsi.rules;
+		<% end %>
+	}
+	<% end %>
+
+	# TODO: allow configurable error pages
+	
+	#error_page 404 /404.html;
+
+	# redirect server error pages to the static page /50x.html
+	#
+	#error_page 500 502 503 504 /50x.html;
+	#location = /50x.html {
+	#	root /usr/share/nginx/html;
+	#}
+
+}

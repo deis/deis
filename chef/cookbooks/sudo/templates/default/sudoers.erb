@@ -1,0 +1,26 @@
+# This file is managed by Chef for <%= node['fqdn'] %>
+# Do NOT modify this file directly.
+
+<% @sudoers_defaults.each do |defaults| -%>
+Defaults      <%= defaults %>
+<% end -%>
+<% if @agent_forwarding -%>
+Defaults      env_keep+=SSH_AUTH_SOCK
+<% end -%>
+
+# User privilege specification
+root          ALL=(ALL) ALL
+
+<% @sudoers_users.each do |user| -%>
+<%= user %>   ALL=(ALL) <%= "NOPASSWD:" if @passwordless %>ALL
+<% end -%>
+
+# Members of the sysadmin group may gain root privileges
+%sysadmin     ALL=(ALL) <%= "NOPASSWD:" if @passwordless %>ALL
+
+<% @sudoers_groups.each do |group| -%>
+# Members of the group '<%= group %>' may gain root privileges
+%<%= group %> ALL=(ALL) <%= "NOPASSWD:" if @passwordless %>ALL
+<% end -%>
+
+<%= '#includedir /etc/sudoers.d' if @include_sudoers_d  %>

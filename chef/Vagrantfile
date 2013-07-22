@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "chef-server"
+  config.vm.hostname = "chef-server"
+
+  config.vm.provider :virtualbox do |v|
+    v.customize ["modifyvm", :id, "--memory", 768]
+  end
+  
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+
+  config.vm.network :public_network, :bridge => 'en0: Wi-Fi (AirPort)' #, :mac => "08002769c9a0"  
+
+  #config.vm.provision :shell, :inline => "echo Bootstrap with: knife bootstrap `/sbin/ifconfig eth1|grep inet|head -1|sed 's/\:/ /'|awk '{print $3}'` -x vagrant -P vagrant -N controller -r role[deis-controller] --sudo"
+  
+  config.vm.provision :shell, :inline => <<EOF
+if [ -z "`dpkg --list |grep chef-server`" ] ; then
+  echo "Downloading open-source Chef Server (11.0.8)..."
+  wget -q https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
+  sudo dpkg -i chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
+fi 
+sudo chef-server-ctl reconfigure
+echo Chef Server URL: https://`/sbin/ifconfig eth1|grep inet|head -1|sed 's/\:/ /'|awk '{print $3}'`/
+EOF
+end
