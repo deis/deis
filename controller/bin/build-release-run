@@ -1,0 +1,40 @@
+#!/opt/deis/controller/venv/bin/python
+import os
+import sys
+import json
+
+if __name__ == '__main__':
+    # prepare pythonpath and django settings
+    base_path = os.path.abspath(os.path.join(__file__, '..', '..'))
+    sys.path.insert(0, base_path)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+    from api import models
+    # deserialize build
+    inp = sys.stdin.read()
+    build = json.loads(inp)
+    # pull username out of ssh key
+    ssh_key = build.pop('ssh_key')
+    username = ssh_key.split('_')[0]
+    from django.contrib.auth.models import User
+    u=User.objects.get(username=username)
+    build['owner'] = u
+    # lookup formation
+    formation_id = build.pop('formation')
+    formation = models.Formation.objects.get(
+        owner=u, id=formation_id)
+    build['formation'] = formation
+    # create the new build
+    b = models.Build.objects.create(**build)
+    # send release signal
+    models.release_signal.send(sender=b,
+        build=b, formation=formation, user=u)
+    # pull the formation again with the new release
+    formation = models.Formation.objects.get(
+        owner=u, id=formation_id)
+    # calculate the formation and converge it
+    databag = formation.calculate()
+    formation.converge(databag)
+    # return a json dump of the databag
+    sys.stdout.write(json.dumps(databag))
+    sys.stdout.flush()
+    sys.exit(0)
