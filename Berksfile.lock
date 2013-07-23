@@ -1,0 +1,15 @@
+{
+  "sources": {
+    "apt": {
+      "locked_version": "2.0.0"
+    },
+    "sudo": {
+      "locked_version": "2.1.2"
+    },
+    "deis": {
+      "locked_version": "0.1.0",
+      "git": "git://github.com/opdemand/deis-cookbook.git",
+      "ref": "325c3bf53688613c6b1ba4670f6eadf86ccc9ac8"
+    }
+  }
+}
