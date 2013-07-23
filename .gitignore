@@ -36,3 +36,8 @@ nosetests.xml
 # Sublime Text droppings
 *.sublime-project
 *.sublime-workspace
+
+# Deis' config file
+deis/local_settings.py
+venv/
+.vagrant
