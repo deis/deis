@@ -41,3 +41,5 @@ nosetests.xml
 deis/local_settings.py
 venv/
 .vagrant
+.ruby-version
+
