@@ -12,6 +12,6 @@ apt-get install -yq ruby1.9.1 ruby1.9.1-dev make
 
 # cleanup for bundle
 rm -rf /var/lib/cloud
+rm -f /home/ubuntu/.ssh/authorized_keys
 rm -f /root/.ssh/authorized_keys
 find /var/log -type f | xargs rm
-
