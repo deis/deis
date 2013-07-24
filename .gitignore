@@ -42,4 +42,5 @@ deis/local_settings.py
 venv/
 .vagrant
 .ruby-version
+.DS_Store
 

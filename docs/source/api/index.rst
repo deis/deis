@@ -5,6 +5,14 @@
 API
 ===
 
+.. automodule:: api
+   :members:
+   :undoc-members:
+
+.. automodule:: celerytasks
+   :members:
+   :undoc-members:
+
 .. automodule:: api.fields
    :members:
    :undoc-members:
