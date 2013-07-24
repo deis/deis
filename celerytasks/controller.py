@@ -32,13 +32,15 @@ def update_formation(formation_id, databag_item_value):
     if code == 200:
         return resp, code
     elif code == 404:
-        resp, code = client.create_databag_item('deis-formations', 
-                           formation_id, databag_item_value)
+        resp, code = client.create_databag_item(
+            'deis-formations', formation_id, databag_item_value)
         if code != 201:
-            raise RuntimeError('Failed to create data bag: {code} => {resp}'.format(**locals()))
+            msg = 'Failed to create data bag: {code} => {resp}'
+            raise RuntimeError(msg.format(**locals()))
     else:
-        raise RuntimeError('Failed to update data bag: {code} => {resp}'.format(**locals()))
-    
+        msg = 'Failed to update data bag: {code} => {resp}'
+        raise RuntimeError(msg.format(**locals()))
+
 
 @task(name='controller.destroy_formation')
 def destroy_formation(formation_id):

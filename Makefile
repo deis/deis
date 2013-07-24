@@ -11,7 +11,7 @@ task:
 	python manage.py test celerytasks
 
 pep8:
-	pep8 api celerytasks deis web
+	pep8 api celerytasks deis web --exclude=migrations
 
 pyflakes:
 	pyflakes api celerytasks deis web

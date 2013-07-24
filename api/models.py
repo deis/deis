@@ -19,7 +19,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from rest_framework.authtoken.models import Token
 
 from api import fields
-from celerytasks import chef, controller
+from celerytasks import controller
 from celery.canvas import group
 
 
@@ -235,7 +235,7 @@ class Formation(UuidAuditedModel):
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
     ssh_public_key = models.TextField()
-    
+
     class Meta:
         unique_together = (('owner', 'id'),)
 
@@ -350,7 +350,7 @@ class Formation(UuidAuditedModel):
         if containers_balanced:
             self.converge(databag)
         return databag
-        
+
     def _balance_containers(self, **kwargs):
         backends = self.backend_set.all().order_by('created')
         if len(backends) < 2:
@@ -361,10 +361,10 @@ class Formation(UuidAuditedModel):
         changed = False
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
-            # map backend container counts => { 2: [b3, b4], 3: [ b1, b2 ] } 
+            # map backend container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
             b_map = {}
             for b in backends:
-                ct = len(b.node.container_set.filter(type=container_type)) 
+                ct = len(b.node.container_set.filter(type=container_type))
                 b_map.setdefault(ct, []).append(b)
             # loop until diff between min and max is 1 or 0
             while max(b_map.keys()) - min(b_map.keys()) > 1:
@@ -394,7 +394,7 @@ class Formation(UuidAuditedModel):
                     b_map.setdefault(ct, []).append(b)
                 changed = True
         return changed
-        
+
     def __str__(self):
         return self.id
 
@@ -403,7 +403,7 @@ class Formation(UuidAuditedModel):
         args = (self.id, self.flavor.provider.creds.copy(),
                 self.flavor.params.copy())
         return tasks.prepare_formation.subtask(args)
-    
+
     def calculate(self):
         "Return a Chef data bag item for this formation"
         release = self.release_set.all().order_by('-created')[0]
@@ -448,12 +448,12 @@ class Formation(UuidAuditedModel):
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
             # converge all backends
-            backend_nodes = [ b.node for b in self.backend_set.all() ]
-            job = group(*[ n.converge() for n in backend_nodes ])
+            backend_nodes = [b.node for b in self.backend_set.all()]
+            job = group(*[n.converge() for n in backend_nodes])
             _results = job.apply_async().join()
             # converge all proxies
-            proxy_nodes = [ b.node for b in self.proxy_set.all() ]
-            job = group(*[ n.converge() for n in proxy_nodes ])
+            proxy_nodes = [b.node for b in self.proxy_set.all()]
+            job = group(*[n.converge() for n in proxy_nodes])
             _results = job.apply_async().join()
         return databag
 
@@ -464,8 +464,8 @@ class Formation(UuidAuditedModel):
         if settings.CHEF_ENABLED:
             subtasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
         # create subtasks to terminate all nodes in parallel
-        subtasks.extend([ b.node.terminate() for b in self.backend_set.all() ])
-        subtasks.extend([ p.node.terminate() for p in self.proxy_set.all() ])
+        subtasks.extend([b.node.terminate() for b in self.backend_set.all()])
+        subtasks.extend([p.node.terminate() for p in self.proxy_set.all()])
         job = group(*subtasks)
         job.apply_async().join() # block for termination
         # purge other hosting provider infrastructure
@@ -500,7 +500,7 @@ class Node(UuidAuditedModel):
     List of nodes available as `formation.nodes`
     """
     objects = NodeManager()
-    
+
     NODE_TYPES = (
         ('backend', 'Backend'),
         ('proxy', 'Proxy'),
@@ -693,7 +693,7 @@ class Config(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     values = fields.EnvVarsField(default='{}', blank=True)
 
     class Meta:
@@ -714,7 +714,7 @@ class Build(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
     # metadata
@@ -743,7 +743,7 @@ class Release(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     config = models.ForeignKey('Config')
     image = models.CharField(max_length=256, default='ubuntu')
     # build only required for heroku-style apps
@@ -757,7 +757,7 @@ class Release(UuidAuditedModel):
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
-    
+
     def rollback(self):
         # create a rollback log entry
         # call run
@@ -787,7 +787,7 @@ def new_release(sender, **kwargs):
                 owner=user, formation=formation, values=new_values)
     # create new release and auto-increment version
     new_version = last_release.version + 1
-    release = Release.objects.create(owner=user, formation=formation, 
+    release = Release.objects.create(owner=user, formation=formation,
         image=image, config=config, build=build, args=args, command=command,
         version=new_version)
     return release

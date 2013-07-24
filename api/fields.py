@@ -88,6 +88,8 @@ class ParamsField(JSONField):
     A text field that accepts a JSON object, used for storing provider
     API Parameters.
     """
+    pass
+
 
 class CloudInitField(YAMLField):
     """
@@ -107,7 +109,7 @@ class NodeStatusField(JSONField):
 
 try:
     from south.modelsinspector import add_introspection_rules
-    # Tell the South schema migration tool to handle a UuidField.
+    # Tell the South schema migration tool to handle our custom fields.
     add_introspection_rules([], [r'^api\.fields\.UuidField'])
     add_introspection_rules([], [r'^api\.fields\.EnvVarsField'])
     add_introspection_rules([], [r'^api\.fields\.DataBagField'])

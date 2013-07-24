@@ -22,6 +22,11 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
+docs:
+	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The documentation pages are now in $(BUILDDIR)/html."
+
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 #	@echo "  html       to make standalone HTML files"
@@ -45,12 +50,7 @@ help:
 #	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 	@echo "  docs       to build the docs and copy the static files to the outputdir"
 	@echo "  server     to serve the docs in your browser under \`http://localhost:8000\`"
-	@echo "  publish    to publish the app to dotcloud"
-
-docs:
-	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The documentation pages are now in $(BUILDDIR)/html."
+	@echo "  publish    to publish the app to deis.io"
 
 publish:
 	@echo "Coming soon..."

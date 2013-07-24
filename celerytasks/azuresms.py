@@ -1,7 +1,5 @@
 
 from __future__ import unicode_literals
-import json
-import time
 
 from azure.servicemanagement import ServiceManagementService
 from azure.servicemanagement import LinuxConfigurationSet, OSVirtualHardDisk
@@ -10,9 +8,6 @@ from celery import task
 import yaml
 
 from . import util
-from api.models import Node
-from deis import settings
-from celerytasks.chef import ChefAPI
 
 @task(name='azuresms.launch_node')
 def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
