@@ -21,7 +21,6 @@ install:
   - "pip install -r requirements.txt --use-mirrors"
 
 before_script:
-  - "psql -c 'create database deis_testing;' -U postgres"
   - |
     cat > deis/local_settings.py <<EOF
     DATABASES = {
