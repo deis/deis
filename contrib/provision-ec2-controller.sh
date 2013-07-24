@@ -17,6 +17,7 @@ ssh_user="ubuntu"
 # chef settings
 node_name="deis-controller"
 run_list="recipe[deis::default],recipe[deis::gitosis],recipe[deis::build],recipe[deis::postgresql],recipe[deis::server]"
+chef_version=11.4.4
 
 function echo_color {
   echo "\033[1m$1\033[0m"
@@ -54,6 +55,7 @@ fi
 echo_color "Provisioning $node_name with knife ec2..."
 set -x
 knife ec2 server create \
+ --bootstrap-version $chef_version \
  --region $region \
  --image $image \
  --flavor $flavor \
