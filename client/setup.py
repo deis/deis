@@ -11,9 +11,6 @@ except ImportError:
     from distutils.core import setup
     USE_SETUPTOOLS = False
 
-from deis.client import __version__
-
-
 try:
     LONG_DESCRIPTION = open('README.rst').read()
 except IOError:
@@ -42,9 +39,9 @@ setup(name='deis',
       author='OpDemand',
       author_email='info@opdemand.com',
       url='https://github.com/opdemand/deis',
-      keywords=['opdemand', 'deis', 'cloud', 'aws', 'ec2', 'heroku'],
+      keywords=['opdemand', 'deis', 'cloud', 'aws', 'ec2', 'heroku', 'docker'],
       classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',

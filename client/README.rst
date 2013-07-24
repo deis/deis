@@ -1,5 +1,5 @@
-deis: Command-line client for your PaaS
-=======================================
+deis
+====
 
 .. image:: https://badge.fury.io/py/deis.png
     :target: http://badge.fury.io/py/deis
@@ -13,10 +13,10 @@ deis: Command-line client for your PaaS
 What is Deis?
 -------------
 
-Deis is an open source PaaS inspired by Heroku, that makes it easy to deploy
-and scale LXC containers used to host applications, databases, middleware and
-other services. Deis leverages Docker, Chef and Heroku Buildpacks to provide a
-private PaaS that is lightweight and flexible.
+Deis is an open source *Platform-as-a-Service* (PaaS) inspired by Heroku that
+makes it easy to deploy and scale LXC containers used to host applications,
+databases, middleware and other services. Deis leverages Docker, Chef and
+Heroku Buildpacks to provide a private PaaS that is lightweight and flexible.
 
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, PHP, Dart and Go. However, Deis can deploy *anything* using Heroku
