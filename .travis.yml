@@ -1,10 +1,17 @@
 language: python
 python:
   - "2.7"
+services:
+  - postgresql
+  - rabbitmq
 
 # command to install dependencies
+before_install:
+  - sudo apt-get install -qq libevent-dev libpq-dev
 install:
   - "pip install -r requirements.txt --use-mirrors"
 
 # command to run tests
+before_script:
+  - "psql -c 'create database deis_testing;' -U postgres"
 script: "python manage.py test"
