@@ -1,68 +1,85 @@
-deis
-====
+deis: Command-line client for your PaaS
+=======================================
 
-**Deis** is an open source *platform-as-a-service* (PaaS) for public and
-private clouds.
+.. image:: https://badge.fury.io/py/deis.png
+    :target: http://badge.fury.io/py/deis
 
-Take your agile development to the next level. Free your mind and focus
-on your code. Deploy updates to local metal or worldwide clouds with
-``git push``. Scale servers, processes, and proxies with a simple
-command. Enjoy the *twelve-factor app* workflow while keeping total
-control.
+.. image:: https://travis-ci.org/opdemand/deis.png?branch=master
+    :target: https://travis-ci.org/opdemand/deis
 
-The `opdemand/deis <https://github.com/opdemand/deis>`__ project
-contains a command-line interface to the **Deis** system. It's all you
-need to work with an existing **Deis** controller. To set up your own
-private application platform, the
-`deis-controller <https://github.com/opdemand/deis-controller>`__ and
-`deis-chef <https://github.com/opdemand/deis-chef>`__ projects are also
-required.
+.. image:: https://pypip.in/d/deis/badge.png
+    :target: https://crate.io/packages/deis/
+
+What is Deis?
+-------------
+
+Deis is an open source PaaS inspired by Heroku, that makes it easy to deploy
+and scale LXC containers used to host applications, databases, middleware and
+other services. Deis leverages Docker, Chef and Heroku Buildpacks to provide a
+private PaaS that is lightweight and flexible.
+
+Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
+Clojure, PHP, Dart and Go. However, Deis can deploy *anything* using Heroku
+Buildpacks or pre-built Docker images.  Containers can be deployed to any
+cloud provider, although only EC2 is currently supported.
+
+Why Deis?
+=========
+
+Deploy anything
+---------------
+
+Leverage Heroku Buildpacks to deploy a wide range of languages and frameworks
+with a simple "git push" or create custom Docker images to deploy pre-built
+apps, databases and other services.
+
+Control everything
+------------------
+
+Choose your hosting providers. Define your application formations. Scale
+nodes and containers independently. Control your routing layer. Manage the
+entire platform with a private Deis controller.
+
+Scale effortlessly
+------------------
+
+Scale nodes, containers and proxies with a single command. Node provisioning is
+transparent, container formations are rebalanced automatically and proxies are
+updated to re-route traffic without downtime.
+
+100% Open Source
+----------------
+
+Free, transparent and easily customized.  Join the open-source PaaS and DevOps
+community by using Deis and complimentary projects like Docker, Chef and
+Heroku Buildpacks.
 
 Getting Started
 ---------------
 
-Clone the git repository at `<https://github.com/opdemand/deis.git>`_:
+Installing the Deis client from the Python Package Index is simple:
 
 ::
 
-    $ git clone https://github.com/opdemand/deis.git
-    Cloning into 'deis'...
-    ...
-    Resolving deltas: 100%, done.
-    $ cd deis
+    $ pip install deis
 
+The client will automatically install the following dependencies:
 
-Use an isolated python environment:
+-  `pyyaml <https://bitbucket.org/xi/pyyaml>`__
+-  `requests <http://python-requests.org>`__
 
-::
-
-    $ virtualenv venv
-    New python executable in venv/bin/python
-    ...
-    Installing pip................done.
-    $ source venv/bin/activate
-    (venv) $
-
-
-Next Steps
-----------
 
 License
 -------
 
-**Deis** is open source software under the Apache 2.0 license. Please
-see the **LICENSE** file in the root directory for details.
+Copyright 2013, OpDemand LLC
 
-Credits
--------
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at <http://www.apache.org/licenses/LICENSE-2.0>
 
-**Deis** rests on the shoulders of leading open source technologies:
-
--  Docker
--  Chef
--  Django
--  Heroku buildpacks
--  Gitosis
-
-`OpDemand <http://www.opdemand.com/>`__ sponsors and maintains the
-**Deis** project.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.

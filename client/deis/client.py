@@ -19,15 +19,15 @@ Common commands:
   rotate        rotate in fresh backends, proxies or containers
   balance       rebalance and converge the container formation
   destroy       destroy a container formation
-  
+
 Use `deis help [subcommand]` to learn about these subcommands:
-  
+
   formations    manage container formations
   containers    manage the containers running on backends
   backends      manage the backend nodes hosting containers
   proxies       manage the proxy nodes routing to containers
   nodes         manage nodes of all types
-  
+
   flavors       create and manage node flavors
   providers     create and manage cloud provider credentials
 
@@ -55,7 +55,7 @@ import subprocess
 import yaml
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.4'
 
 
 USAGE = {
@@ -280,7 +280,7 @@ class DeisClient(object):
             print('Registered {}'.format(username))
             login_args = {'--username': username, '--password': password,
                           '<controller>': controller}
-            # login after registering 
+            # login after registering
             if self.auth_login(login_args) is False:
                 print('Login failed')
                 return
@@ -327,7 +327,7 @@ class DeisClient(object):
         self._settings['controller'] = None
         self._settings.save()
         print('Logged out')
-    
+
     def backends_list(self, args):
         formation = args.get('--formation')
         if not formation:
@@ -523,7 +523,7 @@ class DeisClient(object):
             print('done')
         else:
             print('Error!', response.text)
-    
+
     def flavors_create(self, args):
         """Create a flavor using a provider"""
         body = {'id': args.get('--id'), 'provider': args.get('--provider')}
@@ -562,7 +562,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
         else:
             print('Error!', response.text)
-    
+
     def flavors_list(self, args):
         """List flavors for a user."""
         response = self._session.get(
@@ -685,7 +685,7 @@ class DeisClient(object):
             print(json.dumps(databag, indent=2))
         else:
             print('Error!', response.text)
-    
+
     def formations_converge(self, args):
         formation = args.get('--formation')
         if not formation:
@@ -709,7 +709,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
         else:
             print('Error!', response.text)
-    
+
     def nodes_list(self, args):
         """List nodes for this formation."""
         formation = args.get('--formation')
@@ -782,7 +782,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
         else:
             print('Error!', response.text)
-    
+
     def proxies_list(self, args):
         """List proxies for this formation."""
         formation = args.get('--formation')
@@ -827,7 +827,7 @@ def main():
                 'calculate': cli.formations_calculate,
                 'balance': cli.formations_balance,
                 'converge': cli.formations_converge}
-    # dispatch based on primary command 
+    # dispatch based on primary command
     if cmd == 'help':
         docopt(__doc__, argv=['--help'])
     elif hasattr(cli, cmd):
