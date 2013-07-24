@@ -259,6 +259,13 @@ class DeisClient(object):
         self._session = Session()
         self._settings = Settings()
 
+    def _dispatch(self, method, path, body=None,
+                  headers={'content-type': 'application/json'}, **kwargs):
+        func = getattr(self._session, method.lower())
+        url = urlparse.urljoin(self._settings['controller'], path, **kwargs)
+        response = func(url, data=body, headers=headers)
+        return response
+
     def auth_register(self, args):
         """Register a user at a controller."""
         controller = args['<controller>']
@@ -271,7 +278,7 @@ class DeisClient(object):
         email = args.get('--email')
         if not email:
             email = raw_input ('email: ')
-        url = controller + 'api/register'
+        url = urlparse.urljoin(controller, '/api/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -285,6 +292,7 @@ class DeisClient(object):
                 print('Login failed')
                 return
             # add ssh keys before formations are created
+            print
             self.keys_add({})
         else:
             print('Registration failed', response.content)
@@ -300,7 +308,7 @@ class DeisClient(object):
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
-        url = controller + 'api/auth/login/'
+        url = urlparse.urljoin(controller, '/api/auth/login/')
         payload = {'username': username, 'password': password}
         # prime cookies for login
         self._session.get(url, headers=headers)
@@ -321,7 +329,7 @@ class DeisClient(object):
         """Clear a user's session and unauthenticate her."""
         controller = self._settings.get('controller')
         if controller:
-            self._session.get(controller + 'api/auth/logout/')
+            self._dispatch('get', '/api/auth/logout/')
         self._session.cookies.clear()
         self._session.cookies.save()
         self._settings['controller'] = None
@@ -332,9 +340,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get(
-            '{}api/formations/{}/backends'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('get','/formations/{}/backends'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -350,10 +356,9 @@ class DeisClient(object):
         data = sys.stdin.read()
         # url / sha / slug_size / procfile / checksum
         j = json.loads(data)
-        response = self._session.post(
-            '{}api/formations/{}/builds'.format(
-                self._settings['controller'], formation),
-            data=json.dumps(j), headers={'content-type': 'application/json'})
+        response = self._dispatch('post',
+                                  '/formations/{}/builds'.format(formation),
+                                  body=json.dumps(j))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('Build created.')
         else:
@@ -363,8 +368,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get('{}api/formations/{}/builds'.format(
-            self._settings['controller'], formation))
+        response = self._dispatch('get', '/formations/{}/builds'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -378,9 +382,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get(
-            '{}api/formations/{}/config'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('get', '/formations/{}/config'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
@@ -400,11 +402,9 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
-        response = self._session.post(
-            '{}api/formations/{}/config'.format(
-                self._settings['controller'], formation),
-            data=json.dumps(body),
-            headers={'content-type': 'application/json'})
+        response = self._dispatch('post', 
+                                  '/formations/{}/config'.format(formation), 
+                                  json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
@@ -427,11 +427,9 @@ class DeisClient(object):
         for k in args.get('<key>'):
             values[k] = None
         body = {'values': json.dumps(values)}
-        response = self._session.post(
-            '{}api/formations/{}/config'.format(
-                self._settings['controller'], formation),
-            data=json.dumps(body),
-            headers={'content-type': 'application/json'})
+        response = self._dispatch('post',
+                                  '/formations/{}/config'.format(formation),
+                                  data=json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
@@ -450,8 +448,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get('{}api/formations/{}/containers'.format(
-            self._settings['controller'], formation))
+        response = self._dispatch('get',
+                                  '/formations/{}/containers'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -487,9 +485,7 @@ class DeisClient(object):
         body = {'id': key_id, 'public': '{0} {1}'.format(key_type, key_str)}
         sys.stdout.write('Uploading {0} to Deis... '.format(path))
         sys.stdout.flush()
-        response = self._session.post('{}api/keys'.format(
-            self._settings['controller']), json.dumps(body),
-            headers={'content-type': 'application/json'})
+        response = self._dispatch('post', '/api/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done')
         else:
@@ -497,8 +493,7 @@ class DeisClient(object):
 
     def keys_list(self, args):
         """List SSH keys for the logged in user."""
-        response = self._session.get('{}api/keys'.format(
-            self._settings['controller']))
+        response = self._dispatch('get', '/api/keys')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
@@ -517,8 +512,7 @@ class DeisClient(object):
         key = args.get('<key>')
         sys.stdout.write('Removing {0} SSH Key... '.format(key))
         sys.stdout.flush()
-        response = self._session.delete('{}api/keys/{}'.format(
-            self._settings['controller'], key))
+        response = self._dispatch('delete', '/keys/{}'.format(key))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:
@@ -533,9 +527,7 @@ class DeisClient(object):
             opt = args.get('--'+fld)
             if opt:
                 body.update({fld: opt})
-        controller = self._settings['controller']
-        response = self._session.post(
-            controller + 'api/flavors/', data=body)
+        response = self._dispatch('post', '/api/flavors', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('{0[id]}'.format(response.json()))
         else:
@@ -543,10 +535,8 @@ class DeisClient(object):
 
     def flavors_delete(self, args):
         """Delete a node flavor by ID."""
-        node = args.get('<id>')
-        response = self._session.delete(
-            '{}api/flavors/{}'.format(
-                self._settings['controller'], node))
+        flavor = args.get('<id>')
+        response = self._dispatch('delete', '/api/flavors/{}'.format(flavor))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             pass
         else:
@@ -555,9 +545,7 @@ class DeisClient(object):
     def flavors_info(self, args):
         """Show detail of a node flavor."""
         flavor = args.get('<flavor>')
-        response = self._session.get(
-                '{}api/flavors/{}'.format(
-                    self._settings['controller'], flavor))
+        response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -565,8 +553,7 @@ class DeisClient(object):
 
     def flavors_list(self, args):
         """List flavors for a user."""
-        response = self._session.get(
-            self._settings['controller'] + 'api/flavors/')
+        response = self._dispatch('get', '/api/flavors')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             for item in data['results']:
@@ -579,14 +566,13 @@ class DeisClient(object):
         body = {'image': args['--image'], 'flavor': args['--flavor']}
         if '--id' in args:
             body.update({'id': args['--id']})
-        controller = self._settings['controller']
-        response = self._session.post(
-            controller + 'api/formations/', data=body)
+        response = self._dispatch('post', '/api/formations',
+                                  json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
             print('Created ' + formation)
-            hostname = urlparse.urlparse(controller).netloc
+            hostname = urlparse.urlparse(self._settings['controller']).netloc
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis',
@@ -599,8 +585,7 @@ class DeisClient(object):
 
     def formations_list(self, args):
         """List formations for a user."""
-        response = self._session.get(
-            self._settings['controller'] + 'api/formations/')
+        response = self._dispatch('get', '/api/formations')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             for item in data['results']:
@@ -626,9 +611,7 @@ class DeisClient(object):
                 print('Destroy aborted')
                 return
         print 'Destroying {0}...'.format(formation),
-        response = self._session.delete(
-                '{}api/formations/{}'.format(
-                    self._settings['controller'], formation))
+        response = self._dispatch('delete', '/api/formations/{}'.format(formation))
         if response.status_code in (requests.codes.no_content, requests.codes.not_found):  # @UndefinedVariable
             print('done')
             try:
@@ -649,11 +632,9 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        response = self._session.post(
-            '{}api/formations/{}/scale'.format(
-                self._settings['controller'], formation),
-            data=json.dumps(body),
-            headers={'content-type': 'application/json'})
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/scale'.format(formation),
+                                  json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -664,9 +645,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.post(
-            '{}api/formations/{}/calculate'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/calculate'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -677,9 +657,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.post(
-            '{}api/formations/{}/balance'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/balance'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -690,9 +669,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.post(
-            '{}api/formations/{}/converge'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/converge'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -702,9 +680,7 @@ class DeisClient(object):
     def nodes_info(self, args):
         """Show detail of a provider."""
         node = args.get('<node>')
-        response = self._session.get(
-                '{}api/nodes/{}'.format(
-                    self._settings['controller'], node))
+        response = self._dispatch('get', '/api/nodes/{}'.format(node))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -715,9 +691,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get(
-            '{}api/formations/{}/nodes'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('get', 
+                                  '/api/formations/{}/nodes'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -730,8 +705,8 @@ class DeisClient(object):
     def nodes_delete(self, args):
         """Delete a node by ID."""
         node = args.get('--id')
-        response = self._session.delete(
-            '{}api/nodes/{}'.format(self._settings['controller'], node))
+        response = self._dispatch('delete',
+                                  '/api/nodes/{}'.format(node))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('Node deleted successfully')
         else:
@@ -752,10 +727,8 @@ class DeisClient(object):
         if not id:
             id = type  # @ReservedAssignment
         body = {'id': id, 'type': type, 'creds': json.dumps(creds)}
-        response = self._session.post(
-            '{}api/providers'.format(self._settings['controller']),
-            data=json.dumps(body),
-            headers={'content-type': 'application/json'})
+        response = self._dispatch('post', '/api/providers',
+                                  json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('{0[id]}'.format(response.json()))
         else:
@@ -763,8 +736,7 @@ class DeisClient(object):
 
     def providers_list(self, args):
         """List providers."""
-        response = self._session.get(
-            '{}api/providers'.format(self._settings['controller']))
+        response = self._dispatch('get', '/api/providers')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             for item in data['results']:
@@ -775,9 +747,7 @@ class DeisClient(object):
     def providers_info(self, args):
         """Show detail of a provider."""
         provider = args.get('<provider>')
-        response = self._session.get(
-                '{}api/providers/{}'.format(
-                    self._settings['controller'], provider))
+        response = self._dispatch('get', '/api/providers/{}'.format(provider))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -788,9 +758,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._session.get(
-            '{}api/formations/{}/proxies'.format(
-                self._settings['controller'], formation))
+        response = self._dispatch('get', '/api/formations/{}/proxies'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
