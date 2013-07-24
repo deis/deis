@@ -128,6 +128,15 @@ class FormationSerializer(serializers.ModelSerializer):
         model = models.Formation
         read_only_fields = ('created', 'updated')
 
+    @property
+    def data(self):
+        "Custom data property that removes secure fields"
+        d = super(FormationSerializer, self).data
+        for f in ('ssh_private_key',):
+            if f in d:
+                del d[f]
+        return d
+
 
 class NodeSerializer(serializers.ModelSerializer):
 

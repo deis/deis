@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
+from Crypto.PublicKey import RSA
 
 
 class FormationTest(TestCase):
@@ -26,7 +27,7 @@ class FormationTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/flavors'
-        body = {'id': 'autotest', 'provider': 'autotest', 'ssh_username': 'ubuntu',
+        body = {'id': 'autotest', 'provider': 'autotest',
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -62,6 +63,19 @@ class FormationTest(TestCase):
         self.assertTrue(response.data['id'])
         return response
 
+    def test_formation_ssh_override(self):
+        key = RSA.generate(2048)
+        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest',
+                'ssh_private_key': key.exportKey('PEM'), 
+                'ssh_public_key': key.exportKey('OpenSSH')}
+        url = '/api/formations'
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('ssh_public_key', response.data)
+        self.assertEquals(response.data['ssh_public_key'], body['ssh_public_key'])
+        # ssh private key should be hidden
+        self.assertNotIn('ssh_private_key', response.data)
+        
     def test_formation_errors(self):
         # test duplicate id
         body = {'flavor': 'autotest', 'image': 'deis/autotest'}

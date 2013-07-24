@@ -139,11 +139,6 @@ class FlavorViewSet(OwnerViewSet):
 
     def create(self, request, **kwargs):
         request._data = request.DATA.copy()
-        if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
-            # SECURITY: figure out best way to get keys with proper entropy
-            key = RSA.generate(2048)
-            request.DATA['ssh_private_key'] = key.exportKey('PEM')
-            request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
         # set default cloud-init configuration
         if not 'init' in request.DATA:
             request.DATA['init'] = _load_cloud_config_base()
@@ -157,6 +152,12 @@ class FormationViewSet(OwnerViewSet):
     lookup_field = 'id'
 
     def create(self, request, **kwargs):
+        request._data = request.DATA.copy()
+        if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
+            # SECURITY: figure out best way to get keys with proper entropy
+            key = RSA.generate(2048)
+            request.DATA['ssh_private_key'] = key.exportKey('PEM')
+            request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except IntegrityError as _e:

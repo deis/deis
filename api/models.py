@@ -116,10 +116,6 @@ class Flavor(UuidAuditedModel):
     params = fields.ParamsField()
     init = fields.CloudInitField()
 
-    ssh_username = models.CharField(max_length=64, default='ubuntu')
-    ssh_private_key = models.TextField()
-    ssh_public_key = models.TextField()
-
     class Meta:
         unique_together = (('owner', 'id'),)
 
@@ -187,6 +183,10 @@ class Formation(UuidAuditedModel):
     image = models.CharField(max_length=256, default='ubuntu')
     structure = fields.JSONField(default='{}', blank=True)
 
+    ssh_username = models.CharField(max_length=64, default='ubuntu')
+    ssh_private_key = models.TextField()
+    ssh_public_key = models.TextField()
+    
     class Meta:
         unique_together = (('owner', 'id'),)
 
@@ -506,11 +506,11 @@ class Node(UuidAuditedModel):
                   'proxy', {}).setdefault('formations', [ self.formation.id ])
         # add the formation's ssh pubkey
         init.setdefault('ssh_authorized_keys', []).append(
-                                self.formation.flavor.ssh_public_key)
+                                self.formation.ssh_public_key)
         # add all of the owner's SSH keys
         init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all() ])
-        ssh_username = self.formation.flavor.ssh_username
-        ssh_private_key = self.formation.flavor.ssh_private_key
+        ssh_username = self.formation.ssh_username
+        ssh_private_key = self.formation.ssh_private_key
         args = (self.uuid, creds, params, init, ssh_username, ssh_private_key)
         return args
 
@@ -521,9 +521,9 @@ class Node(UuidAuditedModel):
         return tasks.converge_node.subtask(args)
 
     def _prepare_converge_args(self):
-        ssh_username = self.formation.flavor.ssh_username
+        ssh_username = self.formation.ssh_username
         fqdn = self.fqdn
-        ssh_private_key = self.formation.flavor.ssh_private_key
+        ssh_private_key = self.formation.ssh_private_key
         args = (self.uuid, ssh_username, fqdn, ssh_private_key)
         return args
 
