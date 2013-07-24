@@ -137,6 +137,8 @@ SSH Options:
 """,
     'providers:create': """Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
 """,
+    'providers:discover': """Usage: deis providers:discover
+""",
     'providers:list': """Usage: deis providers:list
 """,
     'providers:info': """Usage: deis providers:info <provider>
@@ -733,6 +735,30 @@ class DeisClient(object):
             print('{0[id]}'.format(response.json()))
         else:
             print('Error!', response.text)
+
+    def providers_discover(self, args):
+        """Discover and update providers"""
+        # look for ec2 credentials
+        if 'AWS_ACCESS_KEY' in os.environ and 'AWS_SECRET_KEY' in os.environ:
+            print('Found EC2 credentials: {0}'.format(os.environ['AWS_ACCESS_KEY']))
+            inp = raw_input('Import these credentials? (y/n) : ')
+            if inp.lower().strip('\n') != 'y':
+                print 'Aborting.'
+                return
+            creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
+                     'secret_key': os.environ['AWS_SECRET_KEY']}
+            body = {'creds': json.dumps(creds)}
+            sys.stdout.write('Uploading EC2 credentials... ')
+            sys.stdout.flush()
+            response = self._dispatch('patch', '/api/providers/ec2',
+                                      json.dumps(body))
+            if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                print 'done'
+            else:
+                print('Error!', response.text)
+        else:
+            print 'No credentials discovered, did you install the EC2 Command Line tools?'
+            return
 
     def providers_list(self, args):
         """List providers."""
