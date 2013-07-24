@@ -47,3 +47,12 @@ class AuthTest(TestCase):
         self.assertFalse(response.data['is_staff'])
         self.assertTrue(
             self.client.login(username=username, password=password))
+        # test for default objects
+        url = '/api/providers'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        url = '/api/flavors'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 8) # 8 regions

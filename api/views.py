@@ -77,6 +77,11 @@ class UserRegistrationView(viewsets.GenericViewSet,
     permission_classes = (IsAnonymous,)
     serializer_class = serializers.UserSerializer
 
+    def post_save(self, user, created=False):
+        if created:
+            models.Provider.objects.seed(user)
+            models.Flavor.objects.seed(user)
+
     def pre_save(self, obj):
         "Replicate UserManager.create_user functionality"
         now = timezone.now()

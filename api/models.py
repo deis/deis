@@ -8,6 +8,7 @@ Data models for the Deis API.
 
 from __future__ import unicode_literals
 import importlib
+import json
 
 from django.conf import settings
 from django.db import models
@@ -83,11 +84,21 @@ class Key(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class ProviderManager(models.Manager):
+
+    def seed(self, user, **kwargs):
+        providers = (('ec2', 'ec2'),)
+        for p_id, p_type in providers:
+            self.create(owner=user, id=p_id, type=p_type, creds='{}')
+
+
+@python_2_unicode_compatible
 class Provider(UuidAuditedModel):
 
     """
     Cloud provider information for a user. Available as `user.provider_set`.
     """
+    objects = ProviderManager()
 
     PROVIDERS = (
         ('ec2', 'Amazon Elastic Compute Cloud (EC2)'),
@@ -104,11 +115,49 @@ class Provider(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class FlavorManager(models.Manager):
+
+    def seed(self, user, **kwargs):
+        # TODO: add optimized AMIs to default flavors
+        flavors = (
+            {'id': 'ec2-us-east-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'us-east-1'})},
+            {'id': 'ec2-us-west-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'us-west-1'})},
+            {'id': 'ec2-us-west-2',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'us-west-2'})},
+            {'id': 'ec2-eu-west-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'eu-west-1'})},
+            {'id': 'ec2-ap-northeast-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'ap-northeast-1'})},
+            {'id': 'ec2-ap-southeast-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'ap-southeast-1'})},
+            {'id': 'ec2-ap-southeast-2',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'ap-southeast-2'})},
+            {'id': 'ec2-sa-east-1',
+             'provider': 'ec2',
+             'params': json.dumps({'region': 'sa-east-1'})},
+        )
+        for flavor in flavors:
+            provider = flavor.pop('provider')
+            flavor['provider'] = Provider.objects.get(owner=user, id=provider)
+            self.create(owner=user, **flavor)
+
+
+@python_2_unicode_compatible
 class Flavor(UuidAuditedModel):
 
     """
     Virtual machine flavors available as `user.flavor_set`.
     """
+    objects = FlavorManager()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
