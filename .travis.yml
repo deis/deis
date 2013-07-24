@@ -1,17 +1,40 @@
+# .travis.yml
+# Configuration file for Travis-CI.org hosted testing
+
 language: python
+
 python:
   - "2.7"
+
+branches:
+  only:
+    - master
+
 services:
   - postgresql
   - rabbitmq
 
-# command to install dependencies
 before_install:
   - sudo apt-get install -qq libevent-dev libpq-dev
+
 install:
   - "pip install -r requirements.txt --use-mirrors"
 
-# command to run tests
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
-script: "python manage.py test"
+  - |
+    cat > deis/local_settings.py <<EOF
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'deis_testing',
+            'USER': 'postgres',
+            'PASSWORD': '',
+            'HOST': '',
+            'PORT': '',
+        }
+    }
+    SECRET_KEY = ')9$y9(@_r!+ai=ub)wsp2!!vs4i67x7ke9!jaljgf1_@rw421='
+    EOF
+
+script: "make test"
