@@ -40,34 +40,22 @@ class NodeTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
         # should start with zero
-        url = '/api/formations/{formation_id}/backends'.format(**locals())
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 8, 'proxies': 2}
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'runtime': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 10)
-        # scale down
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 2, 'proxies': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        url = '/api/formations/{formation_id}/nodes'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 3)
-        # scale down to 0
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 0, 'proxies': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/nodes'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 0)
+        self.assertEqual(len(response.data['results']), 1)
+        # TODO: add node deletion

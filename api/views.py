@@ -176,14 +176,13 @@ class FormationViewSet(OwnerViewSet):
             build = models.Build.objects.create(
                 owner=formation.owner, formation=formation)
             _release = models.Release.objects.create(
-                owner=formation.owner, formation=formation, config=config,
-                image=formation.image, build=build)
+                owner=formation.owner, formation=formation, config=config, build=build)
             # prepare the formation's required infrastruture at the provider
             formation.prepare_provider().delay().wait()
         # update gitosis
         models.Formation.objects.publish()
 
-    def scale(self, request, **kwargs):
+    def scale_layers(self, request, **kwargs):
         new_structure = {}
         try:
             for target, count in request.DATA.items():
@@ -191,10 +190,27 @@ class FormationViewSet(OwnerViewSet):
         except ValueError:
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
-        formation.structure.update(new_structure)
+        formation.layers.update(new_structure)
         formation.save()
         try:
-            databag = formation.scale()
+            databag = formation.scale_layers()
+        except models.ScalingError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        return Response(databag, status=status.HTTP_200_OK,
+                        content_type='application/json')
+
+    def scale_containers(self, request, **kwargs):
+        new_structure = {}
+        try:
+            for target, count in request.DATA.items():
+                new_structure[target] = int(count)
+        except ValueError:
+            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+        formation = self.get_object()
+        formation.containers.update(new_structure)
+        formation.save()
+        try:
+            databag = formation.scale_containers()
         except models.ScalingError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
@@ -227,6 +243,34 @@ class FormationViewSet(OwnerViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class FormationLayerViewSet(OwnerViewSet):
+
+    model = models.Layer
+    serializer_class = serializers.LayerSerializer
+    
+    def get_queryset(self, **kwargs):
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user, formation=formation)
+
+    def get_object(self, *args, **kwargs):
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(id=self.kwargs['layer'])
+        return obj
+
+    def create(self, request, **kwargs):
+        request._data = request.DATA.copy()
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        request.DATA['formation'] = formation.id
+        request.DATA['flavor'] = formation.flavor.id
+        try:
+            return OwnerViewSet.create(self, request, **kwargs)
+        except IntegrityError as _e:
+            return Response("Layer with this Id already exists.",
+                            status=HTTP_400_BAD_REQUEST)
+
+
 class FormationNodeViewSet(OwnerViewSet):
 
     model = models.Node
@@ -240,38 +284,6 @@ class FormationNodeViewSet(OwnerViewSet):
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(id=self.kwargs['id'])
-        return obj
-
-
-class FormationBackendViewSet(OwnerViewSet):
-
-    model = models.Backend
-    serializer_class = serializers.BackendSerializer
-    
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, formation=formation)
-
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['id'])
-        return obj
-
-
-class FormationProxyViewSet(OwnerViewSet):
-
-    model = models.Proxy
-    serializer_class = serializers.ProxySerializer
-    
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, formation=formation)
-
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['id'])
         return obj
 
 

@@ -120,8 +120,8 @@ class FormationSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
     flavor = serializers.SlugRelatedField(slug_field='id')
-    structure = serializers.ModelField(
-        model_field=models.Formation()._meta.get_field('structure'), required=False)
+    containers = serializers.ModelField(
+        model_field=models.Formation()._meta.get_field('containers'), required=False)
                                     
     class Meta:
         """Metadata options for a FormationSerializer."""
@@ -138,44 +138,31 @@ class FormationSerializer(serializers.ModelSerializer):
         return d
 
 
+class LayerSerializer(serializers.ModelSerializer):
+ 
+    """Serializes a Layer model."""
+    
+    owner = serializers.Field(source='owner.username')
+    formation = serializers.SlugRelatedField(slug_field='id')
+    flavor = serializers.SlugRelatedField(slug_field='id')
+    
+    class Meta:
+        """Metadata options for a LayerSerializer."""
+        model = models.Layer
+        read_only_fields = ('created', 'updated')
+
+
 class NodeSerializer(serializers.ModelSerializer):
 
     """Serializes a Node model."""
 
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
+    layer = serializers.SlugRelatedField(slug_field='id')
     
     class Meta:
         """Metadata options for a NodeSerializer."""
         model = models.Node
-        read_only_fields = ('created', 'updated')
-
-
-class BackendSerializer(serializers.ModelSerializer):
- 
-    """Serializes a Backend model."""
-    
-    owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
-    node = serializers.SlugRelatedField(slug_field='uuid')
-    
-    class Meta:
-        """Metadata options for a BackendSerializer."""
-        model = models.Backend
-        read_only_fields = ('created', 'updated')
-
-
-class ProxySerializer(serializers.ModelSerializer):
- 
-    """Serializes a Proxy model."""
-    
-    owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
-    node = serializers.SlugRelatedField(slug_field='uuid')
-    
-    class Meta:
-        """Metadata options for a ProxySerializer."""
-        model = models.Proxy
         read_only_fields = ('created', 'updated')
 
 

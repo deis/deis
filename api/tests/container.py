@@ -36,20 +36,20 @@ class ContainerTest(TestCase):
     
     def test_container_scale(self):
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest', 'flavor': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        # scale backends
-        url = '/api/formations/{formation_id}/backends'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 0)
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 4}
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # scale runtime layer up
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'runtime': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/backends'.format(**locals())
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
@@ -59,7 +59,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 4, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -68,7 +68,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
         # scale down
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 2, 'worker': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         url = '/api/formations/{formation_id}/containers'.format(**locals())
@@ -76,7 +76,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
         # scale down to 0
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 0, 'worker': 0}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -87,17 +87,17 @@ class ContainerTest(TestCase):
 
     def test_container_balance(self):
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest', 'flavor': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        # scale backends
-        url = '/api/formations/{formation_id}/backends'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 0)
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 2}
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # scale layer
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'runtime': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # should start with zero
@@ -106,13 +106,13 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 8, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        # scale backends
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 4 }
+        # scale layer up
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'runtime': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # calculate the formation
@@ -136,7 +136,7 @@ class ContainerTest(TestCase):
         b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
         self.assertLess(b_max - b_min, 2)
         # scale up more
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 6, 'worker': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -161,7 +161,7 @@ class ContainerTest(TestCase):
         b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
         self.assertLess(b_max - b_min, 2)
         # scale down
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 2, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)

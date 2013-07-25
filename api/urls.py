@@ -40,12 +40,13 @@ urlpatterns = patterns(
         views.FlavorViewSet.as_view({'post': 'create', 'get': 'list'})),
 
     # formation infrastructure
+    url(r'^formations/(?P<id>[a-z0-9-]+)/layers/(?P<layer>[a-z0-9-]+)/?',
+        views.FormationLayerViewSet.as_view({
+            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/layers/?',
+        views.FormationLayerViewSet.as_view({'post': 'create', 'get': 'list'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/nodes/?',
         views.FormationNodeViewSet.as_view({'get': 'list'})),
-    url(r'^formations/(?P<id>[a-z0-9-]+)/backends/?',
-        views.FormationBackendViewSet.as_view({'get': 'list'})),
-    url(r'^formations/(?P<id>[a-z0-9-]+)/proxies/?',
-        views.FormationProxyViewSet.as_view({'get': 'list'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/containers/?',
         views.FormationContainerViewSet.as_view({'get': 'list'})),
     # formation release components
@@ -58,8 +59,10 @@ urlpatterns = patterns(
     url(r'^formations/(?P<id>[a-z0-9-]+)/release/?',
         views.FormationReleaseViewSet.as_view({'get': 'retrieve'})),
     # formation actions
-    url(r'^formations/(?P<id>[a-z0-9-]+)/scale/?',
-        views.FormationViewSet.as_view({'post': 'scale'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/scale/layers/?',
+        views.FormationViewSet.as_view({'post': 'scale_layers'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/scale/containers/?',
+        views.FormationViewSet.as_view({'post': 'scale_containers'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/balance/?',
         views.FormationViewSet.as_view({'post': 'balance'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/calculate/?',

@@ -28,13 +28,13 @@ RequestFactory.patch = construct_patch
 Client.patch = send_patch
 
 from .auth import *
-from .backend import *
 from .build import *
 from .config import *
 from .container import *
 from .flavor import *
 from .formation import *
+from .key import *
+from .layer import *
 from .node import *
 from .provider import *
-from .proxy import *
 from .release import *

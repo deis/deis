@@ -201,10 +201,11 @@ class FormationManager(models.Manager):
         if settings.CHEF_ENABLED:
             controller.update_gitosis.delay(databag).wait()  # @UndefinedVariable
 
-    def next_container_node(self, formation, container_type='web'):
+    def next_container_node(self, formation, container_type):
         count = []
-        backend_nodes = list(Node.objects.filter(formation=formation, type='backend').order_by('created'))
-        container_map = { n: [] for n in backend_nodes }
+        layer = formation.layer_set.get(id='runtime')
+        runtime_nodes = list(Node.objects.filter(formation=formation, layer=layer).order_by('created'))
+        container_map = { n: [] for n in runtime_nodes }
         containers = list(Container.objects.filter(formation=formation, type=container_type).order_by('created'))
         for c in containers:
             container_map[c.node].append(c)
@@ -229,9 +230,12 @@ class Formation(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
     flavor = models.ForeignKey('Flavor')
-    image = models.CharField(max_length=256, default='ubuntu')
-    structure = fields.JSONField(default='{}', blank=True)
+    layers = fields.JSONField(default='{}', blank=True)
+    containers = fields.JSONField(default='{}', blank=True)
 
+    environment = models.CharField(max_length=64, default='_default')
+    initial_attributes = fields.JSONField(default='{}', blank=True)
+    
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
     ssh_public_key = models.TextField()
@@ -239,25 +243,26 @@ class Formation(UuidAuditedModel):
     class Meta:
         unique_together = (('owner', 'id'),)
 
-    def scale(self, **kwargs):
-        job = []
-        structure = self.structure.copy()
-        # prepare subtasks to scale proxies via chef
-        req_proxies = structure.pop('proxies', 0)
-        if req_proxies is not None:
-            scalers = self._scale_proxies(int(req_proxies), **kwargs)
-            if scalers:
-                job.extend(scalers)
-        # prepare subtasks to scale backend nodes via chef
-        req_backends = structure.pop('backends', 0)
-        if req_backends is not None:
-            scalers = self._scale_backends(int(req_backends), **kwargs)
-            if scalers:
-                job.extend(scalers)
-        # if there are any keys remaining, treat them as container types
-        # (e.g. web, worker)
-        if structure.keys():
-            containers_scaled = self._scale_containers(structure)
+    def scale_layers(self, **kwargs):
+        layers = self.layers.copy()
+        funcs = []
+        for layer_id, requested in layers.items():
+            layer = self.layer_set.get(id=layer_id)
+            nodes = list(layer.node_set.all().order_by('created'))
+            diff = requested - len(nodes)
+            if diff == 0:
+                return
+            while diff < 0:
+                node = nodes.pop(0)
+                funcs.append(node.terminate)
+                diff = requested - len(nodes)
+            while diff > 0: 
+                node = Node.objects.new(self, layer)
+                nodes.append(node)
+                funcs.append(node.launch)
+                diff = requested - len(nodes)
+        # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
+        job = [func() for func in funcs ]
         # balance containers
         containers_balanced = self._balance_containers()
         # launch/terminate backends and proxies in parallel
@@ -265,63 +270,27 @@ class Formation(UuidAuditedModel):
             group(*job).apply_async().join()
         # once nodes are in place, recalculate the formation and update the data bag
         databag = self.calculate()
-        # if there are scaling jobs or container changes force-converge nodes
-        if job or containers_scaled or containers_balanced:
+        # force-converge nodes if there were changes
+        if job or containers_balanced:
             self.converge(databag)
         return databag
 
-    def _scale_backends(self, requested, **kwargs):
-        backends = list(self.backend_set.all().order_by('created'))
-        diff = requested - len(backends)
-        if diff == 0:
-            return
-        funcs = []
-        while diff < 0:
-            b = backends.pop(0)
-            funcs.append(b.node.terminate)
-            diff = requested - len(backends)
-        while diff > 0:
-            n = Node.objects.new(self, node_type='backend')
-            b = Backend.objects.create(owner=self.owner, formation=self, node=n)
-            backends.append(b)
-            funcs.append(b.node.launch)
-            diff = requested - len(backends)
-        # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [func() for func in funcs ]
-        return job
-
-    def _scale_proxies(self, requested, **kwargs):
-        proxies = list(self.proxy_set.all().order_by('created'))
-        diff = requested - len(proxies)
-        if diff == 0:
-            return
-        funcs = []
-        while diff < 0:
-            p = proxies.pop(0)
-            funcs.append(p.node.terminate)
-            diff = requested - len(proxies)
-        while diff > 0:
-            n = Node.objects.new(self, node_type='proxy')
-            p = Proxy.objects.create(owner=self.owner, formation=self, node=n, port=80)
-            proxies.append(p)
-            funcs.append(p.node.launch)
-            diff = requested - len(proxies)
-        # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [ func() for func in funcs ]
-        return job
-
-    def _scale_containers(self, requested_counts, **kwargs):
-        backends = self.backend_set.all().order_by('created')
-        if len(backends) < 1:
-            raise ScalingError('Must scale backends > 0 to host containers')
+    def scale_containers(self, **kwargs):
+        requested_containers = self.containers.copy()
+        runtime_layers = self.layer_set.filter(id='runtime')
+        if len(runtime_layers) < 1:
+            raise ScalingError('Must create a "runtime" layer to host containers')
+        runtime_nodes = runtime_layers[0].node_set.all()
+        if len(runtime_nodes) < 1:
+            raise ScalingError('Must scale runtime nodes > 0 to host containers')
         # increment new container nums off the most recent container
         all_containers = self.container_set.all().order_by('-created')
         container_num = 1 if not all_containers else all_containers[0].num + 1
         # iterate and scale by container type (web, worker, etc)
         change = False
-        for container_type in requested_counts.keys():
+        for container_type in requested_containers.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
-            requested = requested_counts.pop(container_type)
+            requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
             change = 0
             if diff == 0:
@@ -342,7 +311,11 @@ class Formation(UuidAuditedModel):
                 container_num += 1
                 diff = requested - len(containers)
                 change +=1
-        return change
+        # once nodes are in place, recalculate the formation and update the data bag
+        databag = self.calculate()
+        if change is True:
+            self.converge(databag)
+        return databag
 
     def balance(self, **kwargs):
         containers_balanced = self._balance_containers()
@@ -352,8 +325,8 @@ class Formation(UuidAuditedModel):
         return databag
         
     def _balance_containers(self, **kwargs):
-        backends = self.backend_set.all().order_by('created')
-        if len(backends) < 2:
+        runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('created')
+        if len(runtime_nodes) < 2:
             return # there's nothing to balance with 1 backend
         all_containers = Container.objects.filter(formation=self).order_by('-created')
         # get the next container number (e.g. web.19)
@@ -362,36 +335,36 @@ class Formation(UuidAuditedModel):
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
             # map backend container counts => { 2: [b3, b4], 3: [ b1, b2 ] } 
-            b_map = {}
-            for b in backends:
-                ct = len(b.node.container_set.filter(type=container_type)) 
-                b_map.setdefault(ct, []).append(b)
+            n_map = {}
+            for node in runtime_nodes:
+                ct = len(node.container_set.filter(type=container_type)) 
+                n_map.setdefault(ct, []).append(node)
             # loop until diff between min and max is 1 or 0
-            while max(b_map.keys()) - min(b_map.keys()) > 1:
-                # get the most over-utilized backend
-                b_max = max(b_map.keys())
-                b_over = b_map[b_max].pop(0)
-                if len(b_map[b_max]) == 0:
-                    del b_map[b_max]
-                # get the most under-utilized backend
-                b_min = min(b_map.keys())
-                b_under = b_map[b_min].pop(0)
-                if len(b_map[b_min]) == 0:
-                    del b_map[b_min]
+            while max(n_map.keys()) - min(n_map.keys()) > 1:
+                # get the most over-utilized node
+                n_max = max(n_map.keys())
+                n_over = n_map[n_max].pop(0)
+                if len(n_map[n_max]) == 0:
+                    del n_map[n_max]
+                # get the most under-utilized node
+                n_min = min(n_map.keys())
+                n_under = n_map[n_min].pop(0)
+                if len(n_map[n_min]) == 0:
+                    del n_map[n_min]
                 # create a container on the most under-utilized node
                 Container.objects.create(owner=self.owner,
                                          formation=self,
                                          type=container_type,
                                          num=container_num,
-                                         node=b_under.node)
+                                         node=n_under)
                 container_num +=1
                 # delete the oldest container from the most over-utilized node
-                c = b_over.node.container_set.filter(type=container_type).order_by('created')[0]
+                c = n_over.container_set.filter(type=container_type).order_by('created')[0]
                 c.delete()
                 # update the n_map accordingly
-                for b in (b_over, b_under):
-                    ct = len(b.node.container_set.filter(type=container_type))
-                    b_map.setdefault(ct, []).append(b)
+                for n in (n_over, n_under):
+                    ct = len(n.container_set.filter(type=container_type))
+                    n_map.setdefault(ct, []).append(n)
                 changed = True
         return changed
         
@@ -433,11 +406,9 @@ class Formation(UuidAuditedModel):
             if c.type == 'web':
                 d['proxy']['backends'].append("{0}:{1}".format(c.node.fqdn, port))
         # add all the participating nodes
-        d['nodes'] = {'backends': {}, 'proxies': {}}
-        for b in self.backend_set.all():
-            d['nodes']['backends'][b.node.id] = b.node.fqdn
-        for p in self.proxy_set.all():
-            d['nodes']['proxies'][p.node.id] = p.node.fqdn
+        d['nodes'] = {}
+        for n in self.node_set.all():
+            d['nodes'].setdefault(n.layer.id, {})[n.id] = n.fqdn
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, d).wait()  # @UndefinedVariable
@@ -464,8 +435,7 @@ class Formation(UuidAuditedModel):
         if settings.CHEF_ENABLED:
             subtasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
         # create subtasks to terminate all nodes in parallel
-        subtasks.extend([ b.node.terminate() for b in self.backend_set.all() ])
-        subtasks.extend([ p.node.terminate() for p in self.proxy_set.all() ])
+        subtasks.extend([ node.terminate() for node in self.node_set.all() ])
         job = group(*subtasks)
         job.apply_async().join() # block for termination
         # purge other hosting provider infrastructure
@@ -475,9 +445,32 @@ class Formation(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class Layer(UuidAuditedModel):
+    
+    """
+    Layer of nodes used by the formation
+    
+    All nodes in a layer share the same flavor and configuration
+    """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    id = models.SlugField(max_length=64)
+    
+    formation = models.ForeignKey('Formation')
+    flavor = models.ForeignKey('Flavor')
+    nodes = models.PositiveSmallIntegerField(default=0)
+
+    run_list = models.CharField(max_length=512)
+    image = models.CharField(max_length=256, null=True, blank=True)
+
+    def __str__(self):
+        return self.id
+
+
+@python_2_unicode_compatible
 class NodeManager(models.Manager):
 
-    def new(self, formation, node_type='backend'):
+    def new(self, formation, layer):
         existing_nodes = self.filter(formation=formation).order_by('-created')
         if existing_nodes:
             next_num = existing_nodes[0].num + 1
@@ -485,9 +478,9 @@ class NodeManager(models.Manager):
             next_num = 1
         node = self.create(owner=formation.owner,
                            formation=formation,
+                           layer=layer,
                            num=next_num,
-                           id="{0}-{1}".format(formation.id, next_num),
-                           type=node_type)
+                           id="{0}-{1}-{2}".format(formation.id, layer.id, next_num))
         return node
 
 
@@ -500,17 +493,13 @@ class Node(UuidAuditedModel):
     List of nodes available as `formation.nodes`
     """
     objects = NodeManager()
-    
-    NODE_TYPES = (
-        ('backend', 'Backend'),
-        ('proxy', 'Proxy'),
-    )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=64)
     formation = models.ForeignKey('Formation')
-    type = models.CharField(max_length=8, choices=NODE_TYPES, default='backend')
+    layer = models.ForeignKey('Layer')
     num = models.PositiveIntegerField(default=1)
+    
     # synchronized with node after creation
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
     fqdn = models.CharField(max_length=256, blank=True, null=True)
@@ -587,73 +576,6 @@ class Node(UuidAuditedModel):
         params = self.formation.flavor.params.copy()
         args = (self.uuid, creds, params, self.provider_id)
         return args
-
-
-@python_2_unicode_compatible
-class Backend(UuidAuditedModel):
-
-    """
-    A backend used for hosting containers.
-    """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
-    node = models.ForeignKey('Node')
-
-    status = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        """Metadata options for a Backend model."""
-        get_latest_by = 'created'
-
-    def __str__(self):
-        return self.node.id
-
-
-@python_2_unicode_compatible
-class Proxy(UuidAuditedModel):
-
-    """
-    A software-based web proxy, used for Application load balancing.
-    """
-
-    NGINX = 'N'
-    PROXY_TYPES = (
-        (NGINX, 'nginx'),
-    )
-    HTTP = 'HTTP'
-    HTTPS = 'HTTPS'
-    SSL = 'SSL'
-    TCP = 'TCP'
-    PROXY_PROTOS = (
-        (HTTP, HTTP),
-        (HTTPS, HTTPS),
-        (SSL, SSL),
-        (TCP, TCP),
-    )
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
-    node = models.ForeignKey('Node')
-
-    port = models.PositiveSmallIntegerField()
-
-    in_proto = models.CharField(
-        max_length=5, choices=PROXY_PROTOS, default=HTTP)
-    out_proto = models.CharField(
-        max_length=5, choices=PROXY_PROTOS, default=HTTP)
-    flavor = models.CharField(
-        max_length=1, choices=PROXY_TYPES, default=NGINX)
-
-    status = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        """Metadata options for a Proxy model."""
-        get_latest_by = 'created'
-        verbose_name_plural = 'proxies'
-
-    def __str__(self):
-        return self.node.id
 
 
 @python_2_unicode_compatible
@@ -748,9 +670,6 @@ class Release(UuidAuditedModel):
     image = models.CharField(max_length=256, default='ubuntu')
     # build only required for heroku-style apps
     build = models.ForeignKey('Build', blank=True, null=True)
-    # SECURITY: command-line arguments for docker
-    args = models.CharField(max_length=256, blank=True, null=True)
-    command = models.CharField(max_length=256, blank=True, null=True)
 
     class Meta:
         ordering = ('-created',)
@@ -772,8 +691,6 @@ def new_release(sender, **kwargs):
     image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
-    args = kwargs.get('args', last_release.args)
-    command = kwargs.get('command', last_release.args)
     # overwrite config with build.config if the keys don't exist
     if build and build.config:
         new_values = {}
@@ -788,8 +705,7 @@ def new_release(sender, **kwargs):
     # create new release and auto-increment version
     new_version = last_release.version + 1
     release = Release.objects.create(owner=user, formation=formation, 
-        image=image, config=config, build=build, args=args, command=command,
-        version=new_version)
+        image=image, config=config, build=build, version=new_version)
     return release
 
 

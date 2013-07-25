@@ -42,8 +42,8 @@ class FormationTest(TestCase):
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
         self.assertIn('flavor', response.data)
-        self.assertIn('image', response.data)
-        self.assertIn('structure', response.data)
+        self.assertIn('layers', response.data)
+        self.assertIn('containers', response.data)
         response = self.client.get('/api/formations')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
@@ -93,12 +93,22 @@ class FormationTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        # scaling containers without backends should throw an error
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        # scaling containers without a runtime layer should throw an error
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), 'Must scale backends > 0 to host containers')
+        self.assertEqual(json.loads(response.content), 'Must create a "runtime" layer to host containers')
+        # scaling containers without any runtime nodes should throw an error
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
+        body = {'web': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), 'Must scale runtime nodes > 0 to host containers')
     
     def test_formation_actions(self):
         url = '/api/formations'
@@ -106,23 +116,6 @@ class FormationTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        # scale up
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'backends': 4, 'proxies': 2, 'web': 4, 'worker': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/backends'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 4)
-        url = '/api/formations/{formation_id}/proxies'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 6)
         # test calculate
         url = '/api/formations/{formation_id}/calculate'.format(**locals())
         response = self.client.post(url)

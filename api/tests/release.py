@@ -50,8 +50,6 @@ class ReleaseTest(TestCase):
         self.assertIn('image', response.data)
         self.assertIn('config', response.data)
         self.assertIn('build', response.data)
-        self.assertIn('args', response.data)
-        self.assertIn('command', response.data)
         self.assertEquals(release1['version'], 1)
         # check that updating config rolls a new release
         url = '/api/formations/{formation_id}/config'.format(**locals())
@@ -68,8 +66,6 @@ class ReleaseTest(TestCase):
         self.assertNotEqual(release1['config'], release2['config'])
         self.assertEqual(release1['image'], release2['image'])
         self.assertEqual(release1['build'], release2['build'])
-        self.assertEqual(release1['args'], release2['args'])
-        self.assertEqual(release1['command'], release2['command'])
         self.assertEquals(release2['version'], 2)
         # check that updating the build rolls a new release
         url = '/api/formations/{formation_id}/build'.format(**locals())
@@ -88,8 +84,6 @@ class ReleaseTest(TestCase):
         self.assertNotEqual(release2['uuid'], release3['uuid'])
         self.assertNotEqual(release2['build'], release3['build'])
         self.assertEqual(release2['image'], release3['image'])
-        self.assertEqual(release2['args'], release3['args'])
-        self.assertEqual(release2['command'], release3['command'])
         self.assertEquals(release3['version'], 3)
         # check that build config was respected
         self.assertNotEqual(release2['config'], release3['config'])
@@ -114,11 +108,7 @@ class ReleaseTest(TestCase):
         self.assertNotEqual(release3['image'], release4['image'])
         self.assertEqual(release3['build'], release4['build'])
         self.assertEqual(release3['config'], release4['config'])
-        self.assertEqual(release3['args'], release4['args'])
-        self.assertEqual(release3['command'], release4['command'])
-        self.assertEquals(release4['version'], 4)
-        # TODO: add tests for updating args/command
-        
+        self.assertEquals(release4['version'], 4)        
         # disallow post/put/patch/delete
         self.assertEqual(self.client.post(url).status_code, 405)
         self.assertEqual(self.client.put(url).status_code, 405)
