@@ -77,6 +77,8 @@ USAGE = {
 """,
     'containers:list': """Usage: deis containers:list
 """,
+    'containers:scale': """Usage: deis containers:scale <type=num>...
+""",
     'calculate': """Usage: deis calculate
 """,
     'create': """Usage: deis create --flavor=<flavor> [--image=<image> --id=<id>]
@@ -111,8 +113,6 @@ SSH Options:
 """,
     'formations:destroy': """Usage: deis formations:destroy [<formation>] [--confirm=<confirm>]
 """,
-    'formations:scale': """Usage: deis formations:scale <type=num>...
-""",
     'formations:converge': """Usage: deis formations:converge
 """,
     'formations:calculate': """Usage: deis formations:calculate
@@ -125,6 +125,10 @@ SSH Options:
 """,
     'keys:remove': """Usage: deis keys:remove <key>
 """,
+    'layers:create': """Usage: deis layers:create <id> [--run_list=<run_list> --initial_attributes=<initial_attributes>]
+""",
+    'layers:scale': """Usage: deis layers:scale <type=num>...
+""",
     'login': """Usage: deis login <controller> [--username=<username> --password=<password>]
 """,
     'logout': """Usage: deis logout
@@ -133,7 +137,7 @@ SSH Options:
 """,
     'nodes:list': """Usage: deis nodes:list
 """,
-    'nodes:delete': """Usage: deis nodes:delete --id=<id>
+    'nodes:delete': """Usage: deis nodes:delete <id>
 """,
     'providers:create': """Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
 """,
@@ -460,6 +464,23 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def containers_scale(self, args):
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        body = {}
+        for type_num in args.get('<type=num>'):
+            typ, count = type_num.split('=')
+            body.update({typ: int(count)})
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/scale/containers'.format(formation),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            databag = json.loads(response.content)
+            print(json.dumps(databag, indent=2))
+        else:
+            print('Error!', response.text)
+
     def flavors_create(self, args):
         """Create a flavor using a provider"""
         body = {'id': args.get('--id'), 'provider': args.get('--provider')}
@@ -506,10 +527,12 @@ class DeisClient(object):
     def formations_create(self, args):
         """Create a formation."""
         body = {'flavor': args['--flavor']}
-        if '--id' in args:
-            body.update({'id': args['--id']})
-        if '--image' in args:
-            body.update({'image': args['--image']})
+        formation_id = args.get('--id')
+        if formation_id:
+            body.update({'id': formation_id})
+        image = args.get('--image')
+        if image:
+            body.update({'image': image})
         response = self._dispatch('post', '/api/formations',
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -565,23 +588,6 @@ class DeisClient(object):
                 print('Git remote removed')
             except subprocess.CalledProcessError:
                 pass  # ignore error
-        else:
-            print('Error!', response.text)
-
-    def formations_scale(self, args):
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        body = {}
-        for type_num in args.get('<type=num>'):
-            typ, count = type_num.split('=')
-            body.update({typ: int(count)})
-        response = self._dispatch('post', 
-                                  '/api/formations/{}/scale'.format(formation),
-                                  json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
         else:
             print('Error!', response.text)
 
@@ -681,6 +687,58 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def layers_create(self, args):
+        """Create a layer of nodes."""
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        body = {'id': args['<id>']}
+        if '--run_list' in args:
+            body.update({'run_list': args['--run_list']})
+        if '--initial_attributes' in args:
+            body.update({'initial_attributes': args['--initial_attributes']})
+        response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
+                                  json.dumps(body))
+        sys.stdout.write('Creating layer {}...'.format(args['<id>']))
+        sys.stdout.flush()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print('done')
+        else:
+            print('Error!', response.text)
+
+    def layers_list(self, args):
+        """List layers for this formation."""
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        response = self._dispatch('get', 
+                                  '/api/formations/{}/layers'.format(formation))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('=== {0}'.format(formation))
+            data = response.json()
+            format_str = '{0[id]} => {0[run_list]}'
+            for item in data['results']:
+                print(format_str.format(item))
+        else:
+            print('Error!', response.text)
+
+    def layers_scale(self, args):
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        body = {}
+        for type_num in args.get('<type=num>'):
+            typ, count = type_num.split('=')
+            body.update({typ: int(count)})
+        response = self._dispatch('post', 
+                                  '/api/formations/{}/scale/layers'.format(formation),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            databag = json.loads(response.content)
+            print(json.dumps(databag, indent=2))
+        else:
+            print('Error!', response.text)
+
     def nodes_info(self, args):
         """Show detail of a provider."""
         node = args.get('<node>')
@@ -700,7 +758,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
-            format_str = '{0[id]:<23} {0[type]} {0[provider_id]} {0[fqdn]}'
+            format_str = '{0[id]:<23} {0[layer]} {0[provider_id]} {0[fqdn]}'
             for item in data['results']:
                 print(format_str.format(item))
         else:
@@ -708,7 +766,7 @@ class DeisClient(object):
 
     def nodes_delete(self, args):
         """Delete a node by ID."""
-        node = args.get('--id')
+        node = args['<id>']
         response = self._dispatch('delete',
                                   '/api/nodes/{}'.format(node))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
@@ -819,7 +877,7 @@ def main():
                 'logout': cli.auth_logout,
                 'create': cli.formations_create,
                 'destroy': cli.formations_destroy,
-                'scale': cli.formations_scale,
+                'scale': cli.containers_scale,
                 'calculate': cli.formations_calculate,
                 'balance': cli.formations_balance,
                 'converge': cli.formations_converge}
