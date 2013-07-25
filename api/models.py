@@ -416,9 +416,10 @@ class Formation(UuidAuditedModel):
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
-            nodes = [ node for node in self.node_set.all() ]
-            job = group(*[ n.converge() for n in nodes ])
-            _results = job.apply_async().join()
+        # TODO: batch node converging by layer.level
+        nodes = [ node for node in self.node_set.all() ]
+        job = group(*[ n.converge() for n in nodes ])
+        _results = job.apply_async().join()
         return databag
 
     def destroy(self):
@@ -450,7 +451,8 @@ class Layer(UuidAuditedModel):
     
     formation = models.ForeignKey('Formation')
     flavor = models.ForeignKey('Flavor')
-    nodes = models.PositiveSmallIntegerField(default=0)
+    level = models.PositiveIntegerField(default=0)
+
     # chef settings
     chef_version = models.CharField(max_length=32, default='11.4.4')
     run_list = models.CharField(max_length=512)    
