@@ -41,5 +41,5 @@ before_script:
 script:
   - coverage run manage.py test api celerytasks web
 
-after success:
+after_success:
   - coveralls
