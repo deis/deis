@@ -246,7 +246,6 @@ class Formation(UuidAuditedModel):
     containers = fields.JSONField(default='{}', blank=True)
 
     environment = models.CharField(max_length=64, default='_default')
-    initial_attributes = fields.JSONField(default='{}', blank=True)
     
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
@@ -468,7 +467,7 @@ class Layer(UuidAuditedModel):
     nodes = models.PositiveSmallIntegerField(default=0)
 
     run_list = models.CharField(max_length=512)
-    image = models.CharField(max_length=256, null=True, blank=True)
+    initial_attributes = fields.JSONField(default='{}', blank=True)
 
     def __str__(self):
         return self.id
