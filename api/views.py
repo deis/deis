@@ -264,7 +264,9 @@ class FormationLayerViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         layer = self.get_object()
-        layer.destroy()
+        node_tasks, layer_tasks = layer.destroy()
+        node_tasks.apply_async().join()
+        layer_tasks.apply_async().join()
         layer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

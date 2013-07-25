@@ -422,15 +422,18 @@ class Formation(UuidAuditedModel):
         return databag
 
     def destroy(self):
-        subtasks = []
+        node_tasks, layer_tasks, chef_tasks = [], [], []
+        # create subtasks to terminate all nodes in parallel
+        all_layers = self.layer_set.all()
+        node_tasks.extend([ layer.destroy()[0] for layer in all_layers ])
+        layer_tasks.extend([ layer.destroy()[1] for layer in all_layers ])
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
-            subtasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
-        # create subtasks to terminate all nodes in parallel
-        subtasks.extend([ layer.destroy() for layer in self.layer_set.all() ])
-        job = group(*subtasks)
-        if job:
-            job.apply_async().join() # block for termination
+            chef_tasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
+        # block for tasks by group
+        group(*node_tasks).apply_async().join()
+        group(*layer_tasks).apply_async().join()
+        group(*chef_tasks).apply_async().join()
 
 
 @python_2_unicode_compatible
@@ -472,13 +475,13 @@ class Layer(UuidAuditedModel):
         subtasks = []
         # create subtasks to terminate all nodes in parallel
         subtasks.extend([ node.terminate() for node in self.node_set.all() ])
-        job = group(*subtasks)
-        job.apply_async().join() # block for termination
+        node_tasks = group(*subtasks)
         # purge other hosting provider infrastructure
         name = "{0}-{1}".format(self.formation.id, self.id)
-        tasks.destroy_layer.delay(name,
-            self.flavor.provider.creds.copy(),
-            self.flavor.params.copy()).wait() # block
+        args = (name, self.flavor.provider.creds.copy(),
+                self.flavor.params.copy())
+        layer_tasks = group(*[tasks.destroy_layer.subtask(args)])
+        return node_tasks, layer_tasks
 
 
 @python_2_unicode_compatible
