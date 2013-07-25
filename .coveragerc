@@ -1,2 +1,5 @@
 [run]
-omit = */venv/*
+omit =
+    */venv/*
+    */virtualenv/*
+ignore_errors = True
