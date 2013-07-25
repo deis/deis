@@ -3,12 +3,13 @@ all:
 
 db:
 	python manage.py syncdb --noinput
+	python manage.py migrate
 
 test:
-	python manage.py test api web
+	python manage.py test api celerytasks web
 
-task:
-	python manage.py test celerytasks
+coverage:
+	coverage run manage.py test api celerytasks web
 
 flake8:
 	flake8

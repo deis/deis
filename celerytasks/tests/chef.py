@@ -12,7 +12,7 @@ import unittest
 from celerytasks.chef import ChefAPI
 from deis import settings
 
-
+@unittest.skip('Need to set up TEST_CHEF_SERVER somehow.')
 class ChefAPITest(unittest.TestCase):
     """Tests the client interface to Chef Server API."""
 
@@ -22,32 +22,32 @@ class ChefAPITest(unittest.TestCase):
             settings.TEST_CHEF_CLIENT_KEY)
 
     def test_databag(self):
-        dbag_name = 'testing'
+        databag_name = 'testing'
         ditem_name = 'item1'
         ditem_value = {'something': 1, 'else': 2}
 
         # delete the databag to make sure we are creating a new one
-        resp, status = self.client.delete_databag(dbag_name)
+        resp, status = self.client.delete_databag(databag_name)
 
-        resp, status = self.client.create_databag(dbag_name)
+        resp, status = self.client.create_databag(databag_name)
         self.assertEqual(status, 201)
         self.assertTrue(resp)
 
         resp = self.client.create_databag_item(
-            dbag_name, ditem_name, ditem_value)
+            databag_name, ditem_name, ditem_value)
         self.assertEqual(status, 201)
         self.assertTrue(resp)
 
-        resp, status = self.client.get_databag(dbag_name)
+        resp, status = self.client.get_databag(databag_name)
         self.assertEqual(status, 200)
-        resp, status = self.client.get_databag_item(dbag_name, ditem_name)
+        resp, status = self.client.get_databag_item(databag_name, ditem_name)
         self.assertEqual(status, 200)
 
         ditem_value = json.loads(resp)
         ditem_value['newvalue'] = 'databag'
         resp, status = self.client.update_databag_item(
-            dbag_name, ditem_name, ditem_value)
+            databag_name, ditem_name, ditem_value)
         self.assertEqual(status, 200)
-        resp, status = self.client.get_databag_item(dbag_name, ditem_name)
+        resp, status = self.client.get_databag_item(databag_name, ditem_name)
         self.assertEqual(status, 200)
         self.assertTrue('newvalue' in json.loads(resp))

@@ -39,8 +39,11 @@ nosetests.xml
 
 # Deis' config file
 deis/local_settings.py
+
+# Misc.
+.DS_Store
+htmlcov/
+.ruby-version
 venv/
 .vagrant
-.ruby-version
-.DS_Store
 
