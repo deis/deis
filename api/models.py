@@ -265,7 +265,7 @@ class Formation(UuidAuditedModel):
         job = [func() for func in funcs ]
         # balance containers
         containers_balanced = self._balance_containers()
-        # launch/terminate backends and proxies in parallel
+        # launch/terminate nodes in parallel
         if job:
             group(*job).apply_async().join()
         # once nodes are in place, recalculate the formation and update the data bag
@@ -327,14 +327,14 @@ class Formation(UuidAuditedModel):
     def _balance_containers(self, **kwargs):
         runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('created')
         if len(runtime_nodes) < 2:
-            return # there's nothing to balance with 1 backend
+            return # there's nothing to balance with 1 runtime node
         all_containers = Container.objects.filter(formation=self).order_by('-created')
         # get the next container number (e.g. web.19)
         container_num = 1 if not all_containers else all_containers[0].num + 1
         changed = False
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
-            # map backend container counts => { 2: [b3, b4], 3: [ b1, b2 ] } 
+            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] } 
             n_map = {}
             for node in runtime_nodes:
                 ct = len(node.container_set.filter(type=container_type)) 
@@ -418,13 +418,8 @@ class Formation(UuidAuditedModel):
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
-            # converge all backends
-            backend_nodes = [ b.node for b in self.backend_set.all() ]
-            job = group(*[ n.converge() for n in backend_nodes ])
-            _results = job.apply_async().join()
-            # converge all proxies
-            proxy_nodes = [ b.node for b in self.proxy_set.all() ]
-            job = group(*[ n.converge() for n in proxy_nodes ])
+            nodes = [ node for node in self.node_set.all() ]
+            job = group(*[ n.converge() for n in nodes ])
             _results = job.apply_async().join()
         return databag
 
@@ -531,17 +526,9 @@ class Node(UuidAuditedModel):
             chef['validation_name'] = settings.CHEF_VALIDATION_NAME
             chef['validation_key'] = settings.CHEF_VALIDATION_KEY
             chef['node_name'] = self.id
-            # append to the default run_list
-            run_list = chef.setdefault('run_list', [])
-            attrs = chef['initial_attributes'] = {}
-            if self.type == 'backend':
-                run_list.append('role[deis-backend]')
-                attrs.setdefault('deis', {}).setdefault(
-                  'runtime', {}).setdefault('formations', [ self.formation.id ])
-            elif self.type == 'proxy':
-                run_list.append('role[deis-proxy]')
-                attrs.setdefault('deis', {}).setdefault(
-                  'proxy', {}).setdefault('formations', [ self.formation.id ])
+            # use the layer's run list
+            chef['run_list'] = self.layer.run_list
+            chef['initial_attributes'] = self.layer.initial_attributes
         # add the formation's ssh pubkey
         init.setdefault('ssh_authorized_keys', []).append(
                                 self.formation.ssh_public_key)
