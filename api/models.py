@@ -21,6 +21,8 @@ from rest_framework.authtoken.models import Token
 from api import fields
 from celerytasks import chef, controller
 from celery.canvas import group
+import yaml
+import os.path
 
 
 # define custom signals
@@ -117,6 +119,14 @@ class Provider(UuidAuditedModel):
 @python_2_unicode_compatible
 class FlavorManager(models.Manager):
 
+    def load_cloud_config_base(self):
+        # load cloud-config-base yaml_
+        _cloud_config_path = os.path.abspath(
+                os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
+        with open(_cloud_config_path) as f:
+            _data = f.read()
+        return yaml.safe_load(_data)
+
     def seed(self, user, **kwargs):
         # TODO: add optimized AMIs to default flavors
         flavors = (
@@ -145,9 +155,11 @@ class FlavorManager(models.Manager):
              'provider': 'ec2',
              'params': json.dumps({'region': 'sa-east-1'})},
         )
+        cloud_config = self.load_cloud_config_base()
         for flavor in flavors:
             provider = flavor.pop('provider')
             flavor['provider'] = Provider.objects.get(owner=user, id=provider)
+            flavor['init'] = cloud_config
             self.create(owner=user, **flavor)
 
 

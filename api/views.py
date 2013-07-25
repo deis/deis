@@ -15,9 +15,6 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 import json
-import os.path
-import yaml
-
 
 class AnonymousAuthentication(BaseAuthentication):
 
@@ -128,14 +125,6 @@ class ProviderViewSet(OwnerViewSet):
     lookup_field = 'id'
 
 
-def _load_cloud_config_base():
-    # load cloud-config-base yaml_
-    _cloud_config_path = os.path.abspath(
-            os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
-    with open(_cloud_config_path) as f:
-        _data = f.read()
-    return yaml.safe_load(_data)
-
 class FlavorViewSet(OwnerViewSet):
 
     model = models.Flavor
@@ -146,7 +135,7 @@ class FlavorViewSet(OwnerViewSet):
         request._data = request.DATA.copy()
         # set default cloud-init configuration
         if not 'init' in request.DATA:
-            request.DATA['init'] = _load_cloud_config_base()
+            request.DATA['init'] = models.FlavorManager().load_cloud_config_base()
         return viewsets.ModelViewSet.create(self, request, **kwargs)
 
 
