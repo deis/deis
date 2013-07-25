@@ -119,8 +119,6 @@ class FormationSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    #containers = serializers.ModelField(
-    #    model_field=models.Formation()._meta.get_field('containers'), required=False)
                                     
     class Meta:
         """Metadata options for a FormationSerializer."""
