@@ -10,6 +10,7 @@ test:
 
 coverage:
 	coverage run manage.py test api celerytasks web
+	coverage html
 
 flake8:
 	flake8
