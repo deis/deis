@@ -461,7 +461,8 @@ class Layer(UuidAuditedModel):
 
     def build(self, *args, **kwargs):
         tasks = import_tasks(self.flavor.provider.type)
-        args = (self.id, self.flavor.provider.creds.copy(),
+        name = "{0}-{1}".format(self.formation.id, self.id)
+        args = (name, self.flavor.provider.creds.copy(),
                 self.flavor.params.copy())
         return tasks.build_layer.subtask(args)
 
@@ -473,7 +474,8 @@ class Layer(UuidAuditedModel):
         job = group(*subtasks)
         job.apply_async().join() # block for termination
         # purge other hosting provider infrastructure
-        tasks.destroy_layer.delay(self.id,
+        name = "{0}-{1}".format(self.formation.id, self.id)
+        tasks.destroy_layer.delay(name,
             self.flavor.provider.creds.copy(),
             self.flavor.params.copy()).wait() # block
 
