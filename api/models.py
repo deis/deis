@@ -452,6 +452,7 @@ class Layer(UuidAuditedModel):
     flavor = models.ForeignKey('Flavor')
     nodes = models.PositiveSmallIntegerField(default=0)
     # chef settings
+    chef_version = models.CharField(max_length=32, default='11.4.4')
     run_list = models.CharField(max_length=512)    
     initial_attributes = fields.JSONField(default='{}', blank=True)
     environment = models.CharField(max_length=64, default='_default')
@@ -548,6 +549,8 @@ class Node(UuidAuditedModel):
             chef['validation_name'] = settings.CHEF_VALIDATION_NAME
             chef['validation_key'] = settings.CHEF_VALIDATION_KEY
             chef['node_name'] = self.id
+            if self.layer.chef_version:
+                chef['version'] = self.layer.chef_version
             if self.layer.run_list:
                 chef['run_list'] = self.layer.run_list.split(',')
             if self.layer.initial_attributes:
