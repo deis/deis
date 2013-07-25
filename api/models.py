@@ -477,7 +477,7 @@ class Layer(UuidAuditedModel):
 class NodeManager(models.Manager):
 
     def new(self, formation, layer):
-        existing_nodes = self.filter(formation=formation).order_by('-created')
+        existing_nodes = self.filter(formation=formation, layer=layer).order_by('-created')
         if existing_nodes:
             next_num = existing_nodes[0].num + 1
         else:
