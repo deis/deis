@@ -188,15 +188,16 @@ class FormationManager(models.Manager):
             'ssh_keys': {},
             'admins': [],
             'formations': {}
-        }
+            }
         # add all ssh keys on the system
         for key in Key.objects.all():
-            key_id = '{0}_{1}'.format(key.owner.username, key.id)
+            key_id = "{0}_{1}".format(key.owner.username, key.id)
             databag['ssh_keys'][key_id] = key.public
         # TODO: add sharing-based key lookup, for now just owner's keys
         for formation in formations:
             keys = databag['formations'][formation.id] = []
-            owner_keys = ['{0}_{1}'.format(k.owner.username, k.id) for k in formation.owner.key_set.all()]
+            owner_keys = ["{0}_{1}".format(
+                k.owner.username, k.id) for k in formation.owner.key_set.all()]
             keys.extend(owner_keys)
         # call a celery task to update gitosis
         if settings.CHEF_ENABLED:
@@ -455,11 +456,11 @@ class Formation(UuidAuditedModel):
             # converge all backends
             backend_nodes = [b.node for b in self.backend_set.all()]
             job = group(*[n.converge() for n in backend_nodes])
-            _results = job.apply_async().join()
+            job.apply_async().join()
             # converge all proxies
             proxy_nodes = [b.node for b in self.proxy_set.all()]
             job = group(*[n.converge() for n in proxy_nodes])
-            _results = job.apply_async().join()
+            job.apply_async().join()
         return databag
 
     def destroy(self):

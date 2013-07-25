@@ -40,11 +40,11 @@ class FlavorTest(TestCase):
         response = self.client.get('/api/flavors')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
-        url = '/api/flavors/{flavor_id}'.format(**locals())
+        url = "/api/flavors/{flavor_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         new_init = {'ssh_authorized_keys': ['ssh-rsa aaaaaaaaa']}
-        body = {'init': yaml.safe_dump(new_init) }
+        body = {'init': yaml.safe_dump(new_init)}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(yaml.safe_load(response.data['init']), new_init)

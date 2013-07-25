@@ -404,8 +404,8 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
-        response = self._dispatch('post', 
-                                  '/formations/{}/config'.format(formation), 
+        response = self._dispatch('post',
+                                  '/formations/{}/config'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
@@ -634,7 +634,7 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/scale'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -647,7 +647,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/calculate'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -659,7 +659,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/balance'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -671,7 +671,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/converge'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -693,7 +693,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', 
+        response = self._dispatch('get',
                                   '/api/formations/{}/nodes'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))

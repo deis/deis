@@ -30,11 +30,16 @@ class AuthTest(TestCase):
         username, password = 'newuser', 'password'
         first_name, last_name = 'Otto', 'Test'
         email = 'autotest@deis.io'
-        submit = {'username': username, 'password': password,
-                  'first_name': first_name, 'last_name': last_name,
-                  'email': email,
-                  # try to abuse superuser/staff level perms
-                  'is_superuser': True, 'is_staff': True}
+        submit = {
+            'username': username,
+            'password': password,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            # try to abuse superuser/staff level perms
+            'is_superuser': True,
+            'is_staff': True,
+            }
         url = '/api/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -55,4 +60,4 @@ class AuthTest(TestCase):
         url = '/api/flavors'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 8) # 8 regions
+        self.assertEqual(response.data['count'], 8)  # 8 regions
