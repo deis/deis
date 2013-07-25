@@ -56,7 +56,7 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     conn = create_ec2_connection(
         region, creds['access_key'], creds['secret_key'])
     # find or create the security group for this formation
-    sg_name = params['formation']
+    sg_name = params['layer']
     sg = conn.get_all_security_groups(sg_name)[0]
     # add the security group to the list
     params.setdefault('security_groups', []).append(sg.name)

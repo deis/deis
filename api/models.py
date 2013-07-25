@@ -536,7 +536,7 @@ class Node(UuidAuditedModel):
     def _prepare_launch_args(self):
         creds = self.layer.flavor.provider.creds.copy()
         params = self.layer.flavor.params.copy()
-        params['formation'] = self.formation.id
+        params['layer'] = "{0}-{1}".format(self.formation.id, self.layer.id)
         params['id'] = self.id
         init = self.layer.flavor.init.copy()
         if settings.CHEF_ENABLED:
