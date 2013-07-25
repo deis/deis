@@ -261,6 +261,12 @@ class FormationLayerViewSet(OwnerViewSet):
             # build the layer's required infrastructure
             layer.build().delay().wait()
 
+    def destroy(self, request, **kwargs):
+        layer = self.get_object()
+        layer.destroy()
+        layer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class FormationNodeViewSet(OwnerViewSet):
 
