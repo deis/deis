@@ -79,7 +79,7 @@ USAGE = {
 """,
     'calculate': """Usage: deis calculate
 """,
-    'create': """Usage: deis create --flavor=<flavor> --image=<image> [--id=<id>]
+    'create': """Usage: deis create --flavor=<flavor> [--image=<image> --id=<id>]
 """,
     'converge': """Usage: deis converge
 """,
@@ -105,7 +105,7 @@ SSH Options:
 """,
     'flavors:list': """Usage: deis flavors:list
 """,
-    'formations:create': """Usage: deis formations:create --flavor=<flavor> --image=<image> [--id=<id>]
+    'formations:create': """Usage: deis formations:create --flavor=<flavor> [--image=<image> --id=<id>]
 """,
     'formations:list': """Usage: deis formations:list
 """,
@@ -460,66 +460,6 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
-    def keys_add(self, args):
-        """Add SSH keys for the logged in user."""
-        path = args.get('<key>')
-        if not path:
-            ssh_dir = os.path.expanduser('~/.ssh')
-            pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
-            print('Found the following SSH public keys:')
-            for i, k in enumerate(pubkeys):
-                key = k.split(os.path.sep)[-1]
-                print('{0}) {1}'.format(i+1, key))
-            inp = raw_input('Which would you like to use with Deis? ')
-            try:
-                path = pubkeys[int(inp)-1]
-                key_id = path.split(os.path.sep)[-1].replace('.pub', '')
-            except:
-                print 'Aborting'
-                return
-        with open(path) as f:
-            data = f.read()
-        match = re.match(r'^(ssh-...) ([^ ]+) (.+)', data)
-        if not match:
-            print 'Could not parse public key material'
-            return
-        key_type, key_str, _key_comment = match.groups()
-        body = {'id': key_id, 'public': '{0} {1}'.format(key_type, key_str)}
-        sys.stdout.write('Uploading {0} to Deis... '.format(path))
-        sys.stdout.flush()
-        response = self._dispatch('post', '/api/keys', json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done')
-        else:
-            print('Error!', response.text)
-
-    def keys_list(self, args):
-        """List SSH keys for the logged in user."""
-        response = self._dispatch('get', '/api/keys')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            if data['count'] == 0:
-                print 'No keys found'
-                return
-            print('=== {0} Keys'.format(data['results'][0]['owner']))
-            for key in data['results']:
-                public = key['public']
-                print('{0} {1}...{2}'.format(
-                  key['id'], public[0:16], public[-10:]))
-        else:
-            print('Error!', response.text)
-
-    def keys_remove(self, args):
-        """Remove a specific SSH key for the logged in user."""
-        key = args.get('<key>')
-        sys.stdout.write('Removing {0} SSH Key... '.format(key))
-        sys.stdout.flush()
-        response = self._dispatch('delete', '/keys/{}'.format(key))
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done')
-        else:
-            print('Error!', response.text)
-
     def flavors_create(self, args):
         """Create a flavor using a provider"""
         body = {'id': args.get('--id'), 'provider': args.get('--provider')}
@@ -565,9 +505,11 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """Create a formation."""
-        body = {'image': args['--image'], 'flavor': args['--flavor']}
+        body = {'flavor': args['--flavor']}
         if '--id' in args:
             body.update({'id': args['--id']})
+        if '--image' in args:
+            body.update({'image': args['--image']})
         response = self._dispatch('post', '/api/formations',
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -676,6 +618,66 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
+        else:
+            print('Error!', response.text)
+
+    def keys_add(self, args):
+        """Add SSH keys for the logged in user."""
+        path = args.get('<key>')
+        if not path:
+            ssh_dir = os.path.expanduser('~/.ssh')
+            pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
+            print('Found the following SSH public keys:')
+            for i, k in enumerate(pubkeys):
+                key = k.split(os.path.sep)[-1]
+                print('{0}) {1}'.format(i+1, key))
+            inp = raw_input('Which would you like to use with Deis? ')
+            try:
+                path = pubkeys[int(inp)-1]
+                key_id = path.split(os.path.sep)[-1].replace('.pub', '')
+            except:
+                print 'Aborting'
+                return
+        with open(path) as f:
+            data = f.read()
+        match = re.match(r'^(ssh-...) ([^ ]+) (.+)', data)
+        if not match:
+            print 'Could not parse public key material'
+            return
+        key_type, key_str, _key_comment = match.groups()
+        body = {'id': key_id, 'public': '{0} {1}'.format(key_type, key_str)}
+        sys.stdout.write('Uploading {0} to Deis... '.format(path))
+        sys.stdout.flush()
+        response = self._dispatch('post', '/api/keys', json.dumps(body))
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print('done')
+        else:
+            print('Error!', response.text)
+
+    def keys_list(self, args):
+        """List SSH keys for the logged in user."""
+        response = self._dispatch('get', '/api/keys')
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            if data['count'] == 0:
+                print 'No keys found'
+                return
+            print('=== {0} Keys'.format(data['results'][0]['owner']))
+            for key in data['results']:
+                public = key['public']
+                print('{0} {1}...{2}'.format(
+                  key['id'], public[0:16], public[-10:]))
+        else:
+            print('Error!', response.text)
+
+    def keys_remove(self, args):
+        """Remove a specific SSH key for the logged in user."""
+        key = args.get('<key>')
+        sys.stdout.write('Removing {0} SSH Key... '.format(key))
+        sys.stdout.flush()
+        response = self._dispatch('delete', '/keys/{}'.format(key))
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+            print('done')
         else:
             print('Error!', response.text)
 
