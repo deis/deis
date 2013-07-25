@@ -24,7 +24,7 @@ except IOError:
 KWARGS = {}
 if USE_SETUPTOOLS:
     KWARGS = {
-        'install_requires': ['PyYAML', 'requests'],
+        'install_requires': ['docopt', 'PyYAML', 'requests'],
         'entry_points': {'console_scripts': ['deis = deis.client:main']},
     }
 else:
@@ -59,6 +59,6 @@ setup(name='deis',
           ],
       scripts=['deis/deis'],
       long_description=LONG_DESCRIPTION,
-      requires=['PyYAML', 'requests'],
+      requires=['docopt', 'PyYAML', 'requests'],
       zip_safe=True,
       **KWARGS)
