@@ -58,7 +58,8 @@ class FormationTest(TestCase):
 
     def test_formation_auto_id(self):
         body = {'flavor': 'autotest', 'image': 'deis/autotest'}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post(
+            '/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
         return response
@@ -79,11 +80,13 @@ class FormationTest(TestCase):
     def test_formation_errors(self):
         # test duplicate id
         body = {'flavor': 'autotest', 'image': 'deis/autotest'}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post(
+            '/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
         body = {'id': response.data['id'], 'flavor': 'autotest', 'image': 'deis/autotest'}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post(
+            '/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), 'Formation with this Id already exists.')
 

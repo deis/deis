@@ -27,14 +27,14 @@ def send_patch(self, path, data='', content_type='application/octet-stream',
 RequestFactory.patch = construct_patch
 Client.patch = send_patch
 
-from .auth import *
-from .backend import *
-from .build import *
-from .config import *
-from .container import *
-from .flavor import *
-from .formation import *
-from .node import *
-from .provider import *
-from .proxy import *
-from .release import *
+from .auth import *  # noqa
+from .backend import *  # noqa
+from .build import *  # noqa
+from .config import *  # noqa
+from .container import *  # noqa
+from .flavor import *  # noqa
+from .formation import *  # noqa
+from .node import *  # noqa
+from .provider import *  # noqa
+from .proxy import *  # noqa
+from .release import *  # noqa

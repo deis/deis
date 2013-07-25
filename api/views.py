@@ -179,7 +179,7 @@ class FormationViewSet(OwnerViewSet):
                 owner=formation.owner, formation=formation, values={})
             build = models.Build.objects.create(
                 owner=formation.owner, formation=formation)
-            _release = models.Release.objects.create(
+            models.Release.objects.create(
                 owner=formation.owner, formation=formation, config=config,
                 image=formation.image, build=build)
             # prepare the formation's required infrastruture at the provider

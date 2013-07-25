@@ -1,2 +1,3 @@
-from chef import *
-from azuretest import *
+
+from azuretest import *  # noqa
+from chef import *  # noqa

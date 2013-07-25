@@ -250,9 +250,9 @@ LOGGING = {
 # EMAIL_HOST_PASSWORD = 'bar'
 
 # import other settings
-from .chef_settings import *  # @UnusedWildImport
-from .celery_settings import *  # @UnusedWildImport
+from .chef_settings import *  # noqa @UnusedWildImport
+from .celery_settings import *  # noqa @UnusedWildImport
 try:
-    from .local_settings import *  # pylint: disable=W0401 @UnusedWildImport
+    from .local_settings import *  # noqa @UnusedWildImport
 except ImportError:
-    pass
+    print('No deis/local_settings.py file found!')
