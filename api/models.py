@@ -537,9 +537,10 @@ class Node(UuidAuditedModel):
             chef['validation_name'] = settings.CHEF_VALIDATION_NAME
             chef['validation_key'] = settings.CHEF_VALIDATION_KEY
             chef['node_name'] = self.id
-            # use the layer's run list
-            chef['run_list'] = self.layer.run_list
-            chef['initial_attributes'] = self.layer.initial_attributes
+            if self.layer.run_list:
+                chef['run_list'] = self.layer.run_list
+            if self.layer.initial_attributes:
+                chef['initial_attributes'] = self.layer.initial_attributes
         # add the formation's ssh pubkey
         init.setdefault('ssh_authorized_keys', []).append(
                                 self.formation.ssh_public_key)
