@@ -168,7 +168,7 @@ class FormationViewSet(OwnerViewSet):
         except IntegrityError as _e:
             return Response("Formation with this Id already exists.",
                             status=HTTP_400_BAD_REQUEST)
-    
+
     def post_save(self, formation, created=False, **kwargs):
         if created:
             config = models.Config.objects.create(
@@ -205,7 +205,7 @@ class FormationViewSet(OwnerViewSet):
         databag = formation.balance()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
-    
+
     def calculate(self, request, **kwargs):
         formation = self.get_object()
         databag = formation.calculate()
@@ -231,12 +231,12 @@ class FormationNodeViewSet(OwnerViewSet):
 
     model = models.Node
     serializer_class = serializers.NodeSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
         return self.model.objects.filter(owner=self.request.user, formation=formation)
-            
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(id=self.kwargs['id'])
@@ -247,7 +247,7 @@ class FormationBackendViewSet(OwnerViewSet):
 
     model = models.Backend
     serializer_class = serializers.BackendSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
@@ -263,7 +263,7 @@ class FormationProxyViewSet(OwnerViewSet):
 
     model = models.Proxy
     serializer_class = serializers.ProxySerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
@@ -279,12 +279,12 @@ class FormationContainerViewSet(OwnerViewSet):
 
     model = models.Container
     serializer_class = serializers.ContainerSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
         return self.model.objects.filter(owner=self.request.user, formation=formation)
-    
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(pk=self.kwargs['id'])
@@ -298,8 +298,8 @@ class FormationImageViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(owner=self.request.user)
-            
-    def get_object(self, *args, **kwargs):        
+
+    def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
         return formation.release
@@ -307,7 +307,7 @@ class FormationImageViewSet(OwnerViewSet):
     def reset_image(self, request, *args, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
-        models.release_signal.send(sender=self, image=request.DATA['image'], 
+        models.release_signal.send(sender=self, image=request.DATA['image'],
                                    formation=formation, user=self.request.user)
         return Response(status=HTTP_201_CREATED)
 
@@ -319,7 +319,7 @@ class FormationConfigViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(owner=self.request.user)
-    
+
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         config = self.model.objects.filter(
@@ -358,7 +358,7 @@ class FormationBuildViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(owner=self.request.user)
-    
+
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         build = self.model.objects.filter(
@@ -386,7 +386,7 @@ class FormationReleaseViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(owner=self.request.user)
-            
+
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         release = self.model.objects.filter(

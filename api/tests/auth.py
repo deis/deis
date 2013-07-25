@@ -30,7 +30,7 @@ class AuthTest(TestCase):
         username, password = 'newuser', 'password'
         first_name, last_name = 'Otto', 'Test'
         email = 'autotest@deis.io'
-        submit = {'username': username, 'password': password, 
+        submit = {'username': username, 'password': password,
                   'first_name': first_name, 'last_name': last_name,
                   'email': email,
                   # try to abuse superuser/staff level perms

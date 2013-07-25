@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import importlib
 import json
 
+from celery.canvas import group
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
@@ -20,15 +21,15 @@ from rest_framework.authtoken.models import Token
 
 from api import fields
 from celerytasks import controller
-from celery.canvas import group
 
 
 # define custom signals
 scale_signal = Signal(providing_args=['formation', 'user'])
 release_signal = Signal(providing_args=['formation', 'user'])
 
+
 def import_tasks(provider_type):
-    "Return Celery tasks for a given provider type"
+    """Return Celery tasks for a given provider type"""
     try:
         tasks = importlib.import_module('celerytasks.'+provider_type)
     except ImportError as e:
@@ -195,7 +196,7 @@ class FormationManager(models.Manager):
         # TODO: add sharing-based key lookup, for now just owner's keys
         for formation in formations:
             keys = databag['formations'][formation.id] = []
-            owner_keys = [ '{0}_{1}'.format(k.owner.username, k.id) for k in formation.owner.key_set.all() ]
+            owner_keys = ['{0}_{1}'.format(k.owner.username, k.id) for k in formation.owner.key_set.all()]
             keys.extend(owner_keys)
         # call a celery task to update gitosis
         if settings.CHEF_ENABLED:
@@ -203,9 +204,11 @@ class FormationManager(models.Manager):
 
     def next_container_node(self, formation, container_type='web'):
         count = []
-        backend_nodes = list(Node.objects.filter(formation=formation, type='backend').order_by('created'))
-        container_map = { n: [] for n in backend_nodes }
-        containers = list(Container.objects.filter(formation=formation, type=container_type).order_by('created'))
+        backend_nodes = list(Node.objects.filter(
+            formation=formation, type='backend').order_by('created'))
+        container_map = {n: [] for n in backend_nodes}
+        containers = list(Container.objects.filter(
+            formation=formation, type=container_type).order_by('created'))
         for c in containers:
             container_map[c.node].append(c)
         for n in container_map.keys():
@@ -287,7 +290,7 @@ class Formation(UuidAuditedModel):
             funcs.append(b.node.launch)
             diff = requested - len(backends)
         # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [func() for func in funcs ]
+        job = [func() for func in funcs]
         return job
 
     def _scale_proxies(self, requested, **kwargs):
@@ -307,7 +310,7 @@ class Formation(UuidAuditedModel):
             funcs.append(p.node.launch)
             diff = requested - len(proxies)
         # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [ func() for func in funcs ]
+        job = [func() for func in funcs]
         return job
 
     def _scale_containers(self, requested_counts, **kwargs):
@@ -341,7 +344,7 @@ class Formation(UuidAuditedModel):
                 containers.append(c)
                 container_num += 1
                 diff = requested - len(containers)
-                change +=1
+                change += 1
         return change
 
     def balance(self, **kwargs):
@@ -354,8 +357,9 @@ class Formation(UuidAuditedModel):
     def _balance_containers(self, **kwargs):
         backends = self.backend_set.all().order_by('created')
         if len(backends) < 2:
-            return # there's nothing to balance with 1 backend
-        all_containers = Container.objects.filter(formation=self).order_by('-created')
+            return  # there's nothing to balance with 1 backend
+        all_containers = Container.objects.filter(
+            formation=self).order_by('-created')
         # get the next container number (e.g. web.19)
         container_num = 1 if not all_containers else all_containers[0].num + 1
         changed = False
@@ -384,7 +388,7 @@ class Formation(UuidAuditedModel):
                                          type=container_type,
                                          num=container_num,
                                          node=b_under.node)
-                container_num +=1
+                container_num += 1
                 # delete the oldest container from the most over-utilized node
                 c = b_over.node.container_set.filter(type=container_type).order_by('created')[0]
                 c.delete()
@@ -419,7 +423,7 @@ class Formation(UuidAuditedModel):
             d['release']['build']['procfile'] = release.build.procfile
         # calculate proxy
         d['proxy'] = {}
-        d['proxy']['algorithm'] =  'round_robin'
+        d['proxy']['algorithm'] = 'round_robin'
         d['proxy']['port'] = 80
         d['proxy']['backends'] = []
         # calculate container formation
@@ -428,7 +432,8 @@ class Formation(UuidAuditedModel):
             # all container types get an exposed port starting at 5001
             port = 5000 + c.num
             d['containers'].setdefault(c.type, {})
-            d['containers'][c.type].update({ c.num: "{0}:{1}".format(c.node.id, port) })
+            d['containers'][c.type].update(
+                {c.num: "{0}:{1}".format(c.node.id, port)})
             # only proxy to 'web' containers
             if c.type == 'web':
                 d['proxy']['backends'].append("{0}:{1}".format(c.node.fqdn, port))
@@ -467,9 +472,10 @@ class Formation(UuidAuditedModel):
         subtasks.extend([b.node.terminate() for b in self.backend_set.all()])
         subtasks.extend([p.node.terminate() for p in self.proxy_set.all()])
         job = group(*subtasks)
-        job.apply_async().join() # block for termination
+        job.apply_async().join()  # block for termination
         # purge other hosting provider infrastructure
-        tasks.cleanup_formation.delay(self.id,
+        tasks.cleanup_formation.delay(
+            self.id,
             self.flavor.provider.creds.copy(),
             self.flavor.params.copy()).wait()
 
@@ -545,19 +551,21 @@ class Node(UuidAuditedModel):
             # append to the default run_list
             run_list = chef.setdefault('run_list', [])
             attrs = chef['initial_attributes'] = {}
+            formation_id = self.formation.id
             if self.type == 'backend':
                 run_list.append('role[deis-backend]')
                 attrs.setdefault('deis', {}).setdefault(
-                  'runtime', {}).setdefault('formations', [ self.formation.id ])
+                    'runtime', {}).setdefault('formations', [formation_id])
             elif self.type == 'proxy':
                 run_list.append('role[deis-proxy]')
                 attrs.setdefault('deis', {}).setdefault(
-                  'proxy', {}).setdefault('formations', [ self.formation.id ])
+                    'proxy', {}).setdefault('formations', [formation_id])
         # add the formation's ssh pubkey
         init.setdefault('ssh_authorized_keys', []).append(
-                                self.formation.ssh_public_key)
+            self.formation.ssh_public_key)
         # add all of the owner's SSH keys
-        init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all() ])
+        init['ssh_authorized_keys'].extend(
+            [k.public for k in self.formation.owner.key_set.all()])
         ssh_username = self.formation.ssh_username
         ssh_private_key = self.formation.ssh_private_key
         args = (self.uuid, creds, params, init, ssh_username, ssh_private_key)
@@ -722,7 +730,8 @@ class Build(UuidAuditedModel):
     dockerfile = models.TextField(blank=True)
     config = fields.EnvVarsField(blank=True)
     # slug info, TODO: replace default URL with something more user friendly
-    url = models.URLField('URL', default='https://s3.amazonaws.com/gabrtv-slugs/nodejs.tar.gz')
+    url = models.URLField(
+        'URL', default='https://s3.amazonaws.com/gabrtv-slugs/nodejs.tar.gz')
     size = models.IntegerField(blank=True, null=True)
     checksum = models.CharField(max_length=255, blank=True)
 
@@ -768,7 +777,7 @@ class Release(UuidAuditedModel):
 def new_release(sender, **kwargs):
     formation, user = kwargs['formation'], kwargs['user']
     last_release = Release.objects.filter(
-                formation=formation).order_by('-created')[0]
+        formation=formation).order_by('-created')[0]
     image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
@@ -787,9 +796,9 @@ def new_release(sender, **kwargs):
                 owner=user, formation=formation, values=new_values)
     # create new release and auto-increment version
     new_version = last_release.version + 1
-    release = Release.objects.create(owner=user, formation=formation,
-        image=image, config=config, build=build, args=args, command=command,
-        version=new_version)
+    release = Release.objects.create(
+        owner=user, formation=formation, image=image, config=config,
+        build=build, args=args, command=command, version=new_version)
     return release
 
 
@@ -847,4 +856,3 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         # pylint: disable=E1101
         Token.objects.create(user=instance)
-

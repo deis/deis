@@ -26,7 +26,7 @@ class FlavorTest(TestCase):
         body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-    
+
     def test_flavor(self):
         """
         Test that a user can create, read, update and delete a node flavor
@@ -50,5 +50,3 @@ class FlavorTest(TestCase):
         self.assertEqual(yaml.safe_load(response.data['init']), new_init)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
-        
-

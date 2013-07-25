@@ -33,7 +33,7 @@ class BuildTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-    
+
     def test_build(self):
         """
         Test that a null build is created on a new formation, and that users
@@ -75,4 +75,3 @@ class BuildTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
-

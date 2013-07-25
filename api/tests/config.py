@@ -33,7 +33,7 @@ class ConfigTest(TestCase):
 
     def test_config(self):
         """
-        Test that config is auto-created during a new formation and that 
+        Test that config is auto-created during a new formation and that
         new versions can be created using a PATCH
         """
         url = '/api/formations'
@@ -92,6 +92,3 @@ class ConfigTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
-
-
-        

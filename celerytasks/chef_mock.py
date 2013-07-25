@@ -1,5 +1,4 @@
 """
-
 https://github.com/coderanger/pychef
 
 We want a simpler version for making API calls
@@ -16,8 +15,9 @@ class ChefAPI(object):
 
     def request(self, verb, path, body=''):
         assert verb in ("GET", "DELETE", "PUT", "POST")
-        assert path 
+        assert path
         assert body
+
     def create_databag(self, name):
         body = json.dumps({"name": name, "id" : name})
         resp = self.request("POST", "/data" , body)

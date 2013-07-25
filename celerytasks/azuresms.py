@@ -3,11 +3,11 @@ from __future__ import unicode_literals
 
 from azure.servicemanagement import ServiceManagementService
 from azure.servicemanagement import LinuxConfigurationSet, OSVirtualHardDisk
-
 from celery import task
 import yaml
 
 from . import util
+
 
 @task(name='azuresms.launch_node')
 def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
@@ -19,15 +19,17 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
         print "I is ", i.name, " -- ", i.label, " -- ", i.location, " -- ", i.media_link
     media_link = "http://opdemandstorage.blob.core.windows.net/communityimages/b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu_DAILY_BUILD-precise-12_04_2-LTS-amd64-server-20130702-en-us-30GB.vhd"
     config = LinuxConfigurationSet(user_name="ubuntu", user_password="opdemand")
-    hard_disk = OSVirtualHardDisk("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu_DAILY_BUILD-precise-12_04_2-LTS-amd64-server-20130702-en-us-30GB", media_link, disk_label = "opdemandservice")
-    ret = sms.create_virtual_machine_deployment("opdemandservice", "deploy1", "production", "opdemandservice2", "opdemandservice3", config, hard_disk)
+    hard_disk = OSVirtualHardDisk('b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu_DAILY_BUILD-precise-12_04_2-LTS-amd64-server-20130702-en-us-30GB', media_link, disk_label='opdemandservice')
+    ret = sms.create_virtual_machine_deployment('opdemandservice', 'deploy1', "production", "opdemandservice2", "opdemandservice3", config, hard_disk)
                                                #service_name, deployment_name, deployment_slot, label, role_name, system_config, os_virtual_hard_disk
     print "Ret ", ret
     return sms
 
+
 @task(name='azuresms.terminate_node')
 def terminate_node(node_id, creds, params, provider_id):
     pass
+
 
 @task(name='azuresms.converge_node')
 def converge_node(node_id, ssh_username, fqdn, ssh_private_key,
@@ -118,4 +120,3 @@ def format_metadata(boto):
 if __name__ == "__main__":
     print "Checking "
     l = launch_node(None, None, None, None, None, None)
-
