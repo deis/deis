@@ -15,6 +15,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 import json
+from rest_framework.generics import get_object_or_404
 
 class AnonymousAuthentication(BaseAuthentication):
 
@@ -237,7 +238,7 @@ class FormationLayerViewSet(OwnerViewSet):
 
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
-        obj = qs.get(id=self.kwargs['layer'])
+        obj = get_object_or_404(qs, id=self.kwargs['layer'])
         return obj
 
     def create(self, request, **kwargs):
