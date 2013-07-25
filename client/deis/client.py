@@ -119,13 +119,13 @@ Options:
 """,
     'keys:remove': """Usage: deis keys:remove <key>
 """,
-    'layers:create': """Usage: deis layers:create <id> --flavor=<flavor> [options]
+    'layers:create': """Usage: deis layers:create <id> <flavor> --run_list=<run_list> [options]
 
 Chef Options:
 
---run_list=RUN_LIST                   run-list to use when bootstrapping nodes
---environment=ENVIRONMENT             chef environment to place nodes
---initial_attributes=INITIAL_ATTRS    initial attributes for nodes
+--run_list=RUN_LIST         run-list to use when bootstrapping nodes
+--environment=ENVIRONMENT   chef environment to place nodes [default: _default]
+--attributes=INITIAL_ATTRS  initial attributes for nodes
 
 SSH Options:
 
@@ -133,6 +133,8 @@ SSH Options:
 --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
 --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
 
+""",
+    'layers:destroy': """Usage: deis layers:destroy <id>
 """,
     'layers:scale': """Usage: deis layers:scale <type=num>...
 """,
@@ -533,13 +535,11 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """Create a formation."""
-        body = {'flavor': args['--flavor']}
-        formation_id = args.get('--id')
-        if formation_id:
-            body.update({'id': formation_id})
-        image = args.get('--image')
-        if image:
-            body.update({'image': image})
+        body = {}
+        for opt in ('--id', '--image'):
+            o = args.get(opt)
+            if o:
+                body.update({opt.strip('-'): o})
         response = self._dispatch('post', '/api/formations',
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -699,17 +699,32 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        body = {'id': args['<id>'], 'flavor': args['<flavor>']}
-        for opt in ('--run_list', '--environment', '--initial_attributes',
+        body = {'id': args['<id>'], 'flavor': args['<flavor>'], 'run_list': args['--run_list']}
+        for opt in ('--environment', '--initial_attributes',
                     '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
-        response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
-                                  json.dumps(body))
         sys.stdout.write('Creating layer {}...'.format(args['<id>']))
         sys.stdout.flush()
+        response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
+                                  json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print('done')
+        else:
+            print('Error!', response.text)
+
+    def layers_destroy(self, args):
+        """Destroy a layer of nodes."""
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        layer = args['<id>']
+        sys.stdout.write('Destroying layer {layer}...'.format(**locals()))
+        sys.stdout.flush()
+        response = self._dispatch('delete', 
+            '/api/formations/{formation}/layers/{layer}'.format(**locals()))
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:
             print('Error!', response.text)
