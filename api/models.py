@@ -429,7 +429,8 @@ class Formation(UuidAuditedModel):
         # create subtasks to terminate all nodes in parallel
         subtasks.extend([ layer.destroy() for layer in self.layer_set.all() ])
         job = group(*subtasks)
-        job.apply_async().join() # block for termination
+        if job:
+            job.apply_async().join() # block for termination
 
 
 @python_2_unicode_compatible
