@@ -58,4 +58,10 @@ class NodeTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
-        # TODO: add node deletion
+        node = response.data['results'][0]['id']
+        url = '/api/formations/{formation_id}/nodes/{node}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('fqdn', response.data)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)

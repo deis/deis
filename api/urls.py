@@ -45,6 +45,9 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/layers/?',
         views.FormationLayerViewSet.as_view({'post': 'create', 'get': 'list'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/nodes/(?P<node>[a-z0-9-]+)/?',
+        views.FormationNodeViewSet.as_view({
+            'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/nodes/?',
         views.FormationNodeViewSet.as_view({'get': 'list'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/containers/?',

@@ -283,7 +283,7 @@ class FormationNodeViewSet(OwnerViewSet):
             
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
-        obj = qs.get(id=self.kwargs['id'])
+        obj = get_object_or_404(qs, id=self.kwargs['node'])
         return obj
 
 
