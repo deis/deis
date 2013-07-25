@@ -279,14 +279,14 @@ class DeisClient(object):
             password = getpass('password: ')
         email = args.get('--email')
         if not email:
-            email = raw_input ('email: ')
+            email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
             self._settings.save()
-            print('Registered {}'.format(username))
+            print("Registered {}".format(username))
             login_args = {'--username': username, '--password': password,
                           '<controller>': controller}
             # login after registering
@@ -319,7 +319,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.found:  # @UndefinedVariable
             self._settings['controller'] = controller
             self._settings.save()
-            print('Logged in as {}'.format(username))
+            print("Logged in as {}".format(username))
             return True
         else:
             print('Login failed')
@@ -342,7 +342,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get','/formations/{}/backends'.format(formation))
+        response = self._dispatch('get', "/formations/{}/backends".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -505,7 +505,7 @@ class DeisClient(object):
             for key in data['results']:
                 public = key['public']
                 print('{0} {1}...{2}'.format(
-                  key['id'], public[0:16], public[-10:]))
+                    key['id'], public[0:16], public[-10:]))
         else:
             print('Error!', response.text)
 
