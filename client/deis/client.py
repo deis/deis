@@ -293,7 +293,7 @@ class DeisClient(object):
         email = args.get('--email')
         if not email:
             email = raw_input ('email: ')
-        url = urlparse.urljoin(controller, '/api/register')
+        url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable

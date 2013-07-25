@@ -35,7 +35,7 @@ class AuthTest(TestCase):
                   'email': email,
                   # try to abuse superuser/staff level perms
                   'is_superuser': True, 'is_staff': True}
-        url = '/api/register'
+        url = '/api/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['username'], username)
