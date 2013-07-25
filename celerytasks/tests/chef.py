@@ -12,6 +12,7 @@ import unittest
 from celerytasks.chef import ChefAPI
 from deis import settings
 
+
 @unittest.skip('Need to set up TEST_CHEF_SERVER somehow.')
 class ChefAPITest(unittest.TestCase):
     """Tests the client interface to Chef Server API."""

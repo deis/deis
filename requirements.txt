@@ -1,4 +1,5 @@
 # Deis' python library requirements
+azure>=0.7.0
 boto>=2.9.8
 Django>=1.5.1
 django-allauth>=0.12.0
@@ -13,9 +14,6 @@ psycopg2>=2.5.1
 pyCrypto>=2.6
 PyYAML>=3.10
 South>=0.8.1
-
-# Windows Azure cloud driver -- not yet required
-# azure>=0.7.0
 
 # Generates template documentation in the Django admin.
 # docutils>=0.11
