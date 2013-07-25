@@ -111,6 +111,10 @@ class LayerTest(TestCase):
         body = {'proxy': 2, 'runtime': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertIn('nodes', response.data)
+        self.assertIn('containers', response.data)
+        self.assertIn('proxy', response.data)
+        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -119,6 +123,11 @@ class LayerTest(TestCase):
         url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
         body = {'proxy': 1, 'runtime': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('nodes', response.data)
+        self.assertIn('containers', response.data)
+        self.assertIn('proxy', response.data)
+        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -128,6 +137,10 @@ class LayerTest(TestCase):
         body = {'proxy': 0, 'runtime': 0}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertIn('nodes', response.data)
+        self.assertIn('containers', response.data)
+        self.assertIn('proxy', response.data)
+        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
