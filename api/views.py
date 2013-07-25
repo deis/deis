@@ -147,11 +147,6 @@ class FormationViewSet(OwnerViewSet):
 
     def create(self, request, **kwargs):
         request._data = request.DATA.copy()
-        if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
-            # SECURITY: figure out best way to get keys with proper entropy
-            key = RSA.generate(2048)
-            request.DATA['ssh_private_key'] = key.exportKey('PEM')
-            request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except IntegrityError as _e:
@@ -166,8 +161,6 @@ class FormationViewSet(OwnerViewSet):
                 owner=formation.owner, formation=formation)
             _release = models.Release.objects.create(
                 owner=formation.owner, formation=formation, config=config, build=build)
-            # prepare the formation's required infrastruture at the provider
-            formation.prepare_provider().delay().wait()
         # update gitosis
         models.Formation.objects.publish()
 
@@ -252,12 +245,21 @@ class FormationLayerViewSet(OwnerViewSet):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
         request.DATA['formation'] = formation.id
-        request.DATA['flavor'] = formation.flavor.id
+        if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
+            # SECURITY: figure out best way to get keys with proper entropy
+            key = RSA.generate(2048)
+            request.DATA['ssh_private_key'] = key.exportKey('PEM')
+            request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except IntegrityError as _e:
             return Response("Layer with this Id already exists.",
                             status=HTTP_400_BAD_REQUEST)
+
+    def post_save(self, layer, created=False, **kwargs):
+        if created:
+            # build the layer's required infrastructure
+            layer.build().delay().wait()
 
 
 class FormationNodeViewSet(OwnerViewSet):

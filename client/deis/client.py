@@ -81,7 +81,7 @@ USAGE = {
 """,
     'calculate': """Usage: deis calculate
 """,
-    'create': """Usage: deis create --flavor=<flavor> [--image=<image> --id=<id>]
+    'create': """Usage: deis create [--image=<image> --id=<id>]
 """,
     'converge': """Usage: deis converge
 """,
@@ -93,12 +93,6 @@ Options:
 
 --params=PARAMS    provider-specific parameters (size, region, zone, etc.)
 --init=INIT        override Ubuntu cloud-init with custom YAML
-
-SSH Options:
-
---ssh_username=USERNAME         username for ssh connections [default: ubuntu]
---ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
---ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
 
 """,
     'flavors:delete': """Usage: deis flavors:delete <id>
@@ -125,7 +119,20 @@ SSH Options:
 """,
     'keys:remove': """Usage: deis keys:remove <key>
 """,
-    'layers:create': """Usage: deis layers:create <id> [--run_list=<run_list> --initial_attributes=<initial_attributes>]
+    'layers:create': """Usage: deis layers:create <id> --flavor=<flavor> [options]
+
+Chef Options:
+
+--run_list=RUN_LIST                   run-list to use when bootstrapping nodes
+--environment=ENVIRONMENT             chef environment to place nodes
+--initial_attributes=INITIAL_ATTRS    initial attributes for nodes
+
+SSH Options:
+
+--ssh_username=USERNAME         username for ssh connections [default: ubuntu]
+--ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
+--ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+
 """,
     'layers:scale': """Usage: deis layers:scale <type=num>...
 """,
@@ -692,11 +699,12 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        body = {'id': args['<id>']}
-        if '--run_list' in args:
-            body.update({'run_list': args['--run_list']})
-        if '--initial_attributes' in args:
-            body.update({'initial_attributes': args['--initial_attributes']})
+        body = {'id': args['<id>'], 'flavor': args['<flavor>']}
+        for opt in ('--run_list', '--environment', '--initial_attributes',
+                    '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
+            o = args.get(opt)
+            if o:
+                body.update({opt.strip('-'): o})
         response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
                                   json.dumps(body))
         sys.stdout.write('Creating layer {}...'.format(args['<id>']))

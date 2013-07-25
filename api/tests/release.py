@@ -38,7 +38,7 @@ class ReleaseTest(TestCase):
         that updating config, build, image, args or triggers a new release
         """
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']

@@ -36,12 +36,12 @@ class NodeTest(TestCase):
         Test that a user can create, read, update and delete a node
         """
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # should start with zero

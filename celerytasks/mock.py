@@ -7,14 +7,14 @@ from api.models import Node
 from celery import task
 
 
-@task(name='mock.prepare_formation')
-def prepare_formation(formation, creds, params):
+@task(name='mock.build_layer')
+def build_layer(layer, creds, params):
     # create security group any other infrastructure
     return
 
 
-@task(name='mock.cleanup_formation')
-def cleanup_formation(formation, creds, params):
+@task(name='mock.destroy_layer')
+def destroy_layer(layer, creds, params):
     # delete security group and any other infrastructure
     return
 

@@ -26,26 +26,25 @@ EC2_IMAGE_MAP = {
 }
 
 
-@task(name='ec2.prepare_formation')
-def prepare_formation(formation, creds, params):
+@task(name='ec2.build_layer')
+def build_layer(layer, creds, params):
     region = params.get('region', 'us-east-1')
     conn = create_ec2_connection(
         region, creds['access_key'], creds['secret_key'])
     # create a new sg and authorize all ports
     # use iptables on the host to firewall ports
-    sg = conn.create_security_group(formation, 'Managed by Deis')
+    sg = conn.create_security_group(layer, 'Managed by Deis')
     sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
                  cidr_ip='0.0.0.0/0')
 
 
-@task(name='ec2.cleanup_formation')
-def cleanup_formation(formation, creds, params):
+@task(name='ec2.destroy_layer')
+def destroy_layer(layer, creds, params):
     region = params.get('region', 'us-east-1')
     conn = create_ec2_connection(
         region, creds['access_key'], creds['secret_key'])
-    sg_name = formation
     try:
-        conn.delete_security_group(sg_name)
+        conn.delete_security_group(layer)
     except EC2ResponseError as e:
         if e.code != 'InvalidGroup.NotFound':
             raise e

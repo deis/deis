@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
+from Crypto.PublicKey import RSA
 
 
 class LayerTest(TestCase):
@@ -36,12 +37,12 @@ class LayerTest(TestCase):
         Test that a user can create, read, update and delete a node layer
         """
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'autotest', 'run_list': 'recipe[deis::test1],recipe[deis::test2]'}
+        body = {'id': 'autotest', 'flavor': 'autotest', 'run_list': 'recipe[deis::test1],recipe[deis::test2]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         layer_id = response.data['id']
@@ -49,7 +50,6 @@ class LayerTest(TestCase):
         self.assertIn('id', response.data)
         self.assertIn('flavor', response.data)
         self.assertIn('run_list', response.data)
-        self.assertIn('image', response.data)
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -65,18 +65,36 @@ class LayerTest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
-    def test_layer_scale(self):
+    def test_layer_ssh_override(self):
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'proxy', 'run_list': 'recipe[deis::proxy]'}
+        key = RSA.generate(2048)
+        body = {'id': 'autotest', 'run_list': 'recipe[deis::test1],recipe[deis::test2]',
+                'flavor': 'autotest', 'ssh_private_key': key.exportKey('PEM'),
+                'ssh_public_key': key.exportKey('OpenSSH')}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('ssh_public_key', response.data)
+        self.assertEquals(response.data['ssh_public_key'], body['ssh_public_key'])
+        # ssh private key should be hidden
+        self.assertNotIn('ssh_private_key', response.data)
+
+    def test_layer_scale(self):
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'proxy', 'flavor': 'autotest', 'run_list': 'recipe[deis::proxy]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/layers'.format(**locals())

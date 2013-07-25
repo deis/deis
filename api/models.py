@@ -241,15 +241,8 @@ class Formation(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
-    flavor = models.ForeignKey('Flavor')
     layers = fields.JSONField(default='{}', blank=True)
     containers = fields.JSONField(default='{}', blank=True)
-
-    environment = models.CharField(max_length=64, default='_default')
-    
-    ssh_username = models.CharField(max_length=64, default='ubuntu')
-    ssh_private_key = models.TextField()
-    ssh_public_key = models.TextField()
     
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -381,12 +374,6 @@ class Formation(UuidAuditedModel):
         
     def __str__(self):
         return self.id
-
-    def prepare_provider(self, *args, **kwargs):
-        tasks = import_tasks(self.flavor.provider.type)
-        args = (self.id, self.flavor.provider.creds.copy(),
-                self.flavor.params.copy())
-        return tasks.prepare_formation.subtask(args)
     
     def calculate(self):
         "Return a Chef data bag item for this formation"
@@ -435,19 +422,14 @@ class Formation(UuidAuditedModel):
         return databag
 
     def destroy(self):
-        tasks = import_tasks(self.flavor.provider.type)
         subtasks = []
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             subtasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
         # create subtasks to terminate all nodes in parallel
-        subtasks.extend([ node.terminate() for node in self.node_set.all() ])
+        subtasks.extend([ layer.destroy() for layer in self.layer_set.all() ])
         job = group(*subtasks)
         job.apply_async().join() # block for termination
-        # purge other hosting provider infrastructure
-        tasks.cleanup_formation.delay(self.id,
-            self.flavor.provider.creds.copy(),
-            self.flavor.params.copy()).wait()
 
 
 @python_2_unicode_compatible
@@ -465,12 +447,35 @@ class Layer(UuidAuditedModel):
     formation = models.ForeignKey('Formation')
     flavor = models.ForeignKey('Flavor')
     nodes = models.PositiveSmallIntegerField(default=0)
-
-    run_list = models.CharField(max_length=512)
+    # chef settings
+    run_list = models.CharField(max_length=512)    
     initial_attributes = fields.JSONField(default='{}', blank=True)
-
+    environment = models.CharField(max_length=64, default='_default')
+    # ssh settings
+    ssh_username = models.CharField(max_length=64, default='ubuntu')
+    ssh_private_key = models.TextField()
+    ssh_public_key = models.TextField()
+    
     def __str__(self):
         return self.id
+
+    def build(self, *args, **kwargs):
+        tasks = import_tasks(self.flavor.provider.type)
+        args = (self.id, self.flavor.provider.creds.copy(),
+                self.flavor.params.copy())
+        return tasks.build_layer.subtask(args)
+
+    def destroy(self):
+        tasks = import_tasks(self.flavor.provider.type)
+        subtasks = []
+        # create subtasks to terminate all nodes in parallel
+        subtasks.extend([ node.terminate() for node in self.node_set.all() ])
+        job = group(*subtasks)
+        job.apply_async().join() # block for termination
+        # purge other hosting provider infrastructure
+        tasks.destroy_layer.delay(self.id,
+            self.flavor.provider.creds.copy(),
+            self.flavor.params.copy()).wait() # block
 
 
 @python_2_unicode_compatible
@@ -518,16 +523,16 @@ class Node(UuidAuditedModel):
         return self.id
 
     def launch(self, *args, **kwargs):
-        tasks = import_tasks(self.formation.flavor.provider.type)
+        tasks = import_tasks(self.layer.flavor.provider.type)
         args = self._prepare_launch_args()
         return tasks.launch_node.subtask(args)
 
     def _prepare_launch_args(self):
-        creds = self.formation.flavor.provider.creds.copy()
-        params = self.formation.flavor.params.copy()
+        creds = self.layer.flavor.provider.creds.copy()
+        params = self.layer.flavor.params.copy()
         params['formation'] = self.formation.id
         params['id'] = self.id
-        init = self.formation.flavor.init.copy()
+        init = self.layer.flavor.init.copy()
         if settings.CHEF_ENABLED:
             chef = init['chef'] = {}
             chef['ruby_version'] = settings.CHEF_RUBY_VERSION
@@ -543,36 +548,36 @@ class Node(UuidAuditedModel):
                 chef['initial_attributes'] = self.layer.initial_attributes
         # add the formation's ssh pubkey
         init.setdefault('ssh_authorized_keys', []).append(
-                                self.formation.ssh_public_key)
+                                self.layer.ssh_public_key)
         # add all of the owner's SSH keys
         init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all() ])
-        ssh_username = self.formation.ssh_username
-        ssh_private_key = self.formation.ssh_private_key
+        ssh_username = self.layer.ssh_username
+        ssh_private_key = self.layer.ssh_private_key
         args = (self.uuid, creds, params, init, ssh_username, ssh_private_key)
         return args
 
     def converge(self, *args, **kwargs):
-        tasks = import_tasks(self.formation.flavor.provider.type)
+        tasks = import_tasks(self.layer.flavor.provider.type)
         args = self._prepare_converge_args()
         # TODO: figure out how to store task return values in model
         return tasks.converge_node.subtask(args)
 
     def _prepare_converge_args(self):
-        ssh_username = self.formation.ssh_username
+        ssh_username = self.layer.ssh_username
         fqdn = self.fqdn
-        ssh_private_key = self.formation.ssh_private_key
+        ssh_private_key = self.layer.ssh_private_key
         args = (self.uuid, ssh_username, fqdn, ssh_private_key)
         return args
 
     def terminate(self, *args, **kwargs):
-        tasks = import_tasks(self.formation.flavor.provider.type)
+        tasks = import_tasks(self.layer.flavor.provider.type)
         args = self._prepare_terminate_args()
         # TODO: figure out how to store task return values in model
         return tasks.terminate_node.subtask(args)
 
     def _prepare_terminate_args(self):
-        creds = self.formation.flavor.provider.creds.copy()
-        params = self.formation.flavor.params.copy()
+        creds = self.layer.flavor.provider.creds.copy()
+        params = self.layer.flavor.params.copy()
         args = (self.uuid, creds, params, self.provider_id)
         return args
 

@@ -119,23 +119,13 @@ class FormationSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    flavor = serializers.SlugRelatedField(slug_field='id')
-    containers = serializers.ModelField(
-        model_field=models.Formation()._meta.get_field('containers'), required=False)
+    #containers = serializers.ModelField(
+    #    model_field=models.Formation()._meta.get_field('containers'), required=False)
                                     
     class Meta:
         """Metadata options for a FormationSerializer."""
         model = models.Formation
         read_only_fields = ('created', 'updated')
-
-    @property
-    def data(self):
-        "Custom data property that removes secure fields"
-        d = super(FormationSerializer, self).data
-        for f in ('ssh_private_key',):
-            if f in d:
-                del d[f]
-        return d
 
 
 class LayerSerializer(serializers.ModelSerializer):
@@ -150,6 +140,15 @@ class LayerSerializer(serializers.ModelSerializer):
         """Metadata options for a LayerSerializer."""
         model = models.Layer
         read_only_fields = ('created', 'updated')
+
+    @property
+    def data(self):
+        "Custom data property that removes secure fields"
+        d = super(LayerSerializer, self).data
+        for f in ('ssh_private_key',):
+            if f in d:
+                del d[f]
+        return d
 
 
 class NodeSerializer(serializers.ModelSerializer):

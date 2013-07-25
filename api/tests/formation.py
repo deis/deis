@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
-from Crypto.PublicKey import RSA
 
 
 class FormationTest(TestCase):
@@ -37,11 +36,10 @@ class FormationTest(TestCase):
         Test that a user can create, read, update and delete a node formation
         """
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        self.assertIn('flavor', response.data)
         self.assertIn('layers', response.data)
         self.assertIn('containers', response.data)
         response = self.client.get('/api/formations')
@@ -57,39 +55,26 @@ class FormationTest(TestCase):
         self.assertEqual(response.status_code, 204)
         
     def test_formation_auto_id(self):
-        body = {'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
         return response
-
-    def test_formation_ssh_override(self):
-        key = RSA.generate(2048)
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest',
-                'ssh_private_key': key.exportKey('PEM'), 
-                'ssh_public_key': key.exportKey('OpenSSH')}
-        url = '/api/formations'
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('ssh_public_key', response.data)
-        self.assertEquals(response.data['ssh_public_key'], body['ssh_public_key'])
-        # ssh private key should be hidden
-        self.assertNotIn('ssh_private_key', response.data)
         
     def test_formation_errors(self):
         # test duplicate id
-        body = {'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {}
         response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
-        body = {'id': response.data['id'], 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': response.data['id']}
         response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), 'Formation with this Id already exists.')
 
     def test_formation_scale_errors(self):
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
@@ -101,7 +86,7 @@ class FormationTest(TestCase):
         self.assertEqual(json.loads(response.content), 'Must create a "runtime" layer to host containers')
         # scaling containers without any runtime nodes should throw an error
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'run_list': 'recipe[deis::runtime]'}
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
@@ -112,7 +97,7 @@ class FormationTest(TestCase):
     
     def test_formation_actions(self):
         url = '/api/formations'
-        body = {'id': 'autotest', 'flavor': 'autotest', 'image': 'deis/autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
