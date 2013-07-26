@@ -10,7 +10,6 @@ from Crypto.PublicKey import RSA
 from django.conf import settings
 from django.contrib.auth.models import Group, AnonymousUser, User
 from django.db.utils import IntegrityError
-from django.http.response import Http404
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BaseAuthentication
@@ -399,11 +398,6 @@ class FormationBuildViewSet(OwnerViewSet):
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
-        try:
-            obj = self.get_object()
-            request.DATA['version'] = obj.version + 1
-        except Http404:
-            request.DATA['version'] = 1
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
         request.DATA['formation'] = formation

@@ -662,8 +662,6 @@ class Build(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
-    version = models.PositiveIntegerField()
-
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
 
@@ -678,7 +676,6 @@ class Build(UuidAuditedModel):
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
-        unique_together = (('formation', 'version'),)
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
@@ -694,10 +691,10 @@ class Build(UuidAuditedModel):
         # SECURITY:
         # we assume the first part of the ssh key name
         # is the authenticated user because we trust gitosis
-        username = push.pop('ssh_key').split('_')[0]
+        username = push.pop('username').split('_')[0]
         # retrieve the user and formation instances
         user = User.objects.get(username=username)
-        formation = Formation.objects.get(owner=push['owner'],
+        formation = Formation.objects.get(owner=user,
                                           id=push.pop('formation'))
         # merge the push with the required model instances
         push['owner'] = user
