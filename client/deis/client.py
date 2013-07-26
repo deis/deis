@@ -387,7 +387,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/formations/{}/config'.format(formation))
+        response = self._dispatch('get', '/api/formations/{}/config'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
@@ -408,7 +408,7 @@ class DeisClient(object):
             formation = self._session.formation
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
         response = self._dispatch('post',
-                                  '/formations/{}/config'.format(formation),
+                                  '/api/formations/{}/config'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
@@ -433,7 +433,7 @@ class DeisClient(object):
             values[k] = None
         body = {'values': json.dumps(values)}
         response = self._dispatch('post',
-                                  '/formations/{}/config'.format(formation),
+                                  '/api/formations/{}/config'.format(formation),
                                   data=json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
