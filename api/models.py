@@ -255,7 +255,7 @@ class Formation(UuidAuditedModel):
             nodes = list(layer.node_set.all().order_by('created'))
             diff = requested - len(nodes)
             if diff == 0:
-                return
+                continue
             while diff < 0:
                 node = nodes.pop(0)
                 funcs.append(node.terminate)
