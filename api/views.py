@@ -181,6 +181,8 @@ class FormationViewSet(OwnerViewSet):
             databag = formation.scale_layers()
         except models.ScalingError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        except models.Layer.DoesNotExist as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
