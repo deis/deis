@@ -295,13 +295,8 @@ class DeisClient(object):
             password = getpass('password: ')
         email = args.get('--email')
         if not email:
-<<<<<<< HEAD
             email = raw_input ('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
-=======
-            email = raw_input('email: ')
-        url = urlparse.urljoin(controller, '/api/register')
->>>>>>> master
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -359,22 +354,6 @@ class DeisClient(object):
         self._settings.save()
         print('Logged out')
 
-<<<<<<< HEAD
-=======
-    def backends_list(self, args):
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('get', "/formations/{}/backends".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
-            data = response.json()
-            for item in data['results']:
-                print('{0[uuid]:<23} {0[created]}'.format(item))
-        else:
-            print('Error!', response.text)
-
->>>>>>> master
     def builds_create(self, args):
         formation = args.get('--formation')
         if not formation:
@@ -496,31 +475,8 @@ class DeisClient(object):
                                   '/api/formations/{}/scale/containers'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-<<<<<<< HEAD
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
-=======
-            data = response.json()
-            if data['count'] == 0:
-                print 'No keys found'
-                return
-            print('=== {0} Keys'.format(data['results'][0]['owner']))
-            for key in data['results']:
-                public = key['public']
-                print('{0} {1}...{2}'.format(
-                    key['id'], public[0:16], public[-10:]))
-        else:
-            print('Error!', response.text)
-
-    def keys_remove(self, args):
-        """Remove a specific SSH key for the logged in user."""
-        key = args.get('<key>')
-        sys.stdout.write('Removing {0} SSH Key... '.format(key))
-        sys.stdout.flush()
-        response = self._dispatch('delete', '/keys/{}'.format(key))
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done')
->>>>>>> master
         else:
             print('Error!', response.text)
 
@@ -647,18 +603,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-<<<<<<< HEAD
         response = self._dispatch('post', 
                                   '/api/formations/{}/calculate'.format(formation))
-=======
-        body = {}
-        for type_num in args.get('<type=num>'):
-            typ, count = type_num.split('=')
-            body.update({typ: int(count)})
-        response = self._dispatch('post',
-                                  '/api/formations/{}/scale'.format(formation),
-                                  json.dumps(body))
->>>>>>> master
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -669,13 +615,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-<<<<<<< HEAD
         response = self._dispatch('post', 
                                   '/api/formations/{}/balance'.format(formation))
-=======
-        response = self._dispatch('post',
-                                  '/api/formations/{}/calculate'.format(formation))
->>>>>>> master
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -686,13 +627,8 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-<<<<<<< HEAD
         response = self._dispatch('post', 
                                   '/api/formations/{}/converge'.format(formation))
-=======
-        response = self._dispatch('post',
-                                  '/api/formations/{}/balance'.format(formation))
->>>>>>> master
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -784,7 +720,6 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-<<<<<<< HEAD
         layer = args['<id>']
         sys.stdout.write('Destroying layer {layer}...'.format(**locals()))
         sys.stdout.flush()
@@ -822,10 +757,6 @@ class DeisClient(object):
         response = self._dispatch('post', 
                                   '/api/formations/{}/scale/layers'.format(formation),
                                   json.dumps(body))
-=======
-        response = self._dispatch('post',
-                                  '/api/formations/{}/converge'.format(formation))
->>>>>>> master
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
