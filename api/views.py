@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 import json
 from rest_framework.generics import get_object_or_404
+from django.http.response import Http404
 
 class AnonymousAuthentication(BaseAuthentication):
 
@@ -158,10 +159,8 @@ class FormationViewSet(OwnerViewSet):
         if created:
             config = models.Config.objects.create(
                 owner=formation.owner, formation=formation, values={})
-            build = models.Build.objects.create(
-                owner=formation.owner, formation=formation)
             _release = models.Release.objects.create(
-                owner=formation.owner, formation=formation, config=config, build=build)
+                owner=formation.owner, formation=formation, config=config)
         # update gitosis
         models.Formation.objects.publish()
 
@@ -279,7 +278,8 @@ class FormationNodeViewSet(OwnerViewSet):
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, formation=formation)
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
             
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
@@ -295,11 +295,12 @@ class FormationContainerViewSet(OwnerViewSet):
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, formation=formation)
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
     
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['id'])
+        obj = qs.get(pk=self.kwargs['container'])
         return obj
 
 
@@ -309,12 +310,15 @@ class FormationImageViewSet(OwnerViewSet):
     serializer_class = serializers.ReleaseSerializer
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
-            
-    def get_object(self, *args, **kwargs):        
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
-        return formation.release
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
+            
+    def get_object(self, *args, **kwargs):
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(pk=self.kwargs['id'])
+        return obj
 
     def reset_image(self, request, *args, **kwargs):
         formation = models.Formation.objects.get(
@@ -330,7 +334,10 @@ class FormationConfigViewSet(OwnerViewSet):
     serializer_class = serializers.ConfigSerializer
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
     
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
@@ -369,12 +376,14 @@ class FormationBuildViewSet(OwnerViewSet):
     serializer_class = serializers.BuildSerializer
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
     
     def get_object(self, *args, **kwargs):
-        formation = models.Formation.objects.get(id=self.kwargs['id'])
-        build = self.model.objects.filter(
-                formation=formation).order_by('-created')[0]
+        qs = self.get_queryset().order_by('-created')
+        build = get_object_or_404(qs)
         return build
 
     def post_save(self, obj, created=False):
@@ -384,10 +393,14 @@ class FormationBuildViewSet(OwnerViewSet):
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
-        obj = self.get_object()
-        # increment version and use the same formation
-        request.DATA['version'] = obj.version + 1
-        request.DATA['formation'] = obj.formation
+        try:
+            obj = self.get_object()
+            request.DATA['version'] = obj.version + 1
+        except Http404:
+            request.DATA['version'] = 1
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        request.DATA['formation'] = formation
         return super(OwnerViewSet, self).create(request, *args, **kwargs)
 
 
@@ -397,7 +410,10 @@ class FormationReleaseViewSet(OwnerViewSet):
     serializer_class = serializers.ReleaseSerializer
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        formation = models.Formation.objects.get(
+                owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user, 
+                                         formation=formation)
             
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])

@@ -654,12 +654,12 @@ class Build(UuidAuditedModel):
     
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
-    # metadata
+
     procfile = fields.ProcfileField(blank=True)
     dockerfile = models.TextField(blank=True)
     config = fields.EnvVarsField(blank=True)
-    # slug info, TODO: replace default URL with something more user friendly
-    url = models.URLField('URL', default='https://s3.amazonaws.com/gabrtv-slugs/nodejs.tar.gz')
+
+    url = models.URLField('URL')
     size = models.IntegerField(blank=True, null=True)
     checksum = models.CharField(max_length=255, blank=True)
 

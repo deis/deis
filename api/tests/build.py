@@ -44,12 +44,11 @@ class BuildTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        # check to see that an initial/null build was created
+        # check to see that no initial build was created
         url = '/api/formations/{formation_id}/build'.format(**locals())
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['version'], 1)
-        # post a new build
+        self.assertEqual(response.status_code, 404)
+        # post a first build
         body = {'sha': uuid.uuid4().hex, 'slug_size': 4096000, 'procfile': json.dumps({'web': 'node server.js'}),
                 'url': 'http://deis.local/slugs/1c52739bbf3a44d3bfb9a58f7bbdd5fb.tar.gz',
                 'checksum': uuid.uuid4().hex}
@@ -57,6 +56,7 @@ class BuildTest(TestCase):
         self.assertEqual(response.status_code, 201)
         build1 = response.data
         self.assertEqual(response.data['url'], body['url'])
+        self.assertEqual(response.data['version'], 1)
         # read the build
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -69,6 +69,7 @@ class BuildTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         build3 = response.data
+        self.assertEqual(response.data['version'], 2)
         self.assertEqual(response.data['url'], body['url'])
         self.assertNotEqual(build2['uuid'], build3['uuid'])
         # disallow put/patch/delete
