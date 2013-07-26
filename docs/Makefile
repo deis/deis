@@ -1,4 +1,4 @@
-# Makefile for Deis documentation
+# Makefile for Sphinx documentation
 #
 
 # You can set these variables from the command line.
@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 PYTHON        = python
-BUILDDIR      = build
+BUILDDIR      = _build
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -16,50 +16,40 @@ endif
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
-ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 # the i18n builder cannot share the environment and doctrees with the others
-I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
+I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
 
-docs:
-	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The documentation pages are now in $(BUILDDIR)/html."
-
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-#	@echo "  html       to make standalone HTML files"
-#	@echo "  dirhtml    to make HTML files named index.html in directories"
-#	@echo "  singlehtml to make a single large HTML file"
-#	@echo "  pickle     to make pickle files"
-#	@echo "  json       to make JSON files"
-#	@echo "  htmlhelp   to make HTML files and a HTML help project"
-#	@echo "  qthelp     to make HTML files and a qthelp project"
-#	@echo "  devhelp    to make HTML files and a Devhelp project"
-#	@echo "  epub       to make an epub"
-#	@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
-#	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
-#	@echo "  text       to make text files"
-#	@echo "  man        to make manual pages"
-#	@echo "  texinfo    to make Texinfo files"
-#	@echo "  info       to make Texinfo files and run them through makeinfo"
-#	@echo "  gettext    to make PO message catalogs"
-#	@echo "  changes    to make an overview of all changed/added/deprecated items"
-#	@echo "  linkcheck  to check all external links for integrity"
-#	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
-	@echo "  docs       to build the docs and copy the static files to the outputdir"
-	@echo "  server     to serve the docs in your browser under \`http://localhost:8000\`"
-	@echo "  publish    to publish the app to deis.io"
-
-publish:
-	@echo "Coming soon..."
-
-server: docs
-	@cd $(BUILDDIR)/html; $(PYTHON) -m SimpleHTTPServer 8000
+	@echo "  html       to make standalone HTML files"
+	@echo "  dirhtml    to make HTML files named index.html in directories"
+	@echo "  server     to make dirhtml as above, then serve it at http://0.0.0.0:8000/"
+	@echo "  singlehtml to make a single large HTML file"
+	@echo "  pickle     to make pickle files"
+	@echo "  json       to make JSON files"
+	@echo "  htmlhelp   to make HTML files and a HTML help project"
+	@echo "  qthelp     to make HTML files and a qthelp project"
+	@echo "  devhelp    to make HTML files and a Devhelp project"
+	@echo "  epub       to make an epub"
+	@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
+	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
+	@echo "  latexpdfja to make LaTeX files and run them through platex/dvipdfmx"
+	@echo "  text       to make text files"
+	@echo "  man        to make manual pages"
+	@echo "  texinfo    to make Texinfo files"
+	@echo "  info       to make Texinfo files and run them through makeinfo"
+	@echo "  gettext    to make PO message catalogs"
+	@echo "  changes    to make an overview of all changed/added/deprecated items"
+	@echo "  xml        to make Docutils-native XML files"
+	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
+	@echo "  linkcheck  to check all external links for integrity"
+	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR)/*
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -97,17 +87,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/Docker.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/deis.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/Docker.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/deis.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/Docker"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/Docker"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/deis"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/deis"
 	@echo "# devhelp"
 
 epub:
@@ -126,6 +116,12 @@ latexpdf:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
+	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+
+latexpdfja:
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
+	@echo "Running LaTeX files through platex and dvipdfmx..."
+	$(MAKE) -C $(BUILDDIR)/latex all-pdf-ja
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 text:
@@ -171,3 +167,16 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+xml:
+	$(SPHINXBUILD) -b xml $(ALLSPHINXOPTS) $(BUILDDIR)/xml
+	@echo
+	@echo "Build finished. The XML files are in $(BUILDDIR)/xml."
+
+pseudoxml:
+	$(SPHINXBUILD) -b pseudoxml $(ALLSPHINXOPTS) $(BUILDDIR)/pseudoxml
+	@echo
+	@echo "Build finished. The pseudo-XML files are in $(BUILDDIR)/pseudoxml."
+
+server: dirhtml
+	@cd $(BUILDDIR)/dirhtml; $(PYTHON) -m SimpleHTTPServer 8000
