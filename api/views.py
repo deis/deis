@@ -155,15 +155,15 @@ class FormationViewSet(OwnerViewSet):
         request._data = request.DATA.copy()
         try:
             return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError:
+        except IntegrityError as _e:
             return Response('Formation with this Id already exists.',
                             status=HTTP_400_BAD_REQUEST)
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
-            config = models.Config.objects.create(
+            config = models.Config.objects.create(version=1,
                 owner=formation.owner, formation=formation, values={})
-            _release = models.Release.objects.create(
+            models.Release.objects.create(version=1,
                 owner=formation.owner, formation=formation, config=config)
         # update gitosis
         models.Formation.objects.publish()

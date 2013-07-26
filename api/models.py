@@ -469,7 +469,10 @@ class Layer(UuidAuditedModel):
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
     ssh_public_key = models.TextField()
-    
+
+    class Meta:
+        unique_together = (('formation', 'id'),)
+
     def __str__(self):
         return self.id
 
@@ -525,7 +528,7 @@ class Node(UuidAuditedModel):
     id = models.CharField(max_length=64)
     formation = models.ForeignKey('Formation')
     layer = models.ForeignKey('Layer')
-    num = models.PositiveIntegerField(default=1)
+    num = models.PositiveIntegerField()
     
     # synchronized with node after creation
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
@@ -533,7 +536,7 @@ class Node(UuidAuditedModel):
     status = fields.NodeStatusField(blank=True, null=True)
 
     class Meta:
-        unique_together = (('owner', 'id'),)
+        unique_together = (('formation', 'id'),)
 
     def __str__(self):
         return self.id
@@ -610,7 +613,7 @@ class Container(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     node = models.ForeignKey('Node')
-    type = models.CharField(max_length=128, default='web')
+    type = models.CharField(max_length=128)
     num = models.PositiveIntegerField()
     # synchronized with container after creation
     id = models.CharField(max_length=128, blank=True)
@@ -636,13 +639,14 @@ class Config(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
-    version = models.PositiveIntegerField(default=1)
+    version = models.PositiveIntegerField()
 
     values = fields.EnvVarsField(default='{}', blank=True)
 
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
+        unique_together = (('formation', 'version'),)
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
@@ -657,7 +661,7 @@ class Build(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
-    version = models.PositiveIntegerField(default=1)
+    version = models.PositiveIntegerField()
 
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
@@ -671,7 +675,9 @@ class Build(UuidAuditedModel):
     checksum = models.CharField(max_length=255, blank=True)
 
     class Meta:
-        ordering = ('-created',)
+        get_latest_by = 'created'
+        ordering = ['-created']
+        unique_together = (('formation', 'version'),)
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
@@ -686,7 +692,7 @@ class Release(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
-    version = models.PositiveIntegerField(default=1)
+    version = models.PositiveIntegerField()
 
     config = models.ForeignKey('Config')
     image = models.CharField(max_length=256, default='ubuntu')
@@ -694,7 +700,9 @@ class Release(UuidAuditedModel):
     build = models.ForeignKey('Build', blank=True, null=True)
 
     class Meta:
-        ordering = ('-created',)
+        get_latest_by = 'created'
+        ordering = ['-created']
+        unique_together = (('formation', 'version'),)
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
@@ -722,7 +730,7 @@ def new_release(sender, **kwargs):
         if new_values:
             # update with current config
             new_values.update(config.values)
-            config = Config.objects.create(
+            config = Config.objects.create(version=config.version+1,
                 owner=user, formation=formation, values=new_values)
     # create new release and auto-increment version
     new_version = last_release.version + 1

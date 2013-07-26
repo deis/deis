@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# flake8: noqa
-
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
@@ -50,9 +47,6 @@ class Migration(SchemaMigration):
             ('provider', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Provider'])),
             ('params', self.gf('api.fields.ParamsField')(default=u'null')),
             ('init', self.gf('api.fields.CloudInitField')()),
-            ('ssh_username', self.gf('django.db.models.fields.CharField')(default=u'ubuntu', max_length=64)),
-            ('ssh_private_key', self.gf('django.db.models.fields.TextField')()),
-            ('ssh_public_key', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal(u'api', ['Flavor'])
 
@@ -66,14 +60,36 @@ class Migration(SchemaMigration):
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
-            ('flavor', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Flavor'])),
-            ('image', self.gf('django.db.models.fields.CharField')(default=u'ubuntu', max_length=256)),
-            ('structure', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
+            ('layers', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
+            ('containers', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
         ))
         db.send_create_signal(u'api', ['Formation'])
 
         # Adding unique constraint on 'Formation', fields ['owner', 'id']
         db.create_unique(u'api_formation', ['owner_id', 'id'])
+
+        # Adding model 'Layer'
+        db.create_table(u'api_layer', (
+            ('uuid', self.gf('api.fields.UuidField')(unique=True, max_length=32, primary_key=True)),
+            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
+            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
+            ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
+            ('flavor', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Flavor'])),
+            ('level', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('chef_version', self.gf('django.db.models.fields.CharField')(default=u'11.4.4', max_length=32)),
+            ('run_list', self.gf('django.db.models.fields.CharField')(max_length=512)),
+            ('initial_attributes', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
+            ('environment', self.gf('django.db.models.fields.CharField')(default=u'_default', max_length=64)),
+            ('ssh_username', self.gf('django.db.models.fields.CharField')(default=u'ubuntu', max_length=64)),
+            ('ssh_private_key', self.gf('django.db.models.fields.TextField')()),
+            ('ssh_public_key', self.gf('django.db.models.fields.TextField')()),
+        ))
+        db.send_create_signal(u'api', ['Layer'])
+
+        # Adding unique constraint on 'Layer', fields ['formation', 'id']
+        db.create_unique(u'api_layer', ['formation_id', 'id'])
 
         # Adding model 'Node'
         db.create_table(u'api_node', (
@@ -83,44 +99,16 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('id', self.gf('django.db.models.fields.CharField')(max_length=64)),
             ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('type', self.gf('django.db.models.fields.CharField')(default=u'backend', max_length=8)),
-            ('num', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('layer', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Layer'])),
+            ('num', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('provider_id', self.gf('django.db.models.fields.SlugField')(max_length=64, null=True, blank=True)),
             ('fqdn', self.gf('django.db.models.fields.CharField')(max_length=256, null=True, blank=True)),
             ('status', self.gf('api.fields.NodeStatusField')(default=u'null', null=True, blank=True)),
         ))
         db.send_create_signal(u'api', ['Node'])
 
-        # Adding unique constraint on 'Node', fields ['owner', 'id']
-        db.create_unique(u'api_node', ['owner_id', 'id'])
-
-        # Adding model 'Backend'
-        db.create_table(u'api_backend', (
-            ('uuid', self.gf('api.fields.UuidField')(unique=True, max_length=32, primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('node', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Node'])),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'api', ['Backend'])
-
-        # Adding model 'Proxy'
-        db.create_table(u'api_proxy', (
-            ('uuid', self.gf('api.fields.UuidField')(unique=True, max_length=32, primary_key=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('node', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Node'])),
-            ('port', self.gf('django.db.models.fields.PositiveSmallIntegerField')()),
-            ('in_proto', self.gf('django.db.models.fields.CharField')(default=u'HTTP', max_length=5)),
-            ('out_proto', self.gf('django.db.models.fields.CharField')(default=u'HTTP', max_length=5)),
-            ('flavor', self.gf('django.db.models.fields.CharField')(default=u'N', max_length=1)),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-        ))
-        db.send_create_signal(u'api', ['Proxy'])
+        # Adding unique constraint on 'Node', fields ['formation', 'id']
+        db.create_unique(u'api_node', ['formation_id', 'id'])
 
         # Adding model 'Container'
         db.create_table(u'api_container', (
@@ -130,7 +118,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
             ('node', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Node'])),
-            ('type', self.gf('django.db.models.fields.CharField')(default=u'web', max_length=128)),
+            ('type', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('num', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('id', self.gf('django.db.models.fields.CharField')(max_length=128, blank=True)),
             ('port', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
@@ -148,10 +136,13 @@ class Migration(SchemaMigration):
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('version', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('version', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('values', self.gf('api.fields.EnvVarsField')(default=u'{}', blank=True)),
         ))
         db.send_create_signal(u'api', ['Config'])
+
+        # Adding unique constraint on 'Config', fields ['formation', 'version']
+        db.create_unique(u'api_config', ['formation_id', 'version'])
 
         # Adding model 'Build'
         db.create_table(u'api_build', (
@@ -160,17 +151,20 @@ class Migration(SchemaMigration):
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('version', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('version', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('sha', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('output', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('procfile', self.gf('api.fields.ProcfileField')(default=u'null', blank=True)),
             ('dockerfile', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('config', self.gf('api.fields.EnvVarsField')(default=u'null', blank=True)),
-            ('url', self.gf('django.db.models.fields.URLField')(default=u'https://s3.amazonaws.com/gabrtv-slugs/nodejs.tar.gz', max_length=200)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=200)),
             ('size', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
             ('checksum', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
         ))
         db.send_create_signal(u'api', ['Build'])
+
+        # Adding unique constraint on 'Build', fields ['formation', 'version']
+        db.create_unique(u'api_build', ['formation_id', 'version'])
 
         # Adding model 'Release'
         db.create_table(u'api_release', (
@@ -179,14 +173,15 @@ class Migration(SchemaMigration):
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('formation', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Formation'])),
-            ('version', self.gf('django.db.models.fields.PositiveIntegerField')(default=1)),
+            ('version', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('config', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Config'])),
             ('image', self.gf('django.db.models.fields.CharField')(default=u'ubuntu', max_length=256)),
             ('build', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Build'], null=True, blank=True)),
-            ('args', self.gf('django.db.models.fields.CharField')(max_length=256, null=True, blank=True)),
-            ('command', self.gf('django.db.models.fields.CharField')(max_length=256, null=True, blank=True)),
         ))
         db.send_create_signal(u'api', ['Release'])
+
+        # Adding unique constraint on 'Release', fields ['formation', 'version']
+        db.create_unique(u'api_release', ['formation_id', 'version'])
 
         # Adding model 'Access'
         db.create_table(u'api_access', (
@@ -211,11 +206,23 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+        # Removing unique constraint on 'Release', fields ['formation', 'version']
+        db.delete_unique(u'api_release', ['formation_id', 'version'])
+
+        # Removing unique constraint on 'Build', fields ['formation', 'version']
+        db.delete_unique(u'api_build', ['formation_id', 'version'])
+
+        # Removing unique constraint on 'Config', fields ['formation', 'version']
+        db.delete_unique(u'api_config', ['formation_id', 'version'])
+
         # Removing unique constraint on 'Container', fields ['formation', 'type', 'num']
         db.delete_unique(u'api_container', ['formation_id', 'type', 'num'])
 
-        # Removing unique constraint on 'Node', fields ['owner', 'id']
-        db.delete_unique(u'api_node', ['owner_id', 'id'])
+        # Removing unique constraint on 'Node', fields ['formation', 'id']
+        db.delete_unique(u'api_node', ['formation_id', 'id'])
+
+        # Removing unique constraint on 'Layer', fields ['formation', 'id']
+        db.delete_unique(u'api_layer', ['formation_id', 'id'])
 
         # Removing unique constraint on 'Formation', fields ['owner', 'id']
         db.delete_unique(u'api_formation', ['owner_id', 'id'])
@@ -241,14 +248,11 @@ class Migration(SchemaMigration):
         # Deleting model 'Formation'
         db.delete_table(u'api_formation')
 
+        # Deleting model 'Layer'
+        db.delete_table(u'api_layer')
+
         # Deleting model 'Node'
         db.delete_table(u'api_node')
-
-        # Deleting model 'Backend'
-        db.delete_table(u'api_backend')
-
-        # Deleting model 'Proxy'
-        db.delete_table(u'api_proxy')
 
         # Deleting model 'Container'
         db.delete_table(u'api_container')
@@ -279,18 +283,8 @@ class Migration(SchemaMigration):
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
-        u'api.backend': {
-            'Meta': {'object_name': 'Backend'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
-            'node': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Node']"}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
-        },
         u'api.build': {
-            'Meta': {'ordering': "(u'-created',)", 'object_name': 'Build'},
+            'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'formation', u'version'),)", 'object_name': 'Build'},
             'checksum': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'config': ('api.fields.EnvVarsField', [], {'default': "u'null'", 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -302,19 +296,19 @@ class Migration(SchemaMigration):
             'sha': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'size': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'default': "u'https://s3.amazonaws.com/gabrtv-slugs/nodejs.tar.gz'", 'max_length': '200'}),
+            'url': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
-            'version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'})
+            'version': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         u'api.config': {
-            'Meta': {'ordering': "[u'-created']", 'object_name': 'Config'},
+            'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'formation', u'version'),)", 'object_name': 'Config'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
             'values': ('api.fields.EnvVarsField', [], {'default': "u'{}'", 'blank': 'True'}),
-            'version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'})
+            'version': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         u'api.container': {
             'Meta': {'unique_together': "((u'formation', u'type', u'num'),)", 'object_name': 'Container'},
@@ -326,7 +320,7 @@ class Migration(SchemaMigration):
             'num': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'default': "u'web'", 'max_length': '128'}),
+            'type': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
@@ -346,20 +340,16 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'params': ('api.fields.ParamsField', [], {'default': "u'null'"}),
             'provider': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Provider']"}),
-            'ssh_private_key': ('django.db.models.fields.TextField', [], {}),
-            'ssh_public_key': ('django.db.models.fields.TextField', [], {}),
-            'ssh_username': ('django.db.models.fields.CharField', [], {'default': "u'ubuntu'", 'max_length': '64'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
         u'api.formation': {
             'Meta': {'unique_together': "((u'owner', u'id'),)", 'object_name': 'Formation'},
+            'containers': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'flavor': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Flavor']"}),
             'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
-            'image': ('django.db.models.fields.CharField', [], {'default': "u'ubuntu'", 'max_length': '256'}),
+            'layers': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'structure': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
@@ -372,17 +362,35 @@ class Migration(SchemaMigration):
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
+        u'api.layer': {
+            'Meta': {'unique_together': "((u'formation', u'id'),)", 'object_name': 'Layer'},
+            'chef_version': ('django.db.models.fields.CharField', [], {'default': "u'11.4.4'", 'max_length': '32'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'environment': ('django.db.models.fields.CharField', [], {'default': "u'_default'", 'max_length': '64'}),
+            'flavor': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Flavor']"}),
+            'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
+            'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
+            'initial_attributes': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'level': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'run_list': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
+            'ssh_private_key': ('django.db.models.fields.TextField', [], {}),
+            'ssh_public_key': ('django.db.models.fields.TextField', [], {}),
+            'ssh_username': ('django.db.models.fields.CharField', [], {'default': "u'ubuntu'", 'max_length': '64'}),
+            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
+        },
         u'api.node': {
-            'Meta': {'unique_together': "((u'owner', u'id'),)", 'object_name': 'Node'},
+            'Meta': {'unique_together': "((u'formation', u'id'),)", 'object_name': 'Node'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
             'fqdn': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
-            'num': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'}),
+            'layer': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Layer']"}),
+            'num': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'provider_id': ('django.db.models.fields.SlugField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
             'status': ('api.fields.NodeStatusField', [], {'default': "u'null'", 'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'default': "u'backend'", 'max_length': '8'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
@@ -396,25 +404,9 @@ class Migration(SchemaMigration):
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
-        u'api.proxy': {
-            'Meta': {'object_name': 'Proxy'},
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'flavor': ('django.db.models.fields.CharField', [], {'default': "u'N'", 'max_length': '1'}),
-            'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
-            'in_proto': ('django.db.models.fields.CharField', [], {'default': "u'HTTP'", 'max_length': '5'}),
-            'node': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Node']"}),
-            'out_proto': ('django.db.models.fields.CharField', [], {'default': "u'HTTP'", 'max_length': '5'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'port': ('django.db.models.fields.PositiveSmallIntegerField', [], {}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
-        },
         u'api.release': {
-            'Meta': {'ordering': "(u'-created',)", 'object_name': 'Release'},
-            'args': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
+            'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'formation', u'version'),)", 'object_name': 'Release'},
             'build': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Build']", 'null': 'True', 'blank': 'True'}),
-            'command': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'config': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Config']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
@@ -422,7 +414,7 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
-            'version': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'})
+            'version': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         u'auth.group': {
             'Meta': {'object_name': 'Group'},
