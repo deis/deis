@@ -15,7 +15,7 @@ Auth commands:
 Common commands:
 
   create        create a new container formation
-  scale         scale backends, proxies or container types
+  scale         scale container types (web=2, worker=1)
   rotate        rotate in fresh backends, proxies or containers
   balance       rebalance and converge the container formation
   destroy       destroy a container formation
@@ -23,10 +23,9 @@ Common commands:
 Use `deis help [subcommand]` to learn about these subcommands:
 
   formations    manage container formations
-  containers    manage the containers running on backends
-  backends      manage the backend nodes hosting containers
-  proxies       manage the proxy nodes routing to containers
+  layers        manage layers of nodes
   nodes         manage nodes of all types
+  containers    manage the containers running on backends
 
   flavors       create and manage node flavors
   providers     create and manage cloud provider credentials
@@ -354,19 +353,6 @@ class DeisClient(object):
         self._settings['controller'] = None
         self._settings.save()
         print('Logged out')
-
-    def backends_list(self, args):
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('get','/formations/{}/backends'.format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
-            data = response.json()
-            for item in data['results']:
-                print('{0[uuid]:<23} {0[created]}'.format(item))
-        else:
-            print('Error!', response.text)
 
     def builds_create(self, args):
         formation = args.get('--formation')
@@ -715,7 +701,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         body = {'id': args['<id>'], 'flavor': args['<flavor>'], 'run_list': args['--run_list']}
-        for opt in ('--environment', '--initial_attributes',
+        for opt in ('--environment', '--initial_attributes', 
                     '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
             o = args.get(opt)
             if o:
@@ -879,20 +865,6 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/providers/{}'.format(provider))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
-        else:
-            print('Error!', response.text)
-
-    def proxies_list(self, args):
-        """List proxies for this formation."""
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{}/proxies'.format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
-            data = response.json()
-            for item in data['results']:
-                print('{0[uuid]} {0[created]}'.format(item))
         else:
             print('Error!', response.text)
 
