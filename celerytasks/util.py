@@ -1,8 +1,10 @@
+
 import StringIO
-import paramiko
 import select
 import socket
 import time
+
+import paramiko
 
 
 def connect_ssh(username, hostname, port, key):

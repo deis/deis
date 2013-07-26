@@ -40,5 +40,3 @@ class KeyTest(TestCase):
         self.assertEqual(body['public'], response.data['public'])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
-        
-        

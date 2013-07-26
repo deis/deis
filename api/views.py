@@ -4,19 +4,23 @@ RESTful view classes for presenting Deis API objects.
 # pylint: disable=R0901,R0904
 
 from __future__ import unicode_literals
+import json
+
 from Crypto.PublicKey import RSA
-from api import models, serializers
 from django.conf import settings
 from django.contrib.auth.models import Group, AnonymousUser, User
 from django.db.utils import IntegrityError
+from django.http.response import Http404
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
-import json
-from rest_framework.generics import get_object_or_404
-from django.http.response import Http404
+
+from api import models
+from api import serializers
+
 
 class AnonymousAuthentication(BaseAuthentication):
 
@@ -151,10 +155,10 @@ class FormationViewSet(OwnerViewSet):
         request._data = request.DATA.copy()
         try:
             return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError as _e:
-            return Response("Formation with this Id already exists.",
+        except IntegrityError:
+            return Response('Formation with this Id already exists.',
                             status=HTTP_400_BAD_REQUEST)
-    
+
     def post_save(self, formation, created=False, **kwargs):
         if created:
             config = models.Config.objects.create(
@@ -203,7 +207,7 @@ class FormationViewSet(OwnerViewSet):
         databag = formation.balance()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
-    
+
     def calculate(self, request, **kwargs):
         formation = self.get_object()
         databag = formation.calculate()
@@ -280,7 +284,7 @@ class FormationNodeViewSet(OwnerViewSet):
                 owner=self.request.user, id=self.kwargs['id'])
         return self.model.objects.filter(owner=self.request.user, 
                                          formation=formation)
-            
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = get_object_or_404(qs, id=self.kwargs['node'])
@@ -291,7 +295,7 @@ class FormationContainerViewSet(OwnerViewSet):
 
     model = models.Container
     serializer_class = serializers.ContainerSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
                 owner=self.request.user, id=self.kwargs['id'])
@@ -322,8 +326,8 @@ class FormationImageViewSet(OwnerViewSet):
 
     def reset_image(self, request, *args, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        models.release_signal.send(sender=self, image=request.DATA['image'], 
+            owner=self.request.user, id=self.kwargs['id'])
+        models.release_signal.send(sender=self, image=request.DATA['image'],
                                    formation=formation, user=self.request.user)
         return Response(status=HTTP_201_CREATED)
 
@@ -342,13 +346,14 @@ class FormationConfigViewSet(OwnerViewSet):
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         config = self.model.objects.filter(
-                formation=formation).order_by('-created')[0]
+            formation=formation).order_by('-created')[0]
         return config
 
     def post_save(self, obj, created=False):
         if created:
-            models.release_signal.send(sender=self,
-                config=obj, formation=obj.formation, user=self.request.user)
+            models.release_signal.send(
+                sender=self, config=obj, formation=obj.formation,
+                user=self.request.user)
             # recalculate and converge after each config update
             databag = obj.formation.calculate()
             obj.formation.converge(databag)
@@ -365,7 +370,7 @@ class FormationConfigViewSet(OwnerViewSet):
         provided = json.loads(request.DATA['values'])
         values.update(provided)
         # remove config keys if we provided a null value
-        [ values.pop(k) for k, v in provided.items() if v is None ]
+        [values.pop(k) for k, v in provided.items() if v is None]
         request.DATA['values'] = values
         return super(OwnerViewSet, self).create(request, *args, **kwargs)
 
@@ -388,8 +393,9 @@ class FormationBuildViewSet(OwnerViewSet):
 
     def post_save(self, obj, created=False):
         if created:
-            models.release_signal.send(sender=self,
-                build=obj, formation=obj.formation, user=self.request.user)
+            models.release_signal.send(
+                sender=self, build=obj, formation=obj.formation,
+                user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
@@ -414,9 +420,9 @@ class FormationReleaseViewSet(OwnerViewSet):
                 owner=self.request.user, id=self.kwargs['id'])
         return self.model.objects.filter(owner=self.request.user, 
                                          formation=formation)
-            
+
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         release = self.model.objects.filter(
-                formation=formation).order_by('-created')[0]
+            formation=formation).order_by('-created')[0]
         return release

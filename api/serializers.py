@@ -5,12 +5,10 @@ Classes to serialize the RESTful representation of Deis API models.
 
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from api import models, utils
-
-from django.contrib.auth.models import User
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,8 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         """Metadata options for a UserSerializer."""
         model = User
-        read_only_fields = ('is_superuser', 'is_staff', 'groups', 'user_permissions',
-                            'last_login', 'date_joined')
+        read_only_fields = ('is_superuser', 'is_staff', 'groups',
+                            'user_permissions', 'last_login', 'date_joined')
 
     @property
     def data(self):
@@ -63,7 +61,7 @@ class FlavorSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     provider = serializers.SlugRelatedField(slug_field='id')
-    
+
     class Meta:
         """Metadata options for a FlavorSerializer."""
         model = models.Flavor
@@ -76,9 +74,9 @@ class ConfigSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
-    values = serializers.ModelField(model_field=models.Config()._meta.get_field('values'),
-                                    required=False)
-    
+    values = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('values'), required=False)
+
     class Meta:
         """Metadata options for a ConfigSerializer."""
         model = models.Config
@@ -91,7 +89,7 @@ class BuildSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
-    
+
     class Meta:
         """Metadata options for a BuildSerializer."""
         model = models.Build
@@ -106,7 +104,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     formation = serializers.SlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid', required=False)
-    
+
     class Meta:
         """Metadata options for a ReleaseSerializer."""
         model = models.Release
@@ -119,7 +117,7 @@ class FormationSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-                                    
+
     class Meta:
         """Metadata options for a FormationSerializer."""
         model = models.Formation
@@ -156,7 +154,7 @@ class NodeSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
     layer = serializers.SlugRelatedField(slug_field='id')
-    
+
     class Meta:
         """Metadata options for a NodeSerializer."""
         model = models.Node
@@ -170,7 +168,7 @@ class ContainerSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
     node = serializers.SlugRelatedField(slug_field='uuid')
-    
+
     class Meta:
         """Metadata options for a ContainerSerializer."""
         model = models.Container

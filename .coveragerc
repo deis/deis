@@ -1,0 +1,5 @@
+[run]
+omit =
+    */venv/*
+    */virtualenv/*
+ignore_errors = True

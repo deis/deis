@@ -1,7 +1,12 @@
-# Run "pip install pep8" to enable PEP8 code style checking with "make pep8"
-pep8:
-	pep8 deis
 
-# Run "pip install pyflakes" to enable pyflakes checking with "make pyflakes"
-pyflakes:
-	pyflakes deis
+# Install deis client locally through pip.
+install:
+	pip install deis
+
+# Remove the installed copy of the deis client through pip.
+uninstall:
+	pip uninstall -y deis
+
+# Clean up after setup.py droppings.
+clean:
+	rm -rf build/ dist/ *.egg-info

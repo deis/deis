@@ -19,6 +19,7 @@ before_install:
 
 install:
   - "pip install -r requirements.txt --use-mirrors"
+  - "pip install coveralls --use-mirrors"
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
@@ -34,7 +35,11 @@ before_script:
             'PORT': '',
         }
     }
-    SECRET_KEY = ')9$y9(@_r!+ai=ub)wsp2!!vs4i67x7ke9!jaljgf1_@rw421='
+    SECRET_KEY = ')9$y9(@_r!+ai=ub)wsp2!!vsfaker7ke9!jaljgf1_@rw421='
     EOF
 
-script: "make test"
+script:
+  - coverage run manage.py test api celerytasks web
+
+after_success:
+  - coveralls

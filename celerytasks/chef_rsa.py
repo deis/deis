@@ -2,10 +2,20 @@
 This file as copied from pyChef at https://github.com/coderanger/pychef
 """
 
+from ctypes import CDLL
+from ctypes import byref
+from ctypes import c_char_p
+from ctypes import c_int
+from ctypes import c_long
+from ctypes import c_size_t
+from ctypes import c_ulong
+from ctypes import c_void_p
+from ctypes import create_string_buffer
+from ctypes import string_at
 import sys
-from ctypes import *
 
-if sys.platform == 'win32' or sys.platform == 'cygwin':
+
+if sys.platform in ('win32', 'cygwin'):
     _eay = CDLL('libeay32.dll')
 elif sys.platform == 'darwin':
     _eay = CDLL('libcrypto.dylib')

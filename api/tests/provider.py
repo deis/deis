@@ -46,5 +46,3 @@ class ProviderTest(TestCase):
         self.assertEqual(response.data['type'], 'ec2')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
-        
-        

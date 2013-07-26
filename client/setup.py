@@ -24,7 +24,7 @@ except IOError:
 KWARGS = {}
 if USE_SETUPTOOLS:
     KWARGS = {
-        'install_requires': ['PyYAML', 'requests'],
+        'install_requires': ['docopt', 'PyYAML', 'requests'],
         'entry_points': {'console_scripts': ['deis = deis.client:main']},
     }
 else:
@@ -41,24 +41,24 @@ setup(name='deis',
       url='https://github.com/opdemand/deis',
       keywords=['opdemand', 'deis', 'cloud', 'aws', 'ec2', 'heroku', 'docker'],
       classifiers=[
-        'Development Status :: 4 - Beta',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Information Technology',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Topic :: Internet',
-        'Topic :: System :: Systems Administration',
-      ],
+          'Development Status :: 4 - Beta',
+          'Environment :: Console',
+          'Intended Audience :: Developers',
+          'Intended Audience :: Information Technology',
+          'Intended Audience :: System Administrators',
+          'License :: OSI Approved :: Apache Software License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.7',
+          'Topic :: Internet',
+          'Topic :: System :: Systems Administration',
+          ],
       packages=['deis'],
       data_files=[
-        ('.', ['README.rst']),
-      ],
+          ('.', ['README.rst']),
+          ],
       scripts=['deis/deis'],
       long_description=LONG_DESCRIPTION,
-      requires=['PyYAML', 'requests'],
+      requires=['docopt', 'PyYAML', 'requests'],
       zip_safe=True,
       **KWARGS)

@@ -30,7 +30,7 @@ class FormationTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        
+
     def test_formation(self):
         """
         Test that a user can create, read, update and delete a node formation
@@ -53,7 +53,7 @@ class FormationTest(TestCase):
         self.assertEqual(response.status_code, 405)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
-        
+
     def test_formation_auto_id(self):
         body = {'id': 'autotest'}
         response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
@@ -94,7 +94,7 @@ class FormationTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), 'Must scale runtime nodes > 0 to host containers')
-    
+
     def test_formation_actions(self):
         url = '/api/formations'
         body = {'id': 'autotest'}

@@ -9,7 +9,10 @@ Data models for the Deis API.
 from __future__ import unicode_literals
 import importlib
 import json
+import os
+import yaml
 
+from celery.canvas import group
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
@@ -19,18 +22,16 @@ from django.utils.encoding import python_2_unicode_compatible
 from rest_framework.authtoken.models import Token
 
 from api import fields
-from celerytasks import chef, controller
-from celery.canvas import group
-import yaml
-import os.path
+from celerytasks import controller
 
 
 # define custom signals
 scale_signal = Signal(providing_args=['formation', 'user'])
 release_signal = Signal(providing_args=['formation', 'user'])
 
+
 def import_tasks(provider_type):
-    "Return Celery tasks for a given provider type"
+    """Return Celery tasks for a given provider type"""
     try:
         tasks = importlib.import_module('celerytasks.'+provider_type)
     except ImportError as e:
@@ -199,15 +200,16 @@ class FormationManager(models.Manager):
             'ssh_keys': {},
             'admins': [],
             'formations': {}
-        }
+            }
         # add all ssh keys on the system
         for key in Key.objects.all():
-            key_id = '{0}_{1}'.format(key.owner.username, key.id)
+            key_id = "{0}_{1}".format(key.owner.username, key.id)
             databag['ssh_keys'][key_id] = key.public
         # TODO: add sharing-based key lookup, for now just owner's keys
         for formation in formations:
             keys = databag['formations'][formation.id] = []
-            owner_keys = [ '{0}_{1}'.format(k.owner.username, k.id) for k in formation.owner.key_set.all() ]
+            owner_keys = ["{0}_{1}".format(
+                k.owner.username, k.id) for k in formation.owner.key_set.all()]
             keys.extend(owner_keys)
         # call a celery task to update gitosis
         if settings.CHEF_ENABLED:
@@ -243,7 +245,7 @@ class Formation(UuidAuditedModel):
     id = models.SlugField(max_length=64)
     layers = fields.JSONField(default='{}', blank=True)
     containers = fields.JSONField(default='{}', blank=True)
-    
+
     class Meta:
         unique_together = (('owner', 'id'),)
 
@@ -325,7 +327,7 @@ class Formation(UuidAuditedModel):
         if containers_balanced:
             self.converge(databag)
         return databag
-        
+
     def _balance_containers(self, **kwargs):
         runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('created')
         if len(runtime_nodes) < 2:
@@ -359,7 +361,7 @@ class Formation(UuidAuditedModel):
                                          type=container_type,
                                          num=container_num,
                                          node=n_under)
-                container_num +=1
+                container_num += 1
                 # delete the oldest container from the most over-utilized node
                 c = n_over.container_set.filter(type=container_type).order_by('created')[0]
                 c.delete()
@@ -369,10 +371,16 @@ class Formation(UuidAuditedModel):
                     n_map.setdefault(ct, []).append(n)
                 changed = True
         return changed
-        
+
     def __str__(self):
         return self.id
-    
+
+    def prepare_provider(self, *args, **kwargs):
+        tasks = import_tasks(self.flavor.provider.type)
+        args = (self.id, self.flavor.provider.creds.copy(),
+                self.flavor.params.copy())
+        return tasks.prepare_formation.subtask(args)
+
     def calculate(self):
         "Return a Chef data bag item for this formation"
         release = self.release_set.all().order_by('-created')[0]
@@ -388,7 +396,7 @@ class Formation(UuidAuditedModel):
             d['release']['build']['procfile'] = release.build.procfile
         # calculate proxy
         d['proxy'] = {}
-        d['proxy']['algorithm'] =  'round_robin'
+        d['proxy']['algorithm'] = 'round_robin'
         d['proxy']['port'] = 80
         d['proxy']['backends'] = []
         # calculate container formation
@@ -397,7 +405,8 @@ class Formation(UuidAuditedModel):
             # all container types get an exposed port starting at 5001
             port = 5000 + c.num
             d['containers'].setdefault(c.type, {})
-            d['containers'][c.type].update({ c.num: "{0}:{1}".format(c.node.id, port) })
+            d['containers'][c.type].update(
+                {c.num: "{0}:{1}".format(c.node.id, port)})
             # only proxy to 'web' containers
             if c.type == 'web':
                 d['proxy']['backends'].append("{0}:{1}".format(c.node.fqdn, port))
@@ -628,7 +637,7 @@ class Config(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     values = fields.EnvVarsField(default='{}', blank=True)
 
     class Meta:
@@ -649,7 +658,7 @@ class Build(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
 
@@ -678,7 +687,7 @@ class Release(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     version = models.PositiveIntegerField(default=1)
-    
+
     config = models.ForeignKey('Config')
     image = models.CharField(max_length=256, default='ubuntu')
     # build only required for heroku-style apps
@@ -689,7 +698,7 @@ class Release(UuidAuditedModel):
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
-    
+
     def rollback(self):
         # create a rollback log entry
         # call run
@@ -700,7 +709,7 @@ class Release(UuidAuditedModel):
 def new_release(sender, **kwargs):
     formation, user = kwargs['formation'], kwargs['user']
     last_release = Release.objects.filter(
-                formation=formation).order_by('-created')[0]
+        formation=formation).order_by('-created')[0]
     image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
@@ -776,4 +785,3 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         # pylint: disable=E1101
         Token.objects.create(user=instance)
-

@@ -77,7 +77,7 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^formations/?',
         views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
-    
+
     # authn / authz
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),

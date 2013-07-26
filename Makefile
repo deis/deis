@@ -3,15 +3,14 @@ all:
 
 db:
 	python manage.py syncdb --noinput
+	python manage.py migrate
 
 test:
-	python manage.py test api web
+	python manage.py test api celerytasks web
 
-task:
-	python manage.py test celerytasks
+coverage:
+	coverage run manage.py test api celerytasks web
+	coverage html
 
-pep8:
-	pep8 api celerytasks deis web
-
-pyflakes:
-	pyflakes api celerytasks deis web
+flake8:
+	flake8

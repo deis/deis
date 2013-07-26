@@ -33,7 +33,7 @@ class ContainerTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-    
+
     def test_container_scale(self):
         url = '/api/formations'
         body = {'id': 'autotest'}
@@ -101,7 +101,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # should start with zero
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
@@ -116,7 +116,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # calculate the formation
-        url = '/api/formations/{formation_id}/calculate'.format(**locals())
+        url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
         containers = response.data['containers']
         # check balance of web types
@@ -124,16 +124,16 @@ class ContainerTest(TestCase):
         for c in containers['web'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
         # check balance of worker types
         by_backend = {}
         for c in containers['worker'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
         # scale up more
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
@@ -141,7 +141,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # calculate the formation
-        url = '/api/formations/{formation_id}/calculate'.format(**locals())
+        url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
         containers = response.data['containers']
         # check balance of web types
@@ -149,28 +149,28 @@ class ContainerTest(TestCase):
         for c in containers['web'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
         # check balance of worker types
         by_backend = {}
         for c in containers['worker'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
         # scale down
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 2, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
         # calculate the formation
-        url = '/api/formations/{formation_id}/calculate'.format(**locals())
+        url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
         containers = response.data['containers']
         # check balance of web types
@@ -178,14 +178,14 @@ class ContainerTest(TestCase):
         for c in containers['web'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
         # check balance of worker types
         by_backend = {}
         for c in containers['worker'].values():
             backend, port = c.split(':')
             by_backend.setdefault(backend, []).append(port)
-        b_min = min([ len(by_backend[b]) for b in by_backend.keys() ])
-        b_max = max([ len(by_backend[b]) for b in by_backend.keys() ])
+        b_min = min([len(by_backend[b]) for b in by_backend.keys()])
+        b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
