@@ -291,19 +291,18 @@ class Formation(UuidAuditedModel):
         all_containers = self.container_set.all().order_by('-created')
         container_num = 1 if not all_containers else all_containers[0].num + 1
         # iterate and scale by container type (web, worker, etc)
-        change = False
+        changed = False
         for container_type in requested_containers.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
             requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
-            change = 0
             if diff == 0:
-                return change
+                continue
+            changed = True
             while diff < 0:
                 c = containers.pop(0)
                 c.delete()
                 diff = requested - len(containers)
-                change -= 1
             while diff > 0:
                 node = Formation.objects.next_container_node(self, container_type)
                 c = Container.objects.create(owner=self.owner,
@@ -314,10 +313,9 @@ class Formation(UuidAuditedModel):
                 containers.append(c)
                 container_num += 1
                 diff = requested - len(containers)
-                change +=1
         # once nodes are in place, recalculate the formation and update the data bag
         databag = self.calculate()
-        if change is True:
+        if changed is True:
             self.converge(databag)
         return databag
 
