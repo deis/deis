@@ -46,4 +46,4 @@ def destroy_formation(formation_id):
                      settings.CHEF_CLIENT_NAME,
                      settings.CHEF_CLIENT_KEY)
     _resp, _code = client.delete_databag_item('deis-formations', formation_id)
-    subprocess.check_call(['sudo', 'chef-client'])
+    subprocess.check_call(['sudo', 'chef-client', '--override-runlist', 'recipe[deis::gitosis]'])
