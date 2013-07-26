@@ -53,6 +53,9 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
         # should start with zero
         url = '/api/formations/{formation_id}/containers'.format(**locals())
         response = self.client.get(url)
@@ -67,6 +70,10 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['containers'], json.dumps(body))
         # scale down
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 2, 'worker': 1}
@@ -75,6 +82,10 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['containers'], json.dumps(body))
         # scale down to 0
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 0, 'worker': 0}
@@ -84,6 +95,10 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['containers'], json.dumps(body))
 
     def test_container_balance(self):
         url = '/api/formations'

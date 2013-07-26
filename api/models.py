@@ -278,6 +278,8 @@ class Formation(UuidAuditedModel):
         # force-converge nodes if there were changes
         if job or containers_balanced:
             self.converge(databag)
+        # save the formation with updated layers
+        self.save()
         return databag
 
     def scale_containers(self, **kwargs):
@@ -318,6 +320,8 @@ class Formation(UuidAuditedModel):
         databag = self.calculate()
         if changed is True:
             self.converge(databag)
+        # save the formation with updated containers
+        self.save()
         return databag
 
     def balance(self, **kwargs):

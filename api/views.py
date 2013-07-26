@@ -176,7 +176,6 @@ class FormationViewSet(OwnerViewSet):
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         formation.layers.update(new_structure)
-        formation.save()
         try:
             databag = formation.scale_layers()
         except models.ScalingError as e:
@@ -195,7 +194,6 @@ class FormationViewSet(OwnerViewSet):
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         formation.containers.update(new_structure)
-        formation.save()
         try:
             databag = formation.scale_containers()
         except models.ScalingError as e:
