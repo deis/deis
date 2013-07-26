@@ -720,7 +720,7 @@ class DeisClient(object):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
-        sys.stdout.write('Creating layer {}...'.format(args['<id>']))
+        sys.stdout.write('Creating {} layer... '.format(args['<id>']))
         sys.stdout.flush()
         response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
                                   json.dumps(body))
