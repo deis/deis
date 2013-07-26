@@ -157,7 +157,7 @@ INSTALLED_APPS = (
     # Deis apps
     'api',
     'web',
-#    'south'
+    'south'
 )
 
 AUTHENTICATION_BACKENDS = (
