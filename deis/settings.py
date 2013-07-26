@@ -86,17 +86,15 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = None
+SECRET_KEY = None  # @UnusedVariable
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-    # 'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -136,8 +134,6 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.admindocs',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',
@@ -147,13 +143,10 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.github',
     'djcelery',
     'celerytasks',
     'json_field',
     'rest_framework',
-    'rest_framework.authtoken',
     # Deis apps
     'api',
     'web',
@@ -178,15 +171,14 @@ SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'DEFAULT_MODEL_SERIALIZER_CLASS':
-    'rest_framework.serializers.ModelSerializer',
+        'rest_framework.serializers.ModelSerializer',
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'PAGINATE_BY': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
+    'PAGINATE_BY': 10,
 }
 
 # URLs that end with slashes are ugly
