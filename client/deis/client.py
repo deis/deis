@@ -103,6 +103,8 @@ Options:
 """,
     'formations:create': """Usage: deis formations:create --flavor=<flavor> [--image=<image> --id=<id>]
 """,
+    'formations:list': """Usage: deis formations:info
+""",
     'formations:list': """Usage: deis formations:list
 """,
     'formations:destroy': """Usage: deis formations:destroy [<formation>] [--confirm=<confirm>]
@@ -112,6 +114,8 @@ Options:
     'formations:calculate': """Usage: deis formations:calculate
 """,
     'formations:balance': """Usage: deis formations:balance
+""",
+    'info': """Usage: deis info
 """,
     'keys:add': """Usage: deis keys:add [<key>]
 """,
@@ -146,7 +150,7 @@ SSH Options:
 """,
     'nodes:list': """Usage: deis nodes:list
 """,
-    'nodes:delete': """Usage: deis nodes:delete <id>
+    'nodes:destroy': """Usage: deis nodes:destroy <id>
 """,
     'providers:create': """Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
 """,
@@ -567,6 +571,17 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def formations_info(self, args):
+        """Retrieve formation info"""
+        formation = args.get('<formation>')
+        if not formation:
+            formation = self._session.formation
+        response = self._dispatch('get', '/api/formations/{}'.format(formation))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
+        else:
+            print('Error!', response.text)
+
     def formations_destroy(self, args):
         formation = args.get('<formation>')
         if not formation:
@@ -787,13 +802,18 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
-    def nodes_delete(self, args):
-        """Delete a node by ID."""
+    def nodes_destroy(self, args):
+        """Destroy a node by ID."""
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
         node = args['<id>']
         response = self._dispatch('delete',
-                                  '/api/nodes/{}'.format(node))
+                                  '/api/formations/{formation}/nodes/{node}'.format(**locals()))
+        sys.stdout.write('Destroying {}... '.format(node))
+        sys.stdout.flush()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('Node deleted successfully')
+            print('done')
         else:
             print('Error!', response.status_code, response.text)
 
@@ -899,6 +919,7 @@ def main():
                 'login': cli.auth_login,
                 'logout': cli.auth_logout,
                 'create': cli.formations_create,
+                'info': cli.formations_info,
                 'destroy': cli.formations_destroy,
                 'scale': cli.containers_scale,
                 'calculate': cli.formations_calculate,
