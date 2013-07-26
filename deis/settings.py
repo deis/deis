@@ -221,6 +221,13 @@ LOGGING = {
     }
 }
 
+# import deis-specific settings files
+from .chef_settings import *  # noqa @UnusedWildImport
+from .celery_settings import *  # noqa @UnusedWildImport
+
+# default deis settings
+CONVERGE_ON_PUSH = True
+
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development
@@ -249,10 +256,8 @@ LOGGING = {
 # EMAIL_HOST_USER = 'foo'
 # EMAIL_HOST_PASSWORD = 'bar'
 
-# import other settings
-from .chef_settings import *  # noqa @UnusedWildImport
-from .celery_settings import *  # noqa @UnusedWildImport
 try:
     from .local_settings import *  # noqa @UnusedWildImport
 except ImportError:
     print('No deis/local_settings.py file found!')
+

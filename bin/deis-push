@@ -1,0 +1,20 @@
+#!/opt/deis/controller/venv/bin/python
+import os
+import sys
+import json
+
+if __name__ == '__main__':
+    # prepare pythonpath and django settings
+    base_path = os.path.abspath(os.path.join(__file__, '..', '..'))
+    sys.path.insert(0, base_path)
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+    from api import models
+    # deserialize the json passed on stdin
+    inp = sys.stdin.read()
+    git_push = json.loads(inp)
+    # process the push
+    databag = models.Build.push(git_push)
+    # print the databag json
+    sys.stdout.write(json.dumps(databag))
+    sys.stdout.flush()
+    sys.exit(0)

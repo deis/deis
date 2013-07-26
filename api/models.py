@@ -14,6 +14,7 @@ import yaml
 
 from celery.canvas import group
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -681,6 +682,41 @@ class Build(UuidAuditedModel):
 
     def __str__(self):
         return '{0}-v{1}'.format(self.formation.id, self.version)
+
+    @classmethod
+    def push(cls, push):
+        """
+        Process a push from a local Git server
+
+        Creates a new Build and returns the formation's
+        databag for processing by the git-receive hook
+        """
+        # SECURITY:
+        # we assume the first part of the ssh key name
+        # is the authenticated user because we trust gitosis
+        username = push.pop('ssh_key').split('_')[0]
+        # retrieve the user and formation instances
+        user = User.objects.get(username=username)
+        formation = Formation.objects.get(owner=push['owner'],
+                                          id=push.pop('formation'))
+        # merge the push with the required model instances
+        push['owner'] = user
+        push['formation'] = formation
+        # create the build
+        new_build = cls.objects.create(**push)
+        # send a release signal
+        release_signal.send(sender=push, build=new_build,
+                            formation=formation,
+                            user=user)
+        # recalculate the formation databag including the new
+        # build and release
+        databag = formation.calculate()
+        # if enabled, force-converge all of the chef nodes
+        if settings.CONVERGE_ON_PUSH is True:
+            formation.converge(databag)
+        # return the databag object so the git-receive hook
+        # can tell the user about proxy URLs, etc.
+        return databag
 
 
 @python_2_unicode_compatible
