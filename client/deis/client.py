@@ -721,7 +721,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         layer = args['<id>']
-        sys.stdout.write('Destroying layer {layer}...'.format(**locals()))
+        sys.stdout.write('Destroying {layer} layer... '.format(**locals()))
         sys.stdout.flush()
         response = self._dispatch('delete', 
             '/api/formations/{formation}/layers/{layer}'.format(**locals()))
