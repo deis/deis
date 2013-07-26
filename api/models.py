@@ -16,11 +16,9 @@ from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
-from rest_framework.authtoken.models import Token
 
 from api import fields
 from celerytasks import controller
@@ -323,9 +321,9 @@ class Formation(UuidAuditedModel):
         return databag
 
     def balance(self, **kwargs):
-        containers_balanced = self._balance_containers()
+        changed = self._balance_containers()
         databag = self.calculate()
-        if containers_balanced:
+        if changed:
             self.converge(databag)
         return databag
 
@@ -375,12 +373,6 @@ class Formation(UuidAuditedModel):
 
     def __str__(self):
         return self.id
-
-    def prepare_provider(self, *args, **kwargs):
-        tasks = import_tasks(self.flavor.provider.type)
-        args = (self.id, self.flavor.provider.creds.copy(),
-                self.flavor.params.copy())
-        return tasks.prepare_formation.subtask(args)
 
     def calculate(self):
         "Return a Chef data bag item for this formation"
@@ -771,58 +763,3 @@ def new_release(sender, **kwargs):
         image=image, config=config, build=build, version=new_version)
     return release
 
-
-@python_2_unicode_compatible
-class Access(UuidAuditedModel):
-
-    """
-    An access control list (ACL) entry specifying what role a user has for
-    an app.
-
-    A user is considered always to have "admin" access to his or her own
-    apps whether or not a specific Access entry exists.
-    """
-
-    VIEWER = 'viewer'
-    USER = 'user'
-    ADMIN = 'admin'
-    ACCESS_ROLES = (
-        (VIEWER, 'Viewer'),
-        (USER, 'User'),
-        (ADMIN, 'Administrator'),
-    )
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
-    role = models.CharField(max_length=6, choices=ACCESS_ROLES, default=USER)
-
-    class Meta:
-        """Metadata options for an Access model."""
-        verbose_name_plural = 'accesses'
-
-    def __str__(self):
-        return '{0}: {1} is {2}'.format(self.app, self.user, self.role)
-
-
-@python_2_unicode_compatible
-class Event(UuidAuditedModel):
-
-    """
-    A change in an Application's state worth persisting so it can be
-    searched for in the future.
-    """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
-
-    def __str__(self):
-        # TODO: what's a useful string representation of this object?
-        return '{0} event ?'.format(self.app)
-
-
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
-def create_auth_token(sender, instance=None, created=False, **kwargs):
-    """Adds an auth Token to each newly created user."""
-    if created:
-        # pylint: disable=E1101
-        Token.objects.create(user=instance)
