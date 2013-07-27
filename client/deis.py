@@ -246,7 +246,7 @@ class DeisClient(object):
 
     def auth_login(self, args):
         """
-        Authenticate a user in the system.
+        Login by authenticating against a controller
 
         Usage: deis auth:login <controller> [--username=<username> --password=<password>]
         """
@@ -276,7 +276,11 @@ class DeisClient(object):
             return False
 
     def auth_logout(self, args):
-        """Clear a user's session and unauthenticate her."""
+        """
+        Logout from a controller, clearing the user session
+
+        Usage: deis auth:logout
+        """
         controller = self._settings.get('controller')
         if controller:
             self._dispatch('get', '/api/auth/logout/')
@@ -285,6 +289,12 @@ class DeisClient(object):
         self._settings['controller'] = None
         self._settings.save()
         print('Logged out')
+
+    def builds(self, args):
+        """
+        Builds help would be nice
+        """
+        return self.builds_list(args)
 
     def builds_create(self, args):
         """
@@ -319,6 +329,12 @@ class DeisClient(object):
                 print('{0[uuid]:<23} {0[created]}'.format(item))
         else:
             print('Error!', response.text)
+
+    def config(self, args):
+        """
+        Config help would be nice
+        """
+        return self.config_list(args)
 
     def config_list(self, args):
         """
@@ -392,6 +408,12 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def containers(self, args):
+        """
+        Containers help would be nice
+        """
+        return self.containers_list(args)
+
     def containers_list(self, args):
         """
         Usage: deis containers:list
@@ -436,6 +458,12 @@ class DeisClient(object):
             print(json.dumps(databag, indent=2))
         else:
             print('Error!', response.text)
+
+    def flavors(self, args):
+        """
+        Flavors help would be nice
+        """
+        return self.flavors_list(args)
 
     def flavors_create(self, args):
         """
@@ -492,6 +520,12 @@ class DeisClient(object):
                 print('{0[id]:<23}'.format(item))
         else:
             print('Error!', response.text)
+
+    def formations(self, args):
+        """
+        Formations help would be nice
+        """
+        return self.formations_list(args)
 
     def formations_create(self, args):
         """
@@ -638,6 +672,12 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def keys(self, args):
+        """
+        Keys help would be nice
+        """
+        return self.keys_list(args)
+
     def keys_add(self, args):
         """
         Usage: deis keys:add [<key>]
@@ -707,6 +747,12 @@ class DeisClient(object):
             print('done')
         else:
             print('Error!', response.text)
+
+    def layers(self, args):
+        """
+        Layers help would be nice
+        """
+        return self.layers_list(args)
 
     def layers_create(self, args):
         """
@@ -823,6 +869,12 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def nodes(self, args):
+        """
+        Nodes help would be nice
+        """
+        return self.nodes_list(args)
+
     def nodes_list(self, args):
         """
         List nodes for this formation.
@@ -861,6 +913,12 @@ class DeisClient(object):
             print('done')
         else:
             print('Error!', response.status_code, response.text)
+
+    def providers(self, args):
+        """
+        Providers help would be nice
+        """
+        return self.providers_list(args)
 
     def providers_create(self, args):
         """
@@ -943,6 +1001,21 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def releases_list(self, args):
+        """
+        Usage: deis releases:list
+        """
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        response = self._dispatch('get', '/formations/{}/release'.format(formation))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('=== {0}'.format(formation))
+            data = response.json()
+            for item in data['results']:
+                print('{0[uuid]:<23} {0[created]}'.format(item))
+        else:
+            print('Error!', response.text)
 
 def main():
     """
@@ -982,12 +1055,12 @@ def main():
             args.update(docopt(docstring))
     # find the right method for dispatching
     if cmd == 'help':
+        if len(sys.argv) == 3 and sys.argv[2] in dir(cli):
+            print trim(getattr(cli, sys.argv[2]).__doc__)
+            return
         docopt(__doc__, argv=['--help'])
     elif hasattr(cli, cmd):
         method = getattr(cli, cmd)
-    # magically call list if no subcommand provided
-    elif hasattr(cli, cmd + '_list'):
-        method = getattr(cli, cmd + '_list')
     else:
         print 'Found no matching command'
         raise DocoptExit()
