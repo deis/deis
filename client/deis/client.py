@@ -122,7 +122,7 @@ Options:
 """,
     'keys:remove': """Usage: deis keys:remove <key>
 """,
-    'layers:create': """Usage: deis layers:create <id> <flavor> --run_list=<run_list> [options]
+    'layers:create': """Usage: deis layers:create <id> <flavor> [options]
 
 Chef Options:
 
@@ -700,12 +700,18 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        body = {'id': args['<id>'], 'flavor': args['<flavor>'], 'run_list': args['--run_list']}
-        for opt in ('--environment', '--initial_attributes', 
+        body = {'id': args['<id>'], 'flavor': args['<flavor>']}
+        for opt in ('--environment', '--initial_attributes', '--run_list',
                     '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
+        # provide default run_list for runtime and proxy
+        if not 'run_list' in body:
+            if body['id'] == 'runtime':
+                body['run_list'] = 'recipe[deis],recipe[deis::runtime]'
+            elif body['id'] == 'proxy':
+                body['run_list'] = 'recipe[deis],recipe[deis::proxy]'
         sys.stdout.write('Creating {} layer... '.format(args['<id>']))
         sys.stdout.flush()
         response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
