@@ -52,8 +52,17 @@ else
 fi
 
 # create data bags
-knife data bag create deis-build
-knife data bag create deis-formations
+knife data bag create deis-build 2>/dev/null
+knife data bag create deis-formations 2>/dev/null
+
+# create data bag item using a temp file
+tempfile=$(mktemp -t deis)
+mv $tempfile $tempfile.json
+cat > $tempfile.json <<EOF
+{ "id": "gitosis", "ssh_keys": {}, "formations": {} }
+EOF
+knife data bag from file deis-build $tempfile.json
+rm -f $tempfile.json
 
 # trigger ec2 instance bootstrap
 echo_color "Provisioning $node_name with knife ec2..."
