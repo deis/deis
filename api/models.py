@@ -39,8 +39,8 @@ def import_tasks(provider_type):
     """
     try:
         tasks = importlib.import_module('celerytasks.' + provider_type)
-    except ImportError:
-        raise
+    except ImportError as e:
+        raise e
     return tasks
 
 
@@ -348,7 +348,7 @@ class Formation(UuidAuditedModel):
         changed = False
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
-            # map node container counts => {2: [b3, b4], 3: [ b1, b2 ]}
+            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
             n_map = {}
             for node in runtime_nodes:
                 ct = len(node.container_set.filter(type=container_type))
@@ -708,6 +708,12 @@ class Build(UuidAuditedModel):
         release_signal.send(sender=push, build=new_build,
                             formation=formation,
                             user=user)
+        # see if we need to scale an initial web container
+        if len(formation.layer_set.filter(id='runtime')) > 0 and \
+           len(formation.container_set.filter(type='web')) < 1:
+            # scale an initial web containers
+            formation.containers['web'] = 1
+            formation.scale_containers()
         # recalculate the formation databag including the new
         # build and release
         databag = formation.calculate()
