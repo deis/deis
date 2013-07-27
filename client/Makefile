@@ -1,7 +1,7 @@
 
 # Install deis client locally through pip.
 install:
-	pip install deis
+	pip install . 
 
 # Remove the installed copy of the deis client through pip.
 uninstall:

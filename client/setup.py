@@ -3,7 +3,6 @@
 """Install the Deis command-line client."""
 
 
-import os.path
 try:
     from setuptools import setup
     USE_SETUPTOOLS = True
@@ -25,10 +24,10 @@ KWARGS = {}
 if USE_SETUPTOOLS:
     KWARGS = {
         'install_requires': ['docopt', 'PyYAML', 'requests'],
-        'entry_points': {'console_scripts': ['deis = deis.client:main']},
+        'entry_points': {'console_scripts': ['deis = deis:main']},
     }
 else:
-    KWARGS = {'scripts': [os.path.sep.join(['deis', 'deis'])]}
+    KWARGS = {'scripts': ['deis']}
 
 
 # pylint: disable=W0142
@@ -52,12 +51,11 @@ setup(name='deis',
           'Programming Language :: Python :: 2.7',
           'Topic :: Internet',
           'Topic :: System :: Systems Administration',
-          ],
-      packages=['deis'],
+      ],
+      py_modules=['deis'],
       data_files=[
           ('.', ['README.rst']),
-          ],
-      scripts=['deis/deis'],
+      ],
       long_description=LONG_DESCRIPTION,
       requires=['docopt', 'PyYAML', 'requests'],
       zip_safe=True,

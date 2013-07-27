@@ -40,17 +40,17 @@ Use `git push deis master` to deploy to the container formation.
 
 from cookielib import MozillaCookieJar
 from getpass import getpass
+import glob
 import json
 import os.path
-import glob
 import re
+import subprocess
 import sys
 import urlparse
 
 from docopt import docopt
 from docopt import DocoptExit
 import requests
-import subprocess
 import yaml
 
 
