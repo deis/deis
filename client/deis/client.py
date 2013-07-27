@@ -57,117 +57,6 @@ import yaml
 __version__ = '0.0.4'
 
 
-USAGE = {
-    'auth:register': """Usage: deis auth:register <controller> [--username=<username> --password=<password> --email=<email>]
-""",
-    'backends:list': """Usage: deis backends:list
-""",
-    'balance': """Usage: deis balance
-""",
-    'builds:create': """Usage: deis builds:create - [--formation=<formation>]
-""",
-    'builds:list': """Usage: deis builds:list
-""",
-    'config:list': """Usage: deis config:list
-""",
-    'config:set': """Usage: deis config:set <var>=<value>...
-""",
-    'config:unset': """Usage: deis config:unset <key>...
-""",
-    'containers:list': """Usage: deis containers:list
-""",
-    'containers:scale': """Usage: deis containers:scale <type=num>...
-""",
-    'calculate': """Usage: deis calculate
-""",
-    'create': """Usage: deis create [--image=<image> --id=<id>]
-""",
-    'converge': """Usage: deis converge
-""",
-    'destroy': """Usage: deis destroy [<formation>] [--confirm=<confirm>]
-""",
-    'flavors:create': """Usage: deis flavors:create --id=<id> --provider=<provider> --params=<params> [options]
-
-Options:
-
---params=PARAMS    provider-specific parameters (size, region, zone, etc.)
---init=INIT        override Ubuntu cloud-init with custom YAML
-
-""",
-    'flavors:delete': """Usage: deis flavors:delete <id>
-""",
-    'flavors:info': """Usage: deis flavors:info <flavor>
-""",
-    'flavors:list': """Usage: deis flavors:list
-""",
-    'formations:create': """Usage: deis formations:create --flavor=<flavor> [--image=<image> --id=<id>]
-""",
-    'formations:list': """Usage: deis formations:info
-""",
-    'formations:list': """Usage: deis formations:list
-""",
-    'formations:destroy': """Usage: deis formations:destroy [<formation>] [--confirm=<confirm>]
-""",
-    'formations:converge': """Usage: deis formations:converge
-""",
-    'formations:calculate': """Usage: deis formations:calculate
-""",
-    'formations:balance': """Usage: deis formations:balance
-""",
-    'info': """Usage: deis info
-""",
-    'keys:add': """Usage: deis keys:add [<key>]
-""",
-    'keys:list': """Usage: deis keys:list
-""",
-    'keys:remove': """Usage: deis keys:remove <key>
-""",
-    'layers:create': """Usage: deis layers:create <id> <flavor> [options]
-
-Chef Options:
-
---run_list=RUN_LIST         run-list to use when bootstrapping nodes
---environment=ENVIRONMENT   chef environment to place nodes [default: _default]
---attributes=INITIAL_ATTRS  initial attributes for nodes
-
-SSH Options:
-
---ssh_username=USERNAME         username for ssh connections [default: ubuntu]
---ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
---ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
-
-""",
-    'layers:destroy': """Usage: deis layers:destroy <id>
-""",
-    'layers:scale': """Usage: deis layers:scale <type=num>...
-""",
-    'login': """Usage: deis login <controller> [--username=<username> --password=<password>]
-""",
-    'logout': """Usage: deis logout
-""",
-    'nodes:info': """Usage: deis nodes:info <node>
-""",
-    'nodes:list': """Usage: deis nodes:list
-""",
-    'nodes:destroy': """Usage: deis nodes:destroy <id>
-""",
-    'providers:create': """Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
-""",
-    'providers:discover': """Usage: deis providers:discover
-""",
-    'providers:list': """Usage: deis providers:list
-""",
-    'providers:info': """Usage: deis providers:info <provider>
-""",
-    'proxies:list': """Usage: deis proxies:list
-""",
-    'register': """Usage: deis register <controller> [--username=<username> --password=<password> --email=<email>]
-""",
-    'scale': """Usage: deis scale <type=num>...
-""",
-}
-
-
 class Session(requests.Session):
 
     def __init__(self):
@@ -267,6 +156,38 @@ def dictify(args):
     return data
 
 
+def trim(docstring):
+    """
+    Function to trim whitespace from docstring
+
+    c/o PEP 257 Docstring Conventions
+    http://www.python.org/dev/peps/pep-0257/
+    """
+    if not docstring:
+        return ''
+    # Convert tabs to spaces (following the normal Python rules)
+    # and split into a list of lines:
+    lines = docstring.expandtabs().splitlines()
+    # Determine minimum indentation (first line doesn't count):
+    indent = sys.maxint
+    for line in lines[1:]:
+        stripped = line.lstrip()
+        if stripped:
+            indent = min(indent, len(line) - len(stripped))
+    # Remove indentation (first line is special):
+    trimmed = [lines[0].strip()]
+    if indent < sys.maxint:
+        for line in lines[1:]:
+            trimmed.append(line[indent:].rstrip())
+    # Strip off trailing and leading blank lines:
+    while trimmed and not trimmed[-1]:
+        trimmed.pop()
+    while trimmed and not trimmed[0]:
+        trimmed.pop(0)
+    # Return a single string:
+    return '\n'.join(trimmed)
+
+
 class DeisClient(object):
 
     """
@@ -285,7 +206,9 @@ class DeisClient(object):
         return response
 
     def auth_register(self, args):
-        """Register a user at a controller."""
+        """
+        Usage: deis auth:register <controller> [--username=<username> --password=<password> --email=<email>]
+        """
         controller = args['<controller>']
         username = args.get('--username')
         if not username:
@@ -320,7 +243,11 @@ class DeisClient(object):
             return False
 
     def auth_login(self, args):
-        """Authenticate a user in the system."""
+        """
+        Authenticate a user in the system.
+
+        Usage: deis auth:login <controller> [--username=<username> --password=<password>]
+        """
         controller = args['<controller>']
         username = args.get('--username')
         headers = {}
@@ -358,6 +285,9 @@ class DeisClient(object):
         print('Logged out')
 
     def builds_create(self, args):
+        """
+        Usage: deis builds:create - [--formation=<formation>]
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -373,6 +303,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def builds_list(self, args):
+        """
+        Usage: deis builds:list
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -386,7 +319,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def config_list(self, args):
-        """List configuration values for an application."""
+        """
+        Usage: deis config:list
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -405,7 +340,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def config_set(self, args):
-        """Set a configuration value for a formation."""
+        """
+        Usage: deis config:set <var>=<value>...
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -427,7 +364,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def config_unset(self, args):
-        """Unset a configuration value for a formation."""
+        """
+        Usage: deis config:unset <key>...
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -452,7 +391,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def containers_list(self, args):
-        """List containers for this formation."""
+        """
+        Usage: deis containers:list
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -467,6 +408,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def containers_scale(self, args):
+        """
+        Usage: deis containers:scale <type=num>...
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -474,7 +418,7 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/scale/containers'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -484,12 +428,19 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def flavors_create(self, args):
-        """Create a flavor using a provider"""
+        """
+        Usage: deis flavors:create --id=<id> --provider=<provider> --params=<params> [options]
+
+        Options:
+
+        --params=PARAMS    provider-specific parameters (size, region, zone, etc.)
+        --init=INIT        override Ubuntu cloud-init with custom YAML
+        """
         body = {'id': args.get('--id'), 'provider': args.get('--provider')}
         fields = ('params', 'init', 'ssh_username', 'ssh_private_key',
                   'ssh_public_key')
         for fld in fields:
-            opt = args.get('--'+fld)
+            opt = args.get('--' + fld)
             if opt:
                 body.update({fld: opt})
         response = self._dispatch('post', '/api/flavors', json.dumps(body))
@@ -499,7 +450,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def flavors_delete(self, args):
-        """Delete a node flavor by ID."""
+        """
+        Usage: deis flavors:delete <id>
+        """
         flavor = args.get('<id>')
         response = self._dispatch('delete', '/api/flavors/{}'.format(flavor))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
@@ -508,7 +461,9 @@ class DeisClient(object):
             print('Error!', response.status_code, response.text)
 
     def flavors_info(self, args):
-        """Show detail of a node flavor."""
+        """
+        Usage: deis flavors:info <flavor>
+        """
         flavor = args.get('<flavor>')
         response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -517,7 +472,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def flavors_list(self, args):
-        """List flavors for a user."""
+        """
+        Usage: deis flavors:list
+        """
         response = self._dispatch('get', '/api/flavors')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
@@ -527,7 +484,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_create(self, args):
-        """Create a formation."""
+        """
+        Usage: deis formations:create --flavor=<flavor> [--image=<image> --id=<id>]
+        """
         body = {}
         for opt in ('--id', '--image'):
             o = args.get(opt)
@@ -551,7 +510,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_list(self, args):
-        """List formations for a user."""
+        """
+        Usage: deis formations:info
+        """
         response = self._dispatch('get', '/api/formations')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
@@ -561,7 +522,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_info(self, args):
-        """Retrieve formation info"""
+        """
+        Usage: deis formations:list
+        """
         formation = args.get('<formation>')
         if not formation:
             formation = self._session.formation
@@ -572,6 +535,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_destroy(self, args):
+        """
+        Usage: deis formations:destroy [<formation>] [--confirm=<confirm>]
+        """
         formation = args.get('<formation>')
         if not formation:
             formation = self._session.formation
@@ -603,10 +569,13 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_calculate(self, args):
+        """
+        Usage: deis formations:calculate
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/calculate'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -615,10 +584,13 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_balance(self, args):
+        """
+        Usage: deis formations:balance
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/balance'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -627,10 +599,13 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def formations_converge(self, args):
+        """
+        Usage: deis formations:converge
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/converge'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -639,7 +614,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def keys_add(self, args):
-        """Add SSH keys for the logged in user."""
+        """
+        Usage: deis keys:add [<key>]
+        """
         path = args.get('<key>')
         if not path:
             ssh_dir = os.path.expanduser('~/.ssh')
@@ -647,10 +624,10 @@ class DeisClient(object):
             print('Found the following SSH public keys:')
             for i, k in enumerate(pubkeys):
                 key = k.split(os.path.sep)[-1]
-                print('{0}) {1}'.format(i+1, key))
+                print('{0}) {1}'.format(i + 1, key))
             inp = raw_input('Which would you like to use with Deis? ')
             try:
-                path = pubkeys[int(inp)-1]
+                path = pubkeys[int(inp) - 1]
                 key_id = path.split(os.path.sep)[-1].replace('.pub', '')
             except:
                 print 'Aborting'
@@ -672,7 +649,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def keys_list(self, args):
-        """List SSH keys for the logged in user."""
+        """
+        List SSH keys for the logged in user.
+
+        Usage: deis keys:list
+        """
         response = self._dispatch('get', '/api/keys')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
@@ -688,7 +669,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def keys_remove(self, args):
-        """Remove a specific SSH key for the logged in user."""
+        """
+        Remove a specific SSH key for the logged in user.
+
+        Usage: deis keys:remove <key>
+        """
         key = args.get('<key>')
         sys.stdout.write('Removing {0} SSH Key... '.format(key))
         sys.stdout.flush()
@@ -699,7 +684,24 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def layers_create(self, args):
-        """Create a layer of nodes."""
+        """
+        Create a layer of nodes.
+
+        Usage: deis layers:create <id> <flavor> [options]
+
+        Chef Options:
+
+        --run_list=RUN_LIST         run-list to use when bootstrapping nodes
+        --environment=ENVIRONMENT   chef environment to place nodes [default: _default]
+        --attributes=INITIAL_ATTRS  initial attributes for nodes
+
+        SSH Options:
+
+        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
+        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
+        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -725,14 +727,18 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def layers_destroy(self, args):
-        """Destroy a layer of nodes."""
+        """
+        Destroy a layer of nodes.
+
+        Usage: deis layers:destroy <id>
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
         layer = args['<id>']
         sys.stdout.write('Destroying {layer} layer... '.format(**locals()))
         sys.stdout.flush()
-        response = self._dispatch('delete', 
+        response = self._dispatch('delete',
             '/api/formations/{formation}/layers/{layer}'.format(**locals()))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
@@ -744,7 +750,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', 
+        response = self._dispatch('get',
                                   '/api/formations/{}/layers'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
@@ -756,6 +762,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def layers_scale(self, args):
+        """
+        Usage: deis layers:scale <type=num>...
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -763,7 +772,7 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        response = self._dispatch('post', 
+        response = self._dispatch('post',
                                   '/api/formations/{}/scale/layers'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -773,7 +782,9 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def nodes_info(self, args):
-        """Show detail of a provider."""
+        """
+        Usage: deis nodes:info <node>
+        """
         node = args.get('<node>')
         response = self._dispatch('get', '/api/nodes/{}'.format(node))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -782,7 +793,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def nodes_list(self, args):
-        """List nodes for this formation."""
+        """
+        List nodes for this formation.
+
+        Usage: deis nodes:list
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -798,7 +813,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def nodes_destroy(self, args):
-        """Destroy a node by ID."""
+        """
+        Destroy a node by ID.
+
+        Usage: deis nodes:destroy <id>
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -813,7 +832,11 @@ class DeisClient(object):
             print('Error!', response.status_code, response.text)
 
     def providers_create(self, args):
-        """Create a provider for use by Deis"""
+        """
+        Create a provider for use by Deis
+
+        Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
+        """
         type = args.get('--type')  # @ReservedAssignment
         if type == 'ec2':
             # read creds from envvars
@@ -835,7 +858,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def providers_discover(self, args):
-        """Discover and update providers"""
+        """
+        Discover and update providers
+
+        Usage: deis providers:discover
+        """
         # look for ec2 credentials
         if 'AWS_ACCESS_KEY' in os.environ and 'AWS_SECRET_KEY' in os.environ:
             print('Found EC2 credentials: {0}'.format(os.environ['AWS_ACCESS_KEY']))
@@ -859,7 +886,11 @@ class DeisClient(object):
             return
 
     def providers_list(self, args):
-        """List providers."""
+        """
+        List providers
+
+        Usage: deis providers:list
+        """
         response = self._dispatch('get', '/api/providers')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
@@ -869,7 +900,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def providers_info(self, args):
-        """Show detail of a provider."""
+        """
+        Show detail of a provider.
+
+        Usage: deis providers:info <provider>
+        """
         provider = args.get('<provider>')
         response = self._dispatch('get', '/api/providers/{}'.format(provider))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -889,34 +924,40 @@ def main():
     args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
                   options_first=True)
     cmd = args['<command>']
-    # re-parse for any cmd-specific arguments
-    if cmd in USAGE:
-        args.update(docopt(USAGE[cmd]))
     # split cmd with _ if it contains a :
+    shortcuts = {
+        'register': 'auth:register',
+        'login': 'auth:login',
+        'logout': 'auth:logout',
+        'create': 'formations:create',
+        'info': 'formations:info',
+        'balance': 'formations:balance',
+        'calculate': 'formations:calculate',
+        'converge': 'formations:converge',
+        'destroy': 'formations:destroy',
+        'scale': 'containers:scale',
+    }
+    # lookup cmd shortcut
+    if cmd in shortcuts:
+        cmd = shortcuts[cmd]
+        sys.argv[1] = cmd  # change the cmdline arg itself
+    # convert : to _ for matching method names and docstrings
     if ':' in cmd:
         cmd = '_'.join(cmd.split(':'))
-    # prepare a map of shortcut commands
-    dispatch = {'register': cli.auth_register,
-                'login': cli.auth_login,
-                'logout': cli.auth_logout,
-                'create': cli.formations_create,
-                'info': cli.formations_info,
-                'destroy': cli.formations_destroy,
-                'scale': cli.containers_scale,
-                'calculate': cli.formations_calculate,
-                'balance': cli.formations_balance,
-                'converge': cli.formations_converge}
+    # re-parse docopt with the relevant docstring
+    if cmd in dir(cli):
+        docstring = trim(getattr(cli, cmd).__doc__)
+        if 'Usage: ' in docstring:
+            args.update(docopt(docstring))
     # dispatch based on primary command
     if cmd == 'help':
         docopt(__doc__, argv=['--help'])
     elif hasattr(cli, cmd):
         method = getattr(cli, cmd)
         return method(args)
-    elif hasattr(cli, cmd+'_list'):
-        method = getattr(cli, cmd+'_list')
-        return method(args)
-    elif cmd in dispatch:
-        method = dispatch[cmd]
+    # magically call list if no subcommand provided
+    elif hasattr(cli, cmd + '_list'):
+        method = getattr(cli, cmd + '_list')
         return method(args)
     else:
         print 'Found no matching command'
