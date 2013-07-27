@@ -737,7 +737,7 @@ class Release(UuidAuditedModel):
     version = models.PositiveIntegerField()
 
     config = models.ForeignKey('Config')
-    image = models.CharField(max_length=256, default='ubuntu')
+    image = models.CharField(max_length=256, default='deis/buildstep')
     # build only required for heroku-style apps
     build = models.ForeignKey('Build', blank=True, null=True)
 
