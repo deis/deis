@@ -51,6 +51,10 @@ else
   echo_color "SSH key $ssh_key_path exists"
 fi
 
+# create data bags
+knife data bag create deis-build
+knife data bag create deis-formations
+
 # trigger ec2 instance bootstrap
 echo_color "Provisioning $node_name with knife ec2..."
 set -x
