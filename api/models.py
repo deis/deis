@@ -711,7 +711,7 @@ class Build(UuidAuditedModel):
                             formation=formation,
                             user=user)
         # see if we need to scale an initial web container
-        if len(formation.layer_set.filter(id='runtime')) > 0 and \
+        if len(formation.node_set.filter(layer__id='runtime')) > 0 and \
            len(formation.container_set.filter(type='web')) < 1:
             # scale an initial web containers
             formation.containers['web'] = 1
