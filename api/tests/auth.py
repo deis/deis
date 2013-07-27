@@ -39,7 +39,7 @@ class AuthTest(TestCase):
             # try to abuse superuser/staff level perms
             'is_superuser': True,
             'is_staff': True,
-            }
+        }
         url = '/api/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -60,4 +60,4 @@ class AuthTest(TestCase):
         url = '/api/flavors'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 8) # 8 regions
+        self.assertEqual(response.data['count'], 8)  # 8 regions

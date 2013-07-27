@@ -15,8 +15,11 @@ pyCrypto>=2.6
 PyYAML>=3.10
 South>=0.8.1
 
-# Generates template documentation in the Django admin.
+# Run "make coverage" for the % of code exercised during tests
+# coverage>=3.6
+
+# Generates template documentation in the Django admin
 # docutils>=0.11
 
-# Deis developers must run "flake8" before committing code.
+# Run "make flake8" to check python syntax and style
 # flake8>=2.0

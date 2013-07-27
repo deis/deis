@@ -22,7 +22,7 @@ class LayerTest(TestCase):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
         url = '/api/providers'
-        creds = {'secret_key': 'x'*64, 'access_key': 1*20}
+        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
         body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -31,7 +31,7 @@ class LayerTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-                
+
     def test_layer(self):
         """
         Test that a user can create, read, update and delete a node layer
@@ -40,9 +40,10 @@ class LayerTest(TestCase):
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'autotest', 'flavor': 'autotest', 'run_list': 'recipe[deis::test1],recipe[deis::test2]'}
+        body = {'id': 'autotest', 'flavor': 'autotest',
+                'run_list': 'recipe[deis::test1],recipe[deis::test2]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         layer_id = response.data['id']
@@ -70,7 +71,7 @@ class LayerTest(TestCase):
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         key = RSA.generate(2048)
         body = {'id': 'autotest', 'run_list': 'recipe[deis::test1],recipe[deis::test2]',
@@ -88,7 +89,7 @@ class LayerTest(TestCase):
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         body = {'id': 'proxy', 'flavor': 'autotest', 'run_list': 'recipe[deis::proxy]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')

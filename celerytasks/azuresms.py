@@ -11,11 +11,7 @@ from . import util
 
 @task(name='azuresms.launch_node')
 def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
-    # install this manually in your virtual env https://github.com/WindowsAzure/azure-sdk-for-python
     # "pip install azure"
-    # http://scottdensmore.typepad.com/blog/2012/01/
-    # creating-a-ssl-certificate-for-the-cloud-ready-packages-for-the-ios-windows-azure-toolkit.html
-    # I got all these weird "random" errors that didnt effect anything
     sms = ServiceManagementService(
         subscription_id='69581868-8a08-4d98-a5b0-1d111c616fc3',
         cert_file='/Users/dgriffin/certs/iOSWAToolkit.pem')
@@ -62,7 +58,7 @@ def prepare_run_kwargs(params, init):
         'kernel_id': None, 'ramdisk_id': None,
         'monitoring_enabled': False, 'subnet_id': None,
         'block_device_map': None,
-        }
+    }
     # convert zone "any" to NoneType
     requested_zone = params.get('zone')
     if requested_zone and requested_zone.lower() == 'any':
@@ -74,9 +70,9 @@ def prepare_run_kwargs(params, init):
         'security_groups': params['security_groups'],
         'placement': requested_zone,
         'kernel_id': params.get('kernel', None),
-        }
+    }
     # update user_data
-    cloud_config = '#cloud-config\n'+yaml.safe_dump(init)
+    cloud_config = '#cloud-config\n' + yaml.safe_dump(init)
     kwargs.update({'user_data': cloud_config})
     # params override defaults
     kwargs.update(param_kwargs)

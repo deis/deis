@@ -8,7 +8,8 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from api import models, utils
+from api import models
+from api import utils
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -125,13 +126,13 @@ class FormationSerializer(serializers.ModelSerializer):
 
 
 class LayerSerializer(serializers.ModelSerializer):
- 
+
     """Serializes a Layer model."""
-    
+
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
     flavor = serializers.SlugRelatedField(slug_field='id')
-    
+
     class Meta:
         """Metadata options for a LayerSerializer."""
         model = models.Layer

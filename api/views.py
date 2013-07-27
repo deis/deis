@@ -154,16 +154,16 @@ class FormationViewSet(OwnerViewSet):
         request._data = request.DATA.copy()
         try:
             return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError as _e:
+        except IntegrityError:
             return Response('Formation with this Id already exists.',
                             status=HTTP_400_BAD_REQUEST)
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
-            config = models.Config.objects.create(version=1,
-                owner=formation.owner, formation=formation, values={})
-            models.Release.objects.create(version=1,
-                owner=formation.owner, formation=formation, config=config)
+            config = models.Config.objects.create(
+                version=1, owner=formation.owner, formation=formation, values={})
+            models.Release.objects.create(
+                version=1, owner=formation.owner, formation=formation, config=config)
         # update gitosis
         models.Formation.objects.publish()
 
@@ -232,10 +232,10 @@ class FormationLayerViewSet(OwnerViewSet):
 
     model = models.Layer
     serializer_class = serializers.LayerSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
+            owner=self.request.user, id=self.kwargs['id'])
         return self.model.objects.filter(owner=self.request.user, formation=formation)
 
     def get_object(self, *args, **kwargs):
@@ -246,7 +246,7 @@ class FormationLayerViewSet(OwnerViewSet):
     def create(self, request, **kwargs):
         request._data = request.DATA.copy()
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
+            owner=self.request.user, id=self.kwargs['id'])
         request.DATA['formation'] = formation.id
         if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
             # SECURITY: figure out best way to get keys with proper entropy
@@ -255,7 +255,7 @@ class FormationLayerViewSet(OwnerViewSet):
             request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
         try:
             return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError as _e:
+        except IntegrityError:
             return Response("Layer with this Id already exists.",
                             status=HTTP_400_BAD_REQUEST)
 
@@ -277,11 +277,11 @@ class FormationNodeViewSet(OwnerViewSet):
 
     model = models.Node
     serializer_class = serializers.NodeSerializer
-    
+
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
 
     def get_object(self, *args, **kwargs):
@@ -297,10 +297,10 @@ class FormationContainerViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
-    
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(pk=self.kwargs['container'])
@@ -314,10 +314,10 @@ class FormationImageViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
-            
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(pk=self.kwargs['id'])
@@ -338,10 +338,10 @@ class FormationConfigViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
-    
+
     def get_object(self, *args, **kwargs):
         formation = models.Formation.objects.get(id=self.kwargs['id'])
         config = self.model.objects.filter(
@@ -381,10 +381,10 @@ class FormationBuildViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
-    
+
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset().order_by('-created')
         build = get_object_or_404(qs)
@@ -399,7 +399,7 @@ class FormationBuildViewSet(OwnerViewSet):
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
+            owner=self.request.user, id=self.kwargs['id'])
         request.DATA['formation'] = formation
         return super(OwnerViewSet, self).create(request, *args, **kwargs)
 
@@ -411,8 +411,8 @@ class FormationReleaseViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         formation = models.Formation.objects.get(
-                owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, 
+            owner=self.request.user, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
                                          formation=formation)
 
     def get_object(self, *args, **kwargs):

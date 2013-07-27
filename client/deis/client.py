@@ -79,7 +79,7 @@ class Session(requests.Session):
         try:
             git_root = subprocess.check_output(
                 ['git', 'rev-parse', '--show-toplevel']).strip('\n')
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             raise EnvironmentError('Current directory is not a git repository')
         # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
@@ -220,7 +220,7 @@ class DeisClient(object):
             password = getpass('password: ')
         email = args.get('--email')
         if not email:
-            email = raw_input ('email: ')
+            email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
@@ -508,7 +508,7 @@ class DeisClient(object):
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
-                     stdout=subprocess.PIPE)
+                    stdout=subprocess.PIPE)
             except subprocess.CalledProcessError:
                 sys.exit(1)
             print('Git remote deis added\n')
@@ -569,7 +569,8 @@ class DeisClient(object):
         sys.stdout.write('Destroying {}... '.format(formation))
         sys.stdout.flush()
         response = self._dispatch('delete', '/api/formations/{}'.format(formation))
-        if response.status_code in (requests.codes.no_content, requests.codes.not_found):  # @UndefinedVariable
+        if response.status_code in (requests.codes.no_content,
+                                    requests.codes.not_found):  # @UndefinedVariable
             print('done')
             try:
                 subprocess.check_call(
@@ -677,7 +678,7 @@ class DeisClient(object):
             for key in data['results']:
                 public = key['public']
                 print('{0} {1}...{2}'.format(
-                  key['id'], public[0:16], public[-10:]))
+                    key['id'], public[0:16], public[-10:]))
         else:
             print('Error!', response.text)
 
@@ -748,11 +749,11 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        layer = args['<id>']
+        layer = args['<id>']  # noqa
         sys.stdout.write('Destroying {layer} layer... '.format(**locals()))
         sys.stdout.flush()
-        response = self._dispatch('delete',
-            '/api/formations/{formation}/layers/{layer}'.format(**locals()))
+        response = self._dispatch(
+            'delete', '/api/formations/{formation}/layers/{layer}'.format(**locals()))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:

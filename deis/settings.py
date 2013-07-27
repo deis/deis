@@ -107,7 +107,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "allauth.account.context_processors.account",
-    "allauth.socialaccount.context_processors.socialaccount",
 )
 
 MIDDLEWARE_CLASSES = (
@@ -144,13 +143,14 @@ INSTALLED_APPS = (
     'allauth',
     'allauth.account',
     'djcelery',
-    'celerytasks',
     'json_field',
     'rest_framework',
+    'south',
     # Deis apps
     'api',
+    'celerytasks',
+    'client',
     'web',
-    'south'
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -171,7 +171,7 @@ SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'DEFAULT_MODEL_SERIALIZER_CLASS':
-        'rest_framework.serializers.ModelSerializer',
+    'rest_framework.serializers.ModelSerializer',
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
@@ -214,8 +214,8 @@ LOGGING = {
 }
 
 # import deis-specific settings files
-from .chef_settings import *  # noqa @UnusedWildImport
-from .celery_settings import *  # noqa @UnusedWildImport
+from .chef_settings import *  # @UnusedWildImport # noqa
+from .celery_settings import *  # @UnusedWildImport # noqa
 
 # default deis settings
 CONVERGE_ON_PUSH = True
@@ -249,7 +249,6 @@ CONVERGE_ON_PUSH = True
 # EMAIL_HOST_PASSWORD = 'bar'
 
 try:
-    from .local_settings import *  # noqa @UnusedWildImport
+    from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
     print('No deis/local_settings.py file found!')
-

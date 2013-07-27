@@ -21,7 +21,7 @@ class FormationTest(TestCase):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
         url = '/api/providers'
-        creds = {'secret_key': 'x'*64, 'access_key': 1*20}
+        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
         body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -39,7 +39,7 @@ class FormationTest(TestCase):
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         self.assertIn('layers', response.data)
         self.assertIn('containers', response.data)
         response = self.client.get('/api/formations')
@@ -56,19 +56,22 @@ class FormationTest(TestCase):
 
     def test_formation_auto_id(self):
         body = {'id': 'autotest'}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
         return response
-        
+
     def test_formation_errors(self):
         # test duplicate id
         body = {}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['id'])
         body = {'id': response.data['id']}
-        response = self.client.post('/api/formations', json.dumps(body), content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(json.loads(response.content), 'Formation with this Id already exists.')
 
@@ -77,13 +80,14 @@ class FormationTest(TestCase):
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         # scaling containers without a runtime layer should throw an error
         url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
         body = {'web': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), 'Must create a "runtime" layer to host containers')
+        self.assertEqual(json.loads(response.content),
+                         'Must create a "runtime" layer to host containers')
         # scaling containers without any runtime nodes should throw an error
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
@@ -93,14 +97,15 @@ class FormationTest(TestCase):
         body = {'web': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(json.loads(response.content), 'Must scale runtime nodes > 0 to host containers')
+        self.assertEqual(json.loads(response.content),
+                         'Must scale runtime nodes > 0 to host containers')
 
     def test_formation_actions(self):
         url = '/api/formations'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        formation_id = response.data['id']  # noqa
         # test calculate
         url = '/api/formations/{formation_id}/calculate'.format(**locals())
         response = self.client.post(url)

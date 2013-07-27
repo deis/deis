@@ -30,18 +30,23 @@ release_signal = Signal(providing_args=['formation', 'user'])
 
 
 def import_tasks(provider_type):
-    """Return Celery tasks for a given provider type"""
+    """Return the celerytasks module for a given provider.
+
+        :param provider_type: type of cloud provider **currently only "ec2"**
+        :type  provider_type: string
+        :rtype: celerytasks module for the provider
+        :raises: :py:class:`ImportError` if the provider isn't recognized
+    """
     try:
-        tasks = importlib.import_module('celerytasks.'+provider_type)
-    except ImportError as e:
-        raise e
+        tasks = importlib.import_module('celerytasks.' + provider_type)
+    except ImportError:
+        raise
     return tasks
 
 
 class AuditedModel(models.Model):
 
-    """
-    Adds created and update fields to a model.
+    """Adds created and updated fields to a model.
     """
 
     created = models.DateTimeField(auto_now_add=True)
@@ -49,7 +54,7 @@ class AuditedModel(models.Model):
 
     class Meta:
         """
-        Metadata options for AuditedModel, marking this class as abstract.
+        Metadata options for `AuditedModel`, marking this class as abstract.
         """
         abstract = True
 
@@ -122,7 +127,7 @@ class FlavorManager(models.Manager):
     def load_cloud_config_base(self):
         # load cloud-config-base yaml_
         _cloud_config_path = os.path.abspath(
-                os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
+            os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
         with open(_cloud_config_path) as f:
             _data = f.read()
         return yaml.safe_load(_data)
@@ -199,7 +204,7 @@ class FormationManager(models.Manager):
             'ssh_keys': {},
             'admins': [],
             'formations': {}
-            }
+        }
         # add all ssh keys on the system
         for key in Key.objects.all():
             key_id = "{0}_{1}".format(key.owner.username, key.id)
@@ -217,9 +222,11 @@ class FormationManager(models.Manager):
     def next_container_node(self, formation, container_type):
         count = []
         layer = formation.layer_set.get(id='runtime')
-        runtime_nodes = list(Node.objects.filter(formation=formation, layer=layer).order_by('created'))
-        container_map = { n: [] for n in runtime_nodes }
-        containers = list(Container.objects.filter(formation=formation, type=container_type).order_by('created'))
+        runtime_nodes = list(Node.objects.filter(
+            formation=formation, layer=layer).order_by('created'))
+        container_map = {n: [] for n in runtime_nodes}
+        containers = list(Container.objects.filter(
+            formation=formation, type=container_type).order_by('created'))
         for c in containers:
             container_map[c.node].append(c)
         for n in container_map.keys():
@@ -261,13 +268,13 @@ class Formation(UuidAuditedModel):
                 node = nodes.pop(0)
                 funcs.append(node.terminate)
                 diff = requested - len(nodes)
-            while diff > 0: 
+            while diff > 0:
                 node = Node.objects.new(self, layer)
                 nodes.append(node)
                 funcs.append(node.launch)
                 diff = requested - len(nodes)
         # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [func() for func in funcs ]
+        job = [func() for func in funcs]
         # balance containers
         containers_balanced = self._balance_containers()
         # launch/terminate nodes in parallel
@@ -334,17 +341,17 @@ class Formation(UuidAuditedModel):
     def _balance_containers(self, **kwargs):
         runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('created')
         if len(runtime_nodes) < 2:
-            return # there's nothing to balance with 1 runtime node
+            return  # there's nothing to balance with 1 runtime node
         all_containers = Container.objects.filter(formation=self).order_by('-created')
         # get the next container number (e.g. web.19)
         container_num = 1 if not all_containers else all_containers[0].num + 1
         changed = False
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
-            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] } 
+            # map node container counts => {2: [b3, b4], 3: [ b1, b2 ]}
             n_map = {}
             for node in runtime_nodes:
-                ct = len(node.container_set.filter(type=container_type)) 
+                ct = len(node.container_set.filter(type=container_type))
                 n_map.setdefault(ct, []).append(node)
             # loop until diff between min and max is 1 or 0
             while max(n_map.keys()) - min(n_map.keys()) > 1:
@@ -421,17 +428,17 @@ class Formation(UuidAuditedModel):
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
         # TODO: batch node converging by layer.level
-        nodes = [ node for node in self.node_set.all() ]
-        job = group(*[ n.converge() for n in nodes ])
-        _results = job.apply_async().join()
+        nodes = [node for node in self.node_set.all()]
+        job = group(*[n.converge() for n in nodes])
+        job.apply_async().join()
         return databag
 
     def destroy(self):
         node_tasks, layer_tasks, chef_tasks = [], [], []
         # create subtasks to terminate all nodes in parallel
         all_layers = self.layer_set.all()
-        node_tasks.extend([ layer.destroy()[0] for layer in all_layers ])
-        layer_tasks.extend([ layer.destroy()[1] for layer in all_layers ])
+        node_tasks.extend([layer.destroy()[0] for layer in all_layers])
+        layer_tasks.extend([layer.destroy()[1] for layer in all_layers])
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             chef_tasks.extend([controller.destroy_formation.s(self.id)])  # @UndefinedVariable
@@ -443,23 +450,23 @@ class Formation(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Layer(UuidAuditedModel):
-    
+
     """
     Layer of nodes used by the formation
-    
+
     All nodes in a layer share the same flavor and configuration
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
-    
+
     formation = models.ForeignKey('Formation')
     flavor = models.ForeignKey('Flavor')
     level = models.PositiveIntegerField(default=0)
 
     # chef settings
     chef_version = models.CharField(max_length=32, default='11.4.4')
-    run_list = models.CharField(max_length=512)    
+    run_list = models.CharField(max_length=512)
     initial_attributes = fields.JSONField(default='{}', blank=True)
     environment = models.CharField(max_length=64, default='_default')
     # ssh settings
@@ -484,7 +491,7 @@ class Layer(UuidAuditedModel):
         tasks = import_tasks(self.flavor.provider.type)
         subtasks = []
         # create subtasks to terminate all nodes in parallel
-        subtasks.extend([ node.terminate() for node in self.node_set.all() ])
+        subtasks.extend([node.terminate() for node in self.node_set.all()])
         node_tasks = group(*subtasks)
         # purge other hosting provider infrastructure
         name = "{0}-{1}".format(self.formation.id, self.id)
@@ -526,7 +533,7 @@ class Node(UuidAuditedModel):
     formation = models.ForeignKey('Formation')
     layer = models.ForeignKey('Layer')
     num = models.PositiveIntegerField()
-    
+
     # synchronized with node after creation
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
     fqdn = models.CharField(max_length=256, blank=True, null=True)
@@ -565,10 +572,10 @@ class Node(UuidAuditedModel):
             if self.layer.initial_attributes:
                 chef['initial_attributes'] = self.layer.initial_attributes
         # add the formation's ssh pubkey
-        init.setdefault('ssh_authorized_keys', []).append(
-                                self.layer.ssh_public_key)
+        init.setdefault(
+            'ssh_authorized_keys', []).append(self.layer.ssh_public_key)
         # add all of the owner's SSH keys
-        init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all() ])
+        init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all()])
         ssh_username = self.layer.ssh_username
         ssh_private_key = self.layer.ssh_private_key
         args = (self.uuid, creds, params, init, ssh_username, ssh_private_key)
@@ -744,6 +751,9 @@ class Release(UuidAuditedModel):
 
 @receiver(release_signal)
 def new_release(sender, **kwargs):
+    """Catches a release_signal and creates a new release from the
+    last release.
+    """
     formation, user = kwargs['formation'], kwargs['user']
     last_release = Release.objects.filter(
         formation=formation).order_by('-created')[0]
@@ -759,11 +769,12 @@ def new_release(sender, **kwargs):
         if new_values:
             # update with current config
             new_values.update(config.values)
-            config = Config.objects.create(version=config.version+1,
-                owner=user, formation=formation, values=new_values)
+            config = Config.objects.create(
+                version=config.version + 1, owner=user,
+                formation=formation, values=new_values)
     # create new release and auto-increment version
     new_version = last_release.version + 1
-    release = Release.objects.create(owner=user, formation=formation, 
-        image=image, config=config, build=build, version=new_version)
+    release = Release.objects.create(
+        owner=user, formation=formation, image=image, config=config,
+        build=build, version=new_version)
     return release
-
