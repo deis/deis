@@ -1,6 +1,8 @@
-:title: Contributing to Deis
+:title: Contributing
 :description: TOOD
 :keywords: todo
 
-Contributing to Deis
-====================
+.. _contributing:
+
+Contributing
+============

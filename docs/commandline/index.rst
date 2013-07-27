@@ -1,6 +1,8 @@
-:title: Deis command line cheat sheet
+:title: CLI cheatsheet
 :description: TODO
 :keywords: todo
 
-Command line cheat sheet
-========================
+.. _cheatsheet:
+
+CLI cheatsheet
+==============
