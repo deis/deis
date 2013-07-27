@@ -487,7 +487,7 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """
-        Usage: deis formations:create [--flavor=<flavor> --id=<id>]
+        Usage: deis formations:create [--id=<id> --flavor=<flavor>]
         """
         body = {}
         for opt in ('--id',):
@@ -501,7 +501,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
-            print 'done, created {}'.format(formation)
+            print('done, created {}'.format(formation))
             # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc
             git_remote = 'git@{hostname}:{formation}.git'.format(**locals())
@@ -511,7 +511,13 @@ class DeisClient(object):
                      stdout=subprocess.PIPE)
             except subprocess.CalledProcessError:
                 sys.exit(1)
-            print('Git remote deis added')
+            print('Git remote deis added\n')
+            # create default layers if a flavor was provided
+            flavor = args.get('--flavor')
+            if flavor:
+                self.layers_create({'<id>': 'runtime', '<flavor>': flavor})
+                self.layers_create({'<id>': 'proxy', '<flavor>': flavor})
+                print('\nUse `deis layers:scale runtime=1 proxy=1` to scale a basic formation\n')
         else:
             print('Error!', response.text)
 
@@ -560,7 +566,8 @@ class DeisClient(object):
             if confirm != formation:
                 print('Destroy aborted')
                 return
-        print 'Destroying {0}...'.format(formation),
+        sys.stdout.write('Destroying {}... '.format(formation))
+        sys.stdout.flush()
         response = self._dispatch('delete', '/api/formations/{}'.format(formation))
         if response.status_code in (requests.codes.no_content, requests.codes.not_found):  # @UndefinedVariable
             print('done')
@@ -782,12 +789,14 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
+        print('Scaling layers... but first, coffee!')
+        # TODO: add threaded spinner to print dots
         response = self._dispatch('post',
                                   '/api/formations/{}/scale/layers'.format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
+            print('...done\n')
+            print('Use `git push deis master` to deploy to your formation')
         else:
             print('Error!', response.text)
 
