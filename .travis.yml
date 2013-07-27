@@ -19,7 +19,7 @@ before_install:
 
 install:
   - "pip install -r requirements.txt --use-mirrors"
-  - "pip install coveralls --use-mirrors"
+  - "pip install coveralls sphinx --use-mirrors"
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
@@ -39,7 +39,8 @@ before_script:
     EOF
 
 script:
-  - coverage run manage.py test api celerytasks web
+  - coverage run manage.py test api celerytasks client web
+  - make -C docs clean dirhtml
 
 after_success:
   - coveralls
