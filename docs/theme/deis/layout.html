@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta name="google-site-verification" content="" />
+  <title>{{ meta['title'] if meta and meta['title'] else title }} - Deis Documentation</title>
+  <meta name="description" content="{{ meta['description'] if meta }}" />
+  <meta name="keywords" content="{{ meta['keywords'] if meta }}" />
+  {%- if pagename == 'index' %}
+  <link rel="canonical" href="http://deis.io/docs/latest/">
+  {% else %}
+  <link rel="canonical" href="http://deis.io/docs/latest/{{ pagename }}/">
+  {% endif %}
+  <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.min.css', 1) }}" type="text/css" />
+  <link rel="stylesheet" href="{{ pathto('_static/css/deis.css', 1) }}" type="text/css" />
+  <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.min.css', 1) }}" type="text/css" />
+  <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}"/>
+  {%- block extrahead %}{% endblock %}
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-dotcloud">
+        <div class="container" style="text-align: center;">
+
+            <div style="float: right" class="pull-right">
+                <ul class="nav">
+                    <li id="nav-introduction"><a href="http://deis.io/" title="Deis Home">Home</a></li>
+                    <li id="nav-about"><a href="http://deis.io" title="About">About</a></li>
+                    <li id="nav-documentation" class="active"><a href="http://deis.io/docs/latest/">Documentation</a></li>
+                    <li id="nav-blog"><a href="http://deis.io/blog" title="Deis Blog">Blog</a></li>
+                </ul>
+            </div>
+
+            <div style="margin-left: -12px; float: left;">
+                <a href="http://deis.io" title="Deis Home"><img style="margin-top: 0px; height: 60px; margin-left: 10px;" src="{{ pathto('_static/img/deis_logo.png', 1) }}"></a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="span12 titlebar">
+            <div class="pull-right" id="fork-us" style="margin-top: 16px; margin-right: 16px;">
+                <a href="http://github.com/opdemand/deis/"><img src="{{ pathto('_static/img/fork.png', 1) }}"> Fork us on Github</a>
+            </div>
+            <h1 class="pageheader"><a href="http://deis.io/docs/latest/" title="Documentation" style="color: white;">DOCUMENTATION</a></h1>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <!-- Docs nav
+     ================================================== -->
+    <div class="row" style="position: relative">
+
+        <div class="span3 sidebar bs-docs-sidebar">
+            {{ toctree(collapse=False, maxdepth=3) }}
+        </div>
+
+        <!-- body block -->
+        <div class="span9">
+
+            <!-- Main section
+            ================================================== -->
+            <section id="global" class="containerblock">
+                {% block body %}{% endblock %}
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<div id="footer" class="container" >
+    <div class="row">
+
+        <div class="span12 footer">
+            <div class="tbox textright forceleftmargin social links pull-right">
+                <a class="twitter" href="http://twitter.com/opdemand">Twitter</a>
+                <a class="github" href="https://github.com/opdemand/deis/">GitHub</a>
+            </div>
+
+            <a href="http://www.opdemand.com">OpDemand</a> sponsors and maintains the deis project
+
+        </div>
+    </div>
+</div>
+
+<!-- js -->
+<script type="text/javascript" src="/_static/js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="/_static/js/bootstrap.min.js"></script>
+
+</body>
+</html>
