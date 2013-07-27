@@ -312,6 +312,9 @@ class DeisClient(object):
             # add ssh keys before formations are created
             print
             self.keys_add({})
+            print
+            self.providers_discover({})
+            print
         else:
             print('Registration failed', response.content)
             return False
