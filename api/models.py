@@ -534,6 +534,9 @@ class Node(UuidAuditedModel):
     layer = models.ForeignKey('Layer')
     num = models.PositiveIntegerField()
 
+    # TODO: add celery beat tasks for monitoring node health
+    status = models.CharField(max_length=64, default='up')
+
     # synchronized with node after creation
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
     fqdn = models.CharField(max_length=256, blank=True, null=True)
@@ -619,10 +622,9 @@ class Container(UuidAuditedModel):
     node = models.ForeignKey('Node')
     type = models.CharField(max_length=128)
     num = models.PositiveIntegerField()
-    # synchronized with container after creation
-    id = models.CharField(max_length=128, blank=True)
-    port = models.IntegerField(blank=True, null=True)
-    metadata = fields.JSONField(blank=True)
+
+    # TODO: add celery beat tasks for monitoring node health
+    status = models.CharField(max_length=64, default='up')
 
     def __str__(self):
         if self.id:
