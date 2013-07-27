@@ -578,7 +578,7 @@ class DeisClient(object):
         sys.stdout.write('Destroying {}... '.format(formation))
         sys.stdout.flush()
         response = self._dispatch('delete', '/api/formations/{}'.format(formation))
-        if response.status_code in (requests.codes.no_content,
+        if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done')
             try:
