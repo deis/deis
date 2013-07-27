@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Usage: deis <command> [--formation=<formation>] [<args>...]
+"""Usage: deis <command> [--formation <formation>] [<args>...]
 
 Options:
   -h --help       Show this help screen
@@ -207,6 +207,8 @@ class DeisClient(object):
 
     def auth_register(self, args):
         """
+        Register a new user with a Deis controller
+
         Usage: deis auth:register <controller> [--username=<username> --password=<password> --email=<email>]
         """
         controller = args['<controller>']
@@ -485,45 +487,37 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """
-        Usage: deis formations:create --flavor=<flavor> [--image=<image> --id=<id>]
+        Usage: deis formations:create [--flavor=<flavor> --id=<id>]
         """
         body = {}
-        for opt in ('--id', '--image'):
+        for opt in ('--id',):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
+        sys.stdout.write('Creating formation... ')
+        sys.stdout.flush()
         response = self._dispatch('post', '/api/formations',
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
-            print('Created ' + formation)
+            print 'done, created {}'.format(formation)
+            # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc
+            git_remote = 'git@{hostname}:{formation}.git'.format(**locals())
             try:
                 subprocess.check_call(
-                    ['git', 'remote', 'add', '-f', 'deis',
-                     'git@{hostname}:{formation}.git'.format(**locals())])
+                    ['git', 'remote', 'add', '-f', 'deis', git_remote],
+                     stdout=subprocess.PIPE)
             except subprocess.CalledProcessError:
                 sys.exit(1)
-            print('Git remote added')
-        else:
-            print('Error!', response.text)
-
-    def formations_list(self, args):
-        """
-        Usage: deis formations:info
-        """
-        response = self._dispatch('get', '/api/formations')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            for item in data['results']:
-                print('{0[id]:<23}'.format(item))
+            print('Git remote deis added')
         else:
             print('Error!', response.text)
 
     def formations_info(self, args):
         """
-        Usage: deis formations:list
+        Usage: deis formations:info
         """
         formation = args.get('<formation>')
         if not formation:
@@ -531,6 +525,18 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/formations/{}'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
+        else:
+            print('Error!', response.text)
+
+    def formations_list(self, args):
+        """
+        Usage: deis formations:list
+        """
+        response = self._dispatch('get', '/api/formations')
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            for item in data['results']:
+                print('{0[id]:<23}'.format(item))
         else:
             print('Error!', response.text)
 
@@ -562,7 +568,7 @@ class DeisClient(object):
                 subprocess.check_call(
                     ['git', 'remote', 'rm', 'deis'],
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print('Git remote removed')
+                print('Git remote deis removed')
             except subprocess.CalledProcessError:
                 pass  # ignore error
         else:
@@ -746,7 +752,11 @@ class DeisClient(object):
             print('Error!', response.text)
 
     def layers_list(self, args):
-        """List layers for this formation."""
+        """
+        List layers for this formation.
+
+        Usage deis layers:list
+        """
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
@@ -949,19 +959,25 @@ def main():
         docstring = trim(getattr(cli, cmd).__doc__)
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))
-    # dispatch based on primary command
+    # find the right method for dispatching
     if cmd == 'help':
         docopt(__doc__, argv=['--help'])
     elif hasattr(cli, cmd):
         method = getattr(cli, cmd)
-        return method(args)
     # magically call list if no subcommand provided
     elif hasattr(cli, cmd + '_list'):
         method = getattr(cli, cmd + '_list')
-        return method(args)
     else:
         print 'Found no matching command'
         raise DocoptExit()
+    # dispatch the CLI command
+    try:
+        method(args)
+    except EnvironmentError as e:
+        if e.message.startswith('Could not find deis remote'):
+            print 'Could not find git remote for deis'
+            raise DocoptExit()
+        raise e
 
 
 if __name__ == '__main__':
