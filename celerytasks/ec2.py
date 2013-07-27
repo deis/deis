@@ -40,6 +40,10 @@ def build_layer(layer, creds, params):
 
 @task(name='ec2.destroy_layer')
 def destroy_layer(layer, creds, params):
+    # there's an ec2 race condition on instances terminating
+    # successfully but still holding a lock on the security group
+    # let's take a nap
+    time.sleep(5)
     region = params.get('region', 'us-east-1')
     conn = create_ec2_connection(
         region, creds['access_key'], creds['secret_key'])
@@ -184,7 +188,7 @@ def prepare_run_kwargs(params, init):
         'kernel_id': params.get('kernel', None),
     }
     # update user_data
-    cloud_config = '#cloud-config\n'+yaml.safe_dump(init)
+    cloud_config = '#cloud-config\n' + yaml.safe_dump(init)
     kwargs.update({'user_data': cloud_config})
     # params override defaults
     kwargs.update(param_kwargs)
