@@ -33,7 +33,7 @@ def build_layer(layer, creds, params):
         region, creds['access_key'], creds['secret_key'])
     # create a new sg and authorize all ports
     # use iptables on the host to firewall ports
-    sg = conn.create_security_group(layer, 'Managed by Deis')
+    sg = conn.create_security_group(layer, 'Created by Deis')
     sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
                  cidr_ip='0.0.0.0/0')
 
