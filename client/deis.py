@@ -400,12 +400,20 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('get',
-                                  '/formations/{}/containers'.format(formation))
+                                  '/api/formations/{}/containers'.format(formation))
+        databag = self.formations_calculate({}, quiet=True)
+        procfile = databag['release']['build'].get('procfile', {})
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
             data = response.json()
+            c_map = {}
             for item in data['results']:
-                print('{0[uuid]}'.format(item))
+                c_map.setdefault(item['type'], []).append(item)
+            for c_type in c_map.keys():
+                command = procfile.get(c_type, '<none>')
+                print('=== {c_type}: `{command}`'.format(**locals()))
+                for c in c_map[c_type]:
+                    print('{type}.{num} up {created}'.format(**c))
+                print
         else:
             print('Error!', response.text)
 
@@ -511,13 +519,14 @@ class DeisClient(object):
                     stdout=subprocess.PIPE)
             except subprocess.CalledProcessError:
                 sys.exit(1)
-            print('Git remote deis added\n')
+            print('Git remote deis added')
             # create default layers if a flavor was provided
             flavor = args.get('--flavor')
             if flavor:
+                print
                 self.layers_create({'<id>': 'runtime', '<flavor>': flavor})
                 self.layers_create({'<id>': 'proxy', '<flavor>': flavor})
-                print('\nUse `deis layers:scale runtime=1 proxy=1` to scale a basic formation\n')
+                print('\nUse `deis layers:scale runtime=1 proxy=1` to scale a basic formation')
         else:
             print('Error!', response.text)
 
@@ -582,7 +591,7 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
-    def formations_calculate(self, args):
+    def formations_calculate(self, args, quiet=False):
         """
         Usage: deis formations:calculate
         """
@@ -593,7 +602,9 @@ class DeisClient(object):
                                   '/api/formations/{}/calculate'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
+            if quiet is False:
+                print(json.dumps(databag, indent=2))
+            return databag
         else:
             print('Error!', response.text)
 
