@@ -630,6 +630,8 @@ class Container(UuidAuditedModel):
         return '{0} {1}.{2}'.format(self.formation.id, self.type, self.num)
 
     class Meta:
+        get_latest_by = '-created'
+        ordering = ['created']
         unique_together = (('formation', 'type', 'num'),)
 
 
