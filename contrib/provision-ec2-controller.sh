@@ -55,7 +55,7 @@ function echo_color {
 if ! ec2-describe-group | grep -q "$sg_name"; then
   echo_color "Creating security group: $sg_name"
   set -x
-  ec2-create-group $sg_name -d "Managed by Deis"
+  ec2-create-group $sg_name -d "Created by Deis"
   set +x
   echo_color "Authorizing TCP ports 22,80,443 from $sg_src..."
   set -x
@@ -69,7 +69,7 @@ fi
 
 # create ssh keypair and store it
 if ! test -e $ssh_key_path; then
-  echo "Creating new SSH key: $key_name"
+  echo_color "Creating new SSH key: $key_name"
   set -x
   ec2-create-keypair $key_name > $ssh_key_path
   chmod 600 $ssh_key_path
