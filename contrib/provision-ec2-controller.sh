@@ -1,8 +1,36 @@
 #!/bin/sh
 
+if [ -z $1 ]; then
+  echo usage: $0 [region]
+  exit 1
+fi
+
+region=$1
+
+# see contrib/prepare-ubuntu-ami.sh for instructions
+# on creating your own deis-optmized AMIs
+if [ "$region" == "ap-northeast-1" ]; then
+  image=ami-a57aeca4
+elif [ "$region" == "ap-southeast-1" ]; then
+  image=ami-e03a72b2
+elif [ "$region" == "ap-southeast-2" ]; then
+  image=ami-bd801287
+elif [ "$region" == "eu-west-1" ]; then
+  image=ami-d9d3cdad
+elif [ "$region" == "sa-east-1" ]; then
+  image=ami-a7df7bba
+elif [ "$region" == "us-east-1" ]; then
+  image=ami-e85a2081
+elif [ "$region" == "us-west-1" ]; then
+  image=ami-ac6942e9
+elif [ "$region" == "us-west-2" ]; then
+  image=ami-b55ac885
+else
+  echo "Cannot find AMI for region: $region"
+  exit 1
+fi
+
 # ec2 settings
-region="us-west-2"
-image="ami-bf41d28f"
 flavor="m1.large"
 ebs_size=100
 sg_name=deis-controller
@@ -16,7 +44,7 @@ ssh_user="ubuntu"
 
 # chef settings
 node_name="deis-controller"
-run_list="recipe[deis::default],recipe[deis::gitosis],recipe[deis::build],recipe[deis::postgresql],recipe[deis::server]"
+run_list="recipe[deis],recipe[deis::postgresql],recipe[deis::server],recipe[deis::gitosis],recipe[deis::build]"
 chef_version=11.4.4
 
 function echo_color {
