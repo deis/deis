@@ -15,9 +15,11 @@ Auth commands:
 Common commands:
 
   create        create a new container formation
+  info          print a represenation of the formation
   scale         scale container types (web=2, worker=1)
-  rotate        rotate in fresh backends, proxies or containers
-  balance       rebalance and converge the container formation
+  balance       rebalance the container formation
+  converge      force-converge all nodes in the formation
+  calculate     recalculate and update the formation databag
   destroy       destroy a container formation
 
 Use `deis help [subcommand]` to learn about these subcommands:
@@ -27,12 +29,13 @@ Use `deis help [subcommand]` to learn about these subcommands:
   nodes         manage nodes of all types
   containers    manage the containers running on backends
 
-  flavors       create and manage node flavors
-  providers     create and manage cloud provider credentials
+  providers     manage cloud provider credentials
+  flavors       manage node flavors on a provider
+  keys          manage ssh keys
 
-  config        list, set and unset environment variables for a formation
-  builds        list and manage git-push builds for a formation
-  releases      list and show a formation's release history
+  config        manage environment variables for a formation
+  builds        manage git-push builds for a formation
+  releases      manage a formation's release history
 
 Use `git push deis master` to deploy to the container formation.
 
@@ -73,14 +76,17 @@ class Session(requests.Session):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
 
-    def _get_formation(self):
-        # TODO: determine the user's current formation from files in .git
-        # in the current working directory.
+    def git_root(self):
         try:
             git_root = subprocess.check_output(
-                ['git', 'rev-parse', '--show-toplevel']).strip('\n')
+                ['git', 'rev-parse', '--show-toplevel'],
+                stderr=subprocess.PIPE).strip('\n')
         except subprocess.CalledProcessError:
             raise EnvironmentError('Current directory is not a git repository')
+        return git_root
+
+    def get_formation(self):
+        git_root = self.git_root()
         # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
                                           cwd=git_root)
@@ -94,7 +100,7 @@ class Session(requests.Session):
             raise EnvironmentError('Could not parse: {url}'.format(**locals()))
         return m.groupdict()['formation']
 
-    formation = property(_get_formation)
+    formation = property(get_formation)
 
     def request(self, *args, **kwargs):
         for cookie in self.cookies:
@@ -240,6 +246,7 @@ class DeisClient(object):
             print
             self.providers_discover({})
             print
+            print 'Use `deis create --flavor=ec2-us-east-1` to create a new formation'
         else:
             print('Registration failed', response.content)
             return False
@@ -307,7 +314,7 @@ class DeisClient(object):
         # url / sha / slug_size / procfile / checksum
         j = json.loads(data)
         response = self._dispatch('post',
-                                  '/formations/{}/builds'.format(formation),
+                                  '/api/formations/{}/builds'.format(formation),
                                   body=json.dumps(j))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('Build created.')
@@ -321,7 +328,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/formations/{}/builds'.format(formation))
+        response = self._dispatch('get', '/api/formations/{}/builds'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -532,6 +539,11 @@ class DeisClient(object):
         Usage: deis formations:create [--id=<id> --flavor=<flavor>]
         """
         body = {}
+        try:
+            self._session.git_root()  # check for a git repository
+        except EnvironmentError:
+            print 'No git repository found, use `git init` to create one'
+            return
         for opt in ('--id',):
             o = args.get(opt)
             if o:
@@ -858,6 +870,12 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def nodes(self, args):
+        """
+        Nodes help would be nice
+        """
+        return self.nodes_list(args)
+
     def nodes_info(self, args):
         """
         Usage: deis nodes:info <node>
@@ -868,12 +886,6 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
         else:
             print('Error!', response.text)
-
-    def nodes(self, args):
-        """
-        Nodes help would be nice
-        """
-        return self.nodes_list(args)
 
     def nodes_list(self, args):
         """
@@ -1008,7 +1020,7 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/formations/{}/release'.format(formation))
+        response = self._dispatch('get', '/api/formations/{}/release'.format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('=== {0}'.format(formation))
             data = response.json()
@@ -1040,6 +1052,7 @@ def main():
         'converge': 'formations:converge',
         'destroy': 'formations:destroy',
         'scale': 'containers:scale',
+        'ps': 'containers:list',
     }
     # lookup cmd shortcut
     if cmd in shortcuts:
@@ -1067,11 +1080,9 @@ def main():
     # dispatch the CLI command
     try:
         method(args)
-    except EnvironmentError as e:
-        if e.message.startswith('Could not find deis remote'):
-            print 'Could not find git remote for deis'
-            raise DocoptExit()
-        raise e
+    except EnvironmentError:
+        print 'Could not find git remote for deis'
+        raise DocoptExit()
 
 
 if __name__ == '__main__':
