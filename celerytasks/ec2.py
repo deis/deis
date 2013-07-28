@@ -133,14 +133,17 @@ def terminate_node(node_id, creds, params, provider_id):
         if i.state == "terminated":
             break
     # pull the node from the database
-    node = Node.objects.get(uuid=node_id)
-    chef_id = node.id
-    node.provider_id = None
-    node.fqdn = None
-    node.metadata = {}
-    node.save()
-    # delete the node itself from the database
-    node.delete()
+    try:
+        node = Node.objects.get(uuid=node_id)
+        chef_id = node.id
+        node.provider_id = None
+        node.fqdn = None
+        node.metadata = {}
+        node.save()
+        # delete the node itself from the database
+        node.delete()
+    except Node.DoesNotExist:
+        pass  # ignore node does not exist
     # purge the node & client records from chef server
     client = ChefAPI(settings.CHEF_SERVER_URL,
                      settings.CHEF_CLIENT_NAME,
