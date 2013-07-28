@@ -173,7 +173,7 @@ def prepare_run_kwargs(params, init):
         'min_count': 1, 'max_count': 1,
         'key_name': None,
         'user_data': None, 'addressing_type': None,
-        'instance_type': 'm1.small', 'placement': None,
+        'instance_type': None, 'placement': None,
         'kernel_id': None, 'ramdisk_id': None,
         'monitoring_enabled': False, 'subnet_id': None,
         'block_device_map': None,
@@ -184,7 +184,7 @@ def prepare_run_kwargs(params, init):
         requested_zone = None
     # lookup kwargs from params
     param_kwargs = {
-        'instance_type': params.get('size', 'm1.small'),
+        'instance_type': params.get('size', 'm1.medium'),
         'key_name': params.get('key_name', None),
         'security_groups': params['security_groups'],
         'placement': requested_zone,
