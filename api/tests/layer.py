@@ -158,3 +158,23 @@ class LayerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['layers'], json.dumps(body))
+
+    def test_layer_scale_no_creds(self):
+        url = '/api/providers/autotest'
+        body = {'creds': json.dumps({}) }
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # try to scale and a formation
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']  # noqa
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'runtime': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)

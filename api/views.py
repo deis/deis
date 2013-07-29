@@ -174,6 +174,12 @@ class FormationViewSet(OwnerViewSet):
                 new_structure[target] = int(count)
         except ValueError:
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+        # check for empty credentials
+        for p in models.Provider.objects.filter(owner=request.user):
+            if p.creds:
+                break
+        else:
+            return Response('No provider credentials available', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         formation.layers.update(new_structure)
         try:

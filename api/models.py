@@ -115,7 +115,7 @@ class Provider(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
     type = models.SlugField(max_length=16, choices=PROVIDERS)
-    creds = fields.CredentialsField()
+    creds = fields.CredentialsField(blank=True)
 
     class Meta:
         unique_together = (('owner', 'id'),)
