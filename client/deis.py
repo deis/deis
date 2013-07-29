@@ -4,13 +4,11 @@ This Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [--formation <formation>] [<args>...]
 
-Auth commands:
-
   register      register a new user with a controller
   login         login to a controller
   logout        logout from the current controller
 
-Common commands:
+Shortcut commands:
 
   create        create a new container formation
   info          print a represenation of the formation
@@ -20,7 +18,7 @@ Common commands:
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
 
-Infrastructure commands:
+Subcommands, use `deis help [subcommand]` to learn more:
 
   formations    manage container formations
   layers        manage layers of nodes
@@ -32,11 +30,11 @@ Infrastructure commands:
   keys          manage ssh keys
 
   config        manage environment variables for a formation
-  builds        manage git-push builds for a formation
+  builds        manage git-push or docker builds
   releases      manage a formation's release history
 
 Use `git push deis master` to deploy to a formation.
-Use `deis help [command]` to learn more.
+
 """
 
 from cookielib import MozillaCookieJar
@@ -337,7 +335,7 @@ class DeisClient(object):
         Valid commands for builds:
 
         builds:list        list build history for a formation
-        builds:create      create a new build for a formation
+        builds:create      coming soon!
 
         Use `deis help [command]` to learn more
         """
