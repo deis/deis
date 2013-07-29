@@ -4,17 +4,32 @@
 
 .. _api:
 
-API
-===
+API Reference
+=============
 
-.. automodule:: client.deis
-  :members:
+:Release: |version|
+:Date: |today|
 
-.. automodule:: api.fields
-  :members:
+.. toctree::
+    :maxdepth: 1
 
-.. automodule:: api.models
-  :members:
+    api.fields
+    api.models
+    api.routers
+    api.serializers
+    api.urls
+    api.utils
+    api.views
 
-.. automodule:: api.routers
-  :members:
+    celerytasks.azuresms
+    celerytasks.chef
+    celerytasks.chef_mock
+    celerytasks.chef_rsa
+    celerytasks.controller
+    celerytasks.ec2
+    celerytasks.mock
+    celerytasks.util
+
+    web.models
+    web.urls
+    web.views
