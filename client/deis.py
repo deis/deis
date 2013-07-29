@@ -4,10 +4,6 @@ This Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [--formation <formation>] [<args>...]
 
-Options:
-  -h --help       Show this help screen
-  -v --version    Show the CLI version
-
 Auth commands:
 
   register      register a new user with a controller
@@ -24,7 +20,7 @@ Common commands:
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
 
-Use `deis help [subcommand]` to learn about these subcommands:
+Infrastructure commands:
 
   formations    manage container formations
   layers        manage layers of nodes
@@ -39,8 +35,8 @@ Use `deis help [subcommand]` to learn about these subcommands:
   builds        manage git-push builds for a formation
   releases      manage a formation's release history
 
-Use `git push deis master` to deploy to the container formation.
-
+Use `git push deis master` to deploy to a formation.
+Use `deis help [command]` to learn more.
 """
 
 from cookielib import MozillaCookieJar
@@ -338,7 +334,12 @@ class DeisClient(object):
 
     def builds(self, args):
         """
-        Builds help would be nice
+        Valid commands for builds:
+
+        builds:list        list build history for a formation
+        builds:create      create a new build for a formation
+
+        Use `deis help [command]` to learn more
         """
         return self.builds_list(args)
 
@@ -382,7 +383,13 @@ class DeisClient(object):
 
     def config(self, args):
         """
-        Config help would be nice
+        Valid commands for config:
+
+        config:list        list environment variables for a formation
+        config:set         set environment variables for a formation
+        config:unset       unset environment variables for a formation
+
+        Use `deis help [command]` to learn more
         """
         return self.config_list(args)
 
@@ -411,7 +418,7 @@ class DeisClient(object):
 
     def config_set(self, args):
         """
-        Set environment variables on a formation
+        Set environment variables for a formation
 
         Usage: deis config:set <var>=<value>...
         """
@@ -437,7 +444,7 @@ class DeisClient(object):
 
     def config_unset(self, args):
         """
-        Unset an environment variable on a formation
+        Unset an environment variable for a formation
 
         Usage: deis config:unset <key>...
         """
@@ -466,7 +473,12 @@ class DeisClient(object):
 
     def containers(self, args):
         """
-        Containers help would be nice
+        Valid commands for containers:
+
+        containers:list        list containers for a formation
+        containers:scale       scale a formation's containers (i.e web=4 worker=2)
+
+        Use `deis help [command]` to learn more
         """
         return self.containers_list(args)
 
@@ -523,7 +535,14 @@ class DeisClient(object):
 
     def flavors(self, args):
         """
-        Flavors help would be nice
+        Valid commands for flavors:
+
+        flavors:create        create a new node flavor
+        flavors:info          print information about a node flavor
+        flavors:list          list available flavors
+        flavors:delete        delete a node flavor
+
+        Use `deis help [command]` to learn more
         """
         return self.flavors_list(args)
 
@@ -593,7 +612,17 @@ class DeisClient(object):
 
     def formations(self, args):
         """
-        Formations help would be nice
+        Valid commands for formations:
+
+        formations:create        create a new container formation
+        formations:info          print a represenation of the formation
+        formations:scale         scale container types (web=2, worker=1)
+        formations:balance       rebalance the container formation
+        formations:converge      force-converge all nodes in the formation
+        formations:calculate     recalculate and update the formation databag
+        formations:destroy       destroy a container formation
+
+        Use `deis help [command]` to learn more
         """
         return self.formations_list(args)
 
@@ -641,7 +670,7 @@ class DeisClient(object):
                 print
                 self.layers_create({'<id>': 'runtime', '<flavor>': flavor})
                 self.layers_create({'<id>': 'proxy', '<flavor>': flavor})
-                print('\nUse `deis layers:scale runtime=1 proxy=1` to scale a basic formation')
+                print('\nUse `deis layers:scale proxy=1 runtime=1` to scale a basic formation')
         else:
             print('Error!', response.text)
 
@@ -778,7 +807,13 @@ class DeisClient(object):
 
     def keys(self, args):
         """
-        Keys help would be nice
+        Valid commands for SSH keys:
+
+        keys:list        list SSH keys for the logged in user
+        keys:add         add an SSH key
+        keys:remove      remove an SSH key
+
+        Use `deis help [command]` to learn more
         """
         return self.keys_list(args)
 
@@ -856,7 +891,14 @@ class DeisClient(object):
 
     def layers(self, args):
         """
-        Layers help would be nice
+        Valid commands for node layers:
+
+        layers:create        create a layer of nodes for a formation
+        layers:scale         scale nodes in a layer (e.g. proxy=1 runtime=2)
+        layers:list          list layers in a formation
+        layers:destroy       destroy a layer of nodes in a formation
+
+        Use `deis help [command]` to learn more
         """
         return self.layers_list(args)
 
@@ -971,7 +1013,13 @@ class DeisClient(object):
 
     def nodes(self, args):
         """
-        Nodes help would be nice
+        Valid commands for nodes:
+
+        nodes:list            list nodes for a formation
+        nodes:info            print info for a given node
+        nodes:destroy         destroy a node by ID
+
+        Use `deis help [command]` to learn more
         """
         return self.nodes_list(args)
 
@@ -1038,7 +1086,14 @@ class DeisClient(object):
 
     def providers(self, args):
         """
-        Providers help would be nice
+        Valid commands for providers:
+
+        providers:list        list available providers for the logged in user
+        providers:discover    discover provider credentials using envvars
+        providers:create      create a new provider for use by deis
+        providers:info        print information about a specific provider
+
+        Use `deis help [command]` to learn more
         """
         return self.providers_list(args)
 
@@ -1110,6 +1165,19 @@ class DeisClient(object):
             print 'No credentials discovered, did you install the EC2 Command Line tools?'
             return
 
+    def providers_info(self, args):
+        """
+        Print information about a specific provider
+
+        Usage: deis providers:info <provider>
+        """
+        provider = args.get('<provider>')
+        response = self._dispatch('get', "/api/providers/{}".format(provider))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
+        else:
+            print('Error!', response.text)
+
     def providers_list(self, args):
         """
         List providers for the logged in user
@@ -1124,24 +1192,34 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
-    def providers_info(self, args):
+    def releases(self, args):
         """
-        Print information about a specific provider
+        Valid commands for releases:
 
-        Usage: deis providers:info <provider>
+        releases:list        list a formation's release history
+        releases:info        print information about a specific release
+        releases:rollback    coming soon!
+
+        Use `deis help [command]` to learn more
         """
-        provider = args.get('<provider>')
-        response = self._dispatch('get', "/api/providers/{}".format(provider))
+        return self.releases_list(args)
+
+    def releases_info(self, args):
+        """
+        Print info about a particular release
+
+        Usage: deis releases:info <version>
+        """
+        version = args.get('<version>')
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        response = self._dispatch(
+            'get', "/api/formations/{formation}/releases/{version}".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
             print('Error!', response.text)
-
-    def releases(self, args):
-        """
-        Releases help would be nice
-        """
-        return self.releases_list(args)
 
     def releases_list(self, args):
         """
@@ -1152,12 +1230,12 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{}/release'.format(formation))
+        response = self._dispatch('get', '/api/formations/{formation}/releases'.format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
+            print('=== {0} Releases'.format(formation))
             data = response.json()
             for item in data['results']:
-                print('{0[uuid]:<23} {0[created]}'.format(item))
+                print('{version} {created}'.format(**item))
         else:
             print('Error!', response.text)
 
