@@ -227,7 +227,8 @@ class FormationViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        formation.destroy()  # destroy will delete the record
+        formation.destroy()
+        formation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -264,11 +265,12 @@ class FormationLayerViewSet(OwnerViewSet):
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
-            layer.build()  # build the layer's infrastructure
+            layer.build()
 
     def destroy(self, request, **kwargs):
         layer = self.get_object()
-        layer.destroy()  # destroy layer infrastructure and delete
+        layer.destroy()
+        layer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -290,7 +292,8 @@ class FormationNodeViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         node = self.get_object()
-        node.destroy()  # destroy will delete the record
+        node.destroy()
+        node.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

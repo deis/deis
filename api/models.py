@@ -447,7 +447,6 @@ class Formation(UuidAuditedModel):
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
             controller.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
-        self.delete()
 
 
 @python_2_unicode_compatible
@@ -504,8 +503,6 @@ class Layer(UuidAuditedModel):
         # destroy nodes, then the layer
         node_tasks.apply_async().join()
         layer_tasks.apply_async().join()
-        # delete the database record
-        self.delete()
 
 
 @python_2_unicode_compatible
