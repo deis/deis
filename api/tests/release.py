@@ -51,7 +51,11 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
         # check to see that an initial release was created
-        url = '/api/formations/{formation_id}/release'.format(**locals())
+        url = '/api/formations/{formation_id}/releases'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        url = '/api/formations/{formation_id}/releases/1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
@@ -67,7 +71,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
         # check to see that a new release was created
-        url = '/api/formations/{formation_id}/release'.format(**locals())
+        url = '/api/formations/{formation_id}/releases/2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -77,7 +81,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(release1['build'], release2['build'])
         self.assertEquals(release2['version'], 2)
         # check that updating the build rolls a new release
-        url = '/api/formations/{formation_id}/build'.format(**locals())
+        url = '/api/formations/{formation_id}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
         body = {
             'sha': uuid.uuid4().hex,
@@ -92,7 +96,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['url'], body['url'])
         # check to see that a new release was created
-        url = '/api/formations/{formation_id}/release'.format(**locals())
+        url = '/api/formations/{formation_id}/releases/3'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release3 = response.data
@@ -110,23 +114,8 @@ class ReleaseTest(TestCase):
         self.assertIn('PATH', config3_values)
         self.assertEqual(
             config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
-        # check that updating the image rolls a new release
-        url = '/api/formations/{formation_id}/image'.format(**locals())
-        body = {'image': 'deis/autotest2'}
-        response = self.client.post(
-            url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        # check to see that a new release was created
-        url = '/api/formations/{formation_id}/release'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        release4 = response.data
-        self.assertNotEqual(release3['uuid'], release4['uuid'])
-        self.assertNotEqual(release3['image'], release4['image'])
-        self.assertEqual(release3['build'], release4['build'])
-        self.assertEqual(release3['config'], release4['config'])
-        self.assertEquals(release4['version'], 4)
         # disallow post/put/patch/delete
+        url = '/api/formations/{formation_id}/releases'.format(**locals())
         self.assertEqual(self.client.post(url).status_code, 405)
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)

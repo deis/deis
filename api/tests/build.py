@@ -48,9 +48,10 @@ class BuildTest(TestCase):
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
         # check to see that no initial build was created
-        url = "/api/formations/{formation_id}/build".format(**locals())
+        url = "/api/formations/{formation_id}/builds".format(**locals())
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 0)
         # post a first build
         body = {
             'sha': uuid.uuid4().hex,
@@ -61,14 +62,17 @@ class BuildTest(TestCase):
         }
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        build_id = response.data['uuid']
         build1 = response.data
         self.assertEqual(response.data['url'], body['url'])
         # read the build
+        url = "/api/formations/{formation_id}/builds/{build_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         build2 = response.data
         self.assertEqual(build1, build2)
         # post a new build
+        url = "/api/formations/{formation_id}/builds".format(**locals())
         body = {
             'sha': uuid.uuid4().hex,
             'slug_size': 4096000,
