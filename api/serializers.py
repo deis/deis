@@ -140,7 +140,7 @@ class LayerSerializer(serializers.ModelSerializer):
 
     @property
     def data(self):
-        "Custom data property that removes secure fields"
+        """Custom data property that removes secure fields"""
         d = super(LayerSerializer, self).data
         for f in ('ssh_private_key',):
             if f in d:

@@ -30,12 +30,11 @@ release_signal = Signal(providing_args=['formation', 'user'])
 
 
 def import_tasks(provider_type):
-    """Return the celerytasks module for a given provider.
+    """Return the celerytasks module for a provider.
 
-        :param provider_type: type of cloud provider **currently only "ec2"**
-        :type  provider_type: string
-        :rtype: celerytasks module for the provider
-        :raises: :py:class:`ImportError` if the provider isn't recognized
+    :param string provider_type: type of cloud provider **currently only "ec2"**
+    :rtype: celerytasks module for the provider
+    :raises: :py:class:`ImportError` if the provider isn't recognized
     """
     try:
         tasks = importlib.import_module('celerytasks.' + provider_type)
@@ -45,37 +44,30 @@ def import_tasks(provider_type):
 
 
 class AuditedModel(models.Model):
-
-    """Adds created and updated fields to a model.
+    """Add created and updated fields to a model.
     """
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        """
-        Metadata options for `AuditedModel`, marking this class as abstract.
-        """
+        """Mark :class:`AuditedModel` as abstract."""
         abstract = True
 
 
 class UuidAuditedModel(AuditedModel):
+    """Add a UUID primary key to an audited model.
+    """
 
-    """
-    Adds a UUID primary key to an audited model.
-    """
     uuid = fields.UuidField('UUID', primary_key=True)
 
     class Meta:
-        """
-        Metadata options for UuidAuditedModel, marking this class as abstract.
-        """
+        """Mark :class:`UuidAuditedModel` as abstract."""
         abstract = True
 
 
 @python_2_unicode_compatible
 class Key(UuidAuditedModel):
-
     """An SSH public key."""
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -92,8 +84,7 @@ class Key(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class ProviderManager(models.Manager):
-
-    """Manages database interactions for Provider objects."""
+    """Manage database interactions for :class:`Provider`."""
 
     def seed(self, user, **kwargs):
         """Seeds the database with Providers for clouds supported by deis.
@@ -108,10 +99,11 @@ class ProviderManager(models.Manager):
 
 @python_2_unicode_compatible
 class Provider(UuidAuditedModel):
+    """Cloud provider information for a user.
 
+    Available as `user.provider_set`.
     """
-    Cloud provider information for a user. Available as `user.provider_set`.
-    """
+
     objects = ProviderManager()
 
     PROVIDERS = (
@@ -131,7 +123,7 @@ class Provider(UuidAuditedModel):
 @python_2_unicode_compatible
 class FlavorManager(models.Manager):
 
-    """Manages database interactions for Flavors."""
+    """Manages database interactions for :class:`Flavor`."""
 
     def load_cloud_config_base(self):
         """Read the base configuration file and return the YAML data it contains."""
@@ -534,12 +526,12 @@ class NodeManager(models.Manager):
 
 @python_2_unicode_compatible
 class Node(UuidAuditedModel):
-
     """
     Node used to host containers
 
     List of nodes available as `formation.nodes`
     """
+
     objects = NodeManager()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -709,8 +701,7 @@ class Build(UuidAuditedModel):
 
     @classmethod
     def push(cls, push):
-        """
-        Process a push from a local Git server
+        """Process a push from a local Git server.
 
         Creates a new Build and returns the formation's
         databag for processing by the git-receive hook
@@ -751,7 +742,6 @@ class Build(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Release(UuidAuditedModel):
-
     """
     The deployment of a Build to Instances and the restarting of Processes.
     """
@@ -781,8 +771,9 @@ class Release(UuidAuditedModel):
 
 @receiver(release_signal)
 def new_release(sender, **kwargs):
-    """Catches a release_signal and creates a new release from the
-    last release.
+    """Catch a release_signal and clone a new release from the previous one.
+
+    :returns: a newly created :class:`Release`
     """
     formation, user = kwargs['formation'], kwargs['user']
     last_release = Release.objects.filter(

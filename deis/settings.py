@@ -248,7 +248,8 @@ CONVERGE_ON_PUSH = True
 # EMAIL_HOST_USER = 'foo'
 # EMAIL_HOST_PASSWORD = 'bar'
 
+
 try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
-    print('No deis/local_settings.py file found!')
+    print('\033[96mdeis/local_settings.py \033[91mfile not found!\033[0m')

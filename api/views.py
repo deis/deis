@@ -7,15 +7,14 @@ from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
-from django.conf import settings
-from django.contrib.auth.models import Group, AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser, User
 from django.db.utils import IntegrityError
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 from api import models
 from api import serializers
@@ -33,7 +32,7 @@ class AnonymousAuthentication(BaseAuthentication):
 
 class IsAnonymous(permissions.BasePermission):
     """
-    Object-level permission to allow anonymous users
+    Object-level permission to allow anonymous users.
     """
 
     def has_permission(self, request, view):
@@ -60,16 +59,6 @@ class IsOwner(permissions.BasePermission):
             return False
 
 
-class GroupViewSet(viewsets.ModelViewSet):
-
-    model = Group
-
-
-class UserViewSet(viewsets.ModelViewSet):
-
-    model = settings.AUTH_USER_MODEL
-
-
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
 
@@ -80,12 +69,13 @@ class UserRegistrationView(viewsets.GenericViewSet,
     serializer_class = serializers.UserSerializer
 
     def post_save(self, user, created=False):
+        """Seed both `Providers` and `Flavors` after registration."""
         if created:
             models.Provider.objects.seed(user)
             models.Flavor.objects.seed(user)
 
     def pre_save(self, obj):
-        "Replicate UserManager.create_user functionality"
+        """Replicate UserManager.create_user functionality."""
         now = timezone.now()
         obj.last_login = now
         obj.date_joined = now
@@ -94,36 +84,42 @@ class UserRegistrationView(viewsets.GenericViewSet,
 
 
 class OwnerViewSet(viewsets.ModelViewSet):
-    """
-    Base ViewSet for views scoped to a particular Owner
-    """
+    """Scope views to an `owner` attribute."""
+
     permission_classes = (permissions.IsAuthenticated, IsOwner)
 
     def pre_save(self, obj):
         obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
+        """Filter all querysets by an `owner` attribute.
+        """
         return self.model.objects.filter(owner=self.request.user)
 
 
 class KeyViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Key`."""
 
     model = models.Key
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
 
     def post_save(self, obj, created=False, **kwargs):
-        # update gitosis
+        """Publish all Formations when a Key is saved so gitosis stays updated.
+        """
         models.Formation.objects.publish()
 
     def destroy(self, request, **kwargs):
+        """Publish all Formations when a Key is destroyed so gitosis
+        stays updated.
+        """
         resp = super(KeyViewSet, self).destroy(self, request, **kwargs)
-        # publish gitosis updates
         models.Formation.objects.publish()
         return resp
 
 
 class ProviderViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Provider`."""
 
     model = models.Provider
     serializer_class = serializers.ProviderSerializer
@@ -131,6 +127,7 @@ class ProviderViewSet(OwnerViewSet):
 
 
 class FlavorViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Flavor`."""
 
     model = models.Flavor
     serializer_class = serializers.FlavorSerializer
@@ -145,6 +142,7 @@ class FlavorViewSet(OwnerViewSet):
 
 
 class FormationViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Formtion`."""
 
     model = models.Formation
     serializer_class = serializers.FormationSerializer
@@ -233,6 +231,7 @@ class FormationViewSet(OwnerViewSet):
 
 
 class FormationLayerViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Layer`."""
 
     model = models.Layer
     serializer_class = serializers.LayerSerializer
@@ -275,6 +274,7 @@ class FormationLayerViewSet(OwnerViewSet):
 
 
 class FormationNodeViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Node`."""
 
     model = models.Node
     serializer_class = serializers.NodeSerializer
@@ -298,6 +298,7 @@ class FormationNodeViewSet(OwnerViewSet):
 
 
 class FormationContainerViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Container`."""
 
     model = models.Container
     serializer_class = serializers.ContainerSerializer
@@ -315,6 +316,7 @@ class FormationContainerViewSet(OwnerViewSet):
 
 
 class FormationImageViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Image`."""
 
     model = models.Release
     serializer_class = serializers.ReleaseSerializer
@@ -339,6 +341,7 @@ class FormationImageViewSet(OwnerViewSet):
 
 
 class FormationConfigViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Config`."""
 
     model = models.Config
     serializer_class = serializers.ConfigSerializer
@@ -382,6 +385,7 @@ class FormationConfigViewSet(OwnerViewSet):
 
 
 class FormationBuildViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Build`."""
 
     model = models.Build
     serializer_class = serializers.BuildSerializer
@@ -412,6 +416,7 @@ class FormationBuildViewSet(OwnerViewSet):
 
 
 class FormationReleaseViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Release`."""
 
     model = models.Release
     serializer_class = serializers.ReleaseSerializer
