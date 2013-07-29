@@ -126,13 +126,14 @@ def terminate_node(node_id, creds, params, provider_id):
     region = params.get('region', 'us-east-1')
     conn = create_ec2_connection(
         region, creds['access_key'], creds['secret_key'])
-    conn.terminate_instances([provider_id])
-    i = conn.get_all_instances([provider_id])[0].instances[0]
-    while(True):
-        time.sleep(2)
-        i.update()
-        if i.state == "terminated":
-            break
+    if provider_id:
+        conn.terminate_instances([provider_id])
+        i = conn.get_all_instances([provider_id])[0].instances[0]
+        while(True):
+            time.sleep(2)
+            i.update()
+            if i.state == "terminated":
+                break
     # pull the node from the database
     node = Node.objects.get(uuid=node_id)
     chef_id = node.id
