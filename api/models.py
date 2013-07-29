@@ -446,7 +446,7 @@ class Formation(UuidAuditedModel):
         group(layer_tasks).apply_async().join()
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
-            controller.destroy_formation.apply_async(self.id).join()  # @UndefinedVariable
+            controller.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
 
 
 @python_2_unicode_compatible
