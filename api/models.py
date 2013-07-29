@@ -93,7 +93,14 @@ class Key(UuidAuditedModel):
 @python_2_unicode_compatible
 class ProviderManager(models.Manager):
 
+    """Manages database interactions for Provider objects."""
+
     def seed(self, user, **kwargs):
+        """Seeds the database with Providers for clouds supported by deis.
+
+        :param user: who will own the Providers
+        :type user: a deis user
+        """
         providers = (('ec2', 'ec2'),)
         for p_id, p_type in providers:
             self.create(owner=user, id=p_id, type=p_type, creds='{}')
@@ -124,7 +131,10 @@ class Provider(UuidAuditedModel):
 @python_2_unicode_compatible
 class FlavorManager(models.Manager):
 
+    """Manages database interactions for Flavors."""
+
     def load_cloud_config_base(self):
+        """Read the base configuration file and return the YAML data it contains."""
         # load cloud-config-base yaml_
         _cloud_config_path = os.path.abspath(
             os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
@@ -133,6 +143,7 @@ class FlavorManager(models.Manager):
         return yaml.safe_load(_data)
 
     def seed(self, user, **kwargs):
+        """Seed the database with default Flavors for each cloud region."""
         # TODO: add optimized AMIs to default flavors
         flavors = (
             {'id': 'ec2-us-east-1',
