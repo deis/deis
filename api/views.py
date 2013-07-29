@@ -221,10 +221,7 @@ class FormationViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        formation.destroy()
-        formation.delete()
-        # publish gitosis updates
-        models.Formation.objects.publish()
+        formation.destroy()  # destroy will delete the record
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -261,15 +258,11 @@ class FormationLayerViewSet(OwnerViewSet):
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
-            # build the layer's required infrastructure
-            layer.build().delay().wait()
+            layer.build()  # build the layer's infrastructure
 
     def destroy(self, request, **kwargs):
         layer = self.get_object()
-        node_tasks, layer_tasks = layer.destroy()
-        node_tasks.apply_async().join()
-        layer_tasks.apply_async().join()
-        layer.delete()
+        layer.destroy()  # destroy layer infrastructure and delete
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -288,6 +281,11 @@ class FormationNodeViewSet(OwnerViewSet):
         qs = self.get_queryset(**kwargs)
         obj = get_object_or_404(qs, id=self.kwargs['node'])
         return obj
+
+    def destroy(self, request, **kwargs):
+        node = self.get_object()
+        node.destroy()  # destroy will delete the record
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FormationContainerViewSet(OwnerViewSet):
