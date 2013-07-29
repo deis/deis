@@ -41,7 +41,7 @@ before_script:
     EOF
 
 script:
-  # - make flake8
+  - make flake8
   - make coverage
   - make -C docs
 
