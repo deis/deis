@@ -436,7 +436,7 @@ class Formation(UuidAuditedModel):
     def destroy(self):
         # create subtasks to terminate all nodes in parallel
         all_layers = self.layer_set.all()
-        tasks = [ layer.destroy(async=True) for layer in all_layers ]
+        tasks = [layer.destroy(async=True) for layer in all_layers]
         node_tasks, layer_tasks = [], []
         for n, l in tasks:
             node_tasks.extend(n), layer_tasks.extend(l)
@@ -491,12 +491,12 @@ class Layer(UuidAuditedModel):
     def destroy(self, async=False):
         tasks = import_tasks(self.flavor.provider.type)
         # create subtasks to terminate all nodes in parallel
-        node_tasks = [ node.destroy(async=True) for node in self.node_set.all() ]
+        node_tasks = [node.destroy(async=True) for node in self.node_set.all()]
         # purge other hosting provider infrastructure
         name = "{0}-{1}".format(self.formation.id, self.id)
         args = (name, self.flavor.provider.creds.copy(),
                 self.flavor.params.copy())
-        layer_tasks = [ tasks.destroy_layer.subtask(args) ]
+        layer_tasks = [tasks.destroy_layer.subtask(args)]
         if async:
             return node_tasks, layer_tasks
         # destroy nodes, then the layer

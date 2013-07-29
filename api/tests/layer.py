@@ -161,7 +161,7 @@ class LayerTest(TestCase):
 
     def test_layer_scale_no_creds(self):
         url = '/api/providers/autotest'
-        body = {'creds': json.dumps({}) }
+        body = {'creds': json.dumps({})}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # try to scale and a formation
