@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+"""
+This Deis command-line client issues API calls to a Deis controller.
 
-"""Usage: deis <command> [--formation <formation>] [<args>...]
+Usage: deis <command> [--formation <formation>] [<args>...]
 
 Options:
   -h --help       Show this help screen
@@ -61,6 +63,9 @@ __version__ = '0.0.4'
 
 
 class Session(requests.Session):
+    """
+    Session for making API requests and interacting with the filesystem
+    """
 
     """Subclass `Session` to """
 
@@ -79,6 +84,11 @@ class Session(requests.Session):
             self.cookies.clear_expired_cookies()
 
     def git_root(self):
+        """
+        Return the absolute path from the git repository root
+
+        If no git repository exists, raise an EnvironmentError
+        """
         try:
             git_root = subprocess.check_output(
                 ['git', 'rev-parse', '--show-toplevel'],
@@ -88,6 +98,12 @@ class Session(requests.Session):
         return git_root
 
     def get_formation(self):
+        """
+        Return the formation name for the current directory
+
+        The formation is determined by parsing `git remote -v` output.
+        If no formation is found, raise an EnvironmentError.
+        """
         git_root = self.git_root()
         # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
@@ -105,6 +121,10 @@ class Session(requests.Session):
     formation = property(get_formation)
 
     def request(self, *args, **kwargs):
+        """
+        Issue an HTTP request with proper cookie handling including
+        `Django CSRF tokens <https://docs.djangoproject.com/en/dev/ref/contrib/csrf/>`
+        """
         for cookie in self.cookies:
             if cookie.name == 'csrftoken':
                 if 'headers' in kwargs:
@@ -118,6 +138,11 @@ class Session(requests.Session):
 
 
 class Settings(dict):
+    """
+    Settings backed by a file in the user's home directory
+
+    On init, settings are loaded from ~/.deis/client.yaml
+    """
 
     def __init__(self):
         path = os.path.expanduser('~/.deis')
@@ -131,6 +156,9 @@ class Settings(dict):
         self.load()
 
     def load(self):
+        """
+        Deserialize and load settings from the filesystem
+        """
         with open(self._path) as f:
             data = f.read()
         settings = yaml.safe_load(data)
@@ -138,6 +166,9 @@ class Settings(dict):
         return settings
 
     def save(self):
+        """
+        Serialize and save settings to the filesystem
+        """
         data = yaml.safe_dump(dict(self))
         with open(self._path, 'w') as f:
             f.write(data)
@@ -169,7 +200,7 @@ def trim(docstring):
     Function to trim whitespace from docstring
 
     c/o PEP 257 Docstring Conventions
-    http://www.python.org/dev/peps/pep-0257/
+    <http://www.python.org/dev/peps/pep-0257/>
     """
     if not docstring:
         return ''
@@ -197,9 +228,8 @@ def trim(docstring):
 
 
 class DeisClient(object):
-
     """
-    A client which interacts with a Deis server.
+    A client which interacts with a Deis controller.
     """
 
     def __init__(self):
@@ -208,6 +238,9 @@ class DeisClient(object):
 
     def _dispatch(self, method, path, body=None,
                   headers={'content-type': 'application/json'}, **kwargs):
+        """
+        Dispatch an API request to the active Deis controller
+        """
         func = getattr(self._session, method.lower())
         url = urlparse.urljoin(self._settings['controller'], path, **kwargs)
         response = func(url, data=body, headers=headers)
@@ -238,11 +271,9 @@ class DeisClient(object):
             print("Registered {}".format(username))
             login_args = {'--username': username, '--password': password,
                           '<controller>': controller}
-            # login after registering
             if self.auth_login(login_args) is False:
                 print('Login failed')
                 return
-            # add ssh keys before formations are created
             print
             self.keys_add({})
             print
@@ -286,7 +317,7 @@ class DeisClient(object):
 
     def auth_logout(self, args):
         """
-        Logout from a controller, clearing the user session
+        Logout from a controller and clear the user session
 
         Usage: deis auth:logout
         """
@@ -307,6 +338,8 @@ class DeisClient(object):
 
     def builds_create(self, args):
         """
+        Create a new build for a formation
+
         Usage: deis builds:create - [--formation=<formation>]
         """
         formation = args.get('--formation')
@@ -325,6 +358,8 @@ class DeisClient(object):
 
     def builds_list(self, args):
         """
+        List build history for a formation
+
         Usage: deis builds:list
         """
         formation = args.get('--formation')
@@ -347,6 +382,8 @@ class DeisClient(object):
 
     def config_list(self, args):
         """
+        List environment variables for a formation
+
         Usage: deis config:list
         """
         formation = args.get('--formation')
@@ -368,6 +405,8 @@ class DeisClient(object):
 
     def config_set(self, args):
         """
+        Set environment variables on a formation
+
         Usage: deis config:set <var>=<value>...
         """
         formation = args.get('--formation')
@@ -392,6 +431,8 @@ class DeisClient(object):
 
     def config_unset(self, args):
         """
+        Unset an environment variable on a formation
+
         Usage: deis config:unset <key>...
         """
         formation = args.get('--formation')
@@ -425,6 +466,8 @@ class DeisClient(object):
 
     def containers_list(self, args):
         """
+        List containers for a formation
+
         Usage: deis containers:list
         """
         formation = args.get('--formation')
@@ -450,6 +493,10 @@ class DeisClient(object):
 
     def containers_scale(self, args):
         """
+        Scale containers for a formation
+
+        Example: deis containers:scale web=4 worker=2
+
         Usage: deis containers:scale <type=num>...
         """
         formation = args.get('--formation')
@@ -476,6 +523,8 @@ class DeisClient(object):
 
     def flavors_create(self, args):
         """
+        Create a new node flavor
+
         Usage: deis flavors:create --id=<id> --provider=<provider> --params=<params> [options]
 
         Options:
@@ -498,6 +547,8 @@ class DeisClient(object):
 
     def flavors_delete(self, args):
         """
+        Delete a node flavor
+
         Usage: deis flavors:delete <id>
         """
         flavor = args.get('<id>')
@@ -509,6 +560,8 @@ class DeisClient(object):
 
     def flavors_info(self, args):
         """
+        Print information about a node flavor
+
         Usage: deis flavors:info <flavor>
         """
         flavor = args.get('<flavor>')
@@ -520,6 +573,8 @@ class DeisClient(object):
 
     def flavors_list(self, args):
         """
+        List available node flavors
+
         Usage: deis flavors:list
         """
         response = self._dispatch('get', '/api/flavors')
@@ -538,6 +593,12 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """
+        Create a new formation
+
+        Providing a flavor automatically create a default runtime
+        and proxy layer.  If no ID is provided, one will be
+        generated automatically.
+
         Usage: deis formations:create [--id=<id> --flavor=<flavor>]
         """
         body = {}
@@ -580,6 +641,8 @@ class DeisClient(object):
 
     def formations_info(self, args):
         """
+        Print info about a formation
+
         Usage: deis formations:info
         """
         formation = args.get('<formation>')
@@ -593,6 +656,8 @@ class DeisClient(object):
 
     def formations_list(self, args):
         """
+        List available formations
+
         Usage: deis formations:list
         """
         response = self._dispatch('get', '/api/formations')
@@ -605,6 +670,8 @@ class DeisClient(object):
 
     def formations_destroy(self, args):
         """
+        Destroy a formation
+
         Usage: deis formations:destroy [<formation>] [--confirm=<confirm>]
         """
         formation = args.get('<formation>')
@@ -641,6 +708,11 @@ class DeisClient(object):
 
     def formations_calculate(self, args, quiet=False):
         """
+        Recalculate the formation's databag
+
+        This command will recalculate the databag, update the Chef server
+        and return the databag JSON.
+
         Usage: deis formations:calculate
         """
         formation = args.get('--formation')
@@ -658,6 +730,12 @@ class DeisClient(object):
 
     def formations_balance(self, args):
         """
+        Rebalance containers across a formation
+
+        In the event nodes are added or removed outside of a
+        containers:scale command, balancing the formation will
+        ensure containers are spread evenly across nodes.
+
         Usage: deis formations:balance
         """
         formation = args.get('--formation')
@@ -673,6 +751,12 @@ class DeisClient(object):
 
     def formations_converge(self, args):
         """
+        Force converge a formation
+
+        Converging a formation will force a Chef converge on
+        all nodes in the formation, ensuring the formation is
+        completely up-to-date.
+
         Usage: deis formations:converge
         """
         formation = args.get('--formation')
@@ -694,6 +778,8 @@ class DeisClient(object):
 
     def keys_add(self, args):
         """
+        Add SSH keys for the logged in user
+
         Usage: deis keys:add [<key>]
         """
         path = args.get('<key>')
@@ -729,7 +815,7 @@ class DeisClient(object):
 
     def keys_list(self, args):
         """
-        List SSH keys for the logged in user.
+        List SSH keys for the logged in user
 
         Usage: deis keys:list
         """
@@ -749,7 +835,7 @@ class DeisClient(object):
 
     def keys_remove(self, args):
         """
-        Remove a specific SSH key for the logged in user.
+        Remove an SSH key for the logged in user
 
         Usage: deis keys:remove <key>
         """
@@ -770,7 +856,7 @@ class DeisClient(object):
 
     def layers_create(self, args):
         """
-        Create a layer of nodes.
+        Create a layer of nodes
 
         Usage: deis layers:create <id> <flavor> [options]
 
@@ -813,7 +899,7 @@ class DeisClient(object):
 
     def layers_destroy(self, args):
         """
-        Destroy a layer of nodes.
+        Destroy a layer of nodes
 
         Usage: deis layers:destroy <id>
         """
@@ -832,7 +918,7 @@ class DeisClient(object):
 
     def layers_list(self, args):
         """
-        List layers for this formation.
+        List layers for a formation
 
         Usage deis layers:list
         """
@@ -852,6 +938,11 @@ class DeisClient(object):
 
     def layers_scale(self, args):
         """
+        Scale layers in a formation
+
+        Scaling layers will launch or terminate nodes to meet the
+        requested structure.
+
         Usage: deis layers:scale <type=num>...
         """
         formation = args.get('--formation')
@@ -880,6 +971,8 @@ class DeisClient(object):
 
     def nodes_info(self, args):
         """
+        Print info about a particular node
+
         Usage: deis nodes:info <node>
         """
         node = args.get('<node>')
@@ -891,7 +984,7 @@ class DeisClient(object):
 
     def nodes_list(self, args):
         """
-        List nodes for this formation.
+        List nodes for this formation
 
         Usage: deis nodes:list
         """
@@ -911,7 +1004,16 @@ class DeisClient(object):
 
     def nodes_destroy(self, args):
         """
-        Destroy a node by ID.
+        Destroy a node by ID
+
+        Nodes should normally be added/removed using a layers:scale
+        command.  In the event you need to destroy a specific node,
+        this command will terminate it at the cloud provider and
+        purge it from the Chef server.
+
+        Warning: Destroying a node will orphans any containers
+        associated with it.  Use `formations:balance` to rebalance
+        containers after destroying node(s) with this command.
 
         Usage: deis nodes:destroy <id>
         """
@@ -938,6 +1040,14 @@ class DeisClient(object):
         """
         Create a provider for use by Deis
 
+        This command is only necessary when adding a duplicate
+        set of credentials for a provider like EC2.  User accounts
+        already come with a default EC2 provider that has empty
+        credentials, which should be updated in place.
+
+        Use `providers:discover` to update credentials of the
+        default providers and flavors that come pre-installed.
+
         Usage: deis providers:create --type=<type> [--id=<id> --creds=<creds>]
         """
         type = args.get('--type')  # @ReservedAssignment
@@ -962,7 +1072,13 @@ class DeisClient(object):
 
     def providers_discover(self, args):
         """
-        Discover and update providers
+        Discover and update provider credentials
+
+        This command will discover provider credentials using
+        standard environment variables like AWS_ACCESS_KEY and
+        AWS_SECRET_KEY.  It will use those credentials to update
+        the existing provider record, allowing you to use
+        pre-installed node flavors.
 
         Usage: deis providers:discover
         """
@@ -990,7 +1106,7 @@ class DeisClient(object):
 
     def providers_list(self, args):
         """
-        List providers
+        List providers for the logged in user
 
         Usage: deis providers:list
         """
@@ -1004,7 +1120,7 @@ class DeisClient(object):
 
     def providers_info(self, args):
         """
-        Show detail of a provider.
+        Print information about a specific provider
 
         Usage: deis providers:info <provider>
         """
@@ -1015,8 +1131,16 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def releases(self, args):
+        """
+        Releases help would be nice
+        """
+        return self.releases_list(args)
+
     def releases_list(self, args):
         """
+        List release history for a formation
+
         Usage: deis releases:list
         """
         formation = args.get('--formation')
@@ -1037,13 +1161,10 @@ def main():
     Create a client, parse the arguments received on the command line, and
     call the appropriate method on the client.
     """
-    # create a client instance
     cli = DeisClient()
-    # parse base command-line arguments
-    args = docopt(__doc__, version="Deis CLI {}".format(__version__),
+    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
                   options_first=True)
     cmd = args['<command>']
-    # split cmd with _ if it contains a :
     shortcuts = {
         'register': 'auth:register',
         'login': 'auth:login',
@@ -1057,25 +1178,37 @@ def main():
         'scale': 'containers:scale',
         'ps': 'containers:list',
     }
-    # lookup cmd shortcut
+    if sys.argv[1] == 'help':
+        cmd = sys.argv[-1]
+        help_flag = True
+    else:
+        cmd = sys.argv[1]
+        help_flag = False
+    # swap cmd with shortcut
     if cmd in shortcuts:
         cmd = shortcuts[cmd]
-        sys.argv[1] = cmd  # change the cmdline arg itself
+        # change the cmdline arg itself for docopt
+        if not help_flag:
+            sys.argv[1] = cmd
+        else:
+            sys.argv[2] = cmd
     # convert : to _ for matching method names and docstrings
     if ':' in cmd:
         cmd = '_'.join(cmd.split(':'))
+    # print help if it was asked for
+    if help_flag:
+        if cmd != 'help':
+            if cmd in dir(cli):
+                print trim(getattr(cli, cmd).__doc__)
+                return
+        docopt(__doc__, argv=['--help'])
     # re-parse docopt with the relevant docstring
     if cmd in dir(cli):
         docstring = trim(getattr(cli, cmd).__doc__)
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))
-    # find the right method for dispatching
-    if cmd == 'help':
-        if len(sys.argv) == 3 and sys.argv[2] in dir(cli):
-            print trim(getattr(cli, sys.argv[2]).__doc__)
-            return
-        docopt(__doc__, argv=['--help'])
-    elif hasattr(cli, cmd):
+    # find the method for dispatching
+    if hasattr(cli, cmd):
         method = getattr(cli, cmd)
     else:
         raise DocoptExit('Found no matching command')
