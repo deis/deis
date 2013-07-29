@@ -439,14 +439,14 @@ class Formation(UuidAuditedModel):
         tasks = [ layer.destroy(async=True) for layer in all_layers ]
         node_tasks, layer_tasks = [], []
         for n, l in tasks:
-            node_tasks.append(n), layer_tasks.append(l)
+            node_tasks.extend(n), layer_tasks.extend(l)
         # kill all the nodes in parallel
-        group(*node_tasks).apply_async().join()
+        group(node_tasks).apply_async().join()
         # kill all the layers in parallel
-        group(*layer_tasks).apply_async().join()
+        group(layer_tasks).apply_async().join()
         # call a celery task to update the formation data bag
         if settings.CHEF_ENABLED:
-            controller.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
+            group([controller.destroy_formation.subtask()]).join()  # @UndefinedVariable
 
 
 @python_2_unicode_compatible
@@ -491,18 +491,17 @@ class Layer(UuidAuditedModel):
     def destroy(self, async=False):
         tasks = import_tasks(self.flavor.provider.type)
         # create subtasks to terminate all nodes in parallel
-        node_tasks = [node.terminate(async=True) for node in self.node_set.all()]
-        node_tasks = group(*node_tasks)
+        node_tasks = [ node.destroy(async=True) for node in self.node_set.all() ]
         # purge other hosting provider infrastructure
         name = "{0}-{1}".format(self.formation.id, self.id)
         args = (name, self.flavor.provider.creds.copy(),
                 self.flavor.params.copy())
-        layer_tasks = group(*[tasks.destroy_layer.subtask(args)])
+        layer_tasks = [ tasks.destroy_layer.subtask(args) ]
         if async:
             return node_tasks, layer_tasks
         # destroy nodes, then the layer
-        node_tasks.apply_async().join()
-        layer_tasks.apply_async().join()
+        group(node_tasks).apply_async().join()
+        group(layer_tasks).apply_async().join()
 
 
 @python_2_unicode_compatible
