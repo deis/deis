@@ -62,6 +62,8 @@ __version__ = '0.0.4'
 
 class Session(requests.Session):
 
+    """Subclass `Session` to """
+
     def __init__(self):
         super(Session, self).__init__()
         self.trust_env = False
@@ -97,7 +99,7 @@ class Session(requests.Session):
         url = m.groupdict()['url']
         m = re.match('\S+:(?P<formation>[a-z0-9-]+)(.git)?', url)
         if not m:
-            raise EnvironmentError('Could not parse: {url}'.format(**locals()))
+            raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['formation']
 
     formation = property(get_formation)
@@ -314,7 +316,7 @@ class DeisClient(object):
         # url / sha / slug_size / procfile / checksum
         j = json.loads(data)
         response = self._dispatch('post',
-                                  '/api/formations/{}/builds'.format(formation),
+                                  "/api/formations/{}/builds".format(formation),
                                   body=json.dumps(j))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('Build created.')
@@ -328,12 +330,12 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{}/builds'.format(formation))
+        response = self._dispatch('get', "/api/formations/{}/builds".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             data = response.json()
             for item in data['results']:
-                print('{0[uuid]:<23} {0[created]}'.format(item))
+                print("{0[uuid]:<23} {0[created]}".format(item))
         else:
             print('Error!', response.text)
 
@@ -350,17 +352,17 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{}/config'.format(formation))
+        response = self._dispatch('get', "/api/formations/{}/config".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
                 return
             for k, v in values.items():
-                print('{k}: {v}'.format(**locals()))
+                print("{k}: {v}".format(**locals()))
         else:
             print('Error!', response.text)
 
@@ -373,18 +375,18 @@ class DeisClient(object):
             formation = self._session.formation
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
         response = self._dispatch('post',
-                                  '/api/formations/{}/config'.format(formation),
+                                  "/api/formations/{}/config".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
                 return
             for k, v in values.items():
-                print('{k}: {v}'.format(**locals()))
+                print("{k}: {v}".format(**locals()))
         else:
             print('Error!', response.text)
 
@@ -400,18 +402,18 @@ class DeisClient(object):
             values[k] = None
         body = {'values': json.dumps(values)}
         response = self._dispatch('post',
-                                  '/api/formations/{}/config'.format(formation),
+                                  "/api/formations/{}/config".format(formation),
                                   data=json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
                 return
             for k, v in values.items():
-                print('{k}: {v}'.format(**locals()))
+                print("{k}: {v}".format(**locals()))
         else:
             print('Error!', response.text)
 
@@ -429,7 +431,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('get',
-                                  '/api/formations/{}/containers'.format(formation))
+                                  "/api/formations/{}/containers".format(formation))
         databag = self.formations_calculate({}, quiet=True)
         procfile = databag['release']['build'].get('procfile', {})
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
@@ -439,9 +441,9 @@ class DeisClient(object):
                 c_map.setdefault(item['type'], []).append(item)
             for c_type in c_map.keys():
                 command = procfile.get(c_type, '<none>')
-                print('=== {c_type}: `{command}`'.format(**locals()))
+                print("=== {c_type}: `{command}`".format(**locals()))
                 for c in c_map[c_type]:
-                    print('{type}.{num} up {created}'.format(**c))
+                    print("{type}.{num} up {created}".format(**c))
                 print
         else:
             print('Error!', response.text)
@@ -458,7 +460,7 @@ class DeisClient(object):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         response = self._dispatch('post',
-                                  '/api/formations/{}/scale/containers'.format(formation),
+                                  "/api/formations/{}/scale/containers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
@@ -490,7 +492,7 @@ class DeisClient(object):
                 body.update({fld: opt})
         response = self._dispatch('post', '/api/flavors', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('{0[id]}'.format(response.json()))
+            print("{0[id]}".format(response.json()))
         else:
             print('Error!', response.text)
 
@@ -499,7 +501,7 @@ class DeisClient(object):
         Usage: deis flavors:delete <id>
         """
         flavor = args.get('<id>')
-        response = self._dispatch('delete', '/api/flavors/{}'.format(flavor))
+        response = self._dispatch('delete', "/api/flavors/{}".format(flavor))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             pass
         else:
@@ -510,7 +512,7 @@ class DeisClient(object):
         Usage: deis flavors:info <flavor>
         """
         flavor = args.get('<flavor>')
-        response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
+        response = self._dispatch('get', "/api/flavors/{}".format(flavor))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -524,7 +526,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             for item in data['results']:
-                print('{0[id]:<23}'.format(item))
+                print("{0[id]:<23}".format(item))
         else:
             print('Error!', response.text)
 
@@ -555,10 +557,10 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
-            print('done, created {}'.format(formation))
+            print("done, created {}".format(formation))
             # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc
-            git_remote = 'git@{hostname}:{formation}.git'.format(**locals())
+            git_remote = "git@{hostname}:{formation}.git".format(**locals())
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
@@ -583,7 +585,7 @@ class DeisClient(object):
         formation = args.get('<formation>')
         if not formation:
             formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{}'.format(formation))
+        response = self._dispatch('get', "/api/formations/{}".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -597,7 +599,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             for item in data['results']:
-                print('{0[id]:<23}'.format(item))
+                print("{0[id]:<23}".format(item))
         else:
             print('Error!', response.text)
 
@@ -621,9 +623,9 @@ class DeisClient(object):
             if confirm != formation:
                 print('Destroy aborted')
                 return
-        sys.stdout.write('Destroying {}... '.format(formation))
+        sys.stdout.write("Destroying {}... ".format(formation))
         sys.stdout.flush()
-        response = self._dispatch('delete', '/api/formations/{}'.format(formation))
+        response = self._dispatch('delete', "/api/formations/{}".format(formation))
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done')
@@ -645,7 +647,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('post',
-                                  '/api/formations/{}/calculate'.format(formation))
+                                  "/api/formations/{}/calculate".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             if quiet is False:
@@ -662,7 +664,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('post',
-                                  '/api/formations/{}/balance'.format(formation))
+                                  "/api/formations/{}/balance".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -677,7 +679,7 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('post',
-                                  '/api/formations/{}/converge'.format(formation))
+                                  "/api/formations/{}/converge".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
@@ -701,7 +703,7 @@ class DeisClient(object):
             print('Found the following SSH public keys:')
             for i, k in enumerate(pubkeys):
                 key = k.split(os.path.sep)[-1]
-                print('{0}) {1}'.format(i + 1, key))
+                print("{0}) {1}".format(i + 1, key))
             inp = raw_input('Which would you like to use with Deis? ')
             try:
                 path = pubkeys[int(inp) - 1]
@@ -716,8 +718,8 @@ class DeisClient(object):
             print 'Could not parse public key material'
             return
         key_type, key_str, _key_comment = match.groups()
-        body = {'id': key_id, 'public': '{0} {1}'.format(key_type, key_str)}
-        sys.stdout.write('Uploading {0} to Deis... '.format(path))
+        body = {'id': key_id, 'public': "{0} {1}".format(key_type, key_str)}
+        sys.stdout.write("Uploading {} to Deis... ".format(path))
         sys.stdout.flush()
         response = self._dispatch('post', '/api/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -737,10 +739,10 @@ class DeisClient(object):
             if data['count'] == 0:
                 print 'No keys found'
                 return
-            print('=== {0} Keys'.format(data['results'][0]['owner']))
+            print("=== {0['owner']} Keys".format(data['results'][0]))
             for key in data['results']:
                 public = key['public']
-                print('{0} {1}...{2}'.format(
+                print("{0} {1}...{2}".format(
                     key['id'], public[0:16], public[-10:]))
         else:
             print('Error!', response.text)
@@ -752,9 +754,9 @@ class DeisClient(object):
         Usage: deis keys:remove <key>
         """
         key = args.get('<key>')
-        sys.stdout.write('Removing {0} SSH Key... '.format(key))
+        sys.stdout.write("Removing {} SSH Key... ".format(key))
         sys.stdout.flush()
-        response = self._dispatch('delete', '/keys/{}'.format(key))
+        response = self._dispatch('delete', "/keys/{}".format(key))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:
@@ -800,9 +802,9 @@ class DeisClient(object):
                 body['run_list'] = 'recipe[deis],recipe[deis::runtime]'
             elif body['id'] == 'proxy':
                 body['run_list'] = 'recipe[deis],recipe[deis::proxy]'
-        sys.stdout.write('Creating {} layer... '.format(args['<id>']))
+        sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
-        response = self._dispatch('post', '/api/formations/{}/layers'.format(formation),
+        response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done')
@@ -819,10 +821,10 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         layer = args['<id>']  # noqa
-        sys.stdout.write('Destroying {layer} layer... '.format(**locals()))
+        sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
         response = self._dispatch(
-            'delete', '/api/formations/{formation}/layers/{layer}'.format(**locals()))
+            'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:
@@ -838,11 +840,11 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('get',
-                                  '/api/formations/{}/layers'.format(formation))
+                                  "/api/formations/{}/layers".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             data = response.json()
-            format_str = '{0[id]} => {0[run_list]}'
+            format_str = "{0[id]} => {0[run_list]}"
             for item in data['results']:
                 print(format_str.format(item))
         else:
@@ -862,7 +864,7 @@ class DeisClient(object):
         print('Scaling layers... but first, coffee!')
         # TODO: add threaded spinner to print dots
         response = self._dispatch('post',
-                                  '/api/formations/{}/scale/layers'.format(formation),
+                                  "/api/formations/{}/scale/layers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('...done\n')
@@ -881,7 +883,7 @@ class DeisClient(object):
         Usage: deis nodes:info <node>
         """
         node = args.get('<node>')
-        response = self._dispatch('get', '/api/nodes/{}'.format(node))
+        response = self._dispatch('get', "/api/nodes/{}".format(node))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -897,11 +899,11 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         response = self._dispatch('get',
-                                  '/api/formations/{}/nodes'.format(formation))
+                                  "/api/formations/{}/nodes".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0}'.format(formation))
+            print("=== {}".format(formation))
             data = response.json()
-            format_str = '{0[id]:<23} {0[layer]} {0[provider_id]} {0[fqdn]}'
+            format_str = "{0[id]:<23} {0[layer]} {0[provider_id]} {0[fqdn]}"
             for item in data['results']:
                 print(format_str.format(item))
         else:
@@ -918,8 +920,8 @@ class DeisClient(object):
             formation = self._session.formation
         node = args['<id>']
         response = self._dispatch('delete',
-                                  '/api/formations/{formation}/nodes/{node}'.format(**locals()))
-        sys.stdout.write('Destroying {}... '.format(node))
+                                  "/api/formations/{formation}/nodes/{node}".format(**locals()))
+        sys.stdout.write("Destroying {}... ".format(node))
         sys.stdout.flush()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
@@ -943,7 +945,7 @@ class DeisClient(object):
             # read creds from envvars
             for k in ('AWS_ACCESS_KEY', 'AWS_SECRET_KEY'):
                 if not k in os.environ:
-                    msg = 'Missing environment variable: {}'.format(k)
+                    msg = "Missing environment variable: {}".format(k)
                     raise EnvironmentError(msg)
             creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
                      'secret_key': os.environ['AWS_SECRET_KEY']}
@@ -954,7 +956,7 @@ class DeisClient(object):
         response = self._dispatch('post', '/api/providers',
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('{0[id]}'.format(response.json()))
+            print("{0[id]}".format(response.json()))
         else:
             print('Error!', response.text)
 
@@ -966,7 +968,7 @@ class DeisClient(object):
         """
         # look for ec2 credentials
         if 'AWS_ACCESS_KEY' in os.environ and 'AWS_SECRET_KEY' in os.environ:
-            print('Found EC2 credentials: {0}'.format(os.environ['AWS_ACCESS_KEY']))
+            print("Found EC2 credentials: {}".format(os.environ['AWS_ACCESS_KEY']))
             inp = raw_input('Import these credentials? (y/n) : ')
             if inp.lower().strip('\n') != 'y':
                 print 'Aborting.'
@@ -1007,7 +1009,7 @@ class DeisClient(object):
         Usage: deis providers:info <provider>
         """
         provider = args.get('<provider>')
-        response = self._dispatch('get', '/api/providers/{}'.format(provider))
+        response = self._dispatch('get', "/api/providers/{}".format(provider))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -1029,6 +1031,7 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+
 def main():
     """
     Create a client, parse the arguments received on the command line, and
@@ -1037,7 +1040,7 @@ def main():
     # create a client instance
     cli = DeisClient()
     # parse base command-line arguments
-    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
+    args = docopt(__doc__, version="Deis CLI {}".format(__version__),
                   options_first=True)
     cmd = args['<command>']
     # split cmd with _ if it contains a :
@@ -1075,8 +1078,7 @@ def main():
     elif hasattr(cli, cmd):
         method = getattr(cli, cmd)
     else:
-        print 'Found no matching command'
-        raise DocoptExit()
+        raise DocoptExit('Found no matching command')
     # dispatch the CLI command
     try:
         method(args)

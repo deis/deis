@@ -23,8 +23,8 @@ class ContainerTest(TestCase):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
         url = '/api/providers'
-        creds = {'access_key': getattr(settings, 'EC2_ACCESS_KEY', 'x'*32),
-                 'secret_key': getattr(settings, 'EC2_SECRET_KEY', 'x'*64)}
+        creds = {'access_key': getattr(settings, 'EC2_ACCESS_KEY', 'x' * 32),
+                 'secret_key': getattr(settings, 'EC2_SECRET_KEY', 'x' * 64)}
         body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -40,62 +40,62 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
-        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        url = "/api/formations/{formation_id}/layers".format(**locals())
         body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # scale runtime layer up
-        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
         body = {'runtime': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/nodes'.format(**locals())
+        url = "/api/formations/{formation_id}/nodes".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
-        url = '/api/formations/{formation_id}'.format(**locals())
+        url = "/api/formations/{formation_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         # should start with zero
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
         body = {'web': 4, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
-        url = '/api/formations/{formation_id}'.format(**locals())
+        url = "/api/formations/{formation_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
         # scale down
-        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
         body = {'web': 2, 'worker': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
-        url = '/api/formations/{formation_id}'.format(**locals())
+        url = "/api/formations/{formation_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
         # scale down to 0
-        url = '/api/formations/{formation_id}/scale/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
         body = {'web': 0, 'worker': 0}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/formations/{formation_id}/containers'.format(**locals())
+        url = "/api/formations/{formation_id}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
-        url = '/api/formations/{formation_id}'.format(**locals())
+        url = "/api/formations/{formation_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))

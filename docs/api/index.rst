@@ -7,6 +7,9 @@
 API
 ===
 
+.. automodule:: client.deis
+  :members:
+
 .. automodule:: api.fields
   :members:
 

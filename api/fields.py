@@ -31,7 +31,7 @@ class UuidField(models.CharField):
         if connection and 'postgres' in connection.vendor:
             db_type = 'uuid'
         else:
-            db_type = 'char({0})'.format(self.max_length)
+            db_type = "char({})".format(self.max_length)
         return db_type
 
     def pre_save(self, model_instance, add):

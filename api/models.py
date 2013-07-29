@@ -87,7 +87,7 @@ class Key(UuidAuditedModel):
         unique_together = (('owner', 'id'))
 
     def __str__(self):
-        return '{0} : {1}'.format(self.owner.username, self.id)
+        return "{0} : {1}".format(self.owner.username, self.id)
 
 
 @python_2_unicode_compatible
@@ -638,7 +638,7 @@ class Container(UuidAuditedModel):
     def __str__(self):
         if self.id:
             return self.id
-        return '{0} {1}.{2}'.format(self.formation.id, self.type, self.num)
+        return "{0} {1}.{2}".format(self.formation.id, self.type, self.num)
 
     class Meta:
         get_latest_by = '-created'
@@ -666,7 +666,7 @@ class Config(UuidAuditedModel):
         unique_together = (('formation', 'version'),)
 
     def __str__(self):
-        return '{0}-v{1}'.format(self.formation.id, self.version)
+        return "{0}-v{1}".format(self.formation.id, self.version)
 
 
 @python_2_unicode_compatible
@@ -694,7 +694,7 @@ class Build(UuidAuditedModel):
         ordering = ['-created']
 
     def __str__(self):
-        return '{0}-v{1}'.format(self.formation.id, self.version)
+        return "{0}-v{1}".format(self.formation.id, self.version)
 
     @classmethod
     def push(cls, push):
@@ -760,7 +760,7 @@ class Release(UuidAuditedModel):
         unique_together = (('formation', 'version'),)
 
     def __str__(self):
-        return '{0}-v{1}'.format(self.formation.id, self.version)
+        return "{0}-v{1}".format(self.formation.id, self.version)
 
     def rollback(self):
         # create a rollback log entry
