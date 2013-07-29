@@ -250,7 +250,13 @@ class DeisClient(object):
         """
         Register a new user with a Deis controller
 
-        Usage: deis auth:register <controller> [--username=<username> --password=<password> --email=<email>]
+        Usage: deis auth:register <controller> [options]
+
+        Options:
+
+        --username=USERNAME    provide a username for the new account
+        --password=PASSWORD    provide a password for the new account
+        --email=EMAIL          provide an email address
         """
         controller = args['<controller>']
         username = args.get('--username')
@@ -1156,15 +1162,10 @@ class DeisClient(object):
             print('Error!', response.text)
 
 
-def main():
+def parse_args(cmd):
     """
-    Create a client, parse the arguments received on the command line, and
-    call the appropriate method on the client.
+    Parse command-line args applying shortcuts and looking for help flags
     """
-    cli = DeisClient()
-    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
-                  options_first=True)
-    cmd = args['<command>']
     shortcuts = {
         'register': 'auth:register',
         'login': 'auth:login',
@@ -1178,7 +1179,7 @@ def main():
         'scale': 'containers:scale',
         'ps': 'containers:list',
     }
-    if sys.argv[1] == 'help':
+    if cmd == 'help':
         cmd = sys.argv[-1]
         help_flag = True
     else:
@@ -1195,6 +1196,19 @@ def main():
     # convert : to _ for matching method names and docstrings
     if ':' in cmd:
         cmd = '_'.join(cmd.split(':'))
+    return cmd, help_flag
+
+
+def main():
+    """
+    Create a client, parse the arguments received on the command line, and
+    call the appropriate method on the client.
+    """
+    cli = DeisClient()
+    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
+                  options_first=True)
+    cmd = args['<command>']
+    cmd, help_flag = parse_args(cmd)
     # print help if it was asked for
     if help_flag:
         if cmd != 'help':
