@@ -44,8 +44,7 @@ def import_tasks(provider_type):
 
 
 class AuditedModel(models.Model):
-    """Add created and updated fields to a model.
-    """
+    """Add created and updated fields to a model."""
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -56,8 +55,7 @@ class AuditedModel(models.Model):
 
 
 class UuidAuditedModel(AuditedModel):
-    """Add a UUID primary key to an audited model.
-    """
+    """Add a UUID primary key to an :class:`AuditedModel`."""
 
     uuid = fields.UuidField('UUID', primary_key=True)
 
@@ -122,11 +120,10 @@ class Provider(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class FlavorManager(models.Manager):
-
-    """Manages database interactions for :class:`Flavor`."""
+    """Manage database interactions for :class:`Flavor`."""
 
     def load_cloud_config_base(self):
-        """Read the base configuration file and return the YAML data it contains."""
+        """Read the base configuration file and return YAML data."""
         # load cloud-config-base yaml_
         _cloud_config_path = os.path.abspath(
             os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
@@ -198,6 +195,7 @@ class ScalingError(Exception):
 
 @python_2_unicode_compatible
 class FormationManager(models.Manager):
+    """Manage database interactions for :class:`Formation`."""
 
     def publish(self, **kwargs):
         # build data bag
@@ -259,6 +257,7 @@ class Formation(UuidAuditedModel):
         unique_together = (('owner', 'id'),)
 
     def scale_layers(self, **kwargs):
+        """Scale layers up or down to match requested."""
         layers = self.layers.copy()
         funcs = []
         for layer_id, requested in layers.items():
@@ -293,6 +292,7 @@ class Formation(UuidAuditedModel):
         return databag
 
     def scale_containers(self, **kwargs):
+        """Scale containers up or down to match requested."""
         requested_containers = self.containers.copy()
         runtime_layers = self.layer_set.filter(id='runtime')
         if len(runtime_layers) < 1:
@@ -389,7 +389,7 @@ class Formation(UuidAuditedModel):
         return self.id
 
     def calculate(self):
-        "Return a Chef data bag item for this formation"
+        """Return a Chef data bag item for this formation"""
         release = self.release_set.all().order_by('-created')[0]
         d = {}
         d['id'] = self.id
@@ -427,7 +427,7 @@ class Formation(UuidAuditedModel):
         return d
 
     def converge(self, databag):
-        # call a celery task to update the formation data bag
+        """Call a celery task to update the formation data bag."""
         if settings.CHEF_ENABLED:
             controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
         # TODO: batch node converging by layer.level
@@ -437,7 +437,7 @@ class Formation(UuidAuditedModel):
         return databag
 
     def destroy(self):
-        # create subtasks to terminate all nodes in parallel
+        """Create subtasks to terminate all nodes in parallel."""
         all_layers = self.layer_set.all()
         tasks = [layer.destroy(async=True) for layer in all_layers]
         node_tasks, layer_tasks = [], []
@@ -626,7 +626,7 @@ class Node(UuidAuditedModel):
 class Container(UuidAuditedModel):
 
     """
-    Docker container used to securely host an application process
+    Docker container used to securely host an application process.
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)

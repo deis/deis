@@ -4,45 +4,46 @@ REST framework URL routing classes.
 
 from __future__ import unicode_literals
 
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
 from rest_framework.routers import Route
 
 
-class ApiRouter(routers.DefaultRouter):
-
-    """Routes UUID interchangeably with owner/handle."""
+class ApiRouter(DefaultRouter):
+    """Generate URL patterns for list, detail, and viewset-specific
+    HTTP routes.
+    """
 
     routes = [
         # List route.
         Route(
-            url=r'^{prefix}/?$',
+            url=r"^{prefix}/?$",
             mapping={
                 'get': 'list',
                 'post': 'create'
             },
-            name='{basename}-list',
+            name="{basename}-list",
             initkwargs={'suffix': 'List'}
         ),
         # Detail route.
         Route(
-            url=r'^{prefix}/{lookup}/?$',
+            url=r"^{prefix}/{lookup}/?$",
             mapping={
                 'get': 'retrieve',
                 'put': 'update',
                 'patch': 'partial_update',
                 'delete': 'destroy'
             },
-            name='{basename}-detail',
+            name="{basename}-detail",
             initkwargs={'suffix': 'Instance'}
         ),
         # Dynamically generated routes, from @action or @link decorators
         # on methods of the viewset.
         Route(
-            url=r'^{prefix}/{lookup}/{methodname}/?$',
+            url=r"^{prefix}/{lookup}/{methodname}/?$",
             mapping={
-                '{httpmethod}': '{methodname}',
+                "{httpmethod}": "{methodname}",
             },
-            name='{basename}-{methodnamehyphen}',
+            name="{basename}-{methodnamehyphen}",
             initkwargs={}
         ),
     ]
