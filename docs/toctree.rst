@@ -15,4 +15,5 @@ This documentation has the following resources:
    commandline/index
    api/index
    contributing/index
+   releases
    faq
