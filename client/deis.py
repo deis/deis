@@ -13,7 +13,6 @@ Shortcut commands:
   create        create a new container formation
   info          print a representation of the formation
   scale         scale container types (web=2, worker=1)
-  balance       rebalance the container formation
   converge      force-converge all nodes in the formation
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
@@ -50,6 +49,7 @@ import urlparse
 from docopt import docopt
 from docopt import DocoptExit
 import requests
+import time
 import yaml
 
 
@@ -525,11 +525,12 @@ class DeisClient(object):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         print('Scaling containers... but first, coffee!')
+        before = time.time()
         response = self._dispatch('post',
                                   "/api/formations/{}/scale/containers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print '...done'
+            print('done in {}s\n'.format(int(time.time() - before)))
             self.containers_list({})
         else:
             print('Error!', response.text)
@@ -651,6 +652,13 @@ class DeisClient(object):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
+        # if a flavor was passed, make sure its valid
+        flavor = args.get('--flavor')
+        if flavor:
+            response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
+            if response.status_code != 200:
+                print 'Flavor not found'
+                return
         sys.stdout.write('Creating formation... ')
         sys.stdout.flush()
         response = self._dispatch('post', '/api/formations',
@@ -670,7 +678,6 @@ class DeisClient(object):
                 sys.exit(1)
             print('Git remote deis added')
             # create default layers if a flavor was provided
-            flavor = args.get('--flavor')
             if flavor:
                 print
                 self.layers_create({'<id>': 'runtime', '<flavor>': flavor})
@@ -712,7 +719,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print 'No flavors found'
+                print 'No formations found'
                 return
             print("=== {owner} Formations".format(**data['results'][0]))
             for item in data['results']:
@@ -748,10 +755,11 @@ class DeisClient(object):
                 return
         sys.stdout.write("Destroying {}... ".format(formation))
         sys.stdout.flush()
+        before = time.time()
         response = self._dispatch('delete', "/api/formations/{}".format(formation))
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
-            print('done')
+            print('done in {}s'.format(int(time.time() - before)))
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'rm', 'deis'],
@@ -784,27 +792,6 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
-    def formations_balance(self, args):
-        """
-        Rebalance containers across a formation
-
-        In the event nodes are added or removed outside of a
-        containers:scale command, balancing the formation will
-        ensure containers are spread evenly across nodes.
-
-        Usage: deis formations:balance
-        """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('post',
-                                  "/api/formations/{}/balance".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
-        else:
-            print('Error!', response.text)
-
     def formations_converge(self, args):
         """
         Force converge a formation
@@ -818,9 +805,13 @@ class DeisClient(object):
         formation = args.get('--formation')
         if not formation:
             formation = self._session.formation
+        sys.stdout.write('Converging {}... '.format(formation))
+        sys.stdout.flush()
+        before = time.time()
         response = self._dispatch('post',
                                   "/api/formations/{}/converge".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('done in {}s'.format(int(time.time() - before)))
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
         else:
@@ -959,10 +950,11 @@ class DeisClient(object):
                 body['run_list'] = 'recipe[deis],recipe[deis::proxy]'
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
+        before = time.time()
         response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done')
+            print('done in {}s'.format(int(time.time() - before)))
         else:
             print('Error!', response.text)
 
@@ -978,10 +970,11 @@ class DeisClient(object):
         layer = args['<id>']  # noqa
         sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
+        before = time.time()
         response = self._dispatch(
             'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done')
+            print('done in {}s'.format(int(time.time() - before)))
         else:
             print('Error!', response.text)
 
@@ -1022,12 +1015,13 @@ class DeisClient(object):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         print('Scaling layers... but first, coffee!')
+        before = time.time()
         # TODO: add threaded spinner to print dots
         response = self._dispatch('post',
                                   "/api/formations/{}/scale/layers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('...done\n')
+            print('done in {}s\n'.format(int(time.time() - before)))
             print('Use `git push deis master` to deploy to your formation')
         else:
             print('Error!', response.text)
@@ -1096,12 +1090,13 @@ class DeisClient(object):
         if not formation:
             formation = self._session.formation
         node = args['<id>']
-        response = self._dispatch('delete',
-                                  "/api/formations/{formation}/nodes/{node}".format(**locals()))
         sys.stdout.write("Destroying {}... ".format(node))
         sys.stdout.flush()
+        before = time.time()
+        response = self._dispatch('delete',
+                                  "/api/formations/{formation}/nodes/{node}".format(**locals()))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done')
+            print('done in {}s\n'.format(int(time.time() - before)))
         else:
             print('Error!', response.status_code, response.text)
 
