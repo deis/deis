@@ -11,7 +11,7 @@ Usage: deis <command> [--formation <formation>] [<args>...]
 Shortcut commands:
 
   create        create a new container formation
-  info          print a represenation of the formation
+  info          print a representation of the formation
   scale         scale container types (web=2, worker=1)
   balance       rebalance the container formation
   converge      force-converge all nodes in the formation
@@ -23,7 +23,7 @@ Subcommands, use `deis help [subcommand]` to learn more:
   formations    manage container formations
   layers        manage layers of nodes
   nodes         manage nodes of all types
-  containers    manage the containers running on backends
+  containers    manage runtime containers
 
   providers     manage cloud provider credentials
   flavors       manage node flavors on a provider
@@ -372,7 +372,7 @@ class DeisClient(object):
             formation = self._session.formation
         response = self._dispatch('get', "/api/formations/{}/builds".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {}".format(formation))
+            print("=== {} Builds".format(formation))
             data = response.json()
             for item in data['results']:
                 print("{0[uuid]:<23} {0[created]}".format(item))
@@ -404,7 +404,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {}".format(formation))
+            print("=== {} Config".format(formation))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
@@ -495,12 +495,14 @@ class DeisClient(object):
         procfile = databag['release']['build'].get('procfile', {})
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
+            print("=== {} Containers".format(formation))
             c_map = {}
             for item in data['results']:
                 c_map.setdefault(item['type'], []).append(item)
+            print
             for c_type in c_map.keys():
                 command = procfile.get(c_type, '<none>')
-                print("=== {c_type}: `{command}`".format(**locals()))
+                print("--- {c_type}: `{command}`".format(**locals()))
                 for c in c_map[c_type]:
                     print("{type}.{num} up {created}".format(**c))
                 print
@@ -522,12 +524,13 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
+        print('Scaling containers... but first, coffee!')
         response = self._dispatch('post',
                                   "/api/formations/{}/scale/containers".format(formation),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
+            print '...done'
+            self.containers_list({})
         else:
             print('Error!', response.text)
 
@@ -603,8 +606,12 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/flavors')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
+            if data['count'] == 0:
+                print 'No flavors found'
+                return
+            print("=== {owner} Flavors".format(**data['results'][0]))
             for item in data['results']:
-                print("{0[id]:<23}".format(item))
+                print("{id}: params => {params}".format(**item))
         else:
             print('Error!', response.text)
 
@@ -628,9 +635,9 @@ class DeisClient(object):
         """
         Create a new formation
 
+        If no ID is provided, one will be generated automatically.
         Providing a flavor automatically create a default runtime
-        and proxy layer.  If no ID is provided, one will be
-        generated automatically.
+        and proxy layer.
 
         Usage: deis formations:create [--id=<id> --flavor=<flavor>]
         """
@@ -683,7 +690,15 @@ class DeisClient(object):
             formation = self._session.formation
         response = self._dispatch('get', "/api/formations/{}".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
+            data = response.json()
+            print("=== {} Formation".format(formation))
+            print
+            args = {'<formation>': data['id']}
+            self.layers_list(args)
+            print
+            self.nodes_list(args)
+            print
+            self.containers_list(args)
         else:
             print('Error!', response.text)
 
@@ -696,8 +711,15 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/formations')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
+            if data['count'] == 0:
+                print 'No flavors found'
+                return
+            print("=== {owner} Formations".format(**data['results'][0]))
             for item in data['results']:
-                print("{0[id]:<23}".format(item))
+                formation = item['id']
+                layers = json.loads(item.get('layers', {}))
+                containers = json.loads(item.get('containers', {}))
+                print("{formation}: layers => {layers} containers => {containers}".format(**locals()))
         else:
             print('Error!', response.text)
 
@@ -864,7 +886,7 @@ class DeisClient(object):
             if data['count'] == 0:
                 print 'No keys found'
                 return
-            print("=== {0['owner']} Keys".format(data['results'][0]))
+            print("=== {owner} Keys".format(**data['results'][0]))
             for key in data['results']:
                 public = key['public']
                 print("{0} {1}...{2}".format(
@@ -974,11 +996,11 @@ class DeisClient(object):
         response = self._dispatch('get',
                                   "/api/formations/{}/layers".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {}".format(formation))
+            print("=== {} Layers".format(formation))
             data = response.json()
-            format_str = "{0[id]} => {0[run_list]}"
+            format_str = "{id}: run_list => {run_list}"
             for item in data['results']:
-                print(format_str.format(item))
+                print(format_str.format(**item))
         else:
             print('Error!', response.text)
 
@@ -1046,11 +1068,11 @@ class DeisClient(object):
         response = self._dispatch('get',
                                   "/api/formations/{}/nodes".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {}".format(formation))
+            print("=== {} Nodes".format(formation))
             data = response.json()
-            format_str = "{0[id]:<23} {0[layer]} {0[provider_id]} {0[fqdn]}"
+            format_str = "{id} {provider_id} {fqdn}"
             for item in data['results']:
-                print(format_str.format(item))
+                print(format_str.format(**item))
         else:
             print('Error!', response.text)
 
@@ -1185,8 +1207,14 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/providers')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
+            if data['count'] == 0:
+                print 'No providers found'
+                return
+            print("=== {owner} Providers".format(**data['results'][0]))
             for item in data['results']:
-                print(item['id'])
+                creds = json.loads(item['creds'])
+                creds.pop('secret_key')
+                print("{} => {}".format(item['id'], creds))
         else:
             print('Error!', response.text)
 
