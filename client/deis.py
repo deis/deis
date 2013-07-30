@@ -719,7 +719,8 @@ class DeisClient(object):
                 formation = item['id']
                 layers = json.loads(item.get('layers', {}))
                 containers = json.loads(item.get('containers', {}))
-                print("{formation}: layers => {layers} containers => {containers}".format(**locals()))
+                print("{formation}: layers => {layers} containers => {containers}".format(
+                    **locals()))
         else:
             print('Error!', response.text)
 
