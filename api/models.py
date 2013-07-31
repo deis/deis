@@ -695,6 +695,7 @@ class Build(UuidAuditedModel):
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
+        unique_together = (('formation', 'uuid'),)
 
     def __str__(self):
         return "{0}-v{1}".format(self.formation.id, self.version)
