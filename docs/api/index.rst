@@ -30,6 +30,8 @@ API Reference
     celerytasks.mock
     celerytasks.util
 
+    client
+
     web.models
     web.urls
     web.views
