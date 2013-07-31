@@ -157,7 +157,7 @@ class ContainerSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     formation = serializers.SlugRelatedField(slug_field='id')
-    node = serializers.SlugRelatedField(slug_field='uuid')
+    node = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""

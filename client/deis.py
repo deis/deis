@@ -504,7 +504,7 @@ class DeisClient(object):
                 command = procfile.get(c_type, '<none>')
                 print("--- {c_type}: `{command}`".format(**locals()))
                 for c in c_map[c_type]:
-                    print("{type}.{num} up {created}".format(**c))
+                    print("{type}.{num} up {created} ({node})".format(**c))
                 print
         else:
             print('Error!', response.text)
