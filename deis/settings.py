@@ -178,7 +178,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
     ),
-    'PAGINATE_BY': 10,
+    'PAGINATE_BY': 100,
 }
 
 # URLs that end with slashes are ugly
