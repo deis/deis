@@ -10,9 +10,9 @@
     <meta name="description" content="{{ meta['description'] if meta }}">
     <meta name="keywords" content="{{ meta['keywords'] if meta }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.min.css', 1) }}" type="text/css">
+    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.css', 1) }}" type="text/css">
+    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/css/main.css', 1) }}" type="text/css">
-    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.min.css', 1) }}" type="text/css">
     <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}">
     <script
     <script src="{{ pathto('_static/js/modernizr-2.6.2-respond-1.1.0.min.js', 1) }}"></script>
@@ -65,9 +65,9 @@
             </div>
 
             <div class="span6 hoop">
-              <div>{% block body %}{% endblock %}</div>
+              <div class="doc-content">{% block body %}{% endblock %}</div>
             </div>
-            <div class="span3">
+            <div class="span3 docs-sidebar">
               {{ toctree(collapse=False, maxdepth=3) }}
             </div>
 
