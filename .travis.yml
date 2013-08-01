@@ -18,10 +18,7 @@ before_install:
   - sudo apt-get install -qq libevent-dev libpq-dev
 
 install:
-  - pip install -r requirements.txt --use-mirrors
-  - pip install -r client/requirements.txt --use-mirrors
-  - pip install -r docs/requirements.txt --use-mirrors
-  - pip install coveralls flake8 --use-mirrors
+  - pip install -r dev_requirements.txt coveralls --use-mirrors
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
@@ -37,7 +34,7 @@ before_script:
             'PORT': '',
         }
     }
-    SECRET_KEY = ')9$y9(@_r!+ai=ub)wsp2!!vsfaker7ke9!jaljgf1_@rw421='
+    SECRET_KEY = 'TotallyFake-SECRET_KEY-ForTravisCI'
     EOF
 
 script:
