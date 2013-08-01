@@ -22,11 +22,6 @@
   {% else %}
   <link rel="canonical" href="http://deis.io/docs/latest/{{ pagename }}/">
   {% endif %}
-<style type="text/css" media="print">#wpadminbar { display:none; }</style>
-<style type="text/css" media="screen">
-  html { margin-top: 28px !important; }
-  * html body { margin-top: 28px !important; }
-</style>
   {% block extrahead %}{% endblock %}
 </head>
 <body style="zoom: 1;">
@@ -69,8 +64,11 @@
                 </div>
             </div>
 
-            <div class="span9 hoop">
+            <div class="span6 hoop">
               <div>{% block body %}{% endblock %}</div>
+            </div>
+            <div class="span3">
+              {{ toctree(collapse=False, maxdepth=3) }}
             </div>
 
         </div> <!-- .row -->
@@ -101,7 +99,12 @@
       Math, boxes.map(function() {
         return $(this).height();
     }).get());
-    boxes.height(maxHeight);
+    if (maxHeight < 923) {
+      boxes.height(923);
+    } else {
+      boxes.height(maxHeight);
+    }
+
 
     if (maxHeight > 800) {
       newMargin = maxHeight - 451 - 133 - 30;
