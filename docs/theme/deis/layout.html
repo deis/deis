@@ -6,46 +6,41 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title> &raquo; Overview</title>
-    <meta name="description" content="">
+    <title>{{ meta['title'] if meta and meta['title'] else title }} - Deis Documentation</title>
+    <meta name="description" content="{{ meta['description'] if meta }}">
+    <meta name="keywords" content="{{ meta['keywords'] if meta }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/bootstrap.css">
-    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/bootstrap-responsive.css">
-    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/main.css">
-    <link rel="pingback" href="http://deis.io/xmlrpc.php" />
-    <link rel="shortcut icon" href="http://deis.io/wp-content/themes/deis/img/favicon.ico"/>
-
-
-    <script src="http://deis.io/wp-content/themes/deis/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.min.css', 1) }}" type="text/css">
+    <link rel="stylesheet" href="{{ pathto('_static/css/main.css', 1) }}" type="text/css">
+    <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.min.css', 1) }}" type="text/css">
+    <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}">
+    <script
+    <script src="{{ pathto('_static/js/modernizr-2.6.2-respond-1.1.0.min.js', 1) }}"></script>
     <meta name='robots' content='noindex,nofollow' />
-<link rel="alternate" type="application/rss+xml" title="Deis &raquo; Overview Comments Feed" href="http://deis.io/overview/feed/" />
-<link rel='stylesheet' id='admin-bar-css'  href='http://deis.io/wp-includes/css/admin-bar.min.css?ver=3.5.2' type='text/css' media='all' />
-<link rel='stylesheet' id='core3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shCore.css?ver=3.0' type='text/css' media='all' />
-<link rel='stylesheet' id='core-Default3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shCoreDefault.css?ver=3.0' type='text/css' media='all' />
-<link rel='stylesheet' id='theme-Default3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shThemeDefault.css?ver=3.0' type='text/css' media='all' />
-<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://deis.io/xmlrpc.php?rsd" />
-<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://deis.io/wp-includes/wlwmanifest.xml" />
-<link rel='prev' title='Home' href='http://deis.io/' />
-<link rel='next' title='Get Deis' href='http://deis.io/get-deis/' />
-<link rel='canonical' href='http://deis.io/overview/' />
+  {%- if pagename == 'index' %}
+  <link rel="canonical" href="http://deis.io/docs/latest/">
+  {% else %}
+  <link rel="canonical" href="http://deis.io/docs/latest/{{ pagename }}/">
+  {% endif %}
 <style type="text/css" media="print">#wpadminbar { display:none; }</style>
 <style type="text/css" media="screen">
   html { margin-top: 28px !important; }
   * html body { margin-top: 28px !important; }
 </style>
+  {% block extrahead %}{% endblock %}
 </head>
 <body style="zoom: 1;">
     <!--[if lt IE 7]>
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
     <![endif]-->
 
-    <a class="fork" href="http://github.com/opdemand/deis"><img src="http://deis.io/wp-content/themes/deis/img/fork.png" alt="GitHub Fork Button"></a>
+    <a class="fork" href="http://github.com/opdemand/deis"><img src="{{ pathto('_static/img/fork.png', 1) }}" alt="GitHub Fork Button"></a>
     <div class="container">
         <div class="row">
             <div class="span3 hoop">
                 <div class="nav-border top-spacing">
                     <ul class="nav nav-list menu">
-                        <li><a href="/"><img class="logo" src="http://deis.io/wp-content/themes/deis/img/menu-logo.png" alt="deis logo"></a></li>
+                        <li><a href="/"><img class="logo" src="{{ pathto('_static/img/menu-logo.png', 1) }}" alt="deis logo"></a></li>
                         <li class="divider"></li>
                         <li class="navitem"><a href="http://deis.io/overview/">Overview</a></li>
                         <li class="divider"></li>
