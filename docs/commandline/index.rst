@@ -7,4 +7,4 @@
 CLI cheatsheet
 ==============
 
-**Coming soon...**
+.. automodule:: client.deis

@@ -4,11 +4,13 @@ This Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [--formation <formation>] [<args>...]
 
+::
+
   register      register a new user with a controller
   login         login to a controller
   logout        logout from the current controller
 
-Shortcut commands:
+Shortcut commands::
 
   create        create a new container formation
   info          print a representation of the formation
@@ -17,7 +19,7 @@ Shortcut commands:
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
 
-Subcommands, use `deis help [subcommand]` to learn more:
+Subcommands, use `deis help [subcommand]` to learn more::
 
   formations    manage container formations
   layers        manage layers of nodes

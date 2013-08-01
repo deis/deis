@@ -13,6 +13,8 @@ API Reference
 .. toctree::
     :maxdepth: 1
 
+    rest
+
     api.fields
     api.models
     api.routers
@@ -29,8 +31,6 @@ API Reference
     celerytasks.ec2
     celerytasks.mock
     celerytasks.util
-
-    client
 
     web.models
     web.urls

@@ -6,11 +6,13 @@ Keys
 
 .. http:get:: /api/keys/(string:id)/
 
-  Retrieve a :class:`~api.models.Key` by its id.
+  Retrieve a :class:`~api.models.Key` by its `id`.
 
 .. http:delete:: /api/keys/(string:id)/
 
-  Delete a :class:`~api.models.Key` by its id.
+  Destroy a :class:`~api.models.Key` by its `id`.
+
+  See also :meth:`KeyViewSet.destroy() <api.views.KeyViewSet.destroy>`
 
 .. http:get:: /api/keys/
 
@@ -20,13 +22,15 @@ Keys
 
   Create a new :class:`~api.models.Key`.
 
+  See also :meth:`KeyViewSet.post_save() <api.views.KeyViewSet.post_save>`
+
 
 Providers
 =========
 
 .. http:get:: /api/providers/(string:id)/
 
-  Retrieve a :class:`~api.models.Provider` by its id.
+  Retrieve a :class:`~api.models.Provider` by its `id`.
 
 .. http:patch:: /api/providers/(string:id)/
 
@@ -34,7 +38,7 @@ Providers
 
 .. http:delete:: /api/providers/(string:id)/
 
-  Delete a :class:`~api.models.Provider` by its id.
+  Destroy a :class:`~api.models.Provider` by its `id`.
 
 .. http:get:: /api/providers/
 
@@ -50,7 +54,7 @@ Flavors
 
 .. http:get:: /api/flavors/(string:id)/
 
-  Retrieve a :class:`~api.models.Flavor` by its id.
+  Retrieve a :class:`~api.models.Flavor` by its `id`.
 
 .. http:patch:: /api/flavors/(string:id)/
 
@@ -58,7 +62,7 @@ Flavors
 
 .. http:delete:: /api/flavors/(string:id)/
 
-  Delete a :class:`~api.models.Flavor` by its id.
+  Destroy a :class:`~api.models.Flavor` by its `id`.
 
 .. http:get:: /api/flavors/
 
@@ -68,17 +72,19 @@ Flavors
 
   Create a new :class:`~api.models.Flavor`.
 
+  See also :meth:`FlavorViewSet.create() <api.views.FlavorViewSet.create>`
+
 
 Formations
 ==========
 
 .. http:get:: /api/formations/(string:id)/
 
-  Retrieve a :class:`~api.models.Formation` by its id.
+  Retrieve a :class:`~api.models.Formation` by its `id`.
 
 .. http:delete:: /api/formations/(string:id)/
 
-  Delete a :class:`~api.models.Formation` by its id.
+  Destroy a :class:`~api.models.Formation` by its `id`.
 
 .. http:get:: /api/formations/
 
@@ -88,12 +94,17 @@ Formations
 
   Create a new :class:`~api.models.Formation`.
 
+  See also
+  :meth:`FormationViewSet.create() <api.views.FormationViewSet.create>` and
+  :meth:`FormationViewSet.post_save() <api.views.FormationViewSet.post_save>`
+
+
 Infrastructure
 --------------
 
 .. http:get:: /api/formations/(string:id)/layers/(string:id)/
 
-  Retrieve a :class:`~api.models.Layer` by its id.
+  Retrieve a :class:`~api.models.Layer` by its `id`.
 
 .. http:patch:: /api/formations/(string:id)/layers/(string:id)/
 
@@ -101,7 +112,7 @@ Infrastructure
 
 .. http:delete:: /api/formations/(string:id)/layers/(string:id)/
 
-  Delete a :class:`~api.models.Layer` by its id.
+  Destroy a :class:`~api.models.Layer` by its `id`.
 
 .. http:get:: /api/formations/(string:id)/layers/
 
@@ -113,11 +124,11 @@ Infrastructure
 
 .. http:get:: /api/formations/(string:id)/nodes/(string:id)/
 
-  Retrieve a :class:`~api.models.Node` by its id.
+  Retrieve a :class:`~api.models.Node` by its `id`.
 
 .. http:delete:: /api/formations/(string:id)/nodes/(string:id)/
 
-  Delete a :class:`~api.models.Node` by its id.
+  Destroy a :class:`~api.models.Node` by its `id`.
 
 .. http:get:: /api/formations/(string:id)/nodes/
 
@@ -141,7 +152,7 @@ Release Components
 
 .. http:get:: /api/formations/(string:id)/builds/(string:uuid)/
 
-  Retrieve a :class:`~api.models.Build` by its uuid.
+  Retrieve a :class:`~api.models.Build` by its `uuid`.
 
 .. http:post:: /api/formations/(string:id)/builds/
 
@@ -149,7 +160,7 @@ Release Components
 
 .. http:get:: /api/formations/(string:id)/releases/(int:version)/
 
-  Retrieve a :class:`~api.models.Release` by its version.
+  Retrieve a :class:`~api.models.Release` by its `version`.
 
 .. http:get:: /api/formations/(string:id)/releases/
 
@@ -160,23 +171,28 @@ Actions
 
 .. http:post:: /api/formations/(string:id)/scale/layers/
 
-    scale_layers
+  See also
+  :meth:`FormationViewSet.scale_layers() <api.views.FormationViewSet.scale_layers>`
 
 .. http:post:: /api/formations/(string:id)/scale/containers/
 
-    scale_containers
+  See also
+  :meth:`FormationViewSet.scale_containers() <api.views.FormationViewSet.scale_containers>`
 
 .. http:post:: /api/formations/(string:id)/balance/
 
-    balance
+  See also
+  :meth:`FormationViewSet.balance() <api.views.FormationViewSet.balance>`
 
 .. http:post:: /api/formations/(string:id)/calculate/
 
-    calculate
+  See also
+  :meth:`FormatinViewSet.calculate() <api.views.FormationViewSet.calculate>`
 
 .. http:post:: /api/formations/(string:id)/converge/
 
-    converge
+  See also
+  :meth:`FormationViewSet.converge() <api.views.FormationViewSet.converge>`
 
 
 Auth
