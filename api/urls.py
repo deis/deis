@@ -1,5 +1,199 @@
 """
-URL routing patterns for the Deis API app.
+RESTful URL patterns and routing for the Deis API app.
+
+Keys
+====
+
+.. http:get:: /api/keys/(string:id)/
+
+  Retrieve a :class:`~api.models.Key` by its id.
+
+.. http:delete:: /api/keys/(string:id)/
+
+  Delete a :class:`~api.models.Key` by its id.
+
+.. http:get:: /api/keys/
+
+  List all :class:`~api.models.Key`\s.
+
+.. http:post:: /api/keys/
+
+  Create a new :class:`~api.models.Key`.
+
+
+Providers
+=========
+
+.. http:get:: /api/providers/(string:id)/
+
+  Retrieve a :class:`~api.models.Provider` by its id.
+
+.. http:patch:: /api/providers/(string:id)/
+
+  Update parts of a :class:`~api.models.Provider`.
+
+.. http:delete:: /api/providers/(string:id)/
+
+  Delete a :class:`~api.models.Provider` by its id.
+
+.. http:get:: /api/providers/
+
+  List all :class:`~api.models.Provider`\s.
+
+.. http:post:: /api/providers/
+
+  Create a new :class:`~api.models.Provider`.
+
+
+Flavors
+=======
+
+.. http:get:: /api/flavors/(string:id)/
+
+  Retrieve a :class:`~api.models.Flavor` by its id.
+
+.. http:patch:: /api/flavors/(string:id)/
+
+  Update parts of a :class:`~api.models.Flavor`.
+
+.. http:delete:: /api/flavors/(string:id)/
+
+  Delete a :class:`~api.models.Flavor` by its id.
+
+.. http:get:: /api/flavors/
+
+  List all :class:`~api.models.Flavor`\s.
+
+.. http:post:: /api/flavors/
+
+  Create a new :class:`~api.models.Flavor`.
+
+
+Formations
+==========
+
+.. http:get:: /api/formations/(string:id)/
+
+  Retrieve a :class:`~api.models.Formation` by its id.
+
+.. http:delete:: /api/formations/(string:id)/
+
+  Delete a :class:`~api.models.Formation` by its id.
+
+.. http:get:: /api/formations/
+
+  List all :class:`~api.models.Formation`\s.
+
+.. http:post:: /api/formations/
+
+  Create a new :class:`~api.models.Formation`.
+
+Infrastructure
+--------------
+
+.. http:get:: /api/formations/(string:id)/layers/(string:id)/
+
+  Retrieve a :class:`~api.models.Layer` by its id.
+
+.. http:patch:: /api/formations/(string:id)/layers/(string:id)/
+
+  Update parts of a :class:`~api.models.Layer`.
+
+.. http:delete:: /api/formations/(string:id)/layers/(string:id)/
+
+  Delete a :class:`~api.models.Layer` by its id.
+
+.. http:get:: /api/formations/(string:id)/layers/
+
+  List all :class:`~api.models.Layer`\s.
+
+.. http:post:: /api/formations/(string:id)/layers/
+
+  Create a new :class:`~api.models.Layer`.
+
+.. http:get:: /api/formations/(string:id)/nodes/(string:id)/
+
+  Retrieve a :class:`~api.models.Node` by its id.
+
+.. http:delete:: /api/formations/(string:id)/nodes/(string:id)/
+
+  Delete a :class:`~api.models.Node` by its id.
+
+.. http:get:: /api/formations/(string:id)/nodes/
+
+  List all :class:`~api.models.Node`\s.
+
+.. http:get:: /api/formations/(string:id)/containers/
+
+  List all :class:`~api.models.Container`\s.
+
+
+Release Components
+------------------
+
+.. http:get:: /api/formations/(string:id)/config/
+
+  List all :class:`~api.models.Config`\s.
+
+.. http:post:: /api/formations/(string:id)/config/
+
+  Create a new :class:`~api.models.Config`.
+
+.. http:get:: /api/formations/(string:id)/builds/(string:uuid)/
+
+  Retrieve a :class:`~api.models.Build` by its uuid.
+
+.. http:post:: /api/formations/(string:id)/builds/
+
+  Create a new :class:`~api.models.Build`.
+
+.. http:get:: /api/formations/(string:id)/releases/(int:version)/
+
+  Retrieve a :class:`~api.models.Release` by its version.
+
+.. http:get:: /api/formations/(string:id)/releases/
+
+  List all :class:`~api.models.Release`\s.
+
+Actions
+-------
+
+.. http:post:: /api/formations/(string:id)/scale/layers/
+
+    scale_layers
+
+.. http:post:: /api/formations/(string:id)/scale/containers/
+
+    scale_containers
+
+.. http:post:: /api/formations/(string:id)/balance/
+
+    balance
+
+.. http:post:: /api/formations/(string:id)/calculate/
+
+    calculate
+
+.. http:post:: /api/formations/(string:id)/converge/
+
+    converge
+
+
+Auth
+====
+
+.. http:post:: /api/auth/register/
+
+  Create a new :class:`~api.models.UserRegistration`.
+
+.. http:post:: /api/auth/???
+
+  TODO: document the important rest_framework login URLs
+
+.. http:get:: /api/generate-api-key/
+
+  Generate an API key.
+
 """
 # pylint: disable=C0103
 
@@ -38,7 +232,11 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^flavors/?',
         views.FlavorViewSet.as_view({'post': 'create', 'get': 'list'})),
-
+    # formation base endpoint
+    url(r'^formations/(?P<id>[a-z0-9-]+)/?',
+        views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^formations/?',
+        views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
     # formation infrastructure
     url(r'^formations/(?P<id>[a-z0-9-]+)/layers/(?P<layer>[a-z0-9-]+)/?',
         views.FormationLayerViewSet.as_view({
@@ -74,11 +272,6 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'calculate'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/converge/?',
         views.FormationViewSet.as_view({'post': 'converge'})),
-    # formation base endpoint
-    url(r'^formations/(?P<id>[a-z0-9-]+)/?',
-        views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^formations/?',
-        views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
 
     # authn / authz
     url(r'^auth/register/?',
