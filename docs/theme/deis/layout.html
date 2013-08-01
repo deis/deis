@@ -1,100 +1,121 @@
 <!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
 <head>
-  <meta charset="utf-8">
-  <meta name="google-site-verification" content="" />
-  <title>{{ meta['title'] if meta and meta['title'] else title }} - Deis Documentation</title>
-  <meta name="description" content="{{ meta['description'] if meta }}" />
-  <meta name="keywords" content="{{ meta['keywords'] if meta }}" />
-  {%- if pagename == 'index' %}
-  <link rel="canonical" href="http://deis.io/docs/latest/">
-  {% else %}
-  <link rel="canonical" href="http://deis.io/docs/latest/{{ pagename }}/">
-  {% endif %}
-  <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.min.css', 1) }}" type="text/css" />
-  <link rel="stylesheet" href="{{ pathto('_static/css/deis.css', 1) }}" type="text/css" />
-  <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.min.css', 1) }}" type="text/css" />
-  <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}"/>
-  {%- block extrahead %}{% endblock %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title> &raquo; Overview</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/bootstrap.css">
+    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="http://deis.io/wp-content/themes/deis/css/main.css">
+    <link rel="pingback" href="http://deis.io/xmlrpc.php" />
+    <link rel="shortcut icon" href="http://deis.io/wp-content/themes/deis/img/favicon.ico"/>
+
+
+    <script src="http://deis.io/wp-content/themes/deis/js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    <meta name='robots' content='noindex,nofollow' />
+<link rel="alternate" type="application/rss+xml" title="Deis &raquo; Overview Comments Feed" href="http://deis.io/overview/feed/" />
+<link rel='stylesheet' id='admin-bar-css'  href='http://deis.io/wp-includes/css/admin-bar.min.css?ver=3.5.2' type='text/css' media='all' />
+<link rel='stylesheet' id='core3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shCore.css?ver=3.0' type='text/css' media='all' />
+<link rel='stylesheet' id='core-Default3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shCoreDefault.css?ver=3.0' type='text/css' media='all' />
+<link rel='stylesheet' id='theme-Default3.0-css'  href='http://deis.io/wp-content/plugins/wp-syntaxhighlighter/syntaxhighlighter3/styles/shThemeDefault.css?ver=3.0' type='text/css' media='all' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://deis.io/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://deis.io/wp-includes/wlwmanifest.xml" />
+<link rel='prev' title='Home' href='http://deis.io/' />
+<link rel='next' title='Get Deis' href='http://deis.io/get-deis/' />
+<link rel='canonical' href='http://deis.io/overview/' />
+<style type="text/css" media="print">#wpadminbar { display:none; }</style>
+<style type="text/css" media="screen">
+  html { margin-top: 28px !important; }
+  * html body { margin-top: 28px !important; }
+</style>
 </head>
+<body style="zoom: 1;">
+    <!--[if lt IE 7]>
+        <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+    <![endif]-->
 
-<body>
+    <a class="fork" href="http://github.com/opdemand/deis"><img src="http://deis.io/wp-content/themes/deis/img/fork.png" alt="GitHub Fork Button"></a>
+    <div class="container">
+        <div class="row">
+            <div class="span3 hoop">
+                <div class="nav-border top-spacing">
+                    <ul class="nav nav-list menu">
+                        <li><a href="/"><img class="logo" src="http://deis.io/wp-content/themes/deis/img/menu-logo.png" alt="deis logo"></a></li>
+                        <li class="divider"></li>
+                        <li class="navitem"><a href="http://deis.io/overview/">Overview</a></li>
+                        <li class="divider"></li>
+                        <li class="navitem"><a href="http://deis.io/get-deis/">Get Deis</a></li>
+                        <li class="divider"></li>
+                        <li class="navitem"><a href="http://deis.io/get-involved/">Get Involved</a></li>
+                        <li class="divider"></li>
+                        <li class="navitem selected green"><a href="/">Documentation</a></li>
+                        <li class="divider"></li>
+                        <li class="navitem"><a href="http://deis.io/blog/">Blog</a></li>
+                        <li class="divider"></li>
+                        <div style="clear:both;"></div>
+                    </ul>
 
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-dotcloud">
-        <div class="container" style="text-align: center;">
+                    <div class="social-menu">
+                        <a href="https://twitter.com/opendeis" target="_blank"><span class="twitter"></span></a>
+                        <a href="http://freenode.net" target="_blank"><span class="irc"></span></a>
+                        <a href="https://github.com/opdemand/deis" target="_blank"><span class="github"></span></a>
+                        <a href="http://stackoverflow.com/" target="_blank"><span class="stack"></span></a>
+                    </div>
 
-            <div style="float: right" class="pull-right">
-                <ul class="nav">
-                    <li id="nav-introduction"><a href="http://deis.io/" title="Deis Home">Home</a></li>
-                    <li id="nav-about"><a href="http://deis.io" title="About">About</a></li>
-                    <li id="nav-documentation" class="active"><a href="http://deis.io/docs/latest/">Documentation</a></li>
-                    <li id="nav-blog"><a href="http://deis.io/blog" title="Deis Blog">Blog</a></li>
-                </ul>
+                    <div class="byline-menu">
+                        <a href="" ><span class="cloud-logo"></span></a>
+                        <p>Deis is a project by<br>OpDemand</p>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-left: -12px; float: left;">
-                <a href="http://deis.io" title="Deis Home"><img style="margin-top: 0px; height: 60px; margin-left: 10px;" src="{{ pathto('_static/img/deis_logo.png', 1) }}"></a>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-
-<div class="container">
-    <div class="row">
-        <div class="span12 titlebar">
-            <div class="pull-right" id="fork-us" style="margin-top: 16px; margin-right: 16px;">
-                <a href="http://github.com/opdemand/deis/"><img src="{{ pathto('_static/img/fork.png', 1) }}"> Fork us on Github</a>
-            </div>
-            <h1 class="pageheader"><a href="http://deis.io/docs/latest/" title="Documentation" style="color: white;">DOCUMENTATION</a></h1>
-
-        </div>
-    </div>
-
-</div>
-
-<div class="container">
-
-    <!-- Docs nav
-     ================================================== -->
-    <div class="row" style="position: relative">
-
-        <div class="span3 sidebar bs-docs-sidebar">
-            {{ toctree(collapse=False, maxdepth=3) }}
-        </div>
-
-        <!-- body block -->
-        <div class="span9">
-
-            <!-- Main section
-            ================================================== -->
-            <section id="global" class="containerblock">
-                {% block body %}{% endblock %}
-            </section>
-
-        </div>
-    </div>
-</div>
-
-<div id="footer" class="container" >
-    <div class="row">
-
-        <div class="span12 footer">
-            <div class="tbox textright forceleftmargin social links pull-right">
-                <a class="twitter" href="http://twitter.com/opdemand">Twitter</a>
-                <a class="github" href="https://github.com/opdemand/deis/">GitHub</a>
+            <div class="span9 hoop">
+              <div>{% block body %}{% endblock %}</div>
             </div>
 
-            <a href="http://www.opdemand.com">OpDemand</a> sponsors and maintains the deis project
+        </div> <!-- .row -->
+      </div> <!-- .main_section container-->
 
-        </div>
-    </div>
-</div>
+  <footer>
+  </footer>
 
-<!-- js -->
-<script type="text/javascript" src="/_static/js/jquery-2.0.3.js"></script>
-<script type="text/javascript" src="/_static/js/bootstrap.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
 
-</body>
+  <script src="http://deis.io/wp-content/themes/deis/js/vendor/bootstrap.min.js"></script>
+
+  <script src="http://deis.io/wp-content/themes/deis/js/plugins.js"></script>
+  <script src="http://deis.io/wp-content/themes/deis/js/main.js"></script>
+
+  <script>
+  var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+  (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  g.src='//www.google-analytics.com/ga.js';
+  s.parentNode.insertBefore(g,s)}(document,'script'));
+  </script>
+
+  <script>
+  $(function(){
+    boxes = $('.hoop');
+    maxHeight = Math.max.apply(
+      Math, boxes.map(function() {
+        return $(this).height();
+    }).get());
+    boxes.height(maxHeight);
+
+    if (maxHeight > 800) {
+      newMargin = maxHeight - 451 - 133 - 30;
+      $('.social-menu').css({'margin-top': newMargin})
+    } else {
+      $('.social-menu').css({'margin-top': 271})
+    }
+  });
+  </script>
+
+    </body>
 </html>
