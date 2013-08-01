@@ -16,6 +16,8 @@
     <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}">
     <script
     <script src="{{ pathto('_static/js/modernizr-2.6.2-respond-1.1.0.min.js', 1) }}"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
     <meta name='robots' content='noindex,nofollow' />
   {%- if pagename == 'index' %}
   <link rel="canonical" href="http://deis.io/docs/latest/">
@@ -68,7 +70,10 @@
               <div>{% block body %}{% endblock %}</div>
             </div>
             <div class="span3">
-              {{ toctree(collapse=False, maxdepth=3) }}
+            {%- block sidebarsearch %}
+            {%- include "searchbox.html" %}
+            {%- endblock %}
+            {{ toctree(collapse=False, maxdepth=3) }}
             </div>
 
         </div> <!-- .row -->
@@ -77,13 +82,20 @@
   <footer>
   </footer>
 
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
-
-  <script src="http://deis.io/wp-content/themes/deis/js/vendor/bootstrap.min.js"></script>
-
-  <script src="http://deis.io/wp-content/themes/deis/js/plugins.js"></script>
-  <script src="http://deis.io/wp-content/themes/deis/js/main.js"></script>
+{%- macro script() %}
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '{{ url_root }}',
+        VERSION:     '{{ release|e }}',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '{{ '' if no_search_suffix else file_suffix }}',
+        HAS_SOURCE:  {{ has_source|lower }}
+      };
+    </script>
+{%- endmacro %}
+  <script type="text/javascript" src="{{ pathto('_static/underscore.js', 1) }}" type="text/css"></script>
+  <script type="text/javascript" src="{{ pathto('_static/doctools.js', 1) }}" type="text/css"></script>
+  <script type="text/javascript" src="{{ pathto('_static/searchtools.js', 1) }}" type="text/css"></script>
 
   <script>
   var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
