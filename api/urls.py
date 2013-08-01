@@ -232,11 +232,6 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^flavors/?',
         views.FlavorViewSet.as_view({'post': 'create', 'get': 'list'})),
-    # formation base endpoint
-    url(r'^formations/(?P<id>[a-z0-9-]+)/?',
-        views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^formations/?',
-        views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
     # formation infrastructure
     url(r'^formations/(?P<id>[a-z0-9-]+)/layers/(?P<layer>[a-z0-9-]+)/?',
         views.FormationLayerViewSet.as_view({
@@ -272,6 +267,11 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'calculate'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/converge/?',
         views.FormationViewSet.as_view({'post': 'converge'})),
+    # formation base endpoint
+    url(r'^formations/(?P<id>[a-z0-9-]+)/?',
+        views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^formations/?',
+        views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
 
     # authn / authz
     url(r'^auth/register/?',
