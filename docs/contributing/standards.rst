@@ -1,13 +1,8 @@
-:title: Developer Setup
+:title: Coding Standards
 :description: -- todo: change me
 :keywords: deis, documentation, contributing, developer, setup
 
-.. _developer:
-
-Developer Setup
-===============
-
-**Coming soon...**
+.. _standards:
 
 Coding Standards
 ================

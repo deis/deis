@@ -11,8 +11,8 @@ This documentation has the following resources:
    :titlesonly:
 
    index
-   tutorial/index
-   commandline/index
+   gettingstarted/index
+   client/index
    api/index
    contributing/index
    releases

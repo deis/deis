@@ -9,10 +9,9 @@ FAQ
 
 - What does the word "deis" mean?
 
-    Deis is an alternate spelling for dais_, both of which mean "a raised platform
-    for a speaker or honored guest."
+    Deis is an alternative form of dais_, a raised platform for dignified occupancy.
 
-- How do you prononounce "deis?"
+- How do you pronounce "deis?"
 
     DAY-iss
 

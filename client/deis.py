@@ -4,7 +4,7 @@ This Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [--formation <formation>] [<args>...]
 
-::
+Auth commands::
 
   register      register a new user with a controller
   login         login to a controller
