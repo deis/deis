@@ -51,13 +51,15 @@ Client
 
 - publish CLI to pip
 	- python setup.py sdist upload
-
+	- use testpypi first to ensure there aren't any problems
 
 Docs
 ----
 - create release notes docs
 	- summary of features
 	- what's next? section
-- publish docs to docs.deis.io (TODO)
+- publish docs to docs.deis.io / deis.readthedocs.org
 - publish docs to pythonhosted.org/deis
+    - in the docs dir, "make docs zipfile"
     - use web form at http://pypi.python.org/pypi?%3Aaction=pkg_edit&name=deis
+      to upload zipfile
