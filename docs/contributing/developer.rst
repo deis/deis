@@ -7,3 +7,9 @@
 Developer Setup
 ===============
 
+**Coming soon...**
+
+Coding Standards
+================
+
+**Coming soon...**
