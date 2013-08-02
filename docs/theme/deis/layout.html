@@ -90,6 +90,8 @@
       FILE_SUFFIX: '{{ '' if no_search_suffix else file_suffix }}',
       HAS_SOURCE:  {{ has_source|lower }}
     };
+    // hacky workaround for doctools.js breakage
+    $.browser = {};
   </script>
   <script type="text/javascript" src="{{ pathto('_static/underscore.js', 1) }}" type="text/css"></script>
   <script type="text/javascript" src="{{ pathto('_static/doctools.js', 1) }}" type="text/css"></script>
