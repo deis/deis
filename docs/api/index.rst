@@ -1,6 +1,6 @@
-:title: API
+:title: api
 :description: -- todo: change me
-:keywords: deis, documentation, tutorial, contributing, faq
+:keywords: deis, documentation, api
 
 .. _api:
 

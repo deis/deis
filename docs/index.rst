@@ -2,11 +2,10 @@
 :description: An overview of the Deis documentation
 :keywords: api, commandline, command-line, contributing, faq, terms, tutorial, deis, docker, heroku
 
-Documentation
-=============
+Welcome
+=======
 
-.. image:: https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png
-
+.. image:: _static/img/deis-graphic.png
 
 ``deis`` is an open source PaaS that makes it easy to deploy
 :ref:`container`\s and  :ref:`node`\s used to host applications,
