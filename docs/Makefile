@@ -6,6 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 PYTHON        = python
+ZIP           = zip
 BUILDDIR      = _build
 
 # User-friendly check for sphinx-build
@@ -55,6 +56,9 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
+
+zipfile:
+	cd $(BUILDDIR)/dirhtml; $(ZIP) -r -D -o ../../docs.zip .
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
