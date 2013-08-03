@@ -1,8 +1,8 @@
 :title: Container
-:description: What is a Deis Container?
-:keywords: lxc container, lxc, container, deis, docker
+:description: What is a Container?
+:keywords: lxc container, lxc, container, docker
 
 .. _container:
 
-LXC Container
-=============
+Container
+=========

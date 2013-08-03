@@ -12,6 +12,7 @@ This documentation has the following resources:
 
    index
    gettingstarted/index
+   terms/index
    client/index
    server/index
    contributing/index

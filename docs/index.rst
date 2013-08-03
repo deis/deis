@@ -5,14 +5,14 @@
 Welcome
 =======
 
-Deis is an open source PaaS that makes it easy to deploy
-:ref:`LXC Containers <container>` and :ref:`Chef Nodes <node>` used to host applications,
-databases, middleware and other services. Deis leverages Chef, Docker and
-Heroku Buildpacks to provide a private PaaS that is lightweight and flexible.
+Deis is an open source PaaS that makes it easy to deploy LXC Containers and 
+Chef Nodes used to host applications, databases, middleware and other services.
+Deis leverages Chef, Docker and Heroku Buildpacks to provide a private PaaS 
+that is lightweight and flexible.
 
 .. image:: _static/img/deis-graphic.png
 
-If you are new to Deis, you should start with basic :ref:`concepts`.
+If you are new to Deis, you should start with the :ref:`Technical Overview <overview>`.
 Once you've completed :ref:`installation` of your private Deis controller,
 explore command-line :ref:`usage` which is elaborated on in the :ref:`tutorial`.
 
