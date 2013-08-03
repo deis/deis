@@ -13,7 +13,7 @@ This documentation has the following resources:
    index
    gettingstarted/index
    client/index
-   api/index
+   server/index
    contributing/index
    releases
    faq

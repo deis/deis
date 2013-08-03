@@ -1,11 +1,13 @@
-:title: Contributing Overview
+:title: Contributor Overview
 :description: TOOD
 :keywords: todo
 
-.. _contributingoverview:
+.. _contributor:
 
-Overview
-========
+Contributor Overview
+====================
+
+Interested in contributing to the Deis project?  There are lots of ways to help.
 
 File Bugs & Enhancements
 ------------------------

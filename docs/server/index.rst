@@ -1,11 +1,11 @@
-:title: api
+:title: Server API
 :description: -- todo: change me
 :keywords: deis, documentation, api
 
-.. _api:
+.. _server:
 
-API Reference
-=============
+Server Reference
+================
 
 :Release: |version|
 :Date: |today|
@@ -14,7 +14,7 @@ API Reference
     :maxdepth: 1
 
     rest
-
+	
     api.fields
     api.models
     api.routers

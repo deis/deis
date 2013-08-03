@@ -4,7 +4,7 @@
 
 .. _client:
 
-CLI Reference
+Client Reference
 =============
 
 :Release: |version|
@@ -12,7 +12,27 @@ CLI Reference
 
 .. toctree::
     :maxdepth: 1
-
-    cheatsheet
+    
+    register
     login
+    logout
+    
+    create
+    info
+    scale
     converge
+    calculate
+    destroy
+    
+    formations
+    layers
+    nodes
+    containers
+    
+    providers
+    flavors
+    keys
+    
+    config
+    builds
+    releases
