@@ -1,5 +1,7 @@
-deis
-====
+Deis Client
+===========
+The Deis client is a Python CLI that issues API calls to a private
+Deis controller, providing a Heroku-inspired PaaS workflow.
 
 .. image:: https://badge.fury.io/py/deis.png
     :target: http://badge.fury.io/py/deis
