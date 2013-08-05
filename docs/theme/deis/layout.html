@@ -147,20 +147,22 @@
       $('.social-menu').css({'margin-top': 309})
     }
 
-    //Check URL
-    // var path = window.location.pathname;
-    // var pathName = path.split('/');
-    // var num = pathName.length - 2;
+    //Remove <ul> from Releases
+    $('.toctree-l1 > a').each(function(){
+      if($(this).html() == "Releases") {
+        console.log($(this).html());
+      }
+    });
 
+    //Check URL
     var path = window.location.href;
     var pathName = path.split('/');
     var num = pathName.length - 3;
-    console.log(pathName[num]);
     var gettingstarted, terms, client, server, contributing;
 
     switch(pathName[num]) {
       case 'gettingstarted':
-        console.log('case at Getting Started');
+        //case at Getting Started
         $('.toctree-l1 > a').each(function(){
           if($(this).html() == "Getting Started") {
             $(this).parent().attr('state', 'open');
@@ -169,7 +171,7 @@
         });
         break;
       case 'terms':
-        console.log('case at Terms');
+        //case at Terms
         $('.toctree-l1 > a').each(function(){
           if($(this).html() == "Terms") {
             $(this).parent().attr('state', 'open');
@@ -178,7 +180,7 @@
         });
         break;
       case 'client':
-        console.log('case at Client Reference');
+        //case at Client Reference
         $('.toctree-l1 > a').each(function(){
           if($(this).html() == "Client Reference") {
             $(this).parent().attr('state', 'open');
@@ -187,7 +189,7 @@
         });
         break;
       case 'server':
-        console.log('case at Server Reference');
+        //case at Server Reference
         $('.toctree-l1 > a').each(function(){
           if($(this).html() == "Server Reference") {
             $(this).parent().attr('state', 'open');
@@ -196,7 +198,7 @@
         });
         break;
       case 'contributing':
-        console.log('case at Contributing');
+        //case at Contributing
         $('.toctree-l1 > a').each(function(){
           if($(this).html() == "Contributing") {
             $(this).parent().attr('state', 'open');
@@ -208,26 +210,9 @@
         //code this out when releases gets filled out
         break;
       default:
-      console.log('failure.');
 
     }
     
-
-    // switch(pathName[num]) {
-    //   case gettingstarted:
-    //     $('Getting Started').parent().attr('state', 'open');
-    //     $('Getting Started').attr('state', 'open');
-    //     break;
-    // }
-
-    //Check for match between path name and menu titles
-    //$('.toctree-l2 > a').each(function(){
-    //  if($(this).html().toLowerCase() == pathName[num]) {
-    //    var parents = $(this).parents();
-    //    $(parents[2]).attr('state', 'open');
-    //  }
-    //});
-
     //Doc Sidebar: Create accordion
     var allPanels = $('.toctree-l1 > ul');
     allPanels.hide();
