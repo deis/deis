@@ -11,7 +11,7 @@
 <div id="searchbox" style="display: none">
   <!-- <h3>{{ _('Search') }}</h3> -->
     <form class="search" action="{{ pathto('search') }}" method="get">
-      <input type="text" name="q" />
+      <input type="text" class="searchbox" name="q" value="Search" onfocus="if(this.value == 'Search') { this.value = ''; }" value="value" />
       <input type="submit" value="{{ _('Go') }}" style="display:none;"  />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />

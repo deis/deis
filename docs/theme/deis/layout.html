@@ -73,7 +73,7 @@
 
 
             <div class="span2 offset1 docs-sidebar hoop">
-              
+              {%- include "searchbox.html" %}
               {{ toctree(collapse=False, maxdepth=3) }}
             </div>
 
@@ -109,17 +109,15 @@
   </script>
 
   <script>
-   $(document).ready(function() {
+  $(document).ready(function() {
     var maxHeight = -1;
 
     //find the tallest column
     $('.hoop').each(function() {
-     if (maxHeight > $(this).height()) {
-
-     } else {
-      maxHeight = $(this).height();
-      tallest = $(this);
-     }
+      if (maxHeight < $(this).height()) {
+        maxHeight = $(this).height();
+        tallest = $(this);
+      }
     });
 
     //Find the margin of the tallest item. If none, set to 0
@@ -129,11 +127,15 @@
     //Set the height of each of the columns
     $('.hoop').each(function() {
       if(maxHeight < 923) {
-        $(this).height(923 + tallestMargin);
+        maxHeight = 923;
+        $(this).height(maxHeight + tallestMargin);
       } else {
         $(this).height(maxHeight + tallestMargin);
       }
     });
+
+    //Remove margin from height on Docs Sidebar
+    $('.docs-sidebar').height(maxHeight - 145);
 
     //remove the margin from the tallest column if it exists
     tallest.height(maxHeight - tallestMargin);
@@ -145,8 +147,21 @@
     } else {
       $('.social-menu').css({'margin-top': 309})
     }
+
+    //Doc Sidebar: Create accordion
+    var allPanels = $('.toctree-l1 > ul');
+    allPanels.hide();
+
+    $('.toctree-l1 > a').click(function() {
+      if($(this).siblings().size() > 0) {
+        allPanels.slideUp();
+        $(this).next().slideDown();
+        return false;
+      }
+    });
   });
   </script>
+  
 
     </body>
 </html>
