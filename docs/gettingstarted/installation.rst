@@ -104,9 +104,9 @@ automatically and use the `standard environment variables`_ to configure the EC2
 5. Create & Scale a Formation
 -----------------------------
 
-Find an application you’d like to deploy, or clone `an example app`.
-Change into the application directory and use `deis create` to initialize a
-new formation in a specific EC2 region. Use the `deis layers:scale` command
+Find an application you’d like to deploy, or clone `an example app`_.
+Change into the application directory and use ``deis create`` to initialize a
+new formation in a specific EC2 region. Use the ``deis layers:scale`` command
 to provision nodes that will be dedicated to this formation.
 
 .. code-block:: console
@@ -131,11 +131,11 @@ to provision nodes that will be dedicated to this formation.
 6. Deploy your Application
 --------------------------
 
-Use `git push deis master` to deploy your application.  Deis will
+Use ``git push deis master`` to deploy your application.  Deis will
 automatically deploy Docker containers and configure Nginx proxies to
 route requests to your application.
 
-To learn more, use `deis help` or browse `the documentation`_.
+To learn more, use ``deis help`` or browse `the documentation`_.
 
 .. code-block:: console
 

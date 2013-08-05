@@ -19,7 +19,7 @@ Shortcut commands::
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
 
-Subcommands, use `deis help [subcommand]` to learn more::
+Subcommands, use ``deis help [subcommand]`` to learn more::
 
   formations    manage container formations
   layers        manage layers of nodes
@@ -34,7 +34,7 @@ Subcommands, use `deis help [subcommand]` to learn more::
   builds        manage git-push or docker builds
   releases      manage a formation's release history
 
-Use `git push deis master` to deploy to a formation.
+Use ``git push deis master`` to deploy to a formation.
 
 """
 
@@ -46,13 +46,13 @@ import os.path
 import re
 import subprocess
 import sys
+import time
 import urlparse
+import yaml
 
 from docopt import docopt
 from docopt import DocoptExit
 import requests
-import time
-import yaml
 
 
 __version__ = '0.0.4'
@@ -62,8 +62,6 @@ class Session(requests.Session):
     """
     Session for making API requests and interacting with the filesystem
     """
-
-    """Subclass `Session` to """
 
     def __init__(self):
         super(Session, self).__init__()
