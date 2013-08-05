@@ -8,7 +8,7 @@ Concepts
 ========
 
 Deis is an application platform that deploys and scales `Twelve Factor`_ apps 
-using a formation of `Chef`_ Nodes, `Docker`_ containers and 
+using a formation of `Chef`_ nodes, `Docker`_ containers and 
 `Nginx`_ proxies.
 
 Formations
@@ -71,7 +71,7 @@ by all of the nodes in the proxy layer, making zero downtime deployment possible
 
 Backing Services
 ----------------
-In keeping with `Twelve Factor`_ methodology `backing services`_ like
+In keeping with `Twelve Factor`_ methodology, `backing services`_ like
 databases, queues and storage are decoupled and attached using `environment
 variables`_.  This allows formations to use backing services provided via
 different formations (through their proxy layer), or external/third-party 
@@ -86,6 +86,7 @@ See Also
 * `The Twelve Factor App <http://12factor.net/>`_
 
 
+.. _`Twelve Factor`: http://12factor.net/
 .. _`Chef`: http://www.opscode.com/chef/
 .. _`Docker`: http://docker.io/
 .. _`Nginx`: http://wiki.nginx.org/Main
