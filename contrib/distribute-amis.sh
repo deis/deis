@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Distribute AMIs across regions using EC2 CLI tools
-#
+#   use `ec2-modify-image-attribute <ami> -l -a all` to make public
 
 if [ -z $2 ] ; then
   echo usage: $0 [src-region] [src-ami]
