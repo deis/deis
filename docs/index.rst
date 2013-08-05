@@ -1,4 +1,4 @@
-:title: Deis Documentation | Your PaaS. Your Rules.
+:title: Deis Docs | Your PaaS. Your Rules.
 :description: Welcome to the Deis documentation homepage
 :keywords: api, commandline, command-line, contributing, faq, terms, tutorial, deis, docker
 
@@ -14,7 +14,8 @@ that is lightweight and flexible.
 
 If you are new to Deis, you should start with :ref:`Concepts`.
 Once you've completed :ref:`installation` of your private Deis controller,
-explore command-line :ref:`usage` which is elaborated on in the :ref:`tutorial`.
+you should explore :ref:`usage` of the command-line client 
+which is elaborated on in the :ref:`tutorial`.
 
 Want to learn about Deis internals?  You'll find complete API documentation
 in the :ref:`client` and :ref:`server` sections.

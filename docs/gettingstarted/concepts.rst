@@ -25,7 +25,7 @@ Layers
 :ref:`Layers <layer>` are homogeneous groups of :ref:`Nodes <node>` that 
 perform work on behalf of a formation.  Each node in a layer has 
 the same :ref:`Flavor` and Chef configuration, allowing them to be scaled
-with ease.  Formations have two types of layers.
+easily.  Formations have two types of layers.
 
 Runtime Layers
 ^^^^^^^^^^^^^^
@@ -46,37 +46,46 @@ following the `Twelve Factor model`_.
 
 Build Stage
 ^^^^^^^^^^^
-The Deis :ref:`Controller` includes a `Gitosis Server`_ that receives 
-incoming git push requests over SSH and builds application
-inside an ephemeral Docker container. A tarball of the /app directory is 
-extracted into a :ref:`slug` and exposed on an Nginx static file server. 
-The slug is later downloaded by the the runtime layer and bind-mounted
-into a Docker container.
+The :ref:`Controller` includes a `Gitosis Server`_ that receives
+incoming git push requests over SSH and builds applications
+inside ephemeral Docker containers. 
+Tarballs of the /app directory are extracted into a :ref:`slug` and exposed 
+on the Controller using an Nginx static file server. 
+The slug is later downloaded by the runtime layer and bind-mounted
+into a Docker container for execution.
 
 Release Stage
 ^^^^^^^^^^^^^
-A :ref:`release` is a :ref:`build` combined with :ref:`config`.  
-When a new build is created or config is changed,
-a new release is rolled automatically.  Releases make it easy to
-rollback of code and configuration.
+During the release stage, a :ref:`build` is combined with :ref:`config`
+to create a new numbered :ref:`release`.
+The release stage is triggered any time a new build is created or 
+config is changed, making it easy to rollback code and configuration.
 
 Run Stage
 ^^^^^^^^^
-The run stage updates Chef databags and converges all nodes in the formation, 
-deploying the latest release on containers and reconfiguring proxies.   
+The run stage updates Chef databags and `converges`_ all nodes in the formation.
+The databag specifies the current release, the placement of containers across 
+the runtime layer, and the configuration of the proxy layer.
 SSH is used to converge all of the nodes in the runtime layer followed 
-by all of the nodes in the proxy layer.
+by all of the nodes in the proxy layer, making zero downtime deployment possible.
 
 Backing Services
 ----------------
-In keeping with `Twelve Factor`_ app methodology `backing services`_ like
-databases, queues and storage are decoupled and attached via `environment
+In keeping with `Twelve Factor`_ methodology `backing services`_ like
+databases, queues and storage are decoupled and attached using `environment
 variables`_.  This allows formations to use backing services provided via
-different formations (via their proxy layer), or external/third-party 
+different formations (through their proxy layer), or external/third-party 
 services accessible over the network.  The use of environment variables
 also allows formations to easily swap backing services when necessary.
 
-.. _`Twelve Factor`: http://12factor.net/
+See Also
+--------
+* :ref:`Installation`
+* :ref:`Usage`
+* :ref:`Tutorial`
+* `The Twelve Factor App <http://12factor.net/>`_
+
+
 .. _`Chef`: http://www.opscode.com/chef/
 .. _`Docker`: http://docker.io/
 .. _`Nginx`: http://wiki.nginx.org/Main
@@ -86,3 +95,4 @@ also allows formations to easily swap backing services when necessary.
 .. _`environment variables`: http://12factor.net/config
 .. _`Gitosis Server`: https://github.com/opdemand/gitosis
 .. _`Buildstep`: https://github.com/opdemand/buildstep
+.. _`converges`: http://docs.opscode.com/essentials_nodes_chef_run.html
