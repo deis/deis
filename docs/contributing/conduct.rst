@@ -7,13 +7,13 @@
 Conduct
 =======
 
-The deis community welcomes and encourages participation by **everyone**.
+The Deis community welcomes and encourages participation by **everyone**.
 
 No matter how you identify yourself or how others perceive you: we welcome
 you. We welcome contributions from everyone as long as they interact
 constructively with our community.
 
-The deis developer community continues to grow, and it is inevitable that
+The Deis developer community continues to grow, and it is inevitable that
 disagreements and conflict will arise. We ask that participants conduct
 themselves according to these principles:
 

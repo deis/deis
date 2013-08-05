@@ -7,7 +7,7 @@
 Coding Standards
 ================
 
-Deis is a `python`_ project. We chose python over other compelling
+Deis is a `Python`_ project. We chose Python over other compelling
 languages because it is widespread, well-documented, and friendly to
 a large number of developers. Source code benefits from many eyes
 upon it.
@@ -15,8 +15,8 @@ upon it.
 `The Zen of Python`_ emphasizes simple over clever, and we agree.
 Readability counts. Deis also aims for complete test coverage.
 
-Contributors to deis should feel welcome to make changes to any part
-of the codebase. To create a proper github pull request for inclusion
+Contributors to Deis should feel welcome to make changes to any part
+of the codebase. To create a proper GitHub pull request for inclusion
 into the official repository, your code must pass two tests:
 
 - :ref:`make_flake8`
@@ -90,7 +90,7 @@ Now create a GitHub pull request with a description of what your code
 fixes or improves. That's it!
 
 
-.. _python: http://www.python.org/
+.. _Python: http://www.python.org/
 .. _flake8: https://pypi.python.org/pypi/flake8/
 .. _pep8_tool: https://pypi.python.org/pypi/pep8/
 .. _pyflakes: https://pypi.python.org/pypi/pyflakes/
