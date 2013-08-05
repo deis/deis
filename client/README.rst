@@ -13,15 +13,17 @@ deis
 What is Deis?
 -------------
 
-Deis is an open source *Platform-as-a-Service* (PaaS) inspired by Heroku that
-makes it easy to deploy and scale LXC containers used to host applications,
-databases, middleware and other services. Deis leverages Docker, Chef and
-Heroku Buildpacks to provide a private PaaS that is lightweight and flexible.
+Deis is an open source PaaS that makes it easy to deploy and scale LXC
+containers and Chef nodes used to host applications, databases, middleware
+and other services. Deis leverages Chef, Docker and Heroku Buildpacks to
+provide a private PaaS that is lightweight and flexible.
 
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
-Clojure, PHP, Dart and Go. However, Deis can deploy *anything* using Heroku
-Buildpacks or pre-built Docker images.  Containers can be deployed to any
-cloud provider, although only EC2 is currently supported.
+Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
+anything using Heroku Buildpacks, Docker images or Chef recipes. Deis is
+designed to work with any cloud provider, although only EC2 is currently
+supported.
+
 
 Why Deis?
 =========
@@ -29,30 +31,33 @@ Why Deis?
 Deploy anything
 ---------------
 
-Leverage Heroku Buildpacks to deploy a wide range of languages and frameworks
-with a simple "git push" or create custom Docker images to deploy pre-built
-apps, databases and other services.
+Deploy a wide range of languages and frameworks with a simple git push 
+using Heroku Buildpacks or Dockerfiles. Use custom Chef layers to deploy
+databases, middleware and other add-on services.
+
 
 Control everything
 ------------------
 
-Choose your hosting providers. Define your application formations. Scale
-nodes and containers independently. Control your routing layer. Manage the
-entire platform with a private Deis controller.
+Choose your hosting provider configuration. Define a formation with your
+own proxy and runtime layers. Retain full root access to every node.
+Manage your platform with a private Deis controller.
+
 
 Scale effortlessly
 ------------------
 
-Scale nodes, containers and proxies with a single command. Node provisioning is
-transparent, container formations are rebalanced automatically and proxies are
-updated to re-route traffic without downtime.
+Scale nodes and containers with a single command. Node provisioning, 
+container balancing and proxy reconfiguration are completely automated.
+
 
 100% Open Source
 ----------------
 
-Free, transparent and easily customized.  Join the open-source PaaS and DevOps
-community by using Deis and complimentary projects like Docker, Chef and
-Heroku Buildpacks.
+Free, transparent and easily customized. Join the open-source PaaS 
+and DevOps community by using Deis and complimentary projects like 
+Docker, Chef and Heroku Buildpacks.
+
 
 Getting Started
 ---------------
