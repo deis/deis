@@ -40,11 +40,9 @@ Before you get started, read about Deis core [concepts](http://docs.deis.io/en/l
  * How does the [Build, Release, Run](http://docs.deis.io/en/latest/gettingstarted/concepts/#build-release-run) process work?
  * How do I connect a Formation to [backing services](http://docs.deis.io/en/latest/gettingstarted/concepts/#backing-services)?
 
-*Please note: Deis is still under active development. It should not yet be used in production.*
-
 Follow the steps below to install your own Deis platform on EC2. To complete the installation process, you will need [Git](http://git-scm.com), [RubyGems](http://rubygems.org/pages/download), [Pip](http://www.pip-installer.org/en/latest/installing.html), the [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351), [EC2 Credentials](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux) and a Chef Server with a working [Knife](http://docs.opscode.com/knife.html) client.
 
-Don’t have a Chef Server? [Sign up for a free Hosted Chef account](https://getchef.opscode.com/signup).
+*Please note: Deis is still under active development. It should not yet be used in production.*
 
 ### 1. Clone the Deis Repository
 
@@ -142,7 +140,7 @@ Deis rests on the shoulders of leading open source technologies:
   * [Docker](http://www.docker.io/)
   * [Django](https://www.djangoproject.com/)
   * [Celery](http://www.celeryproject.org/)
-  * [Heroku](https://devcenter.heroku.com/articles/buildpacks)
+  * [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks)
   * [Buildstep](https://github.com/progrium/buildstep)
   * [Gitosis](https://github.com/opdemand/gitosis)
 
