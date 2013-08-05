@@ -12,7 +12,7 @@ that is lightweight and flexible.
 
 .. image:: _static/img/deis-graphic.png
 
-If you are new to Deis, you should start with the :ref:`Technical Overview <overview>`.
+If you are new to Deis, you should start with :ref:`Concepts`.
 Once you've completed :ref:`installation` of your private Deis controller,
 explore command-line :ref:`usage` which is elaborated on in the :ref:`tutorial`.
 

@@ -11,7 +11,7 @@ Getting Started
 .. toctree::
     :maxdepth: 1
 
-    overview
+    concepts
     installation
     usage    
     tutorial

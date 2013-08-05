@@ -1,10 +1,10 @@
-:title: Technical Overview
-:description: -- Technical Overview of the Deis platform
+:title: Concepts
+:description: -- Concepts of the Deis platform
 :keywords: deis, documentation, technical, overview
 
-.. _overview:
+.. _concepts:
 
-Overview
+Concepts
 ========
 
 Deis is an application platform that deploys and scales `Twelve Factor`_ apps 
