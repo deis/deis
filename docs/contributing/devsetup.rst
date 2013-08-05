@@ -30,8 +30,8 @@ To contribute code back to Deis, you must also have a GitHub.com account
 in order to create a pull request.
 
 
-Fetch Git Repositories
-----------------------
+Clone the Deis Repositories
+---------------------------
 
 .. code-block:: console
 
@@ -69,19 +69,35 @@ Please see the `virtualenv documentation`_ for more details on python virtual
 environments.
 
 
-Install knife.rb
-----------------
+Configure the Chef Server
+-------------------------
 
-** Coming soon... ***
+Deis requires a Chef Server. `Sign up for a free Hosted Chef
+account`_ if you don’t have one.  You’ll also need a `Ruby`_ runtime with RubyGems
+in order to install the required Ruby dependencies.
+
+.. code-block:: console
+
+	$ bundle install    # install ruby dependencies
+	$ berks install     # install cookbooks into your local berkshelf
+	$ berks upload      # upload cookbooks to the chef server
 
 
-Set Up a Chef Account
----------------------
 
-** Coming soon... ***
+Provision a Deis Controller
+---------------------------
+
+The `Amazon EC2 API Tools`_ will be used to setup basic EC2 infrastructure.
+The `Knife EC2 plugin`_ will be used to bootstrap the controller.
+
+.. code-block:: console
+
+	$ contrib/provision-ec2-controller.sh
 
 
 .. _`virtualenv documentation`: http://www.virtualenv.org/en/latest/
 .. _`Python`: http://python.org/
 .. _`Ruby`: http://ruby-lang.org/
 .. _`Amazon EC2 API Tools`: http://aws.amazon.com/developertools/Amazon-EC2/351
+.. _`Sign up for a free Hosted Chef account`: https://getchef.opscode.com/signup
+.. _`Knife EC2 plugin`: https://github.com/opscode/knife-ec2
