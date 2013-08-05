@@ -49,7 +49,7 @@ Build Stage
 The :ref:`Controller` includes a `Gitosis Server`_ that receives
 incoming git push requests over SSH and builds applications
 inside ephemeral Docker containers. 
-Tarballs of the /app directory are extracted into a :ref:`slug` and exposed 
+Tarballs of the /app directory are extracted into a slug and exposed 
 on the Controller using an Nginx static file server. 
 The slug is later downloaded by the runtime layer and bind-mounted
 into a Docker container for execution.

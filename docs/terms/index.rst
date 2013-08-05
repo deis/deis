@@ -18,11 +18,11 @@ Terms
     node
     container
     
-    release
     build
     config
-    slug
+    release
     
-    provider
     flavor
+    provider
+    key
     
