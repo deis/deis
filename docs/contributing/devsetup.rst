@@ -7,4 +7,3 @@
 Developer Setup
 ===============
 
-**Coming soon...**
