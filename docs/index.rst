@@ -1,6 +1,6 @@
-:title: Welcome to the Deis documentation
-:description: An overview of the Deis documentation
-:keywords: api, commandline, command-line, contributing, faq, terms, tutorial, deis, docker, heroku
+:title: Deis Documentation | Your PaaS. Your Rules.
+:description: Welcome to the Deis documentation homepage
+:keywords: api, commandline, command-line, contributing, faq, terms, tutorial, deis, docker
 
 Welcome
 =======
