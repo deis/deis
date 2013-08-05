@@ -35,7 +35,7 @@
     <a class="fork" href="http://github.com/opdemand/deis"><img src="{{ pathto('_static/img/fork.png', 1) }}" alt="GitHub Fork Button"></a>
     <div class="container">
         <div class="row">
-            <div class="span3 hoop">
+            <div class="span3 hoop menu">
                 <div class="nav-border top-spacing">
                     <ul class="nav nav-list menu">
                         <li><a href="/"><img class="logo" src="{{ pathto('_static/img/menu-logo.png', 1) }}" alt="deis logo"></a></li>
@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            <div class="span6 hoop">
+            <div class="span6 hoop contents">
               <div class="doc-content">{% block body %}{% endblock %}</div>
             </div>
 
@@ -109,24 +109,41 @@
   </script>
 
   <script>
-  $(function(){
-    boxes = $('.hoop');
-    maxHeight = Math.max.apply(
-      Math, boxes.map(function() {
-        return $(this).height();
-    }).get());
-    if (maxHeight < 923) {
-      boxes.height(923);
-    } else {
-      boxes.height(maxHeight);
-    }
+   $(document).ready(function() {
+    var maxHeight = -1;
 
+    //find the tallest column
+    $('.hoop').each(function() {
+     if (maxHeight > $(this).height()) {
 
+     } else {
+      maxHeight = $(this).height();
+      tallest = $(this);
+     }
+    });
+
+    //Find the margin of the tallest item. If none, set to 0
+    var tallestMargin = parseInt(tallest.css('margin-top'));
+    if(tallestMargin < 1 || isNaN(tallestMargin)) {tallestMargin = 0;}
+
+    //Set the height of each of the columns
+    $('.hoop').each(function() {
+      if(maxHeight < 923) {
+        $(this).height(923 + tallestMargin);
+      } else {
+        $(this).height(maxHeight + tallestMargin);
+      }
+    });
+
+    //remove the margin from the tallest column if it exists
+    tallest.height(maxHeight - tallestMargin);
+    
+    //Set the margin above the social buttons in the left-hand menu
     if (maxHeight > 800) {
-      newMargin = maxHeight - 451 - 133 - 30;
+      newMargin = maxHeight - 451 - 133 - 30 + tallestMargin;
       $('.social-menu').css({'margin-top': newMargin})
     } else {
-      $('.social-menu').css({'margin-top': 271})
+      $('.social-menu').css({'margin-top': 309})
     }
   });
   </script>
