@@ -74,6 +74,11 @@ The `Amazon EC2 API Tools`_ will be used to setup basic EC2 infrastructure.  The
 	Provisioning deis-controller with knife ec2...
 	...
 
+Once the deis-controller node exists on the Chef server, you must log in to
+the WebUI add deis-controller to the `admins` group. This is required so the
+controller can delete node and client records during future
+`layers:scale` operations.
+
 
 4. Install the Deis Client
 --------------------------
