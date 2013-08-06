@@ -67,6 +67,8 @@ The [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351) will be use
 
 	$ contrib/provision-ec2-controller.sh
 
+Once the `deis-controller` node exists on the Chef server, you *must* log in to the WebUI add deis-controller to the `admins` group.  This is required so the controller can delete the node and client records for any nodes bootstrapped during future `layers:scale` operations.
+
 ### 4. Install the Deis Client
 
 Install the Deis client using [Pip](http://www.pip-installer.org/en/latest/installing.html).  Registration will discover SSH keys automatically and use the [standard environment variables](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux) to configure the EC2 provider.
