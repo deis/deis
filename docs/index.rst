@@ -9,11 +9,6 @@ Deis is a Django/Celery API server, Python CLI and set of
 `Chef cookbooks`_ that combine to provide a Heroku-inspired application
 platform for public and private clouds. Your PaaS. Your Rules.
 
-Deis makes it easy to deploy and scale LXC containers and Chef nodes
-used to host applications, databases, middleware and other services.
-Deis leverages Chef, Docker and Heroku Buildpacks to provide a private
-PaaS that is lightweight and flexible.
-
 .. image:: _static/img/deis-graphic.png
 
 If you are new to Deis, you should start with :ref:`Concepts`.
