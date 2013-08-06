@@ -2,4 +2,27 @@
 omit =
     */venv/*
     */virtualenv/*
+    api/__init__.py
+    celerytasks/__init__.py
+    celerytasks/models.py
+    client/__init__.py
+    client/models.py
+    client/tests/__init__.py
+    web/__init__.py
+    web/models.py
+
+[report]
 ignore_errors = True
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+
+[html]
+extra_css = web/static/css/main.css
+title = Deis Coverage Report
