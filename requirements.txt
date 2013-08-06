@@ -1,15 +1,15 @@
 # Deis controller requirements
 azure>=0.7.0
-boto>=2.9.8
+boto>=2.9.9
 Django>=1.5.1
 django-allauth>=0.12.0
-django-celery>=3.0.17
+django-celery>=3.0.21
 django-json-field>=0.5.4
 django-yamlfield>=0.4
 djangorestframework>=2.3.6
 gevent==0.13.8
 gunicorn>=0.17.5
-paramiko>=1.10.1
+paramiko>=1.11.0
 psycopg2>=2.5.1
 pyCrypto>=2.6
 PyYAML>=3.10

@@ -1,15 +1,15 @@
 # Deis controller requirements
 azure>=0.7.0
-boto>=2.9.8
+boto>=2.9.9
 Django>=1.5.1
 django-allauth>=0.12.0
-django-celery>=3.0.17
+django-celery>=3.0.21
 django-json-field>=0.5.4
 django-yamlfield>=0.4
 djangorestframework>=2.3.6
 gevent==0.13.8
 gunicorn>=0.17.5
-paramiko>=1.10.1
+paramiko>=1.11.0
 psycopg2>=2.5.1
 pyCrypto>=2.6
 PyYAML>=3.10
@@ -22,6 +22,7 @@ requests>=1.2.3
 
 # Deis documentation requirements
 Sphinx>=1.2b1
+smartypants>=1.6.0.3
 sphinxcontrib-httpdomain>=1.1.8
 
 # Run "make coverage" for the % of code exercised during tests
@@ -32,4 +33,3 @@ docutils>=0.11
 
 # Run "make flake8" to check python syntax and style
 flake8>=2.0
-
