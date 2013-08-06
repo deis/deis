@@ -11,10 +11,7 @@ from django.test import TestCase
 # pylint: disable=R0904
 
 
-class SimpleTest(TestCase):
+class WebTest(TestCase):
 
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+    # TODO: tests!
+    pass
