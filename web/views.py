@@ -1,3 +1,6 @@
+"""
+View classes for presenting Deis web pages.
+"""
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render

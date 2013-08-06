@@ -1,3 +1,6 @@
+"""
+URL patterns and routing for the Deis web app.
+"""
 
 from __future__ import unicode_literals
 
