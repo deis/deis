@@ -46,4 +46,5 @@ htmlcov/
 .ruby-version
 venv/
 .vagrant
+*.swp
 

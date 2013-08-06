@@ -55,9 +55,9 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean:
-	rm -rf $(BUILDDIR)/*
+	rm -rf docs.zip $(BUILDDIR)/*
 
-zipfile:
+zipfile: dirhtml
 	cd $(BUILDDIR)/dirhtml; $(ZIP) -r -D -o ../../docs.zip .
 
 html:
