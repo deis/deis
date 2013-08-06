@@ -239,4 +239,14 @@ if "%1" == "pseudoxml" (
 	goto end
 )
 
+if "%1" == "server" (
+       %SPHINXBUILD% -b dirhtml %ALLSPHINXOPTS% %BUILDDIR%/dirhtml
+       if errorlevel 1 exit /b 1
+       cd %BUILDDIR%/dirhtml
+       echo.
+       echo.Build finished. Open http://127.0.0.1:8000/ in your browser.
+       python -m SimpleHTTPServer 8000
+       goto end
+)
+
 :end
