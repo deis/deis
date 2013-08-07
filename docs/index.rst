@@ -9,7 +9,7 @@ Deis is a Django/Celery API server, Python CLI and set of
 `Chef cookbooks`_ that combine to provide a Heroku-inspired application
 platform for public and private clouds. Your PaaS. Your Rules.
 
-.. image:: _static/img/deis-graphic.png
+.. image:: ../web/static/img/deis-graphic.png
 
 If you are new to Deis, you should start with :ref:`Concepts`.
 Once you've completed :ref:`installation` of your private Deis controller,
