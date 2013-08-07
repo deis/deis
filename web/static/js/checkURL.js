@@ -1,7 +1,7 @@
 //Remove <ul> from Releases
 $('.toctree-l1 > a').each(function(){
   if($(this).html() == "Releases") {
-    $(this).parent().html('<a class="reference internal" href="/releases/">Releases</a>');
+    $(this).parent().html('<a class="reference internal" href="/latest/releases/">Releases</a>');
   }
 });
 
