@@ -32,10 +32,10 @@
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
     <![endif]-->
 
-    <a class="fork" href="http://github.com/opdemand/deis"><img src="{{ pathto('_static/img/fork.png', 1) }}" alt="GitHub Fork Button"></a>
+    <a class="fork" href="http://github.com/opdemand/deis"><div class="forkImage"></div></a>
     <div class="container">
         <div class="row">
-            <div class="span3 hoop menu">
+            <div class="span3 column_calc menu">
                 <div class="nav-border top-spacing">
                     <ul class="nav nav-list menu">
                         <li><a href="/"><img class="logo" src="{{ pathto('_static/img/menu-logo.png', 1) }}" alt="deis logo"></a></li>
@@ -61,18 +61,19 @@
                     </div>
 
                     <div class="byline-menu">
-                        <a href="" ><span class="cloud-logo"></span></a>
+                        <span class="cloud-logo"></span>
                         <p>Deis is a project by<br>OpDemand</p>
                     </div>
                 </div>
             </div>
 
-            <div class="span6 hoop contents">
+            <div class="span6 column_calc contents">
               <div class="doc-content">{% block body %}{% endblock %}</div>
             </div>
 
 
-            <div class="span2 offset1 docs-sidebar hoop">
+            <div class="span2 offset1 docs-sidebar column_calc">
+              <div class="docs-border"></div>
               {{ toctree(collapse=False, maxdepth=3) }}
             </div>
 
@@ -106,138 +107,8 @@
   ga('send', 'pageview');
 
   </script>
-
-  <script>
-  $(document).ready(function() {
-    var maxHeight = -1;
-
-    //find the tallest column
-    $('.hoop').each(function() {
-      if (maxHeight < $(this).height()) {
-        maxHeight = $(this).height();
-        tallest = $(this);
-      }
-    });
-
-    //Find the margin of the tallest item. If none, set to 0
-    var tallestMargin = parseInt(tallest.css('margin-top'));
-    if(tallestMargin < 1 || isNaN(tallestMargin)) {tallestMargin = 0;}
-
-    //Set the height of each of the columns
-    $('.hoop').each(function() {
-      if(maxHeight < 923) {
-        maxHeight = 923;
-        $(this).height(maxHeight + tallestMargin);
-      } else {
-        $(this).height(maxHeight + tallestMargin);
-      }
-    });
-
-    //Remove margin from height on Docs Sidebar
-    $('.docs-sidebar').height(maxHeight - 145);
-
-    //remove the margin from the tallest column if it exists
-    //tallest.height(maxHeight - tallestMargin);
-    
-    //Set the margin above the social buttons in the left-hand menu
-    if (maxHeight > 800) {
-      newMargin = maxHeight - 451 - 133 - 30 + tallestMargin;
-      $('.social-menu').css({'margin-top': newMargin})
-    } else {
-      $('.social-menu').css({'margin-top': 309})
-    }
-
-    //Remove <ul> from Releases
-    $('.toctree-l1 > a').each(function(){
-      if($(this).html() == "Releases") {
-        console.log($(this).html());
-      }
-    });
-
-    //Check URL
-    var path = window.location.href;
-    var pathName = path.split('/');
-    var num = pathName.length - 3;
-    var gettingstarted, terms, client, server, contributing;
-
-    switch(pathName[num]) {
-      case 'gettingstarted':
-        //case at Getting Started
-        $('.toctree-l1 > a').each(function(){
-          if($(this).html() == "Getting Started") {
-            $(this).parent().attr('state', 'open');
-            $(this).attr('state', 'open');
-          }
-        });
-        break;
-      case 'terms':
-        //case at Terms
-        $('.toctree-l1 > a').each(function(){
-          if($(this).html() == "Terms") {
-            $(this).parent().attr('state', 'open');
-            $(this).attr('state', 'open');
-          }
-        });
-        break;
-      case 'client':
-        //case at Client Reference
-        $('.toctree-l1 > a').each(function(){
-          if($(this).html() == "Client Reference") {
-            $(this).parent().attr('state', 'open');
-            $(this).attr('state', 'open');
-          }
-        });
-        break;
-      case 'server':
-        //case at Server Reference
-        $('.toctree-l1 > a').each(function(){
-          if($(this).html() == "Server Reference") {
-            $(this).parent().attr('state', 'open');
-            $(this).attr('state', 'open');
-          }
-        });
-        break;
-      case 'contributing':
-        //case at Contributing
-        $('.toctree-l1 > a').each(function(){
-          if($(this).html() == "Contributing") {
-            $(this).parent().attr('state', 'open');
-            $(this).attr('state', 'open');
-          }
-        });
-        break;
-      case 'releases':
-        //code this out when releases gets filled out
-        break;
-      default:
-
-    }
-    
-    //Doc Sidebar: Create accordion
-    var allPanels = $('.toctree-l1 > ul');
-    allPanels.hide();
-
-    $('.toctree-l1 > a').each(function(){
-       if($(this).parent().attr('state') == 'open') {
-         $(this).attr('state', 'open');
-         $(this).next().show();
-        }
-    });
-
-    $('.toctree-l1 > a:first-child').click(function() {
-      if($(this).siblings().size() > 0 && $(this).attr('state') != 'open') {
-        allPanels.slideUp();
-        $(this).next().slideDown();
-        $('.toctree-l1 > a').attr('state', 'closed');
-        $(this).attr('state', 'open');
-        return false;
-      }
-      if ($(this).attr('state') == 'open') {
-        return false;
-      }
-    });
-  });
-  </script>
+  <script src="{{ pathto('_static/js/checkURL.js', 1) }}"></script>
+  <script src="{{ pathto('_static/js/adjustments.js', 1) }}"></script>
   
 
     </body>
