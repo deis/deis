@@ -458,12 +458,40 @@ var Search = {
       // search finished, update title and status message
       else {
         Search.stopPulse();
-        Search.title.text(_('Search Results'));
+        Search.title.text(_('Search: ' + '"' + query + '"'));
         if (!resultCount)
           Search.status.text(_('Your search did not match any documents. Please make sure that all words are spelled correctly and that you\'ve selected enough categories.'));
         else
             Search.status.text(_('Search finished, found %s page(s) matching the search query.').replace('%s', resultCount));
         Search.status.fadeIn(500);
+
+        //Edit by Ben Grunfeld - when search finished, make footer align with bottom of content
+        function set_columns(is_server_reference) {
+          is_server_reference = typeof is_server_reference !== 'undefined' ? is_server_reference : false;
+          var margin = 0;
+          var maxHeight = 0;
+
+          //find the tallest column
+          $('.column_calc').each(function() {
+            if (maxHeight < $(this).height()) {
+              maxHeight = $(this).height();
+              console.log("M: " + maxHeight + " T: " + $(this).height());
+            }
+          });
+
+          //511: height of the navigation. 96: height of the footer
+          if (maxHeight > 923) {margin = maxHeight - 511 - 96;}
+          if (is_server_reference == true){margin = margin + 80;}
+          console.log("Max Height: " + maxHeight + " Margin: " + margin);
+          
+          //Set the margin above the footer
+          $('.social-menu').css({'margin-top': (margin)});
+        }
+        //End BG Edit
+
+set_columns();
+
+
       }
     }
     displayNextItem();
