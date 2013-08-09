@@ -1,3 +1,7 @@
+:title: Containers 
+:description: Learn how to scale and list Deis containers for a formation using the Deis client. 
+
+
 containers
 ==========
 

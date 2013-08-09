@@ -1,5 +1,5 @@
 :title: FAQ
-:description: Frequently Asked Questions about the Deis PaaS solution
+:description: Frequently asked questions about the Deis project. Deis FAQ.
 :keywords: deis, PaaS, cloud, faq
 
 .. _faq:

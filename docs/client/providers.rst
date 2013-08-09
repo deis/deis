@@ -1,3 +1,7 @@
+:title: Providers 
+:description: Learn how to discover & update provider credentials, create a provider for use by Deis and list Deis providers for the logged in user using the Deis client.
+
+
 providers
 =========
 

@@ -1,3 +1,7 @@
+:title: Formations
+:description: Learn how to create, force converge and destroy a Deis formation, list available formations and recalculate a formation's databag using the Deis client.
+
+
 formations
 ==========
 

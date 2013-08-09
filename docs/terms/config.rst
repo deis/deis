@@ -1,5 +1,5 @@
 :title: Config
-:description: Deis config refers to a set of environment variables used by containers in a formation’s runtime layer. 
+:description: Deis config refers to a set of environment variables used by containers in a formation's runtime layer. 
 :keywords: config, release, envvar, envvars, environment, variables, deis
 
 .. _config:

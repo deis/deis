@@ -1,5 +1,5 @@
 :title: Developer Setup
-:description: Setting up your workstation for Deis development
+:description: Developer setup instructions for contributing to the Deis project. 
 :keywords: deis, documentation, contributing, developer, setup, chef, knife
 
 .. _devsetup:

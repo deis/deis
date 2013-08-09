@@ -1,3 +1,7 @@
+:title: Scale
+:description: Learn how to scale containers for a Deis formation using the Deis client. 
+
+
 scale
 =====
 

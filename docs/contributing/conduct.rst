@@ -1,6 +1,6 @@
-:title: Conduct
-:description: -- todo: change me
-:keywords: deis, documentation, community, bdfl, code, conduct, code of conduct
+﻿:title: Conduct
+:description: Deis community conduct.
+:keywords: deis, documentation, community, code, conduct, code of conduct
 
 .. _conduct:
 

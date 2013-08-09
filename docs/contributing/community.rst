@@ -1,6 +1,6 @@
 :title: Community
-:description: -- todo: change me
-:keywords: deis, documentation, community, bdfl, code, conduct, code of conduct
+:description: Deis is a fully open source project. Join the Deis community of developers.
+:keywords: deis, documentation, community, code, conduct, code of conduct
 
 .. _community:
 

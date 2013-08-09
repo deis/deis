@@ -1,3 +1,7 @@
+:title: Keys
+:description: Learn how to add, list and remove SSH keys for the logged in user using the Deis client. Deis keys. 
+
+
 keys
 ====
 

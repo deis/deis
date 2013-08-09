@@ -1,3 +1,7 @@
+:title: Layers
+:description: Learn how to scale Deis layers in a formation, list Deis layers for a formation and create and destroy a layer of nodes using the Deis client.
+
+
 layers
 ======
 
