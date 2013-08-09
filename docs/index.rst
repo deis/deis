@@ -10,6 +10,7 @@ Deis is a Django/Celery API server, Python CLI and set of
 platform for public and private clouds. Your PaaS. Your Rules.
 
 .. image:: ../web/static/img/deis-graphic.png
+    :alt: Deis cover logo
 
 If you are new to Deis, you should start with :ref:`Concepts`.
 Once you've completed :ref:`installation` of your private Deis controller,
