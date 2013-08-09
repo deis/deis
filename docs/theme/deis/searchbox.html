@@ -7,7 +7,7 @@
     :copyright: Copyright 2007-2013 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 #}
-{%- if pagename != "search" %}
+
 <div id="searchbox" style="display: none">
   <!-- <h3>{{ _('Search') }}</h3> -->
     <form class="search" action="{{ pathto('search') }}" method="get">
@@ -21,4 +21,3 @@
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
-{%- endif %}

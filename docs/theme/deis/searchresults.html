@@ -1,6 +1,6 @@
 {#
-    deis/searchresults.html
-    ~~~~~~~~~~~~~~~~~~~~~~~
+    basic/searchresults.html
+    ~~~~~~~~~~~~~~~~~~~~~~~~
 
     Template for the body of the search results page.
 
@@ -18,7 +18,7 @@
   <span id="search-progress" style="padding-left: 10px"></span>
 </form>
 {%- if search_performed %}
-  <h2>{{ _('Search Results') }}</h2>
+  <h1>{{ _('Search Results') }}</h1>
   {%- if not search_results %}
   <p>{{ _('Your search did not match any documents. Please make sure that all words are spelled correctly and that you\'ve selected enough categories.') }}</p>
   {%- endif %}
