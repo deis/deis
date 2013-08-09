@@ -1,6 +1,5 @@
-:title: Installation
-:description: TODO
-:keywords: todo
+﻿:title: Installation
+:description:  Install your own Deis platform on EC2. Configure the Chef server, provision a Deis controller, install the Deis Client and create & scale a formation.
 
 .. _installation:
 

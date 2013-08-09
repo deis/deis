@@ -1,6 +1,5 @@
 :title: Getting Started
-:description: TOOD
-:keywords: gettingstarted
+:description: Deis getting started.
 
 .. _gettingstarted:
 

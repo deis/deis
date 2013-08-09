@@ -1,6 +1,5 @@
 :title: Usage
-:description: TODO
-:keywords: todo
+:description: Use the Deis Command-line interface to create a formation for your app, push your code, and scale your own cloud resources.
 
 .. _usage:
 

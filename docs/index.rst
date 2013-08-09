@@ -1,6 +1,6 @@
 :title: Deis Docs | Your PaaS. Your Rules.
-:description: Welcome to the Deis documentation homepage
-:keywords: api, commandline, command-line, contributing, faq, terms, tutorial, deis, docker
+:description: Welcome to Deis
+:keywords: Deis, Django Celery, API, Python, Chef, PaaS, commandline, command-line, contributing, faq, terms, tutorial
 
 Welcome
 =======

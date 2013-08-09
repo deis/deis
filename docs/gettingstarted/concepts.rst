@@ -1,6 +1,6 @@
 :title: Concepts
-:description: -- Concepts of the Deis platform
-:keywords: deis, documentation, technical, overview
+:description: Concepts of the Deis application platform, which deploys and scales twelve factor apps. Learn about formations, layers, build, release, run & backing services.
+:keywords: deis, formations, layers, build, release, run, backing services
 
 .. _concepts:
 

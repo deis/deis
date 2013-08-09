@@ -1,5 +1,5 @@
 :title: Documentation
-:description: -- todo: change me
+:description: Deis toctree
 :keywords: deis, documentation, tutorial, contributing, faq
 
 Documentation
