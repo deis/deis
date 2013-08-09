@@ -1,6 +1,6 @@
 :title: Controller
-:description: What is a Deis Controller?
-:keywords: deis, controller
+:description: The Deis controller is the brains of the Deis platform. Details on what the Deis controller is in charge of and what the Deis controller stack includes.
+:keywords: controller, deis
 
 .. _controller:
 

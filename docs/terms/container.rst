@@ -1,6 +1,6 @@
 :title: Container
-:description: What is a Deis Container?
-:keywords: lxc container, lxc, container, docker
+:description: Deis containers are instances of Docker containers.
+:keywords: lxc container, lxc, container, docker, deis
 
 .. _container:
 

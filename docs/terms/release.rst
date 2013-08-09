@@ -1,5 +1,5 @@
 :title: Release
-:description: What is a Deis Release?
+:description: A Deis release is a combination of a build with a config. Each Deis formation is associated with one release at a time.
 :keywords: release, deis
 
 .. _release:

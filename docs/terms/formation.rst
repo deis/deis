@@ -1,5 +1,5 @@
 :title: Formation
-:description: What is a Deis Formation?
+:description: A Deis formation is a set of infrastructure used to host a single application or service backed by a single git repository.
 :keywords: formation, deis
 
 .. _formation:

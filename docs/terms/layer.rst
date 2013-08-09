@@ -1,6 +1,6 @@
 :title: Layer
-:description: What is a Deis Layer?
-:keywords: layer
+:description: Deis layers are homogeneous groups of nodes that perform work on behalf of a formation. Details on runtime layers, proxy layers and custom layers.
+:keywords: layer, layers, deis
 
 .. _layer:
 

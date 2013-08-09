@@ -1,6 +1,6 @@
 :title: Provider
-:description: What is a Deis Provider?
-:keywords: provider
+:description: A provider is a pluggable connector to a third-party cloud API. Supported providers come pre-installed on the Deis controller.
+:keywords: provider, deis
 
 .. _provider:
 

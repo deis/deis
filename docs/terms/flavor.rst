@@ -1,6 +1,6 @@
 :title: Flavor
-:description: What is a Deis Flavor?
-:keywords: flavor
+:description: A Deis flavor defines the configuration for nodes in a layer, including their provider type, launch parameters and initial configuration.
+:keywords: flavor, deis
 
 .. _flavor:
 

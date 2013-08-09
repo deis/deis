@@ -1,6 +1,6 @@
 :title: Build
-:description: What is a Build?
-:keywords: build, release
+:description: A Deis build refers to the output of a specific application build. Deis builds can be created automatically using git push or manually using the client.
+:keywords: build, release, git push, deis
 
 .. _build:
 
