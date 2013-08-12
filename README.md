@@ -138,9 +138,9 @@ Total 146 (delta 84), reused 47 (delta 22)
        Launching... done, v2
 
 -----> peachy-waxworks deployed to Deis
-       http://ec2-54-214-143-104.us-west-2.compute.amazonaws.com ...
+       http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com ...
 
-$ curl -s http://ec2-54-214-143-104.us-west-2.compute.amazonaws.com
+$ curl -s http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com
 Powered by Deis!
 ```
 
