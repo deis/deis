@@ -460,7 +460,7 @@ var Search = {
         Search.stopPulse();
         Search.title.text(_('Search: ' + '"' + query + '"'));
         if (!resultCount)
-          Search.status.text(_('Your search did not match any documents. Please make sure that all words are spelled correctly and that you\'ve selected enough categories.'));
+          Search.status.text(_('Your search did not match any documents.'));
         else
             Search.status.text(_('Search finished, found %s page(s) matching the search query.').replace('%s', resultCount));
         Search.status.fadeIn(500);
@@ -483,7 +483,7 @@ var Search = {
           if (maxHeight > 923) {margin = maxHeight - 511 - 96;}
           if (is_server_reference == true){margin = margin + 80;}
           console.log("Max Height: " + maxHeight + " Margin: " + margin);
-          
+
           //Set the margin above the footer
           $('.social-menu').css({'margin-top': (margin)});
         }
