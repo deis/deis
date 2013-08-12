@@ -1,3 +1,6 @@
+:description: Python API Reference for the Deis web.urls module
+:keywords: deis, web.urls, python, api
+
 ========
 web.urls
 ========

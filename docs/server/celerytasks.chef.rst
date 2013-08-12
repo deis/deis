@@ -1,3 +1,6 @@
+:description: Python API Reference for the Deis celerytasks.chef module
+:keywords: deis, celerytasks.chef, python, celery, chef, api
+
 ================
 celerytasks.chef
 ================

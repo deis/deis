@@ -1,6 +1,5 @@
-:title: Server API
-:description: -- todo: change me
-:keywords: deis, documentation, api
+:description: API Reference for Deis Server
+:keywords: deis, documentation, api, server
 
 .. _server:
 
@@ -14,7 +13,7 @@ Server Reference
     :maxdepth: 1
 
     rest
-	
+
     api.fields
     api.models
     api.routers

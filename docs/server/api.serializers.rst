@@ -1,3 +1,6 @@
+:description: Python API Reference for the Deis api.serializers module
+:keywords: deis, api.serializers, python, api
+
 ===============
 api.serializers
 ===============

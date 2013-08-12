@@ -1,3 +1,6 @@
+:description: Python API Reference for the Deis api.models module
+:keywords: deis, api.models, python, api
+
 ==========
 api.models
 ==========

@@ -1,3 +1,6 @@
+:description: Python API Reference for the Deis api.views module
+:keywords: deis, api.views, python, api
+
 =========
 api.views
 =========

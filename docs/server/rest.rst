@@ -1,3 +1,6 @@
+:description: REST API Reference for Deis
+:keywords: deis, rest, restful, api
+
 ========
 REST API
 ========
