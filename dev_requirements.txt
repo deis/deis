@@ -13,7 +13,7 @@ paramiko>=1.11.0
 psycopg2>=2.5.1
 pyCrypto>=2.6
 PyYAML>=3.10
-South>=0.8.1
+South>=0.8.2
 
 # Deis client requirements
 docopt>=0.6.1
