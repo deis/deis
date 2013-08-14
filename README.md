@@ -146,7 +146,7 @@ Powered by Deis!
 
 ## Credits
 
-Deis rests on the shoulders of leading open source technologies:
+Deis stands on the shoulders of leading open source technologies:
 
   * [Chef](http://www.opscode.com/)
   * [Docker](http://www.docker.io/)
