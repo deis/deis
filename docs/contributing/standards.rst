@@ -86,9 +86,22 @@ changes. Current test coverage can be found here:
     :target: https://coveralls.io/r/opdemand/deis?branch=master
     :alt: Coverage Status
 
-Now create a GitHub pull request with a description of what your code
-fixes or improves. That's it!
 
+.. _pull_request:
+
+Pull Request
+------------
+Now create a GitHub `pull request`_ with a description of what your code
+fixes or improves.
+
+Before the pull request is merged, make sure that you squash your
+commits into logical units of work using ``git rebase -i`` and
+``git push -f``. Include documentation changes in the same commit,
+so that a revert would remove all traces of the feature or fix.
+
+Commits that fix or close an issue should include a reference like
+*Closes #XXX* or *Fixes #XXX* in the commit message. Doing so will
+automatically close the `GitHub issue`_ when the pull request is merged.
 
 .. _Python: http://www.python.org/
 .. _flake8: https://pypi.python.org/pypi/flake8/
@@ -97,3 +110,5 @@ fixes or improves. That's it!
 .. _mccabe: https://pypi.python.org/pypi/mccabe/
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
+.. _`pull request`: https://github.com/opdemand/pullrequests
+.. _`GitHub issue`: https://github.com/opdemand/issues

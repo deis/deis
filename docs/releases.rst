@@ -1,5 +1,5 @@
 :title: Releases
-:description: Details the Deis release process. Deis releases. 
+:description: Details the Deis release process. Deis releases.
 :keywords: deis, release, process, build, tag
 
 .. _releases:
@@ -51,7 +51,7 @@ Deis Repo
 Client
 ------
 
-- publish CLI to pip
+- publish CLI to pypi.python.org
 	- ``python setup.py sdist upload``
 	- use testpypi.python.org first to ensure there aren't any problems
 
