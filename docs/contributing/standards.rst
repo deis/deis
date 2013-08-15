@@ -110,5 +110,5 @@ automatically close the `GitHub issue`_ when the pull request is merged.
 .. _mccabe: https://pypi.python.org/pypi/mccabe/
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
-.. _`pull request`: https://github.com/opdemand/pullrequests
-.. _`GitHub issue`: https://github.com/opdemand/issues
+.. _`pull request`: https://github.com/opdemand/deis/pulls
+.. _`GitHub issue`: https://github.com/opdemand/deis/issues
