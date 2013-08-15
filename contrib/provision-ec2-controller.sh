@@ -44,7 +44,7 @@ ssh_user="ubuntu"
 
 # chef settings
 node_name="deis-controller"
-run_list="recipe[deis],recipe[deis::postgresql],recipe[deis::server],recipe[deis::gitosis],recipe[deis::build]"
+run_list="recipe[deis::controller]"
 chef_version=11.4.4
 
 function echo_color {
