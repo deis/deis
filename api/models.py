@@ -77,10 +77,9 @@ class Key(UuidAuditedModel):
         unique_together = (('owner', 'id'))
 
     def __str__(self):
-        return "{0} : {1}".format(self.owner.username, self.id)
+        return "{}...{}".format(self.public[:18], self.public[-31:])
 
 
-@python_2_unicode_compatible
 class ProviderManager(models.Manager):
     """Manage database interactions for :class:`Provider`."""
 
@@ -117,8 +116,10 @@ class Provider(UuidAuditedModel):
     class Meta:
         unique_together = (('owner', 'id'),)
 
+    def __str__(self):
+        return "{}-{}".format(self.id, self.get_type_display())
 
-@python_2_unicode_compatible
+
 class FlavorManager(models.Manager):
     """Manage database interactions for :class:`Flavor`."""
 
@@ -193,7 +194,6 @@ class ScalingError(Exception):
     pass
 
 
-@python_2_unicode_compatible
 class FormationManager(models.Manager):
     """Manage database interactions for :class:`Formation`."""
 
@@ -507,7 +507,6 @@ class Layer(UuidAuditedModel):
         group(layer_tasks).apply_async().join()
 
 
-@python_2_unicode_compatible
 class NodeManager(models.Manager):
 
     def new(self, formation, layer):
@@ -638,10 +637,12 @@ class Container(UuidAuditedModel):
     # TODO: add celery beat tasks for monitoring node health
     status = models.CharField(max_length=64, default='up')
 
+    def short_name(self):
+        return "{}.{}".format(self.type, self.num)
+    short_name.short_description = 'Name'
+
     def __str__(self):
-        if self.id:
-            return self.id
-        return "{0} {1}.{2}".format(self.formation.id, self.type, self.num)
+        return "{0} {1}".format(self.formation.id, self.short_name())
 
     class Meta:
         get_latest_by = '-created'
@@ -698,7 +699,7 @@ class Build(UuidAuditedModel):
         unique_together = (('formation', 'uuid'),)
 
     def __str__(self):
-        return "{0}-v{1}".format(self.formation.id, self.version)
+        return "{0}-{1}".format(self.formation.id, self.sha)
 
     @classmethod
     def push(cls, push):
