@@ -14,6 +14,7 @@ Server Reference
 
     rest
 
+    api.admin
     api.fields
     api.models
     api.routers

@@ -107,6 +107,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "allauth.account.context_processors.account",
+    "allauth.socialaccount.context_processors.socialaccount",
 )
 
 MIDDLEWARE_CLASSES = (
@@ -133,6 +134,7 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.messages',
@@ -142,6 +144,7 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'djcelery',
     'json_field',
     'rest_framework',
