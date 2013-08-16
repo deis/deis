@@ -6,7 +6,7 @@ django-allauth>=0.12.0
 django-celery>=3.0.21
 django-json-field>=0.5.4
 django-yamlfield>=0.4
-djangorestframework>=2.3.6
+djangorestframework>=2.3.7
 gevent==0.13.8
 gunicorn>=0.17.5
 paramiko>=1.11.0
