@@ -12,6 +12,17 @@ from api import models
 from api import utils
 
 
+class OwnerSlugRelatedField(serializers.SlugRelatedField):
+    """Filter queries by owner as well as slug_field."""
+
+    def from_native(self, data):
+        """Fetch model object from its 'native' representation.
+        TODO: request.user is not going to work in a team environment...
+        """
+        self.queryset = self.queryset.filter(owner=self.context['request'].user)
+        return serializers.SlugRelatedField.from_native(self, data)
+
+
 class UserSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.User` model."""
 
@@ -57,7 +68,7 @@ class FlavorSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Flavor` model."""
 
     owner = serializers.Field(source='owner.username')
-    provider = serializers.SlugRelatedField(slug_field='id')
+    provider = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`FlavorSerializer`."""
@@ -69,7 +80,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
 
@@ -83,7 +94,7 @@ class BuildSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Build` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -95,7 +106,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid', required=False)
 
@@ -121,8 +132,8 @@ class LayerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Layer` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
-    flavor = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
+    flavor = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`LayerSerializer`."""
@@ -143,8 +154,8 @@ class NodeSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Node` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
-    layer = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
+    layer = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`NodeSerializer`."""
@@ -156,8 +167,8 @@ class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = serializers.SlugRelatedField(slug_field='id')
-    node = serializers.SlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id')
+    node = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""
