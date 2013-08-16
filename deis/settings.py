@@ -222,6 +222,8 @@ from .celery_settings import *  # @UnusedWildImport # noqa
 
 # default deis settings
 CONVERGE_ON_PUSH = True
+DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
+LOG_LINES = 1000
 
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It

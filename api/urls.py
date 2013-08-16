@@ -283,6 +283,8 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'calculate'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/converge/?',
         views.FormationViewSet.as_view({'post': 'converge'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/logs/?',
+        views.FormationViewSet.as_view({'post': 'logs'})),
     # formation base endpoint
     url(r'^formations/(?P<id>[a-z0-9-]+)/?',
         views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
