@@ -1026,6 +1026,22 @@ class DeisClient(object):
         else:
             print('Error!', response.text)
 
+    def logs(self, args):
+        """
+        Retrieve the most recent log events
+
+        Usage: deis logs
+        """
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        response = self._dispatch('post',
+                                  "/api/formations/{}/logs".format(formation))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(response.json())
+        else:
+            print('Error!', response.text)
+
     def nodes(self, args):
         """
         Valid commands for nodes:

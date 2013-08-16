@@ -223,6 +223,12 @@ class FormationViewSet(OwnerViewSet):
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
+    def logs(self, request, **kwargs):
+        formation = self.get_object()
+        logs = formation.logs()
+        return Response(logs, status=status.HTTP_200_OK,
+                        content_type='text/plain')
+
     def destroy(self, request, **kwargs):
         formation = self.get_object()
         formation.destroy()

@@ -40,6 +40,9 @@ nosetests.xml
 # Deis' config file
 deis/local_settings.py
 
+# deis application logs
+logs/
+
 # Misc.
 .DS_Store
 htmlcov/

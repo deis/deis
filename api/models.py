@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import importlib
 import json
 import os
+import subprocess
 import yaml
 
 from celery.canvas import group
@@ -435,6 +436,14 @@ class Formation(UuidAuditedModel):
         job = group(*[n.converge() for n in nodes])
         job.apply_async().join()
         return databag
+
+    def logs(self):
+        """Return aggregated log data for this formation."""
+        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        if not os.path.exists(path):
+            raise EnvironmentError('Could not locate logs')
+        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+        return data
 
     def destroy(self):
         """Create subtasks to terminate all nodes in parallel."""

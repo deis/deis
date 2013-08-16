@@ -7,8 +7,10 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import os.path
 
 from django.test import TestCase
+from deis import settings
 
 
 class FormationTest(TestCase):
@@ -130,3 +132,21 @@ class FormationTest(TestCase):
         self.assertIn('containers', response.data)
         self.assertIn('proxy', response.data)
         self.assertIn('release', response.data)
+        # test logs
+        if not os.path.exists(settings.DEIS_LOG_DIR):
+            os.mkdir(settings.DEIS_LOG_DIR)
+        path = os.path.join(settings.DEIS_LOG_DIR, formation_id + '.log')
+        with open(path, 'w') as f:
+            f.write(FAKE_LOG_DATA)
+        url = '/api/formations/{formation_id}/logs'.format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, FAKE_LOG_DATA)
+
+
+FAKE_LOG_DATA = """
+2013-08-15 12:41:25 [33454] [INFO] Starting gunicorn 17.5
+2013-08-15 12:41:25 [33454] [INFO] Listening at: http://0.0.0.0:5000 (33454)
+2013-08-15 12:41:25 [33454] [INFO] Using worker: sync
+2013-08-15 12:41:25 [33457] [INFO] Booting worker with pid 33457
+"""
