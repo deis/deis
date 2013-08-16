@@ -142,7 +142,7 @@ class FlavorViewSet(OwnerViewSet):
 
 
 class FormationViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Formtion`."""
+    """RESTful views for :class:`~api.models.Formation`."""
 
     model = models.Formation
     serializer_class = serializers.FormationSerializer
