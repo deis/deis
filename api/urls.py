@@ -202,9 +202,13 @@ Auth
 
   Create a new :class:`~api.models.UserRegistration`.
 
-.. http:post:: /api/auth/???
+.. http:post:: /api/auth/login
 
-  TODO: document the important rest_framework login URLs
+  Authenticate for the REST framework.
+
+.. http:post:: /api/auth/logout
+
+  Clear authentication for the REST framework.
 
 .. http:get:: /api/generate-api-key/
 
