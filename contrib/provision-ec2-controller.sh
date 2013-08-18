@@ -57,11 +57,12 @@ if ! ec2-describe-group | grep -q "$sg_name"; then
   set -x
   ec2-create-group $sg_name -d "Created by Deis"
   set +x
-  echo_color "Authorizing TCP ports 22,80,443 from $sg_src..."
+  echo_color "Authorizing TCP ports 22,80,443,514 from $sg_src..."
   set -x
   ec2-authorize deis-controller -P tcp -p 22 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 80 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 443 -s $sg_src >/dev/null
+  ec2-authorize deis-controller -P tcp -p 514 -s $sg_src >/dev/null
   set +x
 else
   echo_color "Security group $sg_name exists"

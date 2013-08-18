@@ -57,10 +57,11 @@ The `Amazon EC2 API Tools`_ will be used to setup basic EC2 infrastructure.  The
 	+ ec2-create-group deis-controller -d 'Created by Deis'
 	GROUP	sg-7c40f317	deis-controller	Created by Deis
 	+ set +x
-	Authorizing TCP ports 22,80,443 from 0.0.0.0/0...
+	Authorizing TCP ports 22,80,443,514 from 0.0.0.0/0...
 	+ ec2-authorize deis-controller -P tcp -p 22 -s 0.0.0.0/0
 	+ ec2-authorize deis-controller -P tcp -p 80 -s 0.0.0.0/0
 	+ ec2-authorize deis-controller -P tcp -p 443 -s 0.0.0.0/0
+	+ ec2-authorize deis-controller -P tcp -p 514 -s 0.0.0.0/0
 	+ set +x
 	Creating new SSH key: deis-controller
 	+ ec2-create-keypair deis-controller
