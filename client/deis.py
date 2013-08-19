@@ -14,7 +14,6 @@ Shortcut commands::
 
   create        create a new container formation
   scale         scale container types (web=2, worker=1)
-  logs          print most recent logs for the formation
   open          open a URL for the formation in a browser
   info          print a representation of the formation
   converge      force-converge all nodes in the formation
