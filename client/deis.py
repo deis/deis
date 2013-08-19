@@ -19,6 +19,7 @@ Shortcut commands::
   info          print a representation of the formation
   converge      force-converge all nodes in the formation
   calculate     recalculate and update the formation databag
+  logs          view aggregated log info for the formation
   destroy       destroy a container formation
 
 Subcommands, use ``deis help [subcommand]`` to learn more::
@@ -643,6 +644,7 @@ class DeisClient(object):
         formations:balance       rebalance the container formation
         formations:converge      force-converge all nodes in the formation
         formations:calculate     recalculate and update the formation databag
+        formations:logs          view aggregated log info for the formation
         formations:destroy       destroy a container formation
 
         Use `deis help [command]` to learn more
