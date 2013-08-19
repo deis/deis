@@ -13,8 +13,9 @@ Auth commands::
 Shortcut commands::
 
   create        create a new container formation
-  info          print a representation of the formation
   scale         scale container types (web=2, worker=1)
+  logs          print most recent logs for the formation
+  info          print a representation of the formation
   converge      force-converge all nodes in the formation
   calculate     recalculate and update the formation databag
   destroy       destroy a container formation
