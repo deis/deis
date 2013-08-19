@@ -77,6 +77,14 @@ class Session(requests.Session):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
 
+    def clear(self, domain):
+        """Clear cookies for the specified domain."""
+        try:
+            self.cookies.clear(domain)
+            self.cookies.save()
+        except KeyError:
+            pass
+
     def git_root(self):
         """
         Return the absolute path from the git repository root
@@ -300,6 +308,8 @@ class DeisClient(object):
             password = getpass('password: ')
         url = urlparse.urljoin(controller, '/api/auth/login/')
         payload = {'username': username, 'password': password}
+        # clear any cookies for this controller's domain
+        self._session.clear(urlparse.urlparse(url).netloc)
         # prime cookies for login
         self._session.get(url, headers=headers)
         # post credentials to the login URL
