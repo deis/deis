@@ -108,6 +108,19 @@ class FormationTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
+        # create & scale a basic formation
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'proxy', 'flavor': 'autotest', 'run_list': 'recipe[deis::proxy]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/scale/layers'.format(**locals())
+        body = {'proxy': 2, 'runtime': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
         # test calculate
         url = '/api/formations/{formation_id}/calculate'.format(**locals())
         response = self.client.post(url)
@@ -150,6 +163,13 @@ class FormationTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
+        # test run
+        url = '/api/formations/{formation_id}/run'.format(**locals())
+        body = {'commands': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('.gitignore', response.data[0])
+        self.assertEqual(response.data[1], 0)
 
 
 FAKE_LOG_DATA = """
