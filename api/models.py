@@ -267,6 +267,7 @@ class Formation(UuidAuditedModel):
             diff = requested - len(nodes)
             if diff == 0:
                 continue
+            new_nodes = False
             while diff < 0:
                 node = nodes.pop(0)
                 funcs.append(node.terminate)
@@ -276,6 +277,7 @@ class Formation(UuidAuditedModel):
                 nodes.append(node)
                 funcs.append(node.launch)
                 diff = requested - len(nodes)
+                new_nodes = True
         # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
         job = [func() for func in funcs]
         # balance containers
@@ -285,8 +287,8 @@ class Formation(UuidAuditedModel):
             group(*job).apply_async().join()
         # once nodes are in place, recalculate the formation and update the data bag
         databag = self.calculate()
-        # force-converge nodes if there were changes
-        if job or containers_balanced:
+        # force-converge nodes if there were new nodes or container rebalancing
+        if new_nodes or containers_balanced:
             self.converge(databag)
         # save the formation with updated layers
         self.save()
