@@ -15,6 +15,7 @@ Shortcut commands::
   create        create a new container formation
   scale         scale container types (web=2, worker=1)
   logs          print most recent logs for the formation
+  open          open a URL for the formation in a browser
   info          print a representation of the formation
   converge      force-converge all nodes in the formation
   calculate     recalculate and update the formation databag
@@ -44,17 +45,18 @@ from getpass import getpass
 import glob
 import json
 import os.path
+import random
 import re
 import subprocess
 import sys
 import time
 import urlparse
+import webbrowser
 import yaml
 
 from docopt import docopt
 from docopt import DocoptExit
 import requests
-
 
 __version__ = '0.0.5'
 
@@ -1143,6 +1145,28 @@ class DeisClient(object):
         Use `deis help [command]` to learn more
         """
         return self.providers_list(args)
+
+    def open(self, args):
+        """
+        Open a URL to the application in a browser
+
+        Usage: deis open
+        """
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        # TODO: replace with a proxy lookup that doesn't have any side effects
+        # this currently recalculates and updates the databag
+        response = self._dispatch('post',
+                                  "/api/formations/{}/calculate".format(formation))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            databag = json.loads(response.content)
+            proxy = random.choice(databag['nodes'].get('proxy', {}).values())
+            # use the OS's default handler to open this URL
+            webbrowser.open('http://{}/'.format(proxy))
+            return proxy
+        else:
+            print('Error!', response.text)
 
     def providers_create(self, args):
         """
