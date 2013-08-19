@@ -194,6 +194,10 @@ Actions
   See also
   :meth:`FormationViewSet.converge() <api.views.FormationViewSet.converge>`
 
+.. http:post:: /api/formations/(string:id)/logs/
+
+  See also
+  :meth:`FormationViewSet.logs() <api.views.FormationViewSet.logs>`
 
 Auth
 ====
