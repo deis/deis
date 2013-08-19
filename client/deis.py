@@ -244,7 +244,11 @@ class DeisClient(object):
         Dispatch an API request to the active Deis controller
         """
         func = getattr(self._session, method.lower())
-        url = urlparse.urljoin(self._settings['controller'], path, **kwargs)
+        controller = self._settings['controller']
+        if not controller:
+            raise EnvironmentError(
+                'No active controller. Use `deis login` or `deis register` to get started.')
+        url = urlparse.urljoin(controller, path, **kwargs)
         response = func(url, data=body, headers=headers)
         return response
 
@@ -656,7 +660,7 @@ class DeisClient(object):
         try:
             self._session.git_root()  # check for a git repository
         except EnvironmentError:
-            print 'No git repository found, use `git init` to create one'
+            print 'No git repository found, use `git init` to create one.'
             return
         for opt in ('--id',):
             o = args.get(opt)
@@ -1355,9 +1359,8 @@ def main():
     # dispatch the CLI command
     try:
         method(args)
-    except EnvironmentError:
-        print 'Could not find git remote for deis'
-        raise DocoptExit()
+    except EnvironmentError as err:
+        raise DocoptExit(err.message)
 
 
 if __name__ == '__main__':
