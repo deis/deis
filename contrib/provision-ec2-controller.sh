@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [ -z $1 ]; then
   echo usage: $0 [region]
@@ -48,7 +48,7 @@ run_list="recipe[deis::controller]"
 chef_version=11.4.4
 
 function echo_color {
-  echo "\033[1m$1\033[0m"
+  echo -e "\033[1m$1\033[0m"
 }
 
 # create security group and authorize ingress
