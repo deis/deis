@@ -225,7 +225,12 @@ class FormationViewSet(OwnerViewSet):
 
     def logs(self, request, **kwargs):
         formation = self.get_object()
-        logs = formation.logs()
+        try:
+            logs = formation.logs()
+        except EnvironmentError:
+            return Response("No logs for {}".format(formation.id),
+                            status=status.HTTP_404_NOT_FOUND,
+                            content_type='text/plain')
         return Response(logs, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
