@@ -136,6 +136,10 @@ class FormationTest(TestCase):
         if not os.path.exists(settings.DEIS_LOG_DIR):
             os.mkdir(settings.DEIS_LOG_DIR)
         path = os.path.join(settings.DEIS_LOG_DIR, formation_id + '.log')
+        try:
+            os.remove(path)  # cleanup any old log files
+        except:
+            pass
         url = '/api/formations/{formation_id}/logs'.format(**locals())
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
