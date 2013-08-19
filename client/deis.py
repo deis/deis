@@ -1056,6 +1056,8 @@ class DeisClient(object):
                                   "/api/formations/{}/logs".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(response.json())
+        elif response.status_code == requests.codes.not_found:  # @UndefinedVariable
+            print(response.json())
         else:
             print('Error!', response.text)
 

@@ -136,9 +136,13 @@ class FormationTest(TestCase):
         if not os.path.exists(settings.DEIS_LOG_DIR):
             os.mkdir(settings.DEIS_LOG_DIR)
         path = os.path.join(settings.DEIS_LOG_DIR, formation_id + '.log')
+        url = '/api/formations/{formation_id}/logs'.format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data, 'No logs for {}'.format(formation_id))
+        # write out some fake log data and try again
         with open(path, 'w') as f:
             f.write(FAKE_LOG_DATA)
-        url = '/api/formations/{formation_id}/logs'.format(**locals())
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
