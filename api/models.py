@@ -447,6 +447,13 @@ class Formation(UuidAuditedModel):
         data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
         return data
 
+    def run(self, commands):
+        """Run a one-off command in an ephemeral container."""
+        runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('?')
+        if not runtime_nodes:
+            raise EnvironmentError('No nodes available')
+        return runtime_nodes[0].run(commands)
+
     def destroy(self):
         """Create subtasks to terminate all nodes in parallel."""
         all_layers = self.layer_set.all()
@@ -624,6 +631,21 @@ class Node(UuidAuditedModel):
         params = self.layer.flavor.params.copy()
         args = (self.uuid, creds, params, self.provider_id)
         return args
+
+    def run(self, *args, **kwargs):
+        tasks = import_tasks(self.layer.flavor.provider.type)
+        command = ' '.join(*args)
+        # prepare app-specific docker arguments
+        formation_id = self.formation.id
+        release = self.formation.release_set.order_by('-created')[0]
+        version = release.version
+        docker_args = ' '.join(
+            ['-v',
+             '/opt/deis/runtime/slugs/{formation_id}-{version}/app:/app'.format(**locals()),
+             release.image])
+        args = list(self._prepare_converge_args()) + [docker_args] + [command]
+        task = tasks.run_node.subtask(args)
+        return task.apply_async().wait()
 
     def destroy(self, async=False):
         subtask = self.terminate()

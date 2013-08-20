@@ -199,6 +199,12 @@ Actions
   See also
   :meth:`FormationViewSet.logs() <api.views.FormationViewSet.logs>`
 
+.. http:post:: /api/formations/(string:id)/run/
+
+  See also
+  :meth:`FormationViewSet.run() <api.views.FormationViewSet.run>`
+
+
 Auth
 ====
 
@@ -293,6 +299,8 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'converge'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/logs/?',
         views.FormationViewSet.as_view({'post': 'logs'})),
+    url(r'^formations/(?P<id>[a-z0-9-]+)/run/?',
+        views.FormationViewSet.as_view({'post': 'run'})),
     # formation base endpoint
     url(r'^formations/(?P<id>[a-z0-9-]+)/?',
         views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),

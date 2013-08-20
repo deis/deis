@@ -25,11 +25,12 @@ def connect_ssh(username, hostname, port, key):
     return ssh
 
 
-def exec_ssh(ssh, command):
+def exec_ssh(ssh, command, pty=False):
     tran = ssh.get_transport()
     chan = tran.open_session()
     # NOTE: pty breaks line ordering on commands like apt-get
-    #chan.get_pty(term='vt100', width=300, height=50)
+    if pty:
+        chan.get_pty(term='vt100', width=80, height=24)
     chan.exec_command(command)
     output = read_from_ssh(chan)
     exit_status = chan.recv_exit_status()
@@ -47,12 +48,12 @@ def read_from_ssh(chan):
                 if data:
                     got_data = True
                     output += data
-                    #print("stdout => ", data)
+                    # print("stdout => ", data)
             if chan.recv_stderr_ready():
                 data = r[0].recv_stderr(4096)
                 if data:
                     got_data = True
                     output += data
-                    #print("stderr => ", data)
+                    # print("stderr => ", data)
             if not got_data:
                 return output
