@@ -40,8 +40,12 @@ Use ``git push deis master`` to deploy to a formation.
 
 """
 
+from __future__ import print_function
 from cookielib import MozillaCookieJar
 from getpass import getpass
+from itertools import cycle
+from threading import Event
+from threading import Thread
 import glob
 import json
 import os.path
@@ -180,6 +184,65 @@ class Settings(dict):
         return data
 
 
+_counter = 0
+
+
+def _newname(template="Thread-{}"):
+    """Generate a new thread name."""
+    global _counter
+    _counter += 1
+    return template.format(_counter)
+
+
+FRAMES = {
+    'arrow':  ['^', '>', 'v', '<'],
+    'dots': ['...', 'o..', '.o.', '..o'],
+    'ligatures': ['bq', 'dp', 'qb', 'pd'],
+    'lines': [' ', '-', '=', '#', '=', '-'],
+    'slash':  ['-', '\\', '|', '/'],
+}
+
+
+class TextProgress(Thread):
+    """Show progress for a long-running operation on the command-line."""
+
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+        name = name or _newname("TextProgress-Thread-{}")
+        style = kwargs.get('style', 'dots')
+        super(TextProgress, self).__init__(
+            group, target, name, args, kwargs)
+        self.daemon = True
+        self.cancelled = Event()
+        self.frames = cycle(FRAMES[style])
+
+    def run(self):
+        """Write ASCII progress animation frames to stdout."""
+        time.sleep(0.5)
+        self._write_frame(self.frames.next(), erase=False)
+        while not self.cancelled.is_set():
+            time.sleep(0.4)
+            self._write_frame(self.frames.next())
+
+    def cancel(self):
+        """Set the animation thread as cancelled."""
+        self.cancelled.set()
+        # clear the animation
+        sys.stdout.write('\b' * (len(self.frames.next()) + 2))
+        sys.stdout.flush()
+
+    def _write_frame(self, frame, erase=True):
+        if erase:
+            backspaces = '\b' * (len(frame) + 2)
+        else:
+            backspaces = ''
+        sys.stdout.write("{} {} ".format(backspaces, frame))
+        # flush stdout or we won't see the frame
+        sys.stdout.flush()
+
+
+progress = TextProgress()
+
+
 def dictify(args):
     """Converts a list of key=val strings into a python dict.
 
@@ -289,12 +352,12 @@ class DeisClient(object):
             if self.auth_login(login_args) is False:
                 print('Login failed')
                 return
-            print
+            print()
             self.keys_add({})
-            print
+            print()
             self.providers_discover({})
-            print
-            print 'Use `deis create --flavor=ec2-us-east-1` to create a new formation'
+            print()
+            print('Use `deis create --flavor=ec2-us-east-1` to create a new formation')
         else:
             print('Registration failed', response.content)
             return False
@@ -516,13 +579,13 @@ class DeisClient(object):
             c_map = {}
             for item in data['results']:
                 c_map.setdefault(item['type'], []).append(item)
-            print
+            print()
             for c_type in c_map.keys():
                 command = procfile.get(c_type, '<none>')
                 print("--- {c_type}: `{command}`".format(**locals()))
                 for c in c_map[c_type]:
                     print("{type}.{num} up {created} ({node})".format(**c))
-                print
+                print()
         else:
             print('Error!', response.text)
 
@@ -542,10 +605,14 @@ class DeisClient(object):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         print('Scaling containers... but first, coffee!')
-        before = time.time()
-        response = self._dispatch('post',
-                                  "/api/formations/{}/scale/containers".format(formation),
-                                  json.dumps(body))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post',
+                                      "/api/formations/{}/scale/containers".format(formation),
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
             self.containers_list({})
@@ -625,7 +692,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print 'No flavors found'
+                print('No flavors found')
                 return
             print("=== {owner} Flavors".format(**data['results'][0]))
             for item in data['results']:
@@ -664,7 +731,7 @@ class DeisClient(object):
         try:
             self._session.git_root()  # check for a git repository
         except EnvironmentError:
-            print 'No git repository found, use `git init` to create one.'
+            print('No git repository found, use `git init` to create one')
             return
         for opt in ('--id',):
             o = args.get(opt)
@@ -675,7 +742,7 @@ class DeisClient(object):
         if flavor:
             response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
             if response.status_code != 200:
-                print 'Flavor not found'
+                print('Flavor not found')
                 return
         sys.stdout.write('Creating formation... ')
         sys.stdout.flush()
@@ -697,7 +764,7 @@ class DeisClient(object):
             print('Git remote deis added')
             # create default layers if a flavor was provided
             if flavor:
-                print
+                print()
                 self.layers_create({'<id>': 'runtime', '<flavor>': flavor})
                 self.layers_create({'<id>': 'proxy', '<flavor>': flavor})
                 print('\nUse `deis layers:scale proxy=1 runtime=1` to scale a basic formation')
@@ -717,12 +784,12 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             print("=== {} Formation".format(formation))
-            print
+            print()
             args = {'<formation>': data['id']}
             self.layers_list(args)
-            print
+            print()
             self.nodes_list(args)
-            print
+            print()
             self.containers_list(args)
         else:
             print('Error!', response.text)
@@ -737,7 +804,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print 'No formations found'
+                print('No formations found')
                 return
             print("=== {owner} Formations".format(**data['results'][0]))
             for item in data['results']:
@@ -762,19 +829,23 @@ class DeisClient(object):
         if confirm == formation:
             pass
         else:
-            print """
+            print("""
  !    WARNING: Potentially Destructive Action
  !    This command will destroy: {formation}
  !    To proceed, type "{formation}" or re-run this command with --confirm={formation}
-""".format(**locals())
+""".format(**locals()))
             confirm = raw_input('> ').strip('\n')
             if confirm != formation:
                 print('Destroy aborted')
                 return
         sys.stdout.write("Destroying {}... ".format(formation))
         sys.stdout.flush()
-        before = time.time()
-        response = self._dispatch('delete', "/api/formations/{}".format(formation))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch('delete', "/api/formations/{}".format(formation))
+        finally:
+            progress.cancel()
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
@@ -825,9 +896,13 @@ class DeisClient(object):
             formation = self._session.formation
         sys.stdout.write('Converging {}... '.format(formation))
         sys.stdout.flush()
-        before = time.time()
-        response = self._dispatch('post',
-                                  "/api/formations/{}/converge".format(formation))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post',
+                                      "/api/formations/{}/converge".format(formation))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
             databag = json.loads(response.content)
@@ -866,13 +941,13 @@ class DeisClient(object):
                 path = pubkeys[int(inp) - 1]
                 key_id = path.split(os.path.sep)[-1].replace('.pub', '')
             except:
-                print 'Aborting'
+                print('Aborting')
                 return
         with open(path) as f:
             data = f.read()
         match = re.match(r'^(ssh-...) ([^ ]+) (.+)', data)
         if not match:
-            print 'Could not parse public key material'
+            print('Could not parse public key material')
             return
         key_type, key_str, _key_comment = match.groups()
         body = {'id': key_id, 'public': "{0} {1}".format(key_type, key_str)}
@@ -894,7 +969,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print 'No keys found'
+                print('No keys found')
                 return
             print("=== {owner} Keys".format(**data['results'][0]))
             for key in data['results']:
@@ -968,9 +1043,13 @@ class DeisClient(object):
                 body['run_list'] = 'recipe[deis],recipe[deis::proxy]'
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
-        before = time.time()
-        response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
-                                  json.dumps(body))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
         else:
@@ -988,9 +1067,13 @@ class DeisClient(object):
         layer = args['<id>']  # noqa
         sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
-        before = time.time()
-        response = self._dispatch(
-            'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch(
+                'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
         else:
@@ -1033,11 +1116,15 @@ class DeisClient(object):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         print('Scaling layers... but first, coffee!')
-        before = time.time()
-        # TODO: add threaded spinner to print dots
-        response = self._dispatch('post',
-                                  "/api/formations/{}/scale/layers".format(formation),
-                                  json.dumps(body))
+        try:
+            progress.start()
+            before = time.time()
+            # TODO: add threaded spinner to print dots
+            response = self._dispatch('post',
+                                      "/api/formations/{}/scale/layers".format(formation),
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
             print('Use `git push deis master` to deploy to your formation')
@@ -1128,9 +1215,13 @@ class DeisClient(object):
         node = args['<id>']
         sys.stdout.write("Destroying {}... ".format(node))
         sys.stdout.flush()
-        before = time.time()
-        response = self._dispatch('delete',
-                                  "/api/formations/{formation}/nodes/{node}".format(**locals()))
+        try:
+            progress.start()
+            before = time.time()
+            response = self._dispatch(
+                'delete', "/api/formations/{formation}/nodes/{node}".format(**locals()))
+        finally:
+            progress.cancel()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
         else:
@@ -1222,7 +1313,7 @@ class DeisClient(object):
             print("Found EC2 credentials: {}".format(os.environ['AWS_ACCESS_KEY']))
             inp = raw_input('Import these credentials? (y/n) : ')
             if inp.lower().strip('\n') != 'y':
-                print 'Aborting.'
+                print('Aborting.')
                 return
             creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
                      'secret_key': os.environ['AWS_SECRET_KEY']}
@@ -1232,11 +1323,11 @@ class DeisClient(object):
             response = self._dispatch('patch', '/api/providers/ec2',
                                       json.dumps(body))
             if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                print 'done'
+                print('done')
             else:
                 print('Error!', response.text)
         else:
-            print 'No credentials discovered, did you install the EC2 Command Line tools?'
+            print('No credentials discovered, did you install the EC2 Command Line tools?')
             return
 
     def providers_info(self, args):
@@ -1262,7 +1353,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print 'No providers found'
+                print('No providers found')
                 return
             print("=== {owner} Providers".format(**data['results'][0]))
             for item in data['results']:
@@ -1372,7 +1463,7 @@ def main():
     if help_flag:
         if cmd != 'help':
             if cmd in dir(cli):
-                print trim(getattr(cli, cmd).__doc__)
+                print(trim(getattr(cli, cmd).__doc__))
                 return
         docopt(__doc__, argv=['--help'])
     # re-parse docopt with the relevant docstring
