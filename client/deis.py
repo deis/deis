@@ -49,6 +49,7 @@ from threading import Event
 from threading import Thread
 import glob
 import json
+import os
 import os.path
 import random
 import re
@@ -218,18 +219,19 @@ class TextProgress(Thread):
 
     def run(self):
         """Write ASCII progress animation frames to stdout."""
-        time.sleep(0.5)
-        self._write_frame(self.frames.next(), erase=False)
-        while not self.cancelled.is_set():
-            time.sleep(0.4)
-            self._write_frame(self.frames.next())
+        if not os.environ.get('DEIS_HIDE_PROGRESS'):
+            time.sleep(0.5)
+            self._write_frame(self.frames.next(), erase=False)
+            while not self.cancelled.is_set():
+                time.sleep(0.4)
+                self._write_frame(self.frames.next())
+            # clear the animation
+            sys.stdout.write('\b' * (len(self.frames.next()) + 2))
+            sys.stdout.flush()
 
     def cancel(self):
         """Set the animation thread as cancelled."""
         self.cancelled.set()
-        # clear the animation
-        sys.stdout.write('\b' * (len(self.frames.next()) + 2))
-        sys.stdout.flush()
 
     def _write_frame(self, frame, erase=True):
         if erase:
@@ -239,9 +241,6 @@ class TextProgress(Thread):
         sys.stdout.write("{} {} ".format(backspaces, frame))
         # flush stdout or we won't see the frame
         sys.stdout.flush()
-
-
-progress = TextProgress()
 
 
 def dictify(args):
@@ -607,6 +606,7 @@ class DeisClient(object):
             body.update({typ: int(count)})
         print('Scaling containers... but first, coffee!')
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch('post',
@@ -614,6 +614,7 @@ class DeisClient(object):
                                       json.dumps(body))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
             self.containers_list({})
@@ -748,8 +749,14 @@ class DeisClient(object):
                 return
         sys.stdout.write('Creating formation... ')
         sys.stdout.flush()
-        response = self._dispatch('post', '/api/formations',
-                                  json.dumps(body))
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', '/api/formations',
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
@@ -843,11 +850,13 @@ class DeisClient(object):
         sys.stdout.write("Destroying {}... ".format(formation))
         sys.stdout.flush()
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch('delete', "/api/formations/{}".format(formation))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
@@ -899,12 +908,14 @@ class DeisClient(object):
         sys.stdout.write('Converging {}... '.format(formation))
         sys.stdout.flush()
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch('post',
                                       "/api/formations/{}/converge".format(formation))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
             databag = json.loads(response.content)
@@ -1069,12 +1080,14 @@ class DeisClient(object):
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
                                       json.dumps(body))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
         else:
@@ -1093,12 +1106,14 @@ class DeisClient(object):
         sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch(
                 'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
         else:
@@ -1142,6 +1157,7 @@ class DeisClient(object):
             body.update({typ: int(count)})
         print('Scaling layers... but first, coffee!')
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             # TODO: add threaded spinner to print dots
@@ -1150,6 +1166,7 @@ class DeisClient(object):
                                       json.dumps(body))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
             print('Use `git push deis master` to deploy to your formation')
@@ -1241,12 +1258,14 @@ class DeisClient(object):
         sys.stdout.write("Destroying {}... ".format(node))
         sys.stdout.flush()
         try:
+            progress = TextProgress()
             progress.start()
             before = time.time()
             response = self._dispatch(
                 'delete', "/api/formations/{formation}/nodes/{node}".format(**locals()))
         finally:
             progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
         else:
