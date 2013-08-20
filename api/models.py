@@ -261,13 +261,13 @@ class Formation(UuidAuditedModel):
         """Scale layers up or down to match requested."""
         layers = self.layers.copy()
         funcs = []
+        new_nodes = False
         for layer_id, requested in layers.items():
             layer = self.layer_set.get(id=layer_id)
             nodes = list(layer.node_set.all().order_by('created'))
             diff = requested - len(nodes)
             if diff == 0:
                 continue
-            new_nodes = False
             while diff < 0:
                 node = nodes.pop(0)
                 funcs.append(node.terminate)

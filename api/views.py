@@ -304,7 +304,6 @@ class FormationNodeViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         node = self.get_object()
         node.destroy()
-        node.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
