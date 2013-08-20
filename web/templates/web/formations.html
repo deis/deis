@@ -1,7 +1,8 @@
 {% extends "web/base.html" %}
+{% load humanize %}
 
 {% block content %}
-<h2>{{ apps | length }} Formations</a></h2>
+<h2>{{ formations|length|apnumber|capfirst }} Formation{{ formations|pluralize }}</a></h2>
 <ul>
   {% for formation in formations %}
   <li>{{ formation }}</li>
