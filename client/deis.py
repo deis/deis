@@ -19,6 +19,7 @@ Shortcut commands::
   converge      force-converge all nodes in the formation
   calculate     recalculate and update the formation databag
   logs          view aggregated log info for the formation
+  run           run a command on a remote container
   destroy       destroy a container formation
 
 Subcommands, use ``deis help [subcommand]`` to learn more::
@@ -711,6 +712,7 @@ class DeisClient(object):
         formations:converge      force-converge all nodes in the formation
         formations:calculate     recalculate and update the formation databag
         formations:logs          view aggregated log info for the formation
+        formations:run           run a command on a remote container
         formations:destroy       destroy a container formation
 
         Use `deis help [command]` to learn more
@@ -907,6 +909,29 @@ class DeisClient(object):
             print('done in {}s'.format(int(time.time() - before)))
             databag = json.loads(response.content)
             print(json.dumps(databag, indent=2))
+        else:
+            print('Error!', response.text)
+
+    def formations_run(self, args):
+        """
+        Run a command on a remote node.
+
+        Usage: deis formations:run <command>...
+        """
+        formation = args.get('--formation')
+        if not formation:
+            formation = self._session.formation
+        body = {'commands': sys.argv[2:]}
+        response = self._dispatch('post',
+                                  "/api/formations/{}/run".format(formation),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            output, rc = json.loads(response.content)
+            if rc == 0:
+                sys.stdout.write(output)
+                sys.stdout.flush()
+            else:
+                print('Error!\n{}'.format(output))
         else:
             print('Error!', response.text)
 
@@ -1426,6 +1451,7 @@ def parse_args(cmd):
         'calculate': 'formations:calculate',
         'converge': 'formations:converge',
         'destroy': 'formations:destroy',
+        'run': 'formations:run',
         'scale': 'containers:scale',
         'ps': 'containers:list',
     }
@@ -1467,7 +1493,8 @@ def main():
                 return
         docopt(__doc__, argv=['--help'])
     # re-parse docopt with the relevant docstring
-    if cmd in dir(cli):
+    # unless cmd is formations_run, which needs to use sys.argv directly
+    if not cmd == 'formations_run' and cmd in dir(cli):
         docstring = trim(getattr(cli, cmd).__doc__)
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))

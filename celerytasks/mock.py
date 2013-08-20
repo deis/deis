@@ -40,3 +40,23 @@ def converge_node(node_id, ssh_username, fqdn, ssh_private_key):
     output = ""
     rc = 0
     return output, rc
+
+
+@task(name='mock.run_node')
+def run_node(node_id, ssh_username, fqdn, ssh_private_key, docker_args, command):
+    output = """\
+total 80
+drwxr-xr-x  11 matt  staff   374 Aug 14 10:57 .
+drwxr-xr-x  34 matt  staff  1156 Aug 19 12:15 ..
+drwxr-xr-x  14 matt  staff   476 Aug 20 09:48 .git
+-rw-r--r--   1 matt  staff     5 Aug 14 10:57 .gitignore
+-rw-r--r--   1 matt  staff    11 Aug 14 10:57 .ruby-version
+-rw-r--r--   1 matt  staff    67 Aug 14 10:57 Gemfile
+-rw-r--r--   1 matt  staff   277 Aug 14 10:57 Gemfile.lock
+-rw-r--r--   1 matt  staff   553 Aug 14 10:57 LICENSE
+-rw-r--r--   1 matt  staff    37 Aug 14 10:57 Procfile
+-rw-r--r--   1 matt  staff  9165 Aug 14 10:57 README.md
+-rw-r--r--   1 matt  staff   127 Aug 14 10:57 web.rb
+"""
+    rc = 0
+    return output, rc
