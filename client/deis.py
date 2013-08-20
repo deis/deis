@@ -1267,7 +1267,8 @@ class DeisClient(object):
             print("=== {owner} Providers".format(**data['results'][0]))
             for item in data['results']:
                 creds = json.loads(item['creds'])
-                creds.pop('secret_key')
+                if 'secret_key' in creds:
+                    creds.pop('secret_key')
                 print("{} => {}".format(item['id'], creds))
         else:
             print('Error!', response.text)
