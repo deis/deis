@@ -7,7 +7,9 @@
       "locked_version": "2.1.2"
     },
     "deis": {
-      "locked_version": "0.0.6"
+      "locked_version": "0.0.7",
+      "git": "https://github.com/opdemand/deis-cookbook.git",
+      "ref": "2068daa476a478f6b1de95d977ac121060975fa9"
     },
     "rsyslog": {
       "locked_version": "1.6.0"
