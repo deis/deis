@@ -17,40 +17,49 @@ GitHub Issues
 - roll unfinished issues (if there are any) into next milestone
 - close current release milestone
 
+Other Repos
+-----------
 
-Chef Repo
----------
-
-- change cookbook revisions
-- change chef attributes deis-cookbook/attributes
-	- default.deis.build.revision
-	- default.deis.controller.revision
-- change chef metadata.rb
-- upload cookbook to Chef
-	* ``berks update && berks install && berks upload --force``
-- tag the opdemand/deis-cookbook repo
-	* ``git commit -a -m 'prep for 0.0.X release'``
-	* ``git tag v0.0.X``
-	* ``git push --tags``
-
+- tag the opdemand/buildstep repo
+- tag the opdemand/gitosis repo
 
 Deis Repo
 ---------
 
 - ``bundle install``
 - Update berksfile with new release
-	* ``berks update && berks install && berks upload --force``
-- update __version__ fields in Python packages
+    * ``berks update && berks install``
+    * switch from github cookbook to opscode community cookbook
 - tag the opdemand/deis-cookbook repo
 	* ``git status && git add . && git commit -m 'updating for 0.0.X release'``
 	* ``git tag v0.0.X``
+	* ``git push origin master``
 	* ``git push --tags``
-- tag the opdemand/buildstep repo
-- tag the opdemand/gitosis repo
+- update __version__ fields in Python packages to *next* versionÏ
+- switch from opscode community cookbook back to github cookbook
+
+Chef Repo
+---------
+
+- change chef attributes from master to latest tag in deis-cookbook/attributes
+	- default.deis.build.revision
+	- default.deis.gitosis.revision
+	- default.deis.controller.revision
+- ``knife cookbook metadata .`` will update metadata.json
+- tag the opdemand/deis-cookbook repo
+	* ``git commit -a -m 'prep for 0.0.X release'``
+	* ``git tag v0.0.X``
+	* ``git push origin master``
+	* ``git push --tags``
+- ``cp -pr deis-cookbook /tmp/deis && cd /tmp``
+- ``tar cvfz deis-cookbook-v0.0.6.tar.gz --exclude='deis/.git' --exclude='deis/.vagrant' deis``
+- log in to community.opscode.com and upload tarball
+- change gitosis, build, controller from latest back to master tag
+- change cookbook revisions in metadata.rb to *next* version
+- git commit and push post-tag dev versions
 
 Client
 ------
-
 - publish CLI to pypi.python.org
 	- ``python setup.py sdist upload``
 	- use testpypi.python.org first to ensure there aren't any problems
