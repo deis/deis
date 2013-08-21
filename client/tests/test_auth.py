@@ -1,86 +1,46 @@
-
 """
-Unit tests for authentication in the CLI.
+Unit tests for the Deis CLI auth commands.
 
-Run these tests with "python -m unittest deis.tests.test_auth"
-or all tests with "python -m unittest discover".
-"""  # pylint: disable=C0103,R0201,R0904
+Run these tests with "python -m unittest client.tests.test_auth"
+or with "./manage.py test client.AuthTest".
+"""
 
-import os
-import unittest
+from __future__ import unicode_literals
+from unittest import TestCase
 
 import pexpect
 
+from .utils import DEIS
+from .utils import DEIS_SERVER
+from .utils import setup
+from .utils import teardown
 
-# Locate the 'of' executable script relative to this file.
-CLI = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', 'deis'))
 
+class AuthTest(TestCase):
 
-class TestLogin(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.username, cls.password, _ = setup()
 
-    """Test authentication in the CLI."""
+    @classmethod
+    def tearDownClass(cls):
+        teardown(cls.username, cls.password, None)
 
-    def setUp(self):
-        # TODO: set up the CLI/api/fixtures/tests.json...somehow
-        self.child = pexpect.spawn('{} login'.format(CLI))
-
-    def tearDown(self):
-        self.child = None
-
-    def test_good_login(self):
-        """Test that a valid login responds with a success message."""
-        child = self.child
-        child.expect('username:')
-        child.sendline('autotest')
-        child.expect('password:')
-        child.sendline('password')
-        child.expect('Logged in as autotest.')
-        # call a protected API endpoint to ensure we were authenticated
-        child = self.child = pexpect.spawn('{} apps'.format(CLI))
-        child.expect('^\S+ +\(.+\)')
-
-    def test_bad_login(self):
-        """Test that an invalid login responds with a failure message."""
-        child = self.child
-        child.expect('username:')
-        child.sendline('autotest')
-        child.expect('password:')
-        child.sendline('Pa55w0rd')
-        child.expect('Login failed.')
-        # call a protected API endpoint to ensure we get an unauth error
-        child = self.child = pexpect.spawn('{} apps'.format(CLI))
-        child.expect("\('Error")
+    def test_login(self):
+        # log in the interactive way
+        child = pexpect.spawn("{} login {}".format(DEIS, DEIS_SERVER))
+        child.expect('username: ')
+        child.sendline(self.username)
+        child.expect('password: ')
+        child.sendline(self.password)
+        child.expect("Logged in as {}".format(self.username))
+        child.expect(pexpect.EOF)
 
     def test_logout(self):
-        child = self.child = pexpect.spawn('{} logout'.format(CLI))
-        child.expect('Logged out.')
-        # call a protected API endpoint to ensure we get an unauth error
-        child = self.child = pexpect.spawn('{} apps'.format(CLI))
-        child.expect("\('Error")
-
-
-class TestHelp(unittest.TestCase):
-
-    """Test that the client can document its own behavior."""
-
-    def test_version(self):
-        """Test that the client reports its help message."""
-        child = pexpect.spawn('{} --help'.format(CLI))
-        child.expect(r'Usage: .*number of proxies\s+$')
-        child = pexpect.spawn('{} -h'.format(CLI))
-        child.expect(r'Usage: .*number of proxies\s+$')
-        child = pexpect.spawn('{} help'.format(CLI))
-        child.expect(r'Usage: .*number of proxies\s+$')
-
-
-class TestVersion(unittest.TestCase):
-
-    """Test that the client can report its version string."""
-
-    def test_version(self):
-        """Test that the client reports its version string."""
-        child = pexpect.spawn('{} --version'.format(CLI))
-        child.expect('Deis CLI 0.0.1')
-        child = pexpect.spawn('{} -v'.format(CLI))
-        child.expect('Deis CLI 0.0.1')
+        child = pexpect.spawn("{} logout".format(DEIS))
+        child.expect('Logged out')
+        # log in the one-liner way
+        child = pexpect.spawn("{} login {} --username={} --password={}".format(
+            DEIS, DEIS_SERVER, self.username, self.password))
+        child.expect("Logged in as {}".format(self.username))
+        child.expect(pexpect.EOF)
