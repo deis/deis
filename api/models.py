@@ -643,6 +643,9 @@ class Node(UuidAuditedModel):
             ['-v',
              '/opt/deis/runtime/slugs/{formation_id}-{version}/app:/app'.format(**locals()),
              release.image])
+        base_cmd = "export HOME=/app; cd /app && for profile in " \
+                   "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
+        command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
         args = list(self._prepare_converge_args()) + [docker_args] + [command]
         task = tasks.run_node.subtask(args)
         return task.apply_async().wait()
