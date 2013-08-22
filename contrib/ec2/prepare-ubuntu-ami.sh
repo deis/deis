@@ -14,6 +14,7 @@
 #   6. Distribute the AMI to other regions using `ec2-copy-image`
 #   7. Create/update your Deis flavors to use your new AMIs
 #
+apt-get install python-software-properties -y
 
 # Add the Docker repository key to your local keychain
 # using apt-key finger you can check the fingerprint matches 36A1 D786 9245 C895 0F96 6E92 D857 6A8B A88D 21E9
@@ -50,7 +51,7 @@ rm -rf /var/lib/cloud
 
 # purge SSH authorized keys
 rm -f /home/ubuntu/.ssh/authorized_keys
-rm -f /root/.ssh/authorized_keys
+# rm -f /root/.ssh/authorized_keys
 
 # ssh host keys are automatically regenerated
 # on system boot by ubuntu cloud init

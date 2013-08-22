@@ -47,7 +47,7 @@ Don't clone the official repository, but **do** complete all the other steps
 outlined in :ref:`installation`. Ensure your CLI and controller are functional
 before moving on.
 
-Near the end of running the ``contrib/provision-ec2-controller.sh`` script,
+Near the end of running the ``contrib/aws/provision-ec2-controller.sh`` script,
 you will see output similar to this::
 
 	Instance ID: i-38ad000c
