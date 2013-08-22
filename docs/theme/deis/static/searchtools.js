@@ -475,6 +475,11 @@ var Search = {
           $('.nav-border').css('height', pageHeight);
 
           var margin = pageHeight - 511 - 158;
+          if (pageHeight < 800){
+            margin = 270;
+            $('body').css('height', '930');
+            $('.nav-border').css('height', '930');
+          }
           $('footer').css('margin-top', margin);
 
           if($(window).width() > 1171){$('.docs-sidebar').css({'position': 'absolute', 'right': '0'})};
