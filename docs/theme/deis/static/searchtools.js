@@ -466,26 +466,19 @@ var Search = {
         Search.status.fadeIn(500);
 
         //Edit by Ben Grunfeld - when search finished, make footer align with bottom of content
-        function set_columns(is_server_reference) {
-          is_server_reference = typeof is_server_reference !== 'undefined' ? is_server_reference : false;
-          var margin = 0;
-          var maxHeight = 0;
+        function set_columns() {
+          pageHeight = 0;
+          $('footer').css('margin-top', '0');
+          $('.nav-border').css('height', '600');
+          pageHeight = $(document).height();
+          console.log(pageHeight);
+          $('.nav-border').css('height', pageHeight);
 
-          //find the tallest column
-          $('.column_calc').each(function() {
-            if (maxHeight < $(this).height()) {
-              maxHeight = $(this).height();
-              console.log("M: " + maxHeight + " T: " + $(this).height());
-            }
-          });
+          var margin = pageHeight - 511 - 158;
+          $('footer').css('margin-top', margin);
 
-          //511: height of the navigation. 96: height of the footer
-          if (maxHeight > 923) {margin = maxHeight - 511 - 96;}
-          if (is_server_reference == true){margin = margin + 80;}
-          console.log("Max Height: " + maxHeight + " Margin: " + margin);
-
-          //Set the margin above the footer
-          $('.social-menu').css({'margin-top': (margin)});
+          if($(window).width() > 1171){$('.docs-sidebar').css({'position': 'absolute', 'right': '0'})};
+          if($(window).width() < 1171){$('.docs-sidebar').css('position', 'static');}
         }
         //End BG Edit
 

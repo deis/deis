@@ -46,38 +46,39 @@
         <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
     <![endif]-->
 
-    <a class="fork" href="http://github.com/opdemand/deis"><div class="forkImage"></div></a>
     <div class="container">
         <div class="row">
-            <div class="span3 column_calc menu">
-                <div class="nav-border top-spacing">
+            <div class="span3 column_calc">
+                <div class="nav-border">
                     <ul class="nav nav-list menu">
                         <li><a href="/"><img class="logo" src="{{ pathto('_static/img/menu-logo.png', 1) }}" alt="deis logo"></a></li>
                         <li class="divider"></li>
-                        <li class="navitem"><a href="http://deis.io/overview/">Overview</a></li>
+                        <li class="navitem overview"><a href="http://deis.io/overview/">Overview</a></li>
                         <li class="divider"></li>
-                        <li class="navitem"><a href="http://deis.io/get-deis/">Get Deis</a></li>
+                        <li class="navitem get-deis"><a href="http://deis.io/get-deis/">Get Deis</a></li>
                         <li class="divider"></li>
-                        <li class="navitem"><a href="http://deis.io/get-involved/">Get Involved</a></li>
+                        <li class="navitem get-involved"><a href="http://deis.io/get-involved/">Get Involved</a></li>
                         <li class="divider"></li>
-                        <li class="navitem selected green"><a href="/">Documentation</a></li>
+                        <li class="navitem documentation selected green"><a href="/">Documentation</a></li>
                         <li class="divider"></li>
-                        <li class="navitem"><a href="http://deis.io/blog/">Blog</a></li>
+                        <li class="navitem blog"><a href="http://deis.io/blog/">Blog</a></li>
                         <li class="divider"></li>
                         <div style="clear:both;"></div>
                     </ul>
 
-                    <div class="social-menu">
-                        <a href="https://twitter.com/opendeis" target="_blank"><span class="twitter"></span></a>
-                        <a href="http://freenode.net" target="_blank"><span class="irc"></span></a>
-                        <a href="https://github.com/opdemand/deis" target="_blank"><span class="github"></span></a>
-                        <a href="http://stackoverflow.com/" target="_blank"><span class="stack"></span></a>
-                    </div>
+                    <footer>
+                      <div class="social-menu">
+                          <a href="https://twitter.com/opendeis" target="_blank"><span class="twitter"></span></a>
+                          <a href="http://freenode.net" target="_blank"><span class="irc"></span></a>
+                          <a href="https://github.com/opdemand/deis" target="_blank"><span class="github"></span></a>
+                          <a href="http://stackoverflow.com/" target="_blank"><span class="stack"></span></a>
+                      </div>
 
-                    <div class="byline-menu">
-                        <span class="cloud-logo"></span>
-                        <p>Deis is a project by<br>OpDemand</p>
-                    </div>
+                      <div class="byline-menu">
+                          <span class="cloud-logo"></span>
+                          <p>Deis is a project by<br>OpDemand</p>
+                      </div>
+                    </footer>
                 </div>
             </div>
 
@@ -86,7 +87,8 @@
             </div>
 
 
-            <div class="span2 offset1 docs-sidebar column_calc">
+            <div class="span3 docs-sidebar column_calc">
+              <a class="fork" href="http://github.com/opdemand/deis"><div class="forkImage"></div></a>
               <div class="docs-border"></div>
               {%- include "searchbox.html" %}
               {{ toctree(collapse=False, maxdepth=3) }}
@@ -95,8 +97,6 @@
         </div> <!-- .row -->
       </div> <!-- .main_section container-->
 
-  <footer>
-  </footer>
   <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
       URL_ROOT:    '{{ url_root }}',
