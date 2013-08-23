@@ -119,7 +119,7 @@ class Session(requests.Session):
         # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
                                           cwd=git_root)
-        m = re.match(r'^deis\W+(?P<url>\S+)\W+\(', remotes, re.MULTILINE)
+        m = re.search(r'^deis\W+(?P<url>\S+)\W+\(', remotes, re.MULTILINE)
         if not m:
             raise EnvironmentError(
                 'Could not find deis remote in `git remote -v`')
