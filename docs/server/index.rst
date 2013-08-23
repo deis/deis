@@ -32,6 +32,5 @@ Server Reference
     celerytasks.mock
     celerytasks.util
 
-    web.models
     web.urls
     web.views
