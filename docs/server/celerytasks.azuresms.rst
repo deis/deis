@@ -14,3 +14,7 @@ celerytasks.azuresms
 .. automodule:: celerytasks.azuresms
     :members:
     :undoc-members:
+
+    .. autofunction:: launch_node(node_id, creds, params, init, ssh_username, ssh_private_key)
+    .. autofunction:: terminate_node(node_id, creds, params, provider_id)
+    .. autofunction:: converge_node(node_id, ssh_username, fqdn, ssh_private_key, command='sudo chef-client')
