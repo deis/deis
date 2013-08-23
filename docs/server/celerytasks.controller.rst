@@ -12,3 +12,7 @@ celerytasks.controller
 .. automodule:: celerytasks.controller
     :members:
     :undoc-members:
+
+    .. autofunction:: update_gitosis(databag_item_value)
+    .. autofunction:: update_formation(formation_id, databag_item_value)
+    .. autofunction:: destroy_formation(formation_id)
