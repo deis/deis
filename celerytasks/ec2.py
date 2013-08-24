@@ -35,8 +35,18 @@ def build_layer(layer, creds, params):
     # create a new sg and authorize all ports
     # use iptables on the host to firewall ports
     sg = conn.create_security_group(layer, 'Created by Deis')
-    sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
-                 cidr_ip='0.0.0.0/0')
+    # loop until the sg is *actually* there
+    for i in xrange(10):
+        try:
+            sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
+                         cidr_ip='0.0.0.0/0')
+            break
+        except EC2ResponseError:
+            if i < 10:
+                time.sleep(1.5)
+                continue
+            else:
+                raise
 
 
 @task(name='ec2.destroy_layer')
