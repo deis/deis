@@ -1299,10 +1299,14 @@ class DeisClient(object):
                                   "/api/formations/{}/calculate".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
-            proxy = random.choice(databag['nodes'].get('proxy', {}).values())
-            # use the OS's default handler to open this URL
-            webbrowser.open('http://{}/'.format(proxy))
-            return proxy
+            proxies = databag['nodes'].get('proxy', {}).values()
+            if proxies:
+                proxy = random.choice(proxies)
+                # use the OS's default handler to open this URL
+                webbrowser.open('http://{}/'.format(proxy))
+                return proxy
+            else:
+                print('No proxies found. Use `deis layers:scale proxy=1` to scale up.')
         else:
             print('Error!', response.text)
 
