@@ -221,7 +221,7 @@ class FormationManager(models.Manager):
         if settings.CHEF_ENABLED:
             controller.update_gitosis.delay(databag).wait()  # @UndefinedVariable
 
-    def next_container_node(self, formation, container_type):
+    def next_container_node(self, formation, container_type, reverse=False):
         count = []
         layer = formation.layer_set.get(id='runtime')
         runtime_nodes = list(Node.objects.filter(
@@ -237,6 +237,9 @@ class FormationManager(models.Manager):
         if not count:
             raise ScalingError('No nodes available for containers')
         count.sort()
+        # reverse means order by greatest # of containers, otherwise fewest
+        if reverse:
+            count.reverse()
         return count[0][1]
 
 
@@ -280,11 +283,15 @@ class Formation(UuidAuditedModel):
                 new_nodes = True
         # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
         job = [func() for func in funcs]
-        # balance containers
-        containers_balanced = self._balance_containers()
         # launch/terminate nodes in parallel
         if job:
             group(*job).apply_async().join()
+        # scale containers in case nodes have been destroyed
+        runtime_layers = self.layer_set.filter(id='runtime')
+        if runtime_layers.exists() and runtime_layers[0].node_set.count():
+            self.scale_containers()
+        # balance containers
+        containers_balanced = self._balance_containers()
         # once nodes are in place, recalculate the formation and update the data bag
         databag = self.calculate()
         # force-converge nodes if there were new nodes or container rebalancing
@@ -316,10 +323,17 @@ class Formation(UuidAuditedModel):
                 continue
             changed = True
             while diff < 0:
-                c = containers.pop(0)
-                c.delete()
-                diff = requested - len(containers)
+                # get the next node with the most containers
+                node = Formation.objects.next_container_node(self, container_type, reverse=True)
+                # delete a container attached to that node
+                for c in containers:
+                    if node == c.node:
+                        containers.remove(c)
+                        c.delete()
+                        diff += 1
+                        break
             while diff > 0:
+                # get the next node with the fewest containers
                 node = Formation.objects.next_container_node(self, container_type)
                 c = Container.objects.create(owner=self.owner,
                                              formation=self,
@@ -328,7 +342,7 @@ class Formation(UuidAuditedModel):
                                              node=node)
                 containers.append(c)
                 container_num += 1
-                diff = requested - len(containers)
+                diff -= 1
         # once nodes are in place, recalculate the formation and update the data bag
         databag = self.calculate()
         if changed is True:
