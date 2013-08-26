@@ -13,6 +13,17 @@ from django.test import TestCase
 from deis import settings
 
 
+def get_allocations(container_dict):
+    counts = {}
+    for container in container_dict.values():
+        name, id = container.split(':')
+        if name in counts:
+            counts[name] += 1
+        else:
+            counts[name] = 1
+    return sorted(counts.values())
+
+
 class ContainerTest(TestCase):
 
     """Tests creation of containers on nodes"""
@@ -99,6 +110,75 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
+
+    def test_container_scale_allocation(self):
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']
+        url = "/api/formations/{formation_id}/layers".format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # With 4 nodes and 13 web containers
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
+        body = {'runtime': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
+        body = {'web': 13}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that one node has 4 and 3 nodes have 3 containers
+        self.assertEqual(get_allocations(response.data['containers']['web']),
+                         [3, 3, 3, 4])
+        # With 1 node
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
+        body = {'runtime': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that the node has all 13 containers
+        self.assertEqual(get_allocations(response.data['containers']['web']),
+                         [13,])
+        # With 2 nodes
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
+        body = {'runtime': 2}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that one has 6 and the other has 7 containers
+        self.assertEqual(get_allocations(response.data['containers']['web']),
+                         [6, 7])
+        # With 8 containers
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
+        body = {'web': 8}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that both have 4 containers
+        self.assertEqual(get_allocations(response.data['containers']['web']),
+                         [4, 4])
+        # With 0 nodes
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
+        body = {'runtime': 0}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that there are no containers
+        self.assertNotIn('web', response.data['containers'])
+        # With 5 containers
+        url = "/api/formations/{formation_id}/scale/containers".format(**locals())
+        body = {'web': 5}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        # test that we get an error message about runtime nodes
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Must scale runtime nodes', response.data)
+        # With 1 node
+        url = "/api/formations/{formation_id}/scale/layers".format(**locals())
+        body = {'runtime': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # test that it gets all 8 containers
+        self.assertEqual(get_allocations(response.data['containers']['web']),
+                         [8,])
 
     def test_container_balance(self):
         url = '/api/formations'
