@@ -140,7 +140,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # test that the node has all 13 containers
         self.assertEqual(get_allocations(response.data['containers']['web']),
-                         [13,])
+                         [13])
         # With 2 nodes
         url = "/api/formations/{formation_id}/scale/layers".format(**locals())
         body = {'runtime': 2}
@@ -178,7 +178,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # test that it gets all 8 containers
         self.assertEqual(get_allocations(response.data['containers']['web']),
-                         [8,])
+                         [8])
 
     def test_container_balance(self):
         url = '/api/formations'
