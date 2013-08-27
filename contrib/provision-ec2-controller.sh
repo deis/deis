@@ -85,7 +85,7 @@ knife data bag create deis-build 2>/dev/null
 knife data bag create deis-formations 2>/dev/null
 
 # create data bag item using a temp file
-tempfile=$(mktemp -t deis)
+tempfile=$(mktemp -t tmp.deisXXXXXXXXXX)
 mv $tempfile $tempfile.json
 cat > $tempfile.json <<EOF
 { "id": "gitosis", "ssh_keys": {}, "formations": {} }
