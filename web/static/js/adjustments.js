@@ -21,17 +21,14 @@ $(function(){
     if($(window).width() < 1171){$('.docs-sidebar').css('position', 'static');}
   }
 
-  //Close all accordions
-  $('.toctree-l1 > ul').hide();
-
-  //This variable checks if all accordions are closed. Used to ensure styling for Releases & FAQ page.
+//This variable checks if all accordions are closed. Used to ensure styling for Releases & FAQ page.
   var allClosed;
 
-  //If a sub-item is currently being viewed, keep it's parent menu open
-  $('.toctree-l1 > a').each(function(){
-    if($(this).attr('state') == 'open') {
-      $(this).next().show();
-      set_columns(); 
+  //Close all accordions
+  $('.toctree-l1').each(function(){
+    if($(this).children('a').attr('state') == 'open') {
+      $(this).children('ul').show();
+      set_columns();
       allClosed = false;
       return false;
     } else {
