@@ -24,7 +24,7 @@ $(function(){
 //This variable checks if all accordions are closed. Used to ensure styling for Releases & FAQ page.
   var allClosed;
 
-  //Close all accordions
+  //Close all accordions, besides the menu containing the page that you've clicked on.
   $('.toctree-l1').each(function(){
     if($(this).children('a').attr('state') == 'open') {
       $(this).children('ul').show();
