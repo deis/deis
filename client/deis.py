@@ -981,7 +981,7 @@ class DeisClient(object):
                 return
         with open(path) as f:
             data = f.read()
-        match = re.match(r'^(ssh-...) ([^ ]+) (.+)', data)
+        match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
         if not match:
             print('Could not parse public key material')
             return
