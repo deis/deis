@@ -244,7 +244,10 @@ class FormationViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        formation.destroy()
+        try:
+            formation.destroy()
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
         formation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -311,7 +314,10 @@ class FormationNodeViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         node = self.get_object()
-        node.destroy()
+        try:
+            node.destroy()
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
