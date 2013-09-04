@@ -50,3 +50,22 @@ class FlavorTest(TestCase):
         self.assertEqual(yaml.safe_load(response.data['init']), new_init)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_flavor_contents(self):
+        """Tests that flavors explicitly contain AMI ID, instance size, region, and zone."""
+        url = '/api/flavors'
+        body = {'id': 'autotest', 'provider': 'autotest', 'params': json.dumps({})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        flavor_id = response.data['id']
+        response = self.client.get('/api/flavors')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        url = "/api/flavors/{flavor_id}".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        params = json.loads(response.data['params'])
+        self.assertEqual(params['region'], 'us-east-1')
+        self.assertEqual(params['zone'], 'any')
+        self.assertEqual(params['size'], 'm1.medium')
+        self.assertTrue(params['image'])

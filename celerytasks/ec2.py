@@ -9,22 +9,10 @@ from celery import task
 import yaml
 
 from . import util
+from api.models import Flavor
 from api.models import Node
 from deis import settings
 from celerytasks.chef import ChefAPI
-
-# deis optimized amis -- with 3.8 kernel, chef 11 deps,
-# and large docker images (e.g. buildstep) pre-installed
-EC2_IMAGE_MAP = {
-    'ap-northeast-1': 'ami-a57aeca4',
-    'ap-southeast-1': 'ami-e03a72b2',
-    'ap-southeast-2': 'ami-bd801287',
-    'eu-west-1': 'ami-d9d3cdad',
-    'sa-east-1': 'ami-a7df7bba',
-    'us-east-1': 'ami-e85a2081',
-    'us-west-1': 'ami-ac6942e9',
-    'us-west-2': 'ami-b55ac885',
-}
 
 
 @task(name='ec2.build_layer')
@@ -74,7 +62,7 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     params.setdefault('security_groups', []).append(sg.name)
     # retrieve the ami for launching this node
     image_id = params.get(
-        'image', getattr(settings, 'EC2_IMAGE_MAP', EC2_IMAGE_MAP)[region])
+        'image', getattr(settings, 'IMAGE_MAP', Flavor.IMAGE_MAP)[region])
     images = conn.get_all_images([image_id])
     if len(images) != 1:
         raise LookupError('Could not find AMI: %s' % image_id)

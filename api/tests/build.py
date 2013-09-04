@@ -32,7 +32,7 @@ class BuildTest(TestCase):
         body = {
             'id': 'autotest',
             'provider': 'autotest',
-            'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'}),
+            'params': json.dumps({'region': 'us-west-2'}),
         }
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
