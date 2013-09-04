@@ -103,11 +103,9 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     node.fqdn = boto.public_dns_name
     node.metadata = format_metadata(boto)
     node.save()
-    # wait 10 seconds for ssh daemon to come up
-    time.sleep(10)
     # loop until cloud-init is finished
     ssh = util.connect_ssh(ssh_username, boto.public_dns_name, 22,
-                           ssh_private_key)
+                           ssh_private_key, timeout=120)
     initializing = True
     while initializing:
         time.sleep(10)

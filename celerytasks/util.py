@@ -7,19 +7,21 @@ import time
 import paramiko
 
 
-def connect_ssh(username, hostname, port, key):
+def connect_ssh(username, hostname, port, key,
+                timeout=120, attempts=10):
     key_f = StringIO.StringIO(key)
     pkey = paramiko.RSAKey.from_private_key(key_f)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    for _ in range(10):
+    interval = int(timeout / attempts)
+    for _ in range(attempts):
         try:
             ssh.connect(hostname, username=username, pkey=pkey)
             break
         except paramiko.AuthenticationException as e:
             raise paramiko.AuthenticationException(e)
         except socket.error:
-            time.sleep(3)
+            time.sleep(interval)
     else:
         raise RuntimeError('SSH Connection Error')
     return ssh
