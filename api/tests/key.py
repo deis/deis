@@ -40,3 +40,14 @@ class KeyTest(TestCase):
         self.assertEqual(body['public'], response.data['public'])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_key_duplicate(self):
+        """
+        Test that a user cannot add a duplicate key
+        """
+        url = '/api/keys'
+        body = {'id': 'mykey@box.local', 'public': 'ssh-rsa XXX'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)

@@ -71,7 +71,7 @@ class Key(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128)
-    public = models.TextField()
+    public = models.TextField(unique=True)
 
     class Meta:
         verbose_name = 'SSH Key'
