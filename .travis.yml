@@ -9,6 +9,7 @@ python:
 branches:
   only:
     - master
+    - develop
 
 services:
   - postgresql
