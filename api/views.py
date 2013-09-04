@@ -155,6 +155,8 @@ class FormationViewSet(OwnerViewSet):
         except IntegrityError:
             return Response('Formation with this Id already exists.',
                             status=HTTP_400_BAD_REQUEST)
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
