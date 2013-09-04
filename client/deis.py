@@ -968,6 +968,9 @@ class DeisClient(object):
         if not path:
             ssh_dir = os.path.expanduser('~/.ssh')
             pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
+            if not pubkeys:
+                print('No SSH public keys found')
+                return
             print('Found the following SSH public keys:')
             for i, k in enumerate(pubkeys):
                 key = k.split(os.path.sep)[-1]
