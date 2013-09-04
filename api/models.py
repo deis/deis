@@ -124,7 +124,8 @@ class Provider(UuidAuditedModel):
 class FlavorManager(models.Manager):
     """Manage database interactions for :class:`Flavor`."""
 
-    def load_cloud_config_base(self):
+    @staticmethod
+    def load_cloud_config_base():
         """Read the base configuration file and return YAML data."""
         # load cloud-config-base yaml_
         _cloud_config_path = os.path.abspath(
@@ -137,30 +138,38 @@ class FlavorManager(models.Manager):
         """Seed the database with default Flavors for each cloud region."""
         # TODO: add optimized AMIs to default flavors
         flavors = (
-            {'id': 'ec2-us-east-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'us-east-1'})},
-            {'id': 'ec2-us-west-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'us-west-1'})},
-            {'id': 'ec2-us-west-2',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'us-west-2'})},
-            {'id': 'ec2-eu-west-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'eu-west-1'})},
-            {'id': 'ec2-ap-northeast-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'ap-northeast-1'})},
-            {'id': 'ec2-ap-southeast-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'ap-southeast-1'})},
-            {'id': 'ec2-ap-southeast-2',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'ap-southeast-2'})},
-            {'id': 'ec2-sa-east-1',
-             'provider': 'ec2',
-             'params': json.dumps({'region': 'sa-east-1'})},
+            {'id': 'ec2-us-east-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'us-east-1', 'image': Flavor.IMAGE_MAP['us-east-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-us-west-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'us-west-1', 'image': Flavor.IMAGE_MAP['us-west-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-us-west-2', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'us-west-2', 'image': Flavor.IMAGE_MAP['us-west-2'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-eu-west-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'eu-west-1', 'image': Flavor.IMAGE_MAP['eu-west-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-ap-northeast-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'ap-northeast-1', 'image': Flavor.IMAGE_MAP['ap-northeast-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-ap-southeast-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'ap-southeast-1', 'image': Flavor.IMAGE_MAP['ap-southeast-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-ap-southeast-2', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'ap-southeast-2', 'image': Flavor.IMAGE_MAP['ap-southeast-2'],
+                 'zone': 'any', 'size': 'm1.medium'})},
+            {'id': 'ec2-sa-east-1', 'provider': 'ec2',
+             'params': json.dumps({
+                 'region': 'sa-east-1', 'image': Flavor.IMAGE_MAP['sa-east-1'],
+                 'zone': 'any', 'size': 'm1.medium'})},
         )
         cloud_config = self.load_cloud_config_base()
         for flavor in flavors:
@@ -183,6 +192,19 @@ class Flavor(UuidAuditedModel):
     provider = models.ForeignKey('Provider')
     params = fields.ParamsField()
     init = fields.CloudInitField()
+
+    # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
+    # and large docker images (e.g. buildstep) pre-installed
+    IMAGE_MAP = {
+        'ap-northeast-1': 'ami-a57aeca4',
+        'ap-southeast-1': 'ami-e03a72b2',
+        'ap-southeast-2': 'ami-bd801287',
+        'eu-west-1': 'ami-d9d3cdad',
+        'sa-east-1': 'ami-a7df7bba',
+        'us-east-1': 'ami-e85a2081',
+        'us-west-1': 'ami-ac6942e9',
+        'us-west-2': 'ami-b55ac885',
+    }
 
     class Meta:
         unique_together = (('owner', 'id'),)
