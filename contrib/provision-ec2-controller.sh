@@ -5,6 +5,20 @@ if [ -z $1 ]; then
   exit 1
 fi
 
+# check for Deis' general dependencies
+thisdir=`dirname $0`
+$thisdir/check-deis-deps.sh
+
+# check for EC2 API tools in $PATH
+if ! which ec2-describe-group > /dev/null; then
+  echo 'Please install the EC2 API command-line tools and ensure they are in your $PATH.'
+  exit
+fi
+
+# check for AWS environment variables
+: ${AWS_ACCESS_KEY:?'Please set AWS_ACCESS_KEY in your environment for EC2 API access.'}
+: ${AWS_SECRET_KEY:?'Please set AWS_SECRET_KEY in your environment for EC2 API access.'}
+
 region=$1
 
 # see contrib/prepare-ubuntu-ami.sh for instructions
