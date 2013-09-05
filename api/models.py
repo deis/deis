@@ -196,14 +196,14 @@ class Flavor(UuidAuditedModel):
     # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
     # and large docker images (e.g. buildstep) pre-installed
     IMAGE_MAP = {
-        'ap-northeast-1': 'ami-a57aeca4',
-        'ap-southeast-1': 'ami-e03a72b2',
-        'ap-southeast-2': 'ami-bd801287',
-        'eu-west-1': 'ami-d9d3cdad',
-        'sa-east-1': 'ami-a7df7bba',
-        'us-east-1': 'ami-e85a2081',
-        'us-west-1': 'ami-ac6942e9',
-        'us-west-2': 'ami-b55ac885',
+        'ap-northeast-1': 'ami-6da8356c',
+        'ap-southeast-1': 'ami-a66f24f4',
+        'ap-southeast-2': 'ami-d5f66bef',
+        'eu-west-1': 'ami-acbf5adb',
+        'sa-east-1': 'ami-f9fd5ae4',
+        'us-east-1': 'ami-69f3bc00',
+        'us-west-1': 'ami-f0695cb5',
+        'us-west-2': 'ami-ea1e82da',
     }
 
     class Meta:
