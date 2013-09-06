@@ -7,7 +7,7 @@
 #
 #   1. Launch a vanilla Ubuntu 12.04 instance (64-bit with an EBS root volume)
 #   2. SSH in and install the 3.8 kernel with:
-#      apt-get update && apt-get install -yq linux-generic-lts-raring && reboot
+#      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
 #   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
 #   4. Run this script (as root!) to optimize the image for fast boot times
 #   5. Create a new AMI from the root volume
@@ -15,20 +15,24 @@
 #   7. Create/update your Deis flavors to use your new AMIs
 #
 
-# add docker ppa
-apt-add-repository ppa:dotcloud/lxc-docker -y
+# Add the Docker repository key to your local keychain
+# using apt-key finger you can check the fingerprint matches 36A1 D786 9245 C895 0F96 6E92 D857 6A8B A88D 21E9
+curl https://get.docker.io/gpg | apt-key add -
+
+# Add the Docker repository to your apt sources list.
+echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
 
 # upgrade to latest packages
 apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker curl git python-setuptools python-pip -yq
+apt-get install lxc-docker curl git make python-setuptools python-pip -yq
 
 # create buildstep docker image
 git clone https://github.com/opdemand/buildstep.git
 cd buildstep
-./build.sh ./stack deis/buildstep
+make
 cd ..
 rm -rf buildstep
 

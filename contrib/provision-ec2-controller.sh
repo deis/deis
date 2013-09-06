@@ -7,12 +7,16 @@ fi
 
 # check for Deis' general dependencies
 thisdir=`dirname $0`
-$thisdir/check-deis-deps.sh
+if ! $thisdir/check-deis-deps.sh; then
+  echo 'Deis is missing some dependencies.'
+  exit 1
+fi
+
 
 # check for EC2 API tools in $PATH
 if ! which ec2-describe-group > /dev/null; then
   echo 'Please install the EC2 API command-line tools and ensure they are in your $PATH.'
-  exit
+  exit 1
 fi
 
 # check for AWS environment variables
@@ -24,21 +28,21 @@ region=$1
 # see contrib/prepare-ubuntu-ami.sh for instructions
 # on creating your own deis-optmized AMIs
 if [ "$region" == "ap-northeast-1" ]; then
-  image=ami-a57aeca4
+  image=ami-6da8356c
 elif [ "$region" == "ap-southeast-1" ]; then
-  image=ami-e03a72b2
+  image=ami-a66f24f4
 elif [ "$region" == "ap-southeast-2" ]; then
-  image=ami-bd801287
+  image=ami-d5f66bef
 elif [ "$region" == "eu-west-1" ]; then
-  image=ami-d9d3cdad
+  image=ami-acbf5adb
 elif [ "$region" == "sa-east-1" ]; then
-  image=ami-a7df7bba
+  image=ami-f9fd5ae4
 elif [ "$region" == "us-east-1" ]; then
-  image=ami-e85a2081
+  image=ami-69f3bc00
 elif [ "$region" == "us-west-1" ]; then
-  image=ami-ac6942e9
+  image=ami-f0695cb5
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-b55ac885
+  image=ami-ea1e82da
 else
   echo "Cannot find AMI for region: $region"
   exit 1
