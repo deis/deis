@@ -39,23 +39,26 @@ class ReleaseTest(TestCase):
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        response = self.client.post('/api/formations', json.dumps({'id': 'autotest'}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
 
     def test_release(self):
         """
         Test that a release is created when a formation is created, and
         that updating config, build, image, args or triggers a new release
         """
-        url = '/api/formations'
-        body = {'id': 'autotest'}
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']  # noqa
+        app_id = response.data['id']
         # check to see that an initial release was created
-        url = '/api/formations/{formation_id}/releases'.format(**locals())
+        url = '/api/apps/{app_id}/releases'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
-        url = '/api/formations/{formation_id}/releases/1'.format(**locals())
+        url = '/api/apps/{app_id}/releases/1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
@@ -64,14 +67,14 @@ class ReleaseTest(TestCase):
         self.assertIn('build', response.data)
         self.assertEquals(release1['version'], 1)
         # check that updating config rolls a new release
-        url = '/api/formations/{formation_id}/config'.format(**locals())
+        url = '/api/apps/{app_id}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
         # check to see that a new release was created
-        url = '/api/formations/{formation_id}/releases/2'.format(**locals())
+        url = '/api/apps/{app_id}/releases/2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -81,7 +84,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(release1['build'], release2['build'])
         self.assertEquals(release2['version'], 2)
         # check that updating the build rolls a new release
-        url = '/api/formations/{formation_id}/builds'.format(**locals())
+        url = '/api/apps/{app_id}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
         body = {
             'sha': uuid.uuid4().hex,
@@ -96,7 +99,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['url'], body['url'])
         # check to see that a new release was created
-        url = '/api/formations/{formation_id}/releases/3'.format(**locals())
+        url = '/api/apps/{app_id}/releases/3'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release3 = response.data
@@ -106,7 +109,7 @@ class ReleaseTest(TestCase):
         self.assertEquals(release3['version'], 3)
         # check that build config was respected
         self.assertNotEqual(release2['config'], release3['config'])
-        url = '/api/formations/{formation_id}/config'.format(**locals())
+        url = '/api/apps/{app_id}/config'.format(**locals())
         response = self.client.get(url)
         config3 = response.data
         config3_values = json.loads(config3['values'])
@@ -115,7 +118,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(
             config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
         # disallow post/put/patch/delete
-        url = '/api/formations/{formation_id}/releases'.format(**locals())
+        url = '/api/apps/{app_id}/releases'.format(**locals())
         self.assertEqual(self.client.post(url).status_code, 405)
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)

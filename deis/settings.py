@@ -152,8 +152,9 @@ INSTALLED_APPS = (
     'south',
     # Deis apps
     'api',
-    'celerytasks',
     'client',
+    'cm',
+    'provider',
     'web',
 )
 
@@ -244,14 +245,34 @@ LOGGING = {
     }
 }
 
-# import deis-specific settings files
-from .chef_settings import *  # @UnusedWildImport # noqa
-from .celery_settings import *  # @UnusedWildImport # noqa
+# default celery settings
+
+import djcelery
+
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+CELERY_RESULT_BACKEND = 'amqp'
+
+# normally False to execute tasks asyncronously
+# set to True to enable blocking execution for debugging
+CELERY_ALWAYS_EAGER = False
+EAGER_PROPAGATES_EXCEPTION = True
+
+# make sure we import the task modules
+CELERY_IMPORTS = ('api.tasks',)
+
+djcelery.setup_loader()
+
 
 # default deis settings
+
+
 CONVERGE_ON_PUSH = True
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
+
+# the config management module to use in api.models
+CM_MODULE = 'cm.mock'
 
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It

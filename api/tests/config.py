@@ -30,19 +30,22 @@ class ConfigTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        response = self.client.post('/api/formations', json.dumps({'id': 'autotest'}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
 
     def test_config(self):
         """
         Test that config is auto-created during a new formation and that
         new versions can be created using a PATCH
         """
-        url = '/api/formations'
-        body = {'id': 'autotest'}
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        app_id = response.data['id']
         # check to see that an initial/empty config was created
-        url = "/api/formations/{formation_id}/config".format(**locals())
+        url = "/api/apps/{app_id}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('values', response.data)

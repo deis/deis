@@ -7,8 +7,6 @@ Data models for the Deis API.
 # pylint: disable=R0903,W0232
 
 from __future__ import unicode_literals
-import importlib
-import json
 import os
 import subprocess
 import yaml
@@ -22,26 +20,11 @@ from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
 
 from api import fields
-from celerytasks import controller
 
 
 # define custom signals
 scale_signal = Signal(providing_args=['formation', 'user'])
 release_signal = Signal(providing_args=['formation', 'user'])
-
-
-def import_tasks(provider_type):
-    """Return the celerytasks module for a provider.
-
-    :param string provider_type: type of cloud provider **currently only "ec2"**
-    :rtype: celerytasks module for the provider
-    :raises: :py:class:`ImportError` if the provider isn't recognized
-    """
-    try:
-        tasks = importlib.import_module('celerytasks.' + provider_type)
-    except ImportError as e:
-        raise e
-    return tasks
 
 
 class AuditedModel(models.Model):
@@ -90,7 +73,7 @@ class ProviderManager(models.Manager):
         :param user: who will own the Providers
         :type user: a deis user
         """
-        providers = (('ec2', 'ec2'),)
+        providers = (('ec2', 'ec2'), ('mock', 'mock'))
         for p_id, p_type in providers:
             self.create(owner=user, id=p_id, type=p_type, creds='{}')
 
@@ -136,47 +119,7 @@ class FlavorManager(models.Manager):
 
     def seed(self, user, **kwargs):
         """Seed the database with default Flavors for each cloud region."""
-        # TODO: add optimized AMIs to default flavors
-        flavors = (
-            {'id': 'ec2-us-east-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'us-east-1', 'image': Flavor.IMAGE_MAP['us-east-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-us-west-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'us-west-1', 'image': Flavor.IMAGE_MAP['us-west-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-us-west-2', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'us-west-2', 'image': Flavor.IMAGE_MAP['us-west-2'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-eu-west-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'eu-west-1', 'image': Flavor.IMAGE_MAP['eu-west-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-ap-northeast-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'ap-northeast-1', 'image': Flavor.IMAGE_MAP['ap-northeast-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-ap-southeast-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'ap-southeast-1', 'image': Flavor.IMAGE_MAP['ap-southeast-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-ap-southeast-2', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'ap-southeast-2', 'image': Flavor.IMAGE_MAP['ap-southeast-2'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-            {'id': 'ec2-sa-east-1', 'provider': 'ec2',
-             'params': json.dumps({
-                 'region': 'sa-east-1', 'image': Flavor.IMAGE_MAP['sa-east-1'],
-                 'zone': 'any', 'size': 'm1.medium'})},
-        )
-        cloud_config = self.load_cloud_config_base()
-        for flavor in flavors:
-            provider = flavor.pop('provider')
-            flavor['provider'] = Provider.objects.get(owner=user, id=provider)
-            flavor['init'] = cloud_config
-            self.create(owner=user, **flavor)
+        return tasks.seed_flavors.delay(user.username).wait()  # @UndefinedVariable
 
 
 @python_2_unicode_compatible
@@ -190,21 +133,8 @@ class Flavor(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
     provider = models.ForeignKey('Provider')
-    params = fields.ParamsField()
+    params = fields.ParamsField(blank=True)
     init = fields.CloudInitField()
-
-    # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
-    # and large docker images (e.g. buildstep) pre-installed
-    IMAGE_MAP = {
-        'ap-northeast-1': 'ami-6da8356c',
-        'ap-southeast-1': 'ami-a66f24f4',
-        'ap-southeast-2': 'ami-d5f66bef',
-        'eu-west-1': 'ami-acbf5adb',
-        'sa-east-1': 'ami-f9fd5ae4',
-        'us-east-1': 'ami-69f3bc00',
-        'us-west-1': 'ami-f0695cb5',
-        'us-west-2': 'ami-ea1e82da',
-    }
 
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -239,15 +169,17 @@ class FormationManager(models.Manager):
             owner_keys = ["{0}_{1}".format(
                 k.owner.username, k.id) for k in formation.owner.key_set.all()]
             keys.extend(owner_keys)
-        # call a celery task to update gitosis
-        if settings.CHEF_ENABLED:
-            controller.update_gitosis.delay(databag).wait()  # @UndefinedVariable
+#         # call a celery task to update gitosis
+#         if settings.CHEF_ENABLED:
+#             controller.update_gitosis.delay(databag).wait()  # @UndefinedVariable
 
     def next_container_node(self, formation, container_type, reverse=False):
         count = []
-        layer = formation.layer_set.get(id='runtime')
-        runtime_nodes = list(Node.objects.filter(
-            formation=formation, layer=layer).order_by('created'))
+        layers = formation.layer_set.filter(runtime=True)
+        runtime_nodes = []
+        for l in layers:
+            runtime_nodes.extend(Node.objects.filter(
+                formation=formation, layer=l).order_by('created'))
         container_map = {n: [] for n in runtime_nodes}
         containers = list(Container.objects.filter(
             formation=formation, type=container_type).order_by('created'))
@@ -269,177 +201,33 @@ class FormationManager(models.Manager):
 class Formation(UuidAuditedModel):
 
     """
-    Formation of machine instances, list of nodes available
-    as `formation.nodes`
+    Formation of nodes used to host applications
     """
     objects = FormationManager()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
-    layers = fields.JSONField(default='{}', blank=True)
-    containers = fields.JSONField(default='{}', blank=True)
+    nodes = fields.JSONField(default='{}', blank=True)
 
     class Meta:
         unique_together = (('owner', 'id'),)
-
-    def scale_layers(self, **kwargs):
-        """Scale layers up or down to match requested."""
-        layers = self.layers.copy()
-        funcs = []
-        new_nodes = False
-        for layer_id, requested in layers.items():
-            layer = self.layer_set.get(id=layer_id)
-            nodes = list(layer.node_set.all().order_by('created'))
-            diff = requested - len(nodes)
-            if diff == 0:
-                continue
-            while diff < 0:
-                node = nodes.pop(0)
-                funcs.append(node.terminate)
-                diff = requested - len(nodes)
-            while diff > 0:
-                node = Node.objects.new(self, layer)
-                nodes.append(node)
-                funcs.append(node.launch)
-                diff = requested - len(nodes)
-                new_nodes = True
-        # http://docs.celeryproject.org/en/latest/userguide/canvas.html#groups
-        job = [func() for func in funcs]
-        # launch/terminate nodes in parallel
-        if job:
-            group(*job).apply_async().join()
-        # scale containers in case nodes have been destroyed
-        runtime_layers = self.layer_set.filter(id='runtime')
-        if runtime_layers.exists() and runtime_layers[0].node_set.count():
-            self.scale_containers()
-        # balance containers
-        containers_balanced = self._balance_containers()
-        # once nodes are in place, recalculate the formation and update the data bag
-        databag = self.calculate()
-        # force-converge nodes if there were new nodes or container rebalancing
-        if new_nodes or containers_balanced:
-            self.converge(databag)
-        # save the formation with updated layers
-        self.save()
-        return databag
-
-    def scale_containers(self, **kwargs):
-        """Scale containers up or down to match requested."""
-        requested_containers = self.containers.copy()
-        runtime_layers = self.layer_set.filter(id='runtime')
-        if len(runtime_layers) < 1:
-            raise ScalingError('Must create a "runtime" layer to host containers')
-        runtime_nodes = runtime_layers[0].node_set.all()
-        if len(runtime_nodes) < 1:
-            raise ScalingError('Must scale runtime nodes > 0 to host containers')
-        # increment new container nums off the most recent container
-        all_containers = self.container_set.all().order_by('-created')
-        container_num = 1 if not all_containers else all_containers[0].num + 1
-        # iterate and scale by container type (web, worker, etc)
-        changed = False
-        for container_type in requested_containers.keys():
-            containers = list(self.container_set.filter(type=container_type).order_by('created'))
-            requested = requested_containers.pop(container_type)
-            diff = requested - len(containers)
-            if diff == 0:
-                continue
-            changed = True
-            while diff < 0:
-                # get the next node with the most containers
-                node = Formation.objects.next_container_node(self, container_type, reverse=True)
-                # delete a container attached to that node
-                for c in containers:
-                    if node == c.node:
-                        containers.remove(c)
-                        c.delete()
-                        diff += 1
-                        break
-            while diff > 0:
-                # get the next node with the fewest containers
-                node = Formation.objects.next_container_node(self, container_type)
-                c = Container.objects.create(owner=self.owner,
-                                             formation=self,
-                                             type=container_type,
-                                             num=container_num,
-                                             node=node)
-                containers.append(c)
-                container_num += 1
-                diff -= 1
-        # once nodes are in place, recalculate the formation and update the data bag
-        databag = self.calculate()
-        if changed is True:
-            self.converge(databag)
-        # save the formation with updated containers
-        self.save()
-        return databag
-
-    def balance(self, **kwargs):
-        changed = self._balance_containers()
-        databag = self.calculate()
-        if changed:
-            self.converge(databag)
-        return databag
-
-    def _balance_containers(self, **kwargs):
-        runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('created')
-        if len(runtime_nodes) < 2:
-            return  # there's nothing to balance with 1 runtime node
-        all_containers = Container.objects.filter(formation=self).order_by('-created')
-        # get the next container number (e.g. web.19)
-        container_num = 1 if not all_containers else all_containers[0].num + 1
-        changed = False
-        # iterate by unique container type
-        for container_type in set([c.type for c in all_containers]):
-            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
-            n_map = {}
-            for node in runtime_nodes:
-                ct = len(node.container_set.filter(type=container_type))
-                n_map.setdefault(ct, []).append(node)
-            # loop until diff between min and max is 1 or 0
-            while max(n_map.keys()) - min(n_map.keys()) > 1:
-                # get the most over-utilized node
-                n_max = max(n_map.keys())
-                n_over = n_map[n_max].pop(0)
-                if len(n_map[n_max]) == 0:
-                    del n_map[n_max]
-                # get the most under-utilized node
-                n_min = min(n_map.keys())
-                n_under = n_map[n_min].pop(0)
-                if len(n_map[n_min]) == 0:
-                    del n_map[n_min]
-                # create a container on the most under-utilized node
-                Container.objects.create(owner=self.owner,
-                                         formation=self,
-                                         type=container_type,
-                                         num=container_num,
-                                         node=n_under)
-                container_num += 1
-                # delete the oldest container from the most over-utilized node
-                c = n_over.container_set.filter(type=container_type).order_by('created')[0]
-                c.delete()
-                # update the n_map accordingly
-                for n in (n_over, n_under):
-                    ct = len(n.container_set.filter(type=container_type))
-                    n_map.setdefault(ct, []).append(n)
-                changed = True
-        return changed
 
     def __str__(self):
         return self.id
 
     def calculate(self):
         """Return a Chef data bag item for this formation"""
-        release = self.release_set.all().order_by('-created')[0]
         d = {}
         d['id'] = self.id
+#         release = self.release_set.all().order_by('-created')[0]
         d['release'] = {}
-        d['release']['version'] = release.version
-        d['release']['config'] = release.config.values
-        d['release']['image'] = release.image
-        d['release']['build'] = {}
-        if release.build:
-            d['release']['build']['url'] = release.build.url
-            d['release']['build']['procfile'] = release.build.procfile
+#         d['release']['version'] = release.version
+#         d['release']['config'] = release.config.values
+#         d['release']['image'] = release.image
+#         d['release']['build'] = {}
+#         if release.build:
+#             d['release']['build']['url'] = release.build.url
+#             d['release']['build']['procfile'] = release.build.procfile
         # calculate proxy
         d['proxy'] = {}
         d['proxy']['algorithm'] = 'round_robin'
@@ -460,50 +248,19 @@ class Formation(UuidAuditedModel):
         d['nodes'] = {}
         for n in self.node_set.all():
             d['nodes'].setdefault(n.layer.id, {})[n.id] = n.fqdn
-        # call a celery task to update the formation data bag
-        if settings.CHEF_ENABLED:
-            controller.update_formation.delay(self.id, d).wait()  # @UndefinedVariable
+#         # call a celery task to update the formation data bag
+#         if settings.CHEF_ENABLED:
+#             controller.update_formation.delay(self.id, d).wait()  # @UndefinedVariable
         return d
 
     def converge(self, databag):
         """Call a celery task to update the formation data bag."""
-        if settings.CHEF_ENABLED:
-            controller.update_formation.delay(self.id, databag).wait()  # @UndefinedVariable
-        # TODO: batch node converging by layer.level
-        nodes = [node for node in self.node_set.all()]
-        job = group(*[n.converge() for n in nodes])
-        job.apply_async().join()
+        tasks.converge_formation.delay(self.id).wait()  # @UndefinedVariable
         return databag
-
-    def logs(self):
-        """Return aggregated log data for this formation."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
-            raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
-        return data
-
-    def run(self, commands):
-        """Run a one-off command in an ephemeral container."""
-        runtime_nodes = self.node_set.filter(layer__id='runtime').order_by('?')
-        if not runtime_nodes:
-            raise EnvironmentError('No nodes available')
-        return runtime_nodes[0].run(commands)
 
     def destroy(self):
         """Create subtasks to terminate all nodes in parallel."""
-        all_layers = self.layer_set.all()
-        tasks = [layer.destroy(async=True) for layer in all_layers]
-        node_tasks, layer_tasks = [], []
-        for n, l in tasks:
-            node_tasks.extend(n), layer_tasks.extend(l)
-        # kill all the nodes in parallel
-        group(node_tasks).apply_async().join()
-        # kill all the layers in parallel
-        group(layer_tasks).apply_async().join()
-        # call a celery task to update the formation data bag
-        if settings.CHEF_ENABLED:
-            controller.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
+        tasks.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
 
 
 @python_2_unicode_compatible
@@ -520,17 +277,17 @@ class Layer(UuidAuditedModel):
 
     formation = models.ForeignKey('Formation')
     flavor = models.ForeignKey('Flavor')
-    level = models.PositiveIntegerField(default=0)
 
-    # chef settings
-    chef_version = models.CharField(max_length=32, default='11.4.4')
-    run_list = models.CharField(max_length=512)
-    initial_attributes = fields.JSONField(default='{}', blank=True)
-    environment = models.CharField(max_length=64, default='_default')
+    proxy = models.BooleanField(default=False)
+    runtime = models.BooleanField(default=False)
+
     # ssh settings
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
     ssh_public_key = models.TextField()
+
+    # example: {'run_list': [deis::runtime'], 'environment': 'dev'}
+    config = fields.JSONField(default='{}', blank=True)
 
     class Meta:
         unique_together = (('formation', 'id'),)
@@ -538,27 +295,11 @@ class Layer(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def build(self, *args, **kwargs):
-        tasks = import_tasks(self.flavor.provider.type)
-        name = "{0}-{1}".format(self.formation.id, self.id)
-        args = (name, self.flavor.provider.creds.copy(),
-                self.flavor.params.copy())
-        return tasks.build_layer.delay(*args).wait()
+    def build(self):
+        tasks.build_layer.delay(self.id).wait()  # @UndefinedVariable
 
-    def destroy(self, async=False):
-        tasks = import_tasks(self.flavor.provider.type)
-        # create subtasks to terminate all nodes in parallel
-        node_tasks = [node.destroy(async=True) for node in self.node_set.all()]
-        # purge other hosting provider infrastructure
-        name = "{0}-{1}".format(self.formation.id, self.id)
-        args = (name, self.flavor.provider.creds.copy(),
-                self.flavor.params.copy())
-        layer_tasks = [tasks.destroy_layer.subtask(args)]
-        if async:
-            return node_tasks, layer_tasks
-        # destroy nodes, then the layer
-        group(node_tasks).apply_async().join()
-        group(layer_tasks).apply_async().join()
+    def destroy(self):
+        tasks.destroy_layer.delay(self.id).wait()  # @UndefinedVariable
 
 
 class NodeManager(models.Manager):
@@ -575,6 +316,44 @@ class NodeManager(models.Manager):
                            num=next_num,
                            id="{0}-{1}-{2}".format(formation.id, layer.id, next_num))
         return node
+
+    def scale(self, formation, structure, **kwargs):
+        """Scale layers up or down to match requested."""
+        funcs = []
+        changed = False
+        for layer_id, requested in structure.items():
+            layer = formation.layer_set.get(id=layer_id)
+            nodes = list(layer.node_set.all().order_by('created'))
+            diff = requested - len(nodes)
+            if diff == 0:
+                continue
+            while diff < 0:
+                node = nodes.pop(0)
+                funcs.append(tasks.destroy_node.si(node.id))
+                diff = requested - len(nodes)
+                changed = True
+            while diff > 0:
+                node = self.new(formation, layer)
+                nodes.append(node)
+                funcs.append(tasks.build_node.si(node.id))
+                diff = requested - len(nodes)
+                changed = True
+        # launch/terminate nodes in parallel
+        if funcs:
+            group(*funcs).apply_async().join()
+        # always scale and balance every application
+        if nodes:
+            for app in formation.app_set.all():
+                Container.objects.scale(app, app.containers)
+                Container.objects.balance(formation)
+        # once nodes are in place, recalculate the formation and update the data bag
+        databag = formation.calculate()
+        # force-converge nodes if there were new nodes or container rebalancing
+        if changed:
+            formation.converge(databag)
+        # save the formation with updated layers
+        formation.save()
+        return databag
 
 
 @python_2_unicode_compatible
@@ -607,90 +386,165 @@ class Node(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def launch(self, *args, **kwargs):
-        tasks = import_tasks(self.layer.flavor.provider.type)
-        args = self._prepare_launch_args()
-        return tasks.launch_node.subtask(args)
+    def build(self):
+        return tasks.build_node.delay(self.id).wait()  # @UndefinedVariable
 
-    def _prepare_launch_args(self):
-        creds = self.layer.flavor.provider.creds.copy()
-        params = self.layer.flavor.params.copy()
-        params['layer'] = "{0}-{1}".format(self.formation.id, self.layer.id)
-        params['id'] = self.id
-        init = self.layer.flavor.init.copy()
-        if settings.CHEF_ENABLED:
-            chef = init['chef'] = {}
-            chef['ruby_version'] = settings.CHEF_RUBY_VERSION
-            chef['server_url'] = settings.CHEF_SERVER_URL
-            chef['install_type'] = settings.CHEF_INSTALL_TYPE
-            chef['environment'] = settings.CHEF_ENVIRONMENT
-            chef['validation_name'] = settings.CHEF_VALIDATION_NAME
-            chef['validation_key'] = settings.CHEF_VALIDATION_KEY
-            chef['node_name'] = self.id
-            if self.layer.chef_version:
-                chef['version'] = self.layer.chef_version
-            if self.layer.run_list:
-                chef['run_list'] = self.layer.run_list.split(',')
-            if self.layer.initial_attributes:
-                chef['initial_attributes'] = self.layer.initial_attributes
-        # add the formation's ssh pubkey
-        init.setdefault(
-            'ssh_authorized_keys', []).append(self.layer.ssh_public_key)
-        # add all of the owner's SSH keys
-        init['ssh_authorized_keys'].extend([k.public for k in self.formation.owner.key_set.all()])
-        ssh_username = self.layer.ssh_username
-        ssh_private_key = self.layer.ssh_private_key
-        args = (self.uuid, creds, params, init, ssh_username, ssh_private_key)
-        return args
+    def destroy(self):
+        return tasks.destroy_node.delay(self.id).wait()  # @UndefinedVariable
 
-    def converge(self, *args, **kwargs):
-        tasks = import_tasks(self.layer.flavor.provider.type)
-        args = self._prepare_converge_args()
-        # TODO: figure out how to store task return values in model
-        return tasks.converge_node.subtask(args)
+    def converge(self):
+        return tasks.converge_node.delay(self.id).wait()  # @UndefinedVariable
 
-    def _prepare_converge_args(self):
-        ssh_username = self.layer.ssh_username
-        fqdn = self.fqdn
-        ssh_private_key = self.layer.ssh_private_key
-        args = (self.uuid, ssh_username, fqdn, ssh_private_key)
-        return args
-
-    def terminate(self, *args, **kwargs):
-        tasks = import_tasks(self.layer.flavor.provider.type)
-        args = self._prepare_terminate_args()
-        # TODO: figure out how to store task return values in model
-        return tasks.terminate_node.subtask(args)
-
-    def _prepare_terminate_args(self):
-        creds = self.layer.flavor.provider.creds.copy()
-        params = self.layer.flavor.params.copy()
-        args = (self.uuid, creds, params, self.provider_id)
-        return args
-
-    def run(self, *args, **kwargs):
-        tasks = import_tasks(self.layer.flavor.provider.type)
+    def run(self, app, *args, **kwargs):
         command = ' '.join(*args)
-        # prepare app-specific docker arguments
-        formation_id = self.formation.id
-        release = self.formation.release_set.order_by('-created')[0]
-        version = release.version
-        docker_args = ' '.join(
-            ['-v',
-             '/opt/deis/runtime/slugs/{formation_id}-{version}/app:/app'.format(**locals()),
-             release.image])
-        base_cmd = "export HOME=/app; cd /app && for profile in " \
-                   "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
-        command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
-        args = list(self._prepare_converge_args()) + [docker_args] + [command]
-        task = tasks.run_node.subtask(args)
-        return task.apply_async().wait()
+        return tasks.run_node.delay(app.id, command).wait()  # @UndefinedVariable
 
-    def destroy(self, async=False):
-        subtask = self.terminate()
-        if async:
-            return subtask
-        return subtask.apply_async().wait()
+
+@python_2_unicode_compatible
+class App(UuidAuditedModel):
+
+    """
+    Application used to service requests on behalf of end-users
+    """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    id = models.SlugField(max_length=64, unique=True)
+    formation = models.ForeignKey('Formation')
+
+    containers = fields.JSONField(default='{}', blank=True)
+
+    def __str__(self):
+        return self.id
+
+    def logs(self):
+        """Return aggregated log data for this application."""
+        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        if not os.path.exists(path):
+            raise EnvironmentError('Could not locate logs')
+        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+        return data
+
+    def run(self, commands):
+        """Run a one-off command in an ephemeral app container."""
+        runtime_nodes = self.formation.node_set.filter(layer__runtime=True).order_by('?')
+        if not runtime_nodes:
+            raise EnvironmentError('No nodes available')
+        return runtime_nodes[0].run(self, commands)
+
+    def calculate(self):
+        """Calculate and update the application databag"""
+        d = {}
+        d['id'] = self.id
+        release = self.release_set.all().order_by('-created')[0]
+        d['release'] = {}
+        d['release']['version'] = release.version
+        d['release']['config'] = release.config.values
+        d['release']['image'] = release.image
+        d['release']['build'] = {}
+        if release.build:
+            d['release']['build']['url'] = release.build.url
+            d['release']['build']['procfile'] = release.build.procfile
+        # add collaborators TODO: add sharing
+        d['users'] = {}
+        for u in (self.owner.username,):
+            d['users'][u] = 'admin'
+#         # call a celery task to update the data bag
+#         if settings.CHEF_ENABLED:
+#             controller.update_application.delay(self.id, d).wait()  # @UndefinedVariable
+        return d
+
+
+class ContainerManager(models.Manager):
+
+    def scale(self, app, structure, **kwargs):
+        """Scale containers up or down to match requested."""
+        requested_containers = structure.copy()
+        formation = app.formation
+        # increment new container nums off the most recent container
+        all_containers = app.container_set.all().order_by('-created')
+        container_num = 1 if not all_containers else all_containers[0].num + 1
+        # iterate and scale by container type (web, worker, etc)
+        changed = False
+        for container_type in requested_containers.keys():
+            containers = list(app.container_set.filter(type=container_type).order_by('created'))
+            requested = requested_containers.pop(container_type)
+            diff = requested - len(containers)
+            if diff == 0:
+                continue
+            changed = True
+            while diff < 0:
+                # get the next node with the most containers
+                node = Formation.objects.next_container_node(
+                    formation, container_type, reverse=True)
+                # delete a container attached to that node
+                for c in containers:
+                    if node == c.node:
+                        containers.remove(c)
+                        c.delete()
+                        diff += 1
+                        break
+            while diff > 0:
+                # get the next node with the fewest containers
+                node = Formation.objects.next_container_node(formation, container_type)
+                c = Container.objects.create(owner=app.owner,
+                                             formation=formation,
+                                             node=node,
+                                             app=app,
+                                             type=container_type,
+                                             num=container_num)
+                containers.append(c)
+                container_num += 1
+                diff -= 1
+        return changed
+#         # once nodes are in place, recalculate the formation and update the data bag
+#         databag = formation.calculate()
+#         if changed is True:
+#             formation.converge(databag)
+#         return databag
+
+    def balance(self, formation, **kwargs):
+        runtime_nodes = formation.node_set.filter(layer__runtime=True).order_by('created')
+        all_containers = self.filter(formation=formation).order_by('-created')
+        # get the next container number (e.g. web.19)
+        container_num = 1 if not all_containers else all_containers[0].num + 1
+        changed = False
+        # iterate by unique container type
+        for container_type in set([c.type for c in all_containers]):
+            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
+            n_map = {}
+            for node in runtime_nodes:
+                ct = len(node.container_set.filter(type=container_type))
+                n_map.setdefault(ct, []).append(node)
+            # loop until diff between min and max is 1 or 0
+            while max(n_map.keys()) - min(n_map.keys()) > 1:
+                # get the most over-utilized node
+                n_max = max(n_map.keys())
+                n_over = n_map[n_max].pop(0)
+                if len(n_map[n_max]) == 0:
+                    del n_map[n_max]
+                # get the most under-utilized node
+                n_min = min(n_map.keys())
+                n_under = n_map[n_min].pop(0)
+                if len(n_map[n_min]) == 0:
+                    del n_map[n_min]
+                # delete the oldest container from the most over-utilized node
+                c = n_over.container_set.filter(type=container_type).order_by('created')[0]
+                app = c.app  # pull ref to app for recreating the container
+                c.delete()
+                # create a container on the most under-utilized node
+                self.create(owner=formation.owner,
+                            formation=formation,
+                            app=app,
+                            type=container_type,
+                            num=container_num,
+                            node=n_under)
+                container_num += 1
+                # update the n_map accordingly
+                for n in (n_over, n_under):
+                    ct = len(n.container_set.filter(type=container_type))
+                    n_map.setdefault(ct, []).append(n)
+                changed = True
+        return changed
 
 
 @python_2_unicode_compatible
@@ -700,9 +554,12 @@ class Container(UuidAuditedModel):
     Docker container used to securely host an application process.
     """
 
+    objects = ContainerManager()
+
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     formation = models.ForeignKey('Formation')
     node = models.ForeignKey('Node')
+    app = models.ForeignKey('App')
     type = models.CharField(max_length=128)
     num = models.PositiveIntegerField()
 
@@ -719,7 +576,7 @@ class Container(UuidAuditedModel):
     class Meta:
         get_latest_by = '-created'
         ordering = ['created']
-        unique_together = (('formation', 'type', 'num'),)
+        unique_together = (('app', 'type', 'num'),)
 
 
 @python_2_unicode_compatible
@@ -731,7 +588,7 @@ class Config(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
+    app = models.ForeignKey('App')
     version = models.PositiveIntegerField()
 
     values = fields.EnvVarsField(default='{}', blank=True)
@@ -739,10 +596,10 @@ class Config(UuidAuditedModel):
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
-        unique_together = (('formation', 'version'),)
+        unique_together = (('app', 'version'),)
 
     def __str__(self):
-        return "{0}-v{1}".format(self.formation.id, self.version)
+        return "{0}-v{1}".format(self.app.id, self.version)
 
 
 @python_2_unicode_compatible
@@ -753,7 +610,7 @@ class Build(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
+    app = models.ForeignKey('App')
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
 
@@ -768,10 +625,10 @@ class Build(UuidAuditedModel):
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
-        unique_together = (('formation', 'uuid'),)
+        unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.formation.id, self.sha)
+        return "{0}-{1}".format(self.app.id, self.sha)
 
     @classmethod
     def push(cls, push):
@@ -798,7 +655,7 @@ class Build(UuidAuditedModel):
                             formation=formation,
                             user=user)
         # see if we need to scale an initial web container
-        if len(formation.node_set.filter(layer__id='runtime')) > 0 and \
+        if len(formation.node_set.filter(layer__runtime=True)) > 0 and \
            len(formation.container_set.filter(type='web')) < 1:
             # scale an initial web containers
             formation.containers['web'] = 1
@@ -821,7 +678,7 @@ class Release(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
+    app = models.ForeignKey('App')
     version = models.PositiveIntegerField()
 
     config = models.ForeignKey('Config')
@@ -832,10 +689,10 @@ class Release(UuidAuditedModel):
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
-        unique_together = (('formation', 'version'),)
+        unique_together = (('app', 'version'),)
 
     def __str__(self):
-        return "{0}-v{1}".format(self.formation.id, self.version)
+        return "{0}-v{1}".format(self.app.id, self.version)
 
     def rollback(self):
         # create a rollback log entry
@@ -849,9 +706,8 @@ def new_release(sender, **kwargs):
 
     :returns: a newly created :class:`Release`
     """
-    formation, user = kwargs['formation'], kwargs['user']
-    last_release = Release.objects.filter(
-        formation=formation).order_by('-created')[0]
+    app, user = kwargs['app'], kwargs['user']
+    last_release = Release.objects.filter(app=app).order_by('-created')[0]
     image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
@@ -866,10 +722,14 @@ def new_release(sender, **kwargs):
             new_values.update(config.values)
             config = Config.objects.create(
                 version=config.version + 1, owner=user,
-                formation=formation, values=new_values)
+                app=app, values=new_values)
     # create new release and auto-increment version
     new_version = last_release.version + 1
     release = Release.objects.create(
-        owner=user, formation=formation, image=image, config=config,
+        owner=user, app=app, image=image, config=config,
         build=build, version=new_version)
     return release
+
+
+# import tasks after models are defined
+from api import tasks
