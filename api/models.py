@@ -206,11 +206,6 @@ class Flavor(UuidAuditedModel):
         'us-west-2': 'ami-ea1e82da',
     }
 
-    def save(self, *args, **kwargs):
-        print args, kwargs
-        print self.params
-        return super(Flavor, self).save(*args, **kwargs)
-
     class Meta:
         unique_together = (('owner', 'id'),)
 
