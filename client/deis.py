@@ -626,6 +626,7 @@ class DeisClient(object):
         Valid commands for flavors:
 
         flavors:create        create a new node flavor
+        flavors:update        update an existing node flavor
         flavors:info          print information about a node flavor
         flavors:list          list available flavors
         flavors:delete        delete a node flavor
@@ -654,6 +655,30 @@ class DeisClient(object):
                 body.update({fld: opt})
         response = self._dispatch('post', '/api/flavors', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print("{0[id]}".format(response.json()))
+        else:
+            print('Error!', response.text)
+
+    def flavors_update(self, args):
+        """
+        Create an existing node flavor
+
+        Usage: deis flavors:update <id> --params=<params> [options]
+
+        Options:
+
+        --params=PARAMS    provider-specific parameters (size, region, zone, etc.)
+        --init=INIT        override Ubuntu cloud-init with custom YAML
+        """
+        flavor = args.get('<id>')
+        body = {'id': flavor}
+        fields = ('params', 'init')
+        for fld in fields:
+            opt = args.get('--' + fld)
+            if opt:
+                body.update({fld: opt})
+        response = self._dispatch('patch', '/api/flavors/{}'.format(flavor), json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print("{0[id]}".format(response.json()))
         else:
             print('Error!', response.text)
