@@ -9,29 +9,16 @@ from celery import task
 import yaml
 
 from . import util
+from api.models import Flavor
 from api.models import Node
 from deis import settings
 from celerytasks.chef import ChefAPI
-
-# deis optimized amis -- with 3.8 kernel, chef 11 deps,
-# and large docker images (e.g. buildstep) pre-installed
-EC2_IMAGE_MAP = {
-    'ap-northeast-1': 'ami-a57aeca4',
-    'ap-southeast-1': 'ami-e03a72b2',
-    'ap-southeast-2': 'ami-bd801287',
-    'eu-west-1': 'ami-d9d3cdad',
-    'sa-east-1': 'ami-a7df7bba',
-    'us-east-1': 'ami-e85a2081',
-    'us-west-1': 'ami-ac6942e9',
-    'us-west-2': 'ami-b55ac885',
-}
 
 
 @task(name='ec2.build_layer')
 def build_layer(layer, creds, params):
     region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(
-        region, creds['access_key'], creds['secret_key'])
+    conn = create_ec2_connection(creds, region)
     # create a new sg and authorize all ports
     # use iptables on the host to firewall ports
     sg = conn.create_security_group(layer, 'Created by Deis')
@@ -56,8 +43,7 @@ def destroy_layer(layer, creds, params):
     # let's take a nap
     time.sleep(5)
     region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(
-        region, creds['access_key'], creds['secret_key'])
+    conn = create_ec2_connection(creds, region)
     try:
         conn.delete_security_group(layer)
     except EC2ResponseError as e:
@@ -68,8 +54,7 @@ def destroy_layer(layer, creds, params):
 @task(name='ec2.launch_node')
 def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(
-        region, creds['access_key'], creds['secret_key'])
+    conn = create_ec2_connection(creds, region)
     # find or create the security group for this formation
     sg_name = params['layer']
     sg = conn.get_all_security_groups(sg_name)[0]
@@ -77,7 +62,7 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     params.setdefault('security_groups', []).append(sg.name)
     # retrieve the ami for launching this node
     image_id = params.get(
-        'image', getattr(settings, 'EC2_IMAGE_MAP', EC2_IMAGE_MAP)[region])
+        'image', getattr(settings, 'IMAGE_MAP', Flavor.IMAGE_MAP)[region])
     images = conn.get_all_images([image_id])
     if len(images) != 1:
         raise LookupError('Could not find AMI: %s' % image_id)
@@ -103,11 +88,9 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
     node.fqdn = boto.public_dns_name
     node.metadata = format_metadata(boto)
     node.save()
-    # wait 10 seconds for ssh daemon to come up
-    time.sleep(10)
     # loop until cloud-init is finished
     ssh = util.connect_ssh(ssh_username, boto.public_dns_name, 22,
-                           ssh_private_key)
+                           ssh_private_key, timeout=120)
     initializing = True
     while initializing:
         time.sleep(10)
@@ -136,8 +119,7 @@ def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
 @task(name='ec2.terminate_node')
 def terminate_node(node_id, creds, params, provider_id):
     region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(
-        region, creds['access_key'], creds['secret_key'])
+    conn = create_ec2_connection(creds, region)
     if provider_id:
         conn.terminate_instances([provider_id])
         i = conn.get_all_instances([provider_id])[0].instances[0]
@@ -176,9 +158,12 @@ def run_node(node_id, ssh_username, fqdn, ssh_private_key, docker_args, command)
 
 # utility functions
 
-def create_ec2_connection(region, access_key, secret_key):
-    return ec2.connect_to_region(region, aws_access_key_id=access_key,
-                                 aws_secret_access_key=secret_key)
+def create_ec2_connection(creds, region):
+    if not creds:
+        raise EnvironmentError('No credentials provided')
+    return ec2.connect_to_region(region,
+                                 aws_access_key_id=creds['access_key'],
+                                 aws_secret_access_key=creds['secret_key'])
 
 
 def prepare_run_kwargs(params, init):

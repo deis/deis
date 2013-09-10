@@ -137,8 +137,14 @@ class FlavorViewSet(OwnerViewSet):
         request._data = request.DATA.copy()
         # set default cloud-init configuration
         if not 'init' in request.DATA:
-            request.DATA['init'] = models.FlavorManager().load_cloud_config_base()
-        return viewsets.ModelViewSet.create(self, request, **kwargs)
+            request.DATA['init'] = models.FlavorManager.load_cloud_config_base()
+        params = json.loads(request.DATA['params'])
+        params.setdefault('region', 'us-east-1')
+        params.setdefault('image', models.Flavor.IMAGE_MAP[params['region']])
+        params.setdefault('size', 'm1.medium')
+        params.setdefault('zone', 'any')
+        request.DATA['params'] = json.dumps(params)
+        return super(FlavorViewSet, self).create(request, **kwargs)
 
 
 class FormationViewSet(OwnerViewSet):
@@ -155,6 +161,8 @@ class FormationViewSet(OwnerViewSet):
         except IntegrityError:
             return Response('Formation with this Id already exists.',
                             status=HTTP_400_BAD_REQUEST)
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
@@ -242,7 +250,10 @@ class FormationViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        formation.destroy()
+        try:
+            formation.destroy()
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
         formation.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -309,7 +320,10 @@ class FormationNodeViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         node = self.get_object()
-        node.destroy()
+        try:
+            node.destroy()
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

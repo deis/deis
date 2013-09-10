@@ -50,3 +50,67 @@ class FlavorTest(TestCase):
         self.assertEqual(yaml.safe_load(response.data['init']), new_init)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_flavor_contents(self):
+        """Tests that flavors explicitly contain AMI ID, instance size, region, and zone."""
+        url = '/api/flavors'
+        body = {'id': 'autotest', 'provider': 'autotest', 'params': json.dumps({})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        flavor_id = response.data['id']
+        response = self.client.get('/api/flavors')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        url = "/api/flavors/{flavor_id}".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        params = json.loads(response.data['params'])
+        self.assertEqual(params['region'], 'us-east-1')
+        self.assertEqual(params['zone'], 'any')
+        self.assertEqual(params['size'], 'm1.medium')
+        self.assertTrue(params['image'])
+
+    def test_flavor_update(self):
+        """Tests that flavors can be updated by the client."""
+        url = '/api/flavors'
+        params = {
+            'region': 'us-west-2',
+            'size': 't1.micro',
+        }
+        body = {'id': 'autotest', 'provider': 'autotest', 'params': json.dumps(params)}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        flavor_id = response.data['id']
+        response = self.client.get('/api/flavors')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        url = "/api/flavors/{flavor_id}".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        uuid = response.data['uuid']
+        self.assertRegexpMatches(uuid, r'^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$')
+        params = json.loads(response.data['params'])
+        self.assertEqual(params['region'], 'us-west-2')
+        self.assertEqual(params['zone'], 'any')
+        self.assertEqual(params['size'], 't1.micro')
+        self.assertTrue(params['image'])
+        params = {
+            'size': 'c1.xlarge',
+            'image': 'ami-c98d1bf9',
+        }
+        body = {'id': flavor_id, 'params': json.dumps(params)}
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        flavor_id = response.data['id']
+        response = self.client.get('/api/flavors')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        url = "/api/flavors/{flavor_id}".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['uuid'], uuid)
+        params = json.loads(response.data['params'])
+        self.assertNotIn('region', params)
+        self.assertNotIn('zone', params)
+        self.assertEqual(params['size'], 'c1.xlarge')
+        self.assertEqual(params['image'], 'ami-c98d1bf9')
