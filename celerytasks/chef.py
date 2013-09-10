@@ -11,6 +11,7 @@ import hashlib
 import httplib
 import json
 import re
+import time
 import urlparse
 
 from chef_rsa import Key
@@ -22,7 +23,7 @@ def ruby_b64encode(value):
     """
     b64 = base64.b64encode(value)
     for i in xrange(0, len(b64), 60):
-        yield b64[i:i+60]
+        yield b64[i:i + 60]
 
 
 class UTC(datetime.tzinfo):
@@ -116,12 +117,20 @@ class ChefAPI(object):
         self.conn = httplib.HTTPSConnection(self.hostname)
         self.conn.connect()
 
-    def request(self, verb, path, body=''):
+    def request(self, verb, path, body='', attempts=5, interval=5):
         url = self.path + path
         headers = create_authorization(
             self.headers, verb, url, self.client_key, self.client_name, body)
-        self.conn.request(verb, url, body=body, headers=headers)
-        resp = self.conn.getresponse()
+        # retry all chef api requests
+        for _ in range(attempts):
+            self.conn.request(verb, url, body=body, headers=headers)
+            resp = self.conn.getresponse()
+            if resp.status != 500:
+                break
+            time.sleep(interval)
+        else:
+            errmsg = 'Chef API requests failed: {}'.format(path)
+            raise RuntimeError(errmsg)
         return resp.read(), resp.status
 
     def create_databag(self, name):
