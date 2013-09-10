@@ -7,8 +7,11 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import os.path
 
 from django.test import TestCase
+
+from deis import settings
 
 
 class FormationTest(TestCase):
@@ -52,6 +55,25 @@ class FormationTest(TestCase):
         self.assertEqual(response.status_code, 405)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_formation_cm(self):
+        """
+        Test that configuration management is updated on formation changes
+        """
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']  # noqa
+        path = os.path.join(settings.TEMPDIR, 'formation-{}'.format(formation_id))
+        with open(path) as f:
+            data = json.loads(f.read())
+        self.assertIn('id', data)
+        self.assertEquals(data['id'], formation_id)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(os.path.exists(path))
 
     def test_formation_id(self):
         body = {'id': 'autotest'}

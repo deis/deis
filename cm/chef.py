@@ -46,7 +46,14 @@ try:
     CHEF_VALIDATION_KEY = subprocess.check_output(
         ['sudo', '/bin/cat', _valid_pem_path]).strip('\n')
 except Exception as e:
-    print 'Error: failed to auto-configure Chef -- {}'.format(e)
+    raise EnvironmentError('Failed to auto-configure Chef -- {}'.format(e))
+
+
+def _get_client():
+    """
+    Return a new instance of a Chef API Client
+    """
+    return ChefAPI(CHEF_SERVER_URL, CHEF_CLIENT_NAME, CHEF_CLIENT_KEY)
 
 
 def configure_node(node):
@@ -87,9 +94,7 @@ def bootstrap_node(node):
     while not registered:
         # reinstatiate the client on each poll attempt
         # to avoid disconnect errors
-        client = ChefAPI(CHEF_SERVER_URL,
-                         CHEF_CLIENT_NAME,
-                         CHEF_CLIENT_KEY)
+        client = _get_client()
         resp, status = client.get_node(node.id)
         if status == 200:
             body = json.loads(resp)
@@ -105,26 +110,20 @@ def destroy_node(node):
     """
     Purge the Node & Client records from Chef Server
     """
-    client = ChefAPI(CHEF_SERVER_URL,
-                     CHEF_CLIENT_NAME,
-                     CHEF_CLIENT_KEY)
+    client = _get_client()
     client.delete_node(node.id)
     client.delete_client(node.id)
     return node
 
 
 def update_user(user):
-    client = ChefAPI(CHEF_SERVER_URL,
-                     CHEF_CLIENT_NAME,
-                     CHEF_CLIENT_KEY)
+    client = _get_client()
     # client.create_databag_item('deis-users', user.username, user.calculate())
     client.update_databag_item('deis-users', user.username, user.calculate())
 
 
 def update_app(app):
-    client = ChefAPI(CHEF_SERVER_URL,
-                     CHEF_CLIENT_NAME,
-                     CHEF_CLIENT_KEY)
+    client = _get_client()
     client.update_databag_item('deis-apps', app.id, app.calculate())
 
 
@@ -135,8 +134,13 @@ def update_formation(formation, client):
 def converge_controller():
     # NOTE: converging the controller can overwrite any in-place
     # changes to application code
-    return subprocess.check_output(
-        ['sudo', 'chef-client', '--override-runlist', 'recipe[deis::gitosis]'])
+    try:
+        return subprocess.check_output(
+            ['sudo', 'chef-client', '--override-runlist', 'recipe[deis::gitosis]'])
+    except subprocess.CalledProcessError as e:
+        print(e)
+        print(e.output)
+        raise e
 
 
 def converge_node(node):
@@ -158,3 +162,46 @@ def converge_formation(formation):
         subtasks.append(subtask)
     job = group(*subtasks)
     return job.apply_async().join()
+
+
+def publish_user(username, data):
+    _publish('deis-users', username, data)
+    return username
+
+
+def publish_app(app_id, data):
+    _publish('deis-apps', app_id, data)
+    return app_id
+
+
+def purge_app(app_id):
+    _purge('deis-apps', app_id)
+    return app_id
+
+
+def publish_formation(formation_id, data):
+    _publish('deis-formations', formation_id, data)
+    return formation_id
+
+
+def purge_formation(formation_id):
+    _purge('deis-formations', formation_id)
+    return formation_id
+
+
+def _publish(data_bag, item_name, item_value):
+    client = _get_client()
+    body, status = client.update_databag_item(data_bag, item_name, item_value)
+    if status != 200:
+        body, status = client.create_databag_item(data_bag, item_name, item_value)
+        if status != 201:
+            raise RuntimeError('Could not publish {item_name}: {body}'.format(**locals()))
+    return body, status
+
+
+def _purge(databag_name, item_name):
+    client = _get_client()
+    body, status = client.delete_databag_item(databag_name, item_name)
+    if status == 200 or status == 404:
+        return body, status
+    raise RuntimeError('Could not purge {item_name}: {body}'.format(**locals()))

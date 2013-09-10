@@ -38,12 +38,12 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 201)
         # create & scale a basic formation
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'proxy', 'flavor': 'autotest', 'type': 'proxy',
+        body = {'id': 'proxy', 'flavor': 'autotest', 'proxy': True,
                 'run_list': 'recipe[deis::proxy]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'flavor': 'autotest', 'type': 'runtime',
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True,
                 'run_list': 'recipe[deis::proxy]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -74,6 +74,25 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 405)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_app_cm(self):
+        """
+        Test that configuration management is updated on app changes
+        """
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']  # noqa
+        path = os.path.join(settings.TEMPDIR, 'app-{}'.format(app_id))
+        with open(path) as f:
+            data = json.loads(f.read())
+        self.assertIn('id', data)
+        self.assertEquals(data['id'], app_id)
+        url = '/api/apps/{app_id}'.format(**locals())
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(os.path.exists(path))
 
     def test_app_override_id(self):
         body = {'formation': 'autotest', 'id': 'myid'}

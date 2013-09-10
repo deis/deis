@@ -4,6 +4,7 @@ Django settings for the Deis project.
 
 from __future__ import unicode_literals
 import os.path
+import tempfile
 
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -267,12 +268,12 @@ djcelery.setup_loader()
 # default deis settings
 
 
-CONVERGE_ON_PUSH = True
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 
 # the config management module to use in api.models
 CM_MODULE = 'cm.mock'
+TEMPDIR = tempfile.mkdtemp(prefix='deis')
 
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
