@@ -45,8 +45,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
             ('provider', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Provider'])),
-            ('params', self.gf('api.fields.ParamsField')(default=u'null')),
-            ('init', self.gf('api.fields.CloudInitField')()),
+            ('params', self.gf('api.fields.ParamsField')(default=u'null', blank=True)),
         ))
         db.send_create_signal(u'api', ['Flavor'])
 
@@ -59,7 +58,8 @@ class Migration(SchemaMigration):
             ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
+            ('id', self.gf('django.db.models.fields.SlugField')(unique=True, max_length=64)),
+            ('domain', self.gf('django.db.models.fields.CharField')(max_length=128, null=True, blank=True)),
             ('nodes', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
         ))
         db.send_create_signal(u'api', ['Formation'])
@@ -81,6 +81,7 @@ class Migration(SchemaMigration):
             ('ssh_username', self.gf('django.db.models.fields.CharField')(default=u'ubuntu', max_length=64)),
             ('ssh_private_key', self.gf('django.db.models.fields.TextField')()),
             ('ssh_public_key', self.gf('django.db.models.fields.TextField')()),
+            ('ssh_port', self.gf('django.db.models.fields.SmallIntegerField')(default=22)),
             ('config', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
         ))
         db.send_create_signal(u'api', ['Layer'])
@@ -310,9 +311,8 @@ class Migration(SchemaMigration):
             'Meta': {'unique_together': "((u'owner', u'id'),)", 'object_name': 'Flavor'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
-            'init': ('api.fields.CloudInitField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'params': ('api.fields.ParamsField', [], {'default': "u'null'"}),
+            'params': ('api.fields.ParamsField', [], {'default': "u'null'", 'blank': 'True'}),
             'provider': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Provider']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
@@ -320,7 +320,8 @@ class Migration(SchemaMigration):
         u'api.formation': {
             'Meta': {'unique_together': "((u'owner', u'id'),)", 'object_name': 'Formation'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
+            'domain': ('django.db.models.fields.CharField', [], {'max_length': '128', 'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '64'}),
             'nodes': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
@@ -345,6 +346,7 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'proxy': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'runtime': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'ssh_port': ('django.db.models.fields.SmallIntegerField', [], {'default': '22'}),
             'ssh_private_key': ('django.db.models.fields.TextField', [], {}),
             'ssh_public_key': ('django.db.models.fields.TextField', [], {}),
             'ssh_username': ('django.db.models.fields.CharField', [], {'default': "u'ubuntu'", 'max_length': '64'}),

@@ -37,7 +37,7 @@ class LayerTest(TestCase):
         Test that a user can create, read, update and delete a node layer
         """
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
@@ -71,7 +71,7 @@ class LayerTest(TestCase):
 
     def test_layer_ssh_override(self):
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa

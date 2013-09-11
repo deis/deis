@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import json
 import os.path
+import uuid
 
 from django.test import TestCase
 
@@ -39,7 +40,7 @@ class FormationTest(TestCase):
         Test that a user can create, read, update and delete a node formation
         """
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
@@ -50,9 +51,10 @@ class FormationTest(TestCase):
         url = '/api/formations/{formation_id}'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        body = {'id': 'new'}
+        body = {'domain': 'new'}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['domain'], 'new')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
@@ -61,7 +63,7 @@ class FormationTest(TestCase):
         Test that configuration management is updated on formation changes
         """
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest-' + uuid.uuid4().hex[:4], 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
@@ -76,19 +78,19 @@ class FormationTest(TestCase):
         self.assertFalse(os.path.exists(path))
 
     def test_formation_id(self):
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post('/api/formations', json.dumps(body),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertTrue('id', response.data)
-        body = {'id': response.data['id']}
+        body = {'id': response.data['id'], 'domain': 'localhost.localdomain'}
         response = self.client.post('/api/formations', json.dumps(body),
                                     content_type='application/json')
         self.assertContains(response, 'Formation with this Id already exists.', status_code=400)
 
     def test_formation_actions(self):
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa

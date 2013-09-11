@@ -9,23 +9,30 @@ Data models for the Deis API.
 from __future__ import unicode_literals
 import os
 import subprocess
-import yaml
 
 from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
 
 from api import fields
+from provider import import_provider_module
 
 
 # define custom signals
-scale_signal = Signal(providing_args=['formation', 'user'])
-release_signal = Signal(providing_args=['formation', 'user'])
+release_signal = Signal(providing_args=['user', 'app'])
+
+# define custom exceptions
+
+
+class ScalingError(Exception):
+    pass
+
+# base models
 
 
 class AuditedModel(models.Model):
@@ -48,6 +55,8 @@ class UuidAuditedModel(AuditedModel):
         """Mark :class:`UuidAuditedModel` as abstract."""
         abstract = True
 
+# deis core models
+
 
 @python_2_unicode_compatible
 class Key(UuidAuditedModel):
@@ -64,15 +73,22 @@ class Key(UuidAuditedModel):
     def __str__(self):
         return "{}...{}".format(self.public[:18], self.public[-31:])
 
+    def save(self, *args, **kwargs):
+        super(Key, self).save(*args, **kwargs)
+        self.owner.publish()
 
+    def delete(self, *args, **kwargs):
+        super(Key, self).delete(*args, **kwargs)
+        self.owner.publish()
+
+
+@python_2_unicode_compatible
 class ProviderManager(models.Manager):
     """Manage database interactions for :class:`Provider`."""
 
     def seed(self, user, **kwargs):
-        """Seeds the database with Providers for clouds supported by deis.
-
-        :param user: who will own the Providers
-        :type user: a deis user
+        """
+        Seeds the database with Providers for clouds supported by Deis.
         """
         providers = (('ec2', 'ec2'), ('mock', 'mock'))
         for p_id, p_type in providers:
@@ -81,7 +97,7 @@ class ProviderManager(models.Manager):
 
 @python_2_unicode_compatible
 class Provider(UuidAuditedModel):
-    """Cloud provider information for a user.
+    """Cloud provider settings for a user.
 
     Available as `user.provider_set`.
     """
@@ -104,30 +120,34 @@ class Provider(UuidAuditedModel):
     def __str__(self):
         return "{}-{}".format(self.id, self.get_type_display())
 
+    def flat(self):
+        return {'id': self.id,
+                'type': self.type,
+                'creds': dict(self.creds)}
 
+
+@python_2_unicode_compatible
 class FlavorManager(models.Manager):
     """Manage database interactions for :class:`Flavor`."""
 
-    @staticmethod
-    def load_cloud_config_base():
-        """Read the base configuration file and return YAML data."""
-        # load cloud-config-base yaml_
-        _cloud_config_path = os.path.abspath(
-            os.path.join(__file__, '..', 'files', 'cloud-config-base.yml'))
-        with open(_cloud_config_path) as f:
-            _data = f.read()
-        return yaml.safe_load(_data)
-
     def seed(self, user, **kwargs):
         """Seed the database with default Flavors for each cloud region."""
-        return tasks.seed_flavors.delay(user.username).wait()  # @UndefinedVariable
+        for provider_type in ('mock', 'ec2'):
+            provider = import_provider_module(provider_type)
+            flavors = provider.seed_flavors()
+            p = Provider.objects.get(owner=user, id=provider_type)
+            for flavor in flavors:
+                flavor['provider'] = p
+                Flavor.objects.create(owner=user, **flavor)
 
 
 @python_2_unicode_compatible
 class Flavor(UuidAuditedModel):
-
     """
-    Virtual machine flavors available as `user.flavor_set`.
+    Virtual machine flavors associated with a Provider
+
+    Params is a JSON field including unstructured data
+    for provider API calls, like region, zone, and size.
     """
     objects = FlavorManager()
 
@@ -135,7 +155,6 @@ class Flavor(UuidAuditedModel):
     id = models.SlugField(max_length=64)
     provider = models.ForeignKey('Provider')
     params = fields.ParamsField(blank=True)
-    init = fields.CloudInitField()
 
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -143,36 +162,16 @@ class Flavor(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    def flat(self):
+        return {'id': self.id,
+                'creds': dict(self.provider.creds),
+                'provider': self.provider.id,
+                'params': self.params}
 
-class ScalingError(Exception):
-    pass
 
-
+@python_2_unicode_compatible
 class FormationManager(models.Manager):
     """Manage database interactions for :class:`Formation`."""
-
-    def publish(self, **kwargs):
-        # build data bag
-        formations = self.all()
-        databag = {
-            'id': 'gitosis',
-            'ssh_keys': {},
-            'admins': [],
-            'formations': {}
-        }
-        # add all ssh keys on the system
-        for key in Key.objects.all():
-            key_id = "{0}_{1}".format(key.owner.username, key.id)
-            databag['ssh_keys'][key_id] = key.public
-        # TODO: add sharing-based key lookup, for now just owner's keys
-        for formation in formations:
-            keys = databag['formations'][formation.id] = []
-            owner_keys = ["{0}_{1}".format(
-                k.owner.username, k.id) for k in formation.owner.key_set.all()]
-            keys.extend(owner_keys)
-#         # call a celery task to update gitosis
-#         if settings.CHEF_ENABLED:
-#             controller.update_gitosis.delay(databag).wait()  # @UndefinedVariable
 
     def next_container_node(self, formation, container_type, reverse=False):
         count = []
@@ -207,7 +206,8 @@ class Formation(UuidAuditedModel):
     objects = FormationManager()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64)
+    id = models.SlugField(max_length=64, unique=True)
+    domain = models.CharField(max_length=128, blank=True, null=True)
     nodes = fields.JSONField(default='{}', blank=True)
 
     class Meta:
@@ -216,52 +216,58 @@ class Formation(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def calculate(self):
-        """Return a Chef data bag item for this formation"""
-        d = {}
-        d['id'] = self.id
-#         release = self.release_set.all().order_by('-created')[0]
-        d['release'] = {}
-#         d['release']['version'] = release.version
-#         d['release']['config'] = release.config.values
-#         d['release']['image'] = release.image
-#         d['release']['build'] = {}
-#         if release.build:
-#             d['release']['build']['url'] = release.build.url
-#             d['release']['build']['procfile'] = release.build.procfile
-        # calculate proxy
-        d['proxy'] = {}
-        d['proxy']['algorithm'] = 'round_robin'
-        d['proxy']['port'] = 80
-        d['proxy']['backends'] = []
-        # calculate container formation
-        d['containers'] = {}
-        for c in self.container_set.all().order_by('created'):
-            # all container types get an exposed port starting at 5001
-            port = 5000 + c.num
-            d['containers'].setdefault(c.type, {})
-            d['containers'][c.type].update(
-                {c.num: "{0}:{1}".format(c.node.id, port)})
-            # only proxy to 'web' containers
-            if c.type == 'web':
-                d['proxy']['backends'].append("{0}:{1}".format(c.node.fqdn, port))
-        # add all the participating nodes
-        d['nodes'] = {}
-        for n in self.node_set.all():
-            d['nodes'].setdefault(n.layer.id, {})[n.id] = n.fqdn
-#         # call a celery task to update the formation data bag
-#         if settings.CHEF_ENABLED:
-#             controller.update_formation.delay(self.id, d).wait()  # @UndefinedVariable
-        return d
+    def flat(self):
+        return {'id': self.id,
+                'domain': self.domain,
+                'nodes': self.nodes}
 
-    def converge(self, databag):
-        """Call a celery task to update the formation data bag."""
-        tasks.converge_formation.delay(self.id).wait()  # @UndefinedVariable
+    def build(self):
+        tasks.build_formation.delay(self).wait()
+
+    def destroy(self, *args, **kwargs):
+        tasks.destroy_formation.delay(self).wait()
+
+    def publish(self):
+        data = self.calculate()
+        CM.publish_formation(self.flat(), data)
+        return data
+
+    def converge(self, **kwargs):
+        databag = self.publish()
+        tasks.converge_formation.delay(self).wait()
         return databag
 
-    def destroy(self):
-        """Create subtasks to terminate all nodes in parallel."""
-        tasks.destroy_formation.delay(self.id).wait()  # @UndefinedVariable
+    def calculate(self):
+        """Return a representation of this formation for config management"""
+        d = {}
+        d['id'] = self.id
+        d['domain'] = self.domain
+        d['nodes'] = {}
+        proxies = []
+        for n in self.node_set.all():
+            d['nodes'][n.id] = {'fqdn': n.fqdn,
+                                'runtime': n.layer.runtime,
+                                'proxy': n.layer.proxy}
+            if n.layer.proxy is True:
+                proxies.append(n.fqdn)
+        d['apps'] = {}
+        for a in self.app_set.all():
+            d['apps'][a.id] = a.calculate()
+            d['apps'][a.id]['proxy'] = {}
+            d['apps'][a.id]['proxy']['nodes'] = proxies
+            d['apps'][a.id]['proxy']['algorithm'] = 'round_robin'
+            d['apps'][a.id]['proxy']['port'] = 80
+            d['apps'][a.id]['proxy']['backends'] = []
+            d['apps'][a.id]['containers'] = containers = {}
+            for c in self.container_set.all().order_by('created'):
+                port = 5000 + c.num
+                containers.setdefault(c.type, {})
+                containers[c.type].update(
+                    {c.num: "{0}:{1}".format(c.node.id, port)})
+                if c.type == 'web':
+                    d['apps'][a.id]['proxy']['backends'].append(
+                        "{0}:{1}".format(c.node.fqdn, port))
+        return d
 
 
 @python_2_unicode_compatible
@@ -270,7 +276,11 @@ class Layer(UuidAuditedModel):
     """
     Layer of nodes used by the formation
 
-    All nodes in a layer share the same flavor and configuration
+    All nodes in a layer share the same flavor and configuration.
+
+    The layer stores SSH settings used to trigger node convergence,
+    as well as other configuration used during node bootstrapping
+    (e.g. Chef Run List, Chef Environment)
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -282,10 +292,10 @@ class Layer(UuidAuditedModel):
     proxy = models.BooleanField(default=False)
     runtime = models.BooleanField(default=False)
 
-    # ssh settings
     ssh_username = models.CharField(max_length=64, default='ubuntu')
     ssh_private_key = models.TextField()
     ssh_public_key = models.TextField()
+    ssh_port = models.SmallIntegerField(default=22)
 
     # example: {'run_list': [deis::runtime'], 'environment': 'dev'}
     config = fields.JSONField(default='{}', blank=True)
@@ -296,13 +306,29 @@ class Layer(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    def flat(self):
+        return {'id': self.id,
+                'provider_type': self.flavor.provider.type,
+                'creds': dict(self.flavor.provider.creds),
+                'formation': self.formation.id,
+                'flavor': self.flavor.id,
+                'params': dict(self.flavor.params),
+                'proxy': self.proxy,
+                'runtime': self.runtime,
+                'ssh_username': self.ssh_username,
+                'ssh_private_key': self.ssh_private_key,
+                'ssh_public_key': self.ssh_public_key,
+                'ssh_port': self.ssh_port,
+                'config': dict(self.config)}
+
     def build(self):
-        tasks.build_layer.delay(self.id).wait()  # @UndefinedVariable
+        return tasks.build_layer.delay(self).wait()
 
     def destroy(self):
-        tasks.destroy_layer.delay(self.id).wait()  # @UndefinedVariable
+        return tasks.destroy_layer.delay(self).wait()
 
 
+@python_2_unicode_compatible
 class NodeManager(models.Manager):
 
     def new(self, formation, layer):
@@ -319,7 +345,7 @@ class NodeManager(models.Manager):
         return node
 
     def scale(self, formation, structure, **kwargs):
-        """Scale layers up or down to match requested."""
+        """Scale layers up or down to match requested structure."""
         funcs = []
         changed = False
         for layer_id, requested in structure.items():
@@ -330,13 +356,13 @@ class NodeManager(models.Manager):
                 continue
             while diff < 0:
                 node = nodes.pop(0)
-                funcs.append(tasks.destroy_node.si(node.id))
+                funcs.append(tasks.destroy_node.si(node))
                 diff = requested - len(nodes)
                 changed = True
             while diff > 0:
                 node = self.new(formation, layer)
                 nodes.append(node)
-                funcs.append(tasks.build_node.si(node.id))
+                funcs.append(tasks.build_node.si(node))
                 diff = requested - len(nodes)
                 changed = True
         # launch/terminate nodes in parallel
@@ -347,14 +373,13 @@ class NodeManager(models.Manager):
             for app in formation.app_set.all():
                 Container.objects.scale(app, app.containers)
                 Container.objects.balance(formation)
-        # once nodes are in place, recalculate the formation and update the data bag
-        databag = formation.calculate()
+        # save new structure now that scaling was successful
+        formation.nodes.update(structure)
+        formation.save()
         # force-converge nodes if there were new nodes or container rebalancing
         if changed:
-            formation.converge(databag)
-        # save the formation with updated layers
-        formation.save()
-        return databag
+            return formation.converge()
+        return formation.calculate()
 
 
 @python_2_unicode_compatible
@@ -376,7 +401,6 @@ class Node(UuidAuditedModel):
     # TODO: add celery beat tasks for monitoring node health
     status = models.CharField(max_length=64, default='up')
 
-    # synchronized with node after creation
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
     fqdn = models.CharField(max_length=256, blank=True, null=True)
     status = fields.NodeStatusField(blank=True, null=True)
@@ -387,23 +411,36 @@ class Node(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    def flat(self):
+        return {'id': self.id,
+                'provider_type': self.layer.flavor.provider.type,
+                'formation': self.formation.id,
+                'layer': self.layer.id,
+                'creds': dict(self.layer.flavor.provider.creds),
+                'params': dict(self.layer.flavor.params),
+                'runtime': self.layer.runtime,
+                'proxy': self.layer.proxy,
+                'ssh_username': self.layer.ssh_username,
+                'ssh_private_key': self.layer.ssh_private_key,
+                'config': dict(self.layer.config),
+                'provider_id': self.provider_id,
+                'fqdn': self.fqdn}
+
     def build(self):
-        return tasks.build_node.delay(self.id).wait()  # @UndefinedVariable
+        return tasks.build_node.delay(self).wait()
 
     def destroy(self):
-        return tasks.destroy_node.delay(self.id).wait()  # @UndefinedVariable
+        return tasks.destroy_node.delay(self).wait()
 
     def converge(self):
-        return tasks.converge_node.delay(self.id).wait()  # @UndefinedVariable
+        return tasks.converge_node.delay(self).wait()
 
-    def run(self, app, *args, **kwargs):
-        command = ' '.join(*args)
-        return tasks.run_node.delay(app.id, command).wait()  # @UndefinedVariable
+    def run(self, command, **kwargs):
+        return tasks.run_node.delay(self, command).wait()
 
 
 @python_2_unicode_compatible
 class App(UuidAuditedModel):
-
     """
     Application used to service requests on behalf of end-users
     """
@@ -417,23 +454,34 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def logs(self):
-        """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
-            raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+    def flat(self):
+        return {'id': self.id,
+                'formation': self.formation.id,
+                'containers': dict(self.containers)}
+
+    def build(self):
+        config = Config.objects.create(
+            version=1, owner=self.owner, app=self, values={})
+        Release.objects.create(
+            version=1, owner=self.owner, app=self, config=config)
+        self.formation.publish()
+        tasks.build_app.delay(self).wait()
+
+    def destroy(self):
+        tasks.destroy_app.delay(self).wait()
+
+    def publish(self):
+        """Publish the application to configuration management"""
+        data = self.calculate()
+        CM.publish_app(self.flat(), data)
         return data
 
-    def run(self, commands):
-        """Run a one-off command in an ephemeral app container."""
-        runtime_nodes = self.formation.node_set.filter(layer__runtime=True).order_by('?')
-        if not runtime_nodes:
-            raise EnvironmentError('No nodes available')
-        return runtime_nodes[0].run(self, commands)
+    def converge(self):
+        self.publish()
+        self.formation.converge()
 
     def calculate(self):
-        """Calculate and update the application databag"""
+        """Return a representation for configuration management"""
         d = {}
         d['id'] = self.id
         d['release'] = {}
@@ -447,13 +495,46 @@ class App(UuidAuditedModel):
             if release.build:
                 d['release']['build']['url'] = release.build.url
                 d['release']['build']['procfile'] = release.build.procfile
+        d['proxies'] = []
+        for n in self.formation.node_set.filter(layer__proxy=True):
+            d['proxies'].append(n.fqdn)
         # TODO: add proper sharing and access controls
         d['users'] = {}
         for u in (self.owner.username,):
             d['users'][u] = 'admin'
         return d
 
+    def logs(self):
+        """Return aggregated log data for this application."""
+        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        if not os.path.exists(path):
+            raise EnvironmentError('Could not locate logs')
+        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+        return data
 
+    def run(self, command):
+        """Run a one-off command in an ephemeral app container."""
+        nodes = self.formation.node_set.order_by('?')
+        releases = self.release_set.order_by('-created')
+        if not nodes:
+            raise EnvironmentError('No nodes available to run command')
+        if not releases:
+            raise EnvironmentError('No release available to run command')
+        node, release = nodes[0], releases[0]
+        # prepare ssh command
+        version = release.version
+        docker_args = ' '.join(
+            ['-v',
+             '/opt/deis/runtime/slugs/{app_id}-{version}/app:/app'.format(**locals()),
+             release.image])
+        base_cmd = "export HOME=/app; cd /app && for profile in " \
+                   "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
+        command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
+        command = "sudo docker run {docker_args} {command}".format(**locals())
+        return node.run(self, command)
+
+
+@python_2_unicode_compatible
 class ContainerManager(models.Manager):
 
     def scale(self, app, structure, **kwargs):
@@ -496,11 +577,6 @@ class ContainerManager(models.Manager):
                 container_num += 1
                 diff -= 1
         return changed
-#         # once nodes are in place, recalculate the formation and update the data bag
-#         databag = formation.calculate()
-#         if changed is True:
-#             formation.converge(databag)
-#         return databag
 
     def balance(self, formation, **kwargs):
         runtime_nodes = formation.node_set.filter(layer__runtime=True).order_by('created')
@@ -549,7 +625,6 @@ class ContainerManager(models.Manager):
 
 @python_2_unicode_compatible
 class Container(UuidAuditedModel):
-
     """
     Docker container used to securely host an application process.
     """
@@ -581,7 +656,6 @@ class Container(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Config(UuidAuditedModel):
-
     """
     Set of configuration values applied as environment variables
     during runtime execution of the Application.
@@ -604,9 +678,8 @@ class Config(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Build(UuidAuditedModel):
-
     """
-    The software build process and creation of executable binaries and assets.
+    Instance of a software build used by runtime nodes
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -634,46 +707,38 @@ class Build(UuidAuditedModel):
     def push(cls, push):
         """Process a push from a local Git server.
 
-        Creates a new Build and returns the formation's
+        Creates a new Build and returns the application's
         databag for processing by the git-receive hook
         """
         # SECURITY:
         # we assume the first part of the ssh key name
         # is the authenticated user because we trust gitosis
         username = push.pop('username').split('_')[0]
-        # retrieve the user and formation instances
+        # retrieve the user and app instances
         user = User.objects.get(username=username)
-        formation = Formation.objects.get(owner=user,
-                                          id=push.pop('formation'))
+        app = App.objects.get(owner=user, id=push.pop('app'))
         # merge the push with the required model instances
         push['owner'] = user
-        push['formation'] = formation
+        push['app'] = app
         # create the build
         new_build = cls.objects.create(**push)
         # send a release signal
-        release_signal.send(sender=push, build=new_build,
-                            formation=formation,
-                            user=user)
+        release_signal.send(sender=push, build=new_build, app=app, user=user)
         # see if we need to scale an initial web container
-        if len(formation.node_set.filter(layer__runtime=True)) > 0 and \
-           len(formation.container_set.filter(type='web')) < 1:
+        if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
+           len(app.formation.container_set.filter(type='web')) < 1:
             # scale an initial web containers
-            formation.containers['web'] = 1
-            formation.scale_containers()
-        # recalculate the formation databag including the new
-        # build and release
-        databag = formation.calculate()
-        # force-converge all of the chef nodes
-        formation.converge(databag)
-        # return the databag object so the git-receive hook
-        # can tell the user about proxy URLs, etc.
-        return databag
+            Container.objects.scale(app, {'web': 1})
+        # publish the app, triggering a formation converge
+        return app.publish()
 
 
 @python_2_unicode_compatible
 class Release(UuidAuditedModel):
     """
-    The deployment of a Build to Instances and the restarting of Processes.
+    Software release deployed by the application platform
+
+    Releases contain a Build and a Config.
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -682,7 +747,6 @@ class Release(UuidAuditedModel):
 
     config = models.ForeignKey('Config')
     image = models.CharField(max_length=256, default='deis/buildstep')
-    # build only required for heroku-style apps
     build = models.ForeignKey('Build', blank=True, null=True)
 
     class Meta:
@@ -701,11 +765,13 @@ class Release(UuidAuditedModel):
 
 @receiver(release_signal)
 def new_release(sender, **kwargs):
-    """Catch a release_signal and clone a new release from the previous one.
-
-    :returns: a newly created :class:`Release`
     """
-    app, user = kwargs['app'], kwargs['user']
+    Catch a release_signal and create a new release
+    using the latest Build and Config for an application.
+
+    Releases start at v1 and auto-increment.
+    """
+    user, app, = kwargs['user'], kwargs['app']
     last_release = Release.objects.filter(app=app).order_by('-created')[0]
     image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
@@ -727,60 +793,54 @@ def new_release(sender, **kwargs):
     release = Release.objects.create(
         owner=user, app=app, image=image, config=config,
         build=build, version=new_version)
+    # converge the application
+    app.converge()
     return release
 
 
-def calculate(self):
-    """
-    Calculate configuration management representation
-    for this user account
-    """
+def _user_flat(self):
+    return {'username': self.username}
+
+
+def _user_calculate(self):
     data = {'id': self.username, 'ssh_keys': {}}
     for k in self.key_set.all():
         data['ssh_keys'][k.id] = k.public
     return data
 
+
+def _user_publish(self):
+    CM.publish_user(self.flat(), self.calculate())
+
+
 # attach to built-in django user
-User.calculate = calculate
+User.flat = _user_flat
+User.calculate = _user_calculate
+User.publish = _user_publish
 
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
 
-def update_user(sender, **kwargs):
-    user = kwargs['instance']
-    tasks.publish_user.delay(user.username, user.calculate()).wait()
+def _publish_to_cm(**kwargs):
+    kwargs['instance'].publish()
 
 
-def update_key(sender, **kwargs):
-    user = kwargs['instance'].owner
-    tasks.publish_user.delay(user.username, user.calculate()).wait()
-
-
-def update_app(sender, **kwargs):
-    tasks.publish_app.delay(kwargs['instance'].id).wait()
-
-
-def delete_app(sender, **kwargs):
-    tasks.purge_app.delay(kwargs['instance'].id).wait()
-
-
-def update_formation(sender, **kwargs):
-    tasks.publish_formation.delay(kwargs['instance'].id).wait()
-
-
-def delete_formation(sender, **kwargs):
-    tasks.purge_formation.delay(kwargs['instance'].id).wait()
+def _publish_user_to_cm(**kwargs):
+    if kwargs.get('update_fields') == frozenset(['last_login']):
+        return
+    kwargs['instance'].publish()
 
 # use django signals to synchronize database updates with
 # the configuration management backend
-post_save.connect(update_user, sender=User)
-post_save.connect(update_key, sender=Key)
-post_delete.connect(update_key, sender=Key)
-post_save.connect(update_app, sender=App)
-post_delete.connect(delete_app, sender=App)
-post_save.connect(update_formation, sender=Formation)
-post_delete.connect(delete_formation, sender=Formation)
+post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
+post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
+post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
 
-# import tasks after models are defined
+
+# now that we've defined models that may be imported by celery tasks
+# import tasks and user-defined config management module
 from api import tasks
+
+import importlib
+CM = importlib.import_module(settings.CM_MODULE)

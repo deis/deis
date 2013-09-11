@@ -3,12 +3,11 @@ from __future__ import unicode_literals
 
 import json
 import time
-import yaml
 
 from boto import ec2
 from boto.exception import EC2ResponseError
 
-from api.ssh import connect_ssh, exec_ssh
+# from api.ssh import connect_ssh, exec_ssh
 from deis import settings
 
 
@@ -26,108 +25,7 @@ IMAGE_MAP = {
 }
 
 
-def build_layer(layer):
-    region = layer.flavor.params.get('region', 'us-east-1')
-    conn = _create_ec2_connection(layer.flavor.provider.creds, region)
-    # create a new sg and authorize all ports
-    # use iptables on the host to firewall ports
-    sg_name = "{}-{}".format(layer.formation.id, layer.id)
-    sg = conn.create_security_group(sg_name, 'Created by Deis')
-    # loop until the sg is *actually* there
-    for i in xrange(10):
-        try:
-            sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
-                         cidr_ip='0.0.0.0/0')
-            break
-        except EC2ResponseError:
-            if i < 10:
-                time.sleep(1.5)
-                continue
-            else:
-                raise
-    return layer
-
-
-def destroy_layer(layer):
-    # there's an ec2 race condition on instances terminating
-    # successfully but still holding a lock on the security group
-    # let's take a nap
-    time.sleep(5)
-    region = layer.flavor.params.get('region', 'us-east-1')
-    sg_name = "{}-{}".format(layer.formation.id, layer.id)
-    conn = _create_ec2_connection(layer.flavor.provider.creds, region)
-    try:
-        conn.delete_security_group(sg_name)
-    except EC2ResponseError as e:
-        if e.code != 'InvalidGroup.NotFound':
-            raise e
-    return layer
-
-
-def build_node(node, config):
-    creds = node.layer.flavor.provider.creds.copy()
-    params = node.layer.flavor.params.copy()
-    # connect to ec2
-    region = params.get('region', 'us-east-1')
-    conn = _create_ec2_connection(creds, region)
-    # use the layer name as the security group name
-    sg_name = "{}-{}".format(node.formation.id, node.layer.id)
-    sg = conn.get_all_security_groups(sg_name)[0]
-    params.setdefault('security_groups', []).append(sg.name)
-    # retrieve the ami for launching this node
-    image_id = params.get(
-        'image', getattr(settings, 'IMAGE_MAP', IMAGE_MAP)[region])
-    images = conn.get_all_images([image_id])
-    if len(images) != 1:
-        raise LookupError('Could not find AMI: %s' % image_id)
-    image = images[0]
-    kwargs = _prepare_run_kwargs(params, config)
-    reservation = image.run(**kwargs)
-    instances = reservation.instances
-    boto = instances[0]
-    # sleep before tagging
-    time.sleep(10)
-    boto.update()
-    boto.add_tag('Name', node.id)
-    # loop until running
-    while(True):
-        time.sleep(2)
-        boto.update()
-        if boto.state == 'running':
-            break
-    # save node updates
-    node.provider_id = boto.id
-    node.fqdn = boto.public_dns_name
-    node.metadata = _format_metadata(boto)
-    node.save()
-    # loop until cloud-init is finished
-    ssh = connect_ssh(node.layer.ssh_username,
-                      boto.public_dns_name, 22,
-                      node.layer.ssh_private_key,
-                      timeout=120)
-    initializing = True
-    while initializing:
-        time.sleep(10)
-        initializing, _rc = exec_ssh(
-            ssh, 'ps auxw | egrep "cloud-init" | grep -v egrep')
-    return node
-
-
-def destroy_node(node):
-    region = node.layer.flavor.params.get('region', 'us-east-1')
-    conn = _create_ec2_connection(node.layer.flavor.provider.creds, region)
-    if node.provider_id:
-        conn.terminate_instances([node.provider_id])
-        i = conn.get_all_instances([node.provider_id])[0].instances[0]
-        while(True):
-            time.sleep(2)
-            i.update()
-            if i.state == "terminated":
-                break
-    return node
-
-
-def seed_flavors(user):
+def seed_flavors():
     """Seed the database with default Flavors for each EC2 region."""
     flavors = []
     for r in ('us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1',
@@ -143,6 +41,94 @@ def seed_flavors(user):
     return flavors
 
 
+def build_layer(layer):
+    region = layer['params'].get('region', 'us-east-1')
+    conn = _create_ec2_connection(layer['creds'], region)
+    # create a new sg and authorize all ports
+    # use iptables on the host to firewall ports
+    name = "{formation}-{id}".format(**layer)
+    sg = conn.create_security_group(name, 'Created by Deis')
+    # import a new keypair using the layer key material
+    conn.import_key_pair(name, layer['ssh_public_key'])
+    # loop until the sg is *actually* there
+    for i in xrange(10):
+        try:
+            sg.authorize(ip_protocol='tcp', from_port=1, to_port=65535,
+                         cidr_ip='0.0.0.0/0')
+            break
+        except EC2ResponseError:
+            if i < 10:
+                time.sleep(1.5)
+                continue
+            else:
+                raise RuntimeError('Failed to authorize security group')
+
+
+def destroy_layer(layer):
+    region = layer['params'].get('region', 'us-east-1')
+    name = "{formation}-{id}".format(**layer)
+    conn = _create_ec2_connection(layer['creds'], region)
+    conn.delete_key_pair(name)
+    # there's an ec2 race condition on instances terminating
+    # successfully but still holding a lock on the security group
+    # let's take a nap
+    time.sleep(5)
+    try:
+        conn.delete_security_group(name)
+    except EC2ResponseError as e:
+        if e.code != 'InvalidGroup.NotFound':
+            raise e
+
+
+def build_node(node):
+    params, creds = node['params'], node['creds']
+    region = params.setdefault('region', 'us-east-1')
+    conn = _create_ec2_connection(creds, region)
+    name = "{formation}-{layer}".format(**node)
+    params['key_name'] = name
+    sg = conn.get_all_security_groups(name)[0]
+    params.setdefault('security_groups', []).append(sg.name)
+    image_id = params.get(
+        'image', getattr(settings, 'IMAGE_MAP', IMAGE_MAP)[region])
+    images = conn.get_all_images([image_id])
+    if len(images) != 1:
+        raise LookupError('Could not find AMI: %s' % image_id)
+    image = images[0]
+    kwargs = _prepare_run_kwargs(params)
+    reservation = image.run(**kwargs)
+    instances = reservation.instances
+    boto = instances[0]
+    # sleep before tagging
+    time.sleep(10)
+    boto.update()
+    boto.add_tag('Name', node['id'])
+    # loop until running
+    while(True):
+        time.sleep(2)
+        boto.update()
+        if boto.state == 'running':
+            break
+    # prepare return values
+    provider_id = boto.id
+    fqdn = boto.public_dns_name
+    metadata = _format_metadata(boto)
+    return provider_id, fqdn, metadata
+
+
+def destroy_node(node):
+    provider_id = node['provider_id']
+    region = node['params'].get('region', 'us-east-1')
+    conn = _create_ec2_connection(node['creds'], region)
+    if provider_id:
+        conn.terminate_instances([provider_id])
+        i = conn.get_all_instances([provider_id])[0].instances[0]
+        while(True):
+            time.sleep(2)
+            i.update()
+            if i.state == "terminated":
+                break
+
+
 def _create_ec2_connection(creds, region):
     if not creds:
         raise EnvironmentError('No credentials provided')
@@ -151,11 +137,10 @@ def _create_ec2_connection(creds, region):
                                  aws_secret_access_key=creds['secret_key'])
 
 
-def _prepare_run_kwargs(params, init):
+def _prepare_run_kwargs(params):
     # start with sane defaults
     kwargs = {
         'min_count': 1, 'max_count': 1,
-        'key_name': None,
         'user_data': None, 'addressing_type': None,
         'instance_type': None, 'placement': None,
         'kernel_id': None, 'ramdisk_id': None,
@@ -169,14 +154,15 @@ def _prepare_run_kwargs(params, init):
     # lookup kwargs from params
     param_kwargs = {
         'instance_type': params.get('size', 'm1.medium'),
-        'key_name': params.get('key_name', None),
         'security_groups': params['security_groups'],
         'placement': requested_zone,
+        'key_name': params['key_name'],
         'kernel_id': params.get('kernel', None),
     }
-    # update user_data
-    cloud_config = '#cloud-config\n' + yaml.safe_dump(init)
-    kwargs.update({'user_data': cloud_config})
+    # add user_data if provided in params
+    user_data = params.get('user_data')
+    if user_data:
+        kwargs.update({'user_data': user_data})
     # params override defaults
     kwargs.update(param_kwargs)
     return kwargs

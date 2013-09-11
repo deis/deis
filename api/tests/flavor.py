@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
-import yaml
 
 
 class FlavorTest(TestCase):
@@ -43,11 +42,11 @@ class FlavorTest(TestCase):
         url = "/api/flavors/{flavor_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        new_init = {'ssh_authorized_keys': ['ssh-rsa aaaaaaaaa']}
-        body = {'init': yaml.safe_dump(new_init)}
+        new_params = {'instance_size': 't1.micro'}
+        body = {'params': json.dumps(new_params)}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(yaml.safe_load(response.data['init']), new_init)
+        self.assertEqual(json.loads(response.data['params']), new_params)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 

@@ -36,7 +36,7 @@ class NodeTest(TestCase):
         Test that a user can create, read, update and delete a node
         """
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']
@@ -77,7 +77,7 @@ class NodeTest(TestCase):
 
     def test_node_scale(self):
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
@@ -105,10 +105,6 @@ class NodeTest(TestCase):
         body = {'proxy': 2, 'runtime': 4}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('nodes', response.data)
-        self.assertIn('containers', response.data)
-        self.assertIn('proxy', response.data)
-        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -122,10 +118,6 @@ class NodeTest(TestCase):
         body = {'proxy': 1, 'runtime': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('nodes', response.data)
-        self.assertIn('containers', response.data)
-        self.assertIn('proxy', response.data)
-        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -139,10 +131,6 @@ class NodeTest(TestCase):
         body = {'proxy': 0, 'runtime': 0}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('nodes', response.data)
-        self.assertIn('containers', response.data)
-        self.assertIn('proxy', response.data)
-        self.assertIn('release', response.data)
         url = '/api/formations/{formation_id}/nodes'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -159,7 +147,7 @@ class NodeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # try to scale and a formation
         url = '/api/formations'
-        body = {'id': 'autotest'}
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa

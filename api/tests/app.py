@@ -10,6 +10,7 @@ import json
 import os.path
 
 from django.test import TestCase
+
 from deis import settings
 
 
@@ -33,8 +34,9 @@ class AppTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = 'autotest'
-        response = self.client.post('/api/formations', json.dumps({'id': formation_id}),
-                                    content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(
+            {'id': formation_id, 'domain': 'localhost.localdomain'}),
+            content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # create & scale a basic formation
         url = '/api/formations/{formation_id}/layers'.format(**locals())

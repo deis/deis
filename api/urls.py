@@ -276,8 +276,6 @@ urlpatterns = patterns(
     # formation actions
     url(r'^formations/(?P<id>[a-z0-9-]+)/scale/?',
         views.FormationViewSet.as_view({'post': 'scale'})),
-    url(r'^formations/(?P<id>[a-z0-9-]+)/scale/containers/?',
-        views.FormationViewSet.as_view({'post': 'scale_containers'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/balance/?',
         views.FormationViewSet.as_view({'post': 'balance'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/calculate/?',
@@ -286,7 +284,8 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'converge'})),
     # formation base endpoint
     url(r'^formations/(?P<id>[a-z0-9-]+)/?',
-        views.FormationViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+        views.FormationViewSet.as_view({
+            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^formations/?',
         views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
     # application release components

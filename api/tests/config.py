@@ -30,8 +30,9 @@ class ConfigTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        response = self.client.post('/api/formations', json.dumps({'id': 'autotest'}),
-                                    content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(
+            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
+            content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_config(self):

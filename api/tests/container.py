@@ -44,8 +44,9 @@ class ContainerTest(TestCase):
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        response = self.client.post('/api/formations', json.dumps({'id': 'autotest'}),
-                                    content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(
+            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
+            content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # create & scale a basic formation
         formation_id = 'autotest'
@@ -116,8 +117,9 @@ class ContainerTest(TestCase):
 
     def test_container_scale_single_layer(self):
         # create & scale a single layer formation
-        response = self.client.post('/api/formations', json.dumps({'id': 'single-layer'}),
-                                    content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps(
+            {'id': 'single-layer', 'domain': 'localhost.localdomain'}),
+            content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = 'single-layer'
         url = '/api/formations/{formation_id}/layers'.format(**locals())
@@ -198,7 +200,7 @@ class ContainerTest(TestCase):
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(get_allocations(response.data['containers']['web']),
+        self.assertEqual(get_allocations(response.data['apps'][app_id]['containers']['web']),
                          [3, 3, 3, 4])
         # With 1 node
         url = "/api/formations/{formation_id}/scale".format(**locals())
@@ -209,7 +211,7 @@ class ContainerTest(TestCase):
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(get_allocations(response.data['containers']['web']),
+        self.assertEqual(get_allocations(response.data['apps'][app_id]['containers']['web']),
                          [13])
         # With 2 nodes
         url = "/api/formations/{formation_id}/scale".format(**locals())
@@ -220,7 +222,7 @@ class ContainerTest(TestCase):
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(get_allocations(response.data['containers']['web']),
+        self.assertEqual(get_allocations(response.data['apps'][app_id]['containers']['web']),
                          [6, 7])
         # With 8 containers
         url = "/api/apps/{app_id}/scale".format(**locals())
@@ -231,7 +233,7 @@ class ContainerTest(TestCase):
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(get_allocations(response.data['containers']['web']),
+        self.assertEqual(get_allocations(response.data['apps'][app_id]['containers']['web']),
                          [4, 4])
         # With 0 nodes
         url = "/api/formations/{formation_id}/scale".format(**locals())
@@ -239,7 +241,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         # test that there are no containers
-        self.assertNotIn('web', response.data['containers'])
+        self.assertNotIn('web', response.data['apps'][app_id]['containers'])
         # With 5 containers
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 5}
@@ -256,7 +258,7 @@ class ContainerTest(TestCase):
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(get_allocations(response.data['containers']['web']),
+        self.assertEqual(get_allocations(response.data['apps'][app_id]['containers']['web']),
                          [8])
 
     def test_container_balance(self):
@@ -289,7 +291,7 @@ class ContainerTest(TestCase):
         # calculate the formation
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
-        containers = response.data['containers']
+        containers = response.data['apps'][app_id]['containers']
         # check balance of web types
         by_backend = {}
         for c in containers['web'].values():
@@ -314,7 +316,7 @@ class ContainerTest(TestCase):
         # calculate the formation
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
-        containers = response.data['containers']
+        containers = response.data['apps'][app_id]['containers']
         # check balance of web types
         by_backend = {}
         for c in containers['web'].values():
@@ -343,7 +345,7 @@ class ContainerTest(TestCase):
         # calculate the formation
         url = "/api/formations/{formation_id}/calculate".format(**locals())
         response = self.client.post(url)
-        containers = response.data['containers']
+        containers = response.data['apps'][app_id]['containers']
         # check balance of web types
         by_backend = {}
         for c in containers['web'].values():

@@ -1,17 +1,16 @@
 
 from __future__ import unicode_literals
 
-import json
-import os.path
+import os
 import re
 import subprocess
+import tempfile
 import time
 
 from celery.canvas import group
 
 from api.ssh import exec_ssh, connect_ssh
 from cm.chef_api import ChefAPI
-
 
 CHEF_CONFIG_PATH = '/etc/chef'
 CHEF_INSTALL_TYPE = 'gems'
@@ -56,87 +55,70 @@ def _get_client():
     return ChefAPI(CHEF_SERVER_URL, CHEF_CLIENT_NAME, CHEF_CLIENT_KEY)
 
 
-def configure_node(node):
-    config = node.layer.config.copy()
-    # http://cloudinit.readthedocs.org/en/latest/topics/examples.html#install-and-run-chef-recipes
-    chef = config['chef'] = {}
-    chef['node_name'] = node.id
-    # if run_list specified in layer, use it (assumes csv)
-    run_list = node.layer.config.get('run_list', [])
-    if run_list:
-        chef['run_list'] = run_list.split(',')
-    # otherwise construct a run_list using proxy/runtime flags
-    else:
-        run_list = ['recipe[deis]']
-        if node.layer.runtime is True:
-            run_list.append('recipe[deis::runtime]')
-        if node.layer.proxy is True:
-            run_list.append('recipe[deis::proxy]')
-        chef['run_list'] = run_list
-    attrs = node.layer.config.get('initial_attributes')
-    if attrs:
-        chef['initial_attributes'] = attrs
-    # add global chef config
-    chef['version'] = CHEF_CLIENT_VERSION
-    chef['ruby_version'] = CHEF_RUBY_VERSION
-    chef['server_url'] = CHEF_SERVER_URL
-    chef['install_type'] = CHEF_INSTALL_TYPE
-    chef['environment'] = CHEF_ENVIRONMENT
-    chef['validation_name'] = CHEF_VALIDATION_NAME
-    chef['validation_key'] = CHEF_VALIDATION_KEY
-    return config
-
-
 def bootstrap_node(node):
-    # loop until node is registered with chef
-    # if chef bootstrapping fails, the node will not complete registration
-    registered = False
-    while not registered:
-        # reinstatiate the client on each poll attempt
-        # to avoid disconnect errors
-        client = _get_client()
-        resp, status = client.get_node(node.id)
-        if status == 200:
-            body = json.loads(resp)
-            # wait until idletime is not null
-            # meaning the node is registered
-            if body.get('automatic', {}).get('idletime'):
-                break
-        time.sleep(5)
-    return node
+    # block until we can connect over ssh
+    ssh = connect_ssh(node['ssh_username'], node['fqdn'], node.get('ssh_port', 22),
+                      node['ssh_private_key'], timeout=120)
+    # block until ubuntu cloud-init is finished
+    initializing = True
+    while initializing:
+        time.sleep(10)
+        initializing, _rc = exec_ssh(ssh, 'ps auxw | egrep "cloud-init" | grep -v egrep')
+    # write out private key and prepare to `knife bootstrap`
+    try:
+        _, pk_path = tempfile.mkstemp()
+        with open(pk_path, 'w') as f:
+            f.write(node['ssh_private_key'])
+        # build knife bootstrap command
+        args = ['knife', 'bootstrap', node['fqdn']]
+        args.extend(['--identity-file', pk_path])
+        args.extend(['--node-name', node['id']])
+        args.extend(['--sudo', '--ssh-user', node['ssh_username']])
+        args.extend(['--ssh-port', str(node.get('ssh_port', 22))])
+        args.extend(['--bootstrap-version', CHEF_CLIENT_VERSION])
+        args.extend(['--no-host-key-verify'])
+        args.extend(['--run-list', _construct_run_list(node)])
+        print(' '.join(args))
+        # TODO: figure out why home isn't being set correctly for knife exec
+        env = os.environ.copy()
+        env['HOME'] = '/opt/deis'
+        # execute knife bootstrap
+        p = subprocess.Popen(args, env=env, stderr=subprocess.PIPE)
+        rc = p.wait()
+        if rc != 0:
+            print(p.stderr.read())
+            raise RuntimeError('Node Bootstrap Error')
+    # remove private key from fileystem
+    finally:
+        pass  # os.remove(pk_path)
 
 
-def destroy_node(node):
+def _construct_run_list(node):
+    config = node['config']
+    # if run_list override specified, use it (assumes csv)
+    run_list = config.get('run_list', [])
+    # otherwise construct a run_list using proxy/runtime flags
+    if not run_list:
+        run_list = ['recipe[deis]']
+        if node.get('runtime') is True:
+            run_list.append('recipe[deis::runtime]')
+        if node.get('proxy') is True:
+            run_list.append('recipe[deis::proxy]')
+    return ','.join(run_list)
+
+
+def purge_node(node):
     """
     Purge the Node & Client records from Chef Server
     """
     client = _get_client()
-    client.delete_node(node.id)
-    client.delete_client(node.id)
-    return node
-
-
-def update_user(user):
-    client = _get_client()
-    # client.create_databag_item('deis-users', user.username, user.calculate())
-    client.update_databag_item('deis-users', user.username, user.calculate())
-
-
-def update_app(app):
-    client = _get_client()
-    client.update_databag_item('deis-apps', app.id, app.calculate())
-
-
-def update_formation(formation, client):
-    client.update_databag_item('deis-formations', formation.id, formation.calculate())
+    client.delete_node(node['id'])
+    client.delete_client(node['id'])
 
 
 def converge_controller():
-    # NOTE: converging the controller can overwrite any in-place
-    # changes to application code
     try:
-        return subprocess.check_output(
-            ['sudo', 'chef-client', '--override-runlist', 'recipe[deis::gitosis]'])
+        return subprocess.check_output(['sudo', 'chef-client'])
     except subprocess.CalledProcessError as e:
         print(e)
         print(e.output)
@@ -144,10 +126,14 @@ def converge_controller():
 
 
 def converge_node(node):
-    ssh = connect_ssh(node.layer.ssh_username,
-                      node.fqdn, 22,
-                      node.layer.ssh_private_key)
+    ssh = connect_ssh(node['ssh_username'],
+                      node['fqdn'], 22,
+                      node['ssh_private_key'])
     output, rc = exec_ssh(ssh, 'sudo chef-client')
+    if rc != 0:
+        e = RuntimeError('Node converge error')
+        e.output = output
+        raise e
     return output, rc
 
 
@@ -164,29 +150,24 @@ def converge_formation(formation):
     return job.apply_async().join()
 
 
-def publish_user(username, data):
-    _publish('deis-users', username, data)
-    return username
+def publish_user(user, data):
+    _publish('deis-users', user['username'], data)
 
 
-def publish_app(app_id, data):
-    _publish('deis-apps', app_id, data)
-    return app_id
+def publish_app(app, data):
+    _publish('deis-apps', app['id'], data)
 
 
-def purge_app(app_id):
-    _purge('deis-apps', app_id)
-    return app_id
+def purge_app(app):
+    _purge('deis-apps', app['id'])
 
 
-def publish_formation(formation_id, data):
-    _publish('deis-formations', formation_id, data)
-    return formation_id
+def publish_formation(formation, data):
+    _publish('deis-formations', formation['id'], data)
 
 
-def purge_formation(formation_id):
-    _purge('deis-formations', formation_id)
-    return formation_id
+def purge_formation(formation):
+    _purge('deis-formations', formation['id'])
 
 
 def _publish(data_bag, item_name, item_value):

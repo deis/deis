@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
+from celery.canvas import group
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.utils import IntegrityError
 from django.utils import timezone
@@ -16,7 +17,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from api import models
+from api import models, tasks
 from api import serializers
 
 
@@ -61,7 +62,6 @@ class IsOwner(permissions.BasePermission):
 
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
-
     model = User
 
     authentication_classes = (AnonymousAuthentication,)
@@ -104,19 +104,6 @@ class KeyViewSet(OwnerViewSet):
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
 
-    def post_save(self, obj, created=False, **kwargs):
-        """Publish all Formations when a Key is saved so gitosis stays updated.
-        """
-        models.Formation.objects.publish()
-
-    def destroy(self, request, **kwargs):
-        """Publish all Formations when a Key is destroyed so gitosis
-        stays updated.
-        """
-        resp = super(KeyViewSet, self).destroy(self, request, **kwargs)
-        models.Formation.objects.publish()
-        return resp
-
 
 class ProviderViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Provider`."""
@@ -132,19 +119,6 @@ class FlavorViewSet(OwnerViewSet):
     model = models.Flavor
     serializer_class = serializers.FlavorSerializer
     lookup_field = 'id'
-
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        # set default cloud-init configuration
-        if not 'init' in request.DATA:
-            request.DATA['init'] = models.FlavorManager.load_cloud_config_base()
-#         params = json.loads(request.DATA['params'])
-#         params.setdefault('region', 'us-east-1')
-#         params.setdefault('image', models.Flavor.IMAGE_MAP[params['region']])
-#         params.setdefault('size', 'm1.medium')
-#         params.setdefault('zone', 'any')
-#         request.DATA['params'] = json.dumps(params)
-        return super(FlavorViewSet, self).create(request, **kwargs)
 
 
 class FormationViewSet(OwnerViewSet):
@@ -166,6 +140,10 @@ class FormationViewSet(OwnerViewSet):
                                 status=HTTP_400_BAD_REQUEST)
             raise e
 
+    def post_save(self, formation, created=False, **kwargs):
+        if created:
+            formation.build()
+
     def scale(self, request, **kwargs):
         new_structure = {}
         try:
@@ -181,18 +159,11 @@ class FormationViewSet(OwnerViewSet):
             return Response('No provider credentials available', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         try:
-            changed = False
-            changed = models.Node.objects.scale(formation, new_structure)
+            databag = models.Node.objects.scale(formation, new_structure)
         except models.ScalingError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         except models.Layer.DoesNotExist as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-        if changed:
-            databag = formation.calculate()
-            formation.converge(databag)
-        # save new structure now that scaling was successful
-        formation.nodes.update(new_structure)
-        formation.save()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
@@ -210,26 +181,9 @@ class FormationViewSet(OwnerViewSet):
 
     def converge(self, request, **kwargs):
         formation = self.get_object()
-        databag = formation.converge(formation.calculate())
+        databag = formation.converge()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
-
-    def logs(self, request, **kwargs):
-        formation = self.get_object()
-        try:
-            logs = formation.logs()
-        except EnvironmentError:
-            return Response("No logs for {}".format(formation.id),
-                            status=status.HTTP_404_NOT_FOUND,
-                            content_type='text/plain')
-        return Response(logs, status=status.HTTP_200_OK,
-                        content_type='text/plain')
-
-    def run(self, request, **kwargs):
-        formation = self.get_object()
-        output_and_rc = formation.run(request.DATA['commands'])
-        return Response(output_and_rc, status=status.HTTP_200_OK,
-                        content_type='text/plain')
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
@@ -284,7 +238,6 @@ class FormationLayerViewSet(FormationScopedViewSet):
     def destroy(self, request, **kwargs):
         layer = self.get_object()
         layer.destroy()
-        layer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -334,12 +287,9 @@ class AppViewSet(OwnerViewSet):
 
     def post_save(self, app, created=False, **kwargs):
         if created:
-            config = models.Config.objects.create(
-                version=1, owner=app.owner, app=app, values={})
-            models.Release.objects.create(
-                version=1, owner=app.owner, app=app, config=config)
-        # update gitosis
-        models.Formation.objects.publish()
+            app.build()
+        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
+                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
 
     def scale(self, request, **kwargs):
         new_structure = {}
@@ -378,7 +328,9 @@ class AppViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         app = self.get_object()
-        app.delete()
+        app.destroy()
+        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
+                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -403,9 +355,8 @@ class AppConfigViewSet(BaseAppViewSet):
             models.release_signal.send(
                 sender=self, config=obj, app=obj.app,
                 user=self.request.user)
-            # recalculate and converge after each config update
-            databag = obj.app.calculate()
-            obj.app.formation.converge(databag)
+            # converge after each config update
+            obj.app.formation.converge()
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
