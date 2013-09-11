@@ -409,9 +409,9 @@ class DeisClient(object):
         """
         Destroy an application
 
-        Usage: deis apps:destroy [--app=<app>] [--confirm=<confirm>]
+        Usage: deis apps:destroy <id> [--confirm=<confirm>]
         """
-        app = args.get('<app>')
+        app = args.get('<id>')
         if not app:
             app = self._session.app
         confirm = args.get('--confirm')
@@ -1124,10 +1124,10 @@ class DeisClient(object):
             inp = raw_input('Which would you like to use with Deis? ')
             try:
                 path = pubkeys[int(inp) - 1]
-                key_id = path.split(os.path.sep)[-1].replace('.pub', '')
             except:
                 print('Aborting')
                 return
+        key_id = path.split(os.path.sep)[-1].replace('.pub', '')
         with open(path) as f:
             data = f.read()
         match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
@@ -1173,7 +1173,7 @@ class DeisClient(object):
         key = args.get('<key>')
         sys.stdout.write("Removing {} SSH Key... ".format(key))
         sys.stdout.flush()
-        response = self._dispatch('delete', "/keys/{}".format(key))
+        response = self._dispatch('delete', "/api/keys/{}".format(key))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done')
         else:
