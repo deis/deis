@@ -2,7 +2,7 @@
 azure==0.7.0
 boto==2.11.0
 celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
-Django==1.5.3
+Django==1.5.4
 django-allauth==0.13.0
 django-celery==3.0.23
 django-json-field==0.5.5
