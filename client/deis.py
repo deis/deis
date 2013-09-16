@@ -595,26 +595,6 @@ class DeisClient(object):
         """
         return self.builds_list(args)
 
-    def builds_create(self, args):
-        """
-        Create a new build for a formation
-
-        Usage: deis builds:create - [--formation=<formation>]
-        """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        data = sys.stdin.read()
-        # url / sha / slug_size / procfile / checksum
-        j = json.loads(data)
-        response = self._dispatch('post',
-                                  "/api/formations/{}/builds".format(formation),
-                                  body=json.dumps(j))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('Build created.')
-        else:
-            raise ResponseError(response)
-
     def builds_list(self, args):
         """
         List build history for a formation
@@ -766,7 +746,7 @@ class DeisClient(object):
 
     def containers_scale(self, args):
         """
-        Scale containers for a formation
+        Scale an application's containers by type
 
         Example: deis containers:scale web=4 worker=2
 
@@ -1276,13 +1256,13 @@ class DeisClient(object):
         """
         Retrieve the most recent log events
 
-        Usage: deis logs
+        Usage: deis logs [--app=<app>]
         """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         response = self._dispatch('post',
-                                  "/api/formations/{}/logs".format(formation))
+                                  "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(response.json())
         elif response.status_code == requests.codes.not_found:  # @UndefinedVariable
@@ -1389,24 +1369,39 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def providers(self, args):
+    def nodes_converge(self, args):
         """
-        Valid commands for providers:
+        Force converge a node
 
-        providers:list        list available providers for the logged in user
-        providers:discover    discover provider credentials using envvars
-        providers:create      create a new provider for use by deis
-        providers:info        print information about a specific provider
+        Converging a node will force a client-client run and
+        return its output
 
-        Use `deis help [command]` to learn more
+        Usage: deis nodes:converge <id>
         """
-        return self.providers_list(args)
+        node = args.get('<id>')
+        sys.stdout.write('Converging {} node... '.format(node))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post',
+                                      "/api/nodes/{}/converge".format(node))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('done in {}s'.format(int(time.time() - before)))
+            output = json.loads(response.content)
+            print(output)
+        else:
+            raise ResponseError(response)
 
-    def ssh(self, args):
+    def nodes_ssh(self, args):
         """
         SSH into a node
 
-        Usage: deis ssh <node> [<command>...]
+        Usage: deis nodes:ssh <node> [<command>...]
         """
         node = args.get('<node>')
         response = self._dispatch('get',
@@ -1431,6 +1426,19 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def providers(self, args):
+        """
+        Valid commands for providers:
+
+        providers:list        list available providers for the logged in user
+        providers:discover    discover provider credentials using envvars
+        providers:create      create a new provider for use by deis
+        providers:info        print information about a specific provider
+
+        Use `deis help [command]` to learn more
+        """
+        return self.providers_list(args)
+
     def open(self, args):
         """
         Open a URL to the application in a browser
@@ -1446,7 +1454,7 @@ class DeisClient(object):
                                   "/api/apps/{}/calculate".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
-            proxies = databag['nodes'].get('proxy', {}).values()
+            proxies = databag.get('proxies', [])
             if proxies:
                 proxy = random.choice(proxies)
                 # use the OS's default handler to open this URL
@@ -1624,6 +1632,7 @@ def parse_args(cmd):
         'scale': 'containers:scale',
         'converge': 'formations:converge',
         'calculate': 'apps:calculate',
+        'ssh': 'nodes:ssh',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]
