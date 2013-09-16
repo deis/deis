@@ -173,6 +173,7 @@ class FormationViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         formation = self.get_object()
         formation.destroy()
+        tasks.converge_controller.delay().wait()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
