@@ -135,6 +135,14 @@ class AppTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[1], 0)
+        # test calculate
+        url = '/api/apps/{app_id}/calculate'.format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        databag = response.data
+        self.assertIn('release', databag)
+        self.assertIn('version', databag['release'])
+        self.assertIn('containers', databag)
 
     def test_app_errors(self):
         formation_id, app_id = 'autotest', 'autotest-errors'

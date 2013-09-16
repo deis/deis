@@ -280,6 +280,12 @@ class AppViewSet(OwnerViewSet):
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
+    def calculate(self, request, **kwargs):
+        app = self.get_object()
+        databag = app.calculate()
+        return Response(databag, status=status.HTTP_200_OK,
+                        content_type='application/json')
+
     def logs(self, request, **kwargs):
         app = self.get_object()
         try:

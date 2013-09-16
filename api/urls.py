@@ -313,6 +313,8 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'post': 'logs'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/run/?',
         views.AppViewSet.as_view({'post': 'run'})),
+    url(r'^apps/(?P<id>[a-z0-9-]+)/calculate/?',
+        views.AppViewSet.as_view({'post': 'calculate'})),
     # apps base endpoint
     url(r'^apps/(?P<id>[a-z0-9-]+)/?',
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
