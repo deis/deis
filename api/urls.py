@@ -12,8 +12,6 @@ Keys
 
   Destroy a :class:`~api.models.Key` by its `id`.
 
-  See also :meth:`KeyViewSet.destroy() <api.views.KeyViewSet.destroy>`
-
 .. http:get:: /api/keys/
 
   List all :class:`~api.models.Key`\s.
@@ -21,8 +19,6 @@ Keys
 .. http:post:: /api/keys/
 
   Create a new :class:`~api.models.Key`.
-
-  See also :meth:`KeyViewSet.post_save() <api.views.KeyViewSet.post_save>`
 
 
 Providers
@@ -72,8 +68,6 @@ Flavors
 
   Create a new :class:`~api.models.Flavor`.
 
-  See also :meth:`FlavorViewSet.create() <api.views.FlavorViewSet.create>`
-
 
 Formations
 ==========
@@ -81,6 +75,10 @@ Formations
 .. http:get:: /api/formations/(string:id)/
 
   Retrieve a :class:`~api.models.Formation` by its `id`.
+
+.. http:patch:: /api/formations/(string:id)/
+
+  Update parts of a :class:`~api.models.Formation`.
 
 .. http:delete:: /api/formations/(string:id)/
 
@@ -95,12 +93,11 @@ Formations
   Create a new :class:`~api.models.Formation`.
 
   See also
-  :meth:`FormationViewSet.create() <api.views.FormationViewSet.create>` and
   :meth:`FormationViewSet.post_save() <api.views.FormationViewSet.post_save>`
 
 
-Infrastructure
---------------
+Formation Infrastructure
+------------------------
 
 .. http:get:: /api/formations/(string:id)/layers/(string:id)/
 
@@ -114,6 +111,9 @@ Infrastructure
 
   Destroy a :class:`~api.models.Layer` by its `id`.
 
+  See also
+  :meth:`FormationLayerViewSet.destroy() <api.views.FormationLayerViewSet.destroy>`
+
 .. http:get:: /api/formations/(string:id)/layers/
 
   List all :class:`~api.models.Layer`\s.
@@ -121,6 +121,9 @@ Infrastructure
 .. http:post:: /api/formations/(string:id)/layers/
 
   Create a new :class:`~api.models.Layer`.
+
+  See also
+  :meth:`FormationLayerViewSet.create() <api.views.FormationLayerViewSet.create>`
 
 .. http:get:: /api/formations/(string:id)/nodes/(string:id)/
 
@@ -134,50 +137,14 @@ Infrastructure
 
   List all :class:`~api.models.Node`\s.
 
-.. http:get:: /api/formations/(string:id)/containers/
 
-  List all :class:`~api.models.Container`\s.
+Formation Actions
+-----------------
 
-
-Release Components
-------------------
-
-.. http:get:: /api/formations/(string:id)/config/
-
-  List all :class:`~api.models.Config`\s.
-
-.. http:post:: /api/formations/(string:id)/config/
-
-  Create a new :class:`~api.models.Config`.
-
-.. http:get:: /api/formations/(string:id)/builds/(string:uuid)/
-
-  Retrieve a :class:`~api.models.Build` by its `uuid`.
-
-.. http:post:: /api/formations/(string:id)/builds/
-
-  Create a new :class:`~api.models.Build`.
-
-.. http:get:: /api/formations/(string:id)/releases/(int:version)/
-
-  Retrieve a :class:`~api.models.Release` by its `version`.
-
-.. http:get:: /api/formations/(string:id)/releases/
-
-  List all :class:`~api.models.Release`\s.
-
-Actions
--------
-
-.. http:post:: /api/formations/(string:id)/scale/layers/
+.. http:post:: /api/formations/(string:id)/scale/
 
   See also
-  :meth:`FormationViewSet.scale_layers() <api.views.FormationViewSet.scale_layers>`
-
-.. http:post:: /api/formations/(string:id)/scale/containers/
-
-  See also
-  :meth:`FormationViewSet.scale_containers() <api.views.FormationViewSet.scale_containers>`
+  :meth:`FormationViewSet.scale() <api.views.FormationViewSet.scale>`
 
 .. http:post:: /api/formations/(string:id)/balance/
 
@@ -187,22 +154,128 @@ Actions
 .. http:post:: /api/formations/(string:id)/calculate/
 
   See also
-  :meth:`FormatinViewSet.calculate() <api.views.FormationViewSet.calculate>`
+  :meth:`FormationViewSet.calculate() <api.views.FormationViewSet.calculate>`
 
 .. http:post:: /api/formations/(string:id)/converge/
 
   See also
   :meth:`FormationViewSet.converge() <api.views.FormationViewSet.converge>`
 
-.. http:post:: /api/formations/(string:id)/logs/
+
+Applications
+============
+
+.. http:get:: /api/apps/(string:id)/
+
+  Retrieve a :class:`~api.models.Application` by its `id`.
+
+.. http:delete:: /api/apps/(string:id)/
+
+  Destroy a :class:`~api.models.Formation` by its `id`.
+
+.. http:get:: /api/apps/
+
+  List all :class:`~api.models.Formation`\s.
+
+.. http:post:: /api/apps/
+
+  Create a new :class:`~api.models.Formation`.
+
+
+Application Release Components
+------------------------------
+
+.. http:get:: /api/apps/(string:id)/config/
+
+  List all :class:`~api.models.Config`\s.
+
+.. http:post:: /api/apps/(string:id)/config/
+
+  Create a new :class:`~api.models.Config`.
+
+.. http:get:: /api/apps/(string:id)/builds/(string:uuid)/
+
+  Retrieve a :class:`~api.models.Build` by its `uuid`.
+
+.. http:get:: /api/apps/(string:id)/builds/
+
+  List all :class:`~api.models.Build`\s.
+
+.. http:post:: /api/apps/(string:id)/builds/
+
+  Create a new :class:`~api.models.Build`.
+
+.. http:get:: /api/apps/(string:id)/releases/(int:version)/
+
+  Retrieve a :class:`~api.models.Release` by its `version`.
+
+.. http:get:: /api/apps/(string:id)/releases/
+
+  List all :class:`~api.models.Release`\s.
+
+
+Application Infrastructure
+--------------------------
+
+.. http:get:: /api/apps/(string:id)/containers/(string:type)/(int:num)/
+
+  List all :class:`~api.models.Container`\s.
+
+.. http:get:: /api/apps/(string:id)/containers/(string:type)/
+
+  List all :class:`~api.models.Container`\s.
+
+.. http:get:: /api/apps/(string:id)/containers/
+
+  List all :class:`~api.models.Container`\s.
+
+
+Application Actions
+-------------------
+
+.. http:post:: /api/apps/(string:id)/scale/
 
   See also
-  :meth:`FormationViewSet.logs() <api.views.FormationViewSet.logs>`
+  :meth:`AppViewSet.scale() <api.views.AppViewSet.scale>`
 
-.. http:post:: /api/formations/(string:id)/run/
+.. http:post:: /api/apps/(string:id)/logs/
 
   See also
-  :meth:`FormationViewSet.run() <api.views.FormationViewSet.run>`
+  :meth:`AppViewSet.logs() <api.views.AppViewSet.logs>`
+
+.. http:post:: /api/apps/(string:id)/run/
+
+  See also
+  :meth:`AppViewSet.run() <api.views.AppViewSet.run>`
+
+.. http:post:: /api/apps/(string:id)/calculate/
+
+  See also
+  :meth:`AppViewSet.calculate() <api.views.AppViewSet.calculate>`
+
+
+Nodes
+=====
+
+.. http:get:: /api/nodes/(string:id)/
+
+  Retrieve a :class:`~api.models.Node` by its `id`.
+
+.. http:patch:: /api/nodes/(string:id)/
+
+  Update parts of a :class:`~api.models.Node`.
+
+.. http:delete:: /api/nodes/(string:id)/
+
+  Destroy a :class:`~api.models.Node` by its `id`.
+
+.. http:get:: /api/nodes/
+
+  List all :class:`~api.models.Node`\s.
+
+.. http:post:: /api/nodes/
+
+  Create a new :class:`~api.models.Node`.
 
 
 Auth
@@ -210,7 +283,7 @@ Auth
 
 .. http:post:: /api/auth/register/
 
-  Create a new :class:`~api.models.UserRegistration`.
+  Create a new :class:`~django.contrib.auth.models.User`.
 
 .. http:post:: /api/auth/login
 
@@ -225,7 +298,6 @@ Auth
   Generate an API key.
 
 """
-# pylint: disable=C0103
 
 from __future__ import unicode_literals
 
@@ -249,25 +321,25 @@ urlpatterns = patterns(
         views.KeyViewSet.as_view({
             'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^keys/?',
-        views.KeyViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.KeyViewSet.as_view({'get': 'list', 'post': 'create'})),
     # provider
     url(r'^providers/(?P<id>[a-z0-9-]+)/?',
         views.ProviderViewSet.as_view({
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^providers/?',
-        views.ProviderViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.ProviderViewSet.as_view({'get': 'list', 'post': 'create'})),
     # flavor
     url(r'^flavors/(?P<id>[a-z0-9-]+)/?',
         views.FlavorViewSet.as_view({
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^flavors/?',
-        views.FlavorViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.FlavorViewSet.as_view({'get': 'list', 'post': 'create'})),
     # formation infrastructure
     url(r'^formations/(?P<id>[a-z0-9-]+)/layers/(?P<layer>[a-z0-9-]+)/?',
         views.FormationLayerViewSet.as_view({
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/layers/?',
-        views.FormationLayerViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.FormationLayerViewSet.as_view({'get': 'list', 'post': 'create'})),
     url(r'^formations/(?P<id>[a-z0-9-]+)/nodes/(?P<node>[a-z0-9-]+)/?',
         views.FormationNodeViewSet.as_view({
             'get': 'retrieve', 'delete': 'destroy'})),
@@ -287,14 +359,14 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^formations/?',
-        views.FormationViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
     url(r'^apps/(?P<id>[a-z0-9-]+)/config/?',
-        views.AppConfigViewSet.as_view({'post': 'create', 'get': 'retrieve'})),
+        views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/builds/(?P<uuid>[a-z0-9-]+)/?',
         views.AppBuildViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/builds/?',
-        views.AppBuildViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/releases/(?P<version>[0-9]+)/?',
         views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/releases/?',
@@ -319,7 +391,7 @@ urlpatterns = patterns(
     url(r'^apps/(?P<id>[a-z0-9-]+)/?',
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^apps/?',
-        views.AppViewSet.as_view({'post': 'create', 'get': 'list'})),
+        views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
     # nodes
     url(r'^nodes/(?P<node>[a-z0-9-]+)/converge/?',
         views.NodeViewSet.as_view({'post': 'converge'})),
