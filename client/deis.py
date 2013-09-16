@@ -1692,15 +1692,15 @@ def main():
                 return
         docopt(__doc__, argv=['--help'])
     # unless cmd needs to use sys.argv directly
-    if cmd not in ('apps_run',):
-        # re-parse docopt with the relevant docstring
-        docstring = trim(getattr(cli, cmd).__doc__)
-        if 'Usage: ' in docstring:
-            args.update(docopt(docstring))
     if hasattr(cli, cmd):
         method = getattr(cli, cmd)
     else:
         raise DocoptExit('Found no matching command, try `deis help`')
+    # re-parse docopt with the relevant docstring unless it needs sys.argv
+    if cmd not in ('apps_run',):
+        docstring = trim(getattr(cli, cmd).__doc__)
+        if 'Usage: ' in docstring:
+            args.update(docopt(docstring))
     # dispatch the CLI command
     try:
         method(args)
