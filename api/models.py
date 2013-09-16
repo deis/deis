@@ -478,6 +478,11 @@ class App(UuidAuditedModel):
             if release.build:
                 d['release']['build']['url'] = release.build.url
                 d['release']['build']['procfile'] = release.build.procfile
+        d['containers'] = {}
+        containers = self.container_set.all()
+        if containers:
+            for c in containers:
+                d['containers'].setdefault(c.type, {})[str(c.num)] = c.status
         d['proxies'] = []
         for n in self.formation.node_set.filter(layer__proxy=True):
             d['proxies'].append(n.fqdn)
