@@ -459,8 +459,9 @@ class App(UuidAuditedModel):
         return data
 
     def converge(self):
-        self.publish()
+        databag = self.publish()
         self.formation.converge()
+        return databag
 
     def calculate(self):
         """Return a representation for configuration management"""
@@ -709,8 +710,8 @@ class Build(UuidAuditedModel):
            len(app.formation.container_set.filter(type='web')) < 1:
             # scale an initial web containers
             Container.objects.scale(app, {'web': 1})
-        # publish the app, triggering a formation converge
-        return app.publish()
+        # publish and converge the application
+        return app.converge()
 
 
 @python_2_unicode_compatible

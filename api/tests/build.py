@@ -11,6 +11,8 @@ import uuid
 
 from django.test import TestCase
 
+from api.models import Build
+
 # pylint: disable=R0904
 
 
@@ -93,3 +95,14 @@ class BuildTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
+
+    def test_build_push(self):
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # simulate a git push calling Build.push()
+        push = {'username': 'autotest', 'app': app_id}
+        databag = Build.push(push)
+        self.assertIn('release', databag)
