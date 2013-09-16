@@ -507,6 +507,26 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def apps_run(self, args):
+        """
+        Run a command inside an ephemeral app container
+
+        Usage: deis apps:run <command>...
+        """
+        app = self._session.app
+        body = {'command': ' '.join(sys.argv[2:])}
+        response = self._dispatch('post',
+                                  "/api/apps/{}/run".format(app),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            output, rc = json.loads(response.content)
+            if rc != 0:
+                print('Warning: non-zero return code {}'.format(rc))
+            sys.stdout.write(output)
+            sys.stdout.flush()
+        else:
+            raise ResponseError(response)
+
     def auth_register(self, args):
         """
         Register a new user with a Deis controller
@@ -1632,6 +1652,7 @@ def parse_args(cmd):
         'calculate': 'apps:calculate',
         'ssh': 'nodes:ssh',
         'logs': 'apps:logs',
+        'run': 'apps:run',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]
@@ -1670,13 +1691,13 @@ def main():
                 print(trim(getattr(cli, cmd).__doc__))
                 return
         docopt(__doc__, argv=['--help'])
-    # re-parse docopt with the relevant docstring
     # unless cmd needs to use sys.argv directly
-    # if cmd not in ('formations_run', 'ssh'):
-    if hasattr(cli, cmd):
+    if cmd not in ('apps_run',):
+        # re-parse docopt with the relevant docstring
         docstring = trim(getattr(cli, cmd).__doc__)
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))
+    if hasattr(cli, cmd):
         method = getattr(cli, cmd)
     else:
         raise DocoptExit('Found no matching command, try `deis help`')

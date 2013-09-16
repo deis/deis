@@ -404,6 +404,7 @@ class Node(UuidAuditedModel):
                 'proxy': self.layer.proxy,
                 'ssh_username': self.layer.ssh_username,
                 'ssh_private_key': self.layer.ssh_private_key,
+                'ssh_port': self.layer.ssh_port,
                 'config': dict(self.layer.config),
                 'provider_id': self.provider_id,
                 'fqdn': self.fqdn}

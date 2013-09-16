@@ -138,9 +138,9 @@ def converge_node(node):
 
 
 def run_node(node, command):
-    ssh = connect_ssh(node.layer.ssh_username,
-                      node.fqdn, 22,
-                      node.layer.ssh_private_key)
+    ssh = connect_ssh(node['ssh_username'],
+                      node['fqdn'], node['ssh_port'],
+                      node['ssh_private_key'])
     output, rc = exec_ssh(ssh, command, pty=True)
     return output, rc
 
