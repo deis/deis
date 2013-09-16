@@ -300,12 +300,15 @@ class AppViewSet(OwnerViewSet):
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
-            databag = models.Container.objects.scale(app, new_structure)
+            changed = models.Container.objects.scale(app, new_structure)
         except models.ScalingError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        if not changed:
+            return Response(status=status.HTTP_204_NO_CONTENT)
         # save new structure now that scaling was successful
         app.containers.update(new_structure)
         app.save()
+        databag = app.converge()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
