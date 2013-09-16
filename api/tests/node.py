@@ -165,3 +165,32 @@ class NodeTest(TestCase):
         body = {'runtime': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'No provider credentials available', status_code=400)
+
+    def test_node_actions(self):
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        body = {'runtime': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # get our node
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        node_id = response.data['results'][0]['id']
+        url = '/api/formations/{formation_id}/nodes/{node_id}'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(node_id, response.data['id'])
+        node = response.data
+        url = '/api/nodes/{id}/converge'.format(**node)
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)

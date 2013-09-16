@@ -242,6 +242,11 @@ class NodeViewSet(FormationNodeViewSet):
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(owner=self.request.user)
 
+    def converge(self, request, **kwargs):
+        node = self.get_object()
+        output, _ = node.converge()
+        return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
+
 
 class AppViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.App`."""
@@ -288,7 +293,11 @@ class AppViewSet(OwnerViewSet):
 
     def run(self, request, **kwargs):
         app = self.get_object()
-        output_and_rc = app.run(request.DATA['commands'])
+        command = request.DATA['command']
+        try:
+            output_and_rc = app.run(command)
+        except EnvironmentError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
@@ -376,9 +385,13 @@ class AppContainerViewSet(OwnerViewSet):
     def get_queryset(self, **kwargs):
         app = models.App.objects.get(
             owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, app=app)
+        qs = self.model.objects.filter(owner=self.request.user, app=app)
+        container_type = self.kwargs.get('type')
+        if container_type:
+            qs = qs.filter(type=container_type)
+        return qs
 
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['container'])
+        obj = qs.get(num=self.kwargs['num'])
         return obj

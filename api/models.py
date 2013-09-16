@@ -497,12 +497,10 @@ class App(UuidAuditedModel):
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
         nodes = self.formation.node_set.order_by('?')
-        releases = self.release_set.order_by('-created')
         if not nodes:
             raise EnvironmentError('No nodes available to run command')
-        if not releases:
-            raise EnvironmentError('No release available to run command')
-        node, release = nodes[0], releases[0]
+        app_id, node = self.id, nodes[0]
+        release = self.release_set.order_by('-created')[0]
         # prepare ssh command
         version = release.version
         docker_args = ' '.join(
@@ -513,7 +511,7 @@ class App(UuidAuditedModel):
                    "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
         command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
         command = "sudo docker run {docker_args} {command}".format(**locals())
-        return node.run(self, command)
+        return node.run(command)
 
 
 @python_2_unicode_compatible

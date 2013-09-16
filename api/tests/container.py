@@ -65,7 +65,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
-    def test_container_scale(self):
+    def test_container(self):
         url = '/api/apps'
         body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -89,6 +89,16 @@ class ContainerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
+        # test listing/retrieving container info
+        url = "/api/apps/{app_id}/containers/web".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 4)
+        num = response.data['results'][0]['num']
+        url = "/api/apps/{app_id}/containers/web/{num}".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['num'], num)
         # scale down
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 2, 'worker': 1}
@@ -115,7 +125,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
 
-    def test_container_scale_errors(self):
+    def test_container_errors(self):
         url = '/api/apps'
         body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -126,7 +136,7 @@ class ContainerTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'Invalid scaling format', status_code=400)
 
-    def test_container_scale_single_layer(self):
+    def test_container_single_layer(self):
         # create & scale a single layer formation
         response = self.client.post('/api/formations', json.dumps(
             {'id': 'single-layer', 'domain': 'localhost.localdomain'}),
@@ -191,7 +201,7 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
 
-    def test_container_scale_allocation(self):
+    def test_container_allocation(self):
         url = '/api/apps'
         formation_id = 'autotest'
         body = {'formation': formation_id}

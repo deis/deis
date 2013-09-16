@@ -5,11 +5,9 @@ import importlib
 from celery import task
 from celery.canvas import group
 
-from api.ssh import connect_ssh, exec_ssh
 from deis import settings
 from provider import import_provider_module
 
-# now that we've defined models that may be imported by celery tasks
 # import user-defined config management module
 CM = importlib.import_module(settings.CM_MODULE)
 
@@ -54,10 +52,7 @@ def converge_node(node):
 
 @task
 def run_node(node, command):
-    ssh = connect_ssh(node.layer.ssh_username,
-                      node.fqdn, 22,
-                      node.layer.ssh_private_key)
-    output, rc = exec_ssh(ssh, command, pty=True)
+    output, rc = CM.run_node(node.flat(), command)
     return output, rc
 
 

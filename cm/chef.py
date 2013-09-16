@@ -137,6 +137,14 @@ def converge_node(node):
     return output, rc
 
 
+def run_node(node, command):
+    ssh = connect_ssh(node.layer.ssh_username,
+                      node.fqdn, 22,
+                      node.layer.ssh_private_key)
+    output, rc = exec_ssh(ssh, command, pty=True)
+    return output, rc
+
+
 def converge_formation(formation):
     nodes = formation.node_set.all()
     subtasks = []

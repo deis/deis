@@ -139,15 +139,6 @@ class LayerSerializer(serializers.ModelSerializer):
         model = models.Layer
         read_only_fields = ('created', 'updated')
 
-    @property
-    def data(self):
-        """Custom data property that removes secure fields"""
-        d = super(LayerSerializer, self).data
-        for f in []:  # ('ssh_private_key',):
-            if f in d:
-                del d[f]
-        return d
-
 
 class NodeSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Node` model."""

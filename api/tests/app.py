@@ -117,10 +117,8 @@ class AppTest(TestCase):
         if not os.path.exists(settings.DEIS_LOG_DIR):
             os.mkdir(settings.DEIS_LOG_DIR)
         path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
-        try:
-            os.remove(path)  # cleanup any old log files
-        except:
-            pass
+        if os.path.exists(path):
+            os.remove(path)
         url = '/api/apps/{app_id}/logs'.format(**locals())
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
@@ -133,11 +131,26 @@ class AppTest(TestCase):
         self.assertEqual(response.data, FAKE_LOG_DATA)
         # test run
         url = '/api/apps/{app_id}/run'.format(**locals())
-        body = {'commands': 'ls -al'}
+        body = {'command': 'ls -al'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertIn('.gitignore', response.data[0])
         self.assertEqual(response.data[1], 0)
+
+    def test_app_errors(self):
+        formation_id, app_id = 'autotest', 'autotest-errors'
+        url = '/api/apps'
+        body = {'formation': formation_id, 'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']  # noqa
+        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        body = {'proxy': 0, 'runtime': 0}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = '/api/apps/{app_id}/run'.format(**locals())
+        body = {'command': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, 'No nodes available to run command', status_code=400)
 
 
 FAKE_LOG_DATA = """

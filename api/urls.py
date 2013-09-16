@@ -300,6 +300,10 @@ urlpatterns = patterns(
     url(r'^apps/(?P<id>[a-z0-9-]+)/releases/?',
         views.AppReleaseViewSet.as_view({'get': 'list'})),
     # application infrastructure
+    url(r'^apps/(?P<id>[a-z0-9-]+)/containers/(?P<type>[a-z0-9-]+)/(?P<num>[a-z0-9-]+)/?',
+        views.AppContainerViewSet.as_view({'get': 'retrieve'})),
+    url(r'^apps/(?P<id>[a-z0-9-]+)/containers/(?P<type>[a-z0-9-.]+)/?',
+        views.AppContainerViewSet.as_view({'get': 'list'})),
     url(r'^apps/(?P<id>[a-z0-9-]+)/containers/?',
         views.AppContainerViewSet.as_view({'get': 'list'})),
     # application actions
@@ -315,6 +319,8 @@ urlpatterns = patterns(
     url(r'^apps/?',
         views.AppViewSet.as_view({'post': 'create', 'get': 'list'})),
     # nodes
+    url(r'^nodes/(?P<node>[a-z0-9-]+)/converge/?',
+        views.NodeViewSet.as_view({'post': 'converge'})),
     url(r'^nodes/(?P<node>[a-z0-9-]+)/?',
         views.NodeViewSet.as_view({
             'get': 'retrieve', 'delete': 'destroy'})),

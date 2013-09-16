@@ -15,6 +15,10 @@ def converge_node(node):
     return '', 0
 
 
+def run_node(node, command):
+    return '', 0
+
+
 def purge_node(node):
     return
 
