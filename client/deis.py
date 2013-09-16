@@ -651,14 +651,14 @@ class DeisClient(object):
 
         Usage: deis config:list
         """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('get', "/api/formations/{}/config".format(formation))
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {} Config".format(formation))
+            print("=== {} Config".format(app))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
@@ -672,19 +672,19 @@ class DeisClient(object):
         """
         Set environment variables for a formation
 
-        Usage: deis config:set <var>=<value>...
+        Usage: deis config:set <var>=<value>... [--app=<app>]
         """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
         response = self._dispatch('post',
-                                  "/api/formations/{}/config".format(formation),
+                                  "/api/apps/{}/config".format(app),
                                   json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {}".format(formation))
+            print("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
@@ -698,22 +698,22 @@ class DeisClient(object):
         """
         Unset an environment variable for a formation
 
-        Usage: deis config:unset <key>...
+        Usage: deis config:unset <key>... [--app=<app>]
         """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         values = {}
         for k in args.get('<key>'):
             values[k] = None
         body = {'values': json.dumps(values)}
         response = self._dispatch('post',
-                                  "/api/formations/{}/config".format(formation),
-                                  data=json.dumps(body))
+                                  "/api/apps/{}/config".format(app),
+                                  json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {}".format(formation))
+            print("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
                 print('No configuration')
