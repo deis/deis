@@ -1586,14 +1586,14 @@ class DeisClient(object):
         """
         Print info about a particular release
 
-        Usage: deis releases:info <version>
+        Usage: deis releases:info <version> [--app=<app>]
         """
         version = args.get('<version>')
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         response = self._dispatch(
-            'get', "/api/formations/{formation}/releases/{version}".format(**locals()))
+            'get', "/api/apps/{app}/releases/{version}".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))
         else:
@@ -1603,14 +1603,14 @@ class DeisClient(object):
         """
         List release history for a formation
 
-        Usage: deis releases:list
+        Usage: deis releases:list [--app=<app>]
         """
-        formation = args.get('--formation')
-        if not formation:
-            formation = self._session.formation
-        response = self._dispatch('get', '/api/formations/{formation}/releases'.format(**locals()))
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', '/api/apps/{app}/releases'.format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0} Releases'.format(formation))
+            print('=== {0} Releases'.format(app))
             data = response.json()
             for item in data['results']:
                 print('{version} {created}'.format(**item))
