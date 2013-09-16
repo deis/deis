@@ -84,5 +84,4 @@ class LayerTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('ssh_public_key', response.data)
         self.assertEquals(response.data['ssh_public_key'], body['ssh_public_key'])
-        # ssh private key should be hidden
-        self.assertNotIn('ssh_private_key', response.data)
+        self.assertIn('ssh_private_key', response.data)
