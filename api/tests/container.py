@@ -115,6 +115,17 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
 
+    def test_container_scale_errors(self):
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = "/api/apps/{app_id}/scale".format(**locals())
+        body = {'web': 'not_an_int'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, 'Invalid scaling format', status_code=400)
+
     def test_container_scale_single_layer(self):
         # create & scale a single layer formation
         response = self.client.post('/api/formations', json.dumps(

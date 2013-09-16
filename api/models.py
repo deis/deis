@@ -7,6 +7,7 @@ Data models for the Deis API.
 # pylint: disable=R0903,W0232
 
 from __future__ import unicode_literals
+import importlib
 import os
 import subprocess
 
@@ -19,18 +20,16 @@ from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
 
-from api import fields
+from api import fields, tasks
 from provider import import_provider_module
+
+# import user-defined configuration management module
+CM = importlib.import_module(settings.CM_MODULE)
 
 
 # define custom signals
 release_signal = Signal(providing_args=['user', 'app'])
 
-# define custom exceptions
-
-
-class ScalingError(Exception):
-    pass
 
 # base models
 
@@ -90,7 +89,7 @@ class ProviderManager(models.Manager):
         """
         Seeds the database with Providers for clouds supported by Deis.
         """
-        providers = (('ec2', 'ec2'), ('mock', 'mock'))
+        providers = [(p, p) for p in settings.PROVIDER_MODULES]
         for p_id, p_type in providers:
             self.create(owner=user, id=p_id, type=p_type, creds='{}')
 
@@ -120,11 +119,6 @@ class Provider(UuidAuditedModel):
     def __str__(self):
         return "{}-{}".format(self.id, self.get_type_display())
 
-    def flat(self):
-        return {'id': self.id,
-                'type': self.type,
-                'creds': dict(self.creds)}
-
 
 @python_2_unicode_compatible
 class FlavorManager(models.Manager):
@@ -132,7 +126,7 @@ class FlavorManager(models.Manager):
 
     def seed(self, user, **kwargs):
         """Seed the database with default Flavors for each cloud region."""
-        for provider_type in ('mock', 'ec2'):
+        for provider_type in settings.PROVIDER_MODULES:
             provider = import_provider_module(provider_type)
             flavors = provider.seed_flavors()
             p = Provider.objects.get(owner=user, id=provider_type)
@@ -162,40 +156,6 @@ class Flavor(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def flat(self):
-        return {'id': self.id,
-                'creds': dict(self.provider.creds),
-                'provider': self.provider.id,
-                'params': self.params}
-
-
-@python_2_unicode_compatible
-class FormationManager(models.Manager):
-    """Manage database interactions for :class:`Formation`."""
-
-    def next_container_node(self, formation, container_type, reverse=False):
-        count = []
-        layers = formation.layer_set.filter(runtime=True)
-        runtime_nodes = []
-        for l in layers:
-            runtime_nodes.extend(Node.objects.filter(
-                formation=formation, layer=l).order_by('created'))
-        container_map = {n: [] for n in runtime_nodes}
-        containers = list(Container.objects.filter(
-            formation=formation, type=container_type).order_by('created'))
-        for c in containers:
-            container_map[c.node].append(c)
-        for n in container_map.keys():
-            # (2, node3), (2, node2), (3, node1)
-            count.append((len(container_map[n]), n))
-        if not count:
-            raise ScalingError('No nodes available for containers')
-        count.sort()
-        # reverse means order by greatest # of containers, otherwise fewest
-        if reverse:
-            count.reverse()
-        return count[0][1]
-
 
 @python_2_unicode_compatible
 class Formation(UuidAuditedModel):
@@ -203,7 +163,6 @@ class Formation(UuidAuditedModel):
     """
     Formation of nodes used to host applications
     """
-    objects = FormationManager()
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
@@ -381,6 +340,29 @@ class NodeManager(models.Manager):
             return formation.converge()
         return formation.calculate()
 
+    def next_runtime_node(self, formation, container_type, reverse=False):
+        count = []
+        layers = formation.layer_set.filter(runtime=True)
+        runtime_nodes = []
+        for l in layers:
+            runtime_nodes.extend(Node.objects.filter(
+                formation=formation, layer=l).order_by('created'))
+        container_map = {n: [] for n in runtime_nodes}
+        containers = list(Container.objects.filter(
+            formation=formation, type=container_type).order_by('created'))
+        for c in containers:
+            container_map[c.node].append(c)
+        for n in container_map.keys():
+            # (2, node3), (2, node2), (3, node1)
+            count.append((len(container_map[n]), n))
+        if not count:
+            raise EnvironmentError('No nodes available for containers')
+        count.sort()
+        # reverse means order by greatest # of containers, otherwise fewest
+        if reverse:
+            count.reverse()
+        return count[0][1]
+
 
 @python_2_unicode_compatible
 class Node(UuidAuditedModel):
@@ -555,7 +537,7 @@ class ContainerManager(models.Manager):
             changed = True
             while diff < 0:
                 # get the next node with the most containers
-                node = Formation.objects.next_container_node(
+                node = Node.objects.next_runtime_node(
                     formation, container_type, reverse=True)
                 # delete a container attached to that node
                 for c in containers:
@@ -566,7 +548,7 @@ class ContainerManager(models.Manager):
                         break
             while diff > 0:
                 # get the next node with the fewest containers
-                node = Formation.objects.next_container_node(formation, container_type)
+                node = Node.objects.next_runtime_node(formation, container_type)
                 c = Container.objects.create(owner=app.owner,
                                              formation=formation,
                                              node=node,
@@ -836,11 +818,3 @@ def _publish_user_to_cm(**kwargs):
 post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
 post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
 post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
-
-
-# now that we've defined models that may be imported by celery tasks
-# import tasks and user-defined config management module
-from api import tasks
-
-import importlib
-CM = importlib.import_module(settings.CM_MODULE)

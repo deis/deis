@@ -275,6 +275,9 @@ LOG_LINES = 1000
 CM_MODULE = 'cm.mock'
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
 
+# default providers, typically overriden in local_settings to include ec2, etc.
+PROVIDER_MODULES = ('mock',)
+
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development

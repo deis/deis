@@ -140,17 +140,23 @@ class NodeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['nodes'], json.dumps(body))
 
-    def test_node_no_creds(self):
+    def test_node_scale_errors(self):
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']  # noqa
+        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        body = {'runtime': 'not_an_int'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, 'Invalid scaling format', status_code=400)
+        body = {'runtime': '1'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, 'Layer matching query does not exist', status_code=400)
         url = '/api/providers/autotest'
         body = {'creds': json.dumps({})}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        # try to scale and a formation
-        url = '/api/formations'
-        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']  # noqa
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         body = {'id': 'runtime', 'flavor': 'autotest', 'run_list': 'recipe[deis::runtime]'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -158,4 +164,4 @@ class NodeTest(TestCase):
         url = '/api/formations/{formation_id}/scale'.format(**locals())
         body = {'runtime': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, 'No provider credentials available', status_code=400)

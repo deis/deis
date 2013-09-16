@@ -7,9 +7,9 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import urllib
 
 from django.test import TestCase
-import urllib
 
 
 class AuthTest(TestCase):
@@ -56,11 +56,11 @@ class AuthTest(TestCase):
         url = '/api/providers'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['count'], 1)
         url = '/api/flavors'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 10)
+        self.assertEqual(response.data['count'], 2)
         # test logout and login
         url = '/api/auth/logout/'
         response = self.client.post(url, content_type='application/json')

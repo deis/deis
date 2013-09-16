@@ -9,7 +9,6 @@ import json
 from Crypto.PublicKey import RSA
 from celery.canvas import group
 from django.contrib.auth.models import AnonymousUser, User
-from django.db.utils import IntegrityError
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BaseAuthentication
@@ -128,18 +127,6 @@ class FormationViewSet(OwnerViewSet):
     serializer_class = serializers.FormationSerializer
     lookup_field = 'id'
 
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            if 'violates unique constraint' in str(e).lower():
-                return Response('Formation with this Id already exists.',
-                                status=HTTP_400_BAD_REQUEST)
-            raise e
-
     def post_save(self, formation, created=False, **kwargs):
         if created:
             formation.build()
@@ -160,8 +147,6 @@ class FormationViewSet(OwnerViewSet):
         formation = self.get_object()
         try:
             databag = models.Node.objects.scale(formation, new_structure)
-        except models.ScalingError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         except models.Layer.DoesNotExist as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
@@ -187,10 +172,7 @@ class FormationViewSet(OwnerViewSet):
 
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        try:
-            formation.destroy()
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+        formation.destroy()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -225,11 +207,7 @@ class FormationLayerViewSet(FormationScopedViewSet):
             key = RSA.generate(2048)
             request.DATA['ssh_private_key'] = key.exportKey('PEM')
             request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError:
-            return Response("Layer with this Id already exists",
-                            status=HTTP_400_BAD_REQUEST)
+        return OwnerViewSet.create(self, request, **kwargs)
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
@@ -254,10 +232,7 @@ class FormationNodeViewSet(FormationScopedViewSet):
 
     def destroy(self, request, **kwargs):
         node = self.get_object()
-        try:
-            node.destroy()
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+        node.destroy()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -275,16 +250,6 @@ class AppViewSet(OwnerViewSet):
     serializer_class = serializers.AppSerializer
     lookup_field = 'id'
 
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError:
-            return Response('App with this Id already exists.',
-                            status=HTTP_400_BAD_REQUEST)
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
-
     def post_save(self, app, created=False, **kwargs):
         if created:
             app.build()
@@ -300,11 +265,9 @@ class AppViewSet(OwnerViewSet):
             return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
-            changed = models.Container.objects.scale(app, new_structure)
-        except models.ScalingError as e:
+            models.Container.objects.scale(app, new_structure)
+        except EnvironmentError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-        if not changed:
-            return Response(status=status.HTTP_204_NO_CONTENT)
         # save new structure now that scaling was successful
         app.containers.update(new_structure)
         app.save()
