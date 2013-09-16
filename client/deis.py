@@ -491,6 +491,22 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def apps_logs(self, args):
+        """
+        Retrieve the most recent log events
+
+        Usage: deis apps:logs [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('post',
+                                  "/api/apps/{}/logs".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(response.json())
+        else:
+            raise ResponseError(response)
+
     def auth_register(self, args):
         """
         Register a new user with a Deis controller
@@ -1252,24 +1268,6 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def logs(self, args):
-        """
-        Retrieve the most recent log events
-
-        Usage: deis logs [--app=<app>]
-        """
-        app = args.get('--app')
-        if not app:
-            app = self._session.app
-        response = self._dispatch('post',
-                                  "/api/apps/{}/logs".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(response.json())
-        elif response.status_code == requests.codes.not_found:  # @UndefinedVariable
-            print(response.json())
-        else:
-            raise ResponseError(response)
-
     def nodes(self, args):
         """
         Valid commands for nodes:
@@ -1633,6 +1631,7 @@ def parse_args(cmd):
         'converge': 'formations:converge',
         'calculate': 'apps:calculate',
         'ssh': 'nodes:ssh',
+        'logs': 'apps:logs',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]
