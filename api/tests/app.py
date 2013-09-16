@@ -95,6 +95,11 @@ class AppTest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertFalse(os.path.exists(path))
+        formation_id = 'autotest'
+        path = os.path.join(settings.TEMPDIR, 'formation-{}'.format(formation_id))
+        with open(path) as f:
+            data = json.loads(f.read())
+        self.assertNotIn(app_id, data['apps'])
 
     def test_app_override_id(self):
         body = {'formation': 'autotest', 'id': 'myid'}

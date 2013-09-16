@@ -91,6 +91,7 @@ def build_app(app):
 def destroy_app(app):
     CM.purge_app(app.flat())
     app.delete()
+    app.formation.publish()
 
 
 @task
