@@ -1,27 +1,58 @@
 
 from __future__ import unicode_literals
+
 import json
 import time
 
 from boto import ec2
 from boto.exception import EC2ResponseError
-from celery import task
-import yaml
 
-from . import util
-from api.models import Flavor
-from api.models import Node
+# from api.ssh import connect_ssh, exec_ssh
 from deis import settings
-from celerytasks.chef import ChefAPI
 
 
-@task(name='ec2.build_layer')
-def build_layer(layer, creds, params):
-    region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(creds, region)
+# Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
+# and large docker images (e.g. buildstep) pre-installed
+IMAGE_MAP = {
+    'ap-northeast-1': 'ami-6da8356c',
+    'ap-southeast-1': 'ami-a66f24f4',
+    'ap-southeast-2': 'ami-d5f66bef',
+    'eu-west-1': 'ami-acbf5adb',
+    'sa-east-1': 'ami-f9fd5ae4',
+    'us-east-1': 'ami-69f3bc00',
+    'us-west-1': 'ami-f0695cb5',
+    'us-west-2': 'ami-ea1e82da',
+}
+
+
+def seed_flavors():
+    """Seed the database with default Flavors for each EC2 region.
+
+    :rtype: list of dicts containing Flavor data
+    """
+    flavors = []
+    for r in ('us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1',
+              'ap-northeast-1', 'ap-southeast-1', 'ap-southeast-2',
+              'sa-east-1'):
+        flavors.append({'id': 'ec2-{}'.format(r),
+                        'provider': 'ec2',
+                        'params': json.dumps({
+                            'region': r,
+                            'image': IMAGE_MAP[r],
+                            'zone': 'any',
+                            'size': 'm1.medium'})})
+    return flavors
+
+
+def build_layer(layer):
+    region = layer['params'].get('region', 'us-east-1')
+    conn = _create_ec2_connection(layer['creds'], region)
     # create a new sg and authorize all ports
     # use iptables on the host to firewall ports
-    sg = conn.create_security_group(layer, 'Created by Deis')
+    name = "{formation}-{id}".format(**layer)
+    sg = conn.create_security_group(name, 'Created by Deis')
+    # import a new keypair using the layer key material
+    conn.import_key_pair(name, layer['ssh_public_key'])
     # loop until the sg is *actually* there
     for i in xrange(10):
         try:
@@ -33,93 +64,64 @@ def build_layer(layer, creds, params):
                 time.sleep(1.5)
                 continue
             else:
-                raise
+                raise RuntimeError('Failed to authorize security group')
 
 
-@task(name='ec2.destroy_layer')
-def destroy_layer(layer, creds, params):
+def destroy_layer(layer):
+    region = layer['params'].get('region', 'us-east-1')
+    name = "{formation}-{id}".format(**layer)
+    conn = _create_ec2_connection(layer['creds'], region)
+    conn.delete_key_pair(name)
     # there's an ec2 race condition on instances terminating
     # successfully but still holding a lock on the security group
     # let's take a nap
     time.sleep(5)
-    region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(creds, region)
     try:
-        conn.delete_security_group(layer)
+        conn.delete_security_group(name)
     except EC2ResponseError as e:
         if e.code != 'InvalidGroup.NotFound':
             raise e
 
 
-@task(name='ec2.launch_node')
-def launch_node(node_id, creds, params, init, ssh_username, ssh_private_key):
-    region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(creds, region)
-    # find or create the security group for this formation
-    sg_name = params['layer']
-    sg = conn.get_all_security_groups(sg_name)[0]
-    # add the security group to the list
+def build_node(node):
+    params, creds = node['params'], node['creds']
+    region = params.setdefault('region', 'us-east-1')
+    conn = _create_ec2_connection(creds, region)
+    name = "{formation}-{layer}".format(**node)
+    params['key_name'] = name
+    sg = conn.get_all_security_groups(name)[0]
     params.setdefault('security_groups', []).append(sg.name)
-    # retrieve the ami for launching this node
     image_id = params.get(
-        'image', getattr(settings, 'IMAGE_MAP', Flavor.IMAGE_MAP)[region])
+        'image', getattr(settings, 'IMAGE_MAP', IMAGE_MAP)[region])
     images = conn.get_all_images([image_id])
     if len(images) != 1:
         raise LookupError('Could not find AMI: %s' % image_id)
     image = images[0]
-    kwargs = prepare_run_kwargs(params, init)
+    kwargs = _prepare_run_kwargs(params)
     reservation = image.run(**kwargs)
     instances = reservation.instances
     boto = instances[0]
-    # initial sleep
+    # sleep before tagging
     time.sleep(10)
     boto.update()
-    # try adding a tag
-    boto.add_tag('Name', params['id'])
+    boto.add_tag('Name', node['id'])
     # loop until running
     while(True):
         time.sleep(2)
         boto.update()
         if boto.state == 'running':
             break
-    # update the node
-    node = Node.objects.get(uuid=node_id)
-    node.provider_id = boto.id
-    node.fqdn = boto.public_dns_name
-    node.metadata = format_metadata(boto)
-    node.save()
-    # loop until cloud-init is finished
-    ssh = util.connect_ssh(ssh_username, boto.public_dns_name, 22,
-                           ssh_private_key, timeout=120)
-    initializing = True
-    while initializing:
-        time.sleep(10)
-        initializing, _rc = util.exec_ssh(
-            ssh, 'ps auxw | egrep "cloud-init" | grep -v egrep')
-    # loop until node is registered with chef
-    # if chef bootstrapping fails, the node will not complete registration
-    if settings.CHEF_ENABLED:
-        registered = False
-        while not registered:
-            # reinstatiate the client on each poll attempt
-            # to avoid disconnect errors
-            client = ChefAPI(settings.CHEF_SERVER_URL,
-                             settings.CHEF_CLIENT_NAME,
-                             settings.CHEF_CLIENT_KEY)
-            resp, status = client.get_node(node.id)
-            if status == 200:
-                body = json.loads(resp)
-                # wait until idletime is not null
-                # meaning the node is registered
-                if body.get('automatic', {}).get('idletime'):
-                    break
-            time.sleep(5)
+    # prepare return values
+    provider_id = boto.id
+    fqdn = boto.public_dns_name
+    metadata = _format_metadata(boto)
+    return provider_id, fqdn, metadata
 
 
-@task(name='ec2.terminate_node')
-def terminate_node(node_id, creds, params, provider_id):
-    region = params.get('region', 'us-east-1')
-    conn = create_ec2_connection(creds, region)
+def destroy_node(node):
+    provider_id = node['provider_id']
+    region = node['params'].get('region', 'us-east-1')
+    conn = _create_ec2_connection(node['creds'], region)
     if provider_id:
         conn.terminate_instances([provider_id])
         i = conn.get_all_instances([provider_id])[0].instances[0]
@@ -128,37 +130,9 @@ def terminate_node(node_id, creds, params, provider_id):
             i.update()
             if i.state == "terminated":
                 break
-    # delete the node from the database
-    node = Node.objects.get(uuid=node_id)
-    chef_id = node.id
-    node.delete()
-    # purge the node & client records from chef server
-    client = ChefAPI(settings.CHEF_SERVER_URL,
-                     settings.CHEF_CLIENT_NAME,
-                     settings.CHEF_CLIENT_KEY)
-    client.delete_node(chef_id)
-    client.delete_client(chef_id)
 
 
-@task(name='ec2.converge_node')
-def converge_node(node_id, ssh_username, fqdn, ssh_private_key,
-                  command='sudo chef-client'):
-    ssh = util.connect_ssh(ssh_username, fqdn, 22, ssh_private_key)
-    output, rc = util.exec_ssh(ssh, command)
-    return output, rc
-
-
-@task(name='ec2.run_node')
-def run_node(node_id, ssh_username, fqdn, ssh_private_key, docker_args, command):
-    ssh = util.connect_ssh(ssh_username, fqdn, 22, ssh_private_key)
-    command = "sudo docker run {docker_args} {command}".format(**locals())
-    output, rc = util.exec_ssh(ssh, command, pty=True)
-    return output, rc
-
-
-# utility functions
-
-def create_ec2_connection(creds, region):
+def _create_ec2_connection(creds, region):
     if not creds:
         raise EnvironmentError('No credentials provided')
     return ec2.connect_to_region(region,
@@ -166,11 +140,10 @@ def create_ec2_connection(creds, region):
                                  aws_secret_access_key=creds['secret_key'])
 
 
-def prepare_run_kwargs(params, init):
+def _prepare_run_kwargs(params):
     # start with sane defaults
     kwargs = {
         'min_count': 1, 'max_count': 1,
-        'key_name': None,
         'user_data': None, 'addressing_type': None,
         'instance_type': None, 'placement': None,
         'kernel_id': None, 'ramdisk_id': None,
@@ -184,20 +157,21 @@ def prepare_run_kwargs(params, init):
     # lookup kwargs from params
     param_kwargs = {
         'instance_type': params.get('size', 'm1.medium'),
-        'key_name': params.get('key_name', None),
         'security_groups': params['security_groups'],
         'placement': requested_zone,
+        'key_name': params['key_name'],
         'kernel_id': params.get('kernel', None),
     }
-    # update user_data
-    cloud_config = '#cloud-config\n' + yaml.safe_dump(init)
-    kwargs.update({'user_data': cloud_config})
+    # add user_data if provided in params
+    user_data = params.get('user_data')
+    if user_data:
+        kwargs.update({'user_data': user_data})
     # params override defaults
     kwargs.update(param_kwargs)
     return kwargs
 
 
-def format_metadata(boto):
+def _format_metadata(boto):
     return {
         'architecture': boto.architecture,
         'block_device_mapping': {
