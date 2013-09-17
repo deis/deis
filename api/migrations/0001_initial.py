@@ -131,12 +131,16 @@ class Migration(SchemaMigration):
             ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.App'])),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=128)),
             ('num', self.gf('django.db.models.fields.PositiveIntegerField')()),
+            ('port', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('status', self.gf('django.db.models.fields.CharField')(default=u'up', max_length=64)),
         ))
         db.send_create_signal(u'api', ['Container'])
 
         # Adding unique constraint on 'Container', fields ['app', 'type', 'num']
         db.create_unique(u'api_container', ['app_id', 'type', 'num'])
+
+        # Adding unique constraint on 'Container', fields ['formation', 'port']
+        db.create_unique(u'api_container', ['formation_id', 'port'])
 
         # Adding model 'Config'
         db.create_table(u'api_config', (
@@ -201,6 +205,9 @@ class Migration(SchemaMigration):
 
         # Removing unique constraint on 'Config', fields ['app', 'version']
         db.delete_unique(u'api_config', ['app_id', 'version'])
+
+        # Removing unique constraint on 'Container', fields ['formation', 'port']
+        db.delete_unique(u'api_container', ['formation_id', 'port'])
 
         # Removing unique constraint on 'Container', fields ['app', 'type', 'num']
         db.delete_unique(u'api_container', ['app_id', 'type', 'num'])
@@ -295,13 +302,14 @@ class Migration(SchemaMigration):
             'version': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         u'api.container': {
-            'Meta': {'ordering': "[u'created']", 'unique_together': "((u'app', u'type', u'num'),)", 'object_name': 'Container'},
+            'Meta': {'ordering': "[u'created']", 'unique_together': "((u'app', u'type', u'num'), (u'formation', u'port'))", 'object_name': 'Container'},
             'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'formation': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Formation']"}),
             'node': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Node']"}),
             'num': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'port': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'status': ('django.db.models.fields.CharField', [], {'default': "u'up'", 'max_length': '64'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),

@@ -218,14 +218,13 @@ class Formation(UuidAuditedModel):
             d['apps'][a.id]['proxy']['port'] = 80
             d['apps'][a.id]['proxy']['backends'] = []
             d['apps'][a.id]['containers'] = containers = {}
-            for c in self.container_set.all().order_by('created'):
-                port = 5000 + c.num
+            for c in a.container_set.all().order_by('created'):
                 containers.setdefault(c.type, {})
                 containers[c.type].update(
-                    {c.num: "{0}:{1}".format(c.node.id, port)})
+                    {c.num: "{0}:{1}".format(c.node.id, c.port)})
                 if c.type == 'web':
                     d['apps'][a.id]['proxy']['backends'].append(
-                        "{0}:{1}".format(c.node.fqdn, port))
+                        "{0}:{1}".format(c.node.fqdn, c.port))
         return d
 
 
@@ -362,6 +361,12 @@ class NodeManager(models.Manager):
         if reverse:
             count.reverse()
         return count[0][1]
+
+    def next_runtime_port(self, formation):
+        containers = Container.objects.filter(formation=formation).order_by('-port')
+        if not containers:
+            return 10001
+        return containers[0].port + 1
 
 
 @python_2_unicode_compatible
@@ -554,12 +559,14 @@ class ContainerManager(models.Manager):
             while diff > 0:
                 # get the next node with the fewest containers
                 node = Node.objects.next_runtime_node(formation, container_type)
+                port = Node.objects.next_runtime_port(formation)
                 c = Container.objects.create(owner=app.owner,
                                              formation=formation,
                                              node=node,
                                              app=app,
                                              type=container_type,
-                                             num=container_num)
+                                             num=container_num,
+                                             port=port)
                 containers.append(c)
                 container_num += 1
                 diff -= 1
@@ -600,7 +607,8 @@ class ContainerManager(models.Manager):
                             app=app,
                             type=container_type,
                             num=container_num,
-                            node=n_under)
+                            node=n_under,
+                            port=Node.objects.next_runtime_port(formation))
                 container_num += 1
                 # update the n_map accordingly
                 for n in (n_over, n_under):
@@ -624,6 +632,7 @@ class Container(UuidAuditedModel):
     app = models.ForeignKey('App')
     type = models.CharField(max_length=128)
     num = models.PositiveIntegerField()
+    port = models.PositiveIntegerField()
 
     # TODO: add celery beat tasks for monitoring node health
     status = models.CharField(max_length=64, default='up')
@@ -638,7 +647,8 @@ class Container(UuidAuditedModel):
     class Meta:
         get_latest_by = '-created'
         ordering = ['created']
-        unique_together = (('app', 'type', 'num'),)
+        unique_together = (('app', 'type', 'num'),
+                           ('formation', 'port'))
 
 
 @python_2_unicode_compatible
@@ -713,7 +723,7 @@ class Build(UuidAuditedModel):
         release_signal.send(sender=push, build=new_build, app=app, user=user)
         # see if we need to scale an initial web container
         if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
-           len(app.formation.container_set.filter(type='web')) < 1:
+           len(app.container_set.filter(type='web')) < 1:
             # scale an initial web containers
             Container.objects.scale(app, {'web': 1})
         # publish and converge the application

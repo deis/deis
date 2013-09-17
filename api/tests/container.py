@@ -201,6 +201,76 @@ class ContainerTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['containers'], json.dumps(body))
 
+    def test_container_multiple_apps(self):
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app1_id = response.data['id']
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app2_id = response.data['id']
+        # scale up
+        url = "/api/apps/{app1_id}/scale".format(**locals())
+        body = {'web': 4, 'worker': 2}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = "/api/apps/{app2_id}/scale".format(**locals())
+        body = {'web': 4, 'worker': 2}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = "/api/apps/{app1_id}/containers".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 6)
+        url = "/api/apps/{app2_id}/containers".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 6)
+        # check port assignments
+        url = '/api/formations/autotest/calculate'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        databag = response.data.copy()
+        ports = []
+        for app in databag['apps'].values():
+            for containers_set in app['containers'].values():
+                for node_port in containers_set.values():
+                    _, port = node_port.split(':')
+                    ports.append(int(port))
+        ports.sort()
+        self.assertEqual(ports, range(10001, 10013))
+        # scale down
+        url = "/api/apps/{app1_id}/scale".format(**locals())
+        body = {'web': 2, 'worker': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = "/api/apps/{app2_id}/scale".format(**locals())
+        body = {'web': 2, 'worker': 1}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = "/api/apps/{app1_id}/containers".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 3)
+        url = "/api/apps/{app2_id}/containers".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 3)
+        # check port assignments
+        url = '/api/formations/autotest/calculate'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        databag = response.data.copy()
+        ports = []
+        for app in databag['apps'].values():
+            for containers_set in app['containers'].values():
+                for node_port in containers_set.values():
+                    _, port = node_port.split(':')
+                    ports.append(int(port))
+        ports.sort()
+        self.assertEqual(len(set(ports)), 6)
+
     def test_container_allocation(self):
         url = '/api/apps'
         formation_id = 'autotest'
