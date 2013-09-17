@@ -450,8 +450,9 @@ class App(UuidAuditedModel):
     def build(self):
         config = Config.objects.create(
             version=1, owner=self.owner, app=self, values={})
+        build = Build.objects.create(owner=self.owner, app=self)
         Release.objects.create(
-            version=1, owner=self.owner, app=self, config=config)
+            version=1, owner=self.owner, app=self, config=config, build=build)
         self.formation.publish()
         tasks.build_app.delay(self).wait()
 
@@ -479,9 +480,8 @@ class App(UuidAuditedModel):
             release = releases[0]
             d['release']['version'] = release.version
             d['release']['config'] = release.config.values
-            d['release']['image'] = release.image
-            d['release']['build'] = {}
-            if release.build:
+            d['release']['build'] = {'image': release.build.image}
+            if release.build.url:
                 d['release']['build']['url'] = release.build.url
                 d['release']['build']['procfile'] = release.build.procfile
         d['containers'] = {}
@@ -518,7 +518,7 @@ class App(UuidAuditedModel):
         docker_args = ' '.join(
             ['-v',
              '/opt/deis/runtime/slugs/{app_id}-{version}/app:/app'.format(**locals()),
-             release.image])
+             release.build.image])
         base_cmd = "export HOME=/app; cd /app && for profile in " \
                    "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
         command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
@@ -684,6 +684,8 @@ class Build(UuidAuditedModel):
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
 
+    image = models.CharField(max_length=256, default='deis/buildstep')
+
     procfile = fields.ProcfileField(blank=True)
     dockerfile = models.TextField(blank=True)
     config = fields.EnvVarsField(blank=True)
@@ -743,7 +745,6 @@ class Release(UuidAuditedModel):
     version = models.PositiveIntegerField()
 
     config = models.ForeignKey('Config')
-    image = models.CharField(max_length=256, default='deis/buildstep')
     build = models.ForeignKey('Build', blank=True, null=True)
 
     class Meta:
@@ -770,7 +771,6 @@ def new_release(sender, **kwargs):
     """
     user, app, = kwargs['user'], kwargs['app']
     last_release = Release.objects.filter(app=app).order_by('-created')[0]
-    image = kwargs.get('image', last_release.image)
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
     # overwrite config with build.config if the keys don't exist
@@ -788,7 +788,7 @@ def new_release(sender, **kwargs):
     # create new release and auto-increment version
     new_version = last_release.version + 1
     release = Release.objects.create(
-        owner=user, app=app, image=image, config=config,
+        owner=user, app=app, config=config,
         build=build, version=new_version)
     # converge the application
     app.converge()

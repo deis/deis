@@ -47,7 +47,7 @@ class ReleaseTest(TestCase):
     def test_release(self):
         """
         Test that a release is created when a formation is created, and
-        that updating config, build, image, args or triggers a new release
+        that updating config or build or triggers a new release
         """
         url = '/api/apps'
         body = {'formation': 'autotest'}
@@ -63,7 +63,6 @@ class ReleaseTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
-        self.assertIn('image', response.data)
         self.assertIn('config', response.data)
         self.assertIn('build', response.data)
         self.assertEquals(release1['version'], 1)
@@ -81,7 +80,6 @@ class ReleaseTest(TestCase):
         release2 = response.data
         self.assertNotEqual(release1['uuid'], release2['uuid'])
         self.assertNotEqual(release1['config'], release2['config'])
-        self.assertEqual(release1['image'], release2['image'])
         self.assertEqual(release1['build'], release2['build'])
         self.assertEquals(release2['version'], 2)
         # check that updating the build rolls a new release
@@ -106,7 +104,6 @@ class ReleaseTest(TestCase):
         release3 = response.data
         self.assertNotEqual(release2['uuid'], release3['uuid'])
         self.assertNotEqual(release2['build'], release3['build'])
-        self.assertEqual(release2['image'], release3['image'])
         self.assertEquals(release3['version'], 3)
         # check that build config was respected
         self.assertNotEqual(release2['config'], release3['config'])

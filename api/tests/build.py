@@ -57,8 +57,8 @@ class BuildTest(TestCase):
         url = "/api/apps/{app_id}/builds".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 0)
-        # post a first build
+        self.assertEqual(response.data['count'], 1)
+        # post a new build
         body = {
             'sha': uuid.uuid4().hex,
             'slug_size': 4096000,

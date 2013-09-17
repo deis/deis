@@ -166,6 +166,7 @@ class Migration(SchemaMigration):
             ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.App'])),
             ('sha', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('output', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('image', self.gf('django.db.models.fields.CharField')(default=u'deis/buildstep', max_length=256)),
             ('procfile', self.gf('api.fields.ProcfileField')(default=u'null', blank=True)),
             ('dockerfile', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('config', self.gf('api.fields.EnvVarsField')(default=u'null', blank=True)),
@@ -187,7 +188,6 @@ class Migration(SchemaMigration):
             ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.App'])),
             ('version', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('config', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Config'])),
-            ('image', self.gf('django.db.models.fields.CharField')(default=u'deis/buildstep', max_length=256)),
             ('build', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Build'], null=True, blank=True)),
         ))
         db.send_create_signal(u'api', ['Release'])
@@ -282,6 +282,7 @@ class Migration(SchemaMigration):
             'config': ('api.fields.EnvVarsField', [], {'default': "u'null'", 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'dockerfile': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'image': ('django.db.models.fields.CharField', [], {'default': "u'deis/buildstep'", 'max_length': '256'}),
             'output': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'procfile': ('api.fields.ProcfileField', [], {'default': "u'null'", 'blank': 'True'}),
@@ -391,7 +392,6 @@ class Migration(SchemaMigration):
             'build': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Build']", 'null': 'True', 'blank': 'True'}),
             'config': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Config']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'image': ('django.db.models.fields.CharField', [], {'default': "u'deis/buildstep'", 'max_length': '256'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
