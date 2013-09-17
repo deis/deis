@@ -11,6 +11,8 @@ import uuid
 
 from django.test import TestCase
 
+from api.models import Build
+
 # pylint: disable=R0904
 
 
@@ -36,23 +38,27 @@ class BuildTest(TestCase):
         }
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        response = self.client.post('/api/formations', json.dumps(
+            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 201)
 
     def test_build(self):
         """
         Test that a null build is created on a new formation, and that users
         can post new builds to a formation
         """
-        url = '/api/formations'
-        body = {'id': 'autotest'}
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        formation_id = response.data['id']
+        app_id = response.data['id']
         # check to see that no initial build was created
-        url = "/api/formations/{formation_id}/builds".format(**locals())
+        url = "/api/apps/{app_id}/builds".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 0)
-        # post a first build
+        self.assertEqual(response.data['count'], 1)
+        # post a new build
         body = {
             'sha': uuid.uuid4().hex,
             'slug_size': 4096000,
@@ -66,13 +72,13 @@ class BuildTest(TestCase):
         build1 = response.data
         self.assertEqual(response.data['url'], body['url'])
         # read the build
-        url = "/api/formations/{formation_id}/builds/{build_id}".format(**locals())
+        url = "/api/apps/{app_id}/builds/{build_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         build2 = response.data
         self.assertEqual(build1, build2)
         # post a new build
-        url = "/api/formations/{formation_id}/builds".format(**locals())
+        url = "/api/apps/{app_id}/builds".format(**locals())
         body = {
             'sha': uuid.uuid4().hex,
             'slug_size': 4096000,
@@ -89,3 +95,30 @@ class BuildTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
+
+    def test_build_push(self):
+        """
+        Simlulate a git push creating a new Build object
+        """
+        formation_id = 'autotest'
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True, 'proxy': True}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/formations/{formation_id}/scale'.format(**locals())
+        body = {'runtime': 2}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = '/api/apps'
+        body = {'formation': formation_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        push = {'username': 'autotest', 'app': app_id}
+        databag = Build.push(push)
+        self.assertIn('release', databag)
+        self.assertIn('version', databag['release'])
+        self.assertIn('containers', databag)
+        self.assertIn('web', databag['containers'])
+        self.assertIn('1', databag['containers']['web'])
+        self.assertEqual(databag['containers']['web']['1'], 'up')

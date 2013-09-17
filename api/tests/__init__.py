@@ -27,6 +27,7 @@ def send_patch(self, path, data='', content_type='application/octet-stream',
 RequestFactory.patch = construct_patch
 Client.patch = send_patch
 
+from .app import *  # noqa
 from .auth import *  # noqa
 from .build import *  # noqa
 from .config import *  # noqa

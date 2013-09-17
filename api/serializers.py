@@ -80,7 +80,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
+    app = OwnerSlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
 
@@ -94,7 +94,7 @@ class BuildSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Build` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
+    app = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -106,7 +106,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
+    app = OwnerSlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid', required=False)
 
@@ -120,7 +120,6 @@ class FormationSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Formation` model."""
 
     owner = serializers.Field(source='owner.username')
-    id = serializers.SlugField(default=utils.generate_app_name)
 
     class Meta:
         """Metadata options for a :class:`FormationSerializer`."""
@@ -140,15 +139,6 @@ class LayerSerializer(serializers.ModelSerializer):
         model = models.Layer
         read_only_fields = ('created', 'updated')
 
-    @property
-    def data(self):
-        """Custom data property that removes secure fields"""
-        d = super(LayerSerializer, self).data
-        for f in ('ssh_private_key',):
-            if f in d:
-                del d[f]
-        return d
-
 
 class NodeSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Node` model."""
@@ -163,12 +153,26 @@ class NodeSerializer(serializers.ModelSerializer):
         read_only_fields = ('created', 'updated')
 
 
+class AppSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.App` model."""
+
+    owner = serializers.Field(source='owner.username')
+    id = serializers.SlugField(default=utils.generate_app_name)
+    formation = OwnerSlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`AppSerializer`."""
+        model = models.App
+        read_only_fields = ('created', 'updated')
+
+
 class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
 
     owner = serializers.Field(source='owner.username')
     formation = OwnerSlugRelatedField(slug_field='id')
     node = OwnerSlugRelatedField(slug_field='id')
+    app = OwnerSlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""

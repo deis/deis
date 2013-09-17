@@ -7,6 +7,7 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import urllib
 
 from django.test import TestCase
 
@@ -20,12 +21,11 @@ class AuthTest(TestCase):
         Test that a user can register using the API, login and logout
         """
         # make sure logging in with an invalid username/password
-        # results in a 404
-        # post credentials to the login URL
-        url = '/api/auth/login'
+        # results in a 200 login page
+        url = '/api/auth/login/'
         body = {'username': 'fail', 'password': 'this'}
         response = self.client.post(url, data=json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
         # test registration workflow
         username, password = 'newuser', 'password'
         first_name, last_name = 'Otto', 'Test'
@@ -60,4 +60,19 @@ class AuthTest(TestCase):
         url = '/api/flavors'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 8)  # 8 regions
+        self.assertEqual(response.data['count'], 2)
+        # test logout and login
+        url = '/api/auth/logout/'
+        response = self.client.post(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        url = '/api/providers'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
+        url = '/api/auth/login/'
+        payload = urllib.urlencode({'username': username, 'password': password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 302)
+        url = '/api/providers'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

@@ -26,8 +26,8 @@ class BuildAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('sha', 'owner', 'formation')
-    list_filter = ('owner', 'formation')
+    list_display = ('sha', 'owner', 'app')
+    list_filter = ('owner', 'app')
 admin.site.register(Build, BuildAdmin)
 
 
@@ -36,9 +36,19 @@ class ConfigAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('version', 'owner', 'formation')
-    list_filter = ('owner', 'formation')
+    list_display = ('version', 'owner', 'app')
+    list_filter = ('owner', 'app')
 admin.site.register(Config, ConfigAdmin)
+
+
+class ReleaseAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Release` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('owner', 'app', 'version')
+    list_filter = ('owner', 'app')
+admin.site.register(Release, ReleaseAdmin)
 
 
 class ContainerAdmin(admin.ModelAdmin):
@@ -46,8 +56,8 @@ class ContainerAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('short_name', 'owner', 'formation', 'status')
-    list_filter = ('owner', 'formation', 'status')
+    list_display = ('short_name', 'owner', 'formation', 'app', 'status')
+    list_filter = ('owner', 'formation', 'app', 'status')
 admin.site.register(Container, ContainerAdmin)
 
 
@@ -86,7 +96,7 @@ class LayerAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'formation', 'flavor', 'level', 'run_list')
+    list_display = ('id', 'owner', 'formation', 'flavor', 'proxy', 'runtime', 'config')
     list_filter = ('owner', 'formation', 'flavor')
 admin.site.register(Layer, LayerAdmin)
 
@@ -109,13 +119,3 @@ class ProviderAdmin(admin.ModelAdmin):
     list_display = ('id', 'owner', 'type')
     list_filter = ('owner', 'type')
 admin.site.register(Provider, ProviderAdmin)
-
-
-class ReleaseAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Release` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('owner', 'formation', 'version')
-    list_filter = ('owner', 'formation')
-admin.site.register(Release, ReleaseAdmin)

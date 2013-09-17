@@ -27,8 +27,8 @@ class ProviderTest(TestCase):
         environment variables
         """
         url = '/api/providers'
-        creds = {'secret_key': 'x'*64, 'access_key': 1*20}
-        body = {'id': 'autotest', 'type': 'ec2', 'creds': json.dumps(creds)}
+        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
+        body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         provider_id = response.data['id']
@@ -39,10 +39,10 @@ class ProviderTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         new_creds = {'access_key': 'new', 'secret_key': 'new'}
-        body = {'type': 'ec2', 'creds': json.dumps(new_creds)}
+        body = {'type': 'mock', 'creds': json.dumps(new_creds)}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['creds'], json.dumps(new_creds))
-        self.assertEqual(response.data['type'], 'ec2')
+        self.assertEqual(response.data['type'], 'mock')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)

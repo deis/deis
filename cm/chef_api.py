@@ -158,6 +158,9 @@ class ChefAPI(object):
         body = json.dumps(item_value)
         return self.request('PUT', '/data/%s/%s' % (bag_name, item_name), body)
 
+    def get_all_databag_items(self, bag_name):
+        return self.request('GET', '/data/%s' % bag_name)
+
     def get_databag_item(self, bag_name, item_name):
         return self.request('GET', '/data/%s/%s' % (bag_name, item_name))
 
@@ -172,55 +175,3 @@ class ChefAPI(object):
 
     def delete_client(self, client_id):
         return self.request('DELETE', '/clients/%s' % client_id)
-
-#     def create_cookbook(self, cookbook_name, cookbooks, priv_key, user, org):
-#         checksums = {}
-#         by_cb = {}
-#         first = None
-#         for c in cookbooks:
-#             json_cb = json.dumps(c)
-#             first = json_cb
-#             hasher = hashlib.md5()
-#             hasher.update(json_cb)
-#             check = hasher.hexdigest()
-#             checksums[check] = None
-#             by_cb[c['name']] = check
-#         body = json.dumps({'checksums': checksums})
-#         sandbox = json.loads(self.request('POST', '/sandboxes'))
-#         print 'Sandbox is ', sandbox
-#         for k, v in sandbox['checksums'].items():
-#             print 'URL ', v
-#             if 'url' in v:
-#                print 'Trigger it ', self.request(
-#                    'PUT', v['url'][25:], json_cb, priv_key, user)
-#
-#        print 'Mark as uploaded ', self.request(
-#            'PUT', sandbox['uri'][25:], '''{'is_completed':true}''', priv_key,
-#            user)
-#        print 'Mark as uploaded ', self.request(
-#            'PUT', sandbox['uri'][25:], '''{'is_completed':true}''', priv_key,
-#            user)
-#        print 'Mark as uploaded ', self.request(
-#            'PUT', sandbox['uri'][25:], '''{'is_completed':true}''', priv_key,
-#            user)
-#        print 'Mark as uploaded ', self.request(
-#            'PUT', sandbox['uri'][25:], '''{'is_completed':true}''', priv_key,
-#            user)
-#
-#         for c in cookbooks:
-#             c['definitions'] = [{
-#                 'name': 'unicorn_config.rb',
-#                 'checksum': by_cb[c['name']],
-#                 'path': 'definitions/unicorn_config.rb',
-#                 'specificity': 'default'
-#             }],
-#             return self.request('PUT', '/organizations/%s/cookbooks/%s/1' %
-#                                 (org, cookbook_name), body, priv_key, user)
-#
-# @task(name='chef.update_data_bag_item')
-# def update_data_bag_item(conn_info, bag_name, item_name, item_value):
-#     client = ChefAPI(conn_info['server_url'],
-#                      conn_info['client_name'],
-#                      conn_info['client_key'],
-#                      conn_info['organization'])
-#     client.update_databag_item(bag_name, item_name, item_value)

@@ -22,7 +22,7 @@ docopt==0.6.1
 requests==1.2.3
 
 # Deis documentation requirements
-Sphinx>=1.2b1
+Sphinx>=1.2b2
 smartypants>=1.8.2
 sphinxcontrib-httpdomain>=1.1.9
 
