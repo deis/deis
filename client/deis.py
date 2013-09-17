@@ -320,19 +320,6 @@ class DeisClient(object):
         response = func(url, data=body, headers=headers)
         return response
 
-    def attach(self, args):
-        """
-        Attach session to an application or formation
-
-        Uses DEIS_APPLICATION and DEIS_FORMATION environment
-        variables to store state in the terminal session.
-
-        Usage: deis attach --formation=<formation> | --app=<app>
-        """
-        formation = args.get('--formation')
-        if formation:
-            os.environ['DEIS_FORMATION'] = formation
-
     def apps(self, args):
         """
         Valid commands for apps:
@@ -479,6 +466,32 @@ class DeisClient(object):
             print('=== Apps')
             for item in data['results']:
                 print('{id} {containers}'.format(**item))
+        else:
+            raise ResponseError(response)
+
+    def apps_open(self, args):
+        """
+        Open a URL to the application in a browser
+
+        Usage: deis apps:open [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        # TODO: replace with a proxy lookup that doesn't have any side effects
+        # this currently recalculates and updates the databag
+        response = self._dispatch('post',
+                                  "/api/apps/{}/calculate".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            databag = json.loads(response.content)
+            domains = databag.get('domains', [])
+            if domains:
+                domain = random.choice(domains)
+                # use the OS's default handler to open this URL
+                webbrowser.open('http://{}/'.format(domain))
+                return domain
+            else:
+                print('No proxies found. Use `deis layers:scale proxy=1` to scale up.')
         else:
             raise ResponseError(response)
 
@@ -1467,32 +1480,6 @@ class DeisClient(object):
         """
         return self.providers_list(args)
 
-    def open(self, args):
-        """
-        Open a URL to the application in a browser
-
-        Usage: deis open
-        """
-        app = args.get('--app')
-        if not app:
-            app = self._session.app
-        # TODO: replace with a proxy lookup that doesn't have any side effects
-        # this currently recalculates and updates the databag
-        response = self._dispatch('post',
-                                  "/api/apps/{}/calculate".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            proxies = databag.get('proxies', [])
-            if proxies:
-                proxy = random.choice(proxies)
-                # use the OS's default handler to open this URL
-                webbrowser.open('http://{}/'.format(proxy))
-                return proxy
-            else:
-                print('No proxies found. Use `deis layers:scale proxy=1` to scale up.')
-        else:
-            raise ResponseError(response)
-
     def providers_create(self, args):
         """
         Create a provider for use by Deis
@@ -1661,6 +1648,7 @@ def parse_args(cmd):
         'converge': 'formations:converge',
         'calculate': 'apps:calculate',
         'ssh': 'nodes:ssh',
+        'open': 'apps:open',
         'logs': 'apps:logs',
         'run': 'apps:run',
     }
