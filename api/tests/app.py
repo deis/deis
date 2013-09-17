@@ -34,23 +34,20 @@ class AppTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = 'autotest'
-        response = self.client.post('/api/formations', json.dumps(
-            {'id': formation_id, 'domain': 'localhost.localdomain'}),
-            content_type='application/json')
+        response = self.client.post('/api/formations', json.dumps({'id': formation_id}),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # create & scale a basic formation
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'proxy', 'flavor': 'autotest', 'proxy': True,
-                'run_list': 'recipe[deis::proxy]'}
+        body = {'id': 'proxy', 'flavor': 'autotest', 'proxy': True}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True,
-                'run_list': 'recipe[deis::proxy]'}
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'proxy': 2, 'runtime': 4}
+        body = {'proxy': 1, 'runtime': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -111,6 +108,42 @@ class AppTest(TestCase):
                                     content_type='application/json')
         self.assertContains(response, 'App with this Id already exists.', status_code=400)
         return response
+
+    def test_multiple_apps(self):
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app1_id = response.data['id']
+        # test single app domain
+        url = "/api/apps/{app1_id}/calculate".format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['domains'], ['localhost.localdomain.local'])
+        # create second app without multi-app support
+        url = '/api/apps'
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, 'Formation does not support multiple apps', status_code=400)
+        # add domain for multi-app support
+        url = '/api/formations/autotest'
+        response = self.client.patch(url, json.dumps({'domain': 'deisapp.local'}),
+                                     content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # create second app
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app2_id = response.data['id']
+        # test multiple app domains
+        url = "/api/apps/{app1_id}/calculate".format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['domains'], ['{}.deisapp.local'.format(app1_id)])
+        url = "/api/apps/{app2_id}/calculate".format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['domains'], ['{}.deisapp.local'.format(app2_id)])
 
     def test_app_actions(self):
         url = '/api/apps'

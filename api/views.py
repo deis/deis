@@ -262,6 +262,17 @@ class AppViewSet(OwnerViewSet):
         group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
                 tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
 
+    def pre_save(self, app, created=False, **kwargs):
+        if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
+            raise EnvironmentError('Formation does not support multiple apps')
+        return super(AppViewSet, self).pre_save(app, **kwargs)
+
+    def create(self, request, **kwargs):
+        try:
+            return OwnerViewSet.create(self, request, **kwargs)
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+
     def scale(self, request, **kwargs):
         new_structure = {}
         try:
