@@ -889,6 +889,7 @@ class DeisClient(object):
         Valid commands for formations:
 
         formations:create        create a new container formation from scratch
+        formations:update        update formation fields including domain
         formations:info          print a represenation of the formation
         formations:converge      force-converge all nodes in the formation
         formations:calculate     recalculate and update the formation databag
@@ -1000,15 +1001,14 @@ class DeisClient(object):
         """
         Print info about a formation
 
-        Usage: deis formations:info
+        Usage: deis formations:info <id>
         """
-        formation = args.get('<formation>')
-        if not formation:
-            formation = self._session.formation
+        formation = args.get('<id>')
         response = self._dispatch('get', "/api/formations/{}".format(formation))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             print("=== {} Formation".format(formation))
+            print(json.dumps(response.json(), indent=2))
             print()
             args = {'<formation>': data['id']}
             self.layers_list(args)
@@ -1067,6 +1067,25 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
+        else:
+            raise ResponseError(response)
+
+    def formations_update(self, args):
+        """
+        Update formation fields
+
+        This is typically used to add a "domain" to to host
+        multiple applications on a single formation
+
+        Usage: deis formations:update <id> [--domain=<domain>]
+        """
+        formation = args['<id>']
+        domain = args.get('--domain')
+        body = {'domain': domain}
+        response = self._dispatch('patch', '/api/formations/{}'.format(formation),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
