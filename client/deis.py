@@ -17,7 +17,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   nodes         manage nodes used to host containers and proxies
 
   apps          manage applications used to service end-users
-  containers    manage containers used to perform work an app
+  containers    manage containers used to service applications
   config        manage environment variables that define app config
   builds        manage builds created using `git push`
   releases      manage releases of an application
@@ -26,16 +26,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   flavors       manage flavors of nodes including size and location
   keys          manage ssh keys used for `git push` deployments
 
-Operations commands::
-
-  init          initialize a new formation
-  scale         scale nodes in a formation (deis=2, layer2=1)
-  converge      force-converge all nodes
-  calculate     recalculate and print the formation databag
-  info          print a representation of the formation
-  destroy       destroy a formation
-
-Developer commands::
+Developer shortcut commands::
 
   create        create a new application
   scale         scale process types (web=2, worker=1)
