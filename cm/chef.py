@@ -44,8 +44,13 @@ try:
     _valid_pem_path = os.path.join(CHEF_CONFIG_PATH, 'validation.pem')
     CHEF_VALIDATION_KEY = subprocess.check_output(
         ['sudo', '/bin/cat', _valid_pem_path]).strip('\n')
-except Exception as e:
-    raise EnvironmentError('Failed to auto-configure Chef -- {}'.format(e))
+except Exception as err:
+    msg = "Failed to auto-configure Chef -- {}".format(err)
+    if os.environ.get('READTHEDOCS'):
+        # Just print the error if Sphinx is running
+        print(msg)
+    else:
+        raise EnvironmentError(msg)
 
 
 def _get_client():

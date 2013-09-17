@@ -61,5 +61,5 @@ def generate_app_name():
         'yachting', 'yardbird', 'yearbook', 'yearling', 'yeomanry', 'yodeling',
         'zaniness', 'zeppelin', 'ziggurat', 'zirconia', 'zoologer', 'zucchini',
     ]
-    return '{}-{}'.format(
+    return "{}-{}".format(
         random.choice(adjectives), random.choice(nouns))

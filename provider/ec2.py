@@ -26,7 +26,10 @@ IMAGE_MAP = {
 
 
 def seed_flavors():
-    """Seed the database with default Flavors for each EC2 region."""
+    """Seed the database with default Flavors for each EC2 region.
+
+    :rtype: list of dicts containing Flavor data
+    """
     flavors = []
     for r in ('us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1',
               'ap-northeast-1', 'ap-southeast-1', 'ap-southeast-2',
