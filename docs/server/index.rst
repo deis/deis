@@ -30,7 +30,6 @@ Server Reference
     cm.chef_rsa
     cm.mock
 
-    provider.controller
     provider.ec2
     provider.mock
 
