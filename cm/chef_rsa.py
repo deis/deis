@@ -1,5 +1,7 @@
 """
-This file as copied from pyChef at https://github.com/coderanger/pychef
+SSL RSA key handling for Chef.
+
+This file derives from pyChef: https://github.com/coderanger/pychef
 """
 
 from ctypes import CDLL
