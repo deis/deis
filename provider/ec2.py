@@ -1,3 +1,6 @@
+"""
+Deis cloud provider implementation for Amazon EC2.
+"""
 
 from __future__ import unicode_literals
 
@@ -26,9 +29,9 @@ IMAGE_MAP = {
 
 
 def seed_flavors():
-    """Seed the database with default Flavors for each EC2 region.
+    """Seed the database with default flavors for each EC2 region.
 
-    :rtype: list of dicts containing Flavor data
+    :rtype: list of dicts containing flavor data
     """
     flavors = []
     for r in ('us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1',
@@ -45,6 +48,11 @@ def seed_flavors():
 
 
 def build_layer(layer):
+    """
+    Build a layer.
+
+    :param layer: a dict containing formation, id, params, and creds info
+    """
     region = layer['params'].get('region', 'us-east-1')
     conn = _create_ec2_connection(layer['creds'], region)
     # create a new sg and authorize all ports
@@ -68,6 +76,11 @@ def build_layer(layer):
 
 
 def destroy_layer(layer):
+    """
+    Destroy a layer.
+
+    :param layer: a dict containing formation, id, params, and creds info
+    """
     region = layer['params'].get('region', 'us-east-1')
     name = "{formation}-{id}".format(**layer)
     conn = _create_ec2_connection(layer['creds'], region)
@@ -84,6 +97,12 @@ def destroy_layer(layer):
 
 
 def build_node(node):
+    """
+    Build a node.
+
+    :param node: a dict containing formation, layer, params, and creds info.
+    :rtype: a tuple of (provider_id, fully_qualified_domain_name, metadata)
+    """
     params, creds = node['params'], node['creds']
     region = params.setdefault('region', 'us-east-1')
     conn = _create_ec2_connection(creds, region)
@@ -119,6 +138,11 @@ def build_node(node):
 
 
 def destroy_node(node):
+    """
+    Destroy a node.
+
+    :param node: a dict containing a node's provider_id, params, and creds
+    """
     provider_id = node['provider_id']
     region = node['params'].get('region', 'us-east-1')
     conn = _create_ec2_connection(node['creds'], region)
@@ -133,6 +157,14 @@ def destroy_node(node):
 
 
 def _create_ec2_connection(creds, region):
+    """
+    Connect to an EC2 region with the given credentials.
+
+    :param creds: a dict containing an EC2 access_key and secret_key
+    :region: the name of an EC2 region, such as "us-west-2"
+    :rtype: a connected :class:`~boto.ec2.connection.EC2Connection`
+    :raises EnvironmentError: if no credentials are provided
+    """
     if not creds:
         raise EnvironmentError('No credentials provided')
     return ec2.connect_to_region(region,
