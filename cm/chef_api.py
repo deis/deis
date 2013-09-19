@@ -1,8 +1,7 @@
 """
-Much of this has been copied from pyChef.
-https://github.com/coderanger/pychef
+Classes and functions for interacting with OpsCode Chef.
 
-We want a simpler version for making API calls
+This file derives from pyChef: https://github.com/coderanger/pychef
 """
 
 import base64
@@ -99,7 +98,19 @@ def create_authorization(blank_headers, verb, url, priv_key, user, body=''):
 
 
 class ChefAPI(object):
+    """The ChefAPI object is a wrapper for a single Chef server.
 
+    .. admonition:: The API stack
+
+        PyChef maintains a stack of :class:`ChefAPI` objects to be use with
+        other methods if an API object isn't given explicitly. The first
+        ChefAPI created will become the default, though you can set a specific
+        default using :meth:`ChefAPI.set_default`. You can also use a ChefAPI
+        as a context manager to create a scoped default::
+
+            with ChefAPI('http://localhost:4000', 'client.pem', 'admin'):
+                n = Node('web1')
+    """
     headers = {
         'Accept': 'application/json',
         'X-Chef-Version': '11.0.4.x',
