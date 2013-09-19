@@ -30,6 +30,7 @@ Developer shortcut commands::
 
   create        create a new application
   scale         scale containers by type (web=2, worker=1)
+  info          view information about the current app
   open          open a URL to the app in a browser
   logs          view aggregated log info for the app
   run           run a command in an ephemeral app container
@@ -470,6 +471,25 @@ class DeisClient(object):
             print('=== Apps')
             for item in data['results']:
                 print('{id} {containers}'.format(**item))
+        else:
+            raise ResponseError(response)
+
+    def apps_info(self, args):
+        """
+        Print info about the current application
+
+        Usage: deis apps:info [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print("=== {} Application".format(app))
+            print(json.dumps(response.json(), indent=2))
+            print()
+            self.containers_list(args)
+            print()
         else:
             raise ResponseError(response)
 
@@ -1634,6 +1654,7 @@ def parse_args(cmd):
         'create': 'apps:create',
         'destroy': 'apps:destroy',
         'ps': 'containers:list',
+        'info': 'apps:info',
         'scale': 'containers:scale',
         'converge': 'formations:converge',
         'calculate': 'apps:calculate',
