@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for the Deis api app.
 
@@ -31,7 +32,9 @@ class FlavorTest(TestCase):
         Test that a user can create, read, update and delete a node flavor
         """
         url = '/api/flavors'
-        body = {'id': 'autotest', 'provider': 'autotest',
+        # Ensure that dashes and underscores are allowed in id, per Django's
+        # definition of a SlugField.
+        body = {'id': 'auto_test-1', 'provider': 'autotest',
                 'params': json.dumps({'region': 'us-west-2', 'instance_size': 'm1.medium'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -59,7 +62,7 @@ class FlavorTest(TestCase):
             'zone': 'any',
             'image': 'i-1234567'
         }
-        body = {'id': 'autotest', 'provider': 'autotest', 'params': json.dumps(params)}
+        body = {'id': 'auto_test', 'provider': 'autotest', 'params': json.dumps(params)}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         flavor_id = response.data['id']
