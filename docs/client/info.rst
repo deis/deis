@@ -1,8 +1,9 @@
 :title: Info
-:description: Learn how to print info about a Deis formation using the Deis client. 
+:description: Learn how to print info about a Deis application's containers using the Deis client. 
 
 
-info
-====
+containers
+==========
 
-.. automethod:: client.deis.DeisClient.formations_info
+.. automethod:: client.deis.DeisClient.containers_list
+  :noindex:

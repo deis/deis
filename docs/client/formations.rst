@@ -1,18 +1,14 @@
 :title: Formations
-:description: Learn how to create, force converge and destroy a Deis formation, list available formations and recalculate a formation's databag using the Deis client.
+:description: Learn how to manage Deis formations using the Deis client, including how to create, list, update, converge, calculate and destroy formations.
 
 
 formations
 ==========
 
 .. automethod:: client.deis.DeisClient.formations_create
-  :noindex:
-.. automethod:: client.deis.DeisClient.formations_info
-  :noindex:
 .. automethod:: client.deis.DeisClient.formations_list
-.. automethod:: client.deis.DeisClient.formations_calculate
-  :noindex:
+.. automethod:: client.deis.DeisClient.formations_update
+.. automethod:: client.deis.DeisClient.formations_info
 .. automethod:: client.deis.DeisClient.formations_converge
-  :noindex:
+.. automethod:: client.deis.DeisClient.formations_calculate
 .. automethod:: client.deis.DeisClient.formations_destroy
-  :noindex:
