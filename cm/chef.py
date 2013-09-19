@@ -1,3 +1,6 @@
+"""
+Deis configuration management implementation for Opscode Chef.
+"""
 
 from __future__ import unicode_literals
 
@@ -11,6 +14,7 @@ from celery.canvas import group
 
 from api.ssh import exec_ssh, connect_ssh
 from cm.chef_api import ChefAPI
+
 
 CHEF_CONFIG_PATH = '/etc/chef'
 CHEF_INSTALL_TYPE = 'gems'
@@ -56,11 +60,19 @@ except Exception as err:
 def _get_client():
     """
     Return a new instance of a Chef API Client
+
+    :rtype: a :class:`~cm.chef_api.ChefAPI` object
     """
     return ChefAPI(CHEF_SERVER_URL, CHEF_CLIENT_NAME, CHEF_CLIENT_KEY)
 
 
 def bootstrap_node(node):
+    """
+    Bootstrap the Chef configuration management tools onto a node.
+
+    :param node: a dict containing the node's fully-qualified domain name and SSH info
+    :raises: RuntimeError
+    """
     # block until we can connect over ssh
     ssh = connect_ssh(node['ssh_username'], node['fqdn'], node.get('ssh_port', 22),
                       node['ssh_private_key'], timeout=120)
@@ -114,7 +126,9 @@ def _construct_run_list(node):
 
 def purge_node(node):
     """
-    Purge the Node & Client records from Chef Server
+    Purge a node and its client from Chef configuration management.
+
+    :param node: a dict containing the id of a node to purge
     """
     client = _get_client()
     client.delete_node(node['id'])
@@ -122,15 +136,32 @@ def purge_node(node):
 
 
 def converge_controller():
+    """
+    Converge this controller node.
+
+    "Converge" means to change a node's configuration to match that defined by
+    configuration management.
+
+    :returns: the output of the convergence command, in this case `sudo chef-client`
+    """
     try:
         return subprocess.check_output(['sudo', 'chef-client'])
-    except subprocess.CalledProcessError as e:
-        print(e)
-        print(e.output)
-        raise e
+    except subprocess.CalledProcessError as err:
+        print(err)
+        print(err.output)
+        raise err
 
 
 def converge_node(node):
+    """
+    Converge a node.
+
+    "Converge" means to change a node's configuration to match that defined by
+    configuration management.
+
+    :param node: a dict containing the node's fully-qualified domain name and SSH info
+    :returns: a tuple of the convergence command's (output, return_code)
+    """
     ssh = connect_ssh(node['ssh_username'],
                       node['fqdn'], 22,
                       node['ssh_private_key'])
@@ -143,14 +174,29 @@ def converge_node(node):
 
 
 def run_node(node, command):
-    ssh = connect_ssh(node['ssh_username'],
-                      node['fqdn'], node['ssh_port'],
-                      node['ssh_private_key'])
+    """
+    Run a command on a node.
+
+    :param node: a dict containing the node's fully-qualified domain name and SSH info
+    :param command: the command-line to execute on the node
+    :returns: a tuple of the command's (output, return_code)
+    """
+    ssh = connect_ssh(node['ssh_username'], node['fqdn'],
+                      node['ssh_port'], node['ssh_private_key'])
     output, rc = exec_ssh(ssh, command, pty=True)
     return output, rc
 
 
 def converge_formation(formation):
+    """
+    Converge all nodes in a formation.
+
+    "Converge" means to change a node's configuration to match that defined by
+    configuration management.
+
+    :param formation: a :class:`~api.models.Formation` to converge
+    :returns: the combined output of the nodes' convergence commands
+    """
     nodes = formation.node_set.all()
     subtasks = []
     for n in nodes:
@@ -164,26 +210,73 @@ def converge_formation(formation):
 
 
 def publish_user(user, data):
+    """
+    Publish a user to configuration management.
+
+    :param user: a dict containing the username
+    :param data: data to store with the user
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     _publish('deis-users', user['username'], data)
 
 
 def publish_app(app, data):
+    """
+    Publish an app to configuration management.
+
+    :param app: a dict containing the id of the app
+    :param data: data to store with the app
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     _publish('deis-apps', app['id'], data)
 
 
 def purge_app(app):
+    """
+    Purge an app from configuration management.
+
+    :param app: a dict containing the id of the app
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     _purge('deis-apps', app['id'])
 
 
 def publish_formation(formation, data):
+    """
+    Publish a formation to configuration management.
+
+    :param formation: a dict containing the id of the formation
+    :param data: data to store with the formation
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     _publish('deis-formations', formation['id'], data)
 
 
 def purge_formation(formation):
+    """
+    Purge a formation from configuration management.
+
+    :param formation: a dict containing the id of the formation
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     _purge('deis-formations', formation['id'])
 
 
 def _publish(data_bag, item_name, item_value):
+    """
+    Publish a data bag item to the Chef server.
+
+    :param data_bag: the name of a Chef data bag
+    :param item_name: the name of the item to publish
+    :param item_value: the value of the item to publish
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     client = _get_client()
     body, status = client.update_databag_item(data_bag, item_name, item_value)
     if status != 200:
@@ -194,6 +287,14 @@ def _publish(data_bag, item_name, item_value):
 
 
 def _purge(databag_name, item_name):
+    """
+    Purge a data bag item from the Chef server.
+
+    :param databag_name: the name of a Chef data bag
+    :param item_name: the name of the item to purge
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
     client = _get_client()
     body, status = client.delete_databag_item(databag_name, item_name)
     if status == 200 or status == 404:
