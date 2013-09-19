@@ -40,7 +40,7 @@ class FormationTest(TestCase):
         Test that a user can create, read, update and delete a node formation
         """
         url = '/api/formations'
-        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
+        body = {'id': 'auto_test-1', 'domain': 'localhost.localdomain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         formation_id = response.data['id']  # noqa
@@ -78,7 +78,9 @@ class FormationTest(TestCase):
         self.assertFalse(os.path.exists(path))
 
     def test_formation_id(self):
-        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
+        # Ensure that dashes and underscores are allowed in id, per Django's
+        # definition of a SlugField.
+        body = {'id': 'auto_test-1', 'domain': 'localhost.localdomain'}
         response = self.client.post('/api/formations', json.dumps(body),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
