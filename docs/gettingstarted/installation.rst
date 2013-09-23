@@ -134,9 +134,9 @@ Find an application you’d like to deploy, or clone `an example app`_.
 Change into the application directory and use  ``deis create --formation=dev`` 
 to create a new application attached to the dev formation.
 
-To deploy the application, new ``git push deis master``.  
-Deis will automatically deploy Docker containers 
-and configure Nginx proxies to route requests to your application.
+To deploy the application, use ``git push deis master``.  
+Deis will automatically deploy Docker containers and configure Nginx proxies
+to route requests to your application.
 
 Once your application is deployed, you use ``deis scale web=4`` to 
 scale up web containers.  You can also use ``deis logs`` to view 
