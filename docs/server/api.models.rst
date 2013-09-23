@@ -11,4 +11,3 @@ api.models
 
 .. automodule:: api.models
     :members:
-    :undoc-members:

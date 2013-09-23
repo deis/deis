@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-This Deis command-line client issues API calls to a Deis controller.
+The Deis command-line client issues API calls to a Deis controller.
 
-Usage: deis <command> [--app=<app> | --formation=<formation>] [<args>...]
+Usage: deis <command> [<args>...]
 
 Auth commands::
 
@@ -13,11 +13,11 @@ Auth commands::
 Subcommands, use ``deis help [subcommand]`` to learn more::
 
   formations    manage formations used to host applications
-  layers        manage layers of nodes used to configure nodes
+  layers        manage layers used for node configuration
   nodes         manage nodes used to host containers and proxies
 
-  apps          manage applications used to service end-users
-  containers    manage containers used to service applications
+  apps          manage applications used to provide services
+  containers    manage containers used to handle requests and jobs
   config        manage environment variables that define app config
   builds        manage builds created using `git push`
   releases      manage releases of an application
@@ -29,7 +29,8 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
 Developer shortcut commands::
 
   create        create a new application
-  scale         scale process types (web=2, worker=1)
+  scale         scale containers by type (web=2, worker=1)
+  info          view information about the current app
   open          open a URL to the app in a browser
   logs          view aggregated log info for the app
   run           run a command in an ephemeral app container
@@ -325,8 +326,12 @@ class DeisClient(object):
         Valid commands for apps:
 
         apps:create        create a new application
-        apps:destroy       destroy an application
         apps:list          list accessible applications
+        apps:info          view info about an application
+        apps:open          open the application in a browser
+        apps:logs          view aggregated application logs
+        apps:run           run a command in an ephemeral app container
+        apps:destroy       destroy an application
 
         Use `deis help [command]` to learn more
         """
@@ -369,7 +374,7 @@ class DeisClient(object):
             sys.exit(1)
         try:
             self._session.get_app()
-            print('Deis remote already exists in this directory, skipping..')
+            print('Deis remote already exists')
             sys.exit(1)
         except EnvironmentError:
             pass
@@ -466,6 +471,25 @@ class DeisClient(object):
             print('=== Apps')
             for item in data['results']:
                 print('{id} {containers}'.format(**item))
+        else:
+            raise ResponseError(response)
+
+    def apps_info(self, args):
+        """
+        Print info about the current application
+
+        Usage: deis apps:info [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print("=== {} Application".format(app))
+            print(json.dumps(response.json(), indent=2))
+            print()
+            self.containers_list(args)
+            print()
         else:
             raise ResponseError(response)
 
@@ -657,9 +681,9 @@ class DeisClient(object):
         """
         Valid commands for config:
 
-        config:list        list environment variables for a formation
-        config:set         set environment variables for a formation
-        config:unset       unset environment variables for a formation
+        config:list        list environment variables for an app
+        config:set         set environment variables for an app
+        config:unset       unset environment variables for an app
 
         Use `deis help [command]` to learn more
         """
@@ -667,9 +691,9 @@ class DeisClient(object):
 
     def config_list(self, args):
         """
-        List environment variables for a formation
+        List environment variables for an application
 
-        Usage: deis config:list
+        Usage: deis config:list [--app=<app>]
         """
         app = args.get('--app')
         if not app:
@@ -690,7 +714,7 @@ class DeisClient(object):
 
     def config_set(self, args):
         """
-        Set environment variables for a formation
+        Set environment variables for an application
 
         Usage: deis config:set <var>=<value>... [--app=<app>]
         """
@@ -716,7 +740,7 @@ class DeisClient(object):
 
     def config_unset(self, args):
         """
-        Unset an environment variable for a formation
+        Unset an environment variable for an application
 
         Usage: deis config:unset <key>... [--app=<app>]
         """
@@ -747,8 +771,8 @@ class DeisClient(object):
         """
         Valid commands for containers:
 
-        containers:list        list containers for a formation
-        containers:scale       scale a formation's containers (i.e web=4 worker=2)
+        containers:list        list application containers
+        containers:scale       scale app containers (e.g. web=4 worker=2)
 
         Use `deis help [command]` to learn more
         """
@@ -756,7 +780,7 @@ class DeisClient(object):
 
     def containers_list(self, args):
         """
-        List containers for a formation
+        List containers servicing an application
 
         Usage: deis containers:list [--app=<app>]
         """
@@ -833,20 +857,10 @@ class DeisClient(object):
         """
         Create a new node flavor
 
-        Usage: deis flavors:create --id=<id> --provider=<provider> --params=<params> [options]
-
-        Options:
-
-        --params=PARAMS    provider-specific parameters (size, region, zone, etc.)
-        --init=INIT        override Ubuntu cloud-init with custom YAML
+        Usage: deis flavors:create <id> --provider=<provider> --params=<params>
         """
-        body = {'id': args.get('--id'), 'provider': args.get('--provider')}
-        fields = ('params', 'init', 'ssh_username', 'ssh_private_key',
-                  'ssh_public_key')
-        for fld in fields:
-            opt = args.get('--' + fld)
-            if opt:
-                body.update({fld: opt})
+        body = {'id': args.get('<id>'), 'provider': args.get('--provider'),
+                'params': args.get('--params', json.dumps({}))}
         response = self._dispatch('post', '/api/flavors', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print("{0[id]}".format(response.json()))
@@ -901,11 +915,12 @@ class DeisClient(object):
         """
         Valid commands for formations:
 
-        formations:create        create a new container formation from scratch
-        formations:update        update formation fields including domain
+        formations:create        create a new container formation
+        formations:list          list accessible formations
+        formations:update        update formation fields
         formations:info          print a represenation of the formation
         formations:converge      force-converge all nodes in the formation
-        formations:calculate     recalculate and update the formation databag
+        formations:calculate     calculate and display the formation databag
         formations:destroy       destroy a container formation
 
         Use `deis help [command]` to learn more
@@ -914,10 +929,10 @@ class DeisClient(object):
 
     def formations_calculate(self, args, quiet=False):
         """
-        Recalculate the formation's databag
+        Calculate and display the formation's databag
 
-        This command will recalculate the databag, update the Chef server
-        and return the databag JSON.
+        This command will calculate the databag and return
+        its JSON representation.
 
         Usage: deis formations:calculate <formation>
         """
@@ -936,9 +951,8 @@ class DeisClient(object):
         """
         Force converge a formation
 
-        Converging a formation will force a Chef converge on
-        all nodes in the formation, ensuring the formation is
-        completely up-to-date.
+        Converging a formation will force a converge on all nodes in the
+        formation, ensuring it is completely up-to-date.
 
         Usage: deis formations:converge <id>
         """
@@ -963,10 +977,9 @@ class DeisClient(object):
 
     def formations_create(self, args):
         """
-        Create a new formation
+        Create a new container formation
 
-        A globally unique formation ID must be provided along
-        with a domain used as the root for applications.
+        A globally unique formation ID must be provided.
 
         If a flavor is provided, a default layer will be initialized
         with dual proxy and runtime capability, faciliating a simple
@@ -974,6 +987,13 @@ class DeisClient(object):
 
         The name of the default layer is "runtime" unless overriden
         with the --layer=<layer> option.
+
+        The domain field is required for a single formation to host
+        multiple applications.  Note this requires wildcard DNS
+        configuration on the provided domain.
+
+        For example: --domain=deisapp.com requires that \\*.deisapp.com\\
+        resolve to the formation's proxy nodes.
 
         Usage: deis formations:create <id> [--flavor=<flavor>] [--domain=<domain> --layer=<layer>]
         """
@@ -1028,7 +1048,6 @@ class DeisClient(object):
             print()
             self.nodes_list(args)
             print()
-            self.containers_list(args)
         else:
             raise ResponseError(response)
 
@@ -1194,8 +1213,8 @@ class DeisClient(object):
         Valid commands for node layers:
 
         layers:create        create a layer of nodes for a formation
-        layers:scale         scale nodes in a layer (e.g. proxy=1 runtime=2)
         layers:list          list layers in a formation
+        layers:info          print info about a particular layer
         layers:destroy       destroy a layer of nodes in a formation
 
         Use `deis help [command]` to learn more
@@ -1210,12 +1229,6 @@ class DeisClient(object):
 
         Usage: deis layers:create <formation> <id> <flavor> [--proxy --runtime] [options]
 
-        Chef Options:
-
-        --run_list=RUN_LIST         run-list to use when bootstrapping nodes
-        --environment=ENVIRONMENT   chef environment to place nodes [default: _default]
-        --attributes=INITIAL_ATTRS  initial attributes for nodes
-
         SSH Options:
 
         --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
@@ -1226,19 +1239,10 @@ class DeisClient(object):
         formation = args.get('<formation>')
         body = {'id': args['<id>'], 'flavor': args['<flavor>']}
         for opt in ('--formation', '--proxy', '--runtime',
-                    '--environment', '--initial_attributes', '--run_list',
                     '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
-        # provide default run_list for runtime and proxy
-        if not 'run_list' in body:
-            run_list = ['recipe[deis]']
-            if body['runtime'] is True:
-                run_list.append('recipe[deis::runtime]')
-            if body['proxy'] is True:
-                run_list.append('recipe[deis::proxy]')
-            body['run_list'] = ','.join(run_list)
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
         try:
@@ -1281,7 +1285,7 @@ class DeisClient(object):
 
     def layers_info(self, args):
         """
-        Print info about a particular layer
+        Print info about a layer of nodes
 
         Usage: deis layers:info <formation> <id>
         """
@@ -1295,7 +1299,7 @@ class DeisClient(object):
 
     def layers_list(self, args):
         """
-        List layers for a formation
+        List a formation's layers
 
         Usage: deis layers:list <formation>
         """
@@ -1305,7 +1309,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print("=== {} Layers".format(formation))
             data = response.json()
-            format_str = "{id}"
+            format_str = "{id} => flavor: {flavor}, proxy: {proxy}, runtime: {runtime}"
             for item in data['results']:
                 print(format_str.format(**item))
         else:
@@ -1315,8 +1319,11 @@ class DeisClient(object):
         """
         Valid commands for nodes:
 
-        nodes:list            list nodes for a formation
+        nodes:list            list nodes in a formation
         nodes:info            print info for a given node
+        nodes:scale           scale nodes by layer (e.g. runtime=4)
+        nodes:converge        force-converge a node and return the output
+        nodes:ssh             ssh directly into a node
         nodes:destroy         destroy a node by ID
 
         Use `deis help [command]` to learn more
@@ -1340,7 +1347,7 @@ class DeisClient(object):
 
     def nodes_list(self, args):
         """
-        List nodes for this formation
+        List nodes in a formation
 
         Usage: deis nodes:list <formation>
         """
@@ -1384,7 +1391,10 @@ class DeisClient(object):
         Scale nodes in a formation
 
         Scaling nodes will launch or terminate nodes to meet the
-        requested structure.
+        requested structure.  For example, to scale up to 4 nodes
+        in the "dev" formation's runtime layer:
+
+        ``deis nodes:scale dev runtime=4``
 
         Usage: deis nodes:scale <formation> <type=num>...
         """
@@ -1414,7 +1424,7 @@ class DeisClient(object):
         """
         Force converge a node
 
-        Converging a node will force a client-client run and
+        Converging a node will force a chef-client run and
         return its output
 
         Usage: deis nodes:converge <id>
@@ -1440,7 +1450,7 @@ class DeisClient(object):
 
     def nodes_ssh(self, args):
         """
-        SSH into a node
+        SSH into a node and optionally run a command
 
         Usage: deis nodes:ssh <node> [<command>...]
         """
@@ -1589,7 +1599,7 @@ class DeisClient(object):
         """
         Valid commands for releases:
 
-        releases:list        list a formation's release history
+        releases:list        list an application's release history
         releases:info        print information about a specific release
         releases:rollback    coming soon!
 
@@ -1616,7 +1626,7 @@ class DeisClient(object):
 
     def releases_list(self, args):
         """
-        List release history for a formation
+        List release history for an application
 
         Usage: deis releases:list [--app=<app>]
         """
@@ -1644,6 +1654,7 @@ def parse_args(cmd):
         'create': 'apps:create',
         'destroy': 'apps:destroy',
         'ps': 'containers:list',
+        'info': 'apps:info',
         'scale': 'containers:scale',
         'converge': 'formations:converge',
         'calculate': 'apps:calculate',

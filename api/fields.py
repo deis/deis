@@ -7,8 +7,6 @@ from uuid import uuid4
 
 from django import forms
 from django.db import models
-from json_field import JSONField
-from yamlfield.fields import YAMLField
 
 
 class UuidField(models.CharField):
@@ -51,60 +49,6 @@ class UuidField(models.CharField):
             'max_length': self.max_length,
         })
         return super(UuidField, self).formfield(**kwargs)
-
-
-class EnvVarsField(JSONField):
-
-    """
-    A text field that accepts a JSON object, coercing its keys to uppercase.
-    """
-    pass
-
-
-class DataBagField(JSONField):
-    """
-    A text field that accepts a JSON object, used for storing Chef data bags.
-    """
-    pass
-
-
-class ProcfileField(JSONField):
-    """
-    A text field that accepts a JSON object, used for Procfile data.
-    """
-    pass
-
-
-class CredentialsField(JSONField):
-    """
-    A text field that accepts a JSON object, used for storing provider
-    API Credentials.
-    """
-    pass
-
-
-class ParamsField(JSONField):
-    """
-    A text field that accepts a JSON object, used for storing provider
-    API Parameters.
-    """
-    pass
-
-
-class CloudInitField(YAMLField):
-    """
-    A text field that accepts a YAML object, used for storing cloud-init
-    boostrapping scripts.
-    """
-    pass
-
-
-class NodeStatusField(JSONField):
-    """
-    A text field that accepts a YAML object, used for storing cloud-init
-    boostrapping scripts.
-    """
-    pass
 
 
 try:

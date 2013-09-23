@@ -7,13 +7,22 @@
 Controller
 ==========
 The controller is the "brains" of the Deis platform.
-Each controller is tied to a single Chef organization.
+The controller manages container :ref:`Formations <formation>`,
+comprised of clusters of nodes providing proxy and runtime services for
+the application platform.  A single controller manages multiple 
+container formations.
+
+Controllers are tied to a configuration management backend (typically a 
+Chef Server) where data about users, applications and formations 
+is stored and updated.
+
 The controller is in charge of:
 
-* Processing Client API calls
-* Managing Chef Nodes
-* Managing Docker Containers
-* Configuring Nginx proxies
+* Processing client API calls
+* Managing nodes that provide services to a formation
+* Managing containers that perform work for applications
+* Managing proxies that route traffic to containers
+* Managing users, providers, flavors, keys and other base configuration
 
 The controller stack includes:
 
