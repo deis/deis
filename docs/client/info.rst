@@ -6,4 +6,4 @@ containers
 ==========
 
 .. automethod:: client.deis.DeisClient.containers_list
-  :noindex:
+   :noindex:
