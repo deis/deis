@@ -7,4 +7,4 @@
 Node
 ====
 A node is a virtual machine instance that is part of a :ref:`Layer`.
-All Deis nodes are managed by a Chef Server. 
+All Deis nodes are managed by a Chef Server.

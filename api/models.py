@@ -19,6 +19,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
+from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
 from provider import import_provider_module
@@ -111,7 +112,7 @@ class Provider(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
     type = models.SlugField(max_length=16, choices=PROVIDERS)
-    creds = fields.CredentialsField(blank=True)
+    creds = JSONField(blank=True)
 
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -148,7 +149,7 @@ class Flavor(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64)
     provider = models.ForeignKey('Provider')
-    params = fields.ParamsField(blank=True)
+    params = JSONField(blank=True)
 
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -167,7 +168,7 @@ class Formation(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     domain = models.CharField(max_length=128, blank=True, null=True)
-    nodes = fields.JSONField(default='{}', blank=True)
+    nodes = JSONField(default='{}', blank=True)
 
     class Meta:
         unique_together = (('owner', 'id'),)
@@ -256,7 +257,7 @@ class Layer(UuidAuditedModel):
     ssh_port = models.SmallIntegerField(default=22)
 
     # example: {'run_list': [deis::runtime'], 'environment': 'dev'}
-    config = fields.JSONField(default='{}', blank=True)
+    config = JSONField(default='{}', blank=True)
 
     class Meta:
         unique_together = (('formation', 'id'),)
@@ -390,7 +391,7 @@ class Node(UuidAuditedModel):
 
     provider_id = models.SlugField(max_length=64, blank=True, null=True)
     fqdn = models.CharField(max_length=256, blank=True, null=True)
-    status = fields.NodeStatusField(blank=True, null=True)
+    status = JSONField(blank=True, null=True)
 
     class Meta:
         unique_together = (('formation', 'id'),)
@@ -438,7 +439,7 @@ class App(UuidAuditedModel):
     id = models.SlugField(max_length=64, unique=True)
     formation = models.ForeignKey('Formation')
 
-    containers = fields.JSONField(default='{}', blank=True)
+    containers = JSONField(default='{}', blank=True)
 
     def __str__(self):
         return self.id
@@ -666,7 +667,7 @@ class Config(UuidAuditedModel):
     app = models.ForeignKey('App')
     version = models.PositiveIntegerField()
 
-    values = fields.EnvVarsField(default='{}', blank=True)
+    values = JSONField(default='{}', blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -690,9 +691,9 @@ class Build(UuidAuditedModel):
 
     image = models.CharField(max_length=256, default='deis/buildstep')
 
-    procfile = fields.ProcfileField(blank=True)
+    procfile = JSONField(blank=True)
     dockerfile = models.TextField(blank=True)
-    config = fields.EnvVarsField(blank=True)
+    config = JSONField(blank=True)
 
     url = models.URLField('URL')
     size = models.IntegerField(blank=True, null=True)

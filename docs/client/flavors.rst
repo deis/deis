@@ -1,5 +1,5 @@
 :title: Flavors
-:description: Learn how to create, print information about and delete a node flavor, and list available node flavors using the Deis client. Deis flavors.
+:description: Learn how to create, print information about and delete a node flavor, and list available node flavors using the Deis client.
 
 
 flavors

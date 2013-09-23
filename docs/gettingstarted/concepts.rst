@@ -8,24 +8,20 @@ Concepts
 ========
 
 Deis is an application platform that deploys and scales `Twelve Factor`_ apps 
-using a formation of `Chef`_ nodes, `Docker`_ containers and 
-`Nginx`_ proxies.
+using a formation of `Chef`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
 
 Formations
 ----------
-A :ref:`formation` is a set of infrastructure used to host a single application
-or service backed by a single git repository. Each formation includes
-:ref:`Layers <layer>` of :ref:`Nodes <node>` used to host services, a set of 
-:ref:`Containers <container>` used to run isolated processes, and a 
-:ref:`Release` that defines the current :ref:`Build` and :ref:`config` 
-deployed by containers.
+A :ref:`formation` is a set of infrastructure used to host applications.
+Each formation includes :ref:`Layers <layer>` of :ref:`Nodes <node>`
+that provide different services to the formation.
 
 Layers
 ------
 :ref:`Layers <layer>` are homogeneous groups of :ref:`Nodes <node>` that 
 perform work on behalf of a formation.  Each node in a layer has 
-the same :ref:`Flavor` and Chef configuration, allowing them to be scaled
-easily.  Formations have two types of layers.
+the same :ref:`Flavor` and configuration, allowing them to be scaled
+easily.  Formations have two primary types of layers.
 
 Runtime Layers
 ^^^^^^^^^^^^^^
@@ -38,6 +34,18 @@ Proxy Layers
 Proxy layers expose the formation to the outside world.
 Nodes in a proxy layer use a `Chef Databag`_ to configure routing of 
 inbound requests to :ref:`Containers <container>` hosted on runtime layers.
+
+Applications
+------------
+
+An :ref:`application` lives on a :ref:`formation` where it services requests 
+and runs background jobs for a deployed git repository. Each application includes 
+:ref:`Containers <container>` used to run isolated processes, and a 
+:ref:`Release` that defines the current :ref:`Build` and :ref:`config` 
+deployed by containers. 
+
+Developers can use :ref:`Applications <application>` to push builds, change config
+and scale containers without worrying about the formation's underlying infrastructure. 
 
 Build, Release, Run
 ------------------- 

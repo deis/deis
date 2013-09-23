@@ -16,13 +16,14 @@ Terms
     formation
     layer
     node
-    container
     
-    build
+    application
+    container
     config
+    build
     release
     
-    flavor
     provider
+    flavor
     key
     
