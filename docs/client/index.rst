@@ -38,9 +38,3 @@ Client Reference
     providers
     flavors
     keys
-
-.. todo
-
-    config
-    builds
-    releases
