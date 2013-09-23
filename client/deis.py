@@ -992,8 +992,8 @@ class DeisClient(object):
         multiple applications.  Note this requires wildcard DNS
         configuration on the provided domain.
 
-        For example: --domain=deisapp.com requires that
-        *.deisapp.com resolve to the formation's proxy nodes.
+        For example: --domain=deisapp.com requires that \\*.deisapp.com\\
+        resolve to the formation's proxy nodes.
 
         Usage: deis formations:create <id> [--flavor=<flavor>] [--domain=<domain> --layer=<layer>]
         """
