@@ -574,6 +574,10 @@ class DeisClient(object):
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
+            confirm = getpass('password (confirm): ')
+            if password != confirm:
+                print('Password mispatch, aborting registration.')
+                return False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
