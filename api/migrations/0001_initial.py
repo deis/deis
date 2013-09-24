@@ -30,7 +30,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
             ('type', self.gf('django.db.models.fields.SlugField')(max_length=16)),
-            ('creds', self.gf('api.fields.CredentialsField')(default=u'null', blank=True)),
+            ('creds', self.gf('json_field.fields.JSONField')(default=u'null', blank=True)),
         ))
         db.send_create_signal(u'api', ['Provider'])
 
@@ -45,7 +45,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('id', self.gf('django.db.models.fields.SlugField')(max_length=64)),
             ('provider', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Provider'])),
-            ('params', self.gf('api.fields.ParamsField')(default=u'null', blank=True)),
+            ('params', self.gf('json_field.fields.JSONField')(default=u'null', blank=True)),
         ))
         db.send_create_signal(u'api', ['Flavor'])
 
@@ -101,7 +101,7 @@ class Migration(SchemaMigration):
             ('num', self.gf('django.db.models.fields.PositiveIntegerField')()),
             ('provider_id', self.gf('django.db.models.fields.SlugField')(max_length=64, null=True, blank=True)),
             ('fqdn', self.gf('django.db.models.fields.CharField')(max_length=256, null=True, blank=True)),
-            ('status', self.gf('api.fields.NodeStatusField')(default=u'null', null=True, blank=True)),
+            ('status', self.gf('json_field.fields.JSONField')(default=u'null', null=True, blank=True)),
         ))
         db.send_create_signal(u'api', ['Node'])
 
@@ -150,7 +150,7 @@ class Migration(SchemaMigration):
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
             ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.App'])),
             ('version', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('values', self.gf('api.fields.EnvVarsField')(default=u'{}', blank=True)),
+            ('values', self.gf('json_field.fields.JSONField')(default=u'{}', blank=True)),
         ))
         db.send_create_signal(u'api', ['Config'])
 
@@ -167,9 +167,9 @@ class Migration(SchemaMigration):
             ('sha', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('output', self.gf('django.db.models.fields.TextField')(blank=True)),
             ('image', self.gf('django.db.models.fields.CharField')(default=u'deis/buildstep', max_length=256)),
-            ('procfile', self.gf('api.fields.ProcfileField')(default=u'null', blank=True)),
+            ('procfile', self.gf('json_field.fields.JSONField')(default=u'null', blank=True)),
             ('dockerfile', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('config', self.gf('api.fields.EnvVarsField')(default=u'null', blank=True)),
+            ('config', self.gf('json_field.fields.JSONField')(default=u'null', blank=True)),
             ('url', self.gf('django.db.models.fields.URLField')(max_length=200)),
             ('size', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
             ('checksum', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
@@ -279,13 +279,13 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'app', u'uuid'),)", 'object_name': 'Build'},
             'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']"}),
             'checksum': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'config': ('api.fields.EnvVarsField', [], {'default': "u'null'", 'blank': 'True'}),
+            'config': ('json_field.fields.JSONField', [], {'default': "u'null'", 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'dockerfile': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'image': ('django.db.models.fields.CharField', [], {'default': "u'deis/buildstep'", 'max_length': '256'}),
             'output': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'procfile': ('api.fields.ProcfileField', [], {'default': "u'null'", 'blank': 'True'}),
+            'procfile': ('json_field.fields.JSONField', [], {'default': "u'null'", 'blank': 'True'}),
             'sha': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'size': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
@@ -299,7 +299,7 @@ class Migration(SchemaMigration):
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
-            'values': ('api.fields.EnvVarsField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'values': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
             'version': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
         u'api.container': {
@@ -321,7 +321,7 @@ class Migration(SchemaMigration):
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'params': ('api.fields.ParamsField', [], {'default': "u'null'", 'blank': 'True'}),
+            'params': ('json_field.fields.JSONField', [], {'default': "u'null'", 'blank': 'True'}),
             'provider': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Provider']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
@@ -372,14 +372,14 @@ class Migration(SchemaMigration):
             'num': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'provider_id': ('django.db.models.fields.SlugField', [], {'max_length': '64', 'null': 'True', 'blank': 'True'}),
-            'status': ('api.fields.NodeStatusField', [], {'default': "u'null'", 'null': 'True', 'blank': 'True'}),
+            'status': ('json_field.fields.JSONField', [], {'default': "u'null'", 'null': 'True', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
         u'api.provider': {
             'Meta': {'unique_together': "((u'owner', u'id'),)", 'object_name': 'Provider'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'creds': ('api.fields.CredentialsField', [], {'default': "u'null'", 'blank': 'True'}),
+            'creds': ('json_field.fields.JSONField', [], {'default': "u'null'", 'blank': 'True'}),
             'id': ('django.db.models.fields.SlugField', [], {'max_length': '64'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'type': ('django.db.models.fields.SlugField', [], {'max_length': '16'}),
