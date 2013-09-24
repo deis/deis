@@ -197,6 +197,13 @@ class AppTest(TestCase):
         body = {'command': 'ls -al'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'No nodes available to run command', status_code=400)
+        url = '/api/apps/{app_id}'.format(**locals())
+        response = self.client.delete(url)
+        self.assertEquals(response.status_code, 204)
+        for endpoint in ('containers', 'config', 'releases', 'builds'):
+            url = '/api/apps/{app_id}/{endpoint}'.format(**locals())
+            response = self.client.get(url)
+            self.assertEquals(response.status_code, 404)
 
 
 FAKE_LOG_DATA = """
