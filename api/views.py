@@ -330,7 +330,8 @@ class AppViewSet(OwnerViewSet):
 class BaseAppViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
-        app = models.App.objects.get(owner=self.request.user, id=self.kwargs['id'])
+        app = get_object_or_404(models.App.objects.filter(
+            owner=self.request.user, id=self.kwargs['id']))
         return self.model.objects.filter(owner=self.request.user, app=app)
 
     def get_object(self, *args, **kwargs):
@@ -401,8 +402,8 @@ class AppContainerViewSet(OwnerViewSet):
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = models.App.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
+        app = get_object_or_404(models.App.objects.filter(
+            owner=self.request.user, id=self.kwargs['id']))
         qs = self.model.objects.filter(owner=self.request.user, app=app)
         container_type = self.kwargs.get('type')
         if container_type:
