@@ -8,7 +8,7 @@ Concepts
 ========
 
 Deis is an application platform that deploys and scales `Twelve Factor`_ apps 
-using a formation of `Chef`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
+using formations of `Chef`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
 
 Formations
 ----------
@@ -25,31 +25,28 @@ easily.  Formations have two primary types of layers.
 
 Runtime Layers
 ^^^^^^^^^^^^^^
-Runtime layers service requests and run background tasks for the formation.
-Nodes in a runtime layer use a `Chef Databag`_  to deploy
-:ref:`Containers <container>` running a specific :ref:`Release`.  
+Runtime layers host :ref:`Containers <container>` for a formation.
+Nodes in a runtime layer use a `Chef Databag`_ to deploy containers for 
+each :ref:`application` in the formation.
 
 Proxy Layers
 ^^^^^^^^^^^^
-Proxy layers expose the formation to the outside world.
+Proxy layers expose :ref:`Applications <application>` to the outside world.
 Nodes in a proxy layer use a `Chef Databag`_ to configure routing of 
 inbound requests to :ref:`Containers <container>` hosted on runtime layers.
 
 Applications
 ------------
-
-An :ref:`application` lives on a :ref:`formation` where it services requests 
-and runs background jobs for a deployed git repository. Each application includes 
-:ref:`Containers <container>` used to run isolated processes, and a 
-:ref:`Release` that defines the current :ref:`Build` and :ref:`config` 
-deployed by containers. 
-
-Developers can use :ref:`Applications <application>` to push builds, change config
-and scale containers without worrying about the formation's underlying infrastructure. 
+An :ref:`application` lives on a :ref:`formation` where it uses 
+:ref:`Containers <container>` to process requests and run background jobs
+for a deployed git repository.
+Developers use :ref:`Applications <application>` to push code, change config,
+scale containers, view logs, or run admin commands --
+regardless of the formation's underlying infrastructure. 
 
 Build, Release, Run
 ------------------- 
-Deis enforces strict separation between Build, Release and Run stages
+Deis enforces strict separation between Build and Run stages
 following the `Twelve Factor model`_.
 
 Build Stage
@@ -72,19 +69,20 @@ config is changed, making it easy to rollback code and configuration.
 Run Stage
 ^^^^^^^^^
 The run stage updates Chef databags and `converges`_ all nodes in the formation.
-The databag specifies the current release, the placement of containers across 
-the runtime layer, and the configuration of the proxy layer.
-SSH is used to converge all of the nodes in the runtime layer followed 
-by all of the nodes in the proxy layer, making zero downtime deployment possible.
+The databag specifies the current application releases, 
+the placement of containers across the runtime layer, 
+and the configuration of the proxy layer.
+SSH is used to converge nodes in runtime layers followed 
+by nodes in proxy layers, making zero downtime deployment possible.
 
 Backing Services
 ----------------
 In keeping with `Twelve Factor`_ methodology, `backing services`_ like
 databases, queues and storage are decoupled and attached using `environment
-variables`_.  This allows formations to use backing services provided via
-different formations (through their proxy layer), or external/third-party 
-services accessible over the network.  The use of environment variables
-also allows formations to easily swap backing services when necessary.
+variables`_.  This allows applications to use backing services provided by
+other applications, or external/third-party services accessible over the network.  
+The use of environment variables makes it easy to swap backing services
+when necessary.
 
 See Also
 --------

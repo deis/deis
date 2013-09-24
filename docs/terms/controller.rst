@@ -13,8 +13,7 @@ the application platform.  A single controller manages multiple
 container formations.
 
 Controllers are tied to a configuration management backend (typically a 
-Chef Server) where data about users, applications and formations 
-is stored and updated.
+Chef Server) where data about users, applications and formations is stored.
 
 The controller is in charge of:
 
