@@ -1,5 +1,5 @@
 ﻿:title: Installation
-:description:  Install your own Deis platform on EC2. Configure the Chef server, provision a Deis controller, install the Deis Client and create & scale a formation.
+:description:  Install your own Deis platform on EC2. Provision a Deis controller, Install the Deis Client, Create & Scale a Formation, Deploy & Scale an Application.
 
 .. _installation:
 
@@ -89,6 +89,7 @@ Registration will discover SSH keys automatically and use the
     $ deis register http://my-deis-controller.fqdn
     username: myuser
     password:
+    password (confirm):
     email: myuser@example.com
     Registered myuser
     Logged in as myuser
@@ -109,13 +110,12 @@ Registration will discover SSH keys automatically and use the
 Use the Deis client to create a new formation named "dev" that
 has a default layer that serves as both runtime (hosts containers)
 and proxy (routes traffic to containers).  Scale the default layer
-up to two nodes.
+up to one node.
 
 .. code-block:: console
 
     $ deis formations:create dev --flavor=ec2-us-west-2
     Creating formation... done, created dev
-    
     Creating runtime layer... done in 1s
     
     Use `deis nodes:scale dev runtime=1` to scale a basic formation
@@ -138,9 +138,9 @@ To deploy the application, use ``git push deis master``.
 Deis will automatically deploy Docker containers and configure Nginx proxies
 to route requests to your application.
 
-Once your application is deployed, you use ``deis scale web=4`` to 
+Once your application is deployed, use ``deis scale web=4`` to 
 scale up web containers.  You can also use ``deis logs`` to view 
-aggregated application logs, or ``deis run`` to run one-off admin
+aggregated application logs, or ``deis run`` to run admin
 commands inside your application.
 
 To learn more, use ``deis help`` or browse `the documentation`_.
@@ -150,6 +150,7 @@ To learn more, use ``deis help`` or browse `the documentation`_.
     $ deis create --formation=dev
     Creating application... done, created peachy-waxworks
     Git remote deis added
+    
     $ git push deis master
     Counting objects: 146, done.
     Delta compression using up to 8 threads.
@@ -169,9 +170,9 @@ To learn more, use ``deis help`` or browse `the documentation`_.
            Launching... done, v2
 
     -----> peachy-waxworks deployed to Deis
-           http://ec2-54-214-143-104.us-west-2.compute.amazonaws.com ...
+           http://peachy-waxworks.deisapp.com ...
 
-    $ curl -s http://ec2-54-214-143-104.us-west-2.compute.amazonaws.com
+    $ curl -s http://peachy-waxworks.deisapp.com
     Powered by Deis!
     
     $ deis scale web=4
@@ -181,10 +182,10 @@ To learn more, use ``deis help`` or browse `the documentation`_.
     === peachy-waxworks Containers
     
     --- web: `node server.js`
-    web.1 up 2013-09-23T19:02:30.745Z (dev-runtime-2)
+    web.1 up 2013-09-23T19:02:30.745Z (dev-runtime-1)
     web.2 up 2013-09-23T19:36:48.741Z (dev-runtime-1)
     web.3 up 2013-09-23T19:36:48.758Z (dev-runtime-1)
-    web.4 up 2013-09-23T19:36:48.771Z (dev-runtime-2)
+    web.4 up 2013-09-23T19:36:48.771Z (dev-runtime-1)
 
 
 .. _`Git`: http://git-scm.com

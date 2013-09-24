@@ -13,14 +13,14 @@ easily.
 
 Runtime Layers
 ^^^^^^^^^^^^^^
-Runtime layers service requests and run background tasks for the formation.
-Nodes in a runtime layer use a configuration management system (e.g. Chef Server)
-to deploy :ref:`Containers <container>` running a specific :ref:`Release`.
+Runtime layers host :ref:`Containers <container>` for a formation.
+Nodes in a runtime layer use a `Chef Databag`_ to deploy containers for 
+each :ref:`application` in the formation.
 
 Proxy Layers
 ^^^^^^^^^^^^
-Proxy layers expose the formation to the outside world.
-Nodes in a proxy layer use configuration management to configure routing of 
+Proxy layers expose :ref:`Applications <application>` to the outside world.
+Nodes in a proxy layer use a `Chef Databag`_ to configure routing of 
 inbound requests to :ref:`Containers <container>` hosted on runtime layers.
 
 Dual Layers
@@ -34,3 +34,5 @@ Custom Layers
 It is also possible to create custom layers that don't provide runtime or proxy
 services to the formation.  This is useful for scaling and managing backing
 services built with Chef that need to be managed alongside a formation.
+
+.. _`Chef Databag`: http://docs.opscode.com/essentials_data_bags.html
