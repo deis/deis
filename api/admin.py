@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
+from .models import App
 from .models import Build
 from .models import Config
 from .models import Container
@@ -19,6 +20,16 @@ from .models import Layer
 from .models import Node
 from .models import Provider
 from .models import Release
+
+
+class AppAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.App` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('id', 'owner', 'formation')
+    list_filter = ('owner', 'formation')
+admin.site.register(App, AppAdmin)
 
 
 class BuildAdmin(admin.ModelAdmin):
@@ -39,16 +50,6 @@ class ConfigAdmin(admin.ModelAdmin):
     list_display = ('version', 'owner', 'app')
     list_filter = ('owner', 'app')
 admin.site.register(Config, ConfigAdmin)
-
-
-class ReleaseAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Release` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('owner', 'app', 'version')
-    list_filter = ('owner', 'app')
-admin.site.register(Release, ReleaseAdmin)
 
 
 class ContainerAdmin(admin.ModelAdmin):
@@ -119,3 +120,13 @@ class ProviderAdmin(admin.ModelAdmin):
     list_display = ('id', 'owner', 'type')
     list_filter = ('owner', 'type')
 admin.site.register(Provider, ProviderAdmin)
+
+
+class ReleaseAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Release` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('owner', 'app', 'version')
+    list_filter = ('owner', 'app')
+admin.site.register(Release, ReleaseAdmin)
