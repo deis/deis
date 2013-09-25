@@ -1,16 +1,16 @@
 # Deis controller requirements
 azure==0.7.0
-boto==2.11.0
+boto==2.13.3
 celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
 Django==1.5.4
 django-allauth==0.13.0
 django-celery==3.0.23
 django-json-field==0.5.5
 django-yamlfield==0.4
-djangorestframework==2.3.7
+djangorestframework==2.3.8
 gevent==0.13.8
 gunicorn==18.0
-paramiko==1.11.0
+paramiko==1.11.1
 psycopg2==2.5.1
 pycrypto==2.6
 PyYAML==3.10
@@ -19,7 +19,7 @@ South==0.8.2
 # Deis client requirements
 docopt==0.6.1
 #PyYAML==3.10
-requests==1.2.3
+requests==2.0.0
 
 # Deis documentation requirements
 Sphinx>=1.2b2
