@@ -1473,7 +1473,7 @@ class DeisClient(object):
             with open(key_path, 'w') as f:
                 f.write(layer['ssh_private_key'])
             ssh_args = ['-o UserKnownHostsFile=/dev/null', '-o StrictHostKeyChecking=no',
-                        '-i', key_path, 'ubuntu@{fqdn}'.format(**node)]
+                        '-i', key_path, '{}@{}'.format(layer['ssh_username'], node['fqdn'])]
             command = args.get('<command>')
             if command:
                 ssh_args.extend(command)
