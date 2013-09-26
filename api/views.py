@@ -16,8 +16,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from api import models, tasks
+from api import models
 from api import serializers
+from api import tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -231,6 +232,19 @@ class FormationNodeViewSet(FormationScopedViewSet):
         qs = self.get_queryset(**kwargs)
         obj = get_object_or_404(qs, id=self.kwargs['node'])
         return obj
+
+    def add(self, request, **kwargs):
+        fqdn = request.DATA['fqdn']
+        formation = models.Formation.objects.get(
+            owner=self.request.user, id=self.kwargs['id'])
+        layer = models.Layer.objects.get(
+            owner=self.request.user, id=request.DATA['layer'])
+        if self.model.objects.filter(fqdn=fqdn, formation=formation, layer=layer).exists():
+            msg = "A node with fqdn={} already exists in the {} formation".format(fqdn, formation)
+            return Response(data=msg, status=status.HTTP_409_CONFLICT)
+        node = models.Node.objects.new(formation, layer, fqdn)
+        node.build()
+        return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
         node = self.get_object()

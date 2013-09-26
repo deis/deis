@@ -1336,6 +1336,31 @@ class DeisClient(object):
         args = docopt(self.nodes_list.__doc__)
         return self.nodes_list(args)
 
+    def nodes_create(self, args):
+        """
+        Add an existing node to a formation.
+
+        Usage: deis nodes:create <formation> <fqdn> --layer=<layer>
+        """
+        formation = args.get('<formation>')
+        fqdn, layer = args.get('<fqdn>'), args.get('--layer')
+        body = {'fqdn': fqdn, 'layer': layer}
+        sys.stdout.write("Creating node for {}... ".format(fqdn))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post', "/api/formations/{}/nodes".format(formation),
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print('done in {}s'.format(int(time.time() - before)))
+        else:
+            raise ResponseError(response)
+
     def nodes_info(self, args):
         """
         Print info about a particular node
