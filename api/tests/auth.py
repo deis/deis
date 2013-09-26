@@ -48,6 +48,7 @@ class AuthTest(TestCase):
         self.assertEqual(response.data['email'], email)
         self.assertEqual(response.data['first_name'], first_name)
         self.assertEqual(response.data['last_name'], last_name)
+        self.assertTrue(response.data['is_active'])
         self.assertFalse(response.data['is_superuser'])
         self.assertFalse(response.data['is_staff'])
         self.assertTrue(
