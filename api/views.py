@@ -78,6 +78,7 @@ class UserRegistrationView(viewsets.GenericViewSet,
         now = timezone.now()
         obj.last_login = now
         obj.date_joined = now
+        obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
 

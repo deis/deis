@@ -576,14 +576,16 @@ class DeisClient(object):
             password = getpass('password: ')
             confirm = getpass('password (confirm): ')
             if password != confirm:
-                print('Password mispatch, aborting registration.')
+                print('Password mismatch, aborting registration.')
                 return False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
-        response = self._session.post(url, data=payload, allow_redirects=False)
+        response = self._session.post(url, data=payload,
+                                      headers={'content-type': 'application/json'},
+                                      allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
             self._settings.save()
