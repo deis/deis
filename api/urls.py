@@ -289,6 +289,10 @@ Auth
 
   Create a new :class:`~django.contrib.auth.models.User`.
 
+.. http:delete:: /api/auth/register/
+
+  Destroy the logged-in :class:`~django.contrib.auth.models.User`.
+
 .. http:post:: /api/auth/login
 
   Authenticate for the REST framework.
@@ -407,6 +411,8 @@ urlpatterns = patterns(
     # authn / authz
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),
+    url(r'^auth/cancel/?',
+        views.UserCancellationView.as_view({'delete': 'destroy'})),
     url(r'^auth/',
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^generate-api-key/',
