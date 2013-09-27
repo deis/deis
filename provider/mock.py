@@ -49,7 +49,7 @@ def build_node(node):
     :rtype: a tuple of (provider_id, fully_qualified_domain_name, metadata)
     """
     provider_id = 'i-1234567'
-    fqdn = 'localhost.localdomain.local'
+    fqdn = node.get('fqdn') or 'localhost.localdomain.local'
     metadata = {'state': 'running'}
     return provider_id, fqdn, metadata
 

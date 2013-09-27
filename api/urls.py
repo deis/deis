@@ -129,6 +129,10 @@ Formation Infrastructure
 
   Retrieve a :class:`~api.models.Node` by its `id`.
 
+.. http:post:: /api/formations/(string:id)/nodes/
+
+  Create a new :class:`~api.models.Node` for an existing instance.
+
 .. http:delete:: /api/formations/(string:id)/nodes/(string:id)/
 
   Destroy a :class:`~api.models.Node` by its `id`.
@@ -344,7 +348,7 @@ urlpatterns = patterns(
         views.FormationNodeViewSet.as_view({
             'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^formations/(?P<id>[-_\w]+)/nodes/?',
-        views.FormationNodeViewSet.as_view({'get': 'list'})),
+        views.FormationNodeViewSet.as_view({'get': 'list', 'post': 'add'})),
     # formation actions
     url(r'^formations/(?P<id>[-_\w]+)/scale/?',
         views.FormationViewSet.as_view({'post': 'scale'})),
