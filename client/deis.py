@@ -604,6 +604,30 @@ class DeisClient(object):
             print('Registration failed', response.content)
             return False
 
+    def auth_cancel(self, args):
+        """
+        Cancel and remove the current account.
+
+        Usage: deis auth:cancel
+        """
+        controller = self._settings.get('controller')
+        if not controller:
+            print('Not logged in to a Deis controller')
+            return False
+        print('Please log in again in order to cancel this account')
+        username = self.auth_login({'<controller>': controller})
+        if username:
+            confirm = raw_input("Cancel account \"{}\" at {}? (y/n) ".format(username, controller))
+            if confirm == 'y':
+                self._dispatch('delete', '/api/auth/cancel')
+                self._session.cookies.clear()
+                self._session.cookies.save()
+                self._settings['controller'] = None
+                self._settings.save()
+                print('Account cancelled')
+            else:
+                print('Accont not changed')
+
     def auth_login(self, args):
         """
         Login by authenticating against a controller
@@ -630,7 +654,7 @@ class DeisClient(object):
             self._settings['controller'] = controller
             self._settings.save()
             print("Logged in as {}".format(username))
-            return True
+            return username
         else:
             print('Login failed')
             self._session.cookies.clear()

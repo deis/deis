@@ -78,3 +78,36 @@ class AuthTest(TestCase):
         url = '/api/providers'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_cancel(self):
+        """Test that a registered user can cancel her account."""
+        # test registration workflow
+        username, password = 'newuser', 'password'
+        first_name, last_name = 'Otto', 'Test'
+        email = 'autotest@deis.io'
+        submit = {
+            'username': username,
+            'password': password,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            # try to abuse superuser/staff level perms
+            'is_superuser': True,
+            'is_staff': True,
+        }
+        url = '/api/auth/register'
+        response = self.client.post(url, json.dumps(submit), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(
+            self.client.login(username=username, password=password))
+        # test for default objects
+        url = '/api/providers'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], len(settings.PROVIDER_MODULES))
+        # cancel the account
+        url = '/api/auth/cancel'
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(
+            self.client.login(username=username, password=password))

@@ -84,6 +84,18 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.set_password(obj.password)
 
 
+class UserCancellationView(viewsets.GenericViewSet,
+                           viewsets.mixins.DestroyModelMixin):
+    model = User
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.request.user
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class OwnerViewSet(viewsets.ModelViewSet):
     """Scope views to an `owner` attribute."""
 
