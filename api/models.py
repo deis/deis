@@ -107,6 +107,7 @@ class Provider(UuidAuditedModel):
     PROVIDERS = (
         ('ec2', 'Amazon Elastic Compute Cloud (EC2)'),
         ('mock', 'Mock Reference Provider'),
+        ('static', 'Static Node Provider'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -290,7 +291,7 @@ class Layer(UuidAuditedModel):
 @python_2_unicode_compatible
 class NodeManager(models.Manager):
 
-    def new(self, formation, layer):
+    def new(self, formation, layer, fqdn=None):
         existing_nodes = self.filter(formation=formation, layer=layer).order_by('-created')
         if existing_nodes:
             next_num = existing_nodes[0].num + 1
@@ -300,7 +301,8 @@ class NodeManager(models.Manager):
                            formation=formation,
                            layer=layer,
                            num=next_num,
-                           id="{0}-{1}-{2}".format(formation.id, layer.id, next_num))
+                           id="{0}-{1}-{2}".format(formation.id, layer.id, next_num),
+                           fqdn=fqdn)
         return node
 
     def scale(self, formation, structure, **kwargs):

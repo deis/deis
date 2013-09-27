@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import json
 import urllib
 
+from django.conf import settings
 from django.test import TestCase
 
 
@@ -57,7 +58,7 @@ class AuthTest(TestCase):
         url = '/api/providers'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], len(settings.PROVIDER_MODULES))
         url = '/api/flavors'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
