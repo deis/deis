@@ -823,7 +823,8 @@ class DeisClient(object):
         response = self._dispatch('get', "/api/apps/{}/builds".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
             raise ResponseError(response)
-        procfile = json.loads(response.json()['results'][0]['procfile'])
+        txt = response.json()['results'][0]['procfile']
+        procfile = json.loads(txt) if txt else {}
         print("=== {} Containers".format(app))
         c_map = {}
         for item in containers['results']:
