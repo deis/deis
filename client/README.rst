@@ -86,6 +86,7 @@ Registration will discover SSH keys automatically and use the
     $ deis register http://my-deis-controller.fqdn
     username: myuser
     password:
+    password (confirm):
     email: myuser@example.com
     Registered myuser
     Logged in as myuser
@@ -101,30 +102,20 @@ Registration will discover SSH keys automatically and use the
 
 Find an application you’d like to deploy, or clone `an example app`_.
 
-Change into the application directory and use ``deis create`` to initialize
-a new formation in a specific EC2 region.
+Change into the application directory and use ``deis formations:create`` to
+initialize a new formation in a specific EC2 region.
 
-Use the ``deis layers:scale`` command to provision nodes that will be
+Use the ``deis nodes:scale`` command to provision nodes that will be
 dedicated to this formation.
+
+Then create an application that references the formation::
 
 .. code-block:: console
 
     $ cd <my-application-repo>
-    $ deis create --flavor=ec2-us-west-2
-    Creating formation... done, created peachy-waxworks
+    $ deis create --formation=dev1
+    Creating application... done, created nimbus-pamphlet
     Git remote deis added
-
-    Creating runtime layer... done
-    Creating proxy layer... done
-
-    Use deis layers:scale proxy=1 runtime=1 to scale a basic formation
-
-    $ deis layers:scale proxy=1 runtime=1
-    Scaling layers... but first, coffee!
-    ...done in 232s
-
-    Use `git push deis master` to deploy to your formation
-
 
 Use ``git push deis master`` to deploy your application.
 
@@ -133,28 +124,33 @@ to route requests to your application.
 
 .. code-block:: console
 
-    $ git push deis master
-    Counting objects: 146, done.
+    (deis)flopsy:example-go matt$ git push deis master
+    Counting objects: 13, done.
     Delta compression using up to 8 threads.
-    Compressing objects: 100% (122/122), done.
-    Writing objects: 100% (146/146), 21.54 KiB, done.
-    Total 146 (delta 84), reused 47 (delta 22)
-           Node.js app detected
-    -----> Resolving engine versions
-           Using Node.js version: 0.10.15
-           Using npm version: 1.2.30
-    ...
-    -----> Building runtime environment
+    Compressing objects: 100% (11/11), done.
+    Writing objects: 100% (13/13), 6.20 KiB | 0 bytes/s, done.
+    Total 13 (delta 2), reused 0 (delta 0)
+           Go app detected
+    -----> Installing Go 1.1.2... done
+           Installing Virtualenv... done
+           Installing Mercurial... done
+           Installing Bazaar... done
+    -----> Running: go get -tags heroku ./...
     -----> Discovering process types
            Procfile declares types -> web
 
-    -----> Compiled slug size: 4.7 MB
+    -----> Compiled slug size: 1.2 MB
            Launching... done, v2
 
-    -----> peachy-waxworks deployed to Deis
-           http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com ...
+    -----> nimbus-pamphlet deployed to Deis
+           http://ec2-198.51.100.22.us-west-2.compute.amazonaws.com
 
-    $ curl -s http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com
+           To learn more, use `deis help` or visit http://deis.io
+
+    To git@deis.mattboersma.com:nimbus-pamphlet.git
+     * [new branch]      master -> master
+
+    $ curl -s http://ec2-198.51.100.22.us-west-2.compute.amazonaws.com
     Powered by Deis!
 
 To learn more, use ``deis help`` or browse `the documentation`_.

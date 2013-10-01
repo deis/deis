@@ -28,9 +28,8 @@ Other Repos
 Chef Repo
 ---------
 
-- merge master into release branch
-    * create pull request from master to release branch
-    * review and merge on github.com
+- checkout release branch
+- merge master into release branch locally
 - change chef attributes from master to latest tag in deis-cookbook/attributes
     * default.deis.build.revision
     * default.deis.gitosis.revision
@@ -38,6 +37,7 @@ Chef Repo
 - ``knife cookbook metadata .`` will update metadata.json
 -  commit and push the opdemand/deis-cookbook repo
     * ``git commit -a -m 'updated for v0.0.X release'``
+    * ``git push origin release``
     * ``git tag v0.0.X``
     * ``git push --tags origin v0.0.X``
 - update opscode community cookbook
