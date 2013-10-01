@@ -174,6 +174,7 @@ def converge_node(node):
                       node['fqdn'], 22,
                       node['ssh_private_key'])
     output, rc = exec_ssh(ssh, 'sudo chef-client')
+    print(output)
     if rc != 0:
         e = RuntimeError('Node converge error')
         e.output = output
