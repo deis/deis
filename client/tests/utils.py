@@ -18,8 +18,8 @@ DEIS = os.path.abspath(
 try:
     DEIS_SERVER = os.environ['DEIS_SERVER']
 except KeyError:
-    raise EnvironmentError(
-        'Environment variable DEIS_SERVER must point to a Deis controller URL.')
+    DEIS_SERVER = None
+    print 'Error: env var DEIS_SERVER must point to a Deis controller URL.'
 DEIS_TEST_FLAVOR = os.environ.get('DEIS_TEST_FLAVOR', 'ec2-us-west-2')
 REPOSITORIES = {
     'Clojure': 'https://github.com/opdemand/example-clojure-ring.git',
