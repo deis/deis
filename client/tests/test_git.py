@@ -7,10 +7,12 @@ or with "./manage.py test client.GitTest".
 
 from __future__ import unicode_literals
 from unittest import TestCase
+from uuid import uuid4
 
-# import pexpect
+import pexpect
 
-# from .utils import DEIS
+from .utils import DEIS
+from .utils import DEIS_TEST_FLAVOR
 from .utils import random_repo
 from .utils import setup
 from .utils import teardown
@@ -22,30 +24,38 @@ class GitTest(TestCase):
     def setUpClass(cls):
         cls.repo_name, repo_url = random_repo()
         cls.username, cls.password, cls.repo_dir = setup(repo_url)
+        # create a new formation
+        cls.formation = "{}-test-formation-{}".format(
+            cls.username, uuid4().hex[:4])
+        child = pexpect.spawn("{} formations:create {} --flavor={}".format(
+            DEIS, cls.formation, DEIS_TEST_FLAVOR))
+        child.expect("created {}.*to scale a basic formation".format(
+            cls.formation))
+        child.expect(pexpect.EOF)
+        # create an app
+        child = pexpect.spawn("{} create --formation={}".format(
+            DEIS, cls.formation))
+        child.expect('done, created (?P<name>[-_\w]+)')
+        cls.app = child.match.group('name')
+        child.expect(pexpect.EOF)
 
     @classmethod
     def tearDownClass(cls):
+        # destroy the formation
+        child = pexpect.spawn("{} formations:destroy {} --confirm={}".format(
+            DEIS, cls.formation, cls.formation))
+        child.expect('done in ', timeout=5*60)
+        child.expect(pexpect.EOF)
         teardown(cls.username, cls.password, cls.repo_dir)
 
-    # def test_push(self):
-    #     pushes = {
-    #         'clojure': 'Clojure app detected.*\[new branch\]      master -> master',
-    #         'django': 'Python app detected.*\[new branch\]      master -> master',
-    #         'flask': 'Python app detected.*\[new branch\]      master -> master',
-    #         'go': 'Go app detected.*\[new branch\]      master -> master',
-    #         'java': 'Java app detected.*\[new branch\]      master -> master',
-    #         'nodejs': 'Node.js app detected.*\[new branch\]      master -> master',
-    #         'rails': 'Ruby/Rails app detected.*\[new branch\]      master -> master',
-    #         'rails-todo': 'Ruby/Rails app detected.*\[new branch\]      master -> master',
-    #         'sinatra': 'Ruby/Rack app detected.*\[new branch\]      master -> master',
-    #     }
-    #     child = pexpect.spawn("python {} create --flavor=ec2-us-west-2".format(DEIS))
-    #     child.expect('created (?P<name>[a-z]{6}-[a-z]{8}).*to scale a basic formation')
-    #     formation = child.match.group('name')
-    #     child = pexpect.spawn('git push deis master')
-    #     child.expect(pushes[self.repo_name], timeout=180)
-    #     child.expect(pexpect.EOF)
-    #     # destroy formation the one-liner way
-    #     child = pexpect.spawn("{} destroy --confirm={}".format(DEIS, formation))
-    #     child.expect('Git remote deis removed')
-    #     child.expect(pexpect.EOF)
+    def test_push(self):
+        child = pexpect.spawn('git push deis master')
+        # check git output for "Clojure app detected", for example
+        print self.repo_name
+        child.expect('----->')
+        print child.before
+        # child.expect("{} app detected".format(self.repo_name))
+        # print child.before
+        child.expect(' -> master', timeout=10*60)
+        child.expect(pexpect.EOF, timeout=2*60)
+        print child.before

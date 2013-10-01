@@ -22,15 +22,15 @@ except KeyError:
         'Environment variable DEIS_SERVER must point to a Deis controller URL.')
 DEIS_TEST_FLAVOR = os.environ.get('DEIS_TEST_FLAVOR', 'ec2-us-west-2')
 REPOSITORIES = {
-    'clojure': 'https://github.com/opdemand/example-clojure-ring.git',
-    'django': 'https://github.com/opdemand/example-python-django.git',
-    'flask': 'https://github.com/opdemand/example-python-flask.git',
-    'java': 'https://github.com/opdemand/example-java-jetty.git',
-    'go': 'https://github.com/opdemand/example-go.git',
-    'nodejs': 'https://github.com/opdemand/example-nodejs-express.git',
-    'rails': 'https://github.com/opdemand/example-rails-helloworld.git',
-    'rails-todo': 'https://github.com/opdemand/example-rails-todo.git',
-    'sinatra': 'https://github.com/opdemand/example-ruby-sinatra.git',
+    'Clojure': 'https://github.com/opdemand/example-clojure-ring.git',
+    # 'Python': 'https://github.com/opdemand/example-python-django.git',
+    'Python': 'https://github.com/opdemand/example-python-flask.git',
+    'Java': 'https://github.com/opdemand/example-java-jetty.git',
+    'Go': 'https://github.com/opdemand/example-go.git',
+    'Node.js': 'https://github.com/opdemand/example-nodejs-express.git',
+    # 'Ruby/Rails': 'https://github.com/opdemand/example-rails-helloworld.git',
+    'Ruby/Rails': 'https://github.com/opdemand/example-rails-todo.git',
+    'Ruby/Rack': 'https://github.com/opdemand/example-ruby-sinatra.git',
 }
 
 
