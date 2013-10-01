@@ -6,14 +6,14 @@ db:
 	python manage.py migrate
 
 test:
-	python manage.py test api client cm provider web
+	python manage.py test api cm provider web
 
 coverage:
-	coverage run manage.py test api client cm provider web
+	coverage run manage.py test api cm provider web
 	coverage html
 
 test_client:
-	python -m unittest client.tests
+	python -m unittest discover client.tests
 
 flake8:
 	flake8
