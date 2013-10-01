@@ -39,6 +39,7 @@ nosetests.xml
 
 # Deis' config file
 deis/local_settings.py
+.secret_key
 
 # deis application logs
 logs/
