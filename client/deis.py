@@ -1021,7 +1021,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             formation = data['id']
-            print("done, created {}\n".format(formation))
+            print("done, created {}".format(formation))
             if flavor:
                 layer = args.get('--layer') or 'runtime'
                 self.layers_create({'<formation>': formation, '<id>': layer,
@@ -1029,7 +1029,7 @@ class DeisClient(object):
                 print('\nUse `deis nodes:scale {formation} {layer}=1` '
                       'to scale a basic formation'.format(**locals()))
             else:
-                print('See `deis help layers:create` to begin '
+                print('\nSee `deis help layers:create` to begin '
                       'building your formation'.format(**locals()))
         else:
             raise ResponseError(response)

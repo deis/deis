@@ -120,7 +120,7 @@ up to one node.
     
     Use `deis nodes:scale dev runtime=1` to scale a basic formation
     
-    $ deis nodes:scale dev runtime=2
+    $ deis nodes:scale dev runtime=1
     Scaling nodes... but first, coffee!
     ...done in 251s
     
@@ -162,9 +162,6 @@ To learn more, use ``deis help`` or browse `the documentation`_.
            Using Node.js version: 0.10.17
            Using npm version: 1.2.30
     ...
-    -----> Building runtime environment
-    -----> Discovering process types
-           Procfile declares types -> web
 
     -----> Compiled slug size: 4.7 MB
            Launching... done, v2
