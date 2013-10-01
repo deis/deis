@@ -84,6 +84,7 @@ def bootstrap_node(node):
     # write out private key and prepare to `knife bootstrap`
     try:
         _, pk_path = tempfile.mkstemp()
+        _, output_path = tempfile.mkstemp()
         with open(pk_path, 'w') as f:
             f.write(node['ssh_private_key'])
         # build knife bootstrap command
@@ -96,18 +97,25 @@ def bootstrap_node(node):
         args.extend(['--no-host-key-verify'])
         args.extend(['--run-list', _construct_run_list(node)])
         print(' '.join(args))
+        # tee the command's output to a tempfile
+        args.extend(['|', 'tee', output_path])
         # TODO: figure out why home isn't being set correctly for knife exec
         env = os.environ.copy()
         env['HOME'] = '/opt/deis'
         # execute knife bootstrap
-        p = subprocess.Popen(args, env=env, stderr=subprocess.PIPE)
+        p = subprocess.Popen(' '.join(args), env=env, shell=True)
         rc = p.wait()
+        # always print knife output
+        with open(output_path) as f:
+            output = f.read()
+        print(output)
+        # raise an exception if bootstrap failed
         if rc != 0:
-            print(p.stderr.read())
             raise RuntimeError('Node Bootstrap Error')
-    # remove private key from fileystem
+    # remove temp files from filesystem
     finally:
-        pass  # os.remove(pk_path)
+        os.remove(pk_path)
+        os.remove(output_path)
 
 
 def _construct_run_list(node):
