@@ -797,8 +797,6 @@ def new_release(sender, **kwargs):
     release = Release.objects.create(
         owner=user, app=app, config=config,
         build=build, version=new_version)
-    # converge the application
-    app.converge()
     return release
 
 
