@@ -34,3 +34,6 @@ docutils>=0.11
 
 # Run "make flake8" to check python syntax and style
 flake8>=2.0
+
+# Python expect is used to automate client-driven tests
+pexpect-u>=2.5.1
