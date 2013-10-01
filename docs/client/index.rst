@@ -18,23 +18,23 @@ Client Reference
     logout
 
     create
-    info
     scale
-    converge
-    calculate
+    info
+    open
+    logs
+    run
     destroy
-
+    
     formations
     layers
     nodes
+    
+    apps
     containers
-
-    providers
-    flavors
-    keys
-
-.. todo
-
     config
     builds
     releases
+    
+    providers
+    flavors
+    keys

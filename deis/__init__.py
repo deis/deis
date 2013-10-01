@@ -4,4 +4,4 @@ settings, and WSGI setup. Most application domain-specific code lives in
 the api, celerytasks, and web Django apps.
 """
 
-__version__ = '0.0.7'
+__version__ = '0.1.0'

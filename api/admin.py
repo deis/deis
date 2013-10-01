@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
+from .models import App
 from .models import Build
 from .models import Config
 from .models import Container
@@ -21,13 +22,23 @@ from .models import Provider
 from .models import Release
 
 
+class AppAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.App` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('id', 'owner', 'formation')
+    list_filter = ('owner', 'formation')
+admin.site.register(App, AppAdmin)
+
+
 class BuildAdmin(admin.ModelAdmin):
     """Set presentation options for :class:`~api.models.Build` models
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('sha', 'owner', 'formation')
-    list_filter = ('owner', 'formation')
+    list_display = ('sha', 'owner', 'app')
+    list_filter = ('owner', 'app')
 admin.site.register(Build, BuildAdmin)
 
 
@@ -36,8 +47,8 @@ class ConfigAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('version', 'owner', 'formation')
-    list_filter = ('owner', 'formation')
+    list_display = ('version', 'owner', 'app')
+    list_filter = ('owner', 'app')
 admin.site.register(Config, ConfigAdmin)
 
 
@@ -46,8 +57,8 @@ class ContainerAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('short_name', 'owner', 'formation', 'status')
-    list_filter = ('owner', 'formation', 'status')
+    list_display = ('short_name', 'owner', 'formation', 'app', 'status')
+    list_filter = ('owner', 'formation', 'app', 'status')
 admin.site.register(Container, ContainerAdmin)
 
 
@@ -86,7 +97,7 @@ class LayerAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'formation', 'flavor', 'level', 'run_list')
+    list_display = ('id', 'owner', 'formation', 'flavor', 'proxy', 'runtime', 'config')
     list_filter = ('owner', 'formation', 'flavor')
 admin.site.register(Layer, LayerAdmin)
 
@@ -116,6 +127,6 @@ class ReleaseAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('owner', 'formation', 'version')
-    list_filter = ('owner', 'formation')
+    list_display = ('owner', 'app', 'version')
+    list_filter = ('owner', 'app')
 admin.site.register(Release, ReleaseAdmin)

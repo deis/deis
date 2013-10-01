@@ -38,7 +38,7 @@ Before you get started, read about Deis core [concepts](http://docs.deis.io/en/l
  * What is a [Formation](http://docs.deis.io/en/latest/gettingstarted/concepts/#formations) and how does it relate to an application?
  * What are [Layers and Nodes](http://docs.deis.io/en/latest/gettingstarted/concepts/#layers), and how do they work with Chef?
  * How does the [Build, Release, Run](http://docs.deis.io/en/latest/gettingstarted/concepts/#build-release-run) process work?
- * How do I connect a Formation to [backing services](http://docs.deis.io/en/latest/gettingstarted/concepts/#backing-services)?
+ * How do I connect an application to [backing services](http://docs.deis.io/en/latest/gettingstarted/concepts/#backing-services)?
 
 Follow the steps below to install your own Deis platform on EC2. To complete the installation process, you will need [Git](http://git-scm.com), [RubyGems](http://rubygems.org/pages/download), [Pip](http://www.pip-installer.org/en/latest/installing.html), the [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351), [EC2 Credentials](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux) and a Chef Server with a working [Knife](http://docs.opscode.com/knife.html) client.
 
@@ -50,6 +50,8 @@ Follow the steps below to install your own Deis platform on EC2. To complete the
 $ git clone https://github.com/opdemand/deis.git
 $ cd deis
 ```
+
+Cloning the default master branch will provide you with the latest development version of Deis.  If you want to deploy the latest stable release, make sure you checkout the most recent tag using ``git checkout vX.Y.Z``.
 
 ### 2. Configure the Chef Server
 
@@ -67,17 +69,18 @@ The [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351) will be use
 
 	$ contrib/provision-ec2-controller.sh
 
-Once the `deis-controller` node exists on the Chef server, you *must* log in to the WebUI add deis-controller to the `admins` group.  This is required so the controller can delete the node and client records for any nodes bootstrapped during future `layers:scale` operations.
+Once the `deis-controller` node exists on the Chef server, you *must* log in to the WebUI add deis-controller to the `admins` group.  This is required so the controller can delete node and client records during future scaling operations.
 
 ### 4. Install the Deis Client
 
-Install the Deis client using [Pip](http://www.pip-installer.org/en/latest/installing.html).  Registration will discover SSH keys automatically and use the [standard environment variables](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux) to configure the EC2 provider.
+Install the Deis client using [Pip](http://www.pip-installer.org/en/latest/installing.html) (for latest stable) or by linking `<repo>/client/deis.py` to `/usr/local/bin/deis` (for dev version).  Registration will discover SSH keys automatically and use the [standard environment variables](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux) to configure the EC2 provider.
 
 ```bash
 $ sudo pip install deis
 $ deis register http://my-deis-controller.fqdn
 username: myuser
 password: 
+password (confirm): 
 email: myuser@example.com
 Registered myuser
 Logged in as myuser
@@ -94,31 +97,44 @@ Uploading EC2 credentials... done
 
 ### 5. Create & Scale a Formation
 
-Find an application you’d like to deploy, or clone [an example app](https://github.com/opdemand/example-nodejs-express).  Change into the application directory and use `deis create` to initialize a new formation in a specific EC2 region. Use the `deis layers:scale` command to provision nodes that will be dedicated to this formation.
+Use the Deis client to create a new formation named "dev" that
+has a default layer that serves as both runtime (hosts containers)
+and proxy (routes traffic to containers).  Scale the default layer
+up to one node.
 
 ```bash
-$ cd <my-application-repo>
-$ deis create --flavor=ec2-us-west-2
-Creating formation... done, created peachy-waxworks
-Git remote deis added
+$ deis formations:create dev --flavor=ec2-us-west-2 --domain=deisapp.com
+Creating formation... done, created dev
+Creating runtime layer... done in 1s
 
-Creating runtime layer... done
-Creating proxy layer... done
+Use `deis nodes:scale dev runtime=1` to scale a basic formation
 
-Use deis layers:scale proxy=1 runtime=1 to scale a basic formation
+$ deis nodes:scale dev runtime=1
+Scaling nodes... but first, coffee!
+...done in 251s
 
-$ deis layers:scale proxy=1 runtime=1
-Scaling layers... but first, coffee!
-...done in 232s
-
-Use `git push deis master` to deploy to your formation
+Use `deis create --formation=dev` to create an application
 ```
 
-### 6. Deploy your Application
+### 6. Deploy & Scale an Application
 
-Use `git push deis master` to deploy your application.  Deis will automatically deploy Docker containers and configure Nginx proxies to route requests to your application.  To learn more, use `deis help` or browse [the documentation](http://docs.deis.io).
+Change into your application directory and use  ``deis create --formation=dev`` 
+to create a new application attached to the dev formation.
+
+To deploy the application, use `git push deis master`.  Deis will automatically deploy Docker containers and configure Nginx proxies to route requests to your application.
+
+Once your application is deployed, use ``deis scale web=4`` to 
+scale up web containers.  You can also use ``deis logs`` to view 
+aggregated application logs, or ``deis run`` to run admin
+commands inside your application.
+
+To learn more, use `deis help` or browse [the documentation](http://docs.deis.io).
 
 ```bash
+$ deis create --formation=dev
+Creating application... done, created peachy-waxworks
+Git remote deis added
+    
 $ git push deis master
 Counting objects: 146, done.
 Delta compression using up to 8 threads.
@@ -138,10 +154,22 @@ Total 146 (delta 84), reused 47 (delta 22)
        Launching... done, v2
 
 -----> peachy-waxworks deployed to Deis
-       http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com ...
+       http://peachy-waxworks.deisapp.com ...
 
-$ curl -s http://ec2-198.51.100.36.us-west-2.compute.amazonaws.com
+$ curl -s http://peachy-waxworks.deisapp.com
 Powered by Deis!
+
+$ deis scale web=4
+Scaling containers... but first, coffee!
+done in 12s
+
+=== peachy-waxworks Containers
+ 
+--- web: `node server.js`
+web.1 up 2013-09-23T19:02:30.745Z (dev-runtime-1)
+web.2 up 2013-09-23T19:36:48.741Z (dev-runtime-1)
+web.3 up 2013-09-23T19:36:48.758Z (dev-runtime-1)
+web.4 up 2013-09-23T19:36:48.771Z (dev-runtime-1)
 ```
 
 ## Credits

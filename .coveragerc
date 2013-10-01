@@ -3,8 +3,6 @@ omit =
     */venv/*
     */virtualenv/*
     api/__init__.py
-    celerytasks/__init__.py
-    celerytasks/models.py
     client/__init__.py
     client/models.py
     client/tests/__init__.py

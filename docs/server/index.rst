@@ -19,18 +19,20 @@ Server Reference
     api.models
     api.routers
     api.serializers
+    api.ssh
+    api.tasks
     api.urls
     api.utils
     api.views
 
-    celerytasks.azuresms
-    celerytasks.chef
-    celerytasks.chef_mock
-    celerytasks.chef_rsa
-    celerytasks.controller
-    celerytasks.ec2
-    celerytasks.mock
-    celerytasks.util
+    cm.chef
+    cm.chef_api
+    cm.chef_rsa
+    cm.mock
+
+    provider.ec2
+    provider.mock
+    provider.static
 
     web.urls
     web.views

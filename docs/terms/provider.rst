@@ -9,15 +9,15 @@ Provider
 A provider is a pluggable connector to a third-party cloud API, such as `Amazon EC2`_.
 Deis's supported providers come pre-installed on the :ref:`Controller`.
 
-Building a custom provider is simple.  It must publish 5 methods as Celery tasks:
+Building a custom provider is simple.  It must publish 5 methods:
 
 * build_layer - to create any shared infrastructure needed by the layer's nodes
 * destroy_layer - to destroy any shared infrastructure
-* launch_node - to provision a node and register it with the Chef Server
-* terminate_node - to destroy a node a remove its records from the Chef Server
-* converge_node - to force converge a node (using SSH or other means)
+* build_node - to provision a node and prepare it for bootstrapping by Chef
+* destroy_node - to destroy a node after it has been purged from the Chef Server
+* seed_flavors - to seed the controller database with default flavors
 
 Provider developers can review the `EC2 Reference Implementation`_.
 
 .. _`Amazon EC2`: http://aws.amazon.com/ec2/
-.. _`EC2 Reference Implementation`: https://github.com/opdemand/deis/blob/master/celerytasks/ec2.py
+.. _`EC2 Reference Implementation`: https://github.com/opdemand/deis/blob/master/provider/ec2.py

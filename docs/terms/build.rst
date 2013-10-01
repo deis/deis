@@ -1,13 +1,12 @@
 :title: Build
-:description: A Deis build refers to the output of a specific application build. Deis builds can be created automatically using git push or manually using the client.
-:keywords: build, release, git push, deis
+:description: Deis builds are created automatically on the controller when a developer uses git push.
+:keywords: build, release, git, git push, deis
 
 .. _build:
 
 Build
 =====
-A Deis build refers to the output of a specific application build.
-Deis builds can be created automatically using git push, 
-or manually using the client.
+Deis builds are created automatically on the controller when a 
+developer uses ``git push deis master``.
 
 When a new build is created, a new :ref:`release` is created automatically.

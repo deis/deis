@@ -7,17 +7,18 @@ from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
+from celery.canvas import group
 from django.contrib.auth.models import AnonymousUser, User
-from django.db.utils import IntegrityError
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from api import models
 from api import serializers
+from api import tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -61,7 +62,6 @@ class IsOwner(permissions.BasePermission):
 
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
-
     model = User
 
     authentication_classes = (AnonymousAuthentication,)
@@ -79,8 +79,21 @@ class UserRegistrationView(viewsets.GenericViewSet,
         now = timezone.now()
         obj.last_login = now
         obj.date_joined = now
+        obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
+
+
+class UserCancellationView(viewsets.GenericViewSet,
+                           viewsets.mixins.DestroyModelMixin):
+    model = User
+
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.request.user
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class OwnerViewSet(viewsets.ModelViewSet):
@@ -104,19 +117,6 @@ class KeyViewSet(OwnerViewSet):
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
 
-    def post_save(self, obj, created=False, **kwargs):
-        """Publish all Formations when a Key is saved so gitosis stays updated.
-        """
-        models.Formation.objects.publish()
-
-    def destroy(self, request, **kwargs):
-        """Publish all Formations when a Key is destroyed so gitosis
-        stays updated.
-        """
-        resp = super(KeyViewSet, self).destroy(self, request, **kwargs)
-        models.Formation.objects.publish()
-        return resp
-
 
 class ProviderViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Provider`."""
@@ -133,19 +133,6 @@ class FlavorViewSet(OwnerViewSet):
     serializer_class = serializers.FlavorSerializer
     lookup_field = 'id'
 
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        # set default cloud-init configuration
-        if not 'init' in request.DATA:
-            request.DATA['init'] = models.FlavorManager.load_cloud_config_base()
-        params = json.loads(request.DATA['params'])
-        params.setdefault('region', 'us-east-1')
-        params.setdefault('image', models.Flavor.IMAGE_MAP[params['region']])
-        params.setdefault('size', 'm1.medium')
-        params.setdefault('zone', 'any')
-        request.DATA['params'] = json.dumps(params)
-        return super(FlavorViewSet, self).create(request, **kwargs)
-
 
 class FormationViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Formation`."""
@@ -154,26 +141,11 @@ class FormationViewSet(OwnerViewSet):
     serializer_class = serializers.FormationSerializer
     lookup_field = 'id'
 
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError:
-            return Response('Formation with this Id already exists.',
-                            status=HTTP_400_BAD_REQUEST)
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
-
     def post_save(self, formation, created=False, **kwargs):
         if created:
-            config = models.Config.objects.create(
-                version=1, owner=formation.owner, formation=formation, values={})
-            models.Release.objects.create(
-                version=1, owner=formation.owner, formation=formation, config=config)
-        # update gitosis
-        models.Formation.objects.publish()
+            formation.build()
 
-    def scale_layers(self, request, **kwargs):
+    def scale(self, request, **kwargs):
         new_structure = {}
         try:
             for target, count in request.DATA.items():
@@ -187,35 +159,16 @@ class FormationViewSet(OwnerViewSet):
         else:
             return Response('No provider credentials available', status=HTTP_400_BAD_REQUEST)
         formation = self.get_object()
-        formation.layers.update(new_structure)
         try:
-            databag = formation.scale_layers()
-        except models.ScalingError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            databag = models.Node.objects.scale(formation, new_structure)
         except models.Layer.DoesNotExist as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def scale_containers(self, request, **kwargs):
-        new_structure = {}
-        try:
-            for target, count in request.DATA.items():
-                new_structure[target] = int(count)
-        except ValueError:
-            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
-        formation = self.get_object()
-        formation.containers.update(new_structure)
-        try:
-            databag = formation.scale_containers()
-        except models.ScalingError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
     def balance(self, request, **kwargs):
         formation = self.get_object()
-        databag = formation.balance()
+        databag = models.Container.objects.balance(formation)
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
@@ -227,47 +180,32 @@ class FormationViewSet(OwnerViewSet):
 
     def converge(self, request, **kwargs):
         formation = self.get_object()
-        databag = formation.converge(formation.calculate())
+        databag = formation.converge()
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
-    def logs(self, request, **kwargs):
-        formation = self.get_object()
-        try:
-            logs = formation.logs()
-        except EnvironmentError:
-            return Response("No logs for {}".format(formation.id),
-                            status=status.HTTP_404_NOT_FOUND,
-                            content_type='text/plain')
-        return Response(logs, status=status.HTTP_200_OK,
-                        content_type='text/plain')
-
-    def run(self, request, **kwargs):
-        formation = self.get_object()
-        output_and_rc = formation.run(request.DATA['commands'])
-        return Response(output_and_rc, status=status.HTTP_200_OK,
-                        content_type='text/plain')
-
     def destroy(self, request, **kwargs):
         formation = self.get_object()
-        try:
-            formation.destroy()
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
-        formation.delete()
+        formation.destroy()
+        tasks.converge_controller.delay().wait()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FormationLayerViewSet(OwnerViewSet):
+class FormationScopedViewSet(OwnerViewSet):
+
+    def get_queryset(self, **kwargs):
+        formations = models.Formation.objects.filter(
+            owner=self.request.user)
+        formation = get_object_or_404(formations, id=self.kwargs['id'])
+        return self.model.objects.filter(owner=self.request.user,
+                                         formation=formation)
+
+
+class FormationLayerViewSet(FormationScopedViewSet):
     """RESTful views for :class:`~api.models.Layer`."""
 
     model = models.Layer
     serializer_class = serializers.LayerSerializer
-
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user, formation=formation)
 
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
@@ -284,11 +222,7 @@ class FormationLayerViewSet(OwnerViewSet):
             key = RSA.generate(2048)
             request.DATA['ssh_private_key'] = key.exportKey('PEM')
             request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except IntegrityError:
-            return Response("Layer with this Id already exists.",
-                            status=HTTP_400_BAD_REQUEST)
+        return OwnerViewSet.create(self, request, **kwargs)
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
@@ -297,105 +231,153 @@ class FormationLayerViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         layer = self.get_object()
         layer.destroy()
-        layer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FormationNodeViewSet(OwnerViewSet):
+class FormationNodeViewSet(FormationScopedViewSet):
     """RESTful views for :class:`~api.models.Node`."""
 
     model = models.Node
     serializer_class = serializers.NodeSerializer
-
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
 
     def get_object(self, *args, **kwargs):
         qs = self.get_queryset(**kwargs)
         obj = get_object_or_404(qs, id=self.kwargs['node'])
         return obj
 
+    def add(self, request, **kwargs):
+        fqdn = request.DATA['fqdn']
+        formation = models.Formation.objects.get(
+            owner=self.request.user, id=self.kwargs['id'])
+        layer = models.Layer.objects.get(
+            owner=self.request.user, id=request.DATA['layer'])
+        if self.model.objects.filter(fqdn=fqdn, formation=formation, layer=layer).exists():
+            msg = "A node with fqdn={} already exists in the {} formation".format(fqdn, formation)
+            return Response(data=msg, status=status.HTTP_409_CONFLICT)
+        node = models.Node.objects.new(formation, layer, fqdn)
+        node.build()
+        return Response(status=status.HTTP_201_CREATED)
+
     def destroy(self, request, **kwargs):
         node = self.get_object()
-        try:
-            node.destroy()
-        except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+        node.destroy()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FormationContainerViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Container`."""
-
-    model = models.Container
-    serializer_class = serializers.ContainerSerializer
+class NodeViewSet(FormationNodeViewSet):
+    """RESTful views for :class:`~api.models.Node`."""
 
     def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
+        return self.model.objects.filter(owner=self.request.user)
 
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['container'])
-        return obj
+    def converge(self, request, **kwargs):
+        node = self.get_object()
+        output, _ = node.converge()
+        return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
 
 
-class FormationImageViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Image`."""
+class AppViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.App`."""
 
-    model = models.Release
-    serializer_class = serializers.ReleaseSerializer
+    model = models.App
+    serializer_class = serializers.AppSerializer
+    lookup_field = 'id'
+
+    def post_save(self, app, created=False, **kwargs):
+        if created:
+            app.build()
+        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
+                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+
+    def pre_save(self, app, created=False, **kwargs):
+        if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
+            raise EnvironmentError('Formation does not support multiple apps')
+        return super(AppViewSet, self).pre_save(app, **kwargs)
+
+    def create(self, request, **kwargs):
+        try:
+            return OwnerViewSet.create(self, request, **kwargs)
+        except EnvironmentError as e:
+            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+
+    def scale(self, request, **kwargs):
+        new_structure = {}
+        try:
+            for target, count in request.DATA.items():
+                new_structure[target] = int(count)
+        except ValueError:
+            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+        app = self.get_object()
+        try:
+            models.Container.objects.scale(app, new_structure)
+        except EnvironmentError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        # save new structure now that scaling was successful
+        app.containers.update(new_structure)
+        app.save()
+        databag = app.converge()
+        return Response(databag, status=status.HTTP_200_OK,
+                        content_type='application/json')
+
+    def calculate(self, request, **kwargs):
+        app = self.get_object()
+        databag = app.calculate()
+        return Response(databag, status=status.HTTP_200_OK,
+                        content_type='application/json')
+
+    def logs(self, request, **kwargs):
+        app = self.get_object()
+        try:
+            logs = app.logs()
+        except EnvironmentError:
+            return Response("No logs for {}".format(app.id),
+                            status=status.HTTP_404_NOT_FOUND,
+                            content_type='text/plain')
+        return Response(logs, status=status.HTTP_200_OK,
+                        content_type='text/plain')
+
+    def run(self, request, **kwargs):
+        app = self.get_object()
+        command = request.DATA['command']
+        try:
+            output_and_rc = app.run(command)
+        except EnvironmentError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        return Response(output_and_rc, status=status.HTTP_200_OK,
+                        content_type='text/plain')
+
+    def destroy(self, request, **kwargs):
+        app = self.get_object()
+        app.destroy()
+        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
+                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BaseAppViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
+        app = get_object_or_404(models.App.objects.filter(
+            owner=self.request.user, id=self.kwargs['id']))
+        return self.model.objects.filter(owner=self.request.user, app=app)
 
     def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = qs.get(pk=self.kwargs['id'])
-        return obj
-
-    def reset_image(self, request, *args, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        models.release_signal.send(sender=self, image=request.DATA['image'],
-                                   formation=formation, user=self.request.user)
-        return Response(status=HTTP_201_CREATED)
+        return self.get_queryset().latest('created')
 
 
-class FormationConfigViewSet(OwnerViewSet):
+class AppConfigViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Config`."""
 
     model = models.Config
     serializer_class = serializers.ConfigSerializer
 
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
-
-    def get_object(self, *args, **kwargs):
-        formation = models.Formation.objects.get(id=self.kwargs['id'])
-        config = self.model.objects.filter(
-            formation=formation).order_by('-created')[0]
-        return config
-
     def post_save(self, obj, created=False):
         if created:
             models.release_signal.send(
-                sender=self, config=obj, formation=obj.formation,
+                sender=self, config=obj, app=obj.app,
                 user=self.request.user)
-            # recalculate and converge after each config update
-            databag = obj.formation.calculate()
-            obj.formation.converge(databag)
+            # converge after each config update
+            obj.app.formation.converge()
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
@@ -403,7 +385,7 @@ class FormationConfigViewSet(OwnerViewSet):
         obj = self.get_object()
         # increment version and use the same formation
         request.DATA['version'] = obj.version + 1
-        request.DATA['formation'] = obj.formation
+        request.DATA['app'] = obj.app
         # merge config values
         values = obj.values.copy()
         provided = json.loads(request.DATA['values'])
@@ -414,51 +396,48 @@ class FormationConfigViewSet(OwnerViewSet):
         return super(OwnerViewSet, self).create(request, *args, **kwargs)
 
 
-class FormationBuildViewSet(OwnerViewSet):
+class AppBuildViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Build`."""
 
     model = models.Build
     serializer_class = serializers.BuildSerializer
 
-    def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
-
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset().order_by('-created')
-        build = get_object_or_404(qs)
-        return build
-
     def post_save(self, obj, created=False):
         if created:
             models.release_signal.send(
-                sender=self, build=obj, formation=obj.formation,
+                sender=self, build=obj, app=obj.app,
                 user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        request.DATA['formation'] = formation
+        app = models.App.objects.get(owner=self.request.user, id=self.kwargs['id'])
+        request.DATA['app'] = app
         return super(OwnerViewSet, self).create(request, *args, **kwargs)
 
 
-class FormationReleaseViewSet(OwnerViewSet):
+class AppReleaseViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Release`."""
 
     model = models.Release
     serializer_class = serializers.ReleaseSerializer
 
+
+class AppContainerViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Container`."""
+
+    model = models.Container
+    serializer_class = serializers.ContainerSerializer
+
     def get_queryset(self, **kwargs):
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
+        app = get_object_or_404(models.App.objects.filter(
+            owner=self.request.user, id=self.kwargs['id']))
+        qs = self.model.objects.filter(owner=self.request.user, app=app)
+        container_type = self.kwargs.get('type')
+        if container_type:
+            qs = qs.filter(type=container_type)
+        return qs
 
     def get_object(self, *args, **kwargs):
-        formation = models.Formation.objects.get(id=self.kwargs['id'])
-        release = self.model.objects.filter(
-            formation=formation).order_by('-created')[0]
-        return release
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(num=self.kwargs['num'])
+        return obj
