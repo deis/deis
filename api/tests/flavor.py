@@ -45,11 +45,6 @@ class FlavorTest(TestCase):
         url = "/api/flavors/{flavor_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        new_params = {'instance_size': 't1.micro'}
-        body = {'params': json.dumps(new_params)}
-        response = self.client.patch(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.data['params']), new_params)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
@@ -82,6 +77,7 @@ class FlavorTest(TestCase):
         params = {
             'size': 'c1.xlarge',
             'image': 'ami-c98d1bf9',
+            'zone': None
         }
         body = {'id': flavor_id, 'params': json.dumps(params)}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
@@ -95,7 +91,7 @@ class FlavorTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['uuid'], uuid)
         params = json.loads(response.data['params'])
-        self.assertNotIn('region', params)
+        self.assertIn('region', params)
         self.assertNotIn('zone', params)
         self.assertEqual(params['size'], 'c1.xlarge')
         self.assertEqual(params['image'], 'ami-c98d1bf9')
