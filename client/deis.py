@@ -940,6 +940,27 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def flavors_update(self, args):
+        """
+        Update an existing node flavor
+
+        Usage: deis flavors:update <id> [<params>] [--provider=<provider>]
+        """
+        id_ = args.get('<id>')
+        body = {'id': id_}
+        params = args.get('<params>')
+        if params:
+            body['params'] = params
+        provider = args.get('--provider')
+        if provider:
+            body['provider'] = provider
+        response = self._dispatch(
+            'patch', '/api/flavors/{}'.format(id_), json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
+        else:
+            raise ResponseError(response)
+
     def formations(self, args):
         """
         Valid commands for formations:

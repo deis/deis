@@ -30,6 +30,7 @@ class FlavorsTest(TestCase):
         teardown(cls.username, cls.password)
 
     def test_create(self):
+        # create a new flavor
         id_ = "test-flavor-{}".format(uuid4().hex[:4])
         child = pexpect.spawn("{} flavors:create {} --provider={} --params='{}'".format(
             DEIS, id_, 'ec2',
@@ -37,15 +38,85 @@ class FlavorsTest(TestCase):
         ))
         child.expect(id_)
         child.expect(pexpect.EOF)
+        # list the flavors and make sure it's in there
+        child = pexpect.spawn("{} flavors".format(DEIS))
+        child.expect(pexpect.EOF)
+        flavors = re.findall('([\w|-]+): .*', child.before)
+        self.assertIn(id_, flavors)
+        # delete the new flavor
         child = pexpect.spawn("{} flavors:delete {}".format(DEIS, id_))
         child.expect(pexpect.EOF)
         self.assertNotIn('Error', child.before)
 
-    # def test_update(self):
-    #     pass
+    def test_update(self):
+        # create a new flavor
+        id_ = "test-flavor-{}".format(uuid4().hex[:4])
+        child = pexpect.spawn("{} flavors:create {} --provider={} --params={}".format(
+            DEIS, id_, 'mock', '{}'))
+        child.expect(id_)
+        child.expect(pexpect.EOF)
+        # update the provider
+        child = pexpect.spawn("{} flavors:update {} --provider={}".format(DEIS, id_, 'ec2'))
+        child.expect(pexpect.EOF)
+        # update the params
+        child = pexpect.spawn("{} flavors:update {} {}".format(
+            DEIS, id_, "'{\"key1\": \"val1\"}'"))
+        child.expect(pexpect.EOF)
+        # test the flavor contents
+        child = pexpect.spawn("{} flavors:info {}".format(DEIS, id_))
+        child.expect(pexpect.EOF)
+        results = json.loads(child.before)
+        self.assertEqual('ec2', results['provider'])
+        self.assertIn('key1', results['params'])
+        self.assertIn('val1', results['params'])
+        # update the params and provider
+        child = pexpect.spawn("{} flavors:update {} {} --provider={}".format(
+            DEIS, id_, "'{\"key2\": \"val2\"}'", 'mock'))
+        child.expect(pexpect.EOF)
+        # test the flavor contents
+        child = pexpect.spawn("{} flavors:info {}".format(DEIS, id_))
+        child.expect(pexpect.EOF)
+        results = json.loads(child.before)
+        self.assertIn('key1', results['params'])
+        self.assertIn('val1', results['params'])
+        self.assertIn('key2', results['params'])
+        self.assertIn('val2', results['params'])
+        self.assertEqual('mock', results['provider'])
+        # update the params to remove a value
+        child = pexpect.spawn("{} flavors:update {} {}".format(
+            DEIS, id_, "'{\"key1\": null}'"))
+        child.expect(pexpect.EOF)
+        # test the flavor contents
+        child = pexpect.spawn("{} flavors:info {}".format(DEIS, id_))
+        child.expect(pexpect.EOF)
+        results = json.loads(child.before)
+        self.assertNotIn('key1', results['params'])
+        self.assertNotIn('val1', results['params'])
+        self.assertIn('key2', results['params'])
+        self.assertIn('val2', results['params'])
+        # delete the new flavor
+        child = pexpect.spawn("{} flavors:delete {}".format(DEIS, id_))
+        child.expect(pexpect.EOF)
+        self.assertNotIn('Error', child.before)
 
-    # def test_delete(self):
-    #     pass
+    def test_delete(self):
+        # create a new flavor
+        id_ = "test-flavor-{}".format(uuid4().hex[:4])
+        child = pexpect.spawn("{} flavors:create {} --provider={} --params='{}'".format(
+            DEIS, id_, 'ec2',
+            '{"region":"ap-southeast-2","image":"ami-d5f66bef","zone":"any","size":"m1.medium"}'
+        ))
+        child.expect(id_)
+        child.expect(pexpect.EOF)
+        # delete the new flavor
+        child = pexpect.spawn("{} flavors:delete {}".format(DEIS, id_))
+        child.expect(pexpect.EOF)
+        self.assertNotIn('Error', child.before)
+        # list the flavors and make sure it's not in there
+        child = pexpect.spawn("{} flavors".format(DEIS))
+        child.expect(pexpect.EOF)
+        flavors = re.findall('([\w|-]+): .*', child.before)
+        self.assertNotIn(id_, flavors)
 
     def test_list(self):
         child = pexpect.spawn("{} flavors".format(DEIS))
@@ -68,7 +139,6 @@ class FlavorsTest(TestCase):
         # test that we received JSON results
         # TODO: There's some error here, but only when run as part of the
         # entire test suite?
-        print child.before
         results = json.loads(child.before)
         self.assertIn('created', results)
         self.assertIn('updated', results)

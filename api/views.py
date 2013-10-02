@@ -133,6 +133,19 @@ class FlavorViewSet(OwnerViewSet):
     serializer_class = serializers.FlavorSerializer
     lookup_field = 'id'
 
+    def update(self, request, *args, **kwargs):
+        """
+        Override default update behavior to ensure that the params
+        field is handled as a dict merge.
+        """
+        params = self.get_object().params
+        new_params = json.loads(request.DATA.get('params', '{}'))
+        params.update(new_params)
+        # remove param if we provided a null value
+        [params.pop(k) for k, v in params.items() if v is None]
+        request.DATA['params'] = json.dumps(params)
+        return super(FlavorViewSet, self).update(request, *args, **kwargs)
+
 
 class FormationViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Formation`."""
