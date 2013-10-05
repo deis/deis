@@ -32,13 +32,13 @@ else:
 
 # pylint: disable=W0142
 setup(name='deis',
-      version='0.1.0',
+      version='0.1.1',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis',
       author='OpDemand',
       author_email='info@opdemand.com',
       url='https://github.com/opdemand/deis',
-      keywords=['opdemand', 'deis', 'cloud', 'aws', 'ec2', 'heroku', 'docker'],
+      keywords=['opdemand', 'deis', 'cloud', 'chef', 'docker', 'heroku', 'aws', 'ec2'],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Console',
