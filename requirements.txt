@@ -1,5 +1,4 @@
 # Deis controller requirements
-azure==0.7.0
 boto==2.13.3
 celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
 Django==1.5.4
