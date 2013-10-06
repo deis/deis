@@ -9,7 +9,7 @@ django-yamlfield==0.4
 djangorestframework==2.3.8
 gevent==0.13.8
 gunicorn==18.0
-paramiko==1.11.1
+paramiko==1.12.0
 psycopg2==2.5.1
 pycrypto==2.6
 PyYAML==3.10
