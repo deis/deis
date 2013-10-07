@@ -67,7 +67,7 @@ $ berks upload      # upload cookbooks to the chef server
 
 The [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351) will be used to setup basic EC2 infrastructure.  The [Knife EC2 plugin](https://github.com/opscode/knife-ec2) will be used to bootstrap the controller.
 
-	$ contrib/aws/provision-ec2-controller.sh
+	$ contrib/ec2/provision-ec2-controller.sh
 
 Once the `deis-controller` node exists on the Chef server, you *must* log in to the WebUI add deis-controller to the `admins` group.  This is required so the controller can delete node and client records during future scaling operations.
 

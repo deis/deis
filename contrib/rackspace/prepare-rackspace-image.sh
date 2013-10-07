@@ -52,7 +52,7 @@ rm -rf /var/lib/cloud
 
 # purge SSH authorized keys
 rm -f /home/ubuntu/.ssh/authorized_keys
-# rm -f /root/.ssh/authorized_keys
+rm -f /root/.ssh/authorized_keys
 
 # ssh host keys are automatically regenerated
 # on system boot by ubuntu cloud init

@@ -46,9 +46,9 @@ The `Amazon EC2 API Tools`_ will be used to setup basic EC2 infrastructure.  The
 
 .. code-block:: console
 
-    $ contrib/aws/provision-ec2-controller.sh
+    $ contrib/ec2/provision-ec2-controller.sh
     usage: contrib/provision-ec2-controller.sh [region]
-    $ contrib/aws/provision-ec2-controller.sh us-west-2
+    $ contrib/ec2/provision-ec2-controller.sh us-west-2
     Creating security group: deis-controller
     + ec2-create-group deis-controller -d 'Created by Deis'
     GROUP    sg-7c40f317    deis-controller    Created by Deis
