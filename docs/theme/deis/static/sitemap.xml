@@ -8,322 +8,354 @@
 
 <url>
   <loc>http://docs.deis.io/en/latest/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/gettingstarted/concepts/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/gettingstarted/installation/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/gettingstarted/usage/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/gettingstarted/tutorial/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/overview/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/devsetup/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/gettingstarted/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/controller/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/formation/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/layer/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/node/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/terms/application/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/container/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
-</url>
-<url>
-  <loc>http://docs.deis.io/en/latest/terms/build/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/config/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/terms/build/</loc>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/release/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
-</url>
-<url>
-  <loc>http://docs.deis.io/en/latest/terms/flavor/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/provider/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/terms/flavor/</loc>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/terms/key/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/register/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/login/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/logout/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/create/</loc>
-  <lastmod>2013-08-27T19:46:10+00:00</lastmod>
-</url>
-<url>
-  <loc>http://docs.deis.io/en/latest/client/info/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/scale/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/client/converge/</loc>
-  <lastmod>2013-08-27T19:46:10+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/client/info/</loc>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/client/calculate/</loc>
-  <lastmod>2013-08-27T19:46:10+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/client/open/</loc>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/logs/</loc>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/run/</loc>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/destroy/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/formations/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/layers/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/nodes/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/apps/</loc>
+  <lastmod>2013-10-07T19:51:30+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/containers/</loc>
-  <lastmod>2013-08-27T19:46:10+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/config/</loc>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/builds/</loc>
+  <lastmod>2013-10-07T19:51:30+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/client/releases/</loc>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/providers/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/flavors/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/client/keys/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:31+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/rest/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.admin/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.fields/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.models/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.routers/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.serializers/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/server/api.ssh/</loc>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/server/api.tasks/</loc>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.urls/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.utils/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/api.views/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.azuresms/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/cm.chef/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.chef/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/cm.chef_api/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.chef_mock/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/cm.chef_rsa/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.chef_rsa/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/cm.mock/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.controller/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/provider.ec2/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.ec2/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/provider.mock/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.mock/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
-</url>
-<url>
-  <loc>http://docs.deis.io/en/latest/server/celerytasks.util/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/server/provider.static/</loc>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/web.urls/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/server/web.views/</loc>
-  <lastmod>2013-08-27T19:46:13+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:34+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/standards/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/community/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/contributing/conduct/</loc>
-  <lastmod>2013-08-27T19:46:11+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/releases/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:33+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/faq/</loc>
-  <lastmod>2013-08-27T19:46:12+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:32+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/client/deis/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/admin/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/fields/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/models/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/routers/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/serializers/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/_modules/api/ssh/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
+</url>
+<url>
+  <loc>http://docs.deis.io/en/latest/_modules/api/tasks/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/utils/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:35+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/api/views/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/azuresms/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/cm/chef/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/chef/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/cm/chef_api/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/chef_mock/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/cm/chef_rsa/</loc>
+  <lastmod>2013-10-07T19:51:37+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/chef_rsa/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/cm/mock/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/controller/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/provider/ec2/</loc>
+  <lastmod>2013-10-07T19:51:37+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/ec2/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/provider/mock/</loc>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 <url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/mock/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
-</url>
-<url>
-  <loc>http://docs.deis.io/en/latest/_modules/celerytasks/util/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <loc>http://docs.deis.io/en/latest/_modules/provider/static/</loc>
+  <lastmod>2013-10-07T19:51:37+00:00</lastmod>
 </url>
 <url>
   <loc>http://docs.deis.io/en/latest/_modules/web/views/</loc>
-  <lastmod>2013-08-27T19:46:14+00:00</lastmod>
+  <lastmod>2013-10-07T19:51:36+00:00</lastmod>
 </url>
 </urlset>
