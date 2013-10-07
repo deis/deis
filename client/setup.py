@@ -38,7 +38,9 @@ setup(name='deis',
       author='OpDemand',
       author_email='info@opdemand.com',
       url='https://github.com/opdemand/deis',
-      keywords=['opdemand', 'deis', 'cloud', 'chef', 'docker', 'heroku', 'aws', 'ec2'],
+      keywords=[
+          'opdemand', 'deis', 'cloud', 'chef', 'docker', 'heroku', 'aws', 'ec2', 'rackspace'
+      ],
       classifiers=[
           'Development Status :: 4 - Beta',
           'Environment :: Console',

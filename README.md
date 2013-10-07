@@ -67,7 +67,7 @@ $ berks upload      # upload cookbooks to the chef server
 
 The [Amazon EC2 API Tools](http://aws.amazon.com/developertools/351) will be used to setup basic EC2 infrastructure.  The [Knife EC2 plugin](https://github.com/opscode/knife-ec2) will be used to bootstrap the controller.
 
-	$ contrib/provision-ec2-controller.sh
+	$ contrib/ec2/provision-ec2-controller.sh
 
 Once the `deis-controller` node exists on the Chef server, you *must* log in to the WebUI add deis-controller to the `admins` group.  This is required so the controller can delete node and client records during future scaling operations.
 
@@ -79,8 +79,8 @@ Install the Deis client using [Pip](http://www.pip-installer.org/en/latest/insta
 $ sudo pip install deis
 $ deis register http://my-deis-controller.fqdn
 username: myuser
-password: 
-password (confirm): 
+password:
+password (confirm):
 email: myuser@example.com
 Registered myuser
 Logged in as myuser
@@ -118,13 +118,13 @@ Use `deis create --formation=dev` to create an application
 
 ### 6. Deploy & Scale an Application
 
-Change into your application directory and use  ``deis create --formation=dev`` 
+Change into your application directory and use  ``deis create --formation=dev``
 to create a new application attached to the dev formation.
 
 To deploy the application, use `git push deis master`.  Deis will automatically deploy Docker containers and configure Nginx proxies to route requests to your application.
 
-Once your application is deployed, use ``deis scale web=4`` to 
-scale up web containers.  You can also use ``deis logs`` to view 
+Once your application is deployed, use ``deis scale web=4`` to
+scale up web containers.  You can also use ``deis logs`` to view
 aggregated application logs, or ``deis run`` to run admin
 commands inside your application.
 
@@ -134,7 +134,7 @@ To learn more, use `deis help` or browse [the documentation](http://docs.deis.io
 $ deis create --formation=dev
 Creating application... done, created peachy-waxworks
 Git remote deis added
-    
+
 $ git push deis master
 Counting objects: 146, done.
 Delta compression using up to 8 threads.
@@ -164,7 +164,7 @@ Scaling containers... but first, coffee!
 done in 12s
 
 === peachy-waxworks Containers
- 
+
 --- web: `node server.js`
 web.1 up 2013-09-23T19:02:30.745Z (dev-runtime-1)
 web.2 up 2013-09-23T19:36:48.741Z (dev-runtime-1)

@@ -107,7 +107,8 @@ class Provider(UuidAuditedModel):
     PROVIDERS = (
         ('ec2', 'Amazon Elastic Compute Cloud (EC2)'),
         ('mock', 'Mock Reference Provider'),
-        ('static', 'Static Node Provider'),
+        ('rackspace', 'Rackspace Open Cloud'),
+        ('static', 'Static Node'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)

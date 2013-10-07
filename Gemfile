@@ -5,3 +5,4 @@ gem 'foodcritic'
 gem 'berkshelf'
 
 gem 'knife-ec2'
+gem 'knife-rackspace'

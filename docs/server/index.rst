@@ -32,6 +32,7 @@ Server Reference
 
     provider.ec2
     provider.mock
+    provider.rackspace
     provider.static
 
     web.urls
