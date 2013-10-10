@@ -1823,7 +1823,11 @@ def main():
     except ResponseError as err:
         resp = err.message
         print('{} {}'.format(resp.status_code, resp.reason))
-        print(resp.json() or resp.text)
+        try:
+            msg = resp.json()
+        except:
+            msg = resp.text
+        print(msg)
         sys.exit(1)
 
 
