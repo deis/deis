@@ -32,7 +32,7 @@ apt-get dist-upgrade -yq
 apt-get install lxc-docker curl git make python-setuptools python-pip -yq
 
 # create buildstep docker image
-git clone https://github.com/opdemand/buildstep.git
+git clone -b deis https://github.com/opdemand/buildstep.git
 cd buildstep
 make
 cd ..
