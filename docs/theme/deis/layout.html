@@ -24,6 +24,7 @@
     <meta name="description" content="{{ meta['description'] if meta }}">
     <meta name="keywords" content="{{ meta['keywords'] if meta }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msvalidate.01" content="079E754911917142D42AB2A3694F9267" />
     <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/css/main.css', 1) }}" type="text/css">
@@ -124,6 +125,9 @@
   <script src="{{ pathto('_static/js/checkURL.js', 1) }}"></script>
   <script src="{{ pathto('_static/js/adjustments.js', 1) }}"></script>
 
+  <div class="rtd-docs">
+    {%- block footer %}{%- endblock %}
+  </div>
 
-    </body>
+  </body>
 </html>

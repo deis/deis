@@ -47,7 +47,7 @@ Don't clone the official repository, but **do** complete all the other steps
 outlined in :ref:`installation`. Ensure your CLI and controller are functional
 before moving on.
 
-Near the end of running the ``contrib/provision-ec2-controller.sh`` script,
+Near the end of running the ``contrib/ec2/provision-ec2-controller.sh`` script,
 you will see output similar to this::
 
 	Instance ID: i-38ad000c
@@ -80,12 +80,12 @@ it's preferable to create a **virtual environment** for python.
 	Installing Pip........................................done.
 	$ source venv/bin/activate
 	(deis)$ pip install -r dev_requirements.txt --use-mirrors
-	Downloading/unpacking azure>=0.7.0 (from -r dev_requirements.txt (line 2))
-	  Downloading azure-0.7.0.zip (76kB): 76kB downloaded
-	  Running setup.py egg_info for package azure
-	Downloading/unpacking boto>=2.9.8 (from -r dev_requirements.txt (line 3))
+	Downloading/unpacking boto==2.13.3 (from -r requirements.txt (line 2))
+  	Downloading boto-2.13.3.tar.gz (1.1MB): 1.1MB downloaded
+  	Running setup.py egg_info for package boto
+    Downloading/unpacking celery==3.0.22 (from -r requirements.txt (line 3))
 	...
-	Successfully installed azure boto ...
+	Successfully installed boto celery ...
 	Cleaning up...
 	(deis)$
 

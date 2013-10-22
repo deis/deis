@@ -108,7 +108,7 @@ initialize a new formation in a specific EC2 region.
 Use the ``deis nodes:scale`` command to provision nodes that will be
 dedicated to this formation.
 
-Then create an application that references the formation::
+Then create an application that references the formation.
 
 .. code-block:: console
 

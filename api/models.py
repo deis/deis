@@ -107,7 +107,8 @@ class Provider(UuidAuditedModel):
     PROVIDERS = (
         ('ec2', 'Amazon Elastic Compute Cloud (EC2)'),
         ('mock', 'Mock Reference Provider'),
-        ('static', 'Static Node Provider'),
+        ('rackspace', 'Rackspace Open Cloud'),
+        ('static', 'Static Node'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -515,7 +516,7 @@ class App(UuidAuditedModel):
 
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
-        nodes = self.formation.node_set.order_by('?')
+        nodes = self.formation.node_set.filter(layer__runtime=True).order_by('?')
         if not nodes:
             raise EnvironmentError('No nodes available to run command')
         app_id, node = self.id, nodes[0]

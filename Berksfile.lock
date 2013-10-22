@@ -10,7 +10,7 @@
       "locked_version": "2.2.0"
     },
     "deis": {
-      "locked_version": "0.1.0"
+      "locked_version": "0.1.1"
     }
   }
 }

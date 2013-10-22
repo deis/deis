@@ -63,7 +63,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 class Session(requests.Session):
@@ -940,6 +940,27 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def flavors_update(self, args):
+        """
+        Update an existing node flavor
+
+        Usage: deis flavors:update <id> [<params>] [--provider=<provider>]
+        """
+        id_ = args.get('<id>')
+        body = {'id': id_}
+        params = args.get('<params>')
+        if params:
+            body['params'] = params
+        provider = args.get('--provider')
+        if provider:
+            body['provider'] = provider
+        response = self._dispatch(
+            'patch', '/api/flavors/{}'.format(id_), json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
+        else:
+            raise ResponseError(response)
+
     def formations(self, args):
         """
         Valid commands for formations:
@@ -1548,13 +1569,12 @@ class DeisClient(object):
         """
         Create a provider for use by Deis
 
-        This command is only necessary when adding a duplicate
-        set of credentials for a provider like EC2.  User accounts
-        already come with a default EC2 provider that has empty
-        credentials, which should be updated in place.
+        This command is only necessary when adding a duplicate set of
+        credentials for a provider. User accounts start with empty providers,
+        EC2 and Rackspace by default, which should be updated in place.
 
-        Use `providers:discover` to update credentials of the
-        default providers and flavors that come pre-installed.
+        Use `providers:discover` to update the credentials for the default
+        providers created with your account.
 
         Usage: deis providers:create <id> <type> <creds>
         """
@@ -1565,8 +1585,21 @@ class DeisClient(object):
                 if not k in os.environ:
                     msg = "Missing environment variable: {}".format(k)
                     raise EnvironmentError(msg)
-            creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
-                     'secret_key': os.environ['AWS_SECRET_KEY']}
+            creds = {
+                'access_key': os.environ['AWS_ACCESS_KEY'],
+                'secret_key': os.environ['AWS_SECRET_KEY'],
+            }
+        elif type == 'rackspace':
+            # read creds from envvars
+            for k in ('RACKSPACE_USERNAME', 'RACKSPACE_API_KEY'):
+                if not k in os.environ:
+                    msg = "Missing environment variable: {}".format(k)
+                    raise EnvironmentError(msg)
+            creds = {
+                'username': os.environ['RACKSPACE_USERNAME'],
+                'api_key': os.environ['RACKSPACE_API_KEY'],
+                'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace'),
+            }
         else:
             creds = json.loads(args.get('<creds>'))
         id = args.get('<id>')  # @ReservedAssignment
@@ -1598,22 +1631,40 @@ class DeisClient(object):
             inp = raw_input('Import these credentials? (y/n) : ')
             if inp.lower().strip('\n') != 'y':
                 print('Aborting.')
-                return
-            creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
-                     'secret_key': os.environ['AWS_SECRET_KEY']}
-            body = {'creds': json.dumps(creds)}
-            sys.stdout.write('Uploading EC2 credentials... ')
-            sys.stdout.flush()
-            response = self._dispatch('patch', '/api/providers/ec2',
-                                      json.dumps(body))
-            if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                print('done')
             else:
-                raise ResponseError(response)
-
+                creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
+                         'secret_key': os.environ['AWS_SECRET_KEY']}
+                body = {'creds': json.dumps(creds)}
+                sys.stdout.write('Uploading EC2 credentials... ')
+                sys.stdout.flush()
+                response = self._dispatch('patch', '/api/providers/ec2',
+                                          json.dumps(body))
+                if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                    print('done')
+                else:
+                    raise ResponseError(response)
         else:
             print('No credentials discovered, did you install the EC2 Command Line tools?')
-            return
+        if 'RACKSPACE_API_KEY' in os.environ and 'RACKSPACE_USERNAME' in os.environ:
+            print("Found Rackspace credentials: {}".format(os.environ['RACKSPACE_API_KEY']))
+            inp = raw_input('Import these credentials? (y/n) : ')
+            if inp.lower().strip('\n') != 'y':
+                print('Aborting.')
+            else:
+                creds = {'username': os.environ['RACKSPACE_USERNAME'],
+                         'api_key': os.environ['RACKSPACE_API_KEY'],
+                         'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace')}
+                body = {'creds': json.dumps(creds)}
+                sys.stdout.write('Uploading Rackspace credentials... ')
+                sys.stdout.flush()
+                response = self._dispatch('patch', '/api/providers/rackspace',
+                                          json.dumps(body))
+                if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                    print('done')
+                else:
+                    raise ResponseError(response)
+        else:
+            print('No Rackspace credentials discovered')
 
     def providers_info(self, args):
         """
@@ -1772,7 +1823,11 @@ def main():
     except ResponseError as err:
         resp = err.message
         print('{} {}'.format(resp.status_code, resp.reason))
-        print(resp.text)
+        try:
+            msg = resp.json()
+        except:
+            msg = resp.text
+        print(msg)
         sys.exit(1)
 
 

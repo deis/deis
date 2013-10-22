@@ -5,13 +5,18 @@ if [ -z $1 ]; then
   exit 1
 fi
 
+function echo_color {
+  echo -e "\033[1m$1\033[0m"
+}
+
+THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
+CONTRIB_DIR=$(dirname $THIS_DIR)
+
 # check for Deis' general dependencies
-thisdir=`dirname $0`
-if ! $thisdir/check-deis-deps.sh; then
+if ! $CONTRIB_DIR/check-deis-deps.sh; then
   echo 'Deis is missing some dependencies.'
   exit 1
 fi
-
 
 # check for EC2 API tools in $PATH
 if ! which ec2-describe-group > /dev/null; then
@@ -23,51 +28,51 @@ fi
 : ${AWS_ACCESS_KEY:?'Please set AWS_ACCESS_KEY in your environment for EC2 API access.'}
 : ${AWS_SECRET_KEY:?'Please set AWS_SECRET_KEY in your environment for EC2 API access.'}
 
-region=$1
+#################
+# chef settings #
+#################
+node_name=deis-controller
+run_list="recipe[deis::controller]"
+chef_version=11.4.4
 
+#######################
+# Amazon EC2 settings #
+#######################
+region=$1
 # see contrib/prepare-ubuntu-ami.sh for instructions
 # on creating your own deis-optmized AMIs
 if [ "$region" == "ap-northeast-1" ]; then
-  image=ami-d95ac4d8
+  image=ami-0b45de0a
 elif [ "$region" == "ap-southeast-1" ]; then
-  image=ami-1823694a
+  image=ami-eaf9b3b8
 elif [ "$region" == "ap-southeast-2" ]; then
-  image=ami-e56af7df
+  image=ami-e9970bd3
 elif [ "$region" == "eu-west-1" ]; then
-  image=ami-7447a003
+  image=ami-c021c1b7
 elif [ "$region" == "sa-east-1" ]; then
-  image=ami-334bec2e
+  image=ami-b5da7ca8
 elif [ "$region" == "us-east-1" ]; then
-  image=ami-493d6a20
+  image=ami-a30b57ca
 elif [ "$region" == "us-west-1" ]; then
-  image=ami-0e2b1f4b
+  image=ami-30e3d475
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-72e27c42
+  image=ami-ca63fafa
 else
   echo "Cannot find AMI for region: $region"
   exit 1
 fi
-
-# ec2 settings
 flavor="m1.large"
 ebs_size=100
 sg_name=deis-controller
 sg_src=0.0.0.0/0
-key_name=deis-controller
 export EC2_URL=https://ec2.$region.amazonaws.com/
 
-# ssh settings
+################
+# SSH settings #
+################
+key_name=deis-controller
 ssh_key_path=~/.ssh/$key_name
 ssh_user="ubuntu"
-
-# chef settings
-node_name="deis-controller"
-run_list="recipe[deis::controller]"
-chef_version=11.4.4
-
-function echo_color {
-  echo -e "\033[1m$1\033[0m"
-}
 
 # create security group and authorize ingress
 if ! ec2-describe-group | grep -q "$sg_name"; then
@@ -93,9 +98,9 @@ if ! test -e $ssh_key_path; then
   ec2-create-keypair $key_name > $ssh_key_path
   chmod 600 $ssh_key_path
   set +x
-  echo "Saved to $ssh_key_path"
+  echo_color "Saved to $ssh_key_path"
 else
-  echo_color "SSH key $ssh_key_path exists"
+  echo_color "WARNING: SSH key $ssh_key_path exists"
 fi
 
 # create data bags

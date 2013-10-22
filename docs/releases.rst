@@ -7,7 +7,7 @@
 Releases
 ========
 
-When the maintainers create a **Deis** release, here are the steps involved:
+When the maintainers create a new Deis release, here are the steps involved:
 
 
 GitHub Issues
@@ -28,57 +28,55 @@ Other Repos
 Chef Repo
 ---------
 
-- checkout release branch
 - merge master into release branch locally
-- change chef attributes from master to latest tag in deis-cookbook/attributes
+    * ``git checkout release``
+    * ``git merge master``
+- change chef attributes to latest tags in deis-cookbook/attributes
     * default.deis.build.revision
     * default.deis.gitosis.revision
     * default.deis.controller.revision
-- ``knife cookbook metadata .`` will update metadata.json
--  commit and push the opdemand/deis-cookbook repo
-    * ``git commit -a -m 'updated for v0.0.X release'``
+- ``knife cookbook metadata .`` to update metadata.json
+- commit and push the opdemand/deis-cookbook release and tag
+    * ``git commit -a -m 'updated for vX.Y.Z release'``
     * ``git push origin release``
-    * ``git tag v0.0.X``
-    * ``git push --tags origin v0.0.X``
+    * ``git tag vX.Y.Z``
+    * ``git push --tags origin vX.Y.Z``
 - update opscode community cookbook
+    * cd to parent dir of deis-cookbook
     * ``cp -pr deis-cookbook /tmp/deis && cd /tmp``
-    * ``tar cvfz deis-cookbook-v0.0.X.tar.gz --exclude='deis/.git' --exclude='deis/.vagrant' deis``
+    * ``tar cvfz deis-cookbook-vX.Y.Z.tar.gz --exclude='deis/.*' deis``
     * log in to community.opscode.com and upload tarball
-- switch master back to upcoming release
+- switch master to upcoming release
     * ``git checkout master``
     * change cookbook revisions in metadata.rb to *next* version
-    * ``git commit -a -m 'switch master to v0.0.Y'``
+    * ``git commit -a -m 'switch master to vX.Y.Z+1'``
     * ``git push origin master``
 
 
 Deis Repo
 ---------
 
-- merge master into release branch
-    * create pull request from master to release branch
-    * review and merge on github.com
-- Update berksfile with new release
-    * ``berks update && berks install``
-    * switch from github cookbook to opscode community cookbook
-- commit and push the opdemand/deis repo
-    * ``git commit -a -m 'updated for v0.0.X release'``
-    * ``git tag v0.0.X``
-    * ``git push --tags origin v0.0.X``
+- merge master into release branch locally
+    * ``git checkout release``
+    * ``git merge master``
+- update berksfile with new release
+    * ensure Berksfile is pointing to opscode community cookbook
+    * ``berks update && berks install`` to update Berksfile.lock
+- commit and push the opdemand/deis release and tag
+    * ``git commit -a -m 'updated for vX.Y.Z release'``
+    * ``git push origin release``
+    * ``git tag vX.Y.Z``
+    * ``git push --tags origin vX.Y.Z``
+- publish CLI to pypi.python.org
+    - ``python setup.py sdist upload``
+    - use testpypi.python.org first to ensure there aren't any problems
 - switch master to upcoming release
     * ``git checkout master``
     * update __version__ fields in Python packages to *next* version
     * switch from opscode community cookbook back to github cookbook
-    * ``berks update && berks install``
-    * ``git commit -a -m 'switch master to v0.0.Y'``
+    * ``berks update && berks install`` to update Berksfile.lock
+    * ``git commit -a -m 'switch master to vX.Y.Z+1'``
     * ``git push origin master``
-
-
-Client
-------
-- publish CLI to pypi.python.org
-    - ``python setup.py sdist upload``
-    - use testpypi.python.org first to ensure there aren't any problems
-
 
 Docs
 ----

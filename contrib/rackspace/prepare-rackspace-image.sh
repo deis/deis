@@ -5,15 +5,17 @@
 #
 # Instructions:
 #
-#   1. Launch a vanilla Ubuntu 12.04 instance (64-bit with an EBS root volume)
-#   2. SSH in and install the 3.8 kernel with:
+#   1. Create a server using the Ubuntu 12.04 LTS image,
+#      type 2 (512MB Standard Instance), Disk Partitioning: Manual.
+#   2. SSH in as root with the password shown, then install the 3.8 kernel with:
 #      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
 #   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
-#   4. Run this script (as root!) to optimize the image for fast boot times
-#   5. Create a new AMI from the root volume
-#   6. Distribute the AMI to other regions using `ec2-copy-image`
-#   7. Create/update your Deis flavors to use your new AMIs
+#   4. Run this script (as root) to optimize the image for fast boot times
+#   5. Create a new image from the server named "deis-base-image".
+#   6. Distribute the image to other regions
+#   7. Create/update your Deis flavors to use your new images
 #
+apt-get install python-software-properties -y
 
 # Add the Docker repository key to your local keychain
 # using apt-key finger you can check the fingerprint matches 36A1 D786 9245 C895 0F96 6E92 D857 6A8B A88D 21E9
@@ -30,7 +32,7 @@ apt-get dist-upgrade -yq
 apt-get install lxc-docker curl git make python-setuptools python-pip -yq
 
 # create buildstep docker image
-git clone https://github.com/opdemand/buildstep.git
+git clone -b deis https://github.com/opdemand/buildstep.git
 cd buildstep
 make
 cd ..
