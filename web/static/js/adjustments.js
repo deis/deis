@@ -16,6 +16,7 @@ $(function(){
       $('.nav-border').css('height', '930');
     }
     $('footer').css('margin-top', margin);
+    $('footer').css('display', 'block');
 
     if($(window).width() > 1171){$('.docs-sidebar').css({'position': 'absolute', 'right': '0'})};
     if($(window).width() < 1171){$('.docs-sidebar').css('position', 'static');}
