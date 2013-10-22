@@ -42,8 +42,9 @@ Chef Repo
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - update opscode community cookbook
+    * cd to parent dir of deis-cookbook
     * ``cp -pr deis-cookbook /tmp/deis && cd /tmp``
-    * ``tar cvfz deis-cookbook-vX.Y.Z.tar.gz --exclude='deis/.git' --exclude='deis/.vagrant' deis``
+    * ``tar cvfz deis-cookbook-vX.Y.Z.tar.gz --exclude='deis/.*' deis``
     * log in to community.opscode.com and upload tarball
 - switch master to upcoming release
     * ``git checkout master``
@@ -57,7 +58,7 @@ Deis Repo
 
 - merge master into release branch locally
     * ``git checkout release``
-    * ``git merge master``    
+    * ``git merge master``
 - update berksfile with new release
     * ensure Berksfile is pointing to opscode community cookbook
     * ``berks update && berks install`` to update Berksfile.lock
