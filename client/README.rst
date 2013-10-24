@@ -23,8 +23,8 @@ provide a private PaaS that is lightweight and flexible.
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
 anything using Heroku Buildpacks, Docker images or Chef recipes. Deis is
-designed to work with any cloud provider, although only EC2 is currently
-supported.
+designed to work with any cloud provider. Currently Amazon EC2 and Rackspace
+Cloud are supported.
 
 
 Why Deis?
@@ -96,14 +96,14 @@ Registration will discover SSH keys automatically and use the
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
-    Found EC2 credentials: AKIAJTVXXXXXXXXXXXXX
-    Import these credentials? (y/n) : y
-    Uploading EC2 credentials... done
-
 Find an application you’d like to deploy, or clone `an example app`_.
 
 Change into the application directory and use ``deis formations:create`` to
-initialize a new formation in a specific EC2 region.
+initialize a new formation in a specific cloud region. For example:
+
+.. code-block:: console
+
+  $ deis formations:create dev1 --flavor=rackspace-dfw
 
 Use the ``deis nodes:scale`` command to provision nodes that will be
 dedicated to this formation.
