@@ -34,6 +34,7 @@ apt-get install lxc-docker curl git make python-setuptools python-pip -yq
 # create buildstep docker image
 git clone -b deis https://github.com/opdemand/buildstep.git
 cd buildstep
+git checkout deis
 make
 cd ..
 rm -rf buildstep
