@@ -1301,7 +1301,7 @@ class DeisClient(object):
             body.update({'ssh_port': int(o)})
         for opt in ('--proxy', '--runtime'):
             o = args.get(opt)
-            if o and o.lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+            if o and str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
                 body.update({opt.strip('-'): False})
             else:
                 body.update({opt.strip('-'): True})
@@ -1407,7 +1407,7 @@ class DeisClient(object):
         for opt in ('--proxy', '--runtime'):
             o = args.get(opt)
             if o is not None:
-                if o.lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+                if str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
                     body.update({opt.strip('-'): False})
                 else:
                     body.update({opt.strip('-'): True})
