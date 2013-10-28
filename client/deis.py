@@ -1277,22 +1277,33 @@ class DeisClient(object):
         """
         Create a layer of nodes
 
-        Usage: deis layers:create <formation> <id> <flavor> [--proxy --runtime] [options]
+        Usage: deis layers:create <formation> <id> <flavor> [options]
 
-        SSH Options:
-
+        Options:
+        --proxy=<yn>                    layer can be used for proxy [default: y]
+        --runtime=<yn>                  layer can be used for runtime [default: y]
         --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
         --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
         --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+        --ssh_port=<port>               port number for ssh comm (default: 22)
 
         """
         formation = args.get('<formation>')
         body = {'id': args['<id>'], 'flavor': args['<flavor>']}
-        for opt in ('--formation', '--proxy', '--runtime',
-                    '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
+        for opt in ('--formation', '--ssh_username', '--ssh_private_key',
+                    '--ssh_public_key'):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
+        o = args.get('--ssh_port')
+        if o:
+            body.update({'ssh_port': int(o)})
+        for opt in ('--proxy', '--runtime'):
+            o = args.get(opt)
+            if o and o.lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+                body.update({opt.strip('-'): False})
+            else:
+                body.update({opt.strip('-'): True})
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
         try:
@@ -1362,6 +1373,51 @@ class DeisClient(object):
             format_str = "{id} => flavor: {flavor}, proxy: {proxy}, runtime: {runtime}"
             for item in data['results']:
                 print(format_str.format(**item))
+        else:
+            raise ResponseError(response)
+
+    def layers_update(self, args):
+        """
+        Create a layer of nodes
+
+        Usage: deis layers:update <formation> <id> [options]
+
+        Options:
+
+        --proxy=<yn>                    layer can be used for proxy [default: y]
+        --runtime=<yn>                  layer can be used for runtime [default: y]
+        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
+        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
+        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+        --ssh_port=<port>               port number for ssh comm (default: 22)
+
+        """
+        formation = args.get('<formation>')
+        layer = args['<id>']  # noqa
+        body = {'id': args['<id>']}
+        for opt in ('--ssh_username', '--ssh_private_key', '--ssh_public_key',
+                    '--ssh_port'):
+            o = args.get(opt)
+            if o:
+                body.update({opt.strip('-'): o})
+        o = args.get('--ssh_port')
+        if o:
+            body.update({'ssh_port': int(o)})
+        for opt in ('--proxy', '--runtime'):
+            o = args.get(opt)
+            if o is not None:
+                if o.lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+                    body.update({opt.strip('-'): False})
+                else:
+                    body.update({opt.strip('-'): True})
+        sys.stdout.write("Updating {} layer... ".format(args['<id>']))
+        sys.stdout.flush()
+        response = self._dispatch(
+            'patch', "/api/formations/{formation}/layers/{layer}".format(**locals()),
+            json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('done.')
+            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
