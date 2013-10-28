@@ -5,6 +5,8 @@ Classes to serialize the RESTful representation of Deis API models.
 
 from __future__ import unicode_literals
 
+import re
+
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -164,6 +166,16 @@ class AppSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`AppSerializer`."""
         model = models.App
         read_only_fields = ('created', 'updated')
+
+    def validate_id(self, attrs, source):
+        """
+        Check that the ID is all lowercase
+        """
+        value = attrs[source]
+        match = re.match(r'^[a-z0-9-]+$', value)
+        if not match:
+            raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
+        return attrs
 
 
 class ContainerSerializer(serializers.ModelSerializer):
