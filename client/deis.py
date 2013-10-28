@@ -399,11 +399,11 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
-            formation = data['id']
-            print("done, created {}".format(formation))
+            app_id = data['id']
+            print("done, created {}".format(app_id))
             # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc
-            git_remote = "git@{hostname}:{formation}.git".format(**locals())
+            git_remote = "git@{hostname}:{app_id}.git".format(**locals())
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
