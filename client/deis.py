@@ -508,6 +508,7 @@ class DeisClient(object):
                                   "/api/apps/{}/calculate".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
+            print(databag)
             domains = databag.get('domains', [])
             if domains:
                 domain = random.choice(domains)
@@ -515,7 +516,7 @@ class DeisClient(object):
                 webbrowser.open('http://{}/'.format(domain))
                 return domain
             else:
-                print('No proxies found. Use `deis layers:scale proxy=1` to scale up.')
+                print('No proxies found. Use `deis nodes:scale myformation proxy=1` to scale up.')
         else:
             raise ResponseError(response)
 
