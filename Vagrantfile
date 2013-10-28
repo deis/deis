@@ -1,19 +1,35 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
+VAGRANTFILE_API_VERSION = "2"
 
-  config.vm.box = "deis-controller"
-  config.vm.hostname = "deis-controller"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+  # Give each controller and node additional memory
   config.vm.provider :virtualbox do |v|
     v.customize ["modifyvm", :id, "--memory", 2048]
   end
-  
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  config.vm.network :public_network, :bridge => 'en0: Wi-Fi (AirPort)' #, :mac => "08002769c9a0"  
+  # Deis Nodes
+  config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box"
+  config.vm.box = "deis-node"
 
-  config.vm.provision :shell, :inline => "echo Bootstrap with: knife bootstrap `/sbin/ifconfig eth1|grep inet|head -1|sed 's/\:/ /'|awk '{print $3}'` -x vagrant -P vagrant -N deis-controller -r role[deis-controller] --sudo"
-  
+  # Deis Controller
+  config.vm.define "deis-controller", primary: true do |controller|
+    controller.vm.hostname = "deis-controller"
+    controller.vm.network "private_network", ip: "192.168.61.100"
+  end
+
+  # Node 1
+  config.vm.define "deis-node-1" do |node1|
+    node1.vm.hostname = "deis-node-1"
+    node1.vm.network "private_network", ip: "192.168.61.101"
+  end
+
+  # Node 2
+  config.vm.define "deis-node-2" do |node2|
+    node2.vm.hostname = "deis-node-2"
+    node2.vm.network "private_network", ip: "192.168.61.102"
+  end
+
 end
