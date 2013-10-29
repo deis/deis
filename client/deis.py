@@ -1657,6 +1657,14 @@ class DeisClient(object):
                 'api_key': os.environ['RACKSPACE_API_KEY'],
                 'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace'),
             }
+        elif type == 'digitalocean':
+            # read creds from envvars
+            for k in ('DIGITALOCEAN_CLIENT_ID', 'DIGITALOCEAN_API_KEY'):
+                if not k in os.environ:
+                    msg = "Missing environment variable: {}".format(k)
+                    raise EnvironmentError(msg)
+            creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
+                     'api_key': os.environ['DIGITALOCEAN_API_KEY']}
         else:
             creds = json.loads(args.get('<creds>'))
         id = args.get('<id>')  # @ReservedAssignment
@@ -1701,7 +1709,7 @@ class DeisClient(object):
                 else:
                     raise ResponseError(response)
         else:
-            print('No credentials discovered, did you install the EC2 Command Line tools?')
+            print('No EC2 credentials discovered. Did you install the EC2 Command Line tools?')
         if 'RACKSPACE_API_KEY' in os.environ and 'RACKSPACE_USERNAME' in os.environ:
             print("Found Rackspace credentials: {}".format(os.environ['RACKSPACE_API_KEY']))
             inp = raw_input('Import these credentials? (y/n) : ')
@@ -1721,7 +1729,27 @@ class DeisClient(object):
                 else:
                     raise ResponseError(response)
         else:
-            print('No Rackspace credentials discovered')
+            print('No Rackspace credentials discovered.')
+        if 'DIGITALOCEAN_API_KEY' in os.environ and 'DIGITALOCEAN_CLIENT_ID' in os.environ:
+            print("Found Digitalocean credentials: {}".format(os.environ['DIGITALOCEAN_CLIENT_ID']))
+            inp = raw_input('Import these credentials? (y/n) : ')
+            if inp.lower().strip('\n') != 'y':
+                print('Aborting.')
+            else:
+                creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
+                         'api_key': os.environ['DIGITALOCEAN_API_KEY'],
+                }
+                body = {'creds': json.dumps(creds)}
+                sys.stdout.write('Uploading Digitalocean credentials... ')
+                sys.stdout.flush()
+                response = self._dispatch('patch', 'api/providers/digitalocean',
+                                          json.dumps(body))
+                if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                    print('done')
+                else:
+                    raise ResponseError(response)
+        else:
+            print('No Digitalocean credentials discovered.')
 
     def providers_info(self, args):
         """
