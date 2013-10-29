@@ -31,6 +31,7 @@ Server Reference
     cm.mock
 
     provider.ec2
+    provider.digitalocean
     provider.mock
     provider.rackspace
     provider.static
