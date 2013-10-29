@@ -1635,6 +1635,7 @@ class DeisClient(object):
 
         Usage: deis providers:create <id> <type> <creds>
         """
+        # TODO: This function has a McCabe of 13. Refactor for simplicity.
         type = args.get('<type>')  # @ReservedAssignment
         if type == 'ec2':
             # read creds from envvars
@@ -1731,13 +1732,15 @@ class DeisClient(object):
         else:
             print('No Rackspace credentials discovered.')
         if 'DIGITALOCEAN_API_KEY' in os.environ and 'DIGITALOCEAN_CLIENT_ID' in os.environ:
-            print("Found Digitalocean credentials: {}".format(os.environ['DIGITALOCEAN_CLIENT_ID']))
+            print("Found Digitalocean credentials: {}".format(
+                os.environ['DIGITALOCEAN_CLIENT_ID']))
             inp = raw_input('Import these credentials? (y/n) : ')
             if inp.lower().strip('\n') != 'y':
                 print('Aborting.')
             else:
-                creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
-                         'api_key': os.environ['DIGITALOCEAN_API_KEY'],
+                creds = {
+                    'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
+                    'api_key': os.environ['DIGITALOCEAN_API_KEY'],
                 }
                 body = {'creds': json.dumps(creds)}
                 sys.stdout.write('Uploading Digitalocean credentials... ')

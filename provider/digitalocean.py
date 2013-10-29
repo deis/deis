@@ -18,6 +18,7 @@ REGION_LIST = {
     'new-york-2': 'New York 2'
 }
 
+
 def seed_flavors():
     """Seed the database with default Flavors for digital ocean"""
     flavors = []
@@ -39,7 +40,7 @@ def build_layer(layer):
     # create a new SSH key
     name = "deis-{formation}-{id}".format(**layer)
     # import a new keypair to the Digital Ocean Control Panel
-    params = { 'name': name, 'ssh_pub_key': layer['ssh_public_key'] }
+    params = {'name': name, 'ssh_pub_key': layer['ssh_public_key']}
     conn.request('/ssh_keys/new/', method='GET', params=params)
     # Digital Ocean images only have the root user created by default
     l = Layer.objects.get(id=layer['id'])
@@ -90,9 +91,11 @@ def _get_droplet_kwargs(node, conn):
         'size_id': _get_id(conn.sizes(), params.get('size', '4GB')),
         'image_id': _get_id(conn.images(show_all=False), params.get('image', 'deis-base')),
         'region_id': _get_id(conn.regions(), params.get('region', 'San Francisco 1')),
-        'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(), "deis-{formation}-{layer}".format(**node)))],
+        'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(),
+                        "deis-{formation}-{layer}".format(**node)))],
         'virtio': True
     }
+
 
 def _get_droplet_metadata(droplet):
     return {
@@ -107,16 +110,19 @@ def _get_droplet_metadata(droplet):
         'ip_address': droplet.ip_address
     }
 
+
 def _create_digitalocean_connection(creds):
     if not creds:
         raise EnvironmentError('No credentials provided')
     return client.Client(creds['client_id'], creds['api_key'])
+
 
 def _get_id(lst, name):
     for i in lst:
         if i.name == name:
             return i.id
     return None
+
 
 def _get_name(lst, name):
     for i in lst:
