@@ -508,7 +508,6 @@ class DeisClient(object):
                                   "/api/apps/{}/calculate".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             databag = json.loads(response.content)
-            print(databag)
             domains = databag.get('domains', [])
             if domains:
                 domain = random.choice(domains)
