@@ -67,7 +67,6 @@ GEM
       multipart-post (~> 1.2.0)
     faraday_middleware (0.9.0)
       faraday (>= 0.7.4, < 0.9)
-    ffi (1.9.1)
     fog (1.15.0)
       builder
       excon (~> 0.25.0)
