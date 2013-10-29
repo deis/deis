@@ -20,6 +20,15 @@ This script will:
 - Run `vagrant up` to create a Deis controller and 2 static nodes
 - Register the controller with Chef and install Deis and supporting software
 
+4. Register a user
+
+5. Run the script to create a static formation:
+```console
+$ ./contrib/vagrant/create-static-formation.sh
+```
+
+Notes
+-----
 
 Mac OS X: if you see an error such as
 "failed to open /dev/vboxnetctl", try restarting VirtualBox:
