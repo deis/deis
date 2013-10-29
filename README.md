@@ -11,7 +11,7 @@ Deis is a Django/Celery API server, Python CLI and set of [Chef cookbooks](https
 
 Deis is an open source PaaS that makes it easy to deploy and scale LXC containers and Chef nodes used to host applications, databases, middleware and other services. Deis leverages Chef, Docker and Heroku Buildpacks to provide a private PaaS that is lightweight and flexible.
 
-Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java, Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy *anything* using Heroku Buildpacks, Docker images or Chef recipes.  Deis is designed to work with any cloud provider, although only EC2 is currently supported.
+Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java, Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy *anything* using Heroku Buildpacks, Docker images or Chef recipes.  Deis can be deployed on any system including every public cloud, private cloud or bare metal.
 
 ## Why Deis?
 
