@@ -50,7 +50,7 @@ location_id=$1
 # The snapshot that we want to use (deis-base)
 image_id=$(knife digital_ocean image list | grep "deis-base" | awk '{print $1}')
 # the ID of the size (1GB)
-size_id=$(knife digital_ocean size list | grep "1GB" | awk '{print $1}')
+size_id=$(knife digital_ocean size list | grep "2GB" | awk '{print $1}')
 
 ################
 # SSH settings #
