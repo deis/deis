@@ -9,6 +9,7 @@ import re
 import subprocess
 import tempfile
 import time
+import socket
 
 from celery.canvas import group
 
