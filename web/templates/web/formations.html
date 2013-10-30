@@ -1,11 +1,38 @@
 {% extends "web/base.html" %}
 {% load humanize %}
 
+{% block title %}Formations{% endblock %}
+
 {% block content %}
-<h2>{{ formations|length|apnumber|capfirst }} Formation{{ formations|pluralize }}</a></h2>
-<ul>
+<div class="pink">
+  <h1>{% if formations %}{{ formations|length|apnumber|capfirst }}{% else %}No{% endif %}
+    Formation{{ formations|pluralize }}</a></h1>
   {% for formation in formations %}
-  <li>{{ formation }}</li>
+  <a name="formation.id"></a>
+  <div class="row-fluid well">
+    <div class="span3">
+      <h3>{{ formation.id }}</h3>
+    </div>
+    <div class="span6">
+      <dl class="dl-horizontal">
+        <dt>Updated</dt>
+        <dd>{{ formation.updated }}</dd>
+        <dt>Created</dt>
+        <dd>{{ formation.created }}</dd>
+        <dt>Owned by</dt>
+        <dd>{{ formation.owner }}</dd>
+        {% if domain %}
+        <dt>Domain</dt>
+        <dd>{{ formation.domain }}</dd>
+        {% endif %}
+      </dl>
+    </div>
+    <div class="span3">
+      {% for node in formation.nodes %}
+      {{ node }}
+      {% endfor %}
+    </div>
+  </div>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}

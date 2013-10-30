@@ -471,7 +471,7 @@ var Search = {
           $('footer').css('margin-top', '0');
           $('.nav-border').css('height', '600');
           pageHeight = $(document).height();
-          console.log(pageHeight);
+          // console.log(pageHeight);
           $('.nav-border').css('height', pageHeight);
 
           var margin = pageHeight - 511 - 158;

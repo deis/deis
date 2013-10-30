@@ -1,0 +1,36 @@
+{% extends "web/base.html" %}
+{% load humanize %}
+
+{% block title %}Apps{% endblock %}
+
+{% block content %}
+<div class="blue">
+  <h1>{% if apps %}{{ apps|length|apnumber|capfirst }}{% else %}No{% endif %}
+   App{{ apps|pluralize }}</a></h1>
+  {% for app in apps %}
+  <div class="row-fluid well">
+    <div class="span3">
+      <h3>{{ app.id }}</h3>
+    </div>
+    <div class="span6">
+      <dl class="dl-horizontal">
+        <dt>Updated</dt>
+        <dd>{{ app.updated }}</dd>
+        <dt>Created</dt>
+        <dd>{{ app.created }}</dd>
+        <dt>Owned by</dt>
+        <dd>{{ app.owner }}</dd>
+        <dt>In formation</dt>
+        <dd><a href="{% url 'formations' %}#{{ app.formation }}"
+          class="pink">{{ app.formation }}</a></dd>
+      </dl>
+    </div>
+    <div class="span3">
+      {% for container in app.containers %}
+      {{ container }}
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

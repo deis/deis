@@ -1,6 +1,22 @@
 {% extends "web/base.html" %}
+{% load humanize %}
+
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2>Dashboard</h2>
-<p>You have <a href="{% url "formations" %}">{{ formations | length }} formations</a>.</p>
+<div class="green">
+  <h1>Dashboard</h1>
+  <p>
+    You have <a href="{% url "formations" %}">
+    {% if formations %}{{ formations|length|apnumber }}{% else %}no{% endif %}
+    formation{{ formations|pluralize }}</a>
+    and <a href="{% url "apps" %}">
+    {% if apps %}{{ apps|length|apnumber }}{% else %}no{% endif %}
+    app{{ apps|pluralize }}</a>.
+  </p>
+  <p>
+    Connected to Deis controller v{{ version }} at
+    <a href="//{{ site.domain }}">{{ site.domain }}</a>.<br>
+  </p>
+</div>
 {% endblock %}
