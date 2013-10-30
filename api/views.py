@@ -1,20 +1,26 @@
 """
 RESTful view classes for presenting Deis API objects.
 """
-# pylint: disable=R0901,R0904
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
 import importlib
 import json
 
 from Crypto.PublicKey import RSA
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User
 from django.utils import timezone
-from rest_framework import permissions, status, viewsets
+from guardian.shortcuts import assign_perm
+from guardian.shortcuts import get_objects_for_user
+from guardian.shortcuts import get_users_with_perms
+from guardian.shortcuts import remove_perm
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from deis import settings
 
@@ -63,6 +69,18 @@ class IsOwner(permissions.BasePermission):
             return False
 
 
+class IsSuperUser(permissions.BasePermission):
+    """
+    Object-level permission to allow only superusers.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return request.user.is_superuser
+
+
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
     model = User
@@ -85,6 +103,9 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
+        # Make this first signup an admin / superuser
+        if not User.objects.filter(is_superuser=True).exists():
+            obj.is_superuser = True
 
 
 class UserCancellationView(viewsets.GenericViewSet,
@@ -160,6 +181,14 @@ class FormationViewSet(OwnerViewSet):
     serializer_class = serializers.FormationSerializer
     lookup_field = 'id'
 
+    def get_queryset(self, **kwargs):
+        """
+        Filter Formations by `owner` attribute or the
+        `api.use_formation` permission.
+        """
+        return super(FormationViewSet, self).get_queryset(**kwargs) | \
+            get_objects_for_user(self.request.user, 'api.use_formation')
+
     def post_save(self, formation, created=False, **kwargs):
         if created:
             formation.build()
@@ -170,18 +199,21 @@ class FormationViewSet(OwnerViewSet):
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
         except ValueError:
-            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+            return Response('Invalid scaling format',
+                            status=status.HTTP_400_BAD_REQUEST)
         # check for empty credentials
         for p in models.Provider.objects.filter(owner=request.user):
             if p.creds:
                 break
         else:
-            return Response('No provider credentials available', status=HTTP_400_BAD_REQUEST)
+            return Response('No provider credentials available',
+                            status=status.HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         try:
             databag = models.Node.objects.scale(formation, new_structure)
         except (models.Layer.DoesNotExist, EnvironmentError) as err:
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str(err),
+                            status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
@@ -282,6 +314,80 @@ class FormationNodeViewSet(FormationScopedViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class _PermsViewSet(viewsets.ViewSet):
+    """RESTful views for object-level permissions.
+    Intended as an abstract base class.
+    """
+
+    model = None   # models class, such as models.App
+    perm = ''      # short name for permission, such as "use_app"
+
+    def list(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        perm_name = "api.{}".format(self.perm)
+        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        usernames = [u.username for u in get_users_with_perms(app)
+                     if u.has_perm(perm_name, app)]
+        return Response({'users': usernames})
+
+    def create(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        if request.user != app.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, username=request.DATA['username'])
+        assign_perm(self.perm, user, app)
+        return Response(status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        if request.user != app.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, username=kwargs['username'])
+        if user.has_perm(self.perm, app):
+            remove_perm(self.perm, user, app)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class AppPermsViewSet(_PermsViewSet):
+    """RESTful views for sharing apps with collaborators."""
+
+    model = models.App
+    perm = 'use_app'
+
+
+class FormationPermsViewSet(_PermsViewSet):
+    """RESTful views for sharing formations with collaborators."""
+
+    model = models.Formation
+    perm = 'use_formation'
+
+
+class AdminPermsViewSet(viewsets.ModelViewSet):
+    """RESTful views for sharing admin permissions with other users."""
+
+    model = User
+    serializer_class = serializers.AdminUserSerializer
+    permission_classes = (IsSuperUser,)
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.filter(is_active=True, is_superuser=True)
+
+    def create(self, request, **kwargs):
+        user = get_object_or_404(User, username=request.DATA['username'])
+        user.is_superuser = True
+        user.save(update_fields=['is_superuser'])
+        return Response(status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, **kwargs):
+        user = get_object_or_404(User, username=request.DATA['username'])
+        user.is_superuser = False
+        user.save(update_fields=['is_superuser'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class NodeViewSet(FormationNodeViewSet):
     """RESTful views for :class:`~api.models.Node`."""
 
@@ -305,6 +411,14 @@ class AppViewSet(OwnerViewSet):
     serializer_class = serializers.AppSerializer
     lookup_field = 'id'
 
+    def get_queryset(self, **kwargs):
+        """
+        Filter Apps by `owner` attribute or the
+        `api.use_formation` permission.
+        """
+        return super(AppViewSet, self).get_queryset(**kwargs) | \
+            get_objects_for_user(self.request.user, 'api.use_app')
+
     def post_save(self, app, created=False, **kwargs):
         if created:
             app.build()
@@ -322,14 +436,14 @@ class AppViewSet(OwnerViewSet):
                 request.DATA['formation'] = models.Formation.objects.first()
             elif count == 0:
                 return Response('No formations available',
-                                status=HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response('Could not determine default formation',
-                                status=HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
     def scale(self, request, **kwargs):
         new_structure = {}
@@ -337,7 +451,8 @@ class AppViewSet(OwnerViewSet):
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
         except ValueError:
-            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+            return Response('Invalid scaling format',
+                            status=status.HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
             models.Container.objects.scale(app, new_structure)

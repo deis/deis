@@ -174,6 +174,7 @@ class Formation(UuidAuditedModel):
     nodes = JSONField(default='{}', blank=True)
 
     class Meta:
+        permissions = (('use_formation', 'Can use formation'),)
         unique_together = (('owner', 'id'),)
 
     def __str__(self):
@@ -456,8 +457,10 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     formation = models.ForeignKey('Formation')
-
     containers = JSONField(default='{}', blank=True)
+
+    class Meta:
+        permissions = (('use_app', 'Can use app'),)
 
     def __str__(self):
         return self.id

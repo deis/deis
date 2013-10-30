@@ -166,6 +166,22 @@ Formation Actions
   :meth:`FormationViewSet.converge() <api.views.FormationViewSet.converge>`
 
 
+Formation Sharing
+-----------------
+
+.. http:delete:: /api/formations/(string:id)/perms/(string:username)/
+
+  Destroy a formation permission by its `username`.
+
+.. http:get:: /api/formations/(string:id)/perms/
+
+  List all permissions granted to this formation.
+
+.. http:post:: /api/formations/(string:id)/perms/
+
+  Create a new formation permission.
+
+
 Applications
 ============
 
@@ -258,6 +274,22 @@ Application Actions
   :meth:`AppViewSet.calculate() <api.views.AppViewSet.calculate>`
 
 
+Application Sharing
+===================
+
+.. http:delete:: /api/apps/(string:id)/perms/(string:username)/
+
+  Destroy an app permission by its `username`.
+
+.. http:get:: /api/apps/(string:id)/perms/
+
+  List all permissions granted to this app.
+
+.. http:post:: /api/apps/(string:id)/perms/
+
+  Create a new app permission.
+
+
 Nodes
 =====
 
@@ -304,6 +336,22 @@ Auth
 .. http:get:: /api/generate-api-key/
 
   Generate an API key.
+
+
+Admin Sharing
+=============
+
+.. http:delete:: /api/admin/perms/(string:username)/
+
+  Destroy an admin permission by its `username`.
+
+.. http:get:: /api/admin/perms/
+
+  List all admin permissions granted.
+
+.. http:post:: /api/admin/perms/
+
+  Create a new admin permission.
 
 """
 
@@ -362,6 +410,11 @@ urlpatterns = patterns(
         views.FormationViewSet.as_view({'post': 'calculate'})),
     url(r'^formations/(?P<id>[-_\w]+)/converge/?',
         views.FormationViewSet.as_view({'post': 'converge'})),
+    # formation sharing
+    url(r'^formations/(?P<id>[-_\w]+)/perms/(?P<username>[-_\w]+)/?',
+        views.FormationPermsViewSet.as_view({'delete': 'destroy'})),
+    url(r'^formations/(?P<id>[-_\w]+)/perms/?',
+        views.FormationPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
     # formation base endpoint
     url(r'^formations/(?P<id>[-_\w]+)/?',
         views.FormationViewSet.as_view({
@@ -395,6 +448,11 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'post': 'run'})),
     url(r'^apps/(?P<id>[-_\w]+)/calculate/?',
         views.AppViewSet.as_view({'post': 'calculate'})),
+    # apps sharing
+    url(r'^apps/(?P<id>[-_\w]+)/perms/(?P<username>[-_\w]+)/?',
+        views.AppPermsViewSet.as_view({'delete': 'destroy'})),
+    url(r'^apps/(?P<id>[-_\w]+)/perms/?',
+        views.AppPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
     # apps base endpoint
     url(r'^apps/(?P<id>[-_\w]+)/?',
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
@@ -417,4 +475,9 @@ urlpatterns = patterns(
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^generate-api-key/',
         'rest_framework.authtoken.views.obtain_auth_token'),
+    # admin sharing
+    url(r'^admin/perms/(?P<username>[-_\w]+)/?',
+        views.AdminPermsViewSet.as_view({'delete': 'destroy'})),
+    url(r'^admin/perms/?',
+        views.AdminPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
 )

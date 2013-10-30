@@ -37,5 +37,6 @@ from .test_formation import *  # noqa
 from .test_key import *  # noqa
 from .test_layer import *  # noqa
 from .test_node import *  # noqa
+from .test_perm import *  # noqa
 from .test_provider import *  # noqa
 from .test_release import *  # noqa

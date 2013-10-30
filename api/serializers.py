@@ -44,6 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
         return d
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Serialize admin status for a :class:`~api.models.User` model."""
+
+    class Meta:
+        model = User
+        fields = ('username', 'is_superuser')
+        read_only_fields = ('username', )
+
+
 class KeySerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 

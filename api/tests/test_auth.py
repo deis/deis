@@ -15,6 +15,8 @@ from django.test import TestCase
 
 class AuthTest(TestCase):
 
+    fixtures = ['test_auth.json']
+
     """Tests user registration, authentication and authorization"""
 
     def test_auth(self):
@@ -37,7 +39,7 @@ class AuthTest(TestCase):
             'first_name': first_name,
             'last_name': last_name,
             'email': email,
-            # try to abuse superuser/staff level perms
+            # try to abuse superuser/staff level perms (not the first signup!)
             'is_superuser': True,
             'is_staff': True,
         }

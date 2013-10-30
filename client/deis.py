@@ -26,6 +26,8 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   flavors       manage flavors of nodes including size and location
   keys          manage ssh keys used for `git push` deployments
 
+  perms         manage permissions for shared apps and formations
+
 Developer shortcut commands::
 
   create        create a new application
@@ -1654,6 +1656,73 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def perms(self, args):
+        """
+        Valid commands for perms:
+
+        perms:list            list permissions granted on an app or formation
+        perms:create          create a new permission for a user
+        perms:delete          delete a permission for a user
+
+        Use `deis help perms:[command]` to learn more
+        """
+        # perms:transfer        transfer ownership of an app or formation
+        return self.perms_list(args)
+
+    def perms_list(self, args):
+        """
+        Usage: deis perms:list [--app=<app>|--formation=<form>|--admin]
+        """
+        url = self._parse_perms_args(args)
+        response = self._dispatch('get', url)
+        if response.status_code == requests.codes.ok:
+            print(json.dumps(response.json(), indent=2))
+        else:
+            raise ResponseError(response)
+
+    def perms_create(self, args):
+        """
+        Usage: deis perms:create <username> [--app=<app>|--formation=<form>|--admin]
+        """
+        url = self._parse_perms_args(args)
+        body = {'username': args.get('<username>')}
+        response = self._dispatch('post', url, json.dumps(body))
+        if response.status_code == requests.codes.created:
+            print(json.dumps(response.json(), indent=2))
+        else:
+            return ResponseError(response)
+
+    def perms_delete(self, args):
+        """
+        Usage: deis perms:delete <username> [--app=<app>|--formation=<form>|--admin]
+        """
+        username = args.get('<username>')
+        url = "{}/{}".format(self._parse_perms_args(args), username)
+        response = self._dispatch('delete', url)
+        if response.status_code == requests.codes.no_content:
+            print('Permission deleted.')
+        else:
+            return ResponseError(response)
+
+    # def perms_transfer(self, args):
+    #     """
+    #     Usage: deis perms:delete <username> [--app=<app>|--formation=<form>]
+    #     """
+    #     url = self._parse_perms_args(args)
+    #     username = args.get('<username>')
+
+    def _parse_perms_args(self, args):
+        app = args.get('--app'),
+        formation = args.get('--formation'),
+        admin = args.get('--admin')
+        if admin:
+            url = '/api/admin/perms'
+        elif formation[0]:
+            url = "/api/formations/{}/perms".format(formation[0])
+        else:
+            url = "/api/apps/{}/perms".format(app[0] or self._session.app)
+        return url
+
     def providers(self, args):
         """
         Valid commands for providers:
@@ -1886,6 +1955,10 @@ def parse_args(cmd):
         'open': 'apps:open',
         'logs': 'apps:logs',
         'run': 'apps:run',
+        'sharing': 'perms:list',
+        'sharing:add': 'perms:create',
+        'sharing:remove': 'perms:delete',
+        'sharing:transfer': 'perms:transfer',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]
