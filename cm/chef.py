@@ -9,6 +9,7 @@ import re
 import subprocess
 import tempfile
 import time
+import socket
 
 from celery.canvas import group
 
@@ -37,8 +38,8 @@ try:
         _d[m[0]] = m[1].strip("'").strip('"')
     # set global variables from client.rb
     CHEF_SERVER_URL = _d['chef_server_url']
-    CHEF_NODE_NAME = _d['node_name']
-    CHEF_CLIENT_NAME = _d['node_name']
+    CHEF_NODE_NAME = _d.get('node_name', socket.hostname())
+    CHEF_CLIENT_NAME = _d.get('node_name', socket.hostname())
     CHEF_VALIDATION_NAME = _d['validation_client_name']
     # read the client key
     _client_pem_path = os.path.join(CHEF_CONFIG_PATH, 'client.pem')
