@@ -99,3 +99,6 @@ knife digital_ocean droplet create \
     --bootstrap \
     --run-list $run_list
 set +x
+
+# Need Chef admin permission in order to add and remove nodes and clients
+echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
