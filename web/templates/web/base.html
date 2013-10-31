@@ -3,19 +3,17 @@
 <html>
 
 <head>
-  <title>Deis</title>
+  <title>Deis | {% block title %}{% endblock %}</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="description" content="">
   <meta name="keywords" content="" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="{% static "css/bootstrap.css" %}" media="screen" type="text/css">
-  <link rel="stylesheet" href="{% static "css/bootstrap-responsive.css" %}" type="text/css">
+  <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" media="screen" type="text/css">
+  <link rel="stylesheet" href="{% static "css/bootstrap-responsive.min.css" %}" type="text/css">
   <link rel="stylesheet" href="{% static "css/main.css" %}" type="text/css">
+  <link rel="stylesheet" href="{% static "css/deis-controller.css" %}" type="text/css">
   <link rel="shortcut icon" href="{% static "favicon.ico" %}">
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
   <meta name='robots' content='noindex,nofollow' />
   {% block extrahead %}{% endblock %}
 </head>
@@ -24,7 +22,9 @@
       <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
   <![endif]-->
 
+  {% ifequal page 'support' %}
   <a class="fork" href="http://github.com/opdemand/deis"><div class="forkImage"></div></a>
+  {% endifequal %}
   <div class="container">
     <div class="row">
       <div class="span3 column_calc menu">
@@ -34,6 +34,8 @@
             <li class="divider"></li>
             {% if user.is_authenticated %}
             <li class="navitem{% ifequal page "formations" %} selected pink{% endifequal %}"><a href="{% url "formations" %}">Formations</a></li>
+            <li class="divider"></li>
+            <li class="navitem{% ifequal page "apps" %} selected blue{% endifequal %}"><a href="{% url "apps" %}">Apps</a></li>
             <li class="divider"></li>
             <li class="navitem{% ifequal page "account" %} selected green{% endifequal %}"><a href="{% url "account" %}">Account</a></li>
             <li class="divider"></li>
@@ -58,12 +60,23 @@
       </div>
 
       <div class="span8 column_calc contents">
-        <div class="doc-content">{% block content %}{% endblock %}</div>
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
       </div>
 
     </div> <!-- .row -->
   </div> <!-- .main_section container-->
 
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="js/jquery-1.10.2.min.js"><\/script>')</script>
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>
 </body>
 
 </html>

@@ -6,7 +6,7 @@ $(function(){
     $('footer').css('margin-top', '0');
     $('.nav-border').css('height', '600');
     pageHeight = $(document).height();
-    console.log(pageHeight);
+    // console.log(pageHeight);
     $('.nav-border').css('height', pageHeight);
 
     var margin = pageHeight - 511 - 158;
@@ -42,7 +42,7 @@ $(function(){
 
   //If menu is closed when clicked, expand it
   $('.toctree-l1 > a').click(function() {
-    
+
     //Make the titles of open accordions dead links
     if ($(this).attr('state') == 'open') {return false;}
 
