@@ -1225,7 +1225,6 @@ class DeisClient(object):
                         selected_key[2], selected_key[3]
                     )
                 }
-                
                 sys.stdout.write("Uploading {} to Deis...".format(selected_key[1]))
             else:
                 body = {
@@ -1234,7 +1233,6 @@ class DeisClient(object):
                         selected_key[2], selected_key[3]
                     )
                 }
-                
                 sys.stdout.write("Uploading {} to Deis...".format(selected_key[4]))
             sys.stdout.flush()
             response = self._dispatch('post', '/api/keys', json.dumps(body))
