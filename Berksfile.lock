@@ -1,5 +1,5 @@
 {
-  "dependencies": {
+  "sources": {
     "apt": {
       "locked_version": "2.1.2"
     },
