@@ -21,7 +21,7 @@ CHEF_CONFIG_PATH = '/etc/chef'
 CHEF_INSTALL_TYPE = 'gems'
 CHEF_RUBY_VERSION = '1.9.1'
 CHEF_ENVIRONMENT = '_default'
-CHEF_CLIENT_VERSION = '11.4.4'
+CHEF_CLIENT_VERSION = '11.6.2'
 
 # load chef config using CHEF_CONFIG_PATH
 try:
