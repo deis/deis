@@ -33,7 +33,7 @@ fi
 #################
 node_name=deis-controller
 run_list="recipe[deis::controller]"
-chef_version=11.4.4
+chef_version=11.6.2
 
 #######################
 # Amazon EC2 settings #
