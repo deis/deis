@@ -1,0 +1,46 @@
+*Please note: Deis is still under active development. It should not yet be used in production.*
+
+Creating your own PaaS requires provisioning a Deis controller on a cloud
+provider of your choice, then registering an account on that controller with
+the Deis client.
+
+Regardless of whether your controller is hosted with Amazon EC2, Rackspace,
+or DigitalOcean, it can create and manage nodes on any of those cloud providers.
+
+Prerequisites
+-------------
+
+To install a Deis controller, you will need `git`_, `RubyGems`_, and an account
+on a Chef server accessible with `knife`_.
+
+1. Clone the Deis Repository
+----------------------------
+
+.. code-block:: console
+
+    $ git clone https://github.com/opdemand/deis.git
+    $ cd deis
+
+Cloning the default master branch will provide you with the latest development
+version of Deis. If you instead want to deploy the latest stable release,
+checkout the most recent tag using ``git checkout v0.1.1``, for example.
+
+2. Configure the Chef Server
+----------------------------
+
+Deis requires a Chef Server. `Sign up for a free Hosted Chef account`_ if you
+don’t have your own server. You will also need a `Ruby`_ runtime with
+`RubyGems`_ for the required dependencies.
+
+.. code-block:: console
+
+    $ gem install bundler  # install the bundler tool
+    $ bundle install       # install ruby dependencies
+    $ berks install        # install cookbooks to your berkshelf
+    $ berks upload         # upload berkshelf to the chef server
+
+.. _`git`: http://git-scm.com
+.. _`RubyGems`: http://rubygems.org/pages/download
+.. _`knife`: http://docs.opscode.com/knife.html
+.. _`Sign up for a free Hosted Chef account`: https://getchef.opscode.com/signup
+.. _`Ruby`: http://ruby-lang.org/

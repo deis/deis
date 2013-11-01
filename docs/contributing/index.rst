@@ -16,4 +16,5 @@ Contributing
     standards
     community
     conduct
+    releases
 

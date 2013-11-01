@@ -147,7 +147,7 @@ to route requests to your application.
 
            To learn more, use `deis help` or visit http://deis.io
 
-    To git@deis.mattboersma.com:nimbus-pamphlet.git
+    To git@198.51.100.22:nimbus-pamphlet.git
      * [new branch]      master -> master
 
     $ curl -s http://ec2-198.51.100.22.us-west-2.compute.amazonaws.com
