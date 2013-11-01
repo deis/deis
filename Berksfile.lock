@@ -1,5 +1,5 @@
 {
-  "sources": {
+  "dependencies": {
     "apt": {
       "locked_version": "2.1.2"
     },
@@ -12,7 +12,7 @@
     "deis": {
       "locked_version": "0.1.2",
       "git": "https://github.com/opdemand/deis-cookbook.git",
-      "ref": "057bb62dcd9ec868a8d564ed07ab1c532315d93f"
+      "ref": "6a8f7ae2330b668500e8c760358de7d6fdb8e296"
     }
   }
 }
