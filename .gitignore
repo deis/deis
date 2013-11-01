@@ -50,5 +50,18 @@ htmlcov/
 .ruby-version
 venv/
 .vagrant
+Vagrantfile.local
 *.swp
+.bundle
 
+# Chef setup
+.chef
+contrib/vagrant/knife-config/admin.pem
+contrib/vagrant/knife-config/chef-validator.pem
+contrib/vagrant/nodes/
+
+# Broken symlinks that appear when mounting the codebase onto a vagrant VM
+# See Vagrantfile.local.example
+logs
+static
+venv

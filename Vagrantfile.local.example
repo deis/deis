@@ -1,0 +1,53 @@
+=begin
+This file augments the standard Vagrantfile with some developer-specific settings.
+You can override any settings you want. This file is in .gitignore, so can be specific
+to your own environment.
+
+By default this file mounts your local development version of the Deis codebase onto the
+Deis Controller. It does this by mounting your code onto the VM at /vagrant, then moving
+the original installed code base to /opt/deis/controller_ORIG and symlinking
+/opt/deis/controller to the mounted code at /vagrant.
+
+Because the deployed environment creates some extra files, like /deis/local_settings.py
+for example, these need to be then symlinked into the symlinked mount. Sound complicated?
+Yo dawg, I heard you like symlinks.
+=end
+
+HOST_CODE_PATH = '/opt/deis/controller'
+HOST_BAK_PATH = "#{HOST_CODE_PATH}_ORIG"
+
+# These paths are either in .gitignore or created after installation.
+# Therefore they need to be linked into the dev codebase.
+symlinks = [
+  'deis/local_settings.py',
+  '.secret_key',
+  'logs',
+  'static',
+  'venv'
+].map { |path|
+  "ln -s #{HOST_BAK_PATH}/#{path} #{HOST_CODE_PATH}/#{path}"
+}.join("\n")
+
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :virtualbox do |vb|
+    #vb.customize ["modifyvm", :id, "--memory", "512"]
+  end
+
+  # Mount the entire Deis codebase onto the VM at /vagrant
+  # The first param is relative to the location of this file
+  config.vm.synced_folder "../../../", "/vagrant", owner: 'deis', group: 'deis'
+
+  config.vm.provision :shell, inline: <<-SCRIPT
+    if [ ! -d #{HOST_BAK_PATH} ]; then
+      mv #{HOST_CODE_PATH} #{HOST_BAK_PATH}
+      ln -s /vagrant #{HOST_CODE_PATH}
+
+      # Paths added after installation need linking into the codebase
+      #{symlinks}
+
+      chown -R deis:deis #{HOST_CODE_PATH}
+    fi
+  SCRIPT
+
+end
