@@ -1621,7 +1621,7 @@ class DeisClient(object):
         """
         return self.providers_list(args)
 
-    def providers_create(self, args):
+    def providers_create(self, args):  # noqa
         """
         Create a provider for use by Deis
 
@@ -1679,7 +1679,7 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def providers_discover(self, args):
+    def providers_discover(self, args):  # noqa
         """
         Discover and update provider credentials
 
