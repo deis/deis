@@ -1757,25 +1757,30 @@ class DeisClient(object):
         # Check for locally booted Deis Controller VM
         try:
             running_vms = subprocess.check_output(
-                    ['vboxmanage', 'list', 'runningvms'],
-                    stderr=subprocess.PIPE)
+                ['vboxmanage', 'list', 'runningvms'],
+                stderr=subprocess.PIPE
+            )
         except subprocess.CalledProcessError:
             running_vms = ""
-        # Vagrant internally names a running VM using the folder name in which the Vagrantfile resides, eg;
-        # my-deis-code-folder_default_1383326629
+        # Vagrant internally names a running VM using the folder name in which the Vagrantfile
+        # resides, eg; my-deis-code-folder_default_1383326629
         deis_codebase_folder = self._session.git_root().split('/')[-1]
         if deis_codebase_folder in running_vms:
             print("Detected locally running Deis Controller VM")
-            # In order for the Controller to be able to boot Vagrant VMs it needs to run commands on the host machine.
-            # It does this via an SSH server. In order to access that server we need to send the current user's name
-            # and IP address.
+            # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
+            # on the host machine. It does this via an SSH server. In order to access that server
+            # we need to send the current user's name and IP address.
             try:
                 user = subprocess.check_output(
                     "whoami",
                     stderr=subprocess.PIPE
                 ).strip()
                 ip = subprocess.check_output(
-                    "/sbin/ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' | head -n1",
+                    "/sbin/ifconfig | \
+                    grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | \
+                    grep -Eo '([0-9]*\.){3}[0-9]*' | \
+                    grep -v '127.0.0.1' | \
+                    head -n1",
                     stderr=subprocess.PIPE,
                     shell=True
                 ).strip()
@@ -1797,7 +1802,6 @@ class DeisClient(object):
                 raise ResponseError(response)
         else:
             print("No Vagrant VMs detected")
-
 
     def providers_info(self, args):
         """
