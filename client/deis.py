@@ -1627,7 +1627,8 @@ class DeisClient(object):
 
         This command is only necessary when adding a duplicate set of
         credentials for a provider. User accounts start with empty providers,
-        EC2 and Rackspace by default, which should be updated in place.
+        EC2, Rackspace, and DigitalOcean by default, which should be updated
+        in place.
 
         Use `providers:discover` to update the credentials for the default
         providers created with your account.

@@ -23,8 +23,8 @@ provide a private PaaS that is lightweight and flexible.
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
 anything using Heroku Buildpacks, Docker images or Chef recipes. Deis is
-designed to work with any cloud provider. Currently Amazon EC2 and Rackspace
-Cloud are supported.
+designed to work with any cloud provider. Currently Amazon EC2, Rackspace,
+and DigitalOcean are supported.
 
 
 Why Deis?
@@ -34,8 +34,8 @@ Deploy anything
 ---------------
 
 Deploy a wide range of languages and frameworks with a simple git push
-using Heroku Buildpacks or Dockerfiles. Use custom Chef layers to deploy
-databases, middleware and other add-on services.
+using Heroku Buildpacks or (coming soon) Dockerfiles. Use custom Chef layers
+to deploy databases, middleware and other add-on services.
 
 
 Control everything
@@ -78,8 +78,8 @@ You should know the fully-qualified domain name of an existing
 Deis controller. To set up a Deis controller, see the
 `Installation`_ documentation.
 
-Registration will discover SSH keys automatically and use the
-`standard environment variables`_ to configure the EC2 provider.
+Registration will discover SSH keys automatically and use environment variables
+to configure Amazon EC2, Rackspace, and DigitalOcean providers.
 
 .. code-block:: console
 
