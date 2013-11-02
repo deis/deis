@@ -1535,8 +1535,11 @@ class DeisClient(object):
         """
         formation = args.get('<formation>')
         body = {}
+        runtimes = True
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
+            if (typ, count) == ('runtime', '0'):
+                runtimes = False
             body.update({typ: int(count)})
         print('Scaling nodes... but first, coffee!')
         try:
@@ -1551,7 +1554,9 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
-            print('Use `deis create --formation={}` to create an application'.format(formation))
+            if runtimes:
+                print('Use `deis create --formation={}` to create an application'.format(
+                      formation))
         else:
             raise ResponseError(response)
 
