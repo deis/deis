@@ -15,29 +15,11 @@ VirtualBox.
 3. Provision a Deis Controller
 ------------------------------
 
-The `Amazon EC2 API Tools`_ are used by the provisioning script to create an
-EC2 Security Group and Keypair. Please install them and ensure they are
-available in your $PATH:
+The ``Vagrantfile`` in the project root has the configuration for a Deis
+controller. It will first need to download a base image "deis-base," which
+may take a while.
 
-.. code-block:: console
-
-    $ ec2-describe-regions  # List regions to see if EC2 tools work
-    REGION  eu-west-1   ec2.eu-west-1.amazonaws.com
-    REGION  sa-east-1   ec2.sa-east-1.amazonaws.com
-    ...
-
-The `knife`_ EC2 plugin is used to bootstrap the controller. It should
-have been installed by ``bundle install``:
-
-.. code-block:: console
-
-    $ knife ec2 flavor list  # List instance types to see if knife-ec2 works
-    ID                                       Name
-    c1.medium                                High-CPU Medium
-    c1.xlarge                                High-CPU Extra Large
-    ...
-
-Run the EC2 provisioning script, which takes several minutes to complete:
+Run the Vagrant provisioning script, which takes several minutes to complete:
 
 .. code-block:: console
 
