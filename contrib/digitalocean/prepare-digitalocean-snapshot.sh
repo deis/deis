@@ -24,14 +24,24 @@ apt-get upgrade -yq
 # install HTTPS transport support
 apt-get install -qy apt-transport-https
 
+# Preinstall Deis recipe packages
+apt-get install -yq python-setuptools python-pip debootstrap git make rsyslog
+
+# Add the Nginx repository key to our local keychain
+# using apt-key finger you can check the fingerprint matches 573B FD6B 3D8F BC64 1079  A6AB ABF5 BD82 7BD9 BF62
+curl http://nginx.org/keys/nginx_signing.key | apt-key add -
+
+# Add the Nginx repository to our apt sources list
+echo deb http://nginx.org/packages/ubuntu precise nginx > /etc/apt/sources.list.d/nginx-ppa.list
+
 # install docker's dependencies
 apt-get install python-software-properties -y
 
-# Add the Docker repository key to your local keychain
+# Add the Docker repository key to our local keychain
 # using apt-key finger you can check the fingerprint matches 36A1 D786 9245 C895 0F96 6E92 D857 6A8B A88D 21E9
 curl https://get.docker.io/gpg | apt-key add -
 
-# Add the Docker repository to your apt sources list.
+# Add the Docker repository to our apt sources list.
 echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
 
 # upgrade to latest packages
