@@ -14,6 +14,9 @@
 #   5. Create a new box with `vagrant package && cp -f package.box contrib/vagrant/deis-base.box`
 #
 
+# Remove old kernel(s)
+dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
+
 # Remove any temporary work files, including the postinstall.sh script
 rm -f /home/${account}/{*.iso,postinstall*.sh}
 
@@ -32,12 +35,11 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.6.4 git make python-setuptools python-pip -yq
 
 # create buildstep docker image
-git clone https://github.com/opdemand/buildstep.git
+git clone -b deis https://github.com/opdemand/buildstep.git
 cd buildstep
-git checkout deis
 make
 cd ..
 rm -rf buildstep

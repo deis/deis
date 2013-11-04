@@ -14,6 +14,10 @@
 #   6. Distribute the AMI to other regions using `ec2-copy-image`
 #   7. Create/update your Deis flavors to use your new AMIs
 #
+
+# Remove old kernel(s)
+dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
+
 apt-get install python-software-properties -y
 
 # Add the Docker repository key to your local keychain
@@ -28,7 +32,7 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.6.4 curl git make python-setuptools python-pip -yq
 
 # create buildstep docker image
 git clone -b deis https://github.com/opdemand/buildstep.git

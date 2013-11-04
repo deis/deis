@@ -14,6 +14,9 @@
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 
+# Remove old kernel(s)
+dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
+
 # upgrade to latest packages
 apt-get update
 apt-get upgrade -yq
@@ -36,12 +39,11 @@ apt-get update
 apt-get -qy upgrade
 
 # install required packages
-apt-get install lxc-docker curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.6.4 curl git make python-setuptools python-pip -yq
 
 # create buildstep docker image
 git clone -b deis https://github.com/opdemand/buildstep.git
 cd buildstep
-git checkout deis
 make
 cd ..
 rm -rf buildstep
