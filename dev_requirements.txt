@@ -3,7 +3,7 @@ boto==2.15.0
 celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
 Cython==0.19.2
 Django==1.5.5
-django-allauth==0.13.0
+django-allauth==0.14.1
 django-celery==3.0.23
 django-json-field==0.5.5
 django-yamlfield==0.5
@@ -14,19 +14,19 @@ gunicorn==18.0
 paramiko==1.12.0
 psycopg2==2.5.1
 pycrypto==2.6.1
-pyrax==1.5.1
+pyrax==1.6.1
 PyYAML==3.10
 South==0.8.2
 
 # Deis client requirements
 docopt==0.6.1
 #PyYAML==3.10
-requests==2.0.0
+requests==2.0.1
 
 # Deis documentation requirements
 Sphinx>=1.2b3
 smartypants>=1.8.2
-sphinxcontrib-httpdomain>=1.1.9
+sphinxcontrib-httpdomain>=1.2.0
 
 # Run "make coverage" for the % of code exercised during tests
 coverage>=3.7
@@ -35,7 +35,7 @@ coverage>=3.7
 docutils>=0.11
 
 # Run "make flake8" to check python syntax and style
-flake8>=2.0
+flake8>=2.1.0
 
 # Python expect is used to automate client-driven tests
 pexpect-u>=2.5.1

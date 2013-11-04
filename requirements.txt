@@ -3,7 +3,7 @@ boto==2.15.0
 celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
 Cython==0.19.2
 Django==1.5.5
-django-allauth==0.13.0
+django-allauth==0.14.1
 django-celery==3.0.23
 django-json-field==0.5.5
 django-yamlfield==0.5
@@ -14,6 +14,6 @@ gunicorn==18.0
 paramiko==1.12.0
 psycopg2==2.5.1
 pycrypto==2.6.1
-pyrax==1.5.1
+pyrax==1.6.1
 PyYAML==3.10
 South==0.8.2
