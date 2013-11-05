@@ -568,6 +568,8 @@ class DeisClient(object):
         --email=EMAIL          provide an email address
         """
         controller = args['<controller>']
+        if not urlparse.urlparse(controller).scheme:
+            controller = "http://{}".format(controller)
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
@@ -635,6 +637,8 @@ class DeisClient(object):
         Usage: deis auth:login <controller> [--username=<username> --password=<password>]
         """
         controller = args['<controller>']
+        if not urlparse.urlparse(controller).scheme:
+            controller = "http://{}".format(controller)
         username = args.get('--username')
         headers = {}
         if not username:
