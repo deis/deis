@@ -77,7 +77,7 @@ def build_node(node):
     # Make a folder for the VM with its own Vagrantfile. Vagrant will then create a .vagrant folder
     # there too when it first gets booted.
     node_dir = HOST_NODES_DIR + '/' + uid
-    mkdir = 'mkdir ' + node_dir
+    mkdir = 'mkdir -p ' + node_dir
     cp_tpl = 'echo "' + result.replace('"', '\\"') + '" > ' + node_dir + '/Vagrantfile'
     _host_ssh(commands=[mkdir, cp_tpl], creds=node['creds'])
 
@@ -155,15 +155,15 @@ def _host_ssh(creds={}, commands=[]):
     # TODO: Find a way of passing this error onto the CLI client.
     try:
         subprocess.check_call([
-            'nc', '-z', '-w2', creds['ip'], '22'
+            'nc', '-z', '-w2', creds['host'], '22'
         ], stderr=subprocess.PIPE)
     except subprocess.CalledProcessError:
-        raise RuntimeError("Couldn't ping port 22 at host with IP " + creds['ip'])
+        raise RuntimeError("Couldn't ping port 22 at host with IP " + creds['host'])
 
-    ssh = connect_ssh(creds['user'], creds['ip'], 22, PKEY, timeout=120)
+    ssh = connect_ssh(creds['user'], creds['host'], 22, PKEY, timeout=120)
     result, status = exec_ssh(ssh, command)
     if status > 0:
         raise RuntimeError(
-            'SSH to Vagrant host error: ' + result +
-            'Command: ' + command)
+            'SSH to Vagrant host error: ' + result.decode('utf-8') +
+            'Command: ' + command.decode('utf-8'))
     return result

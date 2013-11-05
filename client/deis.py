@@ -1775,12 +1775,8 @@ class DeisClient(object):
                     "whoami",
                     stderr=subprocess.PIPE
                 ).strip()
-                ip = subprocess.check_output(
-                    "/sbin/ifconfig | \
-                    grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | \
-                    grep -Eo '([0-9]*\.){3}[0-9]*' | \
-                    grep -v '127.0.0.1' | \
-                    head -n1",
+                hostname = subprocess.check_output(
+                    "hostname",
                     stderr=subprocess.PIPE,
                     shell=True
                 ).strip()
@@ -1789,7 +1785,7 @@ class DeisClient(object):
                 sys.exit(1)
             creds = {
                 'user': user,
-                'ip': ip
+                'host': hostname + ".local"
             }
             body = {'creds': json.dumps(creds)}
             sys.stdout.write('Activating Vagrant as a provider... ')

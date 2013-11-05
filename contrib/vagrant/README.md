@@ -62,9 +62,10 @@ you will need a running SSH server open on port 22.
    `service deis-server restart` and/or `service deis-worker restart` on the VM for your changes to instantly take effect.
    * It's worth having a read of `Vagrantfile.local.example`
 
-7. If you want to hack on the command line client (`/client/deis.py`), install your local dev version rather than
+7. If you want to hack on the command line client (`client/deis.py`), install your local dev version rather than
 the one from Pip.
-    * `cd deis && make install` This will symlink the dev version to your executables path.
+    * `cd deis && make install` This installs the client into your executables path.
+    * `sudo rm /usr/local/bin/deis && sudo ln ./deis.py /usr/local/bin/deis` This will symlink the dev version to your executables path.
     * Your deis controller is available at http://deis-controller.local so you can register with;
     `deis register http://deis-controller.local`
 
