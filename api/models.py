@@ -109,6 +109,7 @@ class Provider(UuidAuditedModel):
         ('mock', 'Mock Reference Provider'),
         ('rackspace', 'Rackspace Open Cloud'),
         ('static', 'Static Node'),
+        ('digitalocean', 'Digital Ocean'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)

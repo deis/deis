@@ -63,7 +63,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 
 class Session(requests.Session):
@@ -399,11 +399,11 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
-            formation = data['id']
-            print("done, created {}".format(formation))
+            app_id = data['id']
+            print("done, created {}".format(app_id))
             # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc
-            git_remote = "git@{hostname}:{formation}.git".format(**locals())
+            git_remote = "git@{hostname}:{app_id}.git".format(**locals())
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
@@ -515,7 +515,7 @@ class DeisClient(object):
                 webbrowser.open('http://{}/'.format(domain))
                 return domain
             else:
-                print('No proxies found. Use `deis layers:scale proxy=1` to scale up.')
+                print('No proxies found. Use `deis nodes:scale myformation proxy=1` to scale up.')
         else:
             raise ResponseError(response)
 
@@ -1277,22 +1277,33 @@ class DeisClient(object):
         """
         Create a layer of nodes
 
-        Usage: deis layers:create <formation> <id> <flavor> [--proxy --runtime] [options]
+        Usage: deis layers:create <formation> <id> <flavor> [options]
 
-        SSH Options:
-
+        Options:
+        --proxy=<yn>                    layer can be used for proxy [default: y]
+        --runtime=<yn>                  layer can be used for runtime [default: y]
         --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
         --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
         --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+        --ssh_port=<port>               port number for ssh comm (default: 22)
 
         """
         formation = args.get('<formation>')
         body = {'id': args['<id>'], 'flavor': args['<flavor>']}
-        for opt in ('--formation', '--proxy', '--runtime',
-                    '--ssh_username', '--ssh_private_key', '--ssh_public_key'):
+        for opt in ('--formation', '--ssh_username', '--ssh_private_key',
+                    '--ssh_public_key'):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
+        o = args.get('--ssh_port')
+        if o:
+            body.update({'ssh_port': int(o)})
+        for opt in ('--proxy', '--runtime'):
+            o = args.get(opt)
+            if o and str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+                body.update({opt.strip('-'): False})
+            else:
+                body.update({opt.strip('-'): True})
         sys.stdout.write("Creating {} layer... ".format(args['<id>']))
         sys.stdout.flush()
         try:
@@ -1362,6 +1373,51 @@ class DeisClient(object):
             format_str = "{id} => flavor: {flavor}, proxy: {proxy}, runtime: {runtime}"
             for item in data['results']:
                 print(format_str.format(**item))
+        else:
+            raise ResponseError(response)
+
+    def layers_update(self, args):
+        """
+        Create a layer of nodes
+
+        Usage: deis layers:update <formation> <id> [options]
+
+        Options:
+
+        --proxy=<yn>                    layer can be used for proxy [default: y]
+        --runtime=<yn>                  layer can be used for runtime [default: y]
+        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
+        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
+        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
+        --ssh_port=<port>               port number for ssh comm (default: 22)
+
+        """
+        formation = args.get('<formation>')
+        layer = args['<id>']  # noqa
+        body = {'id': args['<id>']}
+        for opt in ('--ssh_username', '--ssh_private_key', '--ssh_public_key',
+                    '--ssh_port'):
+            o = args.get(opt)
+            if o:
+                body.update({opt.strip('-'): o})
+        o = args.get('--ssh_port')
+        if o:
+            body.update({'ssh_port': int(o)})
+        for opt in ('--proxy', '--runtime'):
+            o = args.get(opt)
+            if o is not None:
+                if str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
+                    body.update({opt.strip('-'): False})
+                else:
+                    body.update({opt.strip('-'): True})
+        sys.stdout.write("Updating {} layer... ".format(args['<id>']))
+        sys.stdout.flush()
+        response = self._dispatch(
+            'patch', "/api/formations/{formation}/layers/{layer}".format(**locals()),
+            json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print('done.')
+            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -1571,13 +1627,15 @@ class DeisClient(object):
 
         This command is only necessary when adding a duplicate set of
         credentials for a provider. User accounts start with empty providers,
-        EC2 and Rackspace by default, which should be updated in place.
+        EC2, Rackspace, and DigitalOcean by default, which should be updated
+        in place.
 
         Use `providers:discover` to update the credentials for the default
         providers created with your account.
 
         Usage: deis providers:create <id> <type> <creds>
         """
+        # TODO: This function has a McCabe of 13. Refactor for simplicity.
         type = args.get('<type>')  # @ReservedAssignment
         if type == 'ec2':
             # read creds from envvars
@@ -1600,6 +1658,14 @@ class DeisClient(object):
                 'api_key': os.environ['RACKSPACE_API_KEY'],
                 'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace'),
             }
+        elif type == 'digitalocean':
+            # read creds from envvars
+            for k in ('DIGITALOCEAN_CLIENT_ID', 'DIGITALOCEAN_API_KEY'):
+                if not k in os.environ:
+                    msg = "Missing environment variable: {}".format(k)
+                    raise EnvironmentError(msg)
+            creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
+                     'api_key': os.environ['DIGITALOCEAN_API_KEY']}
         else:
             creds = json.loads(args.get('<creds>'))
         id = args.get('<id>')  # @ReservedAssignment
@@ -1644,7 +1710,7 @@ class DeisClient(object):
                 else:
                     raise ResponseError(response)
         else:
-            print('No credentials discovered, did you install the EC2 Command Line tools?')
+            print('No EC2 credentials discovered. Did you install the EC2 Command Line tools?')
         if 'RACKSPACE_API_KEY' in os.environ and 'RACKSPACE_USERNAME' in os.environ:
             print("Found Rackspace credentials: {}".format(os.environ['RACKSPACE_API_KEY']))
             inp = raw_input('Import these credentials? (y/n) : ')
@@ -1664,7 +1730,29 @@ class DeisClient(object):
                 else:
                     raise ResponseError(response)
         else:
-            print('No Rackspace credentials discovered')
+            print('No Rackspace credentials discovered.')
+        if 'DIGITALOCEAN_API_KEY' in os.environ and 'DIGITALOCEAN_CLIENT_ID' in os.environ:
+            print("Found Digitalocean credentials: {}".format(
+                os.environ['DIGITALOCEAN_CLIENT_ID']))
+            inp = raw_input('Import these credentials? (y/n) : ')
+            if inp.lower().strip('\n') != 'y':
+                print('Aborting.')
+            else:
+                creds = {
+                    'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
+                    'api_key': os.environ['DIGITALOCEAN_API_KEY'],
+                }
+                body = {'creds': json.dumps(creds)}
+                sys.stdout.write('Uploading Digitalocean credentials... ')
+                sys.stdout.flush()
+                response = self._dispatch('patch', 'api/providers/digitalocean',
+                                          json.dumps(body))
+                if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                    print('done')
+                else:
+                    raise ResponseError(response)
+        else:
+            print('No Digitalocean credentials discovered.')
 
     def providers_info(self, args):
         """

@@ -1,16 +1,16 @@
 {
   "sources": {
     "apt": {
-      "locked_version": "2.1.2"
+      "locked_version": "2.3.0"
     },
     "rsyslog": {
-      "locked_version": "1.8.0"
+      "locked_version": "1.9.0"
     },
     "sudo": {
-      "locked_version": "2.2.0"
+      "locked_version": "2.2.2"
     },
     "deis": {
-      "locked_version": "0.1.1"
+      "locked_version": "0.2.0",
     }
   }
 }

@@ -32,7 +32,7 @@ else:
 
 # pylint: disable=W0142
 setup(name='deis',
-      version='0.1.1',
+      version='0.2.0',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis',
       author='OpDemand',

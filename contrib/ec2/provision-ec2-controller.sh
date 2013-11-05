@@ -33,7 +33,7 @@ fi
 #################
 node_name=deis-controller
 run_list="recipe[deis::controller]"
-chef_version=11.4.4
+chef_version=11.6.2
 
 #######################
 # Amazon EC2 settings #
@@ -42,21 +42,21 @@ region=$1
 # see contrib/prepare-ubuntu-ami.sh for instructions
 # on creating your own deis-optmized AMIs
 if [ "$region" == "ap-northeast-1" ]; then
-  image=ami-0b45de0a
+  image=ami-39bfda38
 elif [ "$region" == "ap-southeast-1" ]; then
-  image=ami-eaf9b3b8
+  image=ami-c0613492
 elif [ "$region" == "ap-southeast-2" ]; then
-  image=ami-e9970bd3
+  image=ami-9741ddad
 elif [ "$region" == "eu-west-1" ]; then
-  image=ami-c021c1b7
+  image=ami-39bc5e4e
 elif [ "$region" == "sa-east-1" ]; then
-  image=ami-b5da7ca8
+  image=ami-0775d31a
 elif [ "$region" == "us-east-1" ]; then
-  image=ami-a30b57ca
+  image=ami-fa99c193
 elif [ "$region" == "us-west-1" ]; then
-  image=ami-30e3d475
+  image=ami-802412c5
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-ca63fafa
+  image=ami-0e7be33e
 else
   echo "Cannot find AMI for region: $region"
   exit 1
@@ -125,3 +125,6 @@ knife ec2 server create \
  --ebs-size $ebs_size \
  --run-list $run_list
 set +x
+
+# Need Chef admin permission in order to add and remove nodes and clients
+echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"

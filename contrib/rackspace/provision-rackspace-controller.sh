@@ -29,7 +29,7 @@ fi
 #################
 node_name=deis-controller
 run_list="recipe[deis::controller]"
-chef_version=11.4.4
+chef_version=11.6.2
 
 ######################
 # Rackspace settings #
@@ -88,3 +88,6 @@ knife rackspace server create \
  --node-name $node_name \
  --run-list $run_list
 set +x
+
+# Need Chef admin permission in order to add and remove nodes and clients
+echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"

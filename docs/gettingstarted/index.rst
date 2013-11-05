@@ -11,6 +11,5 @@ Getting Started
     :maxdepth: 1
 
     concepts
-    installation
-    usage    
-    tutorial
+    terms/index
+    usage
