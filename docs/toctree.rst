@@ -13,6 +13,7 @@ This documentation has the following resources:
    index
    gettingstarted/index
    installation/index
+   terms/index
    contributing/index
    tutorial/index
    client/index
