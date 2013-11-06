@@ -9,16 +9,25 @@ function echo_color {
   echo -e "\033[1m$1\033[0m"
 }
 
+function usage {
+  echo_color "Usage: provision-digitalocean-controller.sh <region-id>"
+}
+
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 
-echo_color "Provisioning a deis controller on Digital Ocean!"
+if [[ -z $1 ]]; then
+  usage
+  exit 1
+fi
 
 # check for Deis' general dependencies
 if ! $CONTRIB_DIR/check-deis-deps.sh; then
   echo 'Deis is missing some dependencies.'
   exit 1
 fi
+
+echo_color "Provisioning a deis controller on Digital Ocean!"
 
 # connection details for using digital ocean's API
 client_id=$DIGITALOCEAN_CLIENT_ID
@@ -46,11 +55,22 @@ chef_version=11.6.2
 ##########################
 
 # the name of the location we want to work with
-location_id=$1
+region_id=$1
 # The snapshot that we want to use (deis-base)
 image_id=$(knife digital_ocean image list | grep "deis-base" | awk '{print $1}')
 # the ID of the size (1GB)
 size_id=$(knife digital_ocean size list | grep "2GB" | awk '{print $1}')
+
+if [[ -z $image_id ]]; then
+  echo "Can't find saved image \"deis-base\" in region $region_id. Please follow the"
+  echo "instructions in prepare-digitalocean-snapshot.sh before provisioning a Deis controller."
+  exit 1
+fi
+
+if [[ -z $size_id ]]; then
+  echo "Cannot find a droplet with the size '2GB' in region $region_id."
+  exit 1
+fi
 
 ################
 # SSH settings #
