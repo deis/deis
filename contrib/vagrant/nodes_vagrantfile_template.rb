@@ -8,11 +8,8 @@ Vagrant.configure("2") do |config|
   # Avahi-daemon will broadcast the node's address as $id.local
   config.vm.host_name = "$id"
 
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network. IP will be fetched via DCHP and associated to '$id.local'
-  # using avahi-daemon
-  config.vm.network :public_network
+  # IP will be associated to '$id.local' using avahi-daemon
+  config.vm.network :private_network, ip: "$ipaddress"
 
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "$memory"]

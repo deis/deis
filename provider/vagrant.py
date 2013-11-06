@@ -12,6 +12,7 @@ import subprocess
 import uuid
 
 from api.models import Layer
+from api.models import Node
 
 # Collect details for connecting to the host machine
 HOST_NODES_DIR = open('/home/vagrant/.host_nodes_dir').read().strip()
@@ -72,7 +73,11 @@ def build_node(node):
     node['params'].setdefault('memory', '512')
     template = open('/opt/deis/controller/contrib/vagrant/nodes_vagrantfile_template.rb')
     raw = string.Template(template.read())
-    result = raw.substitute({'id': uid, 'memory': node['params']['memory']})
+    result = raw.substitute({
+        'id': uid,
+        'ipaddress': '192.168.61.' + str(Node.objects.all().count() + 100),
+        'memory': node['params']['memory']
+    })
 
     # Make a folder for the VM with its own Vagrantfile. Vagrant will then create a .vagrant folder
     # there too when it first gets booted.

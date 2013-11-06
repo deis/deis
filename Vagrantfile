@@ -11,11 +11,8 @@ Vagrant.configure("2") do |config|
   # Avahi-daemon will broadcast the server's address as deis-controller.local
   config.vm.host_name = "deis-controller"
 
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network. IP will be fetched via DCHP and associated to 'chefserver.local'
-  # using avahi-daemon
-  config.vm.network :public_network
+  # IP will be associated to 'chefserver.local' using avahi-daemon
+  config.vm.network :private_network, ip: "192.168.61.100"
 
   # Chef Server requires at least 1G of RAM to install.
   # You may be able to run it with less once it's installed.

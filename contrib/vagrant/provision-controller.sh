@@ -20,8 +20,8 @@ if [ ! -f /etc/ssh/sshd_config ] && [ ! -f /etc/sshd_config ]; then
   exit 1
 fi
 
-# Make sure avahi-daemon is installed
-if ! which avahi-daemon > /dev/null; then
+# Make sure avahi-daemon is installed and running
+if ! pgrep avahi-daemon >/dev/null; then
   echo 'Please install avahi-daemon to broadcast your hostname to the local network.'
   exit 1
 fi
@@ -104,11 +104,11 @@ set +x
 # The IP address detected by Chef is the VM's eth0 10.0.0.0 range address.
 # However we need the 192 range address set on eth1.
 echo_color "Updating the IP address stored on the Chef Server for the Deis Controller node..."
-ipaddress=$(ping -c1 deis-controller.local | head -n1 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
-knife exec -E "nodes.transform(\"name:deis-controller\") { \
-  |n| n.normal_attrs[\"network\"][\"ipaddress\"] = "$ipaddress"; \
-  n.save \
-}"
+knife exec -E 'nodes.transform("name:deis-controller") { |n|
+  n.automatic_attrs["ipaddress"] = "192.168.61.100"
+  n.save
+}'
+
 if [ $? -eq 0 ]; then
   echo_color "IP address updated."
 fi

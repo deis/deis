@@ -1769,7 +1769,7 @@ class DeisClient(object):
             print("Detected locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
-            # we need to send the current user's name and IP address.
+            # we need to send the current user's name and host.
             try:
                 user = subprocess.check_output(
                     "whoami",
@@ -1781,7 +1781,7 @@ class DeisClient(object):
                     shell=True
                 ).strip()
             except subprocess.CalledProcessError:
-                print("Error detecting username and host IP address.")
+                print("Error detecting username and host address.")
                 sys.exit(1)
             creds = {
                 'user': user,
