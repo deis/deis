@@ -101,18 +101,6 @@ knife bootstrap "$node_name.local" \
   --sudo
 set +x
 
-# The IP address detected by Chef is the VM's eth0 10.0.0.0 range address.
-# However we need the 192 range address set on eth1.
-echo_color "Updating the IP address stored on the Chef Server for the Deis Controller node..."
-knife exec -E 'nodes.transform("name:deis-controller") { |n|
-  n.automatic_attrs["ipaddress"] = "192.168.61.100"
-  n.save
-}'
-
-if [ $? -eq 0 ]; then
-  echo_color "IP address updated."
-fi
-
 echo_color "Updating Django site object from 'example.com' to 'deis-controller'..."
 vagrant ssh -c "sudo su deis -c \"psql deis -c \\\" \
   UPDATE django_site \

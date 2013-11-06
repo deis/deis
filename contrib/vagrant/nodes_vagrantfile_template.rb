@@ -20,5 +20,6 @@ Vagrant.configure("2") do |config|
     # Avahi-daemon broadcasts the machine's hostname to local DNS.
     # So $id.local in this case
     sudo service avahi-daemon restart
+    echo "*.* @@192.168.61.100:514" > /etc/rsyslog.d/51-remote.conf
   SCRIPT
 end
