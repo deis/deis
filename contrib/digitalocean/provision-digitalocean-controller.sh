@@ -113,7 +113,7 @@ knife digital_ocean droplet create \
     --bootstrap-version $chef_version \
     --server-name $node_name \
     --image $image_id \
-    --location $location_id \
+    --location $region_id \
     --size $size_id \
     --ssh-keys $ssh_key_id \
     --identity-file $ssh_key_path \
