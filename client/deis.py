@@ -262,6 +262,37 @@ def dictify(args):
     return data
 
 
+def get_provider_creds(provider, raise_error=False):
+    """Query environment variables and return a provider's creds if found.
+    """
+    cred_types = {
+        'ec2': [[('AWS_ACCESS_KEY_ID', 'access_key', None),
+                 ('AWS_SECRET_ACCESS_KEY', 'secret_key', None)],
+                [('AWS_ACCESS_KEY', 'access_key', None),
+                 ('AWS_SECRET_KEY', 'secret_key', None)]],
+        'rackspace': [[('RACKSPACE_USERNAME', 'username', None),
+                       ('RACKSPACE_API_KEY', 'api_key', None),
+                       ('CLOUD_ID_TYPE', 'identity_type', 'rackspace')]],
+        'digitalocean': [[('DIGITALOCEAN_CLIENT_ID', 'client_id', None),
+                          ('DIGITALOCEAN_API_KEY', 'api_key', None)]]
+    }
+    missing = None
+    for cred_set in cred_types[provider]:
+        creds = {}
+        for envvar, key, default in cred_set:
+            val = os.environ.get(envvar, default)
+            if not val:
+                missing = envvar
+                break
+            else:
+                creds[key] = val
+        if creds:
+            return creds
+    if raise_error:
+        raise EnvironmentError(
+            "Missing environment variable: {}".format(missing))
+
+
 def trim(docstring):
     """
     Function to trim whitespace from docstring
@@ -1331,7 +1362,7 @@ class DeisClient(object):
         Usage: deis layers:destroy <formation> <id>
         """
         formation = args.get('<formation>')
-        layer = args['<id>']  # noqa
+        layer = args['<id>']
         sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
         try:
@@ -1397,7 +1428,7 @@ class DeisClient(object):
 
         """
         formation = args.get('<formation>')
-        layer = args['<id>']  # noqa
+        layer = args['<id>']
         body = {'id': args['<id>']}
         for opt in ('--ssh_username', '--ssh_private_key', '--ssh_public_key',
                     '--ssh_port'):
@@ -1644,37 +1675,9 @@ class DeisClient(object):
 
         Usage: deis providers:create <id> <type> <creds>
         """
-        # TODO: This function has a McCabe of 13. Refactor for simplicity.
         type = args.get('<type>')  # @ReservedAssignment
-        if type == 'ec2':
-            # read creds from envvars
-            for k in ('AWS_ACCESS_KEY', 'AWS_SECRET_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {
-                'access_key': os.environ['AWS_ACCESS_KEY'],
-                'secret_key': os.environ['AWS_SECRET_KEY'],
-            }
-        elif type == 'rackspace':
-            # read creds from envvars
-            for k in ('RACKSPACE_USERNAME', 'RACKSPACE_API_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {
-                'username': os.environ['RACKSPACE_USERNAME'],
-                'api_key': os.environ['RACKSPACE_API_KEY'],
-                'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace'),
-            }
-        elif type == 'digitalocean':
-            # read creds from envvars
-            for k in ('DIGITALOCEAN_CLIENT_ID', 'DIGITALOCEAN_API_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
-                     'api_key': os.environ['DIGITALOCEAN_API_KEY']}
+        if type in ['ec2', 'rackspace', 'digitalocean']:
+            creds = get_provider_creds(type, raise_error=True)
         else:
             creds = json.loads(args.get('<creds>'))
         id = args.get('<id>')  # @ReservedAssignment
@@ -1700,68 +1703,31 @@ class DeisClient(object):
 
         Usage: deis providers:discover
         """
-        # look for ec2 credentials
-        if 'AWS_ACCESS_KEY' in os.environ and 'AWS_SECRET_KEY' in os.environ:
-            print("Found EC2 credentials: {}".format(os.environ['AWS_ACCESS_KEY']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
-            else:
-                creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
-                         'secret_key': os.environ['AWS_SECRET_KEY']}
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading EC2 credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', '/api/providers/ec2',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
+        provider_data = [
+            # Provider, human-redable provider name, sample field to display
+            ('ec2', 'EC2', 'access_key'),
+            ('rackspace', 'Rackspace', 'api_key'),
+            ('digitalocean', 'DigitalOcean', 'api_key'),
+        ]
+        for provider, name, field in provider_data:
+            creds = get_provider_creds(provider)
+            if creds:
+                print ("Found {} credentials: {}".format(name, creds[field]))
+                inp = raw_input('Import these credentials? (y/n) : ')
+                if inp.lower().strip('\n') != 'y':
+                    print('Aborting.')
                 else:
-                    raise ResponseError(response)
-        else:
-            print('No EC2 credentials discovered. Did you install the EC2 Command Line tools?')
-        if 'RACKSPACE_API_KEY' in os.environ and 'RACKSPACE_USERNAME' in os.environ:
-            print("Found Rackspace credentials: {}".format(os.environ['RACKSPACE_API_KEY']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
+                    body = {'creds': json.dumps(creds)}
+                    sys.stdout.write("Uploading {} credentials... ".format(provider))
+                    sys.stdout.flush()
+                    endpoint = "/api/providers/{}".format(provider)
+                    response = self._dispatch('patch', endpoint, json.dumps(body))
+                    if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                        print('done')
+                    else:
+                        raise ResponseError(response)
             else:
-                creds = {'username': os.environ['RACKSPACE_USERNAME'],
-                         'api_key': os.environ['RACKSPACE_API_KEY'],
-                         'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace')}
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading Rackspace credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', '/api/providers/rackspace',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
-                else:
-                    raise ResponseError(response)
-        else:
-            print('No Rackspace credentials discovered.')
-        if 'DIGITALOCEAN_API_KEY' in os.environ and 'DIGITALOCEAN_CLIENT_ID' in os.environ:
-            print("Found Digitalocean credentials: {}".format(
-                os.environ['DIGITALOCEAN_CLIENT_ID']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
-            else:
-                creds = {
-                    'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
-                    'api_key': os.environ['DIGITALOCEAN_API_KEY'],
-                }
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading Digitalocean credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', 'api/providers/digitalocean',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
-                else:
-                    raise ResponseError(response)
-        else:
-            print('No Digitalocean credentials discovered.')
+                print("No {} credentials discovered.".format(provider))
 
     def providers_info(self, args):
         """
