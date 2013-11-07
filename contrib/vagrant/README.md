@@ -7,7 +7,7 @@ them all.
 1. You'll need VirtualBox >= `4.2.18`. We recommend installing Vagrant with their binary installer from http://downloads.vagrantup.com
 Vagrant 1.3.5 has support for VirtualBox 4.3
 
-2. Firstly you need to decide whether to use your own Chef Server or the free tier of the hosted enterprise 
+2. Firstly you need to decide whether to use your own Chef Server or the free tier of the hosted enterprise
 service from Opscode. The free tier has a limit of 5 nodes which is more then enough for development. Also
 bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
 
@@ -24,6 +24,8 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
     * Click on the 'Administration' tab and choose your organisation. There should be a tab in the sidebar that says
     'Starter Kit'. Click it and it will start a small download.
     * Inside the Starter Kit there is a '.chef' folder. Copy it to the root of your Deis codebase.
+    * **NB**: You can also manage your Chef Server through https://manage.opscode.com This is the old
+    interface and has more features, like being able to add clients to permission groups.
 
 3. Now you can follow the standard deis setup:
   ```bash
@@ -34,25 +36,28 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
   ```
 
 4. Use the provision script to boot the deis controller.
-    * If you don't already have the deis-node Vagrant box installed (~1GB). This step might take a long time! If for some reason 
+    * If you don't already have the deis-node Vagrant box installed (~1GB). This step might take a long time! If for some reason
     you want to manually add it, use:
     `vagrant box add deis-node https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box`
     * `cd contrib/vagrant && ./provision-controller.sh`
     * You will be asked to add the Controller's SSH key to your local SSH server. This will allow the Controller
     to run vagrant commands on your machine to bootstrap new nodes.
-    * If you are using a local Chef Server you will need to tell it that your new controller has permission to create
-    nodes. Use:
-    `knife client edit deis-controller`
-    and your default text editor will launch, you need to set 'admin' to 'true'.
+    * You need to tell the Chef Server that your new Controller has permission to create
+    and delete nodes. Use:
+      * For a local Chef Server just type `knife client edit deis-controller` and your default text
+      editor will launch, you need to set 'admin' to 'true'.
+      * For Hosted Chef you need to log into https://manage.opscode.com/ Then goto the Groups tab,
+      click the 'edit' link on the 'admins' row and then under the 'clients' heading toggle the
+      'deis-controller' radio button to be enabled. Then confirm the change by saving the group.
 
 5. The Controller needs to be able to run Vagrant commands on your host machine. It does this via SSH. Therefore
-you will need a running SSH server open on port 22.
+you will need a running SSH server open on port 22 and a means to broadcast your hostname to local DNS.
     * On Debian-flavoured Linux you just need to;
     `sudo apt-get install openssh-server`
     * On Mac OSX you just need to go to **System Preferences -> Sharing** and enable 'Remote Login'.
-    * **NB** If your machine's IP changes the Controller won't be able to run commands any more. Currently you aren't informed
-    of this, you just get a 500 error from the client. If you tail `/var/log/deis/celeryd.log` though you'll know. When this
-    does happen just reupload your IP with `deis providers:discover`.
+    * [Mac OSX user's should already be broadcasting their hostname](http://support.apple.com/kb/ht3473).
+    * Linux user's will need to install avahi-daemon, so that their machine is accessible via
+    [hostname].local. Eg; `sudo apt-get install avahi-daemon`.
 
 6. If you want to hack on the actual codebase, you can mount your local codebase onto the VM
    by using the custom Vagrantfile.local.
