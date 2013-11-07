@@ -1661,7 +1661,7 @@ class DeisClient(object):
         """
         return self.providers_list(args)
 
-    def providers_create(self, args):
+    def providers_create(self, args):  # noqa
         """
         Create a provider for use by Deis
 
@@ -1691,7 +1691,7 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def providers_discover(self, args):
+    def providers_discover(self, args):  # noqa
         """
         Discover and update provider credentials
 
@@ -1728,6 +1728,51 @@ class DeisClient(object):
                         raise ResponseError(response)
             else:
                 print("No {} credentials discovered.".format(provider))
+
+        # Check for locally booted Deis Controller VM
+        try:
+            running_vms = subprocess.check_output(
+                ['vboxmanage', 'list', 'runningvms'],
+                stderr=subprocess.PIPE
+            )
+        except subprocess.CalledProcessError:
+            running_vms = ""
+        # Vagrant internally names a running VM using the folder name in which the Vagrantfile
+        # resides, eg; my-deis-code-folder_default_1383326629
+        deis_codebase_folder = self._session.git_root().split('/')[-1]
+        if deis_codebase_folder in running_vms:
+            print("Detected locally running Deis Controller VM")
+            # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
+            # on the host machine. It does this via an SSH server. In order to access that server
+            # we need to send the current user's name and host.
+            try:
+                user = subprocess.check_output(
+                    "whoami",
+                    stderr=subprocess.PIPE
+                ).strip()
+                hostname = subprocess.check_output(
+                    "hostname",
+                    stderr=subprocess.PIPE,
+                    shell=True
+                ).strip()
+            except subprocess.CalledProcessError:
+                print("Error detecting username and host address.")
+                sys.exit(1)
+            creds = {
+                'user': user,
+                'host': hostname + ".local"
+            }
+            body = {'creds': json.dumps(creds)}
+            sys.stdout.write('Activating Vagrant as a provider... ')
+            sys.stdout.flush()
+            response = self._dispatch('patch', '/api/providers/vagrant',
+                                      json.dumps(body))
+            if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                print('done')
+            else:
+                raise ResponseError(response)
+        else:
+            print("No Vagrant VMs detected")
 
     def providers_info(self, args):
         """

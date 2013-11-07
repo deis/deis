@@ -110,6 +110,7 @@ class Provider(UuidAuditedModel):
         ('rackspace', 'Rackspace Open Cloud'),
         ('static', 'Static Node'),
         ('digitalocean', 'Digital Ocean'),
+        ('vagrant', 'Local Vagrant VMs'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
