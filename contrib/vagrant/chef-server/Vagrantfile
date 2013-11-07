@@ -1,0 +1,46 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "precise64"
+
+  # The url from where the 'config.vm.box' box will be fetched if it
+  # doesn't already exist on the user's system.
+  config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
+
+  # Avahi-daemon will broadcast the server's address as chefserver.local
+  # Thankfully avahi-daemon doesn't re-append as in cefserver.loca.local
+  # because the Chef Server gives API responses with the hostname as its
+  # canonical address. Another way of changing the API's hostname is through
+  # chef-server.rb - http://docs.opscode.com/config_rb_chef_server.html
+  config.vm.host_name = "chefserver.local"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network. IP will be fetched via DCHP and associated to 'chefserver.local'
+  # using avahi-daemon
+  config.vm.network :public_network
+
+  # Chef Server requires at least 1G of RAM to install.
+  # You may be able to run it with less once it's installed.
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+
+  # Install avahi-daemon and the Chef Server
+  config.vm.provision :shell, inline: <<-SCRIPT
+    if ! which chef-server-ctl > /dev/null; then
+      sudo aptitude install avahi-daemon avahi-discover libnss-mdns -y
+      sudo wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
+      sudo dpkg -i chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
+      sudo chef-server-ctl reconfigure
+      sudo chef-server-ctl test # Optional
+    fi
+  SCRIPT
+
+end
+
+# If you want to do some funky custom stuff to your box, but don't want those things tracked by git,
+# add a Vagrantfile.local and it will be included. You can use the exact same syntax as above. For
+# example you could mount your dev version of deis onto the VM and hack live on the VM;
+# `config.vm.share_folder "deis", "/opt/deis", "~/myworkspace/deis"
+# Or if you're low on RAM you can boot the VM with less RAM. Note that at least 1GB is needed for
+# installation, but you may be able to get with 512MB once everything is installed.
+load "Vagrantfile.local" if File.exists? "Vagrantfile.local"
