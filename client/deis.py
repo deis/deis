@@ -1228,35 +1228,53 @@ class DeisClient(object):
         if not path:
             ssh_dir = os.path.expanduser('~/.ssh')
             pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
+            pubkeys_list = []
             if not pubkeys:
                 print('No SSH public keys found')
                 return
             print('Found the following SSH public keys:')
             for i, k in enumerate(pubkeys):
                 key = k.split(os.path.sep)[-1]
-                print("{0}) {1}".format(i + 1, key))
+                with open(k) as f:
+                    data = f.read()
+                    match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+                    if not match:
+                        print("Could not parse SSH public key {0}".format(key))
+                        return
+                    key_type, key_str, _key_comment = match.groups()
+                    pubkeys_list.append([k, key, key_type, key_str, _key_comment])
+                    print("{0}) {1} {2}".format(i + 1, key, _key_comment))
+
             inp = raw_input('Which would you like to use with Deis? ')
             try:
-                path = pubkeys[int(inp) - 1]
+                selected_key = pubkeys_list[int(inp) - 1]
+                path = selected_key[0]
             except:
                 print('Aborting')
                 return
-        key_id = path.split(os.path.sep)[-1].replace('.pub', '')
-        with open(path) as f:
-            data = f.read()
-        match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
-        if not match:
-            print('Could not parse public key material')
-            return
-        key_type, key_str, _key_comment = match.groups()
-        body = {'id': key_id, 'public': "{0} {1}".format(key_type, key_str)}
-        sys.stdout.write("Uploading {} to Deis... ".format(path))
-        sys.stdout.flush()
-        response = self._dispatch('post', '/api/keys', json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done')
-        else:
-            raise ResponseError(response)
+
+            if not selected_key[4]:
+                body = {
+                    'id': selected_key[1].replace('.pub', ''),
+                    'public': "{0} {1}".format(
+                        selected_key[2], selected_key[3]
+                    )
+                }
+                sys.stdout.write("Uploading {} to Deis...".format(selected_key[1]))
+            else:
+                body = {
+                    'id': selected_key[4],
+                    'public': "{0} {1}".format(
+                        selected_key[2], selected_key[3]
+                    )
+                }
+                sys.stdout.write("Uploading {} to Deis...".format(selected_key[4]))
+            sys.stdout.flush()
+            response = self._dispatch('post', '/api/keys', json.dumps(body))
+            if response.status_code == requests.codes.created:  # @UndefinedVariable
+                print('done')
+            else:
+                raise ResponseError(response)
 
     def keys_list(self, args):
         """
