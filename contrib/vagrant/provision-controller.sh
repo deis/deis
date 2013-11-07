@@ -21,9 +21,11 @@ if [ ! -f /etc/ssh/sshd_config ] && [ ! -f /etc/sshd_config ]; then
 fi
 
 # Make sure avahi-daemon is installed and running
-if ! pgrep avahi-daemon >/dev/null; then
-  echo 'Please install avahi-daemon to broadcast your hostname to the local network.'
-  exit 1
+if [[ `uname -s` =~ Linux ]]; then
+  if ! pgrep avahi-daemon >/dev/null; then
+    echo 'Please install avahi-daemon to broadcast your hostname to the local network.'
+    exit 1
+  fi
 fi
 
 #################

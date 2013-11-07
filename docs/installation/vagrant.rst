@@ -16,34 +16,43 @@ VirtualBox.
 ------------------------------
 
 The ``Vagrantfile`` in the project root has the configuration for a Deis
-controller. It will first need to download a base image "deis-base," which
+controller. Vagrant will first need to download a base image "deis-base," which
 may take a while.
 
-Run the Vagrant provisioning script, which takes several minutes to complete:
+Run the Vagrant provisioning script, which takes several minutes to complete.
+Pay attention, because it will ask for confirmation that an SSH key can be
+added to your $HOME/.ssh/authorized_keys file:
 
 .. code-block:: console
 
-    $ ./contrib/ec2/provision-ec2-controller.sh us-west-2
-    Creating security group: deis-controller
-    + ec2-create-group deis-controller -d 'Created by Deis'
-    GROUP   sg-fe82aaaa deis-controller Created by Deis
-    + set +x
-    Authorizing TCP ports 22,80,443,514 from 0.0.0.0/0...
-    + ec2-authorize deis-controller -P tcp -p 22 -s 0.0.0.0/0
-    + ec2-authorize deis-controller -P tcp -p 80 -s 0.0.0.0/0
+    $ ./contrib/vagrant/provision-controller.sh
+    Created data_bag[deis-users]
+    Created data_bag[deis-formations]
+    Created data_bag[deis-apps]
+    Booting deis-controller with 'vagrant up'
+    ~/Projects/deis ~/Projects/deis
+    Bringing machine 'default' up with 'virtualbox' provider...
+    [default] Importing base box 'deis-node'...
+    [default] Matching MAC address for NAT networking...
     ...
-    ec2-198-51-100-22.us-west-2.compute.amazonaws.com
-    ec2-198-51-100-22.us-west-2.compute.amazonaws.com Chef Client finished, 74 resources updated
-    Instance ID: i-2be2411c
-    Flavor: m1.large
-    Image: ami-ca63fafa
-    Region: us-west-2
-    Availability Zone: us-west-2b
-    Security Groups: deis-controller
-    Public DNS Name: ec2-198-51-100-22.us-west-2.compute.amazonaws.com
-    Public IP Address: 198.51.100.22
-    Run List: recipe[deis::controller]
+    [default] Running: inline script
+    stdin: is not a tty
+    avahi-daemon stop/waiting
+    avahi-daemon start/running, process 1366
+    Add the Deis Controller's SSH key to your authorized_keys file? y
+    Generating public/private rsa key pair.
+    Your identification has been saved in /home/vagrant/.ssh/id_rsa.
+    ...
+    deis-controller.local     - execute "bash"  "/tmp/chef-script20131107-1476-la5wbp"
+    deis-controller.local
+    deis-controller.local
+    deis-controller.local
+    deis-controller.local Chef Client finished, 77 resources updated
+    deis-controller.local
     + set +x
+    Updating Django site object from 'example.com' to 'deis-controller'...
+    Site object updated.
+    ~/Projects/deis
     Please ensure that "deis-controller" is added to the Chef "admins" group.
 
 .. include:: steps3-4.txt
@@ -51,14 +60,14 @@ Run the Vagrant provisioning script, which takes several minutes to complete:
 5. Register With the Controller
 -------------------------------
 
-Registration will discover SSH keys automatically and use the
-`standard environment variables`_ **AWS_ACCESS_KEY** and **AWS_SECRET_KEY** to
-configure the EC2 provider with your credentials.
+Registration will discover the local Deis controller running in Vagrant and
+set up the necessary provider entry so that the controller can SSH back to
+the host, which is necessary to run "vagrant up" and thus scale nodes.
 
 .. code-block:: console
 
     $ sudo pip install deis
-    $ deis register http://deis.example.com
+    $ deis register http://deis-controller.local
     username: myuser
     password:
     password (confirm):
@@ -71,9 +80,8 @@ configure the EC2 provider with your credentials.
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
-    Found EC2 credentials: AKIAJTVXXXXXXXXXXXXX
-    Import these credentials? (y/n) : y
-    Uploading EC2 credentials... done
+    Detected locally running Deis Controller VM
+    Activating Vagrant as a provider... done
 
 6. Deploy a Formation and App
 -----------------------------
@@ -82,10 +90,8 @@ Create a formation and scale it:
 
 .. code-block:: console
 
-    $ deis formations:create dev --flavor=ec2-us-west-2
+    $ deis formations:create dev --flavor=vagrant-1024
     $ deis nodes:scale dev runtime=1
 
 .. include:: step6.txt
 
-.. _`Amazon EC2 API Tools`: http://aws.amazon.com/developertools/Amazon-EC2/351
-.. _`standard environment variables`: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux

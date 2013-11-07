@@ -101,7 +101,9 @@ def build_node(node):
     )
 
     provider_id = uid
-    fqdn = provider_id + '.local'  # hostname is broadcast via avahi-daemon
+    fqdn = provider_id
+    if not fqdn.endswith('.local'):
+        fqdn += '.local'  # hostname is broadcast via avahi-daemon
     metadata = {
         'id': uid,
         'fqdn': fqdn,

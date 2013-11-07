@@ -1758,9 +1758,11 @@ class DeisClient(object):
             except subprocess.CalledProcessError:
                 print("Error detecting username and host address.")
                 sys.exit(1)
+            if not hostname.endswith('.local'):
+                hostname += '.local'
             creds = {
                 'user': user,
-                'host': hostname + ".local"
+                'host': hostname
             }
             body = {'creds': json.dumps(creds)}
             sys.stdout.write('Activating Vagrant as a provider... ')

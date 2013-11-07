@@ -2,11 +2,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "deis-node"
 
-  # This is the vanilla Ubunutu 12.04 Precise box. It's about 350MB
+  # This is a preloaded Deis Ubuntu 12.04 Precise box. It's about 1GB
   config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box"
-
-  # This is a premade Deis controller box, probably 12.04, need to check. It's about 1.1GB
-  # config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/deis-controller.box"
 
   # Avahi-daemon will broadcast the server's address as deis-controller.local
   config.vm.host_name = "deis-controller"
