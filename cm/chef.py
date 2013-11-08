@@ -142,11 +142,11 @@ def purge_node(node):
     client = _get_client()
     node_id = node['id']
     body, status = client.delete_node(node_id)
-    if status != 200:
-        raise RuntimeError('Could not purge node {node_id}: {body}'.format(**locals()))
+    if status not in [200, 404]:
+        raise RuntimeError("Could not purge node {node_id}: {body}".format(**locals()))
     body, status = client.delete_client(node_id)
-    if status != 200:
-        raise RuntimeError('Could not purge node client {node_id}: {body}'.format(**locals()))
+    if status not in [200, 404]:
+        raise RuntimeError("Could not purge node client {node_id}: {body}".format(**locals()))
 
 
 def converge_controller():
@@ -312,6 +312,6 @@ def _purge(databag_name, item_name):
     """
     client = _get_client()
     body, status = client.delete_databag_item(databag_name, item_name)
-    if status == 200 or status == 404:
+    if status in [200, 404]:
         return body, status
     raise RuntimeError('Could not purge {item_name}: {body}'.format(**locals()))
