@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 from api.ssh import exec_ssh, connect_ssh
 
 import json
+import logging
 import string
 import subprocess
 import uuid
@@ -14,20 +15,25 @@ import uuid
 from api.models import Layer
 from api.models import Node
 
+logger = logging.getLogger(__name__)
+
 # Collect details for connecting to the host machine
-HOST_NODES_DIR = open('/home/vagrant/.host_nodes_dir').read().strip()
-PKEY = open('/home/vagrant/.ssh/id_rsa').read()
+try:
+    HOST_NODES_DIR = open('/home/vagrant/.host_nodes_dir').read().strip()
+    PKEY = open('/home/vagrant/.ssh/id_rsa').read()
+except IOError as err:
+    logger.warn(err)
 
 
 def seed_flavors():
-    """Seed the database with default flavors for each Rackspace region.
+    """Seed the database with default flavors for vagrant.
 
     :rtype: list of dicts containing flavor data
     """
     flavors = []
     for m in ['512', '1024', '2048']:
         flavors.append({
-            'id': 'vagrant-{}'.format(m),
+            'id': "vagrant-{}".format(m),
             'provider': 'vagrant',
             'params': json.dumps({
                 'memory': m
