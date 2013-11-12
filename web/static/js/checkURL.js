@@ -16,6 +16,12 @@ switch(pathName[num]) {
   case 'terms':
     $('.toctree-l1 > a:contains("Terms")').attr('state', 'open');
     break;
+  case 'opstutorial':
+    $('.toctree-l1 > a:contains("Operations")').attr('state', 'open');
+    break;
+  case 'devtutorial':
+    $('.toctree-l1 > a:contains("Developer")').attr('state', 'open');
+    break;
   case 'contributing':
     $('.toctree-l1 > a:contains("Contributing")').attr('state', 'open');
     break;

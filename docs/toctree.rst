@@ -14,8 +14,9 @@ This documentation has the following resources:
    gettingstarted/index
    installation/index
    terms/index
+   opstutorial/index
+   devtutorial/index
    contributing/index
-   tutorial/index
    client/index
    server/index
    faq
