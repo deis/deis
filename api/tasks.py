@@ -53,6 +53,8 @@ def converge_node(node):
 @task
 def run_node(node, command):
     output, rc = CM.run_node(node.flat(), command)
+    if rc != 0 and 'failed to setup the container' in output:
+        output = '\033[35mPlease run `git push deis master` first.\033[0m\n' + output
     return output, rc
 
 
