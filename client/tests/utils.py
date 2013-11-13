@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import os
 import os.path
 import random
+import re
 import shutil
 import tempfile
 from uuid import uuid4
@@ -22,14 +23,14 @@ except KeyError:
     print 'Error: env var DEIS_SERVER must point to a Deis controller URL.'
 DEIS_TEST_FLAVOR = os.environ.get('DEIS_TEST_FLAVOR', 'ec2-us-west-2')
 REPOSITORIES = {
-    'Clojure': 'https://github.com/opdemand/example-clojure-ring.git',
+    # 'Clojure': 'https://github.com/opdemand/example-clojure-ring.git',
     # 'Python': 'https://github.com/opdemand/example-python-django.git',
     'Python': 'https://github.com/opdemand/example-python-flask.git',
     'Java': 'https://github.com/opdemand/example-java-jetty.git',
     'Go': 'https://github.com/opdemand/example-go.git',
     'Node.js': 'https://github.com/opdemand/example-nodejs-express.git',
     # 'Ruby/Rails': 'https://github.com/opdemand/example-rails-helloworld.git',
-    'Ruby/Rails': 'https://github.com/opdemand/example-rails-todo.git',
+    # 'Ruby/Rails': 'https://github.com/opdemand/example-rails-todo.git',
     'Ruby/Rack': 'https://github.com/opdemand/example-ruby-sinatra.git',
 }
 
@@ -44,12 +45,21 @@ def purge(username, password):
     child.expect('\? \(y/n\) ')
     child.sendline('y')
     child.expect(pexpect.EOF)
+    ssh_path = os.path.expanduser('~/.ssh')
+    child = pexpect.spawn(os.path.expanduser(
+        "rm -f {}/{}*".format(ssh_path, username)))
+    child.expect(pexpect.EOF)
 
 
 def register():
     """Register a new Deis user from the command line."""
     username = "autotester-{}".format(uuid4().hex[:4])
     password = 'password'
+    ssh_path = os.path.expanduser('~/.ssh')
+    child = pexpect.spawn("ssh-keygen -f /{}/{} -t rsa -N '' -C {}".format(
+        ssh_path, username, username))
+    child.expect("Your public key has been saved")
+    child.expect(pexpect.EOF)
     child = pexpect.spawn("{} register {}".format(DEIS, DEIS_SERVER))
     child.expect('username: ')
     child.sendline(username)
@@ -60,9 +70,24 @@ def register():
     child.expect('email: ')
     child.sendline('autotest@opdemand.com')
     child.expect('Which would you like to use with Deis')
-    child.sendline('1')
-    child.expect('Import these credentials\? \(y/n\) :')
-    child.sendline('y')
+    for index, key in re.findall('(\d)\) ([ \S]+)', child.before):
+        # TODO: can't use our generated key--gitosis error!
+        # if username in key:
+        if 'id_rsa' in key:
+            child.sendline(index)
+            break
+    opt = child.expect(['Import EC2 credentials\? \(y/n\) :',
+                       'No EC2 credentials discovered.'])
+    if opt == 0:
+        child.sendline('y')
+    opt = child.expect(['Import Rackspace credentials\? \(y/n\) :',
+                       'No Rackspace credentials discovered.'])
+    if opt == 0:
+        child.sendline('y')
+    opt = child.expect(['Import DigitalOcean credentials\? \(y/n\) :',
+                       'No DigitalOcean credentials discovered.'])
+    if opt == 0:
+        child.sendline('y')
     child.expect(pexpect.EOF)
     return username, password
 
