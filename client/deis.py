@@ -196,11 +196,11 @@ def _newname(template="Thread-{}"):
 
 
 FRAMES = {
-    'arrow':  ['^', '>', 'v', '<'],
+    'arrow': ['^', '>', 'v', '<'],
     'dots': ['...', 'o..', '.o.', '..o'],
     'ligatures': ['bq', 'dp', 'qb', 'pd'],
     'lines': [' ', '-', '=', '#', '=', '-'],
-    'slash':  ['-', '\\', '|', '/'],
+    'slash': ['-', '\\', '|', '/'],
 }
 
 
@@ -1730,13 +1730,13 @@ class DeisClient(object):
         for provider, name, field in provider_data:
             creds = get_provider_creds(provider)
             if creds:
-                print ("Found {} credentials: {}".format(name, creds[field]))
-                inp = raw_input('Import these credentials? (y/n) : ')
+                print ("Discovered {} credentials: {}".format(name, creds[field]))
+                inp = raw_input("Import {} credentials? (y/n) : ".format(name))
                 if inp.lower().strip('\n') != 'y':
                     print('Aborting.')
                 else:
                     body = {'creds': json.dumps(creds)}
-                    sys.stdout.write("Uploading {} credentials... ".format(provider))
+                    sys.stdout.write("Uploading {} credentials... ".format(name))
                     sys.stdout.flush()
                     endpoint = "/api/providers/{}".format(provider)
                     response = self._dispatch('patch', endpoint, json.dumps(body))
@@ -1745,7 +1745,7 @@ class DeisClient(object):
                     else:
                         raise ResponseError(response)
             else:
-                print("No {} credentials discovered.".format(provider))
+                print("No {} credentials discovered.".format(name))
 
         # Check for locally booted Deis Controller VM
         try:
@@ -1759,7 +1759,7 @@ class DeisClient(object):
         # resides, eg; my-deis-code-folder_default_1383326629
         deis_codebase_folder = self._session.git_root().split('/')[-1]
         if deis_codebase_folder in running_vms:
-            print("Detected locally running Deis Controller VM")
+            print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
             # we need to send the current user's name and host.
@@ -1792,7 +1792,7 @@ class DeisClient(object):
             else:
                 raise ResponseError(response)
         else:
-            print("No Vagrant VMs detected")
+            print("No Vagrant VMs discovered.")
 
     def providers_info(self, args):
         """
