@@ -1757,8 +1757,11 @@ class DeisClient(object):
             running_vms = ""
         # Vagrant internally names a running VM using the folder name in which the Vagrantfile
         # resides, eg; my-deis-code-folder_default_1383326629
-        deis_codebase_folder = self._session.git_root().split('/')[-1]
-        if deis_codebase_folder in running_vms:
+        try:
+            deis_codebase_folder = self._session.git_root().split('/')[-1]
+        except EnvironmentError:
+            deis_codebase_folder = None
+        if deis_codebase_folder and deis_codebase_folder in running_vms:
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
