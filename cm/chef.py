@@ -236,6 +236,17 @@ def publish_user(user, data):
     _publish('deis-users', user['username'], data)
 
 
+def purge_user(user):
+    """
+    Purge a user from configuration management.
+
+    :param app: a dict containing the username of the user
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
+    _purge('deis-users', user['username'])
+
+
 def publish_app(app, data):
     """
     Publish an app to configuration management.
