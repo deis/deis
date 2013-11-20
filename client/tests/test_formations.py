@@ -14,19 +14,19 @@ import pexpect
 
 from .utils import DEIS
 from .utils import DEIS_TEST_FLAVOR
-from .utils import setup
-from .utils import teardown
+from .utils import purge
+from .utils import register
 
 
 class FormationsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.username, cls.password, cls.repo_dir = setup()
+        cls.username, cls.password = register()
 
     @classmethod
     def tearDownClass(cls):
-        teardown(cls.username, cls.password)
+        purge(cls.username, cls.password)
 
     def test_list(self):
         # list formations and get their names

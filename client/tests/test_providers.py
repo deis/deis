@@ -11,19 +11,19 @@ from unittest import TestCase
 import pexpect
 
 from .utils import DEIS
-from .utils import setup
-from .utils import teardown
+from .utils import purge
+from .utils import register
 
 
 class ProvidersTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.username, cls.password, _ = setup()
+        cls.username, cls.password = register()
 
     @classmethod
     def tearDownClass(cls):
-        teardown(cls.username, cls.password, None)
+        purge(cls.username, cls.password)
 
     def test_seeded(self):
         """Test that our autotest user has some providers auto-seeded."""
