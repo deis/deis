@@ -16,4 +16,5 @@ Installation
     ec2
     rackspace
     digitalocean
+    static
     vagrant

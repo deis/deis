@@ -20,7 +20,7 @@ Install the Deis client with `pip`_:
 
     $ pip install deis
     Downloading/unpacking deis
-      Downloading deis-0.1.1.tar.gz
+      Downloading deis-0.3.0.tar.gz
       Running setup.py egg_info for package deis
     ...
     Successfully installed deis
