@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Usage: ./provision-vagrant-controller.sh
+#
 
 function echo_color {
   echo -e "\033[1m$1\033[0m"

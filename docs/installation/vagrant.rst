@@ -2,6 +2,8 @@
 :description: How to install a Deis controller on Vagrant for testing
 :keywords: install, installation, deis, controller, setup, vagrant, virtualbox, testing
 
+.. _vagrant_installation:
+
 Vagrant Installation
 ====================
 

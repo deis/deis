@@ -2,6 +2,8 @@
 :description: How to install a Deis controller on Amazon EC2 and create your private PaaS
 :keywords: install, installation, deis, controller, setup, amazon, ec2
 
+.. _ec2_installation:
+
 Amazon EC2 Installation
 =======================
 

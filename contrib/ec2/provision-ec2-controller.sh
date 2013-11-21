@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Usage: ./provision-ec2-controller.sh <region>
+#
 
 if [ -z $1 ]; then
   echo usage: $0 [region]

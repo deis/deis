@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Usage: ./provision-rackspace-controller.sh <region>
+#
 
 if [ -z $1 ]; then
   echo usage: $0 [region]
