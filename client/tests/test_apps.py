@@ -15,17 +15,17 @@ import pexpect
 
 from .utils import DEIS
 from .utils import DEIS_TEST_FLAVOR
+from .utils import clone
+from .utils import purge
 from .utils import random_repo
-from .utils import setup
-from .utils import teardown
+from .utils import register
 
 
 class AppsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        repo_name, repo_url = random_repo()
-        cls.username, cls.password, cls.repo_dir = setup(repo_url)
+        cls.username, cls.password = register()
         # create a new formation
         cls.formation = "{}-test-formation-{}".format(
             cls.username, uuid4().hex[:4])
@@ -34,6 +34,9 @@ class AppsTest(TestCase):
         child.expect("created {}.*to scale a basic formation".format(
             cls.formation))
         child.expect(pexpect.EOF)
+        repo_name, (repo_type, repo_url) = random_repo()
+        # print repo_name, repo_type, repo_url
+        clone(repo_url, repo_name)
 
     @classmethod
     def tearDownClass(cls):
@@ -42,7 +45,7 @@ class AppsTest(TestCase):
             DEIS, cls.formation, cls.formation))
         child.expect('done in ', timeout=5 * 60)
         child.expect(pexpect.EOF)
-        teardown(cls.username, cls.password, cls.repo_dir)
+        purge(cls.username, cls.password)
 
     def test_create(self):
         # create the app

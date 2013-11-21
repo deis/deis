@@ -15,19 +15,19 @@ import random
 from uuid import uuid4
 
 from .utils import DEIS
-from .utils import setup
-from .utils import teardown
+from .utils import purge
+from .utils import register
 
 
 class FlavorsTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.username, cls.password, _ = setup()
+        cls.username, cls.password = register()
 
     @classmethod
     def tearDownClass(cls):
-        teardown(cls.username, cls.password)
+        purge(cls.username, cls.password)
 
     def test_create(self):
         # create a new flavor

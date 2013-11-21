@@ -12,19 +12,19 @@ import pexpect
 
 from .utils import DEIS
 from .utils import DEIS_SERVER
-from .utils import setup
-from .utils import teardown
+from .utils import purge
+from .utils import register
 
 
 class AuthTest(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.username, cls.password, _ = setup()
+        cls.username, cls.password = register()
 
     @classmethod
     def tearDownClass(cls):
-        teardown(cls.username, cls.password, None)
+        purge(cls.username, cls.password)
 
     def test_login(self):
         # log in the interactive way
