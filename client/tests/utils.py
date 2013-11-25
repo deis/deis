@@ -31,7 +31,7 @@ EXAMPLES = {
     'example-nodejs-express':
     ('Node.js', 'https://github.com/opdemand/example-nodejs-express.git'),
     'example-perl': ('Perl/PSGI', 'https://github.com/opdemand/example-perl.git'),
-    'example-php': ('PHP (classic)', 'https://github.com/opdemand/example-php.git'),
+    'example-php': (r'PHP \(classic\)', 'https://github.com/opdemand/example-php.git'),
     'example-play': ('Play 2.x - Java', 'https://github.com/opdemand/example-play.git'),
     'example-python-flask': ('Python', 'https://github.com/opdemand/example-python-flask.git'),
     'example-ruby-sinatra': ('Ruby', 'https://github.com/opdemand/example-ruby-sinatra.git'),
