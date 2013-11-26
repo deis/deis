@@ -63,7 +63,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 
 class Session(requests.Session):
