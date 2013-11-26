@@ -11,10 +11,9 @@ Vagrant.configure("2") do |config|
   # IP will be associated to 'deis-controller.local' using avahi-daemon
   config.vm.network :private_network, ip: "192.168.61.100"
 
-  # The Deis Controller requires at least 1G of RAM to install.
-  # You may be able to run it with less once it's installed.
+  # The Deis Controller requires at least 2G of RAM to install.
   config.vm.provider :virtualbox do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "1024"]
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
   end
 
   # 'deis provider:discover' detects the host machine's user and IP address, however, that command cannot
