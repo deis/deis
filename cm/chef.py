@@ -140,8 +140,13 @@ def purge_node(node):
     :param node: a dict containing the id of a node to purge
     """
     client = _get_client()
-    client.delete_node(node['id'])
-    client.delete_client(node['id'])
+    node_id = node['id']
+    body, status = client.delete_node(node_id)
+    if status not in [200, 404]:
+        raise RuntimeError("Could not purge node {node_id}: {body}".format(**locals()))
+    body, status = client.delete_client(node_id)
+    if status not in [200, 404]:
+        raise RuntimeError("Could not purge node client {node_id}: {body}".format(**locals()))
 
 
 def converge_controller():
@@ -231,6 +236,17 @@ def publish_user(user, data):
     _publish('deis-users', user['username'], data)
 
 
+def purge_user(user):
+    """
+    Purge a user from configuration management.
+
+    :param app: a dict containing the username of the user
+    :returns: a tuple of (body, status) from the underlying HTTP response
+    :raises: RuntimeError
+    """
+    _purge('deis-users', user['username'])
+
+
 def publish_app(app, data):
     """
     Publish an app to configuration management.
@@ -307,6 +323,6 @@ def _purge(databag_name, item_name):
     """
     client = _get_client()
     body, status = client.delete_databag_item(databag_name, item_name)
-    if status == 200 or status == 404:
+    if status in [200, 404]:
         return body, status
     raise RuntimeError('Could not purge {item_name}: {body}'.format(**locals()))

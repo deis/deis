@@ -2,6 +2,8 @@
 :description: How to install a Deis controller on DigitalOcean and create your private PaaS
 :keywords: install, installation, deis, controller, setup, digitalocean
 
+.. _digitalocean_installation:
+
 DigitalOcean Installation
 =========================
 

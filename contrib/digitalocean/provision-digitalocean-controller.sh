@@ -5,14 +5,17 @@
 # Retrieve the region-id by using `knife digital_ocean region list`
 #
 
+if [[ -z $1 ]]; then
+  echo usage: $0 [region]
+  exit 1
+fi
+
 function echo_color {
   echo -e "\033[1m$1\033[0m"
 }
 
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
-
-echo_color "Provisioning a deis controller on Digital Ocean!"
 
 # check for Deis' general dependencies
 if ! $CONTRIB_DIR/check-deis-deps.sh; then
@@ -36,27 +39,36 @@ fi
 #################
 # chef settings #
 #################
-
 node_name=deis-controller
 run_list="recipe[deis::controller]"
 chef_version=11.6.2
 
-##########################
-# digital ocean settings #
-##########################
+#########################
+# digitalocean settings #
+#########################
 
 # the name of the location we want to work with
-location_id=$1
+region_id=$1
 # The snapshot that we want to use (deis-base)
 image_id=$(knife digital_ocean image list | grep "deis-base" | awk '{print $1}')
 # the ID of the size (1GB)
 size_id=$(knife digital_ocean size list | grep "2GB" | awk '{print $1}')
 
+if [[ -z $image_id ]]; then
+  echo "Can't find saved image \"deis-base\" in region $region_id. Please follow the"
+  echo "instructions in prepare-digitalocean-snapshot.sh before provisioning a Deis controller."
+  exit 1
+fi
+
+if [[ -z $size_id ]]; then
+  echo "Cannot find a droplet with the size '2GB' in region $region_id."
+  exit 1
+fi
+
 ################
 # SSH settings #
 ################
-
-key_name="deis-controller"
+key_name=deis-controller
 ssh_key_path=~/.ssh/$key_name
 
 # create ssh keypair and store it
@@ -90,15 +102,15 @@ echo_color "Provisioning $node_name with knife digital_ocean..."
 
 set -x
 knife digital_ocean droplet create \
-    --bootstrap-version $chef_version \
-    --server-name $node_name \
-    --image $image_id \
-    --location $location_id \
-    --size $size_id \
-    --ssh-keys $ssh_key_id \
-    --identity-file $ssh_key_path \
-    --bootstrap \
-    --run-list $run_list
+  --bootstrap-version $chef_version \
+  --server-name $node_name \
+  --image $image_id \
+  --location $region_id \
+  --size $size_id \
+  --ssh-keys $ssh_key_id \
+  --identity-file $ssh_key_path \
+  --bootstrap \
+  --run-list $run_list
 set +x
 
 # Need Chef admin permission in order to add and remove nodes and clients

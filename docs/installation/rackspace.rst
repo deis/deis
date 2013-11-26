@@ -2,6 +2,8 @@
 :description: How to install a Deis controller on Rackspace and create your private PaaS
 :keywords: install, installation, deis, controller, setup, rackspace
 
+.. _rackspace_installation:
+
 Rackspace Installation
 ======================
 

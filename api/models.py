@@ -15,6 +15,7 @@ from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
@@ -110,6 +111,7 @@ class Provider(UuidAuditedModel):
         ('rackspace', 'Rackspace Open Cloud'),
         ('static', 'Static Node'),
         ('digitalocean', 'Digital Ocean'),
+        ('vagrant', 'Local Vagrant VMs'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -817,10 +819,15 @@ def _user_publish(self):
     CM.publish_user(self.flat(), self.calculate())
 
 
+def _user_purge(self):
+    CM.purge_user(self.flat())
+
+
 # attach to built-in django user
 User.flat = _user_flat
 User.calculate = _user_calculate
 User.publish = _user_publish
+User.purge = _user_purge
 
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
@@ -835,8 +842,14 @@ def _publish_user_to_cm(**kwargs):
         return
     kwargs['instance'].publish()
 
+
+def _purge_user_from_cm(**kwargs):
+    kwargs['instance'].purge()
+
+
 # use django signals to synchronize database updates with
 # the configuration management backend
 post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
 post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
 post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
+post_delete.connect(_purge_user_from_cm, sender=User, dispatch_uid='api.models')

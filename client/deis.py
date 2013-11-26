@@ -63,7 +63,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 
 class Session(requests.Session):
@@ -196,11 +196,11 @@ def _newname(template="Thread-{}"):
 
 
 FRAMES = {
-    'arrow':  ['^', '>', 'v', '<'],
+    'arrow': ['^', '>', 'v', '<'],
     'dots': ['...', 'o..', '.o.', '..o'],
     'ligatures': ['bq', 'dp', 'qb', 'pd'],
     'lines': [' ', '-', '=', '#', '=', '-'],
-    'slash':  ['-', '\\', '|', '/'],
+    'slash': ['-', '\\', '|', '/'],
 }
 
 
@@ -260,6 +260,37 @@ def dictify(args):
         except ValueError:
             data[var] = val
     return data
+
+
+def get_provider_creds(provider, raise_error=False):
+    """Query environment variables and return a provider's creds if found.
+    """
+    cred_types = {
+        'ec2': [[('AWS_ACCESS_KEY_ID', 'access_key', None),
+                 ('AWS_SECRET_ACCESS_KEY', 'secret_key', None)],
+                [('AWS_ACCESS_KEY', 'access_key', None),
+                 ('AWS_SECRET_KEY', 'secret_key', None)]],
+        'rackspace': [[('RACKSPACE_USERNAME', 'username', None),
+                       ('RACKSPACE_API_KEY', 'api_key', None),
+                       ('CLOUD_ID_TYPE', 'identity_type', 'rackspace')]],
+        'digitalocean': [[('DIGITALOCEAN_CLIENT_ID', 'client_id', None),
+                          ('DIGITALOCEAN_API_KEY', 'api_key', None)]]
+    }
+    missing = None
+    for cred_set in cred_types[provider]:
+        creds = {}
+        for envvar, key, default in cred_set:
+            val = os.environ.get(envvar, default)
+            if not val:
+                missing = envvar
+                break
+            else:
+                creds[key] = val
+        if creds:
+            return creds
+    if raise_error:
+        raise EnvironmentError(
+            "Missing environment variable: {}".format(missing))
 
 
 def trim(docstring):
@@ -568,6 +599,8 @@ class DeisClient(object):
         --email=EMAIL          provide an email address
         """
         controller = args['<controller>']
+        if not urlparse.urlparse(controller).scheme:
+            controller = "http://{}".format(controller)
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
@@ -635,6 +668,8 @@ class DeisClient(object):
         Usage: deis auth:login <controller> [--username=<username> --password=<password>]
         """
         controller = args['<controller>']
+        if not urlparse.urlparse(controller).scheme:
+            controller = "http://{}".format(controller)
         username = args.get('--username')
         headers = {}
         if not username:
@@ -1193,35 +1228,53 @@ class DeisClient(object):
         if not path:
             ssh_dir = os.path.expanduser('~/.ssh')
             pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
+            pubkeys_list = []
             if not pubkeys:
                 print('No SSH public keys found')
                 return
             print('Found the following SSH public keys:')
             for i, k in enumerate(pubkeys):
                 key = k.split(os.path.sep)[-1]
-                print("{0}) {1}".format(i + 1, key))
+                with open(k) as f:
+                    data = f.read()
+                    match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+                    if not match:
+                        print("Could not parse SSH public key {0}".format(key))
+                        return
+                    key_type, key_str, _key_comment = match.groups()
+                    pubkeys_list.append([k, key, key_type, key_str, _key_comment])
+                    print("{0}) {1} {2}".format(i + 1, key, _key_comment))
+
             inp = raw_input('Which would you like to use with Deis? ')
             try:
-                path = pubkeys[int(inp) - 1]
+                selected_key = pubkeys_list[int(inp) - 1]
+                path = selected_key[0]
             except:
                 print('Aborting')
                 return
-        key_id = path.split(os.path.sep)[-1].replace('.pub', '')
-        with open(path) as f:
-            data = f.read()
-        match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
-        if not match:
-            print('Could not parse public key material')
-            return
-        key_type, key_str, _key_comment = match.groups()
-        body = {'id': key_id, 'public': "{0} {1}".format(key_type, key_str)}
-        sys.stdout.write("Uploading {} to Deis... ".format(path))
-        sys.stdout.flush()
-        response = self._dispatch('post', '/api/keys', json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done')
-        else:
-            raise ResponseError(response)
+
+            if not selected_key[4]:
+                body = {
+                    'id': selected_key[1].replace('.pub', ''),
+                    'public': "{0} {1}".format(
+                        selected_key[2], selected_key[3]
+                    )
+                }
+                sys.stdout.write("Uploading {} to Deis...".format(selected_key[1]))
+            else:
+                body = {
+                    'id': selected_key[4],
+                    'public': "{0} {1}".format(
+                        selected_key[2], selected_key[3]
+                    )
+                }
+                sys.stdout.write("Uploading {} to Deis...".format(selected_key[4]))
+            sys.stdout.flush()
+            response = self._dispatch('post', '/api/keys', json.dumps(body))
+            if response.status_code == requests.codes.created:  # @UndefinedVariable
+                print('done')
+            else:
+                raise ResponseError(response)
 
     def keys_list(self, args):
         """
@@ -1327,7 +1380,7 @@ class DeisClient(object):
         Usage: deis layers:destroy <formation> <id>
         """
         formation = args.get('<formation>')
-        layer = args['<id>']  # noqa
+        layer = args['<id>']
         sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
         sys.stdout.flush()
         try:
@@ -1393,7 +1446,7 @@ class DeisClient(object):
 
         """
         formation = args.get('<formation>')
-        layer = args['<id>']  # noqa
+        layer = args['<id>']
         body = {'id': args['<id>']}
         for opt in ('--ssh_username', '--ssh_private_key', '--ssh_public_key',
                     '--ssh_port'):
@@ -1531,8 +1584,11 @@ class DeisClient(object):
         """
         formation = args.get('<formation>')
         body = {}
+        runtimes = True
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
+            if (typ, count) == ('runtime', '0'):
+                runtimes = False
             body.update({typ: int(count)})
         print('Scaling nodes... but first, coffee!')
         try:
@@ -1547,7 +1603,9 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
-            print('Use `deis create --formation={}` to create an application'.format(formation))
+            if runtimes:
+                print('Use `deis create --formation={}` to create an application'.format(
+                      formation))
         else:
             raise ResponseError(response)
 
@@ -1621,7 +1679,7 @@ class DeisClient(object):
         """
         return self.providers_list(args)
 
-    def providers_create(self, args):
+    def providers_create(self, args):  # noqa
         """
         Create a provider for use by Deis
 
@@ -1635,37 +1693,9 @@ class DeisClient(object):
 
         Usage: deis providers:create <id> <type> <creds>
         """
-        # TODO: This function has a McCabe of 13. Refactor for simplicity.
         type = args.get('<type>')  # @ReservedAssignment
-        if type == 'ec2':
-            # read creds from envvars
-            for k in ('AWS_ACCESS_KEY', 'AWS_SECRET_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {
-                'access_key': os.environ['AWS_ACCESS_KEY'],
-                'secret_key': os.environ['AWS_SECRET_KEY'],
-            }
-        elif type == 'rackspace':
-            # read creds from envvars
-            for k in ('RACKSPACE_USERNAME', 'RACKSPACE_API_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {
-                'username': os.environ['RACKSPACE_USERNAME'],
-                'api_key': os.environ['RACKSPACE_API_KEY'],
-                'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace'),
-            }
-        elif type == 'digitalocean':
-            # read creds from envvars
-            for k in ('DIGITALOCEAN_CLIENT_ID', 'DIGITALOCEAN_API_KEY'):
-                if not k in os.environ:
-                    msg = "Missing environment variable: {}".format(k)
-                    raise EnvironmentError(msg)
-            creds = {'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
-                     'api_key': os.environ['DIGITALOCEAN_API_KEY']}
+        if type in ['ec2', 'rackspace', 'digitalocean']:
+            creds = get_provider_creds(type, raise_error=True)
         else:
             creds = json.loads(args.get('<creds>'))
         id = args.get('<id>')  # @ReservedAssignment
@@ -1679,7 +1709,7 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def providers_discover(self, args):
+    def providers_discover(self, args):  # noqa
         """
         Discover and update provider credentials
 
@@ -1691,68 +1721,81 @@ class DeisClient(object):
 
         Usage: deis providers:discover
         """
-        # look for ec2 credentials
-        if 'AWS_ACCESS_KEY' in os.environ and 'AWS_SECRET_KEY' in os.environ:
-            print("Found EC2 credentials: {}".format(os.environ['AWS_ACCESS_KEY']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
-            else:
-                creds = {'access_key': os.environ['AWS_ACCESS_KEY'],
-                         'secret_key': os.environ['AWS_SECRET_KEY']}
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading EC2 credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', '/api/providers/ec2',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
+        provider_data = [
+            # Provider, human-redable provider name, sample field to display
+            ('ec2', 'EC2', 'access_key'),
+            ('rackspace', 'Rackspace', 'api_key'),
+            ('digitalocean', 'DigitalOcean', 'api_key'),
+        ]
+        for provider, name, field in provider_data:
+            creds = get_provider_creds(provider)
+            if creds:
+                print ("Discovered {} credentials: {}".format(name, creds[field]))
+                inp = raw_input("Import {} credentials? (y/n) : ".format(name))
+                if inp.lower().strip('\n') != 'y':
+                    print('Aborting.')
                 else:
-                    raise ResponseError(response)
-        else:
-            print('No EC2 credentials discovered. Did you install the EC2 Command Line tools?')
-        if 'RACKSPACE_API_KEY' in os.environ and 'RACKSPACE_USERNAME' in os.environ:
-            print("Found Rackspace credentials: {}".format(os.environ['RACKSPACE_API_KEY']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
+                    body = {'creds': json.dumps(creds)}
+                    sys.stdout.write("Uploading {} credentials... ".format(name))
+                    sys.stdout.flush()
+                    endpoint = "/api/providers/{}".format(provider)
+                    response = self._dispatch('patch', endpoint, json.dumps(body))
+                    if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                        print('done')
+                    else:
+                        raise ResponseError(response)
             else:
-                creds = {'username': os.environ['RACKSPACE_USERNAME'],
-                         'api_key': os.environ['RACKSPACE_API_KEY'],
-                         'identity_type': os.environ.get('CLOUD_ID_TYPE', 'rackspace')}
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading Rackspace credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', '/api/providers/rackspace',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
-                else:
-                    raise ResponseError(response)
-        else:
-            print('No Rackspace credentials discovered.')
-        if 'DIGITALOCEAN_API_KEY' in os.environ and 'DIGITALOCEAN_CLIENT_ID' in os.environ:
-            print("Found Digitalocean credentials: {}".format(
-                os.environ['DIGITALOCEAN_CLIENT_ID']))
-            inp = raw_input('Import these credentials? (y/n) : ')
-            if inp.lower().strip('\n') != 'y':
-                print('Aborting.')
+                print("No {} credentials discovered.".format(name))
+
+        # Check for locally booted Deis Controller VM
+        try:
+            running_vms = subprocess.check_output(
+                ['vboxmanage', 'list', 'runningvms'],
+                stderr=subprocess.PIPE
+            )
+        except subprocess.CalledProcessError:
+            running_vms = ""
+        # Vagrant internally names a running VM using the folder name in which the Vagrantfile
+        # resides, eg; my-deis-code-folder_default_1383326629
+        try:
+            deis_codebase_folder = self._session.git_root().split('/')[-1]
+        except EnvironmentError:
+            deis_codebase_folder = None
+        if deis_codebase_folder and deis_codebase_folder in running_vms:
+            print("Discovered locally running Deis Controller VM")
+            # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
+            # on the host machine. It does this via an SSH server. In order to access that server
+            # we need to send the current user's name and host.
+            try:
+                user = subprocess.check_output(
+                    "whoami",
+                    stderr=subprocess.PIPE
+                ).strip()
+                hostname = subprocess.check_output(
+                    "hostname",
+                    stderr=subprocess.PIPE,
+                    shell=True
+                ).strip()
+            except subprocess.CalledProcessError:
+                print("Error detecting username and host address.")
+                sys.exit(1)
+            if not hostname.endswith('.local'):
+                hostname += '.local'
+            creds = {
+                'user': user,
+                'host': hostname
+            }
+            body = {'creds': json.dumps(creds)}
+            sys.stdout.write('Activating Vagrant as a provider... ')
+            sys.stdout.flush()
+            response = self._dispatch('patch', '/api/providers/vagrant',
+                                      json.dumps(body))
+            if response.status_code == requests.codes.ok:  # @UndefinedVariable
+                print('done')
             else:
-                creds = {
-                    'client_id': os.environ['DIGITALOCEAN_CLIENT_ID'],
-                    'api_key': os.environ['DIGITALOCEAN_API_KEY'],
-                }
-                body = {'creds': json.dumps(creds)}
-                sys.stdout.write('Uploading Digitalocean credentials... ')
-                sys.stdout.flush()
-                response = self._dispatch('patch', 'api/providers/digitalocean',
-                                          json.dumps(body))
-                if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                    print('done')
-                else:
-                    raise ResponseError(response)
+                raise ResponseError(response)
         else:
-            print('No Digitalocean credentials discovered.')
+            print("No Vagrant VMs discovered.")
 
     def providers_info(self, args):
         """

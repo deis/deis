@@ -11,5 +11,4 @@ Getting Started
     :maxdepth: 1
 
     concepts
-    terms/index
     usage

@@ -13,6 +13,9 @@ switch(pathName[num]) {
   case 'installation':
     $('.toctree-l1 > a:contains("Installation")').attr('state', 'open');
     break;
+  case 'terms':
+    $('.toctree-l1 > a:contains("Terms")').attr('state', 'open');
+    break;
   case 'contributing':
     $('.toctree-l1 > a:contains("Contributing")').attr('state', 'open');
     break;

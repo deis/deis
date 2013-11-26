@@ -1,11 +1,14 @@
-*Please note: Deis is still under active development. It should not yet be used in production.*
+**PLEASE NOTE:** *Deis is in active development. It should not yet be used in production.*
 
-Creating your own PaaS requires provisioning a Deis controller on a cloud
-provider of your choice, then registering an account on that controller with
-the Deis client.
+Creating your own PaaS requires provisioning a
+Deis :ref:`Controller <controller>`.
 
-Regardless of whether your controller is hosted with Amazon EC2, Rackspace,
-or DigitalOcean, it can create and manage nodes on any of those cloud providers.
+Regardless of whether you provision a controller on
+:ref:`Amazon EC2 <ec2_installation>`,
+:ref:`Rackspace <rackspace_installation>`,
+:ref:`DigitalOcean <digitalocean_installation>`,
+or your own :ref:`bare metal <static_installation>`, it can create and manage
+nodes on any of those cloud providers.
 
 Prerequisites
 -------------
@@ -23,7 +26,7 @@ on a Chef server accessible with `knife`_.
 
 Cloning the default master branch will provide you with the latest development
 version of Deis. If you instead want to deploy the latest stable release,
-checkout the most recent tag using ``git checkout v0.1.1``, for example.
+checkout the most recent tag using ``git checkout v0.3.0``, for example.
 
 2. Configure the Chef Server
 ----------------------------
