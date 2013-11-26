@@ -16,7 +16,7 @@ services:
   - rabbitmq
 
 before_install:
-  - sudo apt-get install -qq libevent-dev libpq-dev
+  - sudo apt-get install -qq libpq-dev
 
 install:
   - pip install -r dev_requirements.txt coveralls --use-mirrors
