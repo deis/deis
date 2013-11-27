@@ -911,6 +911,7 @@ class DeisClient(object):
         flavors:create        create a new node flavor
         flavors:info          print information about a node flavor
         flavors:list          list available flavors
+        flavors:update        update an existing node flavor
         flavors:delete        delete a node flavor
 
         Use `deis help [command]` to learn more
