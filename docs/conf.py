@@ -20,12 +20,10 @@ import sys
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
 # set up Django
-from deis import settings
-from django.core.management import setup_environ
-
+os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+from django.conf import settings
 if not settings.SECRET_KEY:
     settings.SECRET_KEY = 'TotallyFake-SECRET_KEY-ForSphinxDocs'
-setup_environ(settings)
 
 # -- General configuration -----------------------------------------------------
 

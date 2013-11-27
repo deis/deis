@@ -83,7 +83,6 @@ class Key(UuidAuditedModel):
         self.owner.publish()
 
 
-@python_2_unicode_compatible
 class ProviderManager(models.Manager):
     """Manage database interactions for :class:`Provider`."""
 
@@ -126,7 +125,6 @@ class Provider(UuidAuditedModel):
         return "{}-{}".format(self.id, self.get_type_display())
 
 
-@python_2_unicode_compatible
 class FlavorManager(models.Manager):
     """Manage database interactions for :class:`Flavor`."""
 
@@ -292,7 +290,6 @@ class Layer(UuidAuditedModel):
         return tasks.destroy_layer.delay(self).wait()
 
 
-@python_2_unicode_compatible
 class NodeManager(models.Manager):
 
     def new(self, formation, layer, fqdn=None):
@@ -537,7 +534,6 @@ class App(UuidAuditedModel):
         return node.run(command)
 
 
-@python_2_unicode_compatible
 class ContainerManager(models.Manager):
 
     def scale(self, app, structure, **kwargs):
@@ -733,7 +729,7 @@ class Build(UuidAuditedModel):
         # create the build
         new_build = cls.objects.create(**push)
         # send a release signal
-        release_signal.send(sender=push, build=new_build, app=app, user=user)
+        release_signal.send(sender=user, build=new_build, app=app, user=user)
         # see if we need to scale an initial web container
         if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
            len(app.container_set.filter(type='web')) < 1:
