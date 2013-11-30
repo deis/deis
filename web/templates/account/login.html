@@ -12,18 +12,6 @@
 
 <p>{% blocktrans %}Need an account? <a href="{{ signup_url }}"><strong>Sign up</strong></a>.{% endblocktrans %}</p>
 
-{% if socialaccount.providers  %}
-<p>{% blocktrans with site.name as site_name %}Please log in with one
-of your existing third party accounts.{% endblocktrans %}</p>
-<div class="socialaccount_ballot">
-  <ul class="socialaccount_providers">
-    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-  </ul>
-  <div class="login-or">{% trans 'or' %}</div>
-</div>
-{% include "socialaccount/snippets/login_extra.html" %}
-{% endif %}
-
 <form class="login" method="POST" action="{% url 'account_login' %}">
   {% csrf_token %}
   {{ form.as_p }}
