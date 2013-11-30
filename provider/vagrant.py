@@ -50,7 +50,7 @@ def build_layer(layer):
     """
 
     # This can also be done with `deis layers:update` now.
-    layer_ = Layer.objects.get(id=layer['id'])
+    layer_ = Layer.objects.get(id=layer['id'], formation__id=layer['formation'])
     layer_.ssh_username = 'vagrant'
     layer_.save()
 
