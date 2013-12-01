@@ -24,8 +24,8 @@ if ! $CONTRIB_DIR/check-deis-deps.sh; then
 fi
 
 # connection details for using digital ocean's API
-client_id=$DIGITALOCEAN_CLIENT_ID
-api_key=$DIGITALOCEAN_API_KEY
+client_id=$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_client_id]")
+api_key=$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_api_key]")
 
 # Check that client ID and API key was set
 if test -z $client_id; then
@@ -111,7 +111,23 @@ knife digital_ocean droplet create \
   --identity-file $ssh_key_path \
   --bootstrap \
   --run-list $run_list
+result=$?
 set +x
 
-# Need Chef admin permission in order to add and remove nodes and clients
-echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
+if [ $result -ne 0 ]; then
+  echo_color "Knife botstrap failed."
+  # Destroy droplet
+  droplet_id=$(knife digital_ocean droplet list | grep deis-controller | awk '{print $1}')
+  echo_color "Destroying Droplet $droplet_id..."
+  knife digital_ocean droplet destroy -S $droplet_id
+  # Remove node and client from Chef Server
+  echo_color "Deleting Chef client..."
+  knife client delete deis-controller
+  echo_color "Deleting Chef node..."
+  knife node delete deis-controller
+else
+  echo_color "Knife bootstrap successful."
+  # Need Chef admin permission in order to add and remove nodes and clients
+  echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
+fi
+
