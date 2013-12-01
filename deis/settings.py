@@ -110,7 +110,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "allauth.account.context_processors.account",
-    "allauth.socialaccount.context_processors.socialaccount",
     "deis.context_processors.site",
 )
 
@@ -149,7 +148,6 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
     'djcelery',
     'json_field',
     'rest_framework',
