@@ -11,10 +11,12 @@ import os.path
 import uuid
 
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from deis import settings
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class FormationTest(TestCase):
 
     """Tests creation of different node formations"""

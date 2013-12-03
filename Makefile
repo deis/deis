@@ -3,17 +3,17 @@ all:
 
 db:
 	python manage.py syncdb --noinput
-	python manage.py migrate
+	python manage.py migrate --noinput
 
 test:
-	python manage.py test api cm provider web
+	python -Wall manage.py test --noinput api cm provider web
 
 coverage:
-	coverage run manage.py test api cm provider web
+	coverage run manage.py test --noinput api cm provider web
 	coverage html
 
 test_client:
-	python -m unittest discover client.tests
+	python -Wall -m unittest discover client.tests
 
 flake8:
 	flake8

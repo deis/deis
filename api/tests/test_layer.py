@@ -8,10 +8,12 @@ from __future__ import unicode_literals
 
 import json
 
-from django.test import TestCase
 from Crypto.PublicKey import RSA
+from django.test import TestCase
+from django.test.utils import override_settings
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class LayerTest(TestCase):
 
     """Tests creation of different layers of node types"""
