@@ -252,7 +252,6 @@ BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 CELERY_IMPORTS = ('api.tasks',)
 CELERY_RESULT_BACKEND = 'amqp'
-CELERYD_CONCURRENCY = 8
 
 
 # default deis settings
