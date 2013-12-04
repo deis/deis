@@ -185,19 +185,33 @@ class Formation(UuidAuditedModel):
                 'nodes': self.nodes}
 
     def build(self):
-        tasks.build_formation.delay(self).wait()
+        return
 
     def destroy(self, *args, **kwargs):
-        tasks.destroy_formation.delay(self).wait()
+        app_tasks = [tasks.destroy_app.si(a) for a in self.app_set.all()]
+        node_tasks = [tasks.destroy_node.si(n) for n in self.node_set.all()]
+        layer_tasks = [tasks.destroy_layer.si(l) for l in self.layer_set.all()]
+        group(app_tasks + node_tasks).apply_async().join()
+        group(layer_tasks).apply_async().join()
+        CM.purge_formation(self.flat())
+        self.delete()
+        tasks.converge_controller.apply_async().wait()
 
     def publish(self):
         data = self.calculate()
         CM.publish_formation(self.flat(), data)
         return data
 
-    def converge(self, **kwargs):
+    def converge(self, controller=False, **kwargs):
         databag = self.publish()
-        tasks.converge_formation.delay(self).wait()
+        nodes = self.node_set.all()
+        subtasks = []
+        for n in nodes:
+            subtask = tasks.converge_node.si(n)
+            subtasks.append(subtask)
+        if controller is True:
+            subtasks.append(tasks.converge_controller.si())
+        group(*subtasks).apply_async().join()
         return databag
 
     def calculate(self):
@@ -459,10 +473,11 @@ class App(UuidAuditedModel):
         Release.objects.create(
             version=1, owner=self.owner, app=self, config=config, build=build)
         self.formation.publish()
-        tasks.build_app.delay(self).wait()
 
     def destroy(self):
-        tasks.destroy_app.delay(self).wait()
+        CM.purge_app(self.flat())
+        self.delete()
+        self.formation.publish()
 
     def publish(self):
         """Publish the application to configuration management"""
