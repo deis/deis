@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
-from celery.canvas import group
 from django.contrib.auth.models import AnonymousUser, User
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
@@ -18,7 +17,6 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from api import models
 from api import serializers
-from api import tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -200,7 +198,6 @@ class FormationViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         formation = self.get_object()
         formation.destroy()
-        tasks.converge_controller.delay().wait()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -299,8 +296,7 @@ class AppViewSet(OwnerViewSet):
     def post_save(self, app, created=False, **kwargs):
         if created:
             app.build()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
 
     def pre_save(self, app, created=False, **kwargs):
         if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
@@ -372,8 +368,7 @@ class AppViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         app = self.get_object()
         app.destroy()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
