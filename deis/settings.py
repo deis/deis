@@ -253,6 +253,10 @@ CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 CELERY_IMPORTS = ('api.tasks',)
 CELERY_RESULT_BACKEND = 'amqp'
 
+# hardcode celeryd concurrency
+# this number should be equal to N+1, where
+# N is number of nodes in largest formation
+CELERYD_CONCURRENCY = 8
 
 # default deis settings
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
