@@ -160,7 +160,7 @@ class AppSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    formation = OwnerSlugRelatedField(slug_field='id')
+    formation = OwnerSlugRelatedField(slug_field='id', required=False)
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""

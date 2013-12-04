@@ -308,6 +308,16 @@ class AppViewSet(OwnerViewSet):
         return super(AppViewSet, self).pre_save(app, **kwargs)
 
     def create(self, request, **kwargs):
+        if not 'formation' in request.DATA:
+            count = models.Formation.objects.count()
+            if count == 1:
+                request.DATA['formation'] = models.Formation.objects.first()
+            elif count == 0:
+                return Response('No formations available',
+                                status=HTTP_400_BAD_REQUEST)
+            else:
+                return Response('Could not determine default formation',
+                                status=HTTP_400_BAD_REQUEST)
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except EnvironmentError as e:
