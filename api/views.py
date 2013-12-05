@@ -282,7 +282,11 @@ class NodeViewSet(FormationNodeViewSet):
 
     def converge(self, request, **kwargs):
         node = self.get_object()
-        output, _ = node.converge()
+        try:
+            output, _ = node.converge()
+        except RuntimeError as e:
+            return Response(e.output, status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            content_type='text/plain')
         return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
 
 
