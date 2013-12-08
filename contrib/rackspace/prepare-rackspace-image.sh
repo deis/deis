@@ -40,14 +40,15 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker-0.6.4 curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.7.1 curl git make python-setuptools python-pip -yq
 
-# create buildstep docker image
-git clone -b deis https://github.com/opdemand/buildstep.git
-cd buildstep
-make
-cd ..
-rm -rf buildstep
+# wait for docker to start
+while [ ! -e /var/run/docker.sock ] ; do
+  inotifywait -t 2 -e create $(dirname /var/run/docker.sock)
+done
+
+# pull progrium/cedarish docker image
+docker pull progrium/cedarish
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make

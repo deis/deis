@@ -531,6 +531,7 @@ class App(UuidAuditedModel):
 
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
+        # TODO: add support for interactive shell
         nodes = self.formation.node_set.filter(layer__runtime=True).order_by('?')
         if not nodes:
             raise EnvironmentError('No nodes available to run command')
@@ -539,12 +540,9 @@ class App(UuidAuditedModel):
         # prepare ssh command
         version = release.version
         docker_args = ' '.join(
-            ['-v',
-             '/opt/deis/runtime/slugs/{app_id}-{version}/app:/app'.format(**locals()),
-             release.build.image])
-        base_cmd = "export HOME=/app; cd /app && for profile in " \
-                   "`find /app/.profile.d/*.sh -type f`; do . $profile; done"
-        command = "/bin/sh -c '{base_cmd} && {command}'".format(**locals())
+            ['-a', 'stdout', '-a', 'stderr',
+             '-v', '/opt/deis/runtime/slugs/{app_id}-v{version}:/app'.format(**locals()),
+             'deis/slugrunner'])
         command = "sudo docker run {docker_args} {command}".format(**locals())
         return node.run(command)
 
