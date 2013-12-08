@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
-from celery.canvas import group
 from django.contrib.auth.models import AnonymousUser, User
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
@@ -18,7 +17,6 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from api import models
 from api import serializers
-from api import tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -200,7 +198,6 @@ class FormationViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         formation = self.get_object()
         formation.destroy()
-        tasks.converge_controller.delay().wait()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -285,7 +282,11 @@ class NodeViewSet(FormationNodeViewSet):
 
     def converge(self, request, **kwargs):
         node = self.get_object()
-        output, _ = node.converge()
+        try:
+            output, _ = node.converge()
+        except RuntimeError as e:
+            return Response(e.output, status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            content_type='text/plain')
         return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
 
 
@@ -299,8 +300,7 @@ class AppViewSet(OwnerViewSet):
     def post_save(self, app, created=False, **kwargs):
         if created:
             app.build()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
 
     def pre_save(self, app, created=False, **kwargs):
         if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
@@ -308,6 +308,16 @@ class AppViewSet(OwnerViewSet):
         return super(AppViewSet, self).pre_save(app, **kwargs)
 
     def create(self, request, **kwargs):
+        if not 'formation' in request.DATA:
+            count = models.Formation.objects.count()
+            if count == 1:
+                request.DATA['formation'] = models.Formation.objects.first()
+            elif count == 0:
+                return Response('No formations available',
+                                status=HTTP_400_BAD_REQUEST)
+            else:
+                return Response('Could not determine default formation',
+                                status=HTTP_400_BAD_REQUEST)
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except EnvironmentError as e:
@@ -362,8 +372,7 @@ class AppViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         app = self.get_object()
         app.destroy()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -1,22 +1,20 @@
 # Deis controller requirements
-boto==2.16.0
-celery==3.0.22  # 3.0.23 errors, see https://github.com/opdemand/deis/issues/148
-Cython==0.19.2
-Django==1.5.5
-django-allauth==0.14.1
-django-celery==3.0.23
+boto==2.19.0
+celery==3.1.6
+Django==1.6.0
+django-allauth==0.15.0
 django-json-field==0.5.5
 django-yamlfield==0.5
-djangorestframework==2.3.8
-git+git://github.com/surfly/gevent.git@1.0rc3#egg=gevent
+djangorestframework==2.3.9
 dop==0.1.4
+gevent==1.0
 gunicorn==18.0
 paramiko==1.12.0
 psycopg2==2.5.1
 pycrypto==2.6.1
-pyrax==1.6.1
+pyrax==1.6.2
 PyYAML==3.10
-South==0.8.2
+South==0.8.4
 
 # Deis client requirements
 docopt==0.6.1
@@ -25,7 +23,7 @@ requests==2.0.1
 
 # Deis documentation requirements
 Sphinx>=1.2b3
-smartypants>=1.8.2
+smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0
 
 # Run "make coverage" for the % of code exercised during tests
@@ -38,4 +36,4 @@ docutils>=0.11
 flake8>=2.1.0
 
 # Python expect is used to automate client-driven tests
-pexpect-u>=2.5.1
+pexpect>=3.0

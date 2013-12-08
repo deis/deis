@@ -19,13 +19,15 @@ import sys
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('..'))
+# create local_settings.py for SECRET_KEY if necessary
+local_settings_path = os.path.abspath(
+    os.path.join('..', 'deis', 'local_settings.py'))
+if not os.path.exists(local_settings_path):
+    with open(local_settings_path, 'w') as local_settings:
+        local_settings.write("SECRET_KEY = 'DummySecretKey'\n")
 # set up Django
-from deis import settings
-from django.core.management import setup_environ
-
-if not settings.SECRET_KEY:
-    settings.SECRET_KEY = 'TotallyFake-SECRET_KEY-ForSphinxDocs'
-setup_environ(settings)
+os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+from django.conf import settings  # noqa
 
 # -- General configuration -----------------------------------------------------
 

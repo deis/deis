@@ -50,7 +50,7 @@ def build_layer(layer):
     """
 
     # This can also be done with `deis layers:update` now.
-    layer_ = Layer.objects.get(id=layer['id'])
+    layer_ = Layer.objects.get(id=layer['id'], formation__id=layer['formation'])
     layer_.ssh_username = 'vagrant'
     layer_.save()
 
@@ -131,17 +131,25 @@ def destroy_node(node):
         return
 
     # Shut the VM down and destroy it
-    _run_vagrant_command(node['provider_id'], args=['destroy', '--force'], creds=node['creds'])
-    node_dir = HOST_NODES_DIR + '/' + node['provider_id']
+    try:
+        _run_vagrant_command(node['provider_id'], args=['destroy', '--force'], creds=node['creds'])
+        node_dir = HOST_NODES_DIR + '/' + node['provider_id']
 
-    # Sanity check before `rm -rf`
-    if 'contrib/vagrant' not in node_dir:
-        raise RuntimeError("Aborted node destruction: attempting to 'rm -rf' unexpected directory")
+        # Sanity check before `rm -rf`
+        if 'contrib/vagrant' not in node_dir:
+            raise RuntimeError(
+                "Aborted node destruction: attempting to 'rm -rf' unexpected directory")
 
-    # Completely remove the folder that contained the VM
-    rm_vagrantfile = 'rm ' + node_dir + '/Vagrantfile'
-    rm_node_dir = 'rm -rf ' + node_dir
-    _host_ssh(commands=[rm_vagrantfile, rm_node_dir], creds=node['creds'])
+        # Completely remove the folder that contained the VM
+        rm_vagrantfile = 'rm ' + node_dir + '/Vagrantfile'
+        rm_node_dir = 'rm -rf ' + node_dir
+        _host_ssh(commands=[rm_vagrantfile, rm_node_dir], creds=node['creds'])
+    except RuntimeError as err:
+        # If we couldn't cd to the node dir, just log that as a warning
+        if 'No such file or directory' in str(err):
+            logger.warn(err)
+        else:
+            raise
 
 
 def _run_vagrant_command(node_id, args=[], creds={}):

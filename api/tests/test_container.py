@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from deis import settings
 
@@ -24,6 +25,7 @@ def get_allocations(container_dict):
     return sorted(counts.values())
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class ContainerTest(TestCase):
 
     """Tests creation of containers on nodes"""

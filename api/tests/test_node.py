@@ -9,8 +9,10 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
+from django.test.utils import override_settings
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class NodeTest(TestCase):
 
     """Tests creation of nodes"""

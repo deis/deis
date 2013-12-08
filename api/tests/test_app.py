@@ -10,10 +10,12 @@ import json
 import os.path
 
 from django.test import TestCase
+from django.test.utils import override_settings
 
 from deis import settings
 
 
+@override_settings(CELERY_ALWAYS_EAGER=True)
 class AppTest(TestCase):
 
     """Tests creation of applications"""
@@ -108,6 +110,34 @@ class AppTest(TestCase):
                                     content_type='application/json')
         self.assertContains(response, 'App with this Id already exists.', status_code=400)
         return response
+
+    def test_app_default_formation(self):
+        # delete formation created in setUp
+        response = self.client.delete('/api/formations/autotest')
+        self.assertEqual(response.status_code, 204)
+        # try creating an app with no formation specified
+        url = '/api/apps'
+        response = self.client.post(url)
+        self.assertContains(response, 'No formations available', status_code=400)
+        # create a formation
+        formation1 = 'autotest'
+        response = self.client.post('/api/formations', json.dumps({'id': formation1}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # try again to create an app with no formation specified
+        url = '/api/apps'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(formation1, response.data['formation'])
+        # create a second formation
+        formation2 = 'autotest2'
+        response = self.client.post('/api/formations', json.dumps({'id': formation2}),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # create another app with no formation specified
+        url = '/api/apps'
+        response = self.client.post(url)
+        self.assertContains(response, 'Could not determine default formation', status_code=400)
 
     def test_multiple_apps(self):
         url = '/api/apps'

@@ -43,7 +43,7 @@ def build_layer(layer):
     params = {'name': name, 'ssh_pub_key': layer['ssh_public_key']}
     conn.request('/ssh_keys/new/', method='GET', params=params)
     # Digital Ocean images only have the root user created by default
-    l = Layer.objects.get(id=layer['id'])
+    l = Layer.objects.get(id=layer['id'], formation__id=layer['formation'])
     l.ssh_username = 'root'
     l.save()
 

@@ -63,7 +63,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 
 class Session(requests.Session):
@@ -391,11 +391,10 @@ class DeisClient(object):
         """
         Create a new application
 
-        Must provide a target formation to host the application
-        containers. If no ID is provided, one will be generated
-        automatically.
+        If no ID is provided, one will be generated automatically.
+        If no formation is provided, the first available will be used.
 
-        Usage: deis apps:create --formation=<formation> [--id=<id>]
+        Usage: deis apps:create [--id=<id> --formation=<formation>]
         """
         body = {}
         try:
@@ -413,11 +412,6 @@ class DeisClient(object):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
-        formation = args.get('--formation')
-        response = self._dispatch('get', '/api/formations/{}'.format(formation))
-        if response.status_code != 200:
-            print('Formation not found')
-            return
         sys.stdout.write('Creating application... ')
         sys.stdout.flush()
         try:

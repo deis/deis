@@ -1,4 +1,4 @@
-source "http://api.berkshelf.com"
+site :opscode
 
 cookbook 'apt'
 cookbook 'rsyslog'
