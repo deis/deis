@@ -1,0 +1,11 @@
+Configure Wildcard DNS
+----------------------
+In order to expose applications to end-users, you must configure DNS to route
+inbound requests to the formation's proxy layer.
+This needs to be done using wildcard DNS so that \*.formation.domain resolves
+to the proxy nodes.
+
+How you accomplish this depends in large part on your DNS provider.
+At the end of the process, you should be able to query "testing123.deisapp.com"
+(where deisapp.com is replaced with your formation's domain)
+and have it return the A records for your proxy nodes.

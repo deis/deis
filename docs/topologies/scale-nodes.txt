@@ -1,0 +1,5 @@
+Scale Nodes
+-----------
+Now that we have our layers defined, we can add :ref:`Nodes <node>`
+to provide the formation with computing capacity.
+Nodes can be scaled automatically or manually.

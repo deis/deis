@@ -12,10 +12,10 @@ This documentation has the following resources:
 
    index
    gettingstarted/index
-   installation/index
-   terms/index
-   opstutorial/index
-   devtutorial/index
+   developer/index
+   operations/index
+   components/index
+   topologies/index
    contributing/index
    client/index
    server/index

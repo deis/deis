@@ -625,17 +625,10 @@ class DeisClient(object):
                           '<controller>': controller}
             if self.auth_login(login_args) is False:
                 print('Login failed')
-                return
-            print()
-            self.keys_add({})
-            print()
-            self.providers_discover({})
-            print()
-            print('Use `deis formations:create <id> --flavor=ec2-us-east-1`'
-                  ' to create a new formation')
         else:
             print('Registration failed', response.content)
             return False
+        return True
 
     def auth_cancel(self, args):
         """

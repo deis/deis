@@ -1,12 +1,12 @@
-:title: Terms
-:description: Deis Terminology
-:keywords: terms, terminology, glossary
+:title: Deis Components, Usage and Terminolody
+:description: Deis Components, Usage and Terminology
+:keywords: components, usage, terms, terminology, glossary
 
-.. _terms:
+.. _components:
 
 
-Terms
-=====
+Components
+==========
 
 .. toctree::
     :maxdepth: 1
