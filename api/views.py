@@ -377,14 +377,14 @@ class AdminPermsViewSet(viewsets.ModelViewSet):
 
     def create(self, request, **kwargs):
         user = get_object_or_404(User, username=request.DATA['username'])
-        user.is_superuser = True
-        user.save(update_fields=['is_superuser'])
+        user.is_superuser = user.is_staff = True
+        user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
         user = get_object_or_404(User, username=request.DATA['username'])
-        user.is_superuser = False
-        user.save(update_fields=['is_superuser'])
+        user.is_superuser = user.is_staff = False
+        user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

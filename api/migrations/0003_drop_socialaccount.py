@@ -1,37 +1,34 @@
 # -*- coding: utf-8 -*-
 from south.utils import datetime_utils as datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
+from django.conf import settings
 from django.db import models
-from django.db.utils import OperationalError
+from django.contrib.auth.management import create_permissions
+from django.contrib.contenttypes.models import ContentType
 
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
+
+    depends_on = (
+        ('guardian', '0005_auto__chg_field_groupobjectpermission_object_pk__chg_field_userobjectp'),
+    )
 
     def forwards(self, orm):
-        # Drop django-celery tables
-        try:
-            db.delete_table('djcelery_taskstate', cascade=True)
-            db.delete_table('djcelery_workerstate', cascade=True)
-            db.delete_table('djcelery_periodictask', cascade=True)
-            db.delete_table('djcelery_periodictasks', cascade=True)
-            db.delete_table('djcelery_crontabschedule', cascade=True)
-            db.delete_table('djcelery_intervalschedule', cascade=True)
-            db.delete_table('celery_tasksetmeta', cascade=True)
-            db.delete_table('celery_taskmeta', cascade=True)
-        except OperationalError:
-            pass
-        # Drop django-allauth.socialaccount tables
-        try:
-            db.delete_table('socialaccount_socialtoken', cascade=True)
-            db.delete_table('socialaccount_socialaccount', cascade=True)
-            db.delete_table('socialaccount_socialapp', cascade=True)
-            db.delete_table('socialaccount_socialapp_sites', cascade=True)
-        except OperationalError:
-            pass
+        "Drop socialaccount tables."
+        tables_to_drop = [
+            'socialaccount_socialtoken',
+            'socialaccount_socialaccount',
+            'socialaccount_socialapp',
+            'socialaccount_socialapp_sites',
+        ]
+        for table in tables_to_drop:
+            if table in orm:
+                db.delete_table(table)
+        ContentType.objects.filter(app_label='socialaccount').delete()
 
     def backwards(self, orm):
-        pass
+        raise RuntimeError('Cannot reverse this migration')
 
     models = {
         u'api.app': {
@@ -204,4 +201,5 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['api']
+    complete_apps = ['contenttypes', 'auth', 'api']
+    symmetrical = True
