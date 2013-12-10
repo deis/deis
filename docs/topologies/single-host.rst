@@ -46,10 +46,6 @@ This will automatically provision a new node (separate from the controller)
 which will host the entire formation.
 
 .. include:: scale-manually.txt
-
-.. tip:: Reuse the Controller
-   Looking for the smallest possible footprint for Deis?
-   Place the proxy and runtime layers on the :ref:`Controller`.
    
 .. include:: wildcard-dns.txt
 
