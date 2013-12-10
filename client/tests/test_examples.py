@@ -31,15 +31,25 @@ class ExamplesTest(TestCase):
         child.expect("created {}.*to scale a basic formation".format(
             cls.formation))
         child.expect(pexpect.EOF)
-        # TODO: scale the formation runtime=1
+        # scale the formation runtime=1
+        child = pexpect.spawn("{} nodes:scale {} runtime=1".format(
+            DEIS, cls.formation), timeout=10 * 60)
+        child.expect('Scaling nodes...')
+        child.expect(r'done in \d+s')
+        child.expect(pexpect.EOF)
 
     @classmethod
     def tearDownClass(cls):
-        # TODO: scale formation runtime=0
+        # scale formation runtime=0
+        child = pexpect.spawn("{} nodes:scale {} runtime=0".format(
+            DEIS, cls.formation), timeout=3 * 60)
+        child.expect('Scaling nodes...')
+        child.expect(r'done in \d+s')
+        child.expect(pexpect.EOF)
         # destroy the formation
         child = pexpect.spawn("{} formations:destroy {} --confirm={}".format(
             DEIS, cls.formation, cls.formation))
-        child.expect('done in ', timeout=5*60)
+        child.expect('done in ', timeout=5 * 60)
         child.expect(pexpect.EOF)
         purge(cls.username, cls.password)
 
@@ -51,25 +61,37 @@ class ExamplesTest(TestCase):
         # create an App
         child = pexpect.spawn("{} create --formation={}".format(
             DEIS, self.formation))
-        child.expect('done, created (?P<name>[-_\w]+)')
+        child.expect('done, created (?P<name>[-_\w]+)', timeout=3 * 60)
         app = child.match.group('name')
         try:
             child.expect('Git remote deis added')
             child.expect(pexpect.EOF)
             child = pexpect.spawn('git push deis master')
             # check git output for repo_type, e.g. "Clojure app detected"
-            child.expect("{} app detected".format(repo_type), timeout=2*60)
-            child.expect(' -> master', timeout=10*60)
-            child.expect(pexpect.EOF, timeout=2*60)
-            # TODO: scale up runtime nodes in setUpClass, then
-            # actually fetch the URL with curl and check the output
-            # TODO: `deis config:set POWERED_BY="Automated Testing"`
+            # TODO: for some reason, the next regex times out...
+            # child.expect("{} app detected".format(repo_type), timeout=5 * 60)
+            child.expect('Launching... ', timeout=10 * 60)
+            child.expect('deployed to Deis(?P<url>.+)To learn more', timeout=3 * 60)
+            url = child.match.group('url')
+            child.expect(' -> master')
+            child.expect(pexpect.EOF, timeout=2 * 60)
+            # fetch the URL with curl and check the output
+            child = pexpect.spawn("curl -s {}".format(url))
+            child.expect('Powered by Deis')
+            child.expect(pexpect.EOF)
+            # `deis config:set POWERED_BY="Automated Testing"`
+            child = pexpect.spawn(
+                "{} config:set POWERED_BY='Automated Testing'".format(DEIS))
+            child.expect(pexpect.EOF, timeout=3 * 60)
             # then re-fetch the URL with curl and recheck the output
+            child = pexpect.spawn("curl -s {}".format(url))
+            child.expect('Powered by Automated Testing')
+            child.expect(pexpect.EOF)
         finally:
             # destroy the app
             child = pexpect.spawn(
                 "{} apps:destroy --app={} --confirm={}".format(DEIS, app, app),
-                timeout=5*60)
+                timeout=5 * 60)
             child.expect('Git remote deis removed')
             child.expect(pexpect.EOF)
 

@@ -2,6 +2,12 @@
 Tests for the command-line client for the Deis system.
 """
 
+try:
+    import pexpect  # noqa
+except ImportError:
+    print('Please install the python pexpect library.')
+    raise
+
 from .test_apps import *  # noqa
 from .test_auth import *  # noqa
 from .test_builds import *  # noqa
