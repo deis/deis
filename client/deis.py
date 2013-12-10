@@ -1748,7 +1748,7 @@ class DeisClient(object):
         try:
             deis_codebase_folder = self._session.git_root().split('/')[-1]
         except EnvironmentError:
-            deis_codebase_folder = None
+            deis_codebase_folder = 'deis'
         if deis_codebase_folder and deis_codebase_folder in running_vms:
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
