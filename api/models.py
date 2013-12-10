@@ -188,10 +188,9 @@ class Formation(UuidAuditedModel):
         return
 
     def destroy(self, *args, **kwargs):
-        app_tasks = [tasks.destroy_app.si(a) for a in self.app_set.all()]
         node_tasks = [tasks.destroy_node.si(n) for n in self.node_set.all()]
         layer_tasks = [tasks.destroy_layer.si(l) for l in self.layer_set.all()]
-        group(app_tasks + node_tasks).apply_async().join()
+        group(node_tasks).apply_async().join()
         group(layer_tasks).apply_async().join()
         CM.purge_formation(self.flat())
         self.delete()
