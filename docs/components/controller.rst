@@ -31,5 +31,5 @@ The controller stack includes:
 * Gitosis to handle access control for Git Push over SSH
 * Docker and Buildstep to process Heroku Buildpacks
 
-Follow the :ref:`Installation` process to setup your own private
+Follow the :ref:`Operations Guide <operations>` to setup your own private
 Deis controller.

@@ -22,6 +22,6 @@ in the :ref:`client` and :ref:`server` sections.
 
 Interested in contributing to the Deis project?  Check out our
 :ref:`Contributor Overview <contributor>` and
-:ref:`devsetup` instructions.
+:ref:`localdev` instructions.
 
 .. _`Chef cookbooks`: https://github.com/opdemand/deis-cookbook

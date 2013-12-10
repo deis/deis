@@ -12,7 +12,7 @@ Contributing
     :maxdepth: 1
 
     overview
-    devsetup
+    localdev
     standards
     community
     conduct

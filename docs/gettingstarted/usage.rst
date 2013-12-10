@@ -6,7 +6,7 @@
 Usage
 =====
 
-Once you have set up a Deis Controller (see :ref:`installation`), you
+Once you have set up a Deis Controller (see the :ref:`Operations Guide <operations>`), you
 will use the Deis CLI (command-line interface) to create a formation for
 your app, push your code, and scale your own cloud resources.
 
