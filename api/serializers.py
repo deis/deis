@@ -91,7 +91,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
 
@@ -105,7 +105,7 @@ class BuildSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Build` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -117,7 +117,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid', required=False)
 

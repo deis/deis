@@ -4,7 +4,6 @@ RESTful view classes for presenting Deis API objects.
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import importlib
 import json
 
 from Crypto.PublicKey import RSA
@@ -19,15 +18,11 @@ from rest_framework import permissions
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from deis import settings
-
-from api import models, serializers
-
-# import user-defined config management module
-CM = importlib.import_module(settings.CM_MODULE)
+from api import models, serializers, tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -42,7 +37,7 @@ class AnonymousAuthentication(BaseAuthentication):
 
 class IsAnonymous(permissions.BasePermission):
     """
-    Object-level permission to allow anonymous users.
+    View permission to allow anonymous users.
     """
 
     def has_permission(self, request, view):
@@ -69,9 +64,27 @@ class IsOwner(permissions.BasePermission):
             return False
 
 
-class IsSuperUser(permissions.BasePermission):
+class IsAppUser(permissions.BasePermission):
     """
-    Object-level permission to allow only superusers.
+    Object-level permission to allow owners or collaborators to access
+    an app-related model.
+    """
+    def has_object_permission(self, request, view, obj):
+        if isinstance(obj, models.App) and obj.owner == request.user:
+            return True
+        elif hasattr(obj, 'app') and obj.app.owner == request.user:
+            return True
+        elif request.user.has_perm('use_app', obj):
+            return request.method != 'DELETE'
+        elif hasattr(obj, 'app') and request.user.has_perm('use_app', obj.app):
+            return request.method != 'DELETE'
+        else:
+            return False
+
+
+class IsAdmin(permissions.BasePermission):
+    """
+    View permission to allow only admins.
     """
 
     def has_permission(self, request, view):
@@ -142,7 +155,7 @@ class KeyViewSet(OwnerViewSet):
     lookup_field = 'id'
 
     def post_save(self, key, created=False, **kwargs):
-        CM.converge_controller()
+        tasks.converge_controller.apply_async().wait()
 
 
 class ProviderViewSet(OwnerViewSet):
@@ -180,14 +193,6 @@ class FormationViewSet(OwnerViewSet):
     model = models.Formation
     serializer_class = serializers.FormationSerializer
     lookup_field = 'id'
-
-    def get_queryset(self, **kwargs):
-        """
-        Filter Formations by `owner` attribute or the
-        `api.use_formation` permission.
-        """
-        return super(FormationViewSet, self).get_queryset(**kwargs) | \
-            get_objects_for_user(self.request.user, 'api.use_formation')
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
@@ -337,6 +342,8 @@ class _PermsViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
+        app.publish()
+        tasks.converge_controller.apply_async().wait()
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
@@ -346,6 +353,8 @@ class _PermsViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, username=kwargs['username'])
         if user.has_perm(self.perm, app):
             remove_perm(self.perm, user, app)
+            app.publish()
+            tasks.converge_controller.apply_async().wait()
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -358,19 +367,12 @@ class AppPermsViewSet(_PermsViewSet):
     perm = 'use_app'
 
 
-class FormationPermsViewSet(_PermsViewSet):
-    """RESTful views for sharing formations with collaborators."""
-
-    model = models.Formation
-    perm = 'use_formation'
-
-
 class AdminPermsViewSet(viewsets.ModelViewSet):
     """RESTful views for sharing admin permissions with other users."""
 
     model = User
     serializer_class = serializers.AdminUserSerializer
-    permission_classes = (IsSuperUser,)
+    permission_classes = (IsAdmin,)
 
     def get_queryset(self, **kwargs):
         return self.model.objects.filter(is_active=True, is_superuser=True)
@@ -410,6 +412,7 @@ class AppViewSet(OwnerViewSet):
     model = models.App
     serializer_class = serializers.AppSerializer
     lookup_field = 'id'
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
 
     def get_queryset(self, **kwargs):
         """
@@ -499,15 +502,23 @@ class AppViewSet(OwnerViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BaseAppViewSet(OwnerViewSet):
+class BaseAppViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
+
+    def pre_save(self, obj):
+        obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App.objects.filter(
-            owner=self.request.user, id=self.kwargs['id']))
-        return self.model.objects.filter(owner=self.request.user, app=app)
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
-        return self.get_queryset().latest('created')
+        obj = self.get_queryset().latest('created')
+        user = self.request.user
+        if user == obj.app.owner or user in get_users_with_perms(obj.app):
+            return obj
+        raise PermissionDenied()
 
 
 class AppConfigViewSet(BaseAppViewSet):
@@ -538,7 +549,7 @@ class AppConfigViewSet(BaseAppViewSet):
         # remove config keys if we provided a null value
         [values.pop(k) for k, v in provided.items() if v is None]
         request.DATA['values'] = values
-        return super(OwnerViewSet, self).create(request, *args, **kwargs)
+        return super(AppConfigViewSet, self).create(request, *args, **kwargs)
 
 
 class AppBuildViewSet(BaseAppViewSet):
@@ -554,10 +565,10 @@ class AppBuildViewSet(BaseAppViewSet):
                 user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
         request._data = request.DATA.copy()
-        app = models.App.objects.get(owner=self.request.user, id=self.kwargs['id'])
         request.DATA['app'] = app
-        return super(OwnerViewSet, self).create(request, *args, **kwargs)
+        return super(AppBuildViewSet, self).create(request, *args, **kwargs)
 
 
 class AppReleaseViewSet(BaseAppViewSet):
@@ -574,9 +585,8 @@ class AppContainerViewSet(OwnerViewSet):
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App.objects.filter(
-            owner=self.request.user, id=self.kwargs['id']))
-        qs = self.model.objects.filter(owner=self.request.user, app=app)
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        qs = self.model.objects.filter(app=app)
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)

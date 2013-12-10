@@ -3,7 +3,6 @@ omit =
     */venv/*
     */virtualenv/*
     api/__init__.py
-    api/tests/*
     client/__init__.py
     client/models.py
     client/tests/__init__.py

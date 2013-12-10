@@ -1671,9 +1671,9 @@ class DeisClient(object):
 
     def perms_list(self, args):
         """
-        Usage: deis perms:list [--app=<app>|--formation=<form>|--admin]
+        Usage: deis perms:list [--app=<app>|--admin]
         """
-        url = self._parse_perms_args(args)
+        app, url = self._parse_perms_args(args)
         response = self._dispatch('get', url)
         if response.status_code == requests.codes.ok:
             print(json.dumps(response.json(), indent=2))
@@ -1682,46 +1682,52 @@ class DeisClient(object):
 
     def perms_create(self, args):
         """
-        Usage: deis perms:create <username> [--app=<app>|--formation=<form>|--admin]
+        Usage: deis perms:create <username> [--app=<app>|--admin]
         """
-        url = self._parse_perms_args(args)
-        body = {'username': args.get('<username>')}
+        app, url = self._parse_perms_args(args)
+        username = args.get('<username>')
+        body = {'username': username}
+        if app:
+            msg = "Adding {} to {} collaborators... ".format(username, app)
+        else:
+            msg = "Adding {} to system administrators... ".format(username)
+        sys.stdout.write(msg)
+        sys.stdout.flush()
         response = self._dispatch('post', url, json.dumps(body))
         if response.status_code == requests.codes.created:
-            print(json.dumps(response.json(), indent=2))
+            print('done')
         else:
             return ResponseError(response)
 
     def perms_delete(self, args):
         """
-        Usage: deis perms:delete <username> [--app=<app>|--formation=<form>|--admin]
+        Usage: deis perms:delete <username> [--app=<app>|--admin]
         """
+        app, url = self._parse_perms_args(args)
         username = args.get('<username>')
-        url = "{}/{}".format(self._parse_perms_args(args), username)
+        url = "{}/{}".format(url, username)
+        if app:
+            msg = "Removing {} from {} collaborators... ".format(username, app)
+        else:
+            msg = "Remove {} from system administrators... ".format(username)
+        sys.stdout.write(msg)
+        sys.stdout.flush()
         response = self._dispatch('delete', url)
         if response.status_code == requests.codes.no_content:
-            print('Permission deleted.')
+            print('done')
         else:
             return ResponseError(response)
 
-    # def perms_transfer(self, args):
-    #     """
-    #     Usage: deis perms:delete <username> [--app=<app>|--formation=<form>]
-    #     """
-    #     url = self._parse_perms_args(args)
-    #     username = args.get('<username>')
-
     def _parse_perms_args(self, args):
         app = args.get('--app'),
-        formation = args.get('--formation'),
         admin = args.get('--admin')
         if admin:
+            app = None
             url = '/api/admin/perms'
-        elif formation[0]:
-            url = "/api/formations/{}/perms".format(formation[0])
         else:
-            url = "/api/apps/{}/perms".format(app[0] or self._session.app)
-        return url
+            app = app[0] or self._session.app
+            url = "/api/apps/{}/perms".format(app)
+        return app, url
 
     def providers(self, args):
         """
@@ -1956,9 +1962,9 @@ def parse_args(cmd):
         'logs': 'apps:logs',
         'run': 'apps:run',
         'sharing': 'perms:list',
+        'sharing:list': 'perms:list',
         'sharing:add': 'perms:create',
         'sharing:remove': 'perms:delete',
-        'sharing:transfer': 'perms:transfer',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]

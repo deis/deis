@@ -73,7 +73,7 @@ class FlavorAdmin(admin.ModelAdmin):
 admin.site.register(Flavor, FlavorAdmin)
 
 
-class FormationAdmin(GuardedModelAdmin):
+class FormationAdmin(admin.ModelAdmin):
     """Set presentation options for :class:`~api.models.Formation` models
     in the Django admin.
     """
