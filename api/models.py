@@ -541,10 +541,12 @@ class App(UuidAuditedModel):
         # prepare ssh command
         version = release.version
         docker_args = ' '.join(
-            ['-a', 'stdout', '-a', 'stderr',
+            ['-a', 'stdout', '-a', 'stderr', '-rm',
              '-v', '/opt/deis/runtime/slugs/{app_id}-v{version}:/app'.format(**locals()),
              'deis/slugrunner'])
-        command = "sudo docker run {docker_args} {command}".format(**locals())
+        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
+                             for k, v in release.config.values.items()])
+        command = "sudo docker run {env_args} {docker_args} {command}".format(**locals())
         return node.run(command)
 
 
