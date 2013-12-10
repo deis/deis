@@ -382,7 +382,7 @@ class AdminPermsViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
-        user = get_object_or_404(User, username=request.DATA['username'])
+        user = get_object_or_404(User, username=kwargs['username'])
         user.is_superuser = user.is_staff = False
         user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_204_NO_CONTENT)
