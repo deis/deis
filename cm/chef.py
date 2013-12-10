@@ -159,7 +159,8 @@ def converge_controller():
     :returns: the output of the convergence command, in this case `sudo chef-client`
     """
     try:
-        return subprocess.check_output(['sudo', 'chef-client'])
+        # we only need to run the gitosis recipe to update `git push` ACLs
+        return subprocess.check_output(['sudo', 'chef-client', '-o', 'recipe[deis::gitosis]'])
     except subprocess.CalledProcessError as err:
         print(err)
         print(err.output)
