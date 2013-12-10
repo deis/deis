@@ -4,6 +4,7 @@ RESTful view classes for presenting Deis API objects.
 # pylint: disable=R0901,R0904
 
 from __future__ import unicode_literals
+import importlib
 import json
 
 from Crypto.PublicKey import RSA
@@ -15,8 +16,12 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from api import models
-from api import serializers
+from deis import settings
+
+from api import models, serializers
+
+# import user-defined config management module
+CM = importlib.import_module(settings.CM_MODULE)
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -114,6 +119,9 @@ class KeyViewSet(OwnerViewSet):
     model = models.Key
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
+
+    def post_save(self, key, created=False, **kwargs):
+        CM.converge_controller()
 
 
 class ProviderViewSet(OwnerViewSet):
