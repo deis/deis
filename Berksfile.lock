@@ -12,7 +12,7 @@
     "deis": {
       "locked_version": "0.3.0",
       "git": "https://github.com/opdemand/deis-cookbook.git",
-      "ref": "33acc37909a4e57ed0728fa0fd7384ff2c1234fa"
+      "ref": "1a568da5e40e4dd0a47772fe1cb4657313a616f6"
     }
   }
 }
