@@ -24,16 +24,16 @@ if ! $CONTRIB_DIR/check-deis-deps.sh; then
 fi
 
 # connection details for using digital ocean's API
-client_id=$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_client_id]")
-api_key=$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_api_key]")
+client_id=${DIGITALOCEAN_CLIENT_ID:-$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_client_id]")}
+api_key=${DIGITALOCEAN_API_KEY:-$(knife exec -E"puts Chef::Config[:knife][:digital_ocean_api_key]")}
 
 # Check that client ID and API key was set
 if test -z $client_id; then
-  echo "Please add your client id to ${knife_file}."
+  echo "Please add your Digital Ocean Client ID to the shell's environment or knife.rb."
 fi
 
 if test -z $api_key; then
-  echo "Please add your api key to ${knife_file}."
+  echo "Please add your Digital Ocean API Key to the shell's environment or knife.rb."
 fi
 
 #################
@@ -122,9 +122,9 @@ if [ $result -ne 0 ]; then
   knife digital_ocean droplet destroy -S $droplet_id
   # Remove node and client from Chef Server
   echo_color "Deleting Chef client..."
-  knife client delete deis-controller
+  knife client delete deis-controller -y
   echo_color "Deleting Chef node..."
-  knife node delete deis-controller
+  knife node delete deis-controller -y
 else
   echo_color "Knife bootstrap successful."
   # Need Chef admin permission in order to add and remove nodes and clients
