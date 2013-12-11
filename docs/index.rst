@@ -25,3 +25,41 @@ Interested in contributing to the Deis project?  Check out our
 :ref:`localdev` instructions.
 
 .. _`Chef cookbooks`: https://github.com/opdemand/deis-cookbook
+
+
+Admonitions Testing
+-------------------
+
+.. attention:: Attention
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. caution:: Caution
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. danger:: Danger
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. error:: Error
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. hint:: Hint
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. important:: Important
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. note:: Note
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+.. tip:: Tip
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+
+.. warning:: Warning
+   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vehicula sed purus vel ultrices. 
+
+
+   
+   
