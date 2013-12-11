@@ -25,3 +25,4 @@ Interested in contributing to the Deis project?  Check out our
 :ref:`localdev` instructions.
 
 .. _`Chef cookbooks`: https://github.com/opdemand/deis-cookbook
+
