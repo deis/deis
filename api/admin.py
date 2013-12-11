@@ -8,6 +8,7 @@ Django admin app configuration for Deis API models.
 from __future__ import unicode_literals
 
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 
 from .models import App
 from .models import Build
@@ -22,7 +23,7 @@ from .models import Provider
 from .models import Release
 
 
-class AppAdmin(admin.ModelAdmin):
+class AppAdmin(GuardedModelAdmin):
     """Set presentation options for :class:`~api.models.App` models
     in the Django admin.
     """

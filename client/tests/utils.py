@@ -50,6 +50,11 @@ def clone(repo_url, repo_dir):
 
 def login(username, password):
     """Login as an existing Deis user."""
+    home = os.path.join('/tmp', username)
+    os.environ['HOME'] = home
+    os.chdir(home)
+    git_ssh_path = os.path.expandvars("$HOME/git_ssh.sh")
+    os.environ['GIT_SSH'] = git_ssh_path
     child = pexpect.spawn("{} login {}".format(DEIS, DEIS_SERVER))
     child.expect('username:')
     child.sendline(username)

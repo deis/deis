@@ -20,6 +20,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
+from guardian.shortcuts import get_users_with_perms
 from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
@@ -456,8 +457,10 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     formation = models.ForeignKey('Formation')
-
     containers = JSONField(default='{}', blank=True)
+
+    class Meta:
+        permissions = (('use_app', 'Can use app'),)
 
     def __str__(self):
         return self.id
@@ -516,10 +519,10 @@ class App(UuidAuditedModel):
         else:
             for n in self.formation.node_set.filter(layer__proxy=True):
                 d['domains'].append(n.fqdn)
-        # TODO: add proper sharing and access controls
-        d['users'] = {}
-        for u in (self.owner.username,):
-            d['users'][u] = 'admin'
+        # add proper sharing and access controls
+        d['users'] = {self.owner.username: 'owner'}
+        for u in (get_users_with_perms(self)):
+            d['users'][u.username] = 'user'
         return d
 
     def logs(self):
@@ -738,7 +741,7 @@ class Build(UuidAuditedModel):
         username = push.pop('username').split('_')[0]
         # retrieve the user and app instances
         user = User.objects.get(username=username)
-        app = App.objects.get(owner=user, id=push.pop('app'))
+        app = App.objects.get(id=push.pop('app'))
         # merge the push with the required model instances
         push['owner'] = user
         push['app'] = app

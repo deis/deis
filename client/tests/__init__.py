@@ -22,3 +22,4 @@ from .test_misc import *  # noqa
 from .test_nodes import *  # noqa
 from .test_providers import *  # noqa
 from .test_releases import *  # noqa
+from .test_sharing import *  # noqa
