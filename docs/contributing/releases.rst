@@ -68,7 +68,7 @@ Deis Repo
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - publish CLI to pypi.python.org
-    - ``python setup.py sdist upload``
+    - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
 - switch master to upcoming release
     * ``git checkout master``
@@ -85,6 +85,7 @@ Docs
     - summarize all work done
     - what's next and future directions
 - publish docs to http://docs.deis.io (deis.readthedocs.org)
+- visit readthedocs.org admin and add this release to published builds
 - publish docs to pythonhosted.org/deis
     - from the project root, run ``make -C docs clean zipfile``
     - zipfile will be at *docs/docs.zip*
