@@ -51,7 +51,7 @@ Authorizing TCP ports 22,80,443,514 from 0.0.0.0/0...
 ...
 ec2-203.0.113.33.us-west-2.compute.amazonaws.com
 ec2-203-0-113-33.us-west-2.compute.amazonaws.com Chef Client finished, 74 resources updated
-
+...
 Instance ID: i-31c8d106
 Flavor: m1.large
 Image: ami-72e27c42
@@ -59,7 +59,7 @@ Region: us-west-2
 Public DNS Name: ec2-203-0-113-33.us-west-2.compute.amazonaws.com
 Public IP Address: 203.0.113.33
 Run List: recipe[deis::controller]
-+ set +x
+...
 ```
 
 [knifec2]: http://docs.opscode.com/plugin_knife_ec2.html

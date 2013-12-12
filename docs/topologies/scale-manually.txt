@@ -1,0 +1,11 @@
+Scale Manually
+``````````````
+To add nodes manually without using the Deis :ref:`Provider` API,
+use the ``deis nodes:create`` command to bootstrap the nodes over SSH.
+Nodes must be added by their hostname and placed into a target layer.
+Deis will use the layer's SSH configuration to bootstrap the node.
+
+.. code-block:: console
+
+    $ deis nodes:create dev node1.example.com --layer=runtime
+    Creating node for node1.example.com... done in 107s

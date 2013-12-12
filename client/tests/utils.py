@@ -3,7 +3,6 @@ Common code used by the Deis CLI unit tests.
 """
 
 from __future__ import unicode_literals
-import os
 import os.path
 import random
 import re
@@ -22,7 +21,7 @@ try:
 except KeyError:
     DEIS_SERVER = None
     print '\033[35mError: env var DEIS_SERVER must point to a Deis controller URL.\033[0m'
-DEIS_TEST_FLAVOR = os.environ.get('DEIS_TEST_FLAVOR', 'vagrant-2048')
+DEIS_TEST_FLAVOR = os.environ.get('DEIS_TEST_FLAVOR', 'vagrant-512')
 EXAMPLES = {
     'example-clojure-ring': ('Clojure', 'https://github.com/opdemand/example-clojure-ring.git'),
     'example-dart': ('Dart', 'https://github.com/opdemand/example-dart.git'),
@@ -46,6 +45,22 @@ def clone(repo_url, repo_dir):
     child.expect(', done')
     child.expect(pexpect.EOF)
     os.chdir(repo_dir)
+
+
+def login(username, password):
+    """Login as an existing Deis user."""
+    home = os.path.join('/tmp', username)
+    os.environ['HOME'] = home
+    os.chdir(home)
+    git_ssh_path = os.path.expandvars("$HOME/git_ssh.sh")
+    os.environ['GIT_SSH'] = git_ssh_path
+    child = pexpect.spawn("{} login {}".format(DEIS, DEIS_SERVER))
+    child.expect('username:')
+    child.sendline(username)
+    child.expect('password:')
+    child.sendline(password)
+    child.expect("Logged in as {}".format(username))
+    child.expect(pexpect.EOF)
 
 
 def purge(username, password):
@@ -117,11 +132,21 @@ ssh -F {} "$@"
     child.sendline(password)
     child.expect('email: ')
     child.sendline('autotest@opdemand.com')
+    child.expect("Registered {}".format(username))
+    child.expect("Logged in as {}".format(username))
+    child.expect(pexpect.EOF)
+    # add keys
+    child = pexpect.spawn("{} keys:add".format(DEIS))
     child.expect('Which would you like to use with Deis')
     for index, key in re.findall('(\d)\) ([ \S]+)', child.before):
         if username in key:
             child.sendline(index)
             break
+    child.expect('Uploading')
+    child.expect('...done')
+    child.expect(pexpect.EOF)
+    # discover providers
+    child = pexpect.spawn("{} providers:discover".format(DEIS))
     opt = child.expect(['Import EC2 credentials\? \(y/n\) :',
                        'No EC2 credentials discovered.'])
     if opt == 0:

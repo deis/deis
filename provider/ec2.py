@@ -17,14 +17,14 @@ from deis import settings
 # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
 # and large docker images (e.g. buildstep) pre-installed
 IMAGE_MAP = {
-    'ap-northeast-1': 'ami-2bd9bf2a',
-    'ap-southeast-1': 'ami-2821757a',
-    'ap-southeast-2': 'ami-4dfd6277',
-    'eu-west-1': 'ami-0452be73',
-    'sa-east-1': 'ami-87f9589a',
-    'us-east-1': 'ami-5f84a536',
-    'us-west-1': 'ami-f80c3dbd',
-    'us-west-2': 'ami-76ad3746',
+    'ap-northeast-1': 'ami-6399f962',
+    'ap-southeast-1': 'ami-0a87d358',
+    'ap-southeast-2': 'ami-c3bd22f9',
+    'eu-west-1': 'ami-4826c83f',
+    'sa-east-1': 'ami-79bf1e64',
+    'us-east-1': 'ami-e7af828e',
+    'us-west-1': 'ami-a06e5ee5',
+    'us-west-2': 'ami-28abce18',
 }
 
 
@@ -147,13 +147,17 @@ def destroy_node(node):
     region = node['params'].get('region', 'us-east-1')
     conn = _create_ec2_connection(node['creds'], region)
     if provider_id:
-        conn.terminate_instances([provider_id])
-        i = conn.get_all_instances([provider_id])[0].instances[0]
-        while(True):
-            time.sleep(2)
-            i.update()
-            if i.state == "terminated":
-                break
+        try:
+            conn.terminate_instances([provider_id])
+            i = conn.get_all_instances([provider_id])[0].instances[0]
+            while(True):
+                time.sleep(2)
+                i.update()
+                if i.state == "terminated":
+                    break
+        except EC2ResponseError as e:
+            if e.code not in ('InvalidInstanceID.NotFound',):
+                raise
 
 
 def _create_ec2_connection(creds, region):

@@ -44,6 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
         return d
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    """Serialize admin status for a :class:`~api.models.User` model."""
+
+    class Meta:
+        model = User
+        fields = ('username', 'is_superuser')
+        read_only_fields = ('username',)
+
+
 class KeySerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 
@@ -82,7 +91,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
 
@@ -96,7 +105,7 @@ class BuildSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Build` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -108,7 +117,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid', required=False)
 
@@ -160,7 +169,7 @@ class AppSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    formation = OwnerSlugRelatedField(slug_field='id')
+    formation = serializers.SlugRelatedField(slug_field='id', required=False)
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""

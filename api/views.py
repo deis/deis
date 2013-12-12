@@ -1,24 +1,28 @@
 """
 RESTful view classes for presenting Deis API objects.
 """
-# pylint: disable=R0901,R0904
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
 import json
 
 from Crypto.PublicKey import RSA
-from celery.canvas import group
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import User
 from django.utils import timezone
-from rest_framework import permissions, status, viewsets
+from guardian.shortcuts import assign_perm
+from guardian.shortcuts import get_objects_for_user
+from guardian.shortcuts import get_users_with_perms
+from guardian.shortcuts import remove_perm
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework import viewsets
 from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from api import models
-from api import serializers
-from api import tasks
+from api import models, serializers, tasks
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -33,7 +37,7 @@ class AnonymousAuthentication(BaseAuthentication):
 
 class IsAnonymous(permissions.BasePermission):
     """
-    Object-level permission to allow anonymous users.
+    View permission to allow anonymous users.
     """
 
     def has_permission(self, request, view):
@@ -60,6 +64,51 @@ class IsOwner(permissions.BasePermission):
             return False
 
 
+class IsAppUser(permissions.BasePermission):
+    """
+    Object-level permission to allow owners or collaborators to access
+    an app-related model.
+    """
+    def has_object_permission(self, request, view, obj):
+        if isinstance(obj, models.App) and obj.owner == request.user:
+            return True
+        elif hasattr(obj, 'app') and obj.app.owner == request.user:
+            return True
+        elif request.user.has_perm('use_app', obj):
+            return request.method != 'DELETE'
+        elif hasattr(obj, 'app') and request.user.has_perm('use_app', obj.app):
+            return request.method != 'DELETE'
+        else:
+            return False
+
+
+class IsAdmin(permissions.BasePermission):
+    """
+    View permission to allow only admins.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return request.user.is_superuser
+
+
+class IsAdminOrSafeMethod(permissions.BasePermission):
+    """
+    View permission to allow only admins to use unsafe methods
+    including POST, PUT, DELETE.
+
+    This allows
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return request.method in permissions.SAFE_METHODS or request.user.is_superuser
+
+
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
     model = User
@@ -82,6 +131,9 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
+        # Make this first signup an admin / superuser
+        if not User.objects.filter(is_superuser=True).exists():
+            obj.is_superuser = obj.is_staff = True
 
 
 class UserCancellationView(viewsets.GenericViewSet,
@@ -117,6 +169,9 @@ class KeyViewSet(OwnerViewSet):
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
 
+    def post_save(self, key, created=False, **kwargs):
+        tasks.converge_controller.apply_async().wait()
+
 
 class ProviderViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Provider`."""
@@ -147,12 +202,17 @@ class FlavorViewSet(OwnerViewSet):
         return super(FlavorViewSet, self).update(request, *args, **kwargs)
 
 
-class FormationViewSet(OwnerViewSet):
+class FormationViewSet(viewsets.ModelViewSet):
     """RESTful views for :class:`~api.models.Formation`."""
 
     model = models.Formation
     serializer_class = serializers.FormationSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrSafeMethod)
     lookup_field = 'id'
+
+    def pre_save(self, obj):
+        if not hasattr(obj, 'owner'):
+            obj.owner = self.request.user
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
@@ -164,18 +224,21 @@ class FormationViewSet(OwnerViewSet):
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
         except ValueError:
-            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+            return Response('Invalid scaling format',
+                            status=status.HTTP_400_BAD_REQUEST)
         # check for empty credentials
         for p in models.Provider.objects.filter(owner=request.user):
             if p.creds:
                 break
         else:
-            return Response('No provider credentials available', status=HTTP_400_BAD_REQUEST)
+            return Response('No provider credentials available',
+                            status=status.HTTP_400_BAD_REQUEST)
         formation = self.get_object()
         try:
             databag = models.Node.objects.scale(formation, new_structure)
         except (models.Layer.DoesNotExist, EnvironmentError) as err:
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+            return Response(str(err),
+                            status=status.HTTP_400_BAD_REQUEST)
         return Response(databag, status=status.HTTP_200_OK,
                         content_type='application/json')
 
@@ -200,18 +263,21 @@ class FormationViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         formation = self.get_object()
         formation.destroy()
-        tasks.converge_controller.delay().wait()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FormationScopedViewSet(OwnerViewSet):
+class FormationScopedViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.IsAuthenticated, IsAdmin)
+
+    def pre_save(self, obj):
+        if not hasattr(obj, 'owner'):
+            obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
-        formations = models.Formation.objects.filter(
-            owner=self.request.user)
+        formations = models.Formation.objects.all()
         formation = get_object_or_404(formations, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
+        return self.model.objects.filter(formation=formation)
 
 
 class FormationLayerViewSet(FormationScopedViewSet):
@@ -227,15 +293,14 @@ class FormationLayerViewSet(FormationScopedViewSet):
 
     def create(self, request, **kwargs):
         request._data = request.DATA.copy()
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
+        formation = models.Formation.objects.get(id=self.kwargs['id'])
         request.DATA['formation'] = formation.id
         if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
             # SECURITY: figure out best way to get keys with proper entropy
             key = RSA.generate(2048)
             request.DATA['ssh_private_key'] = key.exportKey('PEM')
             request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
-        return OwnerViewSet.create(self, request, **kwargs)
+        return super(FormationLayerViewSet, self).create(request, **kwargs)
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
@@ -260,10 +325,8 @@ class FormationNodeViewSet(FormationScopedViewSet):
 
     def add(self, request, **kwargs):
         fqdn = request.DATA['fqdn']
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        layer = models.Layer.objects.get(
-            owner=self.request.user, id=request.DATA['layer'])
+        formation = models.Formation.objects.get(id=self.kwargs['id'])
+        layer = models.Layer.objects.get(id=request.DATA['layer'])
         if self.model.objects.filter(fqdn=fqdn, formation=formation, layer=layer).exists():
             msg = "A node with fqdn={} already exists in the {} formation".format(fqdn, formation)
             return Response(data=msg, status=status.HTTP_409_CONFLICT)
@@ -277,15 +340,90 @@ class FormationNodeViewSet(FormationScopedViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class _PermsViewSet(viewsets.ViewSet):
+    """RESTful views for object-level permissions.
+    Intended as an abstract base class.
+    """
+
+    model = None   # models class, such as models.App
+    perm = ''      # short name for permission, such as "use_app"
+
+    def list(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        perm_name = "api.{}".format(self.perm)
+        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        usernames = [u.username for u in get_users_with_perms(app)
+                     if u.has_perm(perm_name, app)]
+        return Response({'users': usernames})
+
+    def create(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        if request.user != app.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, username=request.DATA['username'])
+        assign_perm(self.perm, user, app)
+        app.publish()
+        tasks.converge_controller.apply_async().wait()
+        return Response(status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, **kwargs):
+        app = get_object_or_404(self.model, id=kwargs['id'])
+        if request.user != app.owner:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        user = get_object_or_404(User, username=kwargs['username'])
+        if user.has_perm(self.perm, app):
+            remove_perm(self.perm, user, app)
+            app.publish()
+            tasks.converge_controller.apply_async().wait()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class AppPermsViewSet(_PermsViewSet):
+    """RESTful views for sharing apps with collaborators."""
+
+    model = models.App
+    perm = 'use_app'
+
+
+class AdminPermsViewSet(viewsets.ModelViewSet):
+    """RESTful views for sharing admin permissions with other users."""
+
+    model = User
+    serializer_class = serializers.AdminUserSerializer
+    permission_classes = (IsAdmin,)
+
+    def get_queryset(self, **kwargs):
+        return self.model.objects.filter(is_active=True, is_superuser=True)
+
+    def create(self, request, **kwargs):
+        user = get_object_or_404(User, username=request.DATA['username'])
+        user.is_superuser = user.is_staff = True
+        user.save(update_fields=['is_superuser', 'is_staff'])
+        return Response(status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, **kwargs):
+        user = get_object_or_404(User, username=kwargs['username'])
+        user.is_superuser = user.is_staff = False
+        user.save(update_fields=['is_superuser', 'is_staff'])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class NodeViewSet(FormationNodeViewSet):
     """RESTful views for :class:`~api.models.Node`."""
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        return self.model.objects.all()
 
     def converge(self, request, **kwargs):
         node = self.get_object()
-        output, _ = node.converge()
+        try:
+            output, _ = node.converge()
+        except RuntimeError as e:
+            return Response(e.output, status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            content_type='text/plain')
         return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
 
 
@@ -295,12 +433,20 @@ class AppViewSet(OwnerViewSet):
     model = models.App
     serializer_class = serializers.AppSerializer
     lookup_field = 'id'
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
+
+    def get_queryset(self, **kwargs):
+        """
+        Filter Apps by `owner` attribute or the
+        `api.use_formation` permission.
+        """
+        return super(AppViewSet, self).get_queryset(**kwargs) | \
+            get_objects_for_user(self.request.user, 'api.use_app')
 
     def post_save(self, app, created=False, **kwargs):
         if created:
             app.build()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
 
     def pre_save(self, app, created=False, **kwargs):
         if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
@@ -308,10 +454,20 @@ class AppViewSet(OwnerViewSet):
         return super(AppViewSet, self).pre_save(app, **kwargs)
 
     def create(self, request, **kwargs):
+        if not 'formation' in request.DATA:
+            count = models.Formation.objects.count()
+            if count == 1:
+                request.DATA['formation'] = models.Formation.objects.first()
+            elif count == 0:
+                return Response('No formations available',
+                                status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response('Could not determine default formation',
+                                status=status.HTTP_400_BAD_REQUEST)
         try:
             return OwnerViewSet.create(self, request, **kwargs)
         except EnvironmentError as e:
-            return Response(str(e), status=HTTP_400_BAD_REQUEST)
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
     def scale(self, request, **kwargs):
         new_structure = {}
@@ -319,7 +475,8 @@ class AppViewSet(OwnerViewSet):
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
         except ValueError:
-            return Response('Invalid scaling format', status=HTTP_400_BAD_REQUEST)
+            return Response('Invalid scaling format',
+                            status=status.HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
             models.Container.objects.scale(app, new_structure)
@@ -362,20 +519,27 @@ class AppViewSet(OwnerViewSet):
     def destroy(self, request, **kwargs):
         app = self.get_object()
         app.destroy()
-        group(*[tasks.converge_formation.si(app.formation),  # @UndefinedVariable
-                tasks.converge_controller.si()]).apply_async().join()  # @UndefinedVariable
+        app.formation.converge(controller=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class BaseAppViewSet(OwnerViewSet):
+class BaseAppViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
+
+    def pre_save(self, obj):
+        obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App.objects.filter(
-            owner=self.request.user, id=self.kwargs['id']))
-        return self.model.objects.filter(owner=self.request.user, app=app)
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
-        return self.get_queryset().latest('created')
+        obj = self.get_queryset().latest('created')
+        user = self.request.user
+        if user == obj.app.owner or user in get_users_with_perms(obj.app):
+            return obj
+        raise PermissionDenied()
 
 
 class AppConfigViewSet(BaseAppViewSet):
@@ -406,7 +570,7 @@ class AppConfigViewSet(BaseAppViewSet):
         # remove config keys if we provided a null value
         [values.pop(k) for k, v in provided.items() if v is None]
         request.DATA['values'] = values
-        return super(OwnerViewSet, self).create(request, *args, **kwargs)
+        return super(AppConfigViewSet, self).create(request, *args, **kwargs)
 
 
 class AppBuildViewSet(BaseAppViewSet):
@@ -422,10 +586,10 @@ class AppBuildViewSet(BaseAppViewSet):
                 user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
         request._data = request.DATA.copy()
-        app = models.App.objects.get(owner=self.request.user, id=self.kwargs['id'])
         request.DATA['app'] = app
-        return super(OwnerViewSet, self).create(request, *args, **kwargs)
+        return super(AppBuildViewSet, self).create(request, *args, **kwargs)
 
 
 class AppReleaseViewSet(BaseAppViewSet):
@@ -442,9 +606,8 @@ class AppContainerViewSet(OwnerViewSet):
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App.objects.filter(
-            owner=self.request.user, id=self.kwargs['id']))
-        qs = self.model.objects.filter(owner=self.request.user, app=app)
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        qs = self.model.objects.filter(app=app)
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)

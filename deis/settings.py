@@ -29,6 +29,8 @@ DATABASES = {
     }
 }
 
+CONN_MAX_AGE = 60 * 3
+
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ['localhost']
@@ -108,7 +110,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.tz",
     "django.contrib.messages.context_processors.messages",
     "allauth.account.context_processors.account",
-    "allauth.socialaccount.context_processors.socialaccount",
     "deis.context_processors.site",
 )
 
@@ -147,8 +148,7 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'djcelery',
+    'guardian',
     'json_field',
     'rest_framework',
     'south',
@@ -163,10 +163,12 @@ INSTALLED_APPS = (
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
+    "guardian.backends.ObjectPermissionBackend",
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
+ANONYMOUS_USER_ID = -1
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
@@ -247,28 +249,19 @@ LOGGING = {
     }
 }
 
-# default celery settings
 
-import djcelery
-
+# celery task execution settings
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_IMPORTS = ('api.tasks',)
 CELERY_RESULT_BACKEND = 'amqp'
 
-# normally False to execute tasks asyncronously
-# set to True to enable blocking execution for debugging
-CELERY_ALWAYS_EAGER = False
-EAGER_PROPAGATES_EXCEPTION = True
-
-# make sure we import the task modules
-CELERY_IMPORTS = ('api.tasks',)
-
-djcelery.setup_loader()
-
+# hardcode celeryd concurrency
+# this number should be equal to N+1, where
+# N is number of nodes in largest formation
+CELERYD_CONCURRENCY = 8
 
 # default deis settings
-
-
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 

@@ -59,8 +59,7 @@ def build_layer(layer):
     # import a new keypair using the layer key material
     conn.keypairs.create(name, layer['ssh_public_key'])
     # Rackspace images only have the root user created by default
-    # TODO: this seems like a smelly hack...
-    layer_ = Layer.objects.get(id=layer['id'])
+    layer_ = Layer.objects.get(id=layer['id'], formation__id=layer['formation'])
     layer_.ssh_username = 'root'
     layer_.save()
 

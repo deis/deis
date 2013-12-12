@@ -86,11 +86,9 @@ when necessary.
 
 See Also
 --------
-* :ref:`Installation`
-* :ref:`Usage`
-* :ref:`Tutorial`
+* :ref:`Developer Guide <developer>`
+* :ref:`Operations Guide <developer>`
 * `The Twelve Factor App <http://12factor.net/>`_
-
 
 .. _`Twelve Factor`: http://12factor.net/
 .. _`Chef`: http://www.opscode.com/chef/

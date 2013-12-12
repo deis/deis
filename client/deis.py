@@ -26,6 +26,8 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   flavors       manage flavors of nodes including size and location
   keys          manage ssh keys used for `git push` deployments
 
+  perms         manage permissions for shared apps and formations
+
 Developer shortcut commands::
 
   create        create a new application
@@ -63,7 +65,7 @@ from docopt import DocoptExit
 import requests
 import tempfile
 
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 
 class Session(requests.Session):
@@ -391,11 +393,10 @@ class DeisClient(object):
         """
         Create a new application
 
-        Must provide a target formation to host the application
-        containers. If no ID is provided, one will be generated
-        automatically.
+        If no ID is provided, one will be generated automatically.
+        If no formation is provided, the first available will be used.
 
-        Usage: deis apps:create --formation=<formation> [--id=<id>]
+        Usage: deis apps:create [--id=<id> --formation=<formation>]
         """
         body = {}
         try:
@@ -413,11 +414,6 @@ class DeisClient(object):
             o = args.get(opt)
             if o:
                 body.update({opt.strip('-'): o})
-        formation = args.get('--formation')
-        response = self._dispatch('get', '/api/formations/{}'.format(formation))
-        if response.status_code != 200:
-            print('Formation not found')
-            return
         sys.stdout.write('Creating application... ')
         sys.stdout.flush()
         try:
@@ -625,17 +621,10 @@ class DeisClient(object):
                           '<controller>': controller}
             if self.auth_login(login_args) is False:
                 print('Login failed')
-                return
-            print()
-            self.keys_add({})
-            print()
-            self.providers_discover({})
-            print()
-            print('Use `deis formations:create <id> --flavor=ec2-us-east-1`'
-                  ' to create a new formation')
         else:
             print('Registration failed', response.content)
             return False
+        return True
 
     def auth_cancel(self, args):
         """
@@ -911,6 +900,7 @@ class DeisClient(object):
         flavors:create        create a new node flavor
         flavors:info          print information about a node flavor
         flavors:list          list available flavors
+        flavors:update        update an existing node flavor
         flavors:delete        delete a node flavor
 
         Use `deis help [command]` to learn more
@@ -1666,6 +1656,88 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def perms(self, args):
+        """
+        Valid commands for perms:
+
+        perms:list            list permissions granted on an app or formation
+        perms:create          create a new permission for a user
+        perms:delete          delete a permission for a user
+
+        Use `deis help perms:[command]` to learn more
+        """
+        # perms:transfer        transfer ownership of an app or formation
+        return self.perms_list(args)
+
+    def perms_list(self, args):
+        """
+        List all users with permission to use an app, or list all users
+        with system administrator privileges.
+
+        Usage: deis perms:list [--app=<app>|--admin]
+        """
+        app, url = self._parse_perms_args(args)
+        response = self._dispatch('get', url)
+        if response.status_code == requests.codes.ok:
+            print(json.dumps(response.json(), indent=2))
+        else:
+            raise ResponseError(response)
+
+    def perms_create(self, args):
+        """
+        Give another user permission to use an app, or give another user
+        system administrator privileges.
+
+        Usage: deis perms:create <username> [--app=<app>|--admin]
+        """
+        app, url = self._parse_perms_args(args)
+        username = args.get('<username>')
+        body = {'username': username}
+        if app:
+            msg = "Adding {} to {} collaborators... ".format(username, app)
+        else:
+            msg = "Adding {} to system administrators... ".format(username)
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+        response = self._dispatch('post', url, json.dumps(body))
+        if response.status_code == requests.codes.created:
+            print('done')
+        else:
+            raise ResponseError(response)
+
+    def perms_delete(self, args):
+        """
+        Revoke another user's permission to use an app, or revoke another
+        user's system administrator privileges.
+
+        Usage: deis perms:delete <username> [--app=<app>|--admin]
+        """
+        app, url = self._parse_perms_args(args)
+        username = args.get('<username>')
+        url = "{}/{}".format(url, username)
+        if app:
+            msg = "Removing {} from {} collaborators... ".format(username, app)
+        else:
+            msg = "Remove {} from system administrators... ".format(username)
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+        response = self._dispatch('delete', url)
+        if response.status_code == requests.codes.no_content:
+            print('done')
+        else:
+            raise ResponseError(response)
+
+    def _parse_perms_args(self, args):
+        app = args.get('--app'),
+        admin = args.get('--admin')
+        if admin:
+            app = None
+            url = '/api/admin/perms'
+        else:
+            app = app[0] or self._session.app
+            url = "/api/apps/{}/perms".format(app)
+        return app, url
+
     def providers(self, args):
         """
         Valid commands for providers:
@@ -1760,7 +1832,7 @@ class DeisClient(object):
         try:
             deis_codebase_folder = self._session.git_root().split('/')[-1]
         except EnvironmentError:
-            deis_codebase_folder = None
+            deis_codebase_folder = 'deis'
         if deis_codebase_folder and deis_codebase_folder in running_vms:
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
@@ -1898,6 +1970,10 @@ def parse_args(cmd):
         'open': 'apps:open',
         'logs': 'apps:logs',
         'run': 'apps:run',
+        'sharing': 'perms:list',
+        'sharing:list': 'perms:list',
+        'sharing:add': 'perms:create',
+        'sharing:remove': 'perms:delete',
     }
     if cmd == 'help':
         cmd = sys.argv[-1]

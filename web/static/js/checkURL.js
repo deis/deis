@@ -13,8 +13,17 @@ switch(pathName[num]) {
   case 'installation':
     $('.toctree-l1 > a:contains("Installation")').attr('state', 'open');
     break;
-  case 'terms':
-    $('.toctree-l1 > a:contains("Terms")').attr('state', 'open');
+  case 'operations':
+    $('.toctree-l1 > a:contains("Operations")').attr('state', 'open');
+    break;
+  case 'developer':
+    $('.toctree-l1 > a:contains("Developer")').attr('state', 'open');
+    break;
+  case 'components':
+    $('.toctree-l1 > a:contains("Components")').attr('state', 'open');
+    break;
+  case 'topologies':
+    $('.toctree-l1 > a:contains("Topologies")').attr('state', 'open');
     break;
   case 'contributing':
     $('.toctree-l1 > a:contains("Contributing")').attr('state', 'open');

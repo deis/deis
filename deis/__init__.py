@@ -4,4 +4,9 @@ settings, and WSGI setup. Most application domain-specific code lives in
 the api, provider, cm, and web Django apps.
 """
 
-__version__ = '0.2.1'
+from __future__ import absolute_import
+
+from .celery import app  # noqa
+
+
+__version__ = '0.3.0'

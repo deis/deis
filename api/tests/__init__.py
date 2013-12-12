@@ -27,15 +27,16 @@ def send_patch(self, path, data='', content_type='application/octet-stream',
 RequestFactory.patch = construct_patch
 Client.patch = send_patch
 
-from .app import *  # noqa
-from .auth import *  # noqa
-from .build import *  # noqa
-from .config import *  # noqa
-from .container import *  # noqa
-from .flavor import *  # noqa
-from .formation import *  # noqa
-from .key import *  # noqa
-from .layer import *  # noqa
-from .node import *  # noqa
-from .provider import *  # noqa
-from .release import *  # noqa
+from .test_app import *  # noqa
+from .test_auth import *  # noqa
+from .test_build import *  # noqa
+from .test_config import *  # noqa
+from .test_container import *  # noqa
+from .test_flavor import *  # noqa
+from .test_formation import *  # noqa
+from .test_key import *  # noqa
+from .test_layer import *  # noqa
+from .test_node import *  # noqa
+from .test_perm import *  # noqa
+from .test_provider import *  # noqa
+from .test_release import *  # noqa

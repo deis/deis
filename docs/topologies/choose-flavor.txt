@@ -1,0 +1,8 @@
+Choose a Flavor
+```````````````
+When creating :ref:`Layers <layer>` you must provide a node :ref:`flavor`, 
+which specifies basic server configuration.
+If deploying a formation manually without help from 
+the Deis :ref:`Provider` API, use the "static" flavor.
+We will use the "ec2-us-west-2" flavor which benefits from 
+automated provisioning via the EC2 Provider API.

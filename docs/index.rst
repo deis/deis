@@ -12,16 +12,17 @@ platform for public and private clouds. Your PaaS. Your Rules.
 .. image:: ../web/static/img/deis-graphic.png
     :alt: Deis cover logo
 
-If you are new to Deis, you should start with :ref:`Concepts`.
-Once you've completed :ref:`installation` of your private Deis controller,
-you should explore :ref:`usage` of the command-line client
-which is elaborated on in the :ref:`tutorial`.
+If you are new to Deis, you should start with :ref:`Concepts`
+and basic :ref:`Usage` of the command-line client.
+Follow the :ref:`Developer Guide <developer>` to deploy an application on Deis.
+The :ref:`Operations Guide <operations>` will walk you through deploying Deis itself.
 
 Want to learn about Deis internals?  You'll find complete API documentation
 in the :ref:`client` and :ref:`server` sections.
 
 Interested in contributing to the Deis project?  Check out our
 :ref:`Contributor Overview <contributor>` and
-:ref:`devsetup` instructions.
+:ref:`localdev` instructions.
 
 .. _`Chef cookbooks`: https://github.com/opdemand/deis-cookbook
+

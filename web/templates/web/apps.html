@@ -5,8 +5,7 @@
 
 {% block content %}
 <div class="blue">
-  <h1>{% if apps %}{{ apps|length|apnumber|capfirst }}{% else %}No{% endif %}
-   App{{ apps|pluralize }}</a></h1>
+  <h1>{% if apps %}{{ apps|length|apnumber|capfirst }}{% else %}No{% endif %} App{{ apps|pluralize }}</h1>
   {% for app in apps %}
   <div class="row-fluid well">
     <div class="span3">

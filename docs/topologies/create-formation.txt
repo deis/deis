@@ -1,0 +1,12 @@
+Create the Formation
+--------------------
+Let's create a formation that can host
+:ref:`Applications <application>` and :ref:`Containers <container>` 
+for developers -- we'll call it the "dev" formation.
+
+.. code-block:: console
+
+    $ deis formations:create dev --domain=deisapp.com
+    Creating formation... done, created dev  
+    
+    See `deis help layers:create` to begin building your formation
