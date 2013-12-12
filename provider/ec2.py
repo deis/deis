@@ -147,13 +147,17 @@ def destroy_node(node):
     region = node['params'].get('region', 'us-east-1')
     conn = _create_ec2_connection(node['creds'], region)
     if provider_id:
-        conn.terminate_instances([provider_id])
-        i = conn.get_all_instances([provider_id])[0].instances[0]
-        while(True):
-            time.sleep(2)
-            i.update()
-            if i.state == "terminated":
-                break
+        try:
+            conn.terminate_instances([provider_id])
+            i = conn.get_all_instances([provider_id])[0].instances[0]
+            while(True):
+                time.sleep(2)
+                i.update()
+                if i.state == "terminated":
+                    break
+        except EC2ResponseError as e:
+            if e.code not in ('InvalidInstanceID.NotFound',):
+                raise
 
 
 def _create_ec2_connection(creds, region):
