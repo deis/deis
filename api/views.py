@@ -133,7 +133,7 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.set_password(obj.password)
         # Make this first signup an admin / superuser
         if not User.objects.filter(is_superuser=True).exists():
-            obj.is_superuser = True
+            obj.is_superuser = obj.is_staff = True
 
 
 class UserCancellationView(viewsets.GenericViewSet,
