@@ -1671,6 +1671,9 @@ class DeisClient(object):
 
     def perms_list(self, args):
         """
+        List all users with permission to use an app, or list all users
+        with system administrator privileges.
+
         Usage: deis perms:list [--app=<app>|--admin]
         """
         app, url = self._parse_perms_args(args)
@@ -1682,6 +1685,9 @@ class DeisClient(object):
 
     def perms_create(self, args):
         """
+        Give another user permission to use an app, or give another user
+        system administrator privileges.
+
         Usage: deis perms:create <username> [--app=<app>|--admin]
         """
         app, url = self._parse_perms_args(args)
@@ -1701,6 +1707,9 @@ class DeisClient(object):
 
     def perms_delete(self, args):
         """
+        Revoke another user's permission to use an app, or revoke another
+        user's system administrator privileges.
+
         Usage: deis perms:delete <username> [--app=<app>|--admin]
         """
         app, url = self._parse_perms_args(args)

@@ -12,9 +12,8 @@ Developer Guide
 
 .. toctree::
     :maxdepth: 1
-    
+
     install-client
     register-user
     deploy-application
     manage-application
-

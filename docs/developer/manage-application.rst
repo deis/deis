@@ -9,7 +9,7 @@ and troubleshoot your deployed :ref:`Application`.
 
 Configure the Application
 -------------------------
-Use ``deis config`` to set a `DATABASE_URL` that attaches 
+Use ``deis config`` to set a `DATABASE_URL` that attaches
 the application to an external PostgreSQL database.
 
 .. code-block:: console
@@ -35,9 +35,9 @@ that power your app.
     $ deis scale web=8
     Scaling containers... but first, coffee!
     done in 20s
-    
+
     === peachy-waxworks Containers
-    
+
     --- web: `java -cp target/classes:target/dependency/* HelloWorld`
     web.1 up 2013-12-03T00:00:25.836Z (dev-runtime-1)
     web.2 up 2013-12-03T00:30:10.934Z (dev-runtime-1)
@@ -52,7 +52,7 @@ Applications deployed on Deis `scale out via the process model`_.
 Web requests are automatically routed to the ``web`` processes
 defined by your application.
 
-You must define process types like ``web`` or ``worker`` in a 
+You must define process types like ``web`` or ``worker`` in a
 `Procfile`_ in the root of your application repository.
 
 Administer the Application
@@ -73,6 +73,37 @@ Use ``deis run`` to execute commands against the deployed version of your applic
 
 Applications deployed on Deis `use one-off processes for admin tasks`_ like
 database migrations and other tasks that must run against the live application.
+
+Share the Application
+---------------------
+Use ``deis sharing:add`` to allow another Deis user to collaborate on your
+application.
+
+.. code-block:: console
+
+  $ deis sharing:add otheruser
+  Adding otheruser to peachy-waxworks collaborators... done
+
+Use ``deis sharing`` to see who an application is currently shared with, and
+``deis sharing:remove`` to remove a collaborator.
+
+.. note::
+    Collaborators can do anything with an application that its owner can do,
+    except delete the application itself.
+
+When working with an application that has been shared with you, clone
+the original repository and add Deis' git remote entry before attempting to
+``git push`` any changes to Deis.
+
+.. code-block:: console
+
+  $ git clone https://github.com/opdemand/example-java-jetty.git
+  Cloning into 'example-java-jetty'... done
+  $ cd example-java-jetty
+  $ git remote add -f deis git@deis-controller.local:peachy-waxworks.git
+  Updating deis
+  From deis-controller.local:peachy-waxworks
+   * [new branch]      master     -> deis/master
 
 Troubleshoot the Application
 ----------------------------
