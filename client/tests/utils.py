@@ -3,7 +3,6 @@ Common code used by the Deis CLI unit tests.
 """
 
 from __future__ import unicode_literals
-import os
 import os.path
 import random
 import re
