@@ -94,6 +94,21 @@ class IsAdmin(permissions.BasePermission):
         return request.user.is_superuser
 
 
+class IsAdminOrSafeMethod(permissions.BasePermission):
+    """
+    View permission to allow only admins to use unsafe methods
+    including POST, PUT, DELETE.
+
+    This allows
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        return request.method in permissions.SAFE_METHODS or request.user.is_superuser
+
+
 class UserRegistrationView(viewsets.GenericViewSet,
                            viewsets.mixins.CreateModelMixin):
     model = User
@@ -187,12 +202,17 @@ class FlavorViewSet(OwnerViewSet):
         return super(FlavorViewSet, self).update(request, *args, **kwargs)
 
 
-class FormationViewSet(OwnerViewSet):
+class FormationViewSet(viewsets.ModelViewSet):
     """RESTful views for :class:`~api.models.Formation`."""
 
     model = models.Formation
     serializer_class = serializers.FormationSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrSafeMethod)
     lookup_field = 'id'
+
+    def pre_save(self, obj):
+        if not hasattr(obj, 'owner'):
+            obj.owner = self.request.user
 
     def post_save(self, formation, created=False, **kwargs):
         if created:
@@ -246,14 +266,18 @@ class FormationViewSet(OwnerViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class FormationScopedViewSet(OwnerViewSet):
+class FormationScopedViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.IsAuthenticated, IsAdmin)
+
+    def pre_save(self, obj):
+        if not hasattr(obj, 'owner'):
+            obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
-        formations = models.Formation.objects.filter(
-            owner=self.request.user)
+        formations = models.Formation.objects.all()
         formation = get_object_or_404(formations, id=self.kwargs['id'])
-        return self.model.objects.filter(owner=self.request.user,
-                                         formation=formation)
+        return self.model.objects.filter(formation=formation)
 
 
 class FormationLayerViewSet(FormationScopedViewSet):
@@ -269,15 +293,14 @@ class FormationLayerViewSet(FormationScopedViewSet):
 
     def create(self, request, **kwargs):
         request._data = request.DATA.copy()
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
+        formation = models.Formation.objects.get(id=self.kwargs['id'])
         request.DATA['formation'] = formation.id
         if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
             # SECURITY: figure out best way to get keys with proper entropy
             key = RSA.generate(2048)
             request.DATA['ssh_private_key'] = key.exportKey('PEM')
             request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
-        return OwnerViewSet.create(self, request, **kwargs)
+        return super(FormationLayerViewSet, self).create(request, **kwargs)
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
@@ -302,10 +325,8 @@ class FormationNodeViewSet(FormationScopedViewSet):
 
     def add(self, request, **kwargs):
         fqdn = request.DATA['fqdn']
-        formation = models.Formation.objects.get(
-            owner=self.request.user, id=self.kwargs['id'])
-        layer = models.Layer.objects.get(
-            owner=self.request.user, id=request.DATA['layer'])
+        formation = models.Formation.objects.get(id=self.kwargs['id'])
+        layer = models.Layer.objects.get(id=request.DATA['layer'])
         if self.model.objects.filter(fqdn=fqdn, formation=formation, layer=layer).exists():
             msg = "A node with fqdn={} already exists in the {} formation".format(fqdn, formation)
             return Response(data=msg, status=status.HTTP_409_CONFLICT)
@@ -394,7 +415,7 @@ class NodeViewSet(FormationNodeViewSet):
     """RESTful views for :class:`~api.models.Node`."""
 
     def get_queryset(self, **kwargs):
-        return self.model.objects.filter(owner=self.request.user)
+        return self.model.objects.all()
 
     def converge(self, request, **kwargs):
         node = self.get_object()

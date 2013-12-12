@@ -50,7 +50,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'is_superuser')
-        read_only_fields = ('username', )
+        read_only_fields = ('username',)
 
 
 class KeySerializer(serializers.ModelSerializer):
@@ -169,7 +169,7 @@ class AppSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    formation = OwnerSlugRelatedField(slug_field='id', required=False)
+    formation = serializers.SlugRelatedField(slug_field='id', required=False)
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""

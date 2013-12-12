@@ -1703,7 +1703,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:
             print('done')
         else:
-            return ResponseError(response)
+            raise ResponseError(response)
 
     def perms_delete(self, args):
         """
@@ -1725,7 +1725,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.no_content:
             print('done')
         else:
-            return ResponseError(response)
+            raise ResponseError(response)
 
     def _parse_perms_args(self, args):
         app = args.get('--app'),
