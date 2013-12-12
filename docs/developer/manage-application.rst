@@ -87,7 +87,7 @@ application.
 Use ``deis sharing`` to see who an application is currently shared with, and
 ``deis sharing:remove`` to remove a collaborator.
 
-.. important:: Collaborator Privileges
+.. note::
     Collaborators can do anything with an application that its owner can do,
     except delete the application itself.
 
