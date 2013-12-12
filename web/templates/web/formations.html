@@ -5,8 +5,7 @@
 
 {% block content %}
 <div class="pink">
-  <h1>{% if formations %}{{ formations|length|apnumber|capfirst }}{% else %}No{% endif %}
-    Formation{{ formations|pluralize }}</a></h1>
+  <h1>{% if formations %}{{ formations|length|apnumber|capfirst }}{% else %}No{% endif %} Formation{{ formations|pluralize }}</h1>
   {% for formation in formations %}
   <a name="formation.id"></a>
   <div class="row-fluid well">
