@@ -11,7 +11,7 @@ from django.test import TestCase
 
 class WebViewsTest(TestCase):
 
-    fixtures = ['tests.json']
+    fixtures = ['test_web.json']
 
     def setUp(self):
         self.client.login(username='autotest-1', password='password')

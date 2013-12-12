@@ -3,7 +3,6 @@ View classes for presenting Deis web pages.
 """
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
 from django.shortcuts import render
 
 from api.models import App
@@ -50,12 +49,6 @@ def apps(request):
         'page': 'apps',
         'apps': apps,
     })
-
-
-@login_required
-def docs(request):
-    """Return the documentation index."""
-    return redirect('http://docs.deis.io/')
 
 
 @login_required
