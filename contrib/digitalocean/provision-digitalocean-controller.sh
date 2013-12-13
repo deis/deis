@@ -30,16 +30,18 @@ api_key=${DIGITALOCEAN_API_KEY:-$(knife exec -E"puts Chef::Config[:knife][:digit
 # Check that client ID and API key was set
 if test -z $client_id; then
   echo "Please add your Digital Ocean Client ID to the shell's environment or knife.rb."
+  exit 1
 fi
 
 if test -z $api_key; then
   echo "Please add your Digital Ocean API Key to the shell's environment or knife.rb."
+  exit 1
 fi
 
 #################
 # chef settings #
 #################
-node_name=deis-controller
+node_name="deis-controller-$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 5 | xargs)"
 run_list="recipe[deis::controller]"
 chef_version=11.6.2
 
@@ -117,7 +119,7 @@ set +x
 if [ $result -ne 0 ]; then
   echo_color "Knife botstrap failed."
   # Destroy droplet
-  droplet_id=$(knife digital_ocean droplet list | grep deis-controller | awk '{print $1}')
+  droplet_id=$(knife digital_ocean droplet list | grep $node_name | awk '{print $1}')
   echo_color "Destroying Droplet $droplet_id..."
   knife digital_ocean droplet destroy -S $droplet_id
   # Remove node and client from Chef Server
@@ -130,4 +132,3 @@ else
   # Need Chef admin permission in order to add and remove nodes and clients
   echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
 fi
-
