@@ -1,7 +1,7 @@
 # Deis requirements for Sphinx documentation generation
 boto==2.19.0
 celery==3.1.6
-Django==1.6.0
+Django==1.6.1
 django-json-field==0.5.5
 djangorestframework==2.3.9
 dop==0.1.4

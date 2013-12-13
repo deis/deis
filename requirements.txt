@@ -1,7 +1,7 @@
 # Deis controller requirements
 boto==2.19.0
 celery==3.1.6
-Django==1.6.0
+Django==1.6.1
 django-allauth==0.15.0
 django-guardian==1.1.1
 django-json-field==0.5.5
