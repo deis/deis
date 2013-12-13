@@ -92,6 +92,23 @@
               <div class="docs-border"></div>
               {%- include "searchbox.html" %}
               {{ toctree(collapse=False, maxdepth=3) }}
+              <ul class="current">
+                <li class="toctree-l1">
+                  <a class="reference internal" href="../" state="open">Versions</a>
+                  <ul class="current">
+                    {% for slug, url in versions %}
+                    <li class="toctree-l2"><a href="{{ url }}{%- for word in pagename.split('/') -%}
+                      {%- if word != 'index' -%}
+                        {%- if word != '' -%}
+                          {{ word }}/
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor -%}"
+                    title="Switch to {{ slug }}">{{ slug }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              </ul>
             </div>
 
         </div> <!-- .row -->
@@ -124,10 +141,6 @@
   </script>
   <script src="{{ pathto('_static/js/checkURL.js', 1) }}"></script>
   <script src="{{ pathto('_static/js/adjustments.js', 1) }}"></script>
-
-  <div class="rtd-docs">
-    {%- block footer %}{%- endblock %}
-  </div>
 
   </body>
 </html>
