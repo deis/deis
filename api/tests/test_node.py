@@ -1,7 +1,7 @@
 """
 Unit tests for the Deis api app.
 
-Run the tests with "./manage.py test api"
+Run these tests with "./manage.py test api.tests.test_node"
 """
 
 from __future__ import unicode_literals
@@ -10,6 +10,8 @@ import json
 
 from django.test import TestCase
 from django.test.utils import override_settings
+
+from api.models import Node
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -236,3 +238,28 @@ class NodeTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 0)
+
+    def test_node_str(self):
+        """Test the text representation of a node."""
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # create a node for an existing instance
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
+        body = {'fqdn': 'example.com', 'layer': 'runtime'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # get our node
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        node_id = response.data['results'][0]['id']
+        node = Node.objects.get(id=node_id)
+        self.assertEqual(str(node), 'autotest-runtime-1')

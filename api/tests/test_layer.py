@@ -12,6 +12,8 @@ from Crypto.PublicKey import RSA
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from api.models import Layer
+
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
 class LayerTest(TestCase):
@@ -87,3 +89,18 @@ class LayerTest(TestCase):
         self.assertIn('ssh_public_key', response.data)
         self.assertEquals(response.data['ssh_public_key'], body['ssh_public_key'])
         self.assertIn('ssh_private_key', response.data)
+
+    def test_layer_str(self):
+        """Test the text representation of a layer."""
+        url = '/api/formations'
+        body = {'id': 'autotest', 'domain': 'localhost.localdomain'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']  # noqa
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'autotest', 'flavor': 'autotest',
+                'config': json.dumps({'key': 'value'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        layer = Layer.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(str(layer), 'autotest')

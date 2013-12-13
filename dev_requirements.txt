@@ -28,7 +28,7 @@ smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0
 
 # Run "make coverage" for the % of code exercised during tests
-coverage>=3.7
+coverage>=3.7.1
 
 # Generates template documentation in the Django admin
 docutils>=0.11

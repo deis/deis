@@ -11,6 +11,8 @@ import json
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from api.models import Config
+
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
 class ConfigTest(TestCase):
@@ -98,3 +100,10 @@ class ConfigTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
+        return config5
+
+    def test_config_str(self):
+        """Test the text representation of a node."""
+        config5 = self.test_config()
+        config = Config.objects.get(uuid=config5['uuid'])
+        self.assertEqual(str(config), "{}-v4".format(config5['app']))

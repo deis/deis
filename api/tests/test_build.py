@@ -122,3 +122,19 @@ class BuildTest(TestCase):
         self.assertIn('web', databag['containers'])
         self.assertIn('1', databag['containers']['web'])
         self.assertEqual(databag['containers']['web']['1'], 'up')
+
+    def test_build_str(self):
+        """Test the text representation of a build."""
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # check to see that no initial build was created
+        url = "/api/apps/{app_id}/builds".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.data['results'][0]
+        build = Build.objects.get(uuid=data['uuid'])
+        sha = ''
+        self.assertEqual(str(build), "{}-{}".format(data['app'], sha))

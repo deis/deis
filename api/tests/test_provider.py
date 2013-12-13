@@ -10,6 +10,8 @@ import json
 
 from django.test import TestCase
 
+from api.models import Provider
+
 
 class ProviderTest(TestCase):
 
@@ -46,3 +48,12 @@ class ProviderTest(TestCase):
         self.assertEqual(response.data['type'], 'mock')
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_provider_str(self):
+        """Test the text representation of a provider."""
+        url = '/api/providers'
+        body = {'id': 'autotest', 'type': 'ec2', 'creds': json.dumps({})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        provider = Provider.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(str(provider), 'autotest-Amazon Elastic Compute Cloud (EC2)')

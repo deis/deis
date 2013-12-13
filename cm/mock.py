@@ -46,7 +46,26 @@ def run_node(node, command):
     :param command: the command-line to execute on the node
     :returns: a tuple of the command's (output, return_code)
     """
-    return '', 0
+    if command.endswith('ls -al'):
+        output, rc = """\
+total 48
+drwxr-xr-x  8 deis deis 4096 Dec 21 10:08 .
+drwxr-xr-x  5 root root 4096 Dec 21 10:00 ..
+-rw-------  1 deis deis  164 Dec 22 12:39 .bash_history
+-rw-r--r--  1 deis deis  220 Mar 28  2013 .bash_logout
+-rw-r--r--  1 deis deis 3486 Mar 28  2013 .bashrc
+drwxr-xr-x  5 deis deis 4096 Dec 21 10:05 build
+drwx------  2 deis deis 4096 Dec 21 10:08 .cache
+drwx------  2 deis deis 4096 Dec 21 10:00 .chef
+drwxr-xr-x 15 deis deis 4096 Dec 21 10:09 controller
+drwxr-xr-x  8 git  git  4096 Dec 21 10:14 gitosis
+-rw-r--r--  1 root root    0 Dec 21 10:00 prevent-apt-update
+-rw-r--r--  1 deis deis  675 Mar 28  2013 .profile
+drwxr-xr-x  2 deis deis 4096 Dec 21 10:07 .ssh
+""", 0
+    else:
+        output, rc = 'failed to setup the container', 1
+    return output, rc
 
 
 def purge_node(node):
