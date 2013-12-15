@@ -41,9 +41,14 @@ fi
 #################
 # chef settings #
 #################
-node_name="deis-controller-$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 5 | xargs)"
+node_name="deis-controller-$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 5 | xargs)"
 run_list="recipe[deis::controller]"
 chef_version=11.6.2
+
+if [ $node_name = 'deis-controller-' ]; then
+  echo "Couldn't generate unique name for deis-controller. Aborting."
+  exit 1
+fi
 
 #########################
 # digitalocean settings #
@@ -124,11 +129,11 @@ if [ $result -ne 0 ]; then
   knife digital_ocean droplet destroy -S $droplet_id
   # Remove node and client from Chef Server
   echo_color "Deleting Chef client..."
-  knife client delete deis-controller -y
+  knife client delete $node_name -y
   echo_color "Deleting Chef node..."
-  knife node delete deis-controller -y
+  knife node delete $node_name -y
 else
   echo_color "Knife bootstrap successful."
   # Need Chef admin permission in order to add and remove nodes and clients
-  echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
+  echo -e "\033[35mPlease ensure that \"$node_name\" is added to the Chef \"admins\" group.\033[0m"
 fi
