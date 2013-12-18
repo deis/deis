@@ -12,9 +12,6 @@ import yaml
 SLUG_DIR = os.environ['SLUG_DIR']
 CONTROLLER_DIR = os.environ['CONTROLLER_DIR']
 
-if SLUG_DIR is None || CONTROLLER_DIR is None:
-    raise EnvironmentError("Environment variables not set.")
-
 def parse_args():
     desc = """
 Process a git push by running it through the buildpack process
@@ -119,7 +116,7 @@ if __name__ == '__main__':
     try:
         release = yaml.safe_load(p.stdout.read())
     except YAMLError as e:
-        exit_on_error(1, 'Invalid Release format: {0}'.format(e))    
+        exit_on_error(1, 'Invalid Release format: {0}'.format(e))
     # remove the container
     cmd = 'docker rm {container}'.format(**locals())
     p = subprocess.Popen(cmd, cwd=args.src, shell=True, stdout=subprocess.PIPE)
