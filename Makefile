@@ -6,14 +6,14 @@ db:
 	python manage.py migrate --noinput
 
 test:
-	python -Wall manage.py test --noinput api cm provider web
+	python manage.py test --noinput api cm provider web
 
 coverage:
 	coverage run manage.py test --noinput api cm provider web
 	coverage html
 
 test_client:
-	python -Wall -m unittest discover client.tests
+	python -m unittest discover client.tests
 
 flake8:
 	flake8
