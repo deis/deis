@@ -146,7 +146,7 @@ def destroy_node(node):
         _host_ssh(commands=[rm_vagrantfile, rm_node_dir], creds=node['creds'])
     except RuntimeError as err:
         # If we couldn't cd to the node dir, just log that as a warning
-        if 'No such file or directory' in str(err):
+        if 'no such file or directory' in str(err).lower():
             logger.warn(err)
         else:
             raise
