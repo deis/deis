@@ -9,9 +9,6 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 .. image:: https://travis-ci.org/opdemand/deis.png?branch=master
     :target: https://travis-ci.org/opdemand/deis
 
-.. image:: https://pypip.in/d/deis/badge.png
-    :target: https://crate.io/packages/deis/
-
 What is Deis?
 -------------
 
@@ -61,104 +58,68 @@ and DevOps community by using Deis and complimentary projects like
 Docker, Chef and Heroku Buildpacks.
 
 
-Getting Started
----------------
+Get Started
+===========
 
-Installing the Deis client using `pip`_ is simple::
-
-    $ pip install deis
-
-`pip`_ will automatically install the following dependencies:
-
--  `docopt <http://docopt.org>`__
--  `pyyaml <https://bitbucket.org/xi/pyyaml>`__
--  `requests <http://python-requests.org>`__
-
-You should know the fully-qualified domain name of an existing
-Deis controller. To set up a Deis controller, see the
-`Installation`_ documentation.
-
-Registration will discover SSH keys automatically and use environment variables
-to configure Amazon EC2, Rackspace, and DigitalOcean providers.
+1. `Install the Client`_:
 
 .. code-block:: console
 
-    $ deis register http://my-deis-controller.fqdn
-    username: myuser
-    password:
-    password (confirm):
-    email: myuser@example.com
-    Registered myuser
-    Logged in as myuser
+    $ sudo pip install deis
 
-    Found the following SSH public keys:
-    1) id_rsa.pub
-    Which would you like to use with Deis? 1
-    Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
-Find an application you’d like to deploy, or clone `an example app`_.
-
-Change into the application directory and use ``deis formations:create`` to
-initialize a new formation in a specific cloud region. For example:
+2. `Register a User`_:
 
 .. code-block:: console
 
-  $ deis formations:create dev1 --flavor=rackspace-dfw
+    $ deis register http://deis.example.com
+    $ deis keys:add
 
-Use the ``deis nodes:scale`` command to provision nodes that will be
-dedicated to this formation.
 
-Then create an application that references the formation.
+3. `Deploy an Application`_:
 
 .. code-block:: console
 
-    $ cd <my-application-repo>
-    $ deis create --formation=dev1
-    Creating application... done, created nimbus-pamphlet
+    $ deis create
+    Creating application... done, created peachy-waxworks
     Git remote deis added
-
-Use ``git push deis master`` to deploy your application.
-
-Deis will automatically deploy Docker containers and configure Nginx proxies
-to route requests to your application.
-
-.. code-block:: console
-
-    (deis)flopsy:example-go matt$ git push deis master
-    Counting objects: 13, done.
-    Delta compression using up to 8 threads.
-    Compressing objects: 100% (11/11), done.
-    Writing objects: 100% (13/13), 6.20 KiB | 0 bytes/s, done.
-    Total 13 (delta 2), reused 0 (delta 0)
-           Go app detected
-    -----> Installing Go 1.1.2... done
-           Installing Virtualenv... done
-           Installing Mercurial... done
-           Installing Bazaar... done
-    -----> Running: go get -tags heroku ./...
-    -----> Discovering process types
-           Procfile declares types -> web
-
-    -----> Compiled slug size: 1.2 MB
+    $ git push deis master
+           Java app detected
+    -----> Installing OpenJDK 1.6... done
+    ...
+    -----> Compiled slug size: 63.5 MB
            Launching... done, v2
 
-    -----> nimbus-pamphlet deployed to Deis
-           http://ec2-198.51.100.22.us-west-2.compute.amazonaws.com
+    -----> peachy-waxworks deployed to Deis
+           http://peachy-waxworks.example.com ...
 
-           To learn more, use `deis help` or visit http://deis.io
-
-    To git@198.51.100.22:nimbus-pamphlet.git
-     * [new branch]      master -> master
-
-    $ curl -s http://ec2-198.51.100.22.us-west-2.compute.amazonaws.com
+    $ curl -s http://peachy-waxworks.example.com
     Powered by Deis!
+
+
+4. `Manage an Application`_:
+
+.. code-block:: console
+
+    $ deis config:set DATABASE_URL=postgres://user:pass@example.com:5432/db
+    $ deis scale web=8
+    $ deis run ls -l  # the view from inside a container
+    total 28
+    -rw-r--r-- 1 root root  553 Dec  2 23:59 LICENSE
+    -rw-r--r-- 1 root root   60 Dec  2 23:59 Procfile
+    -rw-r--r-- 1 root root   33 Dec  2 23:59 README.md
+    -rw-r--r-- 1 root root 1622 Dec  2 23:59 pom.xml
+    drwxr-xr-x 3 root root 4096 Dec  2 23:59 src
+    -rw-r--r-- 1 root root   25 Dec  2 23:59 system.properties
+    drwxr-xr-x 6 root root 4096 Dec  3 00:00 target
+
 
 To learn more, use ``deis help`` or browse `the documentation`_.
 
-.. _`pip`: http://www.pip-installer.org/en/latest/installing.html
-.. _`Installation`: http://docs.deis.io/en/latest/gettingstarted/installation/
-.. _`standard environment variables`: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SettingUp_CommandLine.html#set_aws_credentials_linux
-.. _`an example app`: https://github.com/opdemand/example-nodejs-express
+.. _`Install the Client`: http://docs.deis.io/en/latest/developer/install-client/
+.. _`Register a User`: http://docs.deis.io/en/latest/developer/register-user/
+.. _`Deploy an Application`: http://docs.deis.io/en/latest/developer/deploy-application/
+.. _`Manage an Application`: http://docs.deis.io/en/latest/developer/manage-application/
 .. _`the documentation`: http://docs.deis.io/
 
 
