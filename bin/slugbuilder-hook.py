@@ -6,11 +6,11 @@ import json
 import os
 import subprocess
 import sys
-import uuid
 import yaml
 
 SLUG_DIR = os.environ['SLUG_DIR']
 CONTROLLER_DIR = os.environ['CONTROLLER_DIR']
+
 
 def parse_args():
     desc = """
