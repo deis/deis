@@ -87,13 +87,20 @@ def destroy_layer(layer):
     conn.delete_key_pair(name)
     # there's an ec2 race condition on instances terminating
     # successfully but still holding a lock on the security group
-    # let's take a nap
-    time.sleep(5)
-    try:
-        conn.delete_security_group(name)
-    except EC2ResponseError as e:
-        if e.code != 'InvalidGroup.NotFound':
-            raise e
+    for i in range(5):
+        # let's take a nap
+        time.sleep(i ** 1.25)  # 1, 2.4, 3.9, 5.6, 7.4
+        try:
+            conn.delete_security_group(name)
+            return
+        except EC2ResponseError as err:
+            if err.code == 'InvalidGroup.NotFound':
+                return
+            elif err.code in ('InvalidGroup.InUse',
+                              'DependencyViolation') and i < 4:
+                continue  # retry
+            else:
+                raise
 
 
 def build_node(node):
