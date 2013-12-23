@@ -11,6 +11,7 @@ import json
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from api.models import Container
 from deis import settings
 
 
@@ -455,3 +456,27 @@ class ContainerTest(TestCase):
         b_min = min([len(by_backend[b]) for b in by_backend.keys()])
         b_max = max([len(by_backend[b]) for b in by_backend.keys()])
         self.assertLess(b_max - b_min, 2)
+
+    def test_container_str(self):
+        """Test the text representation of a container."""
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # scale up
+        url = "/api/apps/{app_id}/scale".format(**locals())
+        body = {'web': 4, 'worker': 2}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        # should start with zero
+        url = "/api/apps/{app_id}/containers".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 6)
+        uuid = response.data['results'][0]['uuid']
+        container = Container.objects.get(uuid=uuid)
+        self.assertEqual(container.short_name(),
+                         "{}.{}".format(container.type, container.num))
+        self.assertEqual(str(container),
+                         "{} {}".format(container.formation.id, container.short_name()))

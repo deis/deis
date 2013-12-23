@@ -7,10 +7,13 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import unittest
 import uuid
 
 from django.test import TestCase
 from django.test.utils import override_settings
+
+from api.models import Release
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -123,3 +126,24 @@ class ReleaseTest(TestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
+        return release3
+
+    @unittest.expectedFailure
+    def test_release_rollback(self):
+        url = '/api/apps'
+        body = {'formation': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # check to see that an initial release was created
+        url = '/api/apps/{app_id}/releases'.format(**locals())
+        response = self.client.get(url)
+        uuid = response.data['results'][0]['uuid']
+        release = Release.objects.get(uuid=uuid)
+        release.rollback()  # raises NotImplementedError currently
+
+    def test_release_str(self):
+        """Test the text representation of a release."""
+        release3 = self.test_release()
+        release = Release.objects.get(uuid=release3['uuid'])
+        self.assertEqual(str(release), "{}-v3".format(release3['app']))

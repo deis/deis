@@ -11,6 +11,8 @@ import json
 
 from django.test import TestCase
 
+from api.models import Flavor
+
 
 class FlavorTest(TestCase):
 
@@ -95,3 +97,18 @@ class FlavorTest(TestCase):
         self.assertNotIn('zone', params)
         self.assertEqual(params['size'], 'c1.xlarge')
         self.assertEqual(params['image'], 'ami-c98d1bf9')
+
+    def test_flavor_str(self):
+        """Test the text representation of a flavor."""
+        url = '/api/flavors'
+        params = {
+            'region': 'us-west-2',
+            'size': 't1.micro',
+            'zone': 'any',
+            'image': 'i-1234567'
+        }
+        body = {'id': 'auto_test', 'provider': 'autotest', 'params': json.dumps(params)}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        flavor = Flavor.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(str(flavor), 'auto_test')

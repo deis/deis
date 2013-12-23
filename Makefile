@@ -1,9 +1,8 @@
-all:
+runserver:
 	python manage.py runserver
 
 db:
-	python manage.py syncdb --noinput
-	python manage.py migrate --noinput
+	python manage.py syncdb --migrate --noinput
 
 test:
 	python manage.py test --noinput api cm provider web
