@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import json
 import os
+import paramiko
 
 from deis import settings
 
@@ -18,7 +19,8 @@ def bootstrap_node(node):
 
     :param node: a dict containing the node's fully-qualified domain name and SSH info
     """
-    pass
+    if node and 'error' in node['fqdn']:
+        raise paramiko.AuthenticationException('Authentication failed.')
 
 
 def converge_node(node):

@@ -32,7 +32,11 @@ def build_node(node):
     node.fqdn = fqdn
     node.metadata = metadata
     node.save()
-    CM.bootstrap_node(node.flat())
+    try:
+        CM.bootstrap_node(node.flat())
+    except:
+        node.delete()  # rollback node creation if we had an error
+        raise
 
 
 @task
