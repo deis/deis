@@ -2011,10 +2011,9 @@ def main():
     cmd, help_flag = parse_args(cmd)
     # print help if it was asked for
     if help_flag:
-        if cmd != 'help':
-            if cmd in dir(cli):
-                print(trim(getattr(cli, cmd).__doc__))
-                return
+        if cmd != 'help' and cmd in dir(cli):
+            print(trim(getattr(cli, cmd).__doc__))
+            return
         docopt(__doc__, argv=['--help'])
     # unless cmd needs to use sys.argv directly
     if hasattr(cli, cmd):
@@ -2036,6 +2035,8 @@ def main():
         print('{} {}'.format(resp.status_code, resp.reason))
         try:
             msg = resp.json()
+            if 'detail' in msg:
+                msg = "Detail:\n{}".format(msg['detail'])
         except:
             msg = resp.text
         print(msg)
