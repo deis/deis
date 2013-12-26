@@ -111,8 +111,8 @@ def bootstrap_node(node):
             output = f.read()
         print(output)
         # raise an exception if bootstrap failed
-        if rc != 0:
-            raise RuntimeError('Node Bootstrap Error')
+        if rc != 0 or 'incorrect password' in output:
+            raise RuntimeError('Node Bootstrap Error:\n' + output)
     # remove temp files from filesystem
     finally:
         os.remove(pk_path)
