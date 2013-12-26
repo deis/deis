@@ -239,6 +239,22 @@ class NodeTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 0)
 
+    def test_node_create_errors(self):
+        url = '/api/formations'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # create a node for an existing instance
+        url = '/api/formations/{formation_id}/nodes'.format(**locals())
+        body = {'fqdn': 'error', 'layer': 'runtime'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 401)
+
     def test_node_str(self):
         """Test the text representation of a node."""
         url = '/api/formations'
