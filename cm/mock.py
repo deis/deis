@@ -18,7 +18,8 @@ def bootstrap_node(node):
 
     :param node: a dict containing the node's fully-qualified domain name and SSH info
     """
-    pass
+    if 'error' in node.get('fqdn'):
+        raise RuntimeError('Node Bootstrap Error:\nmock testing')
 
 
 def converge_node(node):

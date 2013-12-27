@@ -6,6 +6,9 @@ Run the tests with "./manage.py test web"
 
 from __future__ import unicode_literals
 
+from django.template import Context
+from django.template import Template
+from django.template import TemplateSyntaxError
 from django.test import TestCase
 
 
@@ -51,3 +54,38 @@ class WebViewsTest(TestCase):
         self.assertContains(response, '<div class="forkImage">')
         self.assertContains(response, '<h2>IRC</h2>')
         self.assertContains(response, '<h2>GitHub</h2>')
+
+
+class GravatarTagsTest(TestCase):
+
+    def _render_template(self, str, ctx=None):
+        """Test that the tag renders a gravatar URL."""
+        tmpl = Template(str)
+        return tmpl.render(Context(ctx)).strip()
+
+    def test_render(self):
+        tmpl = """\
+{% load gravatar_tags %}
+{% gravatar_url email %}
+"""
+        rendered = self._render_template(tmpl, {'email': 'github@deis.io'})
+        self.assertEquals(
+            rendered,
+            r'//www.gravatar.com/avatar/058ff74579b6a8fa1e10ab98c990e945?s=24&d=mm')
+
+    def test_render_syntax_error(self):
+        """Test that the tag requires one argument."""
+        tmpl = """
+{% load gravatar_tags %}
+{% gravatar_url %}
+"""
+        self.assertRaises(TemplateSyntaxError, self._render_template, tmpl)
+
+    def test_render_context_error(self):
+        """Test that an empty email returns an empty string."""
+        tmpl = """
+{% load gravatar_tags %}
+{% gravatar_url email %}
+"""
+        rendered = self._render_template(tmpl, {})
+        self.assertEquals(rendered, '')
