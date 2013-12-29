@@ -1,5 +1,5 @@
 # Deis controller requirements
-boto==2.20.1
+boto==2.21.2
 celery==3.1.7
 Django==1.6.1
 django-allauth==0.15.0
