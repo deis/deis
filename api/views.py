@@ -44,9 +44,7 @@ class IsAnonymous(permissions.BasePermission):
         """
         Return `True` if permission is granted, `False` otherwise.
         """
-        if type(request.user) == AnonymousUser:
-            return True
-        return False
+        return type(request.user) is AnonymousUser
 
 
 class IsOwner(permissions.BasePermission):
