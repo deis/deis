@@ -21,7 +21,6 @@ GitHub Issues
 Other Repos
 -----------
 
-- tag the opdemand/buildstep repo
 - tag the opdemand/gitosis repo
 
 
