@@ -17,14 +17,14 @@ from deis import settings
 # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
 # and large docker images (e.g. buildstep) pre-installed
 IMAGE_MAP = {
-    'ap-northeast-1': 'ami-6399f962',
-    'ap-southeast-1': 'ami-0a87d358',
-    'ap-southeast-2': 'ami-c3bd22f9',
-    'eu-west-1': 'ami-4826c83f',
-    'sa-east-1': 'ami-79bf1e64',
-    'us-east-1': 'ami-e7af828e',
-    'us-west-1': 'ami-a06e5ee5',
-    'us-west-2': 'ami-28abce18',
+    'ap-northeast-1': 'ami-e31478e2',
+    'ap-southeast-1': 'ami-24421576',
+    'ap-southeast-2': 'ami-6338a759',
+    'eu-west-1': 'ami-6ed73c19',
+    'sa-east-1': 'ami-510eaf4c',
+    'us-east-1': 'ami-cb3a0fa2',
+    'us-west-1': 'ami-d82d1e9d',
+    'us-west-2': 'ami-5299fe62',
 }
 
 
@@ -87,13 +87,20 @@ def destroy_layer(layer):
     conn.delete_key_pair(name)
     # there's an ec2 race condition on instances terminating
     # successfully but still holding a lock on the security group
-    # let's take a nap
-    time.sleep(5)
-    try:
-        conn.delete_security_group(name)
-    except EC2ResponseError as e:
-        if e.code != 'InvalidGroup.NotFound':
-            raise e
+    for i in range(5):
+        # let's take a nap
+        time.sleep(i ** 1.25)  # 1, 2.4, 3.9, 5.6, 7.4
+        try:
+            conn.delete_security_group(name)
+            return
+        except EC2ResponseError as err:
+            if err.code == 'InvalidGroup.NotFound':
+                return
+            elif err.code in ('InvalidGroup.InUse',
+                              'DependencyViolation') and i < 4:
+                continue  # retry
+            else:
+                raise
 
 
 def build_node(node):

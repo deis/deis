@@ -10,6 +10,10 @@
 
 <p>{% blocktrans %}Already have an account? <a href="{{ login_url }}"><strong>Log in</strong></a>.{% endblocktrans %}</p>
 
+<p>
+  Please use the <a href="https://pypi.python.org/pypi/deis">Deis CLI</a> to sign up.
+</p>
+<!--
 <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
   {% csrf_token %}
   {{ form.as_p }}
@@ -18,6 +22,7 @@
   {% endif %}
   <button type="submit">{% trans "Sign Up" %} &raquo;</button>
 </form>
+-->
 
 
 {% endblock %}

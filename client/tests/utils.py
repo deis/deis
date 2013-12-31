@@ -85,7 +85,7 @@ def random_repo():
     return name, EXAMPLES[name]
 
 
-def register():
+def register(add_keys=True, add_providers=True):
     """Register a new Deis user from the command line."""
     username = "autotester-{}".format(uuid4().hex[:4])
     password = 'password'
@@ -136,28 +136,30 @@ ssh -F {} "$@"
     child.expect("Logged in as {}".format(username))
     child.expect(pexpect.EOF)
     # add keys
-    child = pexpect.spawn("{} keys:add".format(DEIS))
-    child.expect('Which would you like to use with Deis')
-    for index, key in re.findall('(\d)\) ([ \S]+)', child.before):
-        if username in key:
-            child.sendline(index)
-            break
-    child.expect('Uploading')
-    child.expect('...done')
-    child.expect(pexpect.EOF)
+    if add_keys:
+        child = pexpect.spawn("{} keys:add".format(DEIS))
+        child.expect('Which would you like to use with Deis')
+        for index, key in re.findall('(\d)\) ([ \S]+)', child.before):
+            if username in key:
+                child.sendline(index)
+                break
+        child.expect('Uploading')
+        child.expect('...done')
+        child.expect(pexpect.EOF)
     # discover providers
-    child = pexpect.spawn("{} providers:discover".format(DEIS))
-    opt = child.expect(['Import EC2 credentials\? \(y/n\) :',
-                       'No EC2 credentials discovered.'])
-    if opt == 0:
-        child.sendline('y')
-    opt = child.expect(['Import Rackspace credentials\? \(y/n\) :',
-                       'No Rackspace credentials discovered.'])
-    if opt == 0:
-        child.sendline('y')
-    opt = child.expect(['Import DigitalOcean credentials\? \(y/n\) :',
-                       'No DigitalOcean credentials discovered.'])
-    if opt == 0:
-        child.sendline('y')
-    child.expect(pexpect.EOF)
+    if add_providers:
+        child = pexpect.spawn("{} providers:discover".format(DEIS))
+        opt = child.expect(['Import EC2 credentials\? \(y/n\) :',
+                           'No EC2 credentials discovered.'])
+        if opt == 0:
+            child.sendline('y')
+        opt = child.expect(['Import Rackspace credentials\? \(y/n\) :',
+                           'No Rackspace credentials discovered.'])
+        if opt == 0:
+            child.sendline('y')
+        opt = child.expect(['Import DigitalOcean credentials\? \(y/n\) :',
+                           'No DigitalOcean credentials discovered.'])
+        if opt == 0:
+            child.sendline('y')
+        child.expect(pexpect.EOF)
     return username, password

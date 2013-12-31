@@ -340,13 +340,11 @@ class FormationNodeViewSet(FormationScopedViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class _PermsViewSet(viewsets.ViewSet):
-    """RESTful views for object-level permissions.
-    Intended as an abstract base class.
-    """
+class AppPermsViewSet(viewsets.ViewSet):
+    """RESTful views for sharing apps with collaborators."""
 
-    model = None   # models class, such as models.App
-    perm = ''      # short name for permission, such as "use_app"
+    model = models.App  # models class
+    perm = 'use_app'    # short name for permission
 
     def list(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
@@ -379,13 +377,6 @@ class _PermsViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
-
-
-class AppPermsViewSet(_PermsViewSet):
-    """RESTful views for sharing apps with collaborators."""
-
-    model = models.App
-    perm = 'use_app'
 
 
 class AdminPermsViewSet(viewsets.ModelViewSet):

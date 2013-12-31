@@ -2,12 +2,16 @@
 omit =
     */venv/*
     */virtualenv/*
+    *tests*
     api/__init__.py
     client/__init__.py
     client/models.py
-    client/tests/__init__.py
+    cm/__init__.py
+    cm/models.py
+    provider/models.py
     web/__init__.py
     web/models.py
+    web/templatetags/__init__.py
 
 [report]
 ignore_errors = True

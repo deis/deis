@@ -1,9 +1,9 @@
 # Deis requirements for Sphinx documentation generation
-boto==2.19.0
-celery==3.1.6
-Django==1.6.0
+boto==2.20.1
+celery==3.1.7
+Django==1.6.1
 django-json-field==0.5.5
-djangorestframework==2.3.9
+djangorestframework==2.3.10
 dop==0.1.4
 paramiko==1.12.0
 pyrax==1.6.2
@@ -13,6 +13,6 @@ PyYAML==3.10
 docopt==0.6.1
 
 # Deis documentation requirements
-Sphinx>=1.2b3
+Sphinx>=1.2
 smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0

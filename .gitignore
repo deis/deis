@@ -63,5 +63,4 @@ contrib/vagrant/nodes/
 # Broken symlinks that appear when mounting the codebase onto a vagrant VM
 # See Vagrantfile.local.example
 logs
-static
 venv

@@ -9,3 +9,7 @@ Deis will use the layer's SSH configuration to bootstrap the node.
 
     $ deis nodes:create dev node1.example.com --layer=runtime
     Creating node for node1.example.com... done in 107s
+
+.. note::
+	To bootstrap a node manually, ``deis nodes:create`` requires the
+	SSH user to be able to run ``sudo`` without entering a password.

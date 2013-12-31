@@ -12,6 +12,7 @@ import os.path
 from django.test import TestCase
 from django.test.utils import override_settings
 
+from api.models import Key
 from deis import settings
 
 
@@ -79,3 +80,19 @@ class KeyTest(TestCase):
         self.assertEqual(response.status_code, 201)
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+    def test_key_str(self):
+        """Test the text representation of a key"""
+        url = '/api/keys'
+        body = {'id': 'autotest', 'public':
+                'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDzqPAwHN70xsB0LXG//KzO'
+                'gcPikyhdN/KRc4x3j/RA0pmFj63Ywv0PJ2b1LcMSqfR8F11WBlrW8c9xFua0'
+                'ZAKzI+gEk5uqvOR78bs/SITOtKPomW4e/1d2xEkJqOmYH30u94+NZZYwEBqY'
+                'aRb34fhtrnJS70XeGF0RhXE5Qea5eh7DBbeLxPfSYd8rfHgzMSb/wmx3h2vm'
+                'HdQGho20pfJktNu7DxeVkTHn9REMUphf85su7slTgTlWKq++3fASE8PdmFGz'
+                'b6PkOR4c+LS5WWXd2oM6HyBQBxxiwXbA2lSgQxOdgDiM2FzT0GVSFMUklkUH'
+                'MdsaG6/HJDw9QckTS0vN autotest@deis.io'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        key = Key.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(str(key), 'ssh-rsa AAAAB3NzaC.../HJDw9QckTS0vN autotest@deis.io')

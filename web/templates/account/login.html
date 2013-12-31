@@ -10,7 +10,7 @@
 
 <h1>{% trans "Log In" %}</h1>
 
-<p>{% blocktrans %}Need an account? <a href="{{ signup_url }}"><strong>Sign up</strong></a>.{% endblocktrans %}</p>
+<p>Need an account? Use the <a href="https://pypi.python.org/pypi/deis">Deis CLI</a> to sign up.</p>
 
 <form class="login" method="POST" action="{% url 'account_login' %}">
   {% csrf_token %}

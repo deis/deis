@@ -62,5 +62,5 @@ try:
     add_introspection_rules([], [r'^api\.fields\.ParamsField'])
     add_introspection_rules([], [r'^api\.fields\.CloudInitField'])
     add_introspection_rules([], [r'^api\.fields\.NodeStatusField'])
-except ImportError:
+except ImportError:  # pragma: no cover
     pass

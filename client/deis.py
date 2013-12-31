@@ -43,6 +43,7 @@ Use ``git push deis master`` to deploy to an application.
 """
 
 from __future__ import print_function
+from collections import namedtuple
 from cookielib import MozillaCookieJar
 from getpass import getpass
 from itertools import cycle
@@ -55,6 +56,7 @@ import random
 import re
 import subprocess
 import sys
+import tempfile
 import time
 import urlparse
 import webbrowser
@@ -63,9 +65,8 @@ import yaml
 from docopt import docopt
 from docopt import DocoptExit
 import requests
-import tempfile
 
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 
 
 class Session(requests.Session):
@@ -1214,57 +1215,60 @@ class DeisClient(object):
 
         Usage: deis keys:add [<key>]
         """
+
+        Key = namedtuple('Key', 'path name type str comment')
+
+        def parse_key(path):
+            """Parse an SSH public key path into a Key namedtuple."""
+            name = path.split(os.path.sep)[-1]
+            with open(path) as f:
+                data = f.read()
+                match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+                if not match:
+                    print("Could not parse SSH public key {0}".format(name))
+                    return
+                key_type, key_str, key_comment = match.groups()
+                return Key(path, name, key_type, key_str, key_comment)
+
         path = args.get('<key>')
         if not path:
+            # find public keys and prompt the user to pick one
             ssh_dir = os.path.expanduser('~/.ssh')
-            pubkeys = glob.glob(os.path.join(ssh_dir, '*.pub'))
-            pubkeys_list = []
-            if not pubkeys:
+            pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
+            if not pubkey_paths:
                 print('No SSH public keys found')
                 return
+            pubkeys_list = [parse_key(k) for k in pubkey_paths]
             print('Found the following SSH public keys:')
-            for i, k in enumerate(pubkeys):
-                key = k.split(os.path.sep)[-1]
-                with open(k) as f:
-                    data = f.read()
-                    match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
-                    if not match:
-                        print("Could not parse SSH public key {0}".format(key))
-                        return
-                    key_type, key_str, _key_comment = match.groups()
-                    pubkeys_list.append([k, key, key_type, key_str, _key_comment])
-                    print("{0}) {1} {2}".format(i + 1, key, _key_comment))
-
+            for i, key_ in enumerate(pubkeys_list):
+                print("{}) {} {}".format(i + 1, key_.name, key_.comment))
             inp = raw_input('Which would you like to use with Deis? ')
             try:
                 selected_key = pubkeys_list[int(inp) - 1]
-                path = selected_key[0]
             except:
                 print('Aborting')
                 return
-
-            if not selected_key[4]:
-                body = {
-                    'id': selected_key[1].replace('.pub', ''),
-                    'public': "{0} {1}".format(
-                        selected_key[2], selected_key[3]
-                    )
-                }
-                sys.stdout.write("Uploading {} to Deis...".format(selected_key[1]))
-            else:
-                body = {
-                    'id': selected_key[4],
-                    'public': "{0} {1}".format(
-                        selected_key[2], selected_key[3]
-                    )
-                }
-                sys.stdout.write("Uploading {} to Deis...".format(selected_key[4]))
-            sys.stdout.flush()
-            response = self._dispatch('post', '/api/keys', json.dumps(body))
-            if response.status_code == requests.codes.created:  # @UndefinedVariable
-                print('done')
-            else:
-                raise ResponseError(response)
+        else:
+            # check the specified key format
+            selected_key = parse_key(path)
+            if not selected_key:
+                return
+        # Upload the key to Deis
+        if selected_key.comment:
+            key_id = selected_key.comment
+        else:
+            key_id = selected_key.name.replace('.pub', '')
+        body = {
+            'id': key_id,
+            'public': "{} {}".format(selected_key.type, selected_key.str)
+        }
+        sys.stdout.write("Uploading {} to Deis...".format(key_id))
+        sys.stdout.flush()
+        response = self._dispatch('post', '/api/keys', json.dumps(body))
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print('done')
+        else:
+            raise ResponseError(response)
 
     def keys_list(self, args):
         """
@@ -2007,10 +2011,9 @@ def main():
     cmd, help_flag = parse_args(cmd)
     # print help if it was asked for
     if help_flag:
-        if cmd != 'help':
-            if cmd in dir(cli):
-                print(trim(getattr(cli, cmd).__doc__))
-                return
+        if cmd != 'help' and cmd in dir(cli):
+            print(trim(getattr(cli, cmd).__doc__))
+            return
         docopt(__doc__, argv=['--help'])
     # unless cmd needs to use sys.argv directly
     if hasattr(cli, cmd):
@@ -2032,6 +2035,8 @@ def main():
         print('{} {}'.format(resp.status_code, resp.reason))
         try:
             msg = resp.json()
+            if 'detail' in msg:
+                msg = "Detail:\n{}".format(msg['detail'])
         except:
             msg = resp.text
         print(msg)

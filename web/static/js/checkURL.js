@@ -35,4 +35,6 @@ switch(pathName[num]) {
     $('.toctree-l1 > a:contains("Server Reference")').attr('state', 'open');
     break;
   default:
+    $('.toctree-l1 > a:contains("Version")').attr('state', 'close');
+    break;
 }

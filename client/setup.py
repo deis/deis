@@ -32,14 +32,15 @@ else:
 
 # pylint: disable=W0142
 setup(name='deis',
-      version='0.3.0',
+      version='0.3.1',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',
       author_email='info@opdemand.com',
       url='https://github.com/opdemand/deis',
       keywords=[
-          'opdemand', 'deis', 'cloud', 'chef', 'docker', 'heroku', 'aws', 'ec2', 'rackspace'
+          'opdemand', 'deis', 'paas', 'cloud', 'chef', 'docker', 'heroku',
+          'aws', 'ec2', 'rackspace', 'digitalocean'
       ],
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -59,6 +60,6 @@ setup(name='deis',
           ('.', ['README.rst']),
       ],
       long_description=LONG_DESCRIPTION,
-      requires=['docopt', 'PyYAML', 'requests'],
+      requires=['docopt(>=0.6.1)', 'PyYAML(>=3.10)', 'requests(>=2.1.0)'],
       zip_safe=True,
       **KWARGS)

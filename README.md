@@ -47,7 +47,7 @@ Regardless of whether your controller is hosted with
 [DigitalOcean](http://docs.deis.io/en/latest/installation/digitalocean/),
 it can create and manage nodes on any of those cloud providers.
 
-Proceed to the [Installation](http://docs.deis.io/en/latest/installation/)
+Proceed to the [Operations Guide](http://docs.deis.io/en/latest/operations/)
 documentation to start building your own private PaaS.
 
 ## Credits

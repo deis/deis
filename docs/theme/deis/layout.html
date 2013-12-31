@@ -28,12 +28,14 @@
     <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap.min.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/css/bootstrap-responsive.min.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/css/main.css', 1) }}" type="text/css">
+    <link rel="stylesheet" href="{{ pathto('_static/css/deis-docs.css', 1) }}" type="text/css">
     <link rel="stylesheet" href="{{ pathto('_static/pygments.css', 1) }}" type="text/css">
     <link rel="shortcut icon" href="{{ pathto('_static/favicon.ico', 1) }}">
     <script
     <script src="{{ pathto('_static/js/modernizr-2.6.2-respond-1.1.0.min.js', 1) }}"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="{{ pathto('_static/js/jquery-1.10.2.min.js', 1) }}"><\/script>')</script>
+    <meta name="msvalidate.01" content="08598E7D936D9217891AE6C1665A645D" />
   {%- if pagename == 'index' %}
   <link rel="canonical" href="http://docs.deis.io/en/latest">
   {% else %}
@@ -92,6 +94,23 @@
               <div class="docs-border"></div>
               {%- include "searchbox.html" %}
               {{ toctree(collapse=False, maxdepth=3) }}
+              <ul class="current">
+                <li class="toctree-l1">
+                  <a class="reference internal" href="../" state="open">Versions</a>
+                  <ul class="current">
+                    {% for slug, url in versions %}
+                    <li class="toctree-l2"><a href="{{ url }}{%- for word in pagename.split('/') -%}
+                      {%- if word != 'index' -%}
+                        {%- if word != '' -%}
+                          {{ word }}/
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor -%}"
+                    title="Switch to {{ slug }}">{{ slug }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              </ul>
             </div>
 
         </div> <!-- .row -->
@@ -124,10 +143,6 @@
   </script>
   <script src="{{ pathto('_static/js/checkURL.js', 1) }}"></script>
   <script src="{{ pathto('_static/js/adjustments.js', 1) }}"></script>
-
-  <div class="rtd-docs">
-    {%- block footer %}{%- endblock %}
-  </div>
 
   </body>
 </html>

@@ -60,6 +60,29 @@ class FormationTest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
+    def test_formation_delete(self):
+        """
+        Test that deleting a formation also deletes its apps.
+        """
+        url = '/api/formations'
+        body = {'id': 'auto_test-1', 'domain': 'localhost.localdomain'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        formation_id = response.data['id']  # noqa
+        url = '/api/apps'
+        body = {'formation': 'auto_test-1'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        response = self.client.get('/api/apps')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        url = '/api/formations/{formation_id}'.format(**locals())
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        response = self.client.get('/api/apps')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
+
     def test_formation_cm(self):
         """
         Test that configuration management is updated on formation changes

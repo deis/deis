@@ -1,12 +1,12 @@
 # Deis controller requirements
-boto==2.19.0
-celery==3.1.6
-Django==1.6.0
+boto==2.20.1
+celery==3.1.7
+Django==1.6.1
 django-allauth==0.15.0
 django-guardian==1.1.1
 django-json-field==0.5.5
 django-yamlfield==0.5
-djangorestframework==2.3.9
+djangorestframework==2.3.10
 dop==0.1.4
 gevent==1.0
 gunicorn==18.0
@@ -20,15 +20,15 @@ South==0.8.4
 # Deis client requirements
 docopt==0.6.1
 #PyYAML==3.10
-requests==2.0.1
+requests==2.1.0
 
 # Deis documentation requirements
-Sphinx>=1.2b3
+Sphinx>=1.2
 smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0
 
 # Run "make coverage" for the % of code exercised during tests
-coverage>=3.7
+coverage>=3.7.1
 
 # Generates template documentation in the Django admin
 docutils>=0.11

@@ -6,6 +6,7 @@ from celery import task
 
 from deis import settings
 from provider import import_provider_module
+from .exceptions import BuildNodeError
 
 # import user-defined config management module
 CM = importlib.import_module(settings.CM_MODULE)
@@ -32,7 +33,10 @@ def build_node(node):
     node.fqdn = fqdn
     node.metadata = metadata
     node.save()
-    CM.bootstrap_node(node.flat())
+    try:
+        CM.bootstrap_node(node.flat())
+    except RuntimeError as err:
+        raise BuildNodeError(str(err))
 
 
 @task
