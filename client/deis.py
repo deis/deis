@@ -66,7 +66,7 @@ from docopt import docopt
 from docopt import DocoptExit
 import requests
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 
 
 class Session(requests.Session):
