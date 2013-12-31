@@ -9,6 +9,14 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 .. image:: https://travis-ci.org/opdemand/deis.png?branch=master
     :target: https://travis-ci.org/opdemand/deis
 
+.. image:: https://pypip.in/d/deis/badge.png
+    :target: https://pypi.python.org/pypi/deis/
+    :alt: Downloads
+
+.. image:: https://pypip.in/license/deis/badge.png
+    :target: https://pypi.python.org/pypi/deis/
+    :alt: License
+
 What is Deis?
 -------------
 

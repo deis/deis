@@ -65,7 +65,7 @@ Deis Repo
     * ensure Berksfile is pointing to opscode community cookbook
     * ``berks update && berks install`` to update Berksfile.lock
 - commit and push the opdemand/deis release and tag
-    * ``git commit -a -m 'updated for vX.Y.Z release'``
+    * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
@@ -77,7 +77,7 @@ Deis Repo
     * update __version__ fields in Python packages to *next* version
     * switch from opscode community cookbook back to github cookbook
     * ``berks update && berks install`` to update Berksfile.lock
-    * ``git commit -a -m 'switch master to vA.B.C.'`` (next version)
+    * ``git commit -a -m 'Switch master to vA.B.C.'`` (next version)
     * ``git push origin master``
 
 Docs
