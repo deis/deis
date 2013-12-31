@@ -710,7 +710,7 @@ class Build(UuidAuditedModel):
     sha = models.CharField('SHA', max_length=255, blank=True)
     output = models.TextField(blank=True)
 
-    image = models.CharField(max_length=256, default='deis/buildstep')
+    image = models.CharField(max_length=256, default='deis/slugbuilder')
 
     procfile = JSONField(blank=True)
     dockerfile = models.TextField(blank=True)
