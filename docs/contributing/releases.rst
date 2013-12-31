@@ -88,6 +88,7 @@ Docs
     - what's next and future directions
 - publish docs to http://docs.deis.io (deis.readthedocs.org)
 - visit readthedocs.org admin and add this release to published builds
+    - Rebuild *all* published versions so their "Versions" index is updated
 - publish docs to pythonhosted.org/deis
     - from the project root, run ``make -C docs clean zipfile``
     - zipfile will be at *docs/docs.zip*
