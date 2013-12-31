@@ -22,6 +22,9 @@ Other Repos
 -----------
 
 - tag the opdemand/gitosis repo
+    * ``git checkout master``
+    * ``git tag vX.Y.Z``
+    * ``git push --tags origin vX.Y.Z``
 
 
 Chef Repo
@@ -30,13 +33,13 @@ Chef Repo
 - merge master into release branch locally
     * ``git checkout release``
     * ``git merge master``
-- change chef attributes to latest tags in deis-cookbook/attributes
-    * default.deis.build.revision
+- change chef attributes to latest tags in attributes/default.rb
     * default.deis.gitosis.revision
     * default.deis.controller.revision
+    * (default.deis.build.revision for slugbuilder stays at master)
 - ``knife cookbook metadata .`` to update metadata.json
 - commit and push the opdemand/deis-cookbook release and tag
-    * ``git commit -a -m 'updated for vX.Y.Z release'``
+    * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
@@ -48,7 +51,7 @@ Chef Repo
 - switch master to upcoming release
     * ``git checkout master``
     * change cookbook revisions in metadata.rb to *next* version
-    * ``git commit -a -m 'switch master to vX.Y.Z+1'``
+    * ``git commit -a -m 'Switch master to vA.B.C.'`` (next version)
     * ``git push origin master``
 
 
@@ -74,7 +77,7 @@ Deis Repo
     * update __version__ fields in Python packages to *next* version
     * switch from opscode community cookbook back to github cookbook
     * ``berks update && berks install`` to update Berksfile.lock
-    * ``git commit -a -m 'switch master to vX.Y.Z+1'``
+    * ``git commit -a -m 'switch master to vA.B.C.'`` (next version)
     * ``git push origin master``
 
 Docs
