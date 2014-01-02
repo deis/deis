@@ -1,10 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
 Data models for the Deis API.
 """
-# pylint: disable=R0903,W0232
 
 from __future__ import unicode_literals
 import importlib
@@ -36,7 +34,6 @@ release_signal = Signal(providing_args=['user', 'app'])
 
 # base models
 
-
 class AuditedModel(models.Model):
     """Add created and updated fields to a model."""
 
@@ -57,8 +54,8 @@ class UuidAuditedModel(AuditedModel):
         """Mark :class:`UuidAuditedModel` as abstract."""
         abstract = True
 
-# deis core models
 
+# deis core models
 
 @python_2_unicode_compatible
 class Key(UuidAuditedModel):
@@ -127,7 +124,7 @@ class Provider(UuidAuditedModel):
 
 
 class FlavorManager(models.Manager):
-    """Manage database interactions for :class:`Flavor`."""
+    """Manage database interactions for :class:`Flavor`\s."""
 
     def seed(self, user, **kwargs):
         """Seed the database with default Flavors for each cloud region."""
@@ -164,7 +161,6 @@ class Flavor(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Formation(UuidAuditedModel):
-
     """
     Formation of nodes used to host applications
     """
@@ -250,7 +246,6 @@ class Formation(UuidAuditedModel):
 
 @python_2_unicode_compatible
 class Layer(UuidAuditedModel):
-
     """
     Layer of nodes used by the formation
 
@@ -763,7 +758,7 @@ class Release(UuidAuditedModel):
     """
     Software release deployed by the application platform
 
-    Releases contain a Build and a Config.
+    Releases contain a :class:`Build` and a :class:`Config`.
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -844,9 +839,9 @@ User.calculate = _user_calculate
 User.publish = _user_publish
 User.purge = _user_purge
 
+
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
-
 
 def _publish_to_cm(**kwargs):
     kwargs['instance'].publish()

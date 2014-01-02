@@ -30,7 +30,6 @@ else:
     KWARGS = {'scripts': ['deis']}
 
 
-# pylint: disable=W0142
 setup(name='deis',
       version='0.4.0',
       license=APACHE_LICENSE,
