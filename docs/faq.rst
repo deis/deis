@@ -1,6 +1,6 @@
 :title: FAQ
 :description: Frequently asked questions about the Deis project. Deis FAQ.
-:keywords: deis, PaaS, cloud, faq
+:keywords: deis, PaaS, cloud, faq, custom buildpack
 
 .. _faq:
 
@@ -16,3 +16,13 @@ FAQ
     DAY-iss
 
 .. _dais: https://en.wiktionary.org/wiki/dais
+
+- How can I use custom buildpacks with Deis?
+
+    1. Clone the `deis-cookbook`_ repository.
+    2. Change the *buildpacks* definition in *recipes/build.rb*.
+    3. Upload the changed cookbook to the Chef server
+       with ``berks upload --force``.
+    4. SSH into your Deis controller and run ``sudo chef-client``.
+
+.. _`deis-cookbook`: https://github.com/opdemand/deis-cookbook.git
