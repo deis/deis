@@ -1,7 +1,6 @@
 """
 Classes to serialize the RESTful representation of Deis API models.
 """
-# pylint: disable=R0903,W0232
 
 from __future__ import unicode_literals
 
