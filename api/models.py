@@ -6,6 +6,7 @@ Data models for the Deis API.
 
 from __future__ import unicode_literals
 import importlib
+import logging
 import os
 import subprocess
 
@@ -23,6 +24,9 @@ from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
 from provider import import_provider_module
+
+
+logger = logging.getLogger(__name__)
 
 # import user-defined configuration management module
 CM = importlib.import_module(settings.CM_MODULE)
@@ -443,6 +447,11 @@ class Node(UuidAuditedModel):
         return tasks.run_node.delay(self, command).wait()
 
 
+def log_event(app, msg, level=logging.INFO):
+    msg = "{}: {}".format(app.id, msg)
+    logger.log(level, msg)
+
+
 @python_2_unicode_compatible
 class App(UuidAuditedModel):
     """
@@ -544,6 +553,7 @@ class App(UuidAuditedModel):
              'deis/slugrunner'])
         env_args = ' '.join(["-e '{k}={v}'".format(**locals())
                              for k, v in release.config.values.items()])
+        log_event(self, "deis run '{}'".format(command))
         command = "sudo docker run {env_args} {docker_args} {command}".format(**locals())
         return node.run(command)
 
@@ -557,6 +567,8 @@ class ContainerManager(models.Manager):
         # increment new container nums off the most recent container
         all_containers = app.container_set.all().order_by('-created')
         container_num = 1 if not all_containers else all_containers[0].num + 1
+        msg = 'Containers scaled ' + ' '.join(
+            "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
         changed = False
         for container_type in requested_containers.keys():
@@ -591,6 +603,7 @@ class ContainerManager(models.Manager):
                 containers.append(c)
                 container_num += 1
                 diff -= 1
+        log_event(app, msg)
         return changed
 
     def balance(self, formation, **kwargs):
@@ -599,6 +612,7 @@ class ContainerManager(models.Manager):
         # get the next container number (e.g. web.19)
         container_num = 1 if not all_containers else all_containers[0].num + 1
         changed = False
+        app = None
         # iterate by unique container type
         for container_type in set([c.type for c in all_containers]):
             # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
@@ -636,6 +650,8 @@ class ContainerManager(models.Manager):
                     ct = len(n.container_set.filter(type=container_type))
                     n_map.setdefault(ct, []).append(n)
                 changed = True
+        if app:
+            log_event(app, 'Containers balanced')
         return changed
 
 
@@ -716,7 +732,7 @@ class Push(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.app.id, self.sha[8:])
+        return "{0}-{1}".format(self.app.id, self.sha[:7])
 
 
 @python_2_unicode_compatible
@@ -746,7 +762,7 @@ class Build(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.app.id, self.sha)
+        return "{0}-{1}".format(self.app.id, self.sha[:7])
 
     @classmethod
     def push(cls, push):
@@ -877,9 +893,30 @@ def _purge_user_from_cm(**kwargs):
     kwargs['instance'].purge()
 
 
-# use django signals to synchronize database updates with
-# the configuration management backend
+def _log_build_created(**kwargs):
+    if kwargs.get('created'):
+        build = kwargs['instance']
+        log_event(build.app, "Build {} created".format(build))
+
+
+def _log_release_created(**kwargs):
+    if kwargs.get('created'):
+        release = kwargs['instance']
+        log_event(release.app, "Release {} created".format(release))
+
+
+def _log_config_updated(**kwargs):
+    config = kwargs['instance']
+    log_event(config.app, "Config {} updated".format(config))
+
+
+# Connect Django model signals
+# Sync database updates with the configuration management backend
 post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
 post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
 post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
 post_delete.connect(_purge_user_from_cm, sender=User, dispatch_uid='api.models')
+# Log significant app-related events
+post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
+post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
+post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
