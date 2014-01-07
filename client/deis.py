@@ -2028,6 +2028,10 @@ def main():
     # dispatch the CLI command
     try:
         method(args)
+    except requests.exceptions.ConnectionError as err:
+        print("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
+correct and the server is running.")
+        sys.exit(1)
     except EnvironmentError as err:
         raise DocoptExit(err.message)
     except ResponseError as err:
