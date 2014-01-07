@@ -133,10 +133,12 @@ and a means to broadcast your hostname to local DNS.
 Install the Client
 ------------------
 In a development environment you'll want to use the latest version of the client.
-Install it by symlinking ``client/deis.py`` to ``deis`` on your local workstation.
+Install its dependencies by using the Makefile and symlinking ``client/deis.py`` to ``deis`` on your local workstation.
 
 .. code-block:: console
 
+    $ cd $DEIS_DIR/client
+    $ make install
     $ ln -fs $DEIS_DIR/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]

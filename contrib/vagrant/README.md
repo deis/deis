@@ -35,7 +35,16 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
   berks upload [--ssl-verify=false] # Upload the cookbooks to the Chef Server
   ```
 
-4. Use the provision script to boot the deis controller.
+4. The Controller needs to be able to run Vagrant commands on your host machine. It does this via SSH. Therefore
+you will need a running SSH server open on port 22 and a means to broadcast your hostname to local DNS.
+    * On Debian-flavoured Linux you just need to;
+    `sudo apt-get install openssh-server`
+    * On Mac OSX you just need to go to **System Preferences -> Sharing** and enable 'Remote Login'.
+    * [Mac OSX user's should already be broadcasting their hostname](http://support.apple.com/kb/ht3473).
+    * Linux user's will need to install avahi-daemon, so that their machine is accessible via
+    [hostname].local. Eg; `sudo apt-get install avahi-daemon`.
+
+5. Use the provision script to boot the Deis Controller.
     * If you don't already have the deis-node Vagrant box installed (~1GB). This step might take a long time! If for some reason
     you want to manually add it, use:
     `vagrant box add deis-node https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box`
@@ -49,15 +58,6 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
       * For Hosted Chef you need to log into https://manage.opscode.com/ Then goto the Groups tab,
       click the 'edit' link on the 'admins' row and then under the 'clients' heading toggle the
       'deis-controller' radio button to be enabled. Then confirm the change by saving the group.
-
-5. The Controller needs to be able to run Vagrant commands on your host machine. It does this via SSH. Therefore
-you will need a running SSH server open on port 22 and a means to broadcast your hostname to local DNS.
-    * On Debian-flavoured Linux you just need to;
-    `sudo apt-get install openssh-server`
-    * On Mac OSX you just need to go to **System Preferences -> Sharing** and enable 'Remote Login'.
-    * [Mac OSX user's should already be broadcasting their hostname](http://support.apple.com/kb/ht3473).
-    * Linux user's will need to install avahi-daemon, so that their machine is accessible via
-    [hostname].local. Eg; `sudo apt-get install avahi-daemon`.
 
 6. If you want to hack on the actual codebase, you can mount your local codebase onto the VM
    by using the custom Vagrantfile.local.
