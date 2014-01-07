@@ -63,3 +63,41 @@ def generate_app_name():
     ]
     return "{}-{}".format(
         random.choice(adjectives), random.choice(nouns))
+
+
+def dict_diff(dict1, dict2):
+    """
+    Returns the added, changed, and deleted items in dict1 compared with dict2.
+
+    :param dict1: a python dict
+    :param dict2: an earlier version of the same python dict
+    :return: a new dict, with 'added', 'changed', and 'removed' items if
+             any were found.
+
+    >>> d1 = {1: 'a'}
+    >>> dict_diff(d1, d1)
+    {}
+    >>> d2 = {1: 'a', 2: 'b'}
+    >>> dict_diff(d2, d1)
+    {'added': {2: 'b'}}
+    >>> d3 = {2: 'B', 3: 'c'}
+    >>> expected = {'added': {3: 'c'}, 'changed': {2: 'B'}, 'deleted': {1: 'a'}}
+    >>> dict_diff(d3, d2) == expected
+    True
+    """
+    diff = {}
+    set1, set2 = set(dict1), set(dict2)
+    # Find items that were added to dict2
+    diff['added'] = {k: dict1[k] for k in (set1 - set2)}
+    # Find common items whose values differ between dict1 and dict2
+    diff['changed'] = {
+        k: dict1[k] for k in (set1 & set2) if dict1[k] != dict2[k]
+    }
+    # Find items that were deleted from dict2
+    diff['deleted'] = {k: dict2[k] for k in (set2 - set1)}
+    return {k: diff[k] for k in diff if diff[k]}
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()

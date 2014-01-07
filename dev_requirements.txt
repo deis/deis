@@ -19,6 +19,7 @@ South==0.8.4
 
 # Deis client requirements
 docopt==0.6.1
+python-dateutil==2.2
 #PyYAML==3.10
 requests==2.1.0
 

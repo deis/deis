@@ -640,15 +640,17 @@ class AppReleaseViewSet(BaseAppViewSet):
         """
         app = get_object_or_404(models.App, id=self.kwargs['id'])
         last_version = app.release_set.latest().version
-        version = request.DATA.get('version', last_version - 1)
+        version = int(request.DATA.get('version', last_version - 1))
         if version < 1:
             return Response(status=status.HTTP_404_NOT_FOUND)
         prev = app.release_set.get(version=version)
         with transaction.atomic():
+            summary = "{} rolled back to v{}".format(request.user, version)
             app.release_set.create(owner=request.user, version=last_version + 1,
-                                   build=prev.build, config=prev.config)
+                                   build=prev.build, config=prev.config,
+                                   summary=summary)
             app.converge()
-        msg = "Rolled back to {}".format(version)
+        msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
 
 
