@@ -1954,6 +1954,27 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def releases_rollback(self, args):
+        """
+        Roll back to a previous application release.
+
+        Usage: deis releases:rollback [--app=<app>] [<version>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        version = args.get('--version')
+        if version:
+            body = {'version': version}
+        else:
+            body = {}
+        url = "/api/apps/{app}/releases/rollback".format(**locals())
+        response = self._dispatch('post', url, json.dumps(body))
+        if response.status_code == requests.codes.created:
+            print(response.json())
+        else:
+            raise ResponseError(response)
+
 
 def parse_args(cmd):
     """
@@ -1973,6 +1994,7 @@ def parse_args(cmd):
         'ssh': 'nodes:ssh',
         'open': 'apps:open',
         'logs': 'apps:logs',
+        'rollback': 'releases:rollback',
         'run': 'apps:run',
         'sharing': 'perms:list',
         'sharing:list': 'perms:list',
