@@ -587,6 +587,10 @@ class AppReleaseViewSet(BaseAppViewSet):
     model = models.Release
     serializer_class = serializers.ReleaseSerializer
 
+    def get_object(self, *args, **kwargs):
+        """Get Release by version always."""
+        return self.get_queryset(**kwargs).get(version=self.kwargs['version'])
+
 
 class AppContainerViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Container`."""
