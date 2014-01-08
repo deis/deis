@@ -120,6 +120,14 @@ class ReleaseTest(TestCase):
         self.assertIn('PATH', config3_values)
         self.assertEqual(
             config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
+        # check that we can fetch a previous release
+        url = '/api/apps/{app_id}/releases/2'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        release2 = response.data
+        self.assertNotEqual(release2['uuid'], release3['uuid'])
+        self.assertNotEqual(release2['build'], release3['build'])
+        self.assertEquals(release2['version'], 2)
         # disallow post/put/patch/delete
         url = '/api/apps/{app_id}/releases'.format(**locals())
         self.assertEqual(self.client.post(url).status_code, 405)
