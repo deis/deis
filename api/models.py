@@ -776,11 +776,6 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def rollback(self):
-        # create a rollback log entry
-        # call run
-        raise NotImplementedError
-
 
 @receiver(release_signal)
 def new_release(sender, **kwargs):
@@ -791,7 +786,7 @@ def new_release(sender, **kwargs):
     Releases start at v1 and auto-increment.
     """
     user, app, = kwargs['user'], kwargs['app']
-    last_release = Release.objects.filter(app=app).order_by('-created')[0]
+    last_release = app.release_set.latest()
     config = kwargs.get('config', last_release.config)
     build = kwargs.get('build', last_release.build)
     # overwrite config with build.config if the keys don't exist

@@ -9,6 +9,7 @@ import json
 from Crypto.PublicKey import RSA
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -590,6 +591,24 @@ class AppReleaseViewSet(BaseAppViewSet):
     def get_object(self, *args, **kwargs):
         """Get Release by version always."""
         return self.get_queryset(**kwargs).get(version=self.kwargs['version'])
+
+    def rollback(self, request, *args, **kwargs):
+        """
+        Create a new release as a copy of the state of the compiled slug and
+        config vars of a previous release.
+        """
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        last_version = app.release_set.latest().version
+        version = request.DATA.get('version', last_version - 1)
+        if version < 1:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        prev = app.release_set.get(version=version)
+        with transaction.atomic():
+            app.release_set.create(owner=request.user, version=last_version + 1,
+                                   build=prev.build, config=prev.config)
+            app.converge()
+        msg = "Rolled back to {}".format(version)
+        return Response(msg, status=status.HTTP_201_CREATED)
 
 
 class AppContainerViewSet(OwnerViewSet):

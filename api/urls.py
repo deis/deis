@@ -217,6 +217,10 @@ Application Release Components
 
   List all :class:`~api.models.Release`\s.
 
+.. http:post:: /api/apps/(string:id)/releases/rollback/
+
+  Rollback to a previous :class:`~api.models.Release`.
+
 
 Application Infrastructure
 --------------------------
@@ -409,6 +413,8 @@ urlpatterns = patterns(
         views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/releases/(?P<version>[0-9]+)/?',
         views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
+    url(r'^apps/(?P<id>[-_\w]+)/releases/rollback/?',
+        views.AppReleaseViewSet.as_view({'post': 'rollback'})),
     url(r'^apps/(?P<id>[-_\w]+)/releases/?',
         views.AppReleaseViewSet.as_view({'get': 'list'})),
     # application infrastructure
