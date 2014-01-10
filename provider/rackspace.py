@@ -10,18 +10,20 @@ import novaclient
 import pyrax
 
 # TODO: this seems like a bad import, but can't update the layer
-# coorrectly otherwise.
+# correctly otherwise.
 from api.models import Layer
 
 
 logger = logging.getLogger(__name__)
 
+## TODO: add syd and hkg when they gain performance flavors in early 2014
 RACKSPACE_REGIONS = {
     'dfw': 'Dallas',
     'iad': 'Northern Virginia',
     'ord': 'Chicago',
-    'lon': "London",
-    'syd': 'Sydney',
+    'lon': 'London',
+    #'syd': 'Sydney',
+    #'hkg': 'Hong Kong',
 }
 
 RACKSPACE_DEFAULT_REGION = 'dfw'
@@ -40,7 +42,7 @@ def seed_flavors():
             'params': json.dumps({
                 'region': r,
                 # 'image': ?
-                'flavor': 4,   # 2GB Standard Instance, 2 VCPUs, 2048 / 80GB
+                'flavor': 'performance1-2',   # 2GB Performance Instance, 2 VCPUs, 2048 / 80GB
             })
         })
     return flavors
