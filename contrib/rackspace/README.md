@@ -1,8 +1,8 @@
 Provision a Deis Controller on Rackspace
 ========================================
 
-1. Install [knife-rackspace][kniferack] with `gem install knife-rackspace` or
-just `bundle install` from the root directory of your deis repository:
+1. Install [knife-rackspace][kniferack] with `gem install knife-rackspace` or just `bundle install` from the root directory of your deis repository:
+
 ```console
 $ cd $HOME/projects/deis
 $ gem install knife-rackspace
@@ -13,8 +13,8 @@ Installing ri documentation for knife-rackspace-0.8.1...
 Installing RDoc documentation for knife-rackspace-0.8.1...
 ```
 
-2. Export your Rackspace credentials as environment variables and edit knife.rb
-to read them:
+2. Export your Rackspace credentials as environment variables and edit knife.rb to read them:
+
 ```console
 $ cat <<'EOF' >> $HOME/.bash_profile
 export RACKSPACE_USERNAME=<your_rackspace_username>
@@ -29,9 +29,33 @@ $ knife rackspace server list
 Instance ID  Name  Public IP  Private IP  Flavor  Image  State
 ```
 
-3. Run the provisioning script to create a new Deis controller:
+3. Prepare an new image.
+    * This will be used as the image to create a new controller as well as new nodes in a formation.
+
 ```console
-$ ./contrib/rackspace/provision-rackspace-controller.sh dfw
+$ ./contrib/rackspace/prepare-rackspace-image.sh
++ dpkg -l 'linux-*'
++ xargs sudo apt-get -y purge
+++ uname -r
+++ sed 's/\(.*\)-\([^0-9]\+\)/\1/'
+...
++ rm -f /root/.ssh/authorized_keys
++ find /var/log -type f
++ xargs rm
++ sync
+```
+
+4. Run the provisioning script to create a new Deis controller:
+    * Change ```<region>``` to be one of:
+        * dfw
+        * ord
+        * iad
+        * lon
+        * syd
+        * hkg
+
+```console
+$ ./contrib/rackspace/provision-rackspace-controller.sh <region>
 Provisioning a deis controller on Rackspace...
 Creating new SSH key: deis-controller
 + ssh-keygen -f /home/myuser/.ssh/deis-controller -t rsa -N '' -C deis-controller
@@ -41,16 +65,11 @@ Created data_bag[deis-users]
 Created data_bag[deis-formations]
 Created data_bag[deis-apps]
 Provisioning deis-controller with knife rackspace...
-+ knife rackspace server create -y --server-create-timeout 1200 --server-name deis-controller --image 4b7c635d-89e1-44be-a15f-2877b5a660d1 --rackspace-region dfw --flavor 4 --identity-file /home/myuser/.ssh/deis-controller --bootstrap-version 11.4.4 --node-name deis-controller --run-list 'recipe[deis::controller]'
++ knife rackspace server create -y --server-create-timeout 1200 --server-name deis-controller --image 4b7c635d-89e1-44be-a15f-2877b5a660d1 --rackspace-region <region> --flavor 4 --identity-file /home/myuser/.ssh/deis-controller --bootstrap-version 11.4.4 --node-name deis-controller --run-list 'recipe[deis::controller]'
 Instance ID: de17ca36-f186-4cdd-8969-4be58e7108ea
 Name: deis-controller
 Flavor: 2GB Standard Instance
 ...
-
-$ ./contrib/rackspace/provision-rackspace-controller.sh dfw
-...
-
 ```
-
 
 [kniferack]: http://docs.opscode.com/plugin_knife_rackspace.html
