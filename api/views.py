@@ -25,6 +25,8 @@ from rest_framework.response import Response
 
 from api import models, serializers, tasks
 
+from deis import settings
+
 
 class AnonymousAuthentication(BaseAuthentication):
 
@@ -106,6 +108,22 @@ class IsAdminOrSafeMethod(permissions.BasePermission):
         Return `True` if permission is granted, `False` otherwise.
         """
         return request.method in permissions.SAFE_METHODS or request.user.is_superuser
+
+
+class HasBuilderAuth(permissions.BasePermission):
+    """
+    View permission to allow builder to perform actions
+    with a special HTTP header
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        auth_header = request.environ.get('HTTP_X_DEIS_BUILDER_AUTH')
+        if not auth_header:
+            return False
+        return auth_header == settings.BUILDER_KEY
 
 
 class UserRegistrationView(viewsets.GenericViewSet,
@@ -529,6 +547,29 @@ class BaseAppViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user == obj.app.owner or user in get_users_with_perms(obj.app):
             return obj
+        raise PermissionDenied()
+
+
+class AppPushViewSet(viewsets.ModelViewSet):
+    """RESTful views for :class:`~api.models.Push`."""
+
+    model = models.Push
+    serializer_class = serializers.PushSerializer
+
+    permission_classes = (HasBuilderAuth,)
+
+    def pre_save(self, obj):
+        # SECURITY: we trust the receive_user field to map to the push owner
+        obj.owner = self.request.DATA['owner']
+
+    def create(self, request, *args, **kwargs):
+        request._data = request.DATA.copy()
+        app = request.DATA['app'] = get_object_or_404(models.App, id=self.kwargs['id'])
+        # check the user is authorized for this app
+        user = request.DATA['owner'] = get_object_or_404(
+            User, username=self.request.DATA['receive_user'])
+        if user == app.owner or user in get_users_with_perms(app):
+            return super(AppPushViewSet, self).create(request, *args, **kwargs)
         raise PermissionDenied()
 
 
