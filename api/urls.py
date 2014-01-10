@@ -189,6 +189,10 @@ Applications
 Application Release Components
 ------------------------------
 
+.. http:post:: /api/apps/(string:id)/push/
+
+  Create a new :class:`~api.models.Push`.
+
 .. http:get:: /api/apps/(string:id)/config/
 
   List all :class:`~api.models.Config`\s.
@@ -405,6 +409,8 @@ urlpatterns = patterns(
     url(r'^formations/?',
         views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
+    url(r'^apps/(?P<id>[-_\w]+)/push/?',
+        views.AppPushViewSet.as_view({'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/builds/(?P<uuid>[-_\w]+)/?',

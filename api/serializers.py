@@ -86,6 +86,18 @@ class FlavorSerializer(serializers.ModelSerializer):
         read_only_fields = ('created', 'updated')
 
 
+class PushSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Push` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`PushSerializer`."""
+        model = models.Push
+        read_only_fields = ('uuid', 'created', 'updated')
+
+
 class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
