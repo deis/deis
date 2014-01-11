@@ -579,6 +579,14 @@ class AppConfigViewSet(BaseAppViewSet):
     model = models.Config
     serializer_class = serializers.ConfigSerializer
 
+    def get_object(self, *args, **kwargs):
+        """Return the Config associated with the App's latest Release."""
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        user = self.request.user
+        if user == app.owner or user in get_users_with_perms(app):
+            return app.release_set.latest().config
+        raise PermissionDenied()
+
     def post_save(self, obj, created=False):
         if created:
             models.release_signal.send(
