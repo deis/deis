@@ -15,4 +15,5 @@ psycopg2==2.5.2
 pycrypto==2.6.1
 pyrax==1.6.2
 PyYAML==3.10
+redis==2.8.0
 South==0.8.4
