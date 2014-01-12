@@ -44,11 +44,11 @@ try:
     # read the client key
     _client_pem_path = os.path.join(CHEF_CONFIG_PATH, 'client.pem')
     CHEF_CLIENT_KEY = subprocess.check_output(
-        ['sudo', '/bin/cat', _client_pem_path]).strip('\n')
+        ['/bin/cat', _client_pem_path]).strip('\n')
     # read the validation key
     _valid_pem_path = os.path.join(CHEF_CONFIG_PATH, 'validation.pem')
     CHEF_VALIDATION_KEY = subprocess.check_output(
-        ['sudo', '/bin/cat', _valid_pem_path]).strip('\n')
+        ['/bin/cat', _valid_pem_path]).strip('\n')
 except Exception as err:
     msg = "Failed to auto-configure Chef -- {}".format(err)
     if os.environ.get('READTHEDOCS'):
@@ -90,6 +90,7 @@ def bootstrap_node(node):
             f.write(node['ssh_private_key'])
         # build knife bootstrap command
         args = ['knife', 'bootstrap', node['fqdn']]
+        args.extend(['--config', '/etc/chef/client.rb'])
         args.extend(['--identity-file', pk_path])
         args.extend(['--node-name', node['id']])
         args.extend(['--sudo', '--ssh-user', node['ssh_username']])
@@ -158,13 +159,14 @@ def converge_controller():
 
     :returns: the output of the convergence command, in this case `sudo chef-client`
     """
-    try:
-        # we only need to run the gitosis recipe to update `git push` ACLs
-        return subprocess.check_output(['sudo', 'chef-client', '-o', 'recipe[deis::gitosis]'])
-    except subprocess.CalledProcessError as err:
-        print(err)
-        print(err.output)
-        raise err
+    #try:
+    #    # we only need to run the gitosis recipe to update `git push` ACLs
+    #    return subprocess.check_output(['sudo', 'chef-client', '-o', 'recipe[deis::gitosis]'])
+    #except subprocess.CalledProcessError as err:
+    #    print(err)
+    #    print(err.output)
+    #    raise err
+    pass  # TODO: replace this with new key lookup
 
 
 def converge_node(node):
