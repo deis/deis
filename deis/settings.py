@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 import os.path
 import tempfile
 
-
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
 DEBUG = False
@@ -150,6 +149,7 @@ INSTALLED_APPS = (
     'allauth.account',
     'guardian',
     'json_field',
+    'gunicorn',
     'rest_framework',
     'south',
     # Deis apps
@@ -263,14 +263,14 @@ LOGGING = {
 }
 TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 
-
-# celery task execution settings
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+# celery settings
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 CELERY_IMPORTS = ('api.tasks',)
-CELERY_RESULT_BACKEND = 'amqp'
-
-# hardcode celeryd concurrency
+BROKER_URL = 'redis://{}:{}/{}'.format(
+             os.environ.get('CACHE_HOST', '127.0.0.1'),
+             os.environ.get('CACHE_PORT', 6379),
+             os.environ.get('CACHE_NAME', 0))
+CELERY_RESULT_BACKEND = BROKER_URL
 # this number should be equal to N+1, where
 # N is number of nodes in largest formation
 CELERYD_CONCURRENCY = 8
@@ -310,7 +310,6 @@ ALLOWED_HOSTS = ['*']
 # should also be used for any settings which differ between development
 # and production.
 # The local_settings.py file should *not* be checked in to version control.
-
 try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
