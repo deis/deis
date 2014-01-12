@@ -332,7 +332,7 @@ def readable_datetime(datetime_str):
         else:
             return "{}{}ago".format(hour_str, min_str)
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days=-1)
+    yesterday = now + relativedelta.relativedelta(days= -1)
     if delta.days <= 2 and dt.day == yesterday.day:
         return dt.strftime("Yesterday at %X")
     # otherwise return locale-specific date/time format
@@ -474,7 +474,7 @@ class DeisClient(object):
             app_id = data['id']
             print("done, created {}".format(app_id))
             # add a git remote
-            hostname = urlparse.urlparse(self._settings['controller']).netloc
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "git@{hostname}:{app_id}.git".format(**locals())
             try:
                 subprocess.check_call(
