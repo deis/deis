@@ -313,4 +313,4 @@ ALLOWED_HOSTS = ['*']
 try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
-    print('\033[96mdeis/local_settings.py \033[91mfile not found!\033[0m')
+    pass
