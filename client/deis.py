@@ -1999,6 +1999,28 @@ def parse_args(cmd):
     return cmd, help_flag
 
 
+def _dispatch_cmd(method, args):
+    try:
+        method(args)
+    except requests.exceptions.ConnectionError as err:
+        print("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
+correct and the server is running.")
+        sys.exit(1)
+    except EnvironmentError as err:
+        raise DocoptExit(err.message)
+    except ResponseError as err:
+        resp = err.message
+        print('{} {}'.format(resp.status_code, resp.reason))
+        try:
+            msg = resp.json()
+            if 'detail' in msg:
+                msg = "Detail:\n{}".format(msg['detail'])
+        except:
+            msg = resp.text
+        print(msg)
+        sys.exit(1)
+
+
 def main():
     """
     Create a client, parse the arguments received on the command line, and
@@ -2026,25 +2048,7 @@ def main():
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))
     # dispatch the CLI command
-    try:
-        method(args)
-    except requests.exceptions.ConnectionError as err:
-        print("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
-correct and the server is running.")
-        sys.exit(1)
-    except EnvironmentError as err:
-        raise DocoptExit(err.message)
-    except ResponseError as err:
-        resp = err.message
-        print('{} {}'.format(resp.status_code, resp.reason))
-        try:
-            msg = resp.json()
-            if 'detail' in msg:
-                msg = "Detail:\n{}".format(msg['detail'])
-        except:
-            msg = resp.text
-        print(msg)
-        sys.exit(1)
+    _dispatch_cmd(method, args)
 
 
 if __name__ == '__main__':
