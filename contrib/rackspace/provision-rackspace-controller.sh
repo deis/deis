@@ -86,6 +86,7 @@ knife rackspace server create \
  --image $image \
  --flavor $flavor \
  --rackspace-metadata "{\"Name\": \"$node_name\"}" \
+ --rackspace-disk-config MANUAL \
  --identity-file $ssh_key_path \
  --server-name $node_name \
  --node-name $node_name \
