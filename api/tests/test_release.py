@@ -63,7 +63,7 @@ class ReleaseTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
-        url = '/api/apps/{app_id}/releases/1'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
@@ -78,7 +78,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/2'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -102,7 +102,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['url'], body['url'])
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/3'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v3'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release3 = response.data
@@ -120,7 +120,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(
             config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
         # check that we can fetch a previous release
-        url = '/api/apps/{app_id}/releases/2'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -174,12 +174,12 @@ class ReleaseTest(TestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 4)
-        url = '/api/apps/{app_id}/releases/2'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         release2 = response.data
         self.assertEquals(release2['version'], 2)
-        url = '/api/apps/{app_id}/releases/4'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v4'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         release4 = response.data
@@ -198,11 +198,11 @@ class ReleaseTest(TestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 5)
-        url = '/api/apps/{app_id}/releases/1'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
-        url = '/api/apps/{app_id}/releases/5'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v5'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release5 = response.data
@@ -235,3 +235,11 @@ class ReleaseTest(TestCase):
         release3 = self.test_release()
         release = Release.objects.get(uuid=release3['uuid'])
         self.assertEqual(str(release), "{}-v3".format(release3['app']))
+
+    def test_release_summary(self):
+        """Test the text summary of a release."""
+        release3 = self.test_release()
+        release = Release.objects.get(uuid=release3['uuid'])
+        # check that the release has push and env change messages
+        self.assertIn('autotest deployed ', release.summary)
+        self.assertIn('autotest added PATH', release.summary)
