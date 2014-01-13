@@ -1,10 +1,12 @@
 
 from __future__ import unicode_literals
-
-# add patch support to built-in django test client
+import logging
 
 from django.test.client import RequestFactory, Client
+from django.test.simple import DjangoTestSuiteRunner
 
+
+# add patch support to built-in django test client
 
 def construct_patch(self, path, data='',
                     content_type='application/octet-stream', **extra):
@@ -26,6 +28,18 @@ def send_patch(self, path, data='', content_type='application/octet-stream',
 
 RequestFactory.patch = construct_patch
 Client.patch = send_patch
+
+
+class SilentDjangoTestSuiteRunner(DjangoTestSuiteRunner):
+    """Prevents api log messages from cluttering the console during tests."""
+
+    def run_tests(self, test_labels, extra_tests=None, **kwargs):
+        """Run tests with all but critical log messages disabled."""
+        # hide any log messages less than critical
+        logging.disable(logging.CRITICAL)
+        return super(SilentDjangoTestSuiteRunner, self).run_tests(
+            test_labels, extra_tests, **kwargs)
+
 
 from .test_app import *  # noqa
 from .test_auth import *  # noqa

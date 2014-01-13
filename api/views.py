@@ -380,6 +380,7 @@ class AppPermsViewSet(viewsets.ViewSet):
         assign_perm(self.perm, user, app)
         app.publish()
         tasks.converge_controller.apply_async().wait()
+        models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
@@ -391,6 +392,7 @@ class AppPermsViewSet(viewsets.ViewSet):
             remove_perm(self.perm, user, app)
             app.publish()
             tasks.converge_controller.apply_async().wait()
+            models.log_event(app, "User {} was revoked access to {}".format(user, app))
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
