@@ -22,10 +22,7 @@ except IOError:
 
 KWARGS = {}
 if USE_SETUPTOOLS:
-    KWARGS = {
-        'install_requires': ['docopt', 'python-dateutil', 'PyYAML', 'requests'],
-        'entry_points': {'console_scripts': ['deis = deis:main']},
-    }
+    KWARGS = {'entry_points': {'console_scripts': ['deis = deis:main']}}
 else:
     KWARGS = {'scripts': ['deis']}
 
@@ -59,9 +56,9 @@ setup(name='deis',
           ('.', ['README.rst']),
       ],
       long_description=LONG_DESCRIPTION,
-      requires=[
-          'docopt(==0.6.1)', 'python-dateutil(==2.2)',
-          'PyYAML(==3.10)', 'requests(==2.2.0)',
+      install_requires=[
+          'docopt==0.6.1', 'python-dateutil==2.2',
+          'PyYAML==3.10', 'requests==2.2.0'
       ],
       zip_safe=True,
       **KWARGS)
