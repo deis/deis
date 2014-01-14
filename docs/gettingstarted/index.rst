@@ -11,4 +11,5 @@ Getting Started
     :maxdepth: 1
 
     concepts
+    architecture
     usage
