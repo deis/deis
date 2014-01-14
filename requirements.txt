@@ -1,5 +1,5 @@
 # Deis controller requirements
-boto==2.21.2
+boto==2.23.0
 celery==3.1.7
 Django==1.6.1
 django-allauth==0.15.0
@@ -10,8 +10,8 @@ djangorestframework==2.3.10
 dop==0.1.4
 gevent==1.0
 gunicorn==18.0
-paramiko==1.12.0
-psycopg2==2.5.1
+paramiko==1.12.1
+psycopg2==2.5.2
 pycrypto==2.6.1
 pyrax==1.6.2
 PyYAML==3.10

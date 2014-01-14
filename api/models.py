@@ -27,7 +27,6 @@ from provider import import_provider_module
 from utils import dict_diff
 
 
-
 logger = logging.getLogger(__name__)
 
 # import user-defined configuration management module
