@@ -6,7 +6,7 @@
 # Instructions:
 #
 #   1. Create a server using the Ubuntu 12.04 LTS image,
-#      type 2 (512MB Standard Instance), Disk Partitioning: Manual.
+#      performance1-2, 2GB performance server
 #   2. SSH in as root with the password shown, then install the 3.8 kernel with:
 #      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
 #   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
