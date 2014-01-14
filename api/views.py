@@ -9,6 +9,7 @@ import json
 from Crypto.PublicKey import RSA
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -23,6 +24,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import models, serializers, tasks
+
+from deis import settings
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -44,9 +47,7 @@ class IsAnonymous(permissions.BasePermission):
         """
         Return `True` if permission is granted, `False` otherwise.
         """
-        if type(request.user) == AnonymousUser:
-            return True
-        return False
+        return type(request.user) is AnonymousUser
 
 
 class IsOwner(permissions.BasePermission):
@@ -107,6 +108,22 @@ class IsAdminOrSafeMethod(permissions.BasePermission):
         Return `True` if permission is granted, `False` otherwise.
         """
         return request.method in permissions.SAFE_METHODS or request.user.is_superuser
+
+
+class HasBuilderAuth(permissions.BasePermission):
+    """
+    View permission to allow builder to perform actions
+    with a special HTTP header
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        auth_header = request.environ.get('HTTP_X_DEIS_BUILDER_AUTH')
+        if not auth_header:
+            return False
+        return auth_header == settings.BUILDER_KEY
 
 
 class UserRegistrationView(viewsets.GenericViewSet,
@@ -363,6 +380,7 @@ class AppPermsViewSet(viewsets.ViewSet):
         assign_perm(self.perm, user, app)
         app.publish()
         tasks.converge_controller.apply_async().wait()
+        models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
@@ -374,6 +392,7 @@ class AppPermsViewSet(viewsets.ViewSet):
             remove_perm(self.perm, user, app)
             app.publish()
             tasks.converge_controller.apply_async().wait()
+            models.log_event(app, "User {} was revoked access to {}".format(user, app))
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -533,11 +552,42 @@ class BaseAppViewSet(viewsets.ModelViewSet):
         raise PermissionDenied()
 
 
+class AppPushViewSet(viewsets.ModelViewSet):
+    """RESTful views for :class:`~api.models.Push`."""
+
+    model = models.Push
+    serializer_class = serializers.PushSerializer
+
+    permission_classes = (HasBuilderAuth,)
+
+    def pre_save(self, obj):
+        # SECURITY: we trust the receive_user field to map to the push owner
+        obj.owner = self.request.DATA['owner']
+
+    def create(self, request, *args, **kwargs):
+        request._data = request.DATA.copy()
+        app = request.DATA['app'] = get_object_or_404(models.App, id=self.kwargs['id'])
+        # check the user is authorized for this app
+        user = request.DATA['owner'] = get_object_or_404(
+            User, username=self.request.DATA['receive_user'])
+        if user == app.owner or user in get_users_with_perms(app):
+            return super(AppPushViewSet, self).create(request, *args, **kwargs)
+        raise PermissionDenied()
+
+
 class AppConfigViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Config`."""
 
     model = models.Config
     serializer_class = serializers.ConfigSerializer
+
+    def get_object(self, *args, **kwargs):
+        """Return the Config associated with the App's latest Release."""
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        user = self.request.user
+        if user == app.owner or user in get_users_with_perms(app):
+            return app.release_set.latest().config
+        raise PermissionDenied()
 
     def post_save(self, obj, created=False):
         if created:
@@ -588,6 +638,30 @@ class AppReleaseViewSet(BaseAppViewSet):
 
     model = models.Release
     serializer_class = serializers.ReleaseSerializer
+
+    def get_object(self, *args, **kwargs):
+        """Get Release by version always."""
+        return self.get_queryset(**kwargs).get(version=self.kwargs['version'])
+
+    def rollback(self, request, *args, **kwargs):
+        """
+        Create a new release as a copy of the state of the compiled slug and
+        config vars of a previous release.
+        """
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        last_version = app.release_set.latest().version
+        version = int(request.DATA.get('version', last_version - 1))
+        if version < 1:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        prev = app.release_set.get(version=version)
+        with transaction.atomic():
+            summary = "{} rolled back to v{}".format(request.user, version)
+            app.release_set.create(owner=request.user, version=last_version + 1,
+                                   build=prev.build, config=prev.config,
+                                   summary=summary)
+            app.converge()
+        msg = "Rolled back to v{}".format(version)
+        return Response(msg, status=status.HTTP_201_CREATED)
 
 
 class AppContainerViewSet(OwnerViewSet):

@@ -1,5 +1,5 @@
 """
-Deis exception classes.
+Deis API exception classes.
 """
 
 from __future__ import unicode_literals
@@ -9,7 +9,12 @@ from rest_framework import status
 
 
 class BuildNodeError(APIException):
-    """Indicates a problem in building or bootstrapping a node."""
+    """
+    Indicates a problem in building or bootstrapping a node.
+
+    This exception is subclassed from rest_framework's APIException so it
+    isn't reported as "500 SERVER ERROR."
+    """
 
     status_code = status.HTTP_401_UNAUTHORIZED
 

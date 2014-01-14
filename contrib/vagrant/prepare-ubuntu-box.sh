@@ -42,7 +42,7 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker-0.7.1 git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.7.5 git make python-setuptools python-pip -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
@@ -81,7 +81,7 @@ find /var/log -type f | xargs rm
 rm -f /var/lib/dhcp3/*
 
 # Make sure Udev doesn't block our network, see: http://6.ptmc.org/?p=164
-rm /etc/udev/rules.d/70-persistent-net.rules
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
 mkdir /etc/udev/rules.d/70-persistent-net.rules
 rm -rf /dev/.udev/
 rm /lib/udev/rules.d/75-persistent-net-generator.rules

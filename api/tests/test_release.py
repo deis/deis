@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import unittest
 import uuid
 
 from django.test import TestCase
@@ -64,7 +63,7 @@ class ReleaseTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
-        url = '/api/apps/{app_id}/releases/1'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
@@ -79,7 +78,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/2'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -103,7 +102,7 @@ class ReleaseTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['url'], body['url'])
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/3'.format(**locals())
+        url = '/api/apps/{app_id}/releases/v3'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release3 = response.data
@@ -120,6 +119,14 @@ class ReleaseTest(TestCase):
         self.assertIn('PATH', config3_values)
         self.assertEqual(
             config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
+        # check that we can fetch a previous release
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        release2 = response.data
+        self.assertNotEqual(release2['uuid'], release3['uuid'])
+        self.assertNotEqual(release2['build'], release3['build'])
+        self.assertEquals(release2['version'], 2)
         # disallow post/put/patch/delete
         url = '/api/apps/{app_id}/releases'.format(**locals())
         self.assertEqual(self.client.post(url).status_code, 405)
@@ -128,22 +135,111 @@ class ReleaseTest(TestCase):
         self.assertEqual(self.client.delete(url).status_code, 405)
         return release3
 
-    @unittest.expectedFailure
     def test_release_rollback(self):
         url = '/api/apps'
         body = {'formation': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        # check to see that an initial release was created
+        # try to rollback with only 1 release extant, expecting 404
+        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        response = self.client.post(url, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        # update config to roll a new release
+        url = '/api/apps/{app_id}/config'.format(**locals())
+        body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # update the build to roll a new release
+        url = '/api/apps/{app_id}/builds'.format(**locals())
+        build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
+        body = {
+            'sha': uuid.uuid4().hex,
+            'slug_size': 4096000,
+            'procfile': json.dumps({'web': 'node server.js'}),
+            'url':
+            'http://deis.local/slugs/1c52739bbf3a44d3bfb9a58f7bbdd5fb.tar.gz',
+            'checksum': uuid.uuid4().hex, 'config': build_config,
+        }
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # rollback and check to see that a 4th release was created
+        # with the build and config of release #2
+        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        response = self.client.post(url, content_type='application/json')
+        self.assertEqual(response.status_code, 201)
         url = '/api/apps/{app_id}/releases'.format(**locals())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 4)
+        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        release2 = response.data
+        self.assertEquals(release2['version'], 2)
+        url = '/api/apps/{app_id}/releases/v4'.format(**locals())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        release4 = response.data
+        self.assertEquals(release4['version'], 4)
+        self.assertNotEqual(release2['uuid'], release4['uuid'])
+        self.assertEqual(release2['build'], release4['build'])
+        self.assertEqual(release2['config'], release4['config'])
+        # rollback explicitly to release #1 and check that a 5th release
+        # was created with the build and config of release #1
+        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        body = {'version': 1}
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = '/api/apps/{app_id}/releases'.format(**locals())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 5)
+        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
         response = self.client.get(url)
-        uuid = response.data['results'][0]['uuid']
-        release = Release.objects.get(uuid=uuid)
-        release.rollback()  # raises NotImplementedError currently
+        self.assertEqual(response.status_code, 200)
+        release1 = response.data
+        url = '/api/apps/{app_id}/releases/v5'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        release5 = response.data
+        self.assertEqual(release5['version'], 5)
+        self.assertNotEqual(release1['uuid'], release5['uuid'])
+        self.assertEqual(release1['build'], release5['build'])
+        self.assertEqual(release1['config'], release5['config'])
+        # check to see that the current config is actually the initial one
+        url = "/api/apps/{app_id}/config".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['values'], json.dumps({}))
+        # rollback to #3 and see that it has the correct config
+        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        body = {'version': 3}
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        url = "/api/apps/{app_id}/config".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        values = json.loads(response.data['values'])
+        self.assertIn('NEW_URL1', values)
+        self.assertEqual('http://localhost:8080/', values['NEW_URL1'])
+        self.assertIn('PATH', values)
+        self.assertEqual('bin:/usr/local/bin:/usr/bin:/bin', values['PATH'])
 
     def test_release_str(self):
         """Test the text representation of a release."""
         release3 = self.test_release()
         release = Release.objects.get(uuid=release3['uuid'])
         self.assertEqual(str(release), "{}-v3".format(release3['app']))
+
+    def test_release_summary(self):
+        """Test the text summary of a release."""
+        release3 = self.test_release()
+        release = Release.objects.get(uuid=release3['uuid'])
+        # check that the release has push and env change messages
+        self.assertIn('autotest deployed ', release.summary)
+        self.assertIn('autotest added PATH', release.summary)

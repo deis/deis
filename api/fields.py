@@ -10,9 +10,7 @@ from django.db import models
 
 
 class UuidField(models.CharField):
-
     """A univerally unique ID field."""
-    # pylint: disable=R0904
 
     description = __doc__
 
@@ -24,13 +22,11 @@ class UuidField(models.CharField):
         super(UuidField, self).__init__(*args, **kwargs)
 
     def db_type(self, connection=None):
-        """Return the database type for a UuidField."""
-        db_type = None
+        """Return the database column type for a UuidField."""
         if connection and 'postgres' in connection.vendor:
-            db_type = 'uuid'
+            return 'uuid'
         else:
-            db_type = "char({})".format(self.max_length)
-        return db_type
+            return "char({})".format(self.max_length)
 
     def pre_save(self, model_instance, add):
         """Initialize an empty field with a new UUID before it is saved."""
@@ -55,12 +51,5 @@ try:
     from south.modelsinspector import add_introspection_rules
     # Tell the South schema migration tool to handle our custom fields.
     add_introspection_rules([], [r'^api\.fields\.UuidField'])
-    add_introspection_rules([], [r'^api\.fields\.EnvVarsField'])
-    add_introspection_rules([], [r'^api\.fields\.DataBagField'])
-    add_introspection_rules([], [r'^api\.fields\.ProcfileField'])
-    add_introspection_rules([], [r'^api\.fields\.CredentialsField'])
-    add_introspection_rules([], [r'^api\.fields\.ParamsField'])
-    add_introspection_rules([], [r'^api\.fields\.CloudInitField'])
-    add_introspection_rules([], [r'^api\.fields\.NodeStatusField'])
 except ImportError:  # pragma: no cover
     pass

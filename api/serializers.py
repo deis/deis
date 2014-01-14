@@ -1,7 +1,6 @@
 """
 Classes to serialize the RESTful representation of Deis API models.
 """
-# pylint: disable=R0903,W0232
 
 from __future__ import unicode_literals
 
@@ -85,6 +84,18 @@ class FlavorSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`FlavorSerializer`."""
         model = models.Flavor
         read_only_fields = ('created', 'updated')
+
+
+class PushSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Push` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`PushSerializer`."""
+        model = models.Push
+        read_only_fields = ('uuid', 'created', 'updated')
 
 
 class ConfigSerializer(serializers.ModelSerializer):

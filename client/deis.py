@@ -45,12 +45,14 @@ Use ``git push deis master`` to deploy to an application.
 from __future__ import print_function
 from collections import namedtuple
 from cookielib import MozillaCookieJar
+from datetime import datetime
 from getpass import getpass
 from itertools import cycle
 from threading import Event
 from threading import Thread
 import glob
 import json
+import locale
 import os.path
 import random
 import re
@@ -60,13 +62,19 @@ import tempfile
 import time
 import urlparse
 import webbrowser
-import yaml
 
+from dateutil import parser
+from dateutil import relativedelta
+from dateutil import tz
 from docopt import docopt
 from docopt import DocoptExit
 import requests
+import yaml
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
+
+
+locale.setlocale(locale.LC_ALL, '')
 
 
 class Session(requests.Session):
@@ -294,6 +302,42 @@ def get_provider_creds(provider, raise_error=False):
     if raise_error:
         raise EnvironmentError(
             "Missing environment variable: {}".format(missing))
+
+
+def readable_datetime(datetime_str):
+    """
+    Return a human-readable datetime string from an ECMA-262 (JavaScript)
+    datetime string.
+    """
+    timezone = tz.tzlocal()
+    dt = parser.parse(datetime_str).astimezone(timezone)
+    now = datetime.now(timezone)
+    delta = relativedelta.relativedelta(now, dt)
+    # if it happened today, say "2 hours and 1 minute ago"
+    if delta.days <= 1 and dt.day == now.day:
+        if delta.hours == 0:
+            hour_str = ''
+        elif delta.hours == 1:
+            hour_str = '1 hour '
+        else:
+            hour_str = "{} hours ".format(delta.hours)
+        if delta.minutes == 0:
+            min_str = ''
+        elif delta.minutes == 1:
+            min_str = '1 minute '
+        else:
+            min_str = "{} minutes ".format(delta.minutes)
+        if not any((hour_str, min_str)):
+            return 'Just now'
+        else:
+            return "{}{}ago".format(hour_str, min_str)
+    # if it happened yesterday, say "yesterday at 3:23 pm"
+    yesterday = now + relativedelta.relativedelta(days=-1)
+    if delta.days <= 2 and dt.day == yesterday.day:
+        return dt.strftime("Yesterday at %X")
+    # otherwise return locale-specific date/time format
+    else:
+        return dt.strftime('%c %Z')
 
 
 def trim(docstring):
@@ -1926,6 +1970,8 @@ class DeisClient(object):
         Usage: deis releases:info <version> [--app=<app>]
         """
         version = args.get('<version>')
+        if not version.startswith('v'):
+            version = 'v' + version
         app = args.get('--app')
         if not app:
             app = self._session.app
@@ -1945,12 +1991,36 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', '/api/apps/{app}/releases'.format(**locals()))
+        response = self._dispatch('get', "/api/apps/{app}/releases".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('=== {0} Releases'.format(app))
+            print("=== {} Releases".format(app))
             data = response.json()
             for item in data['results']:
-                print('{version} {created}'.format(**item))
+                item['created'] = readable_datetime(item['created'])
+                print("v{version:<6} {created:<33} {summary}".format(**item))
+        else:
+            raise ResponseError(response)
+
+    def releases_rollback(self, args):
+        """
+        Roll back to a previous application release.
+
+        Usage: deis releases:rollback [--app=<app>] [<version>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        version = args.get('<version>')
+        if version:
+            if version.startswith('v'):
+                version = version[1:]
+            body = {'version': int(version)}
+        else:
+            body = {}
+        url = "/api/apps/{app}/releases/rollback".format(**locals())
+        response = self._dispatch('post', url, json.dumps(body))
+        if response.status_code == requests.codes.created:
+            print(response.json())
         else:
             raise ResponseError(response)
 
@@ -1973,6 +2043,7 @@ def parse_args(cmd):
         'ssh': 'nodes:ssh',
         'open': 'apps:open',
         'logs': 'apps:logs',
+        'rollback': 'releases:rollback',
         'run': 'apps:run',
         'sharing': 'perms:list',
         'sharing:list': 'perms:list',
@@ -1997,6 +2068,28 @@ def parse_args(cmd):
     if ':' in cmd:
         cmd = '_'.join(cmd.split(':'))
     return cmd, help_flag
+
+
+def _dispatch_cmd(method, args):
+    try:
+        method(args)
+    except requests.exceptions.ConnectionError as err:
+        print("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
+correct and the server is running.")
+        sys.exit(1)
+    except EnvironmentError as err:
+        raise DocoptExit(err.message)
+    except ResponseError as err:
+        resp = err.message
+        print('{} {}'.format(resp.status_code, resp.reason))
+        try:
+            msg = resp.json()
+            if 'detail' in msg:
+                msg = "Detail:\n{}".format(msg['detail'])
+        except:
+            msg = resp.text
+        print(msg)
+        sys.exit(1)
 
 
 def main():
@@ -2026,21 +2119,7 @@ def main():
         if 'Usage: ' in docstring:
             args.update(docopt(docstring))
     # dispatch the CLI command
-    try:
-        method(args)
-    except EnvironmentError as err:
-        raise DocoptExit(err.message)
-    except ResponseError as err:
-        resp = err.message
-        print('{} {}'.format(resp.status_code, resp.reason))
-        try:
-            msg = resp.json()
-            if 'detail' in msg:
-                msg = "Detail:\n{}".format(msg['detail'])
-        except:
-            msg = resp.text
-        print(msg)
-        sys.exit(1)
+    _dispatch_cmd(method, args)
 
 
 if __name__ == '__main__':

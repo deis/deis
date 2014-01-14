@@ -8,7 +8,11 @@ omit =
     client/models.py
     cm/__init__.py
     cm/models.py
+    provider/digitalocean.py
+    provider/ec2.py
     provider/models.py
+    provider/rackspace.py
+    provider/static.py
     web/__init__.py
     web/models.py
     web/templatetags/__init__.py

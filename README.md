@@ -59,14 +59,10 @@ Deis stands on the shoulders of leading open source technologies:
   * [Django](https://www.djangoproject.com/)
   * [Celery](http://www.celeryproject.org/)
   * [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks)
-  * [Buildstep](https://github.com/progrium/buildstep)
+  * [Slugbuilder](https://github.com/flynn/slugbuilder) and [slugrunner](https://github.com/flynn/slugrunner)
   * [Gitosis](https://github.com/opdemand/gitosis)
 
-## License and Authors
-
-- Author:: Gabriel Monroy <gabriel@opdemand.com>
-- Author:: Matt Boersma <matt@opdemand.com>
-- Author:: Ben Grunfeld <ben@opdemand.com>
+## License
 
 Copyright 2013, OpDemand LLC
 

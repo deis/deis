@@ -189,6 +189,10 @@ Applications
 Application Release Components
 ------------------------------
 
+.. http:post:: /api/apps/(string:id)/push/
+
+  Create a new :class:`~api.models.Push`.
+
 .. http:get:: /api/apps/(string:id)/config/
 
   List all :class:`~api.models.Config`\s.
@@ -216,6 +220,10 @@ Application Release Components
 .. http:get:: /api/apps/(string:id)/releases/
 
   List all :class:`~api.models.Release`\s.
+
+.. http:post:: /api/apps/(string:id)/releases/rollback/
+
+  Rollback to a previous :class:`~api.models.Release`.
 
 
 Application Infrastructure
@@ -401,14 +409,18 @@ urlpatterns = patterns(
     url(r'^formations/?',
         views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
+    url(r'^apps/(?P<id>[-_\w]+)/push/?',
+        views.AppPushViewSet.as_view({'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/builds/(?P<uuid>[-_\w]+)/?',
         views.AppBuildViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>[-_\w]+)/builds/?',
         views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^apps/(?P<id>[-_\w]+)/releases/(?P<version>[0-9]+)/?',
+    url(r'^apps/(?P<id>[-_\w]+)/releases/v(?P<version>[0-9]+)/?',
         views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
+    url(r'^apps/(?P<id>[-_\w]+)/releases/rollback/?',
+        views.AppReleaseViewSet.as_view({'post': 'rollback'})),
     url(r'^apps/(?P<id>[-_\w]+)/releases/?',
         views.AppReleaseViewSet.as_view({'get': 'list'})),
     # application infrastructure

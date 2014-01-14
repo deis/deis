@@ -193,6 +193,14 @@ REST_FRAMEWORK = {
 # URLs that end with slashes are ugly
 APPEND_SLASH = False
 
+# Determine where to send syslog messages
+if os.path.exists('/dev/log'):           # Linux rsyslog
+    SYSLOG_ADDRESS = '/dev/log'
+elif os.path.exists('/var/log/syslog'):  # Mac OS X syslog
+    SYSLOG_ADDRESS = '/var/log/syslog'
+else:                                    # default SysLogHandler address
+    SYSLOG_ADDRESS = ('localhost', 514)
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -228,13 +236,18 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'rsyslog': {
+            'class': 'logging.handlers.SysLogHandler',
+            'address': SYSLOG_ADDRESS,
+            'facility': 'local0',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['null'],
-            'propagate': True,
             'level': 'INFO',
+            'propagate': True,
         },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
@@ -242,12 +255,13 @@ LOGGING = {
             'propagate': True,
         },
         'api': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console', 'mail_admins', 'rsyslog'],
             'level': 'INFO',
             'propagate': True,
         },
     }
 }
+TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 
 
 # celery task execution settings
@@ -264,42 +278,38 @@ CELERYD_CONCURRENCY = 8
 # default deis settings
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
-
-# the config management module to use in api.models
-CM_MODULE = 'cm.mock'
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
 
+# security keys and auth tokens
+SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
+BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
+
+# the config management module to use in api.models
+CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
+
 # default providers, typically overriden in local_settings to include ec2, etc.
-PROVIDER_MODULES = ('mock',)
+PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'static')
+
+# default to sqlite3, but allow postgresql config through envvars
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'postgresql_psycopg2'),
+        'NAME': os.environ.get('DATABASE_NAME', 'deis'),
+        'USER': os.environ.get('DATABASE_USER', 'deis'),
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'deis'),
+        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+    }
+}
+
+# SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
+# see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
+ALLOWED_HOSTS = ['*']
 
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development
 # and production.
 # The local_settings.py file should *not* be checked in to version control.
-# A local_setings.py configured for development might look like this:
-#
-# DEBUG = TEMPLATE_DEBUG = True
-# ADMINS = (
-#     ('Abraham Lincoln', 'abe@example.com'),
-#     ('George Washington', 'george@example.com'),
-# )
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': 'deis.db',
-#         'USER': '',
-#         'PASSWORD': '',
-#         'HOST': '',
-#         'PORT': '',
-#     }
-# }
-# SECRET_KEY = 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qilmw1#g'
-# EMAIL_HOST = 'smtp.sendgrid.com'
-# EMAIL_PORT = 587
-# EMAIL_HOST_USER = 'foo'
-# EMAIL_HOST_PASSWORD = 'bar'
-
 
 try:
     from .local_settings import *  # @UnusedWildImport # noqa

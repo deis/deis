@@ -40,11 +40,12 @@ chef_version=11.6.2
 region=$1
 # see contrib/prepare-rackspace-image.sh for instructions
 # on creating your own deis-optmized images
-if ! [[ "ord dfw iad lon syd" =~ $region ]]; then
+# TODO: add syd and hkg when they gain performance flavors in early 2014
+if ! [[ "ord dfw iad lon" =~ $region ]]; then
   echo "Unrecognized region: $region"
   exit 1
 fi
-flavor=$(knife rackspace flavor list | grep '2GB Standard Instance' | awk '{print $1}')
+flavor='performance1-2'
 image=$(knife rackspace image list --rackspace-region $region | grep 'deis-base-image' | awk '{print $1}')
 if [[ -z $image ]]; then
   echo "Can't find saved image \"deis-base-image\" in region $region. Please follow the"

@@ -14,7 +14,6 @@ from django.contrib import admin
 admin.autodiscover()
 
 
-# pylint: disable=C0103
 urlpatterns = patterns(
     '',
     url(r'^accounts/', include('allauth.urls')),

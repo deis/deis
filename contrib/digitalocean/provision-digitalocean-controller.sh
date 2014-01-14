@@ -122,7 +122,7 @@ result=$?
 set +x
 
 if [ $result -ne 0 ]; then
-  echo_color "Knife botstrap failed."
+  echo_color "Knife bootstrap failed."
   # Destroy droplet
   droplet_id=$(knife digital_ocean droplet list | grep $node_name | awk '{print $1}')
   echo_color "Destroying Droplet $droplet_id..."
