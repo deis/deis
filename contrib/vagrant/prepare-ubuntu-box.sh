@@ -81,7 +81,7 @@ find /var/log -type f | xargs rm
 rm -f /var/lib/dhcp3/*
 
 # Make sure Udev doesn't block our network, see: http://6.ptmc.org/?p=164
-rm /etc/udev/rules.d/70-persistent-net.rules
+rm -rf /etc/udev/rules.d/70-persistent-net.rules
 mkdir /etc/udev/rules.d/70-persistent-net.rules
 rm -rf /dev/.udev/
 rm /lib/udev/rules.d/75-persistent-net-generator.rules

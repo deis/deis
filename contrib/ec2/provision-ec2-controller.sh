@@ -45,21 +45,21 @@ region=$1
 # see contrib/prepare-ubuntu-ami.sh for instructions
 # on creating your own deis-optmized AMIs
 if [ "$region" == "ap-northeast-1" ]; then
-  image=ami-e31478e2
+  image=ami-5d432d5c
 elif [ "$region" == "ap-southeast-1" ]; then
-  image=ami-24421576
+  image=ami-b4c493e6
 elif [ "$region" == "ap-southeast-2" ]; then
-  image=ami-6338a759
+  image=ami-d59d03ef
 elif [ "$region" == "eu-west-1" ]; then
-  image=ami-6ed73c19
+  image=ami-ce30c5b9
 elif [ "$region" == "sa-east-1" ]; then
-  image=ami-510eaf4c
+  image=ami-61b1117c
 elif [ "$region" == "us-east-1" ]; then
-  image=ami-cb3a0fa2
+  image=ami-8df9c9e4
 elif [ "$region" == "us-west-1" ]; then
-  image=ami-d82d1e9d
+  image=ami-62477527
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-5299fe62
+  image=ami-ea6001da
 else
   echo "Cannot find AMI for region: $region"
   exit 1
