@@ -805,9 +805,10 @@ class DeisClient(object):
                 print('No configuration')
                 return
             keys = sorted(values)
+            width = max(map(len, keys)) + 5
             for k in keys:
                 v = values[k]
-                print("{k}: {v}".format(**locals()))
+                print(("{k:<"+str(width)+"} {v}").format(**locals()))
         else:
             raise ResponseError(response)
 
