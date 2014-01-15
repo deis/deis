@@ -804,7 +804,9 @@ class DeisClient(object):
             if len(items) == 0:
                 print('No configuration')
                 return
-            for k, v in values.items():
+            keys = sorted(values)
+            for k in keys:
+                v = values[k]
                 print("{k}: {v}".format(**locals()))
         else:
             raise ResponseError(response)
