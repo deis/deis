@@ -3,7 +3,7 @@ boto==2.23.0
 celery==3.1.7
 Django==1.6.1
 django-json-field==0.5.5
-djangorestframework==2.3.10
+djangorestframework==2.3.12
 dop==0.1.4
 paramiko==1.12.1
 pyrax==1.6.2

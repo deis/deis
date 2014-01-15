@@ -6,7 +6,7 @@ django-allauth==0.15.0
 django-guardian==1.1.1
 django-json-field==0.5.5
 django-yamlfield==0.5
-djangorestframework==2.3.10
+djangorestframework==2.3.12
 dop==0.1.4
 gevent==1.0
 gunicorn==18.0
