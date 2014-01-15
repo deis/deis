@@ -39,7 +39,7 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker-0.7.5 curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.7.6 curl git make python-setuptools python-pip -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
