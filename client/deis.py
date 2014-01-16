@@ -790,11 +790,13 @@ class DeisClient(object):
         """
         List environment variables for an application
 
-        Usage: deis config:list [--app=<app>]
+        Usage: deis config:list [--oneline] [--app=<app>]
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
+
+        oneline = args.get('--oneline')
         response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
@@ -804,8 +806,19 @@ class DeisClient(object):
             if len(items) == 0:
                 print('No configuration')
                 return
-            for k, v in values.items():
-                print("{k}: {v}".format(**locals()))
+            keys = sorted(values)
+
+            if not oneline:
+                width = max(map(len, keys)) + 5
+                for k in keys:
+                    v = values[k]
+                    print(("{k:<"+str(width)+"} {v}").format(**locals()))
+            else:
+                output = []
+                for k in keys:
+                    v = values[k]
+                    output.append("{k}={v}".format(**locals()))
+                print(' '.join(output))
         else:
             raise ResponseError(response)
 
