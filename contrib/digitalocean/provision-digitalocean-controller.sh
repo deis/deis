@@ -15,10 +15,10 @@ function echo_color {
 }
 
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
 # check for Deis' general dependencies
-if ! $CONTRIB_DIR/check-deis-deps.sh; then
+if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
   echo 'Deis is missing some dependencies.'
   exit 1
 fi
