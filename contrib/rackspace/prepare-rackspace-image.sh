@@ -69,8 +69,15 @@ rm -f /root/.ssh/authorized_keys
 # ssh host keys are automatically regenerated
 # on system boot by ubuntu cloud init
 
+# remove /etc/chef so contents can't intefere with
+# node being converged (i.e. old keys)
+rm -f /etc/chef/*
+
 # purge /var/log
 find /var/log -type f | xargs rm
+
+# Sync call needs this package
+apt-get -yqq install inotify-tools
 
 # flush writes to block storage
 sync
