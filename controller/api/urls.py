@@ -233,6 +233,12 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^clusters/?',
         views.ClusterViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # application domains
+    url(r'^domains/(?P<id>[-\._\w]+)/?',
+        views.DomainViewSet.as_view({'delete': 'destroy'})),
+    url(r'^apps/(?P<id>[-_\w]+)/domains/?',
+        views.DomainViewSet.as_view({'post': 'create',
+                                     'get': 'list'})),
     # application release components
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
