@@ -831,6 +831,17 @@ class Release(UuidAuditedModel):
         super(Release, self).save(*args, **kwargs)
 
 
+@python_2_unicode_compatible
+class Domain(AuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    domain = models.TextField(blank=False, null=False, unique=True)
+    domain_parent = models.TextField(blank=False, null=False)
+
+    def __str__(self):
+        return "{0} -> {1}".format(self.domain, self.app.id)
+
+
 @receiver(release_signal)
 def new_release(sender, **kwargs):
     """

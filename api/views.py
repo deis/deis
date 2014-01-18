@@ -721,3 +721,31 @@ class BuildHookViewSet(BaseHookViewSet):
                 models.Container.objects.scale(app, {'web': 1})
             # publish and converge the application
             app.converge()
+
+class DomainViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Domain`."""
+
+    model = models.Domain  # models class
+    perm = 'use_app'    # short name for permission
+    serializer_class = serializers.DomainSerializer
+
+    def get_queryset(self, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        return self.model.objects.filter(app=app)
+
+    def create(self, request, **kwargs):
+        print(kwargs)
+        app = get_object_or_404(models.App, id=kwargs['id'])
+        perm_name = "api.{}".format(self.perm)
+        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        domain_name = kwargs['domain']
+
+        if self.model.objects.filter(domain=domain_name).exists():
+            msg = "The domain {} is already in use by another app".format(domain_name)
+            return Response(data=msg, status=status.HTTP_409_CONFLICT)
+
+        domain = models.Domain(app=app, domain=domain_name, owner=request.user)
+        domain.save()
+
+        return Response(status=status.HTTP_201_CREATED)

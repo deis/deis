@@ -210,3 +210,16 @@ class ContainerSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
         read_only_fields = ('created', 'updated')
+
+
+class DomainSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Domain` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.Field(source='app.id')
+
+    class Meta:
+        """Metadata options for a :class:`DomainSerializer`."""
+        model = models.Domain
+        fields = ('domain', 'owner', 'created', 'updated')
+        read_only_fields = ('created', 'updated')

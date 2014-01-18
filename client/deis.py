@@ -563,6 +563,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
             print()
             self.containers_list(args)
+            self.domains_list(args)
             print()
         else:
             raise ResponseError(response)
@@ -1959,6 +1960,47 @@ class DeisClient(object):
                 if 'secret_key' in creds:
                     creds.pop('secret_key')
                 print("{} => {}".format(item['id'], creds))
+        else:
+            raise ResponseError(response)
+
+    def domains_list(self, args):
+        """
+        Print info about a particular release
+
+        Usage: deis domains:list [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+
+        response = self._dispatch(
+            'get', "/api/apps/{app}/domains".format(app=app))
+
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
+        else:
+            raise ResponseError(response)
+
+    def domains_create(self, args):
+        """
+        Print info about a particular release
+
+        Usage: deis domains:create <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+
+        domain = args.get('<domain>')
+        if domain is None:
+            print("Faulty input")
+            return
+
+        response = self._dispatch(
+            'post', "/api/apps/{app}/domains/{domain}".format(app=app, domain=domain))
+
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 

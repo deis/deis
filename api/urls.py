@@ -416,6 +416,11 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^formations/?',
         views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # Domains
+    url(r'^apps/(?P<id>[-_\w]+)/domains/(?P<domain>[.-_\w]+)/?',
+        views.DomainViewSet.as_view({'post': 'create'})),
+    url(r'^apps/(?P<id>[-_\w]+)/domains/?',
+        views.DomainViewSet.as_view({'get': 'list'})),
     # application release components
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
