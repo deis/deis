@@ -747,5 +747,7 @@ class DomainViewSet(OwnerViewSet):
 
         domain = models.Domain(app=app, domain=domain_name, owner=request.user)
         domain.save()
+        app.publish()
+        app.formation.converge(controller=True)
 
         return Response(status=status.HTTP_201_CREATED)

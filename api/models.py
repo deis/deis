@@ -510,11 +510,8 @@ class App(UuidAuditedModel):
             for c in containers:
                 d['containers'].setdefault(c.type, {})[str(c.num)] = c.status
         d['domains'] = []
-        if self.formation.domain:
-            d['domains'].append('{}.{}'.format(self.id, self.formation.domain))
-        else:
-            for n in self.formation.node_set.filter(layer__proxy=True):
-                d['domains'].append(n.fqdn)
+        for domain in Domain.objects.all().filter(app=self):
+            d['domains'].append(domain.domain)
         # add proper sharing and access controls
         d['users'] = {self.owner.username: 'owner'}
         for u in (get_users_with_perms(self)):
