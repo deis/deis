@@ -1,0 +1,16 @@
+{
+  "builders": [{
+    "type": "digitalocean",
+    "image_id": 1505447,
+    "region_id": 1,
+    "size_id": 62,
+    "private_networking": true,
+    "snapshot_name": "deis-base",
+    "droplet_name": "packer-deis-base"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "script": "prepare-digitalocean-snapshot.sh",
+    "execute_command": "echo 'packer' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'"
+  }]
+}

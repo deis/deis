@@ -22,7 +22,19 @@ knife[:digital_ocean_client_id] =   "your digital ocean client ID"
 knife[:digital_ocean_api_key] =     "your digital ocean API key"
 ```
 
-* Follow the steps provided in contrib/digitalocean/prepare-digitalocean-snapshot.sh
+* Follow theses steps to create a deis-base snapshot.
+
+[install Packer](http://www.packer.io/intro/getting-started/setup.html).
+Then, `cd` into ./contrib/digitalocean/ and run the following:
+
+
+```
+$ export DIGITALOCEAN_CLIENT_ID="YOUR CLIENT ID"
+$ export DIGITALOCEAN_API_KEY="YOUR API KEY"
+$ packer build deis-base.json
+```
+
+
 * Run this command to start the provisioning process
 
 ```
