@@ -1,8 +1,11 @@
 {
+  "variables": {
+    "region": "1"
+  },
   "builders": [{
     "type": "digitalocean",
     "image_id": 1505447,
-    "region_id": 1,
+    "region_id": "{{user `region`}}",
     "size_id": 62,
     "private_networking": true,
     "snapshot_name": "deis-base",

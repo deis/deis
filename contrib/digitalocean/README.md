@@ -31,7 +31,7 @@ Then, `cd` into ./contrib/digitalocean/ and run the following:
 ```
 $ export DIGITALOCEAN_CLIENT_ID="YOUR CLIENT ID"
 $ export DIGITALOCEAN_API_KEY="YOUR API KEY"
-$ packer build deis-base.json
+$ packer build -var 'region=1' deis-base.json
 ```
 
 
