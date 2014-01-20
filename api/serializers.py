@@ -232,8 +232,8 @@ class DomainSerializer(serializers.ModelSerializer):
         match = re.match(r'^(\*\.)?([a-z0-9-]+\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$', value)
         if not match:
             raise serializers.ValidationError(
-                "Hostname does look like a valid hostname. "
-                "Note that it only allows lower-case characters.")
+                "Hostname does not look like a valid hostname. "
+                "Only lowercase characters are allowed.")
 
         if models.Domain.objects.filter(domain=value).exists():
             raise serializers.ValidationError(
