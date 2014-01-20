@@ -1996,8 +1996,10 @@ class DeisClient(object):
             print("Faulty input")
             return
 
+        body = {'domain': domain}
         response = self._dispatch(
-            'post', "/api/apps/{app}/domains/{domain}".format(app=app, domain=domain))
+            'post', "/api/apps/{app}/domains".format(app=app, domain=domain),
+            json.dumps(body))
 
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(json.dumps(response.json(), indent=2))

@@ -216,10 +216,27 @@ class DomainSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Domain` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = serializers.Field(source='app.id')
+    app = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`DomainSerializer`."""
         model = models.Domain
-        fields = ('domain', 'owner', 'created', 'updated')
+        fields = ('domain', 'owner', 'created', 'updated', 'app')
         read_only_fields = ('created', 'updated')
+
+    def validate_domain(self, attrs, source):
+        """
+        Check that the hostname is valid
+        """
+        value = attrs[source]
+        match = re.match(r'^(\*\.)?([a-z0-9-]+\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$', value)
+        if not match:
+            raise serializers.ValidationError(
+                "Hostname does look like a valid hostname. "
+                "Note that it only allows lower-case characters.")
+
+        if models.Domain.objects.filter(domain=value).exists():
+            raise serializers.ValidationError(
+                "The domain {} is already in use by another app".format(value))
+
+        return attrs

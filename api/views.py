@@ -733,21 +733,18 @@ class DomainViewSet(OwnerViewSet):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
         return self.model.objects.filter(app=app)
 
-    def create(self, request, **kwargs):
-        print(kwargs)
+    def post_save(self, obj, created=False):
+        if created:
+            obj.app.publish()
+            obj.app.formation.converge()
+
+    def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=kwargs['id'])
         perm_name = "api.{}".format(self.perm)
         if request.user != app.owner and not request.user.has_perm(perm_name, app):
             return Response(status=status.HTTP_403_FORBIDDEN)
-        domain_name = kwargs['domain']
 
-        if self.model.objects.filter(domain=domain_name).exists():
-            msg = "The domain {} is already in use by another app".format(domain_name)
-            return Response(data=msg, status=status.HTTP_409_CONFLICT)
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
 
-        domain = models.Domain(app=app, domain=domain_name, owner=request.user)
-        domain.save()
-        app.publish()
-        app.formation.converge(controller=True)
-
-        return Response(status=status.HTTP_201_CREATED)
+        return OwnerViewSet.create(self, request, *args, **kwargs)
