@@ -11,9 +11,6 @@
 #   4. Create/update your Deis flavors to use your new snapshot
 #
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
-
 # Remove old kernel(s)
 dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
 
