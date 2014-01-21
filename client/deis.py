@@ -1965,7 +1965,7 @@ class DeisClient(object):
 
     def domains_list(self, args):
         """
-        Print info about a particular release
+        List the custom domains for an app
 
         Usage: deis domains:list [--app=<app>]
         """
@@ -1981,11 +1981,11 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def domains_create(self, args):
+    def domains_add(self, args):
         """
-        Print info about a particular release
+        Add a custom domain for an app
 
-        Usage: deis domains:create <domain> [--app=<app>]
+        Usage: deis domains:add <domain> [--app=<app>]
         """
         app = args.get('--app')
         if not app:
@@ -1998,11 +1998,34 @@ class DeisClient(object):
 
         body = {'domain': domain}
         response = self._dispatch(
-            'post', "/api/apps/{app}/domains".format(app=app, domain=domain),
+            'post', "/api/apps/{app}/domains".format(app=app),
             json.dumps(body))
 
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
+            print("Domain created")
+        else:
+            raise ResponseError(response)
+
+    def domains_rm(self, args):
+        """
+        Remove a custom domain for an app
+
+        Usage: deis domains:rm <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+
+        domain = args.get('<domain>')
+        if domain is None:
+            print("Faulty input")
+            return
+
+        response = self._dispatch(
+            'delete', "/api/domains/{domain}".format(app=app, domain=domain))
+
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print("Domain removed")
         else:
             raise ResponseError(response)
 

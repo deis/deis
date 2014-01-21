@@ -748,3 +748,11 @@ class DomainViewSet(OwnerViewSet):
         request.DATA['app'] = app
 
         return OwnerViewSet.create(self, request, *args, **kwargs)
+
+    def destroy(self, request, **kwargs):
+        domain = get_object_or_404(models.Domain, domain=kwargs['id'])
+        domain.delete()
+
+        domain.app.publish()
+        domain.app.formation.converge()
+        return Response(status=status.HTTP_204_NO_CONTENT)
