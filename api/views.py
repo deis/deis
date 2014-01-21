@@ -726,7 +726,6 @@ class DomainViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Domain`."""
 
     model = models.Domain  # models class
-    perm = 'use_app'    # short name for permission
     serializer_class = serializers.DomainSerializer
 
     def get_queryset(self, **kwargs):
@@ -740,8 +739,7 @@ class DomainViewSet(OwnerViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=kwargs['id'])
-        perm_name = "api.{}".format(self.perm)
-        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+        if request.user != app.owner and not request.user.has_perm('api.use_app', app):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         request._data = request.DATA.copy()

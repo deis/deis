@@ -45,6 +45,7 @@ from .test_app import *  # noqa
 from .test_auth import *  # noqa
 from .test_build import *  # noqa
 from .test_config import *  # noqa
+from .test_domain import *  # noqa
 from .test_container import *  # noqa
 from .test_flavor import *  # noqa
 from .test_formation import *  # noqa
