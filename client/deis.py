@@ -783,6 +783,8 @@ class DeisClient(object):
         config:unset       unset environment variables for an app
 
         Use `deis help [command]` to learn more
+
+        Usage: deis config [--oneline] [--app=<app>]
         """
         return self.config_list(args)
 
