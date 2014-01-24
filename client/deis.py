@@ -783,9 +783,9 @@ class DeisClient(object):
         config:unset       unset environment variables for an app
 
         Use `deis help [command]` to learn more
-
-        Usage: deis config [--oneline] [--app=<app>]
         """
+        sys.argv[1] = 'config:list'
+        args = docopt(self.config_list.__doc__)
         return self.config_list(args)
 
     def config_list(self, args):
@@ -888,6 +888,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more
         """
+        sys.argv[1] = 'containers:list'
+        args = docopt(self.containers_list.__doc__)
         return self.containers_list(args)
 
     def containers_list(self, args, app=None):
@@ -1734,10 +1736,10 @@ class DeisClient(object):
         perms:delete          delete a permission for a user
 
         Use `deis help perms:[command]` to learn more
-
-        Usage: deis perms [--app=<app>|--admin]
         """
         # perms:transfer        transfer ownership of an app or formation
+        sys.argv[1] = 'perms:list'
+        args = docopt(self.perms_list.__doc__)
         return self.perms_list(args)
 
     def perms_list(self, args):
