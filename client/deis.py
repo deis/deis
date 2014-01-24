@@ -1734,6 +1734,8 @@ class DeisClient(object):
         perms:delete          delete a permission for a user
 
         Use `deis help perms:[command]` to learn more
+
+        Usage: deis perms [--app=<app>|--admin]
         """
         # perms:transfer        transfer ownership of an app or formation
         return self.perms_list(args)
