@@ -15,23 +15,17 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
   end
 
-  # 'deis provider:discover' detects the host machine's user and IP address, however, that command cannot
-  # be guareteed to run inside the deis codebase. Therefore we can't use that opportunity to discover
-  # the path of the codebase on the host machine. Therefore we do it now as this Vagrantfile has to exist
-  # inside the codebase.
-  nodes_dir = File.dirname(__FILE__) + '/contrib/vagrant/nodes'
-
   config.vm.provision :shell, inline: <<-SCRIPT
     # install latest stable chef for subsequent provision blocks
     sudo apt-get install -yq curl
     chef-client -v | grep 10.14.2 && curl -L https://www.opscode.com/chef/install.sh | sudo bash
+    # install 'etcd' gem using the vagrant chef runtime
+    sudo /opt/chef/embedded/bin/gem install etcd --no-ri --no-rdoc
     # Avahi-daemon broadcasts the machine's hostname to local DNS.
     # Therefore 'deis-controller.local' in this case.
     sudo apt-get install -yq avahi-daemon
-    # Make a record of where the deis code base is on the host machine
-    echo "#{nodes_dir}" > /home/vagrant/.host_nodes_dir
   SCRIPT
-
+  
   # load chef config from ~/.chef/knife.rb (requires `vagrant plugin install chef`)
   Chef::Config.from_file(File.join(ENV['HOME'], '.chef', 'knife.rb'))
   
@@ -49,9 +43,6 @@ Vagrant.configure("2") do |config|
     }
     # define the run list
     chef.add_recipe 'deis::controller'
-    # cleanup records on teardown
-    chef.delete_node = true
-    chef.delete_client = true
   end
 
 end
