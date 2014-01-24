@@ -1,0 +1,18 @@
+[submodule "images/etcd"]
+	path = images/etcd
+	url = ssh://github.com/deis/etcd.git
+[submodule "images/postgres"]
+	path = images/postgres
+	url = ssh://github.com/deis/postgres.git
+[submodule "images/redis"]
+	path = images/redis
+	url = ssh://github.com/deis/redis.git
+[submodule "images/server"]
+	path = images/server
+	url = ssh://github.com/deis/server.git
+[submodule "images/worker"]
+	path = images/worker
+	url = ssh://github.com/deis/worker.git
+[submodule "images/builder"]
+	path = images/builder
+	url = ssh://github.com/deis/builder.git
