@@ -1300,9 +1300,14 @@ class DeisClient(object):
             print('Found the following SSH public keys:')
             for i, key_ in enumerate(pubkeys_list):
                 print("{}) {} {}".format(i + 1, key_.name, key_.comment))
+            print("0) Enter path to pubfile (or use keys:add <key_path>) ")
             inp = raw_input('Which would you like to use with Deis? ')
             try:
-                selected_key = pubkeys_list[int(inp) - 1]
+                if int(inp) != 0:
+                    selected_key = pubkeys_list[int(inp) - 1]
+                else:
+                    selected_key_path = raw_input('Enter the path to the pubkey file: ')
+                    selected_key = parse_key(os.path.expanduser(selected_key_path))
             except:
                 print('Aborting')
                 return
