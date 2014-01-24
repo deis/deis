@@ -4,6 +4,7 @@ Django settings for the Deis project.
 
 from __future__ import unicode_literals
 import os.path
+import sys
 import tempfile
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
@@ -304,6 +305,14 @@ DATABASES = {
 # SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
 # see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
 ALLOWED_HOSTS = ['*']
+
+# import dynamic confd settings from /app, if they exist
+try:
+    if os.path.exists('/app/confd_settings.py'):
+        sys.path.append('/app')
+        from confd_settings import *
+except ImportError:
+    pass
 
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
