@@ -888,15 +888,16 @@ class DeisClient(object):
         """
         return self.containers_list(args)
 
-    def containers_list(self, args):
+    def containers_list(self, args, app=None):
         """
         List containers servicing an application
 
         Usage: deis containers:list [--app=<app>]
         """
-        app = args.get('--app')
         if not app:
-            app = self._session.get_app()
+            app = args.get('--app')
+            if not app:
+                app = self._session.get_app()
         response = self._dispatch('get',
                                   "/api/apps/{}/containers".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
@@ -947,7 +948,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
-            self.containers_list({})
+            self.containers_list({}, app)
         else:
             raise ResponseError(response)
 
