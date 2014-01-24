@@ -134,7 +134,7 @@ class Session(requests.Session):
             raise EnvironmentError(
                 'Could not find deis remote in `git remote -v`')
         url = m.groupdict()['url']
-        m = re.match('\S+:(?P<app>[a-z0-9-]+)(.git)?', url)
+        m = re.match('\S+/(?P<app>[a-z0-9-]+)(.git)?$', url)
         if not m:
             raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['app']
@@ -475,7 +475,7 @@ class DeisClient(object):
             print("done, created {}".format(app_id))
             # add a git remote
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
-            git_remote = "git@{hostname}:{app_id}.git".format(**locals())
+            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
