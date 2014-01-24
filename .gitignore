@@ -64,3 +64,5 @@ contrib/vagrant/nodes/
 # See Vagrantfile.local.example
 logs
 venv
+static
+!static/
