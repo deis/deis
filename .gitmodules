@@ -16,3 +16,6 @@
 [submodule "images/builder"]
 	path = images/builder
 	url = https://github.com/deis/builder.git
+[submodule "images/registry"]
+	path = images/registry
+	url = https://github.com/deis/registry
