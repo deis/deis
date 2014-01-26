@@ -189,10 +189,6 @@ Applications
 Application Release Components
 ------------------------------
 
-.. http:post:: /api/apps/(string:id)/push/
-
-  Create a new :class:`~api.models.Push`.
-
 .. http:get:: /api/apps/(string:id)/config/
 
   List all :class:`~api.models.Config`\s.
@@ -280,6 +276,18 @@ Application Sharing
 .. http:post:: /api/apps/(string:id)/perms/
 
   Create a new app permission.
+
+
+API Hooks
+=========
+
+.. http:post:: /api/hooks/push/
+
+  Create a new :class:`~api.models.Push`.
+
+.. http:post:: /api/hooks/build/
+
+  Create a new :class:`~api.models.Build`.
 
 
 Nodes
@@ -409,8 +417,6 @@ urlpatterns = patterns(
     url(r'^formations/?',
         views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
-    url(r'^apps/(?P<id>[-_\w]+)/push/?',
-        views.AppPushViewSet.as_view({'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>[-_\w]+)/builds/(?P<uuid>[-_\w]+)/?',
@@ -449,6 +455,11 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # hooks
+    url(r'^hooks/push/?',
+        views.PushHookViewSet.as_view({'post': 'create'})),
+    url(r'^hooks/build/?',
+        views.BuildHookViewSet.as_view({'post': 'create'})),
     # nodes
     url(r'^nodes/(?P<node>[-_\w]+)/converge/?',
         views.NodeViewSet.as_view({'post': 'converge'})),

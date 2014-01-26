@@ -552,29 +552,6 @@ class BaseAppViewSet(viewsets.ModelViewSet):
         raise PermissionDenied()
 
 
-class AppPushViewSet(viewsets.ModelViewSet):
-    """RESTful views for :class:`~api.models.Push`."""
-
-    model = models.Push
-    serializer_class = serializers.PushSerializer
-
-    permission_classes = (HasBuilderAuth,)
-
-    def pre_save(self, obj):
-        # SECURITY: we trust the receive_user field to map to the push owner
-        obj.owner = self.request.DATA['owner']
-
-    def create(self, request, *args, **kwargs):
-        request._data = request.DATA.copy()
-        app = request.DATA['app'] = get_object_or_404(models.App, id=self.kwargs['id'])
-        # check the user is authorized for this app
-        user = request.DATA['owner'] = get_object_or_404(
-            User, username=self.request.DATA['receive_user'])
-        if user == app.owner or user in get_users_with_perms(app):
-            return super(AppPushViewSet, self).create(request, *args, **kwargs)
-        raise PermissionDenied()
-
-
 class AppConfigViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Config`."""
 
@@ -682,3 +659,66 @@ class AppContainerViewSet(OwnerViewSet):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(num=self.kwargs['num'])
         return obj
+
+
+class BaseHookViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (HasBuilderAuth,)
+
+    def pre_save(self, obj):
+        # SECURITY: we trust the username field to map to the owner
+        obj.owner = self.request.DATA['owner']
+
+
+class PushHookViewSet(BaseHookViewSet):
+    """API hook to create new :class:`~api.models.Push`"""
+
+    model = models.Push
+    serializer_class = serializers.PushSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        user = get_object_or_404(
+            User, username=request.DATA['receive_user'])
+        # check the user is authorized for this app
+        if user == app.owner or user in get_users_with_perms(app):
+            request._data = request.DATA.copy()
+            request.DATA['app'] = app
+            request.DATA['owner'] = user
+            return super(PushHookViewSet, self).create(request, *args, **kwargs)
+        raise PermissionDenied()
+
+
+class BuildHookViewSet(BaseHookViewSet):
+    """API hook to create new :class:`~api.models.Build`"""
+
+    model = models.Build
+    serializer_class = serializers.BuildSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        user = get_object_or_404(
+            User, username=request.DATA['receive_user'])
+        # check the user is authorized for this app
+        if user == app.owner or user in get_users_with_perms(app):
+            request._data = request.DATA.copy()
+            request.DATA['app'] = app
+            request.DATA['owner'] = user
+            return super(BuildHookViewSet, self).create(request, *args, **kwargs)
+        raise PermissionDenied()
+
+    def post_save(self, obj, created=False):
+        if created:
+            # create a new release
+            models.release_signal.send(
+                sender=self, build=obj, app=obj.app,
+                user=obj.owner)
+            models.release_signal.send(sender=self, build=obj, app=obj.app, user=obj.owner)
+            # see if we need to scale an initial web container
+            app = obj.app
+            if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
+               len(app.container_set.filter(type='web')) < 1:
+                # scale an initial web containers
+                models.Container.objects.scale(app, {'web': 1})
+            # publish and converge the application
+            app.converge()

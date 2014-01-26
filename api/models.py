@@ -765,35 +765,6 @@ class Build(UuidAuditedModel):
     def __str__(self):
         return "{0}-{1}".format(self.app.id, self.sha[:7])
 
-    @classmethod
-    def push(cls, push):
-        """Process a push from a local Git server.
-
-        Creates a new Build and returns the application's
-        databag for processing by the git-receive hook
-        """
-        # SECURITY:
-        # we assume the first part of the ssh key name
-        # is the authenticated user because we trust gitosis
-        username = push.pop('username').split('_')[0]
-        # retrieve the user and app instances
-        user = User.objects.get(username=username)
-        app = App.objects.get(id=push.pop('app'))
-        # merge the push with the required model instances
-        push['owner'] = user
-        push['app'] = app
-        # create the build
-        new_build = cls.objects.create(**push)
-        # send a release signal
-        release_signal.send(sender=user, build=new_build, app=app, user=user)
-        # see if we need to scale an initial web container
-        if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
-           len(app.container_set.filter(type='web')) < 1:
-            # scale an initial web containers
-            Container.objects.scale(app, {'web': 1})
-        # publish and converge the application
-        return app.converge()
-
 
 @python_2_unicode_compatible
 class Release(UuidAuditedModel):

@@ -96,33 +96,6 @@ class BuildTest(TestCase):
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
 
-    def test_build_push(self):
-        """
-        Simlulate a git push creating a new Build object
-        """
-        formation_id = 'autotest'
-        url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True, 'proxy': True}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'runtime': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-        url = '/api/apps'
-        body = {'formation': formation_id}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        push = {'username': 'autotest', 'app': app_id}
-        databag = Build.push(push)
-        self.assertIn('release', databag)
-        self.assertIn('version', databag['release'])
-        self.assertIn('containers', databag)
-        self.assertIn('web', databag['containers'])
-        self.assertIn('1', databag['containers']['web'])
-        self.assertEqual(databag['containers']['web']['1'], 'up')
-
     def test_build_str(self):
         """Test the text representation of a build."""
         url = '/api/apps'
