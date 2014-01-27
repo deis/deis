@@ -39,7 +39,7 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install required packages
-apt-get install lxc-docker-0.7.6 curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.7.6 curl git inotify-tools make python-setuptools python-pip -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
@@ -65,8 +65,9 @@ rm -rf /var/lib/cloud
 rm -f /home/ubuntu/.ssh/authorized_keys
 rm -f /root/.ssh/authorized_keys
 
-# ssh host keys are automatically regenerated
-# on system boot by ubuntu cloud init
+# remove /etc/chef so contents can't intefere with
+# node being converged (i.e. old keys)
+rm -f /etc/chef/*
 
 # purge /var/log
 find /var/log -type f | xargs rm
