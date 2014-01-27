@@ -1,9 +1,9 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "precise64"
 
-  # This is a preloaded Deis Ubuntu 12.04 Precise box. It's about 1GB
-  #config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box"
-
+  # Ubuntu 12.04.3 LTS base with 3.8 kernel (ready for Docker)
+  config.vm.box_url = "https://oss-binaries.phusionpassenger.com/vagrant/boxes/ubuntu-12.04.3-amd64-vbox.box"
+  
   # Avahi-daemon will broadcast the server's address as deis-controller.local
   config.vm.host_name = "deis-controller"
 
