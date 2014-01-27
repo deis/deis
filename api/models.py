@@ -524,6 +524,9 @@ class App(UuidAuditedModel):
         else:
             for n in self.formation.node_set.filter(layer__proxy=True):
                 d['domains'].append(n.fqdn)
+
+        for domain in Domain.objects.all().filter(app=self):
+            d['domains'].append(domain.domain)
         # add proper sharing and access controls
         d['users'] = {self.owner.username: 'owner'}
         for u in (get_users_with_perms(self)):
@@ -869,6 +872,17 @@ class Release(UuidAuditedModel):
                     else:
                         self.summary = "{} changed nothing".format(self.owner)
         super(Release, self).save(*args, **kwargs)
+
+
+@python_2_unicode_compatible
+class Domain(AuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    domain = models.TextField(blank=False, null=False, unique=True)
+    domain_parent = models.TextField(blank=False, null=False)
+
+    def __str__(self):
+        return "{0} -> {1}".format(self.domain, self.app.id)
 
 
 @receiver(release_signal)

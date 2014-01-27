@@ -682,3 +682,37 @@ class AppContainerViewSet(OwnerViewSet):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(num=self.kwargs['num'])
         return obj
+
+
+class DomainViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Domain`."""
+
+    model = models.Domain  # models class
+    serializer_class = serializers.DomainSerializer
+
+    def get_queryset(self, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        return self.model.objects.filter(app=app)
+
+    def post_save(self, obj, created=False):
+        if created:
+            obj.app.publish()
+            obj.app.formation.converge()
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=kwargs['id'])
+        if request.user != app.owner and not request.user.has_perm('api.use_app', app):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+
+        return OwnerViewSet.create(self, request, *args, **kwargs)
+
+    def destroy(self, request, **kwargs):
+        domain = get_object_or_404(models.Domain, domain=kwargs['id'])
+        domain.delete()
+
+        domain.app.publish()
+        domain.app.formation.converge()
+        return Response(status=status.HTTP_204_NO_CONTENT)
