@@ -9,7 +9,7 @@ python:
 branches:
   only:
     - master
-    - develop
+    - release
 
 services:
   - postgresql
@@ -19,7 +19,7 @@ before_install:
   - sudo apt-get install -qq libpq-dev
 
 install:
-  - pip install -r dev_requirements.txt coveralls --use-mirrors
+  - pip install -r dev_requirements.txt coveralls
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
