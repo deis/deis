@@ -1278,64 +1278,68 @@ class DeisClient(object):
         Usage: deis keys:add [<key>]
         """
 
-        Key = namedtuple('Key', 'path name type str comment')
-
-        def parse_key(path):
-            """Parse an SSH public key path into a Key namedtuple."""
-            name = path.split(os.path.sep)[-1]
-            with open(path) as f:
-                data = f.read()
-                match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
-                if not match:
-                    print("Could not parse SSH public key {0}".format(name))
-                    return
-                key_type, key_str, key_comment = match.groups()
-                return Key(path, name, key_type, key_str, key_comment)
-
         path = args.get('<key>')
         if not path:
-            # find public keys and prompt the user to pick one
-            ssh_dir = os.path.expanduser('~/.ssh')
-            pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
-            if not pubkey_paths:
-                print('No SSH public keys found')
-                return
-            pubkeys_list = [parse_key(k) for k in pubkey_paths]
-            print('Found the following SSH public keys:')
-            for i, key_ in enumerate(pubkeys_list):
-                print("{}) {} {}".format(i + 1, key_.name, key_.comment))
-            print("0) Enter path to pubfile (or use keys:add <key_path>) ")
-            inp = raw_input('Which would you like to use with Deis? ')
-            try:
-                if int(inp) != 0:
-                    selected_key = pubkeys_list[int(inp) - 1]
-                else:
-                    selected_key_path = raw_input('Enter the path to the pubkey file: ')
-                    selected_key = parse_key(os.path.expanduser(selected_key_path))
-            except:
-                print('Aborting')
-                return
+            selected_key = self._ask_pubkey_interactively()
         else:
             # check the specified key format
-            selected_key = parse_key(path)
+            selected_key = self._parse_key(path)
             if not selected_key:
                 return
         # Upload the key to Deis
-        if selected_key.comment:
-            key_id = selected_key.comment
-        else:
-            key_id = selected_key.name.replace('.pub', '')
         body = {
-            'id': key_id,
+            'id': selected_key.id,
             'public': "{} {}".format(selected_key.type, selected_key.str)
         }
-        sys.stdout.write("Uploading {} to Deis...".format(key_id))
+        sys.stdout.write("Uploading {} to Deis...".format(selected_key.id))
         sys.stdout.flush()
         response = self._dispatch('post', '/api/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done')
         else:
             raise ResponseError(response)
+
+    def _parse_key(self, path):
+        """Parse an SSH public key path into a Key namedtuple."""
+        Key = namedtuple('Key', 'path name type str comment id')
+
+        name = path.split(os.path.sep)[-1]
+        with open(path) as f:
+            data = f.read()
+            match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+            if not match:
+                print("Could not parse SSH public key {0}".format(name))
+                return
+            key_type, key_str, key_comment = match.groups()
+            if key_comment:
+                key_id = key_comment
+            else:
+                key_id = name.replace('.pub', '')
+            return Key(path, name, key_type, key_str, key_comment, key_id)
+
+    def _ask_pubkey_interactively(self):
+        # find public keys and prompt the user to pick one
+        ssh_dir = os.path.expanduser('~/.ssh')
+        pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
+        if not pubkey_paths:
+            print('No SSH public keys found')
+            return
+        pubkeys_list = [self._parse_key(k) for k in pubkey_paths]
+        print('Found the following SSH public keys:')
+        for i, key_ in enumerate(pubkeys_list):
+            print("{}) {} {}".format(i + 1, key_.name, key_.comment))
+        print("0) Enter path to pubfile (or use keys:add <key_path>) ")
+        inp = raw_input('Which would you like to use with Deis? ')
+        try:
+            if int(inp) != 0:
+                selected_key = pubkeys_list[int(inp) - 1]
+            else:
+                selected_key_path = raw_input('Enter the path to the pubkey file: ')
+                selected_key = self._parse_key(os.path.expanduser(selected_key_path))
+        except:
+            print('Aborting')
+            return
+        return selected_key
 
     def keys_list(self, args):
         """
