@@ -550,7 +550,7 @@ class App(UuidAuditedModel):
         version = release.version
         docker_args = ' '.join(
             ['-a', 'stdout', '-a', 'stderr', '-rm',
-             '-v', '/opt/deis/runtime/slugs/{app_id}-v{version}:/app'.format(**locals()),
+             '-v', '/opt/deis/runtime/slugs/{app_id}-v{version}:/app:ro'.format(**locals()),
              'deis/slugrunner'])
         env_args = ' '.join(["-e '{k}={v}'".format(**locals())
                              for k, v in release.config.values.items()])
