@@ -19,12 +19,13 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
+import etcd
 from guardian.shortcuts import get_users_with_perms
 from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
 from provider import import_provider_module
-from utils import dict_diff
+from utils import dict_diff, fingerprint
 
 
 logger = logging.getLogger(__name__)
@@ -907,16 +908,6 @@ def _publish_to_cm(**kwargs):
     kwargs['instance'].publish()
 
 
-def _publish_user_to_cm(**kwargs):
-    if kwargs.get('update_fields') == frozenset(['last_login']):
-        return
-    kwargs['instance'].publish()
-
-
-def _purge_user_from_cm(**kwargs):
-    kwargs['instance'].purge()
-
-
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
@@ -934,13 +925,41 @@ def _log_config_updated(**kwargs):
     log_event(config.app, "Config {} updated".format(config))
 
 
+def _etcd_publish_key(**kwargs):
+    key = kwargs['instance']
+    _etcd_client.write('/deis/builder/users/{}/{}'.format(
+                 key.owner.username, fingerprint(key.public)), key.public)
+
+
+def _etcd_purge_key(**kwargs):
+    key = kwargs['instance']
+    _etcd_client.delete('/deis/builder/users/{}/{}'.format(
+                 key.owner.username, fingerprint(key.public)))
+
+
+def _etcd_purge_user(**kwargs):
+    username = kwargs['instance'].username
+    _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+
+
 # Connect Django model signals
 # Sync database updates with the configuration management backend
 post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
 post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
-post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
-post_delete.connect(_purge_user_from_cm, sender=User, dispatch_uid='api.models')
 # Log significant app-related events
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+
+# wire up etcd publishing if we can connect
+try:
+    _etcd_client = etcd.Client(host=settings.ETCD_HOST, port=int(settings.ETCD_PORT))
+    _etcd_client.get('/deis')
+except etcd.EtcdException:
+    logger.log(logging.WARNING, 'Cannot synchronize with etcd cluster')
+    _etcd_client = None
+
+if _etcd_client:
+    post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')

@@ -16,6 +16,14 @@ from api.models import Key
 from deis import settings
 
 
+PUBKEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfQkkUUoxpvcNMkvv7jqnfodgs37M2eBO" \
+         "APgLK+KNBMaZaaKB4GF1QhTCMfFhoiTW3rqa0J75bHJcdkoobtTHlK8XUrFqsquWyg3XhsT" \
+         "Yr/3RQQXvO86e2sF7SVDJqVtpnbQGc5SgNrHCeHJmf5HTbXSIjCO/AJSvIjnituT/SIAMGe" \
+         "Bw0Nq/iSltwYAek1hiKO7wSmLcIQ8U4A00KEUtalaumf2aHOcfjgPfzlbZGP0S0cuBwSqLr" \
+         "8b5XGPmkASNdUiuJY4MJOce7bFU14B7oMAy2xacODUs1momUeYtGI9T7X2WMowJaO7tP3Gl" \
+         "sgBMP81VfYTfYChAyJpKp2yoP autotest@autotesting comment"
+
+
 @override_settings(CELERY_ALWAYS_EAGER=True)
 class KeyTest(TestCase):
 
@@ -32,7 +40,7 @@ class KeyTest(TestCase):
         Test that a user can add, remove and manage their SSH public keys
         """
         url = '/api/keys'
-        body = {'id': 'mykey@box.local', 'public': 'ssh-rsa XXX'}
+        body = {'id': 'mykey@box.local', 'public': PUBKEY}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         key_id = response.data['id']
@@ -52,7 +60,7 @@ class KeyTest(TestCase):
         Test that creating and deleting a key updates configuration management
         """
         url = '/api/keys'
-        body = {'id': 'mykey@box.local', 'public': 'ssh-rsa XXX'}
+        body = {'id': 'mykey@box.local', 'public': PUBKEY}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         key_id = response.data['id']
@@ -75,7 +83,7 @@ class KeyTest(TestCase):
         Test that a user cannot add a duplicate key
         """
         url = '/api/keys'
-        body = {'id': 'mykey@box.local', 'public': 'ssh-rsa XXX'}
+        body = {'id': 'mykey@box.local', 'public': PUBKEY}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         response = self.client.post(url, json.dumps(body), content_type='application/json')

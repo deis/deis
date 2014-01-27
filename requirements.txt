@@ -13,6 +13,7 @@ gunicorn==18.0
 paramiko==1.12.1
 psycopg2==2.5.2
 pycrypto==2.6.1
+python-etcd==0.3.0
 pyrax==1.6.2
 PyYAML==3.10
 redis==2.8.0
