@@ -74,6 +74,35 @@ Add Controller to Admins Group
 Whether you used automatic or manual provisioning,
 you must add "deis-controller" to the "admins" group on the Chef Server.
 
+Hosted Chef
+~~~~~~~~~~~
+Users using Hosted Chef can perform these `steps` to add deis-controller to admin group.
+
+Open Source Chef
+~~~~~~~~~~~~~~~~
+
+For opensource chef one can use knife cli tool. First, set the EDITOR environment variable to your favourite text editor.
+
+``$ export EDITOR=vim``
+
+Now issue the command to edit ``deis-controller`` user.
+
+``$ knife client edit deis-controller``
+
+and update the 'admin' key to 'true'. The updated content should look similar to this.
+
+.. code-block:: console
+
+    {
+    "name": "deis-controller",
+    "public_key": "-----BEGIN PUBLIC KEY-----\nMaaBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwzKA3YNTw0qD8hcPiJpT\naYSpJI0sQF4u6/WpE4HAlGRHpjpoG/QwtuA4sosW+ebNXDbxKhDoQxsHnz97jDuZ\n4nvnTdaJRGygXABEkuUG68cV7asdGzn76bRT3GNa4LD+ekqJON7nCA/K8V3AZ1P4\nWfnPc/RfmK3InQC92w1xsX2hpZ/qzeL3Y+jxaJ7SnGgm9Q5O7PnDObNW4exzo6936\nkZFCdmQIdVfy4sGASc8ep6NW8ZHuej8vcCdFKJut9QV3S8kDl1XF2sG2DV4qMbC/\nalFRnZUy0TckSgm3fiqfi89u2bbSlfzrTHv2NU9xaYDv7QQpFoZ62PKG9SdJ9R5G\nUwIDAQAB\n-----END PUBLIC KEY-----\n",
+    "admin": true,
+    "json_class": "Chef::ApiClient",
+    "chef_type": "client"
+    }
+
+Save and close the file. The user is now in admin group.
+
 If you skip this step, you will receive errors when scaling down nodes as the 
 controller will not have permissions to delete "client" and "node" records from the Chef Server.
 
@@ -82,4 +111,5 @@ controller will not have permissions to delete "client" and "node" records from 
 .. _`Digital Ocean`: https://github.com/opdemand/deis/tree/master/contrib/digitalocean#readme
 .. _`add the controller to the admins group`: #add-controller-to-admins-group
 .. _`knife`: http://docs.opscode.com/knife.html
+.. _`steps`: http://docs.opscode.com/manage_server_hosted_groups.html#add-user-to-group
 
