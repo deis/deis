@@ -144,17 +144,3 @@ def purge_formation(formation):
     """
     path = os.path.join(settings.TEMPDIR, 'formation-{id}'.format(**formation))
     os.remove(path)
-
-
-def converge_controller():
-    """
-    Converge this controller node.
-
-    "Converge" means to change a node's configuration to match that defined by
-    configuration management.
-
-    This is a no-op for the mock provider.
-
-    :returns: the output of the convergence command, in this case None
-    """
-    return None

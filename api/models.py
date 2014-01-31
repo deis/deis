@@ -199,22 +199,19 @@ class Formation(UuidAuditedModel):
         group(layer_tasks).apply_async().join()
         CM.purge_formation(self.flat())
         self.delete()
-        tasks.converge_controller.apply_async().wait()
 
     def publish(self):
         data = self.calculate()
         CM.publish_formation(self.flat(), data)
         return data
 
-    def converge(self, controller=False, **kwargs):
+    def converge(self, **kwargs):
         databag = self.publish()
         nodes = self.node_set.all()
         subtasks = []
         for n in nodes:
             subtask = tasks.converge_node.si(n)
             subtasks.append(subtask)
-        if controller is True:
-            subtasks.append(tasks.converge_controller.si())
         group(*subtasks).apply_async().join()
         return databag
 

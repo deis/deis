@@ -158,25 +158,6 @@ def purge_node(node):
         raise RuntimeError("Could not purge node client {node_id}: {body}".format(**locals()))
 
 
-def converge_controller():
-    """
-    Converge this controller node.
-
-    "Converge" means to change a node's configuration to match that defined by
-    configuration management.
-
-    :returns: the output of the convergence command, in this case `sudo chef-client`
-    """
-    #try:
-    #    # we only need to run the gitosis recipe to update `git push` ACLs
-    #    return subprocess.check_output(['sudo', 'chef-client', '-o', 'recipe[deis::gitosis]'])
-    #except subprocess.CalledProcessError as err:
-    #    print(err)
-    #    print(err.output)
-    #    raise err
-    pass  # TODO: replace this with new key lookup
-
-
 def converge_node(node):
     """
     Converge a node.

@@ -186,9 +186,6 @@ class KeyViewSet(OwnerViewSet):
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
 
-    def post_save(self, key, created=False, **kwargs):
-        tasks.converge_controller.apply_async().wait()
-
 
 class ProviderViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.Provider`."""
@@ -379,7 +376,6 @@ class AppPermsViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
         app.publish()
-        tasks.converge_controller.apply_async().wait()
         models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
@@ -391,7 +387,6 @@ class AppPermsViewSet(viewsets.ViewSet):
         if user.has_perm(self.perm, app):
             remove_perm(self.perm, user, app)
             app.publish()
-            tasks.converge_controller.apply_async().wait()
             models.log_event(app, "User {} was revoked access to {}".format(user, app))
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
