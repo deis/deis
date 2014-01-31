@@ -262,7 +262,7 @@ def dictify(args):
     data = {}
     for arg in args:
         try:
-            var, val = arg.split('=')
+            var, val = arg.split('=', 1)
         except ValueError:
             raise DocoptExit()
         # Try to coerce the value to an int since that's a common use case
