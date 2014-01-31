@@ -21,7 +21,7 @@ CHEF_CONFIG_PATH = '/etc/chef'
 CHEF_INSTALL_TYPE = 'gems'
 CHEF_RUBY_VERSION = '1.9.1'
 CHEF_ENVIRONMENT = '_default'
-CHEF_CLIENT_VERSION = '11.6.2'
+CHEF_CLIENT_VERSION = '11.8.2'
 
 # load chef config using CHEF_CONFIG_PATH
 try:
@@ -49,6 +49,14 @@ try:
     _valid_pem_path = os.path.join(CHEF_CONFIG_PATH, 'validation.pem')
     CHEF_VALIDATION_KEY = subprocess.check_output(
         ['/bin/cat', _valid_pem_path]).strip('\n')
+    # write out knife template
+    if not os.path.exists('.chef'):
+        os.mkdir('.chef')
+    _template_src = os.path.abspath(os.path.join(__file__, '..', 'ubuntu12.04-gems.erb'))
+    with open(_template_src) as src:
+        _knife_template = os.path.abspath(os.path.join('.chef', 'knife-template.erb'))
+        with open(_knife_template, 'w') as f:
+            f.write(src.read())
 except Exception as err:
     msg = "Failed to auto-configure Chef -- {}".format(err)
     if os.environ.get('READTHEDOCS'):
@@ -91,6 +99,7 @@ def bootstrap_node(node):
         # build knife bootstrap command
         args = ['knife', 'bootstrap', node['fqdn']]
         args.extend(['--config', '/etc/chef/client.rb'])
+        args.extend(['--template-file', '.chef/knife-template.erb'])
         args.extend(['--identity-file', pk_path])
         args.extend(['--node-name', node['id']])
         args.extend(['--sudo', '--ssh-user', node['ssh_username']])
@@ -103,14 +112,13 @@ def bootstrap_node(node):
         args.extend(['|', 'tee', output_path])
         # TODO: figure out why home isn't being set correctly for knife exec
         env = os.environ.copy()
-        env['HOME'] = '/opt/deis'
+        env['HOME'] = '/var/lib/deis'
         # execute knife bootstrap
         p = subprocess.Popen(' '.join(args), env=env, shell=True)
         rc = p.wait()
         # always print knife output
         with open(output_path) as f:
-            output = f.read()
-        print(output)
+            output = str(f.read())
         # raise an exception if bootstrap failed
         if rc != 0 or 'incorrect password' in output:
             raise RuntimeError('Node Bootstrap Error:\n' + output)
