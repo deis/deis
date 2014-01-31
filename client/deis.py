@@ -814,7 +814,7 @@ class DeisClient(object):
                 width = max(map(len, keys)) + 5
                 for k in keys:
                     v = values[k]
-                    print(("{k:<"+str(width)+"} {v}").format(**locals()))
+                    print(("{k:<" + str(width) + "} {v}").format(**locals()))
             else:
                 output = []
                 for k in keys:
@@ -1907,19 +1907,12 @@ class DeisClient(object):
                     "whoami",
                     stderr=subprocess.PIPE
                 ).strip()
-                hostname = subprocess.check_output(
-                    "hostname",
-                    stderr=subprocess.PIPE,
-                    shell=True
-                ).strip()
             except subprocess.CalledProcessError:
-                print("Error detecting username and host address.")
+                print("Error detecting username.")
                 sys.exit(1)
-            if not hostname.endswith('.local'):
-                hostname += '.local'
             creds = {
                 'user': user,
-                'host': hostname
+                'host': '192.168.61.1'
             }
             body = {'creds': json.dumps(creds)}
             sys.stdout.write('Activating Vagrant as a provider... ')
