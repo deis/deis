@@ -216,29 +216,6 @@ def converge_formation(formation):
     return job.apply_async().join()
 
 
-def publish_user(user, data):
-    """
-    Publish a user to configuration management.
-
-    :param user: a dict containing the username
-    :param data: data to store with the user
-    :returns: a tuple of (body, status) from the underlying HTTP response
-    :raises: RuntimeError
-    """
-    _publish('deis-users', user['username'], data)
-
-
-def purge_user(user):
-    """
-    Purge a user from configuration management.
-
-    :param app: a dict containing the username of the user
-    :returns: a tuple of (body, status) from the underlying HTTP response
-    :raises: RuntimeError
-    """
-    _purge('deis-users', user['username'])
-
-
 def publish_app(app, data):
     """
     Publish an app to configuration management.

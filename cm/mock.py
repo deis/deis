@@ -80,28 +80,6 @@ def purge_node(node):
     pass
 
 
-def publish_user(user, data):
-    """
-    Publish a user to configuration management.
-
-    :param user: a dict containing the username
-    :param data: data to store with the user
-    """
-    path = os.path.join(settings.TEMPDIR, 'user-{username}'.format(**user))
-    with open(path, 'w') as f:
-        f.write(json.dumps(data))
-
-
-def purge_user(user):
-    """
-    Purge a user from configuration management.
-
-    :param user: a dict containing the username
-    """
-    path = os.path.join(settings.TEMPDIR, 'user-{username}'.format(**user))
-    os.remove(path)
-
-
 def publish_app(app, data):
     """
     Publish an app to configuration management.

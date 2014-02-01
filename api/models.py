@@ -78,14 +78,6 @@ class Key(UuidAuditedModel):
     def __str__(self):
         return "{}...{}".format(self.public[:18], self.public[-31:])
 
-    def save(self, *args, **kwargs):
-        super(Key, self).save(*args, **kwargs)
-        self.owner.publish()
-
-    def delete(self, *args, **kwargs):
-        super(Key, self).delete(*args, **kwargs)
-        self.owner.publish()
-
 
 class ProviderManager(models.Manager):
     """Manage database interactions for :class:`Provider`."""
@@ -867,33 +859,6 @@ def new_release(sender, **kwargs):
         owner=user, app=app, config=config,
         build=build, version=new_version)
     return release
-
-
-def _user_flat(self):
-    return {'username': self.username}
-
-
-def _user_calculate(self):
-    data = {'id': self.username, 'ssh_keys': {}}
-    for k in self.key_set.all():
-        data['ssh_keys'][k.id] = k.public
-    return data
-
-
-def _user_publish(self):
-    CM.publish_user(self.flat(), self.calculate())
-
-
-def _user_purge(self):
-    CM.purge_user(self.flat())
-
-
-# attach to built-in django user
-User.flat = _user_flat
-User.calculate = _user_calculate
-User.publish = _user_publish
-User.purge = _user_purge
-
 
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
