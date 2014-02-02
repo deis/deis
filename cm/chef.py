@@ -49,14 +49,6 @@ try:
     _valid_pem_path = os.path.join(CHEF_CONFIG_PATH, 'validation.pem')
     CHEF_VALIDATION_KEY = subprocess.check_output(
         ['/bin/cat', _valid_pem_path]).strip('\n')
-    # write out knife template
-    if not os.path.exists('.chef'):
-        os.mkdir('.chef')
-    _template_src = os.path.abspath(os.path.join(__file__, '..', 'ubuntu12.04-gems.erb'))
-    with open(_template_src) as src:
-        _knife_template = os.path.abspath(os.path.join('.chef', 'knife-template.erb'))
-        with open(_knife_template, 'w') as f:
-            f.write(src.read())
 except Exception as err:
     msg = "Failed to auto-configure Chef -- {}".format(err)
     if os.environ.get('READTHEDOCS'):
@@ -99,7 +91,6 @@ def bootstrap_node(node):
         # build knife bootstrap command
         args = ['knife', 'bootstrap', node['fqdn']]
         args.extend(['--config', '/etc/chef/client.rb'])
-        args.extend(['--template-file', '.chef/knife-template.erb'])
         args.extend(['--identity-file', pk_path])
         args.extend(['--node-name', node['id']])
         args.extend(['--sudo', '--ssh-user', node['ssh_username']])
