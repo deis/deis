@@ -46,7 +46,11 @@ Vagrant.configure("2") do |config|
     # TODO: replace with in-recipe public_ip lookup that handles vagrant/ec2/metal
 	chef.json = {
         "deis" => {
-            "public_ip" => "192.168.61.100"
+            "public_ip" => "192.168.61.100",
+            "dev" => {
+              "mode" => true,
+              "source" => "/vagrant"
+            }
         }
     }
     # define the run list
