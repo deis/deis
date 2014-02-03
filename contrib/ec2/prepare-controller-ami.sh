@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 #
-# Prepare a Deis-optimized Controller AMI from a vanilla Ubuntu 12.04
+# Prepare a Deis Controller image for Amazon EC2.
 #
 # Instructions:
 #

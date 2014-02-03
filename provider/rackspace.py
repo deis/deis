@@ -96,13 +96,13 @@ def build_node(node):
     name = "{formation}-{layer}".format(**node)
     params['key_name'] = name
     tags = {'Name': name}
-    # look up the saved image / snapshot by name 'deis-base-image', until we
+    # look up the saved image / snapshot by name 'deis-node-image', until we
     # can create a public image at Rackspace--at which point we call list_images().
     try:
-        image = next(i for i in conn.list_snapshots() if i.name == 'deis-base-image')
+        image = next(i for i in conn.list_snapshots() if i.name == 'deis-node-image')
     except StopIteration:
         msg = """\
-Can't find saved image "deis-base-image" in region {}. Please follow the
+Can't find saved image "deis-node-image" in region {}. Please follow the
 instructions in prepare-rackspace-image.sh before scaling Deis nodes.
 """.format(region)
         raise EnvironmentError(msg)

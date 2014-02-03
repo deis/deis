@@ -1,13 +1,13 @@
 #!/bin/bash -ex
 
 #
-# Prepare a Deis-optimized Node image from a vanilla Ubuntu 12.04 droplet
+# Prepare a Deis Node image for DigitalOcean.
 #
 # Instructions:
 #
 #   1. Launch a vanilla Ubuntu 12.04.3 droplet (64-bit)
 #   2. Run this script (as root!) to optimize the image for faster provisioning
-#   3. Create a new snapshot named "deis-node-base" from this droplet
+#   3. Create a new snapshot named "deis-node-image" from this droplet
 #
 
 # Remove old kernel(s)
@@ -22,7 +22,7 @@ echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/dock
 
 # upgrade to latest packages
 apt-get update
-apt-get dist-upgrade -yq
+apt-get upgrade -yq
 
 # install required packages
 apt-get install lxc-docker-0.7.6 fail2ban curl git inotify-tools make python-setuptools python-pip -yq
