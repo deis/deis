@@ -24,6 +24,7 @@ from guardian.shortcuts import get_users_with_perms
 from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
+from docker import publish_release
 from provider import import_provider_module
 from utils import dict_diff, fingerprint
 
@@ -499,7 +500,7 @@ class App(UuidAuditedModel):
             release = releases[0]
             d['release']['version'] = release.version
             d['release']['config'] = release.config.values
-            d['release']['build'] = {'image': release.build.image}
+            d['release']['build'] = {'image': release.build.image + ":v{}".format(release.version)}
             if release.build.url:
                 d['release']['build']['url'] = release.build.url
                 d['release']['build']['procfile'] = release.build.procfile
@@ -858,6 +859,11 @@ def new_release(sender, **kwargs):
     release = Release.objects.create(
         owner=user, app=app, config=config,
         build=build, version=new_version)
+    # publish release to registry as new docker image
+    if settings.REGISTRY_URL:
+        repository_path = "{}/{}".format(user.username, app.id)
+        tag = 'v{}'.format(new_version)
+        publish_release(repository_path, config.values, tag)
     return release
 
 

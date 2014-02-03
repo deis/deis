@@ -288,6 +288,9 @@ TEMPDIR = tempfile.mkdtemp(prefix='deis')
 SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 
+# registry settings
+REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
+
 # the config management module to use in api.models
 CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 
