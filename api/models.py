@@ -539,7 +539,8 @@ class App(UuidAuditedModel):
         release = self.release_set.order_by('-created')[0]
         # prepare ssh command
         version = release.version
-        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '-rm', release.build.image])
+        image = release.build.image + ":v{}".format(release.version)
+        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '-rm', image])
         env_args = ' '.join(["-e '{k}={v}'".format(**locals())
                              for k, v in release.config.values.items()])
         log_event(self, "deis run '{}'".format(command))
