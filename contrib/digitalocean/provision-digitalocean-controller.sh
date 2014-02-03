@@ -56,13 +56,13 @@ fi
 
 # the name of the location we want to work with
 region_id=$1
-# The snapshot that we want to use (deis-base)
-image_id=$(knife digital_ocean image list | grep "deis-base" | awk '{print $1}')
-# the ID of the size (1GB)
+# The image that we want to use (deis-controller-base)
+image_id=$(knife digital_ocean image list | grep "deis-controller-base" | awk '{print $1}')
+# the ID of the size (2GB)
 size_id=$(knife digital_ocean size list | grep "2GB" | awk '{print $1}')
 
 if [[ -z $image_id ]]; then
-  echo "Can't find saved image \"deis-base\" in region $region_id. Please follow the"
+  echo "Can't find saved image \"deis-controller-base\" in region $region_id. Please follow the"
   echo "instructions in prepare-digitalocean-snapshot.sh before provisioning a Deis controller."
   exit 1
 fi
