@@ -332,7 +332,7 @@ def readable_datetime(datetime_str):
         else:
             return "{}{}ago".format(hour_str, min_str)
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days= -1)
+    yesterday = now + relativedelta.relativedelta(days=-1)
     if delta.days <= 2 and dt.day == yesterday.day:
         return dt.strftime("Yesterday at %X")
     # otherwise return locale-specific date/time format

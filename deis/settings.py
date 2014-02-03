@@ -313,7 +313,7 @@ ALLOWED_HOSTS = ['*']
 try:
     if os.path.exists('/app/confd_settings.py'):
         sys.path.append('/app')
-        from confd_settings import *
+        from confd_settings import *  # noqa
 except ImportError:
     pass
 

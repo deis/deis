@@ -133,7 +133,8 @@ class HookTest(TestCase):
                 'checksum': checksum,
                 'procfile': {'web': 'node server.js'},
                 'config': {'PATH': '/usr/local/bin:/usr/bin:/usr/sbin'},
-                'url': 'http://deis-controller.local/slugs/{app_id}-{sha}.tar.gz'.format(**locals()),
+                'url':
+                'http://deis-controller.local/slugs/{app_id}-{sha}.tar.gz'.format(**locals()),
                 'size': 12345}
         # post the build without a session
         self.assertIsNone(self.client.logout())
@@ -162,4 +163,3 @@ class HookTest(TestCase):
         self.assertIn('web', databag['containers'])
         self.assertIn('1', databag['containers']['web'])
         self.assertEqual(databag['containers']['web']['1'], 'up')
-

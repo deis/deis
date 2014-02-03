@@ -860,6 +860,7 @@ def new_release(sender, **kwargs):
         build=build, version=new_version)
     return release
 
+
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
@@ -887,13 +888,13 @@ def _log_config_updated(**kwargs):
 def _etcd_publish_key(**kwargs):
     key = kwargs['instance']
     _etcd_client.write('/deis/builder/users/{}/{}'.format(
-                 key.owner.username, fingerprint(key.public)), key.public)
+        key.owner.username, fingerprint(key.public)), key.public)
 
 
 def _etcd_purge_key(**kwargs):
     key = kwargs['instance']
     _etcd_client.delete('/deis/builder/users/{}/{}'.format(
-                 key.owner.username, fingerprint(key.public)))
+        key.owner.username, fingerprint(key.public)))
 
 
 def _etcd_purge_user(**kwargs):
