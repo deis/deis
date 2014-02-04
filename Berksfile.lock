@@ -1,18 +1,18 @@
 {
   "sources": {
     "apt": {
-      "locked_version": "2.3.0"
+      "locked_version": "2.3.4"
     },
     "rsyslog": {
-      "locked_version": "1.9.0"
+      "locked_version": "1.10.2"
     },
     "sudo": {
-      "locked_version": "2.2.2"
+      "locked_version": "2.3.0"
     },
     "deis": {
-      "locked_version": "0.4.1",
+      "locked_version": "0.5.0",
       "git": "https://github.com/opdemand/deis-cookbook.git",
-      "ref": "a730d3f829d278cad94c59721768a0807612cc76"
+      "ref": "e172d9f1347f9876eda626866cf0c45a3ceaea64"
     }
   }
 }
