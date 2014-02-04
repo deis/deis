@@ -15,7 +15,7 @@
       "ref": "e172d9f1347f9876eda626866cf0c45a3ceaea64"
     },
     "docker": {
-      "locked_version": "0.27.0"
+      "locked_version": "0.28.0"
     },
     "git": {
       "locked_version": "2.9.0"
