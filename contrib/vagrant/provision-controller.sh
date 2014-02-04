@@ -7,11 +7,11 @@ function echo_color {
   echo -e "\033[1m$1\033[0m"
 }
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR="$(cd $(dirname $0); pwd)" # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
 # check for Deis' general dependencies
-if ! $CONTRIB_DIR/check-deis-deps.sh; then
+if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
   echo 'Deis is missing some dependencies.'
   exit 1
 fi
@@ -52,7 +52,7 @@ knife data bag create deis-apps 2>/dev/null
 
 # Boot the deis-controller VM
 echo_color "Booting $node_name with 'vagrant up'"
-pushd $THIS_DIR/../../
+pushd "$THIS_DIR/../../"
 vagrant up --provision
 if [ $? -gt 0 ]; then
   echo_color "Canceling provision because 'vagrant up' failed"

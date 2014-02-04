@@ -11,9 +11,6 @@
 #   4. Create/update your Deis flavors to use your new snapshot
 #
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
-
 # Remove old kernel(s)
 dpkg -l 'linux-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d' | xargs sudo apt-get -y purge
 
@@ -49,7 +46,7 @@ apt-get update
 apt-get -qy upgrade
 
 # install required packages
-apt-get install lxc-docker-0.7.5 curl git make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.7.6 curl git inotify-tools make python-setuptools python-pip -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
@@ -74,8 +71,9 @@ rm -rf /var/lib/cloud
 # purge SSH authorized keys
 rm -f /root/.ssh/authorized_keys
 
-# ssh host keys are automatically regenerated
-# on system boot by ubuntu cloud init
+# remove /etc/chef so contents can't intefere with
+# node being converged (i.e. old keys)
+rm -f /etc/chef/*
 
 # purge /var/log
 find /var/log -type f | xargs rm

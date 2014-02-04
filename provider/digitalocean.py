@@ -78,7 +78,7 @@ def destroy_node(node):
     params, creds = node['params'], node['creds']
     conn = _create_digitalocean_connection(creds)
     name = node['id']
-    for i in conn.images():
+    for i in conn.show_active_droplets():
         if i.name == name:
             conn.destroy_droplet(i.id)
     return

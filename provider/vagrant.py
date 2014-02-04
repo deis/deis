@@ -88,8 +88,8 @@ def build_node(node):
     # Make a folder for the VM with its own Vagrantfile. Vagrant will then create a .vagrant folder
     # there too when it first gets booted.
     node_dir = HOST_NODES_DIR + '/' + uid
-    mkdir = 'mkdir -p ' + node_dir
-    cp_tpl = 'echo "' + result.replace('"', '\\"') + '" > ' + node_dir + '/Vagrantfile'
+    mkdir = 'mkdir -p "{}"'.format(node_dir)
+    cp_tpl = 'echo "' + result.replace('"', '\\"') + '" > "{}/Vagrantfile"'.format(node_dir)
     _host_ssh(commands=[mkdir, cp_tpl], creds=node['creds'])
 
     # Boot the VM
@@ -141,8 +141,8 @@ def destroy_node(node):
                 "Aborted node destruction: attempting to 'rm -rf' unexpected directory")
 
         # Completely remove the folder that contained the VM
-        rm_vagrantfile = 'rm ' + node_dir + '/Vagrantfile'
-        rm_node_dir = 'rm -rf ' + node_dir
+        rm_vagrantfile = 'rm "{}/Vagrantfile"'.format(node_dir)
+        rm_node_dir = 'rm -rf "{}"'.format(node_dir)
         _host_ssh(commands=[rm_vagrantfile, rm_node_dir], creds=node['creds'])
     except RuntimeError as err:
         # If we couldn't cd to the node dir, just log that as a warning
@@ -158,7 +158,7 @@ def _run_vagrant_command(node_id, args=[], creds={}):
     e.g. ['up', 'my_vm_name', '--no-provision']
     """
 
-    cd = 'cd ' + HOST_NODES_DIR + '/' + node_id
+    cd = 'cd "{}/{}"'.format(HOST_NODES_DIR, node_id)
     command = ['vagrant'] + [arg for arg in args if arg is not None]
     return _host_ssh(commands=[cd, ' '.join(command)], creds=creds)
 

@@ -1,12 +1,12 @@
 # Deis controller requirements
 boto==2.23.0
-celery==3.1.7
+celery==3.1.8
 Django==1.6.1
 django-allauth==0.15.0
 django-guardian==1.1.1
 django-json-field==0.5.5
 django-yamlfield==0.5
-djangorestframework==2.3.10
+djangorestframework==2.3.12
 dop==0.1.4
 gevent==1.0
 gunicorn==18.0
@@ -21,10 +21,10 @@ South==0.8.4
 docopt==0.6.1
 python-dateutil==2.2
 #PyYAML==3.10
-requests==2.2.0
+requests==2.2.1
 
 # Deis documentation requirements
-Sphinx>=1.2
+Sphinx>=1.2.1
 smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0
 
@@ -38,4 +38,4 @@ docutils>=0.11
 flake8>=2.1.0
 
 # Python expect is used to automate client-driven tests
-pexpect>=3.0
+pexpect>=3.1

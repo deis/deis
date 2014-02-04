@@ -89,10 +89,8 @@ the one from Pip.
   * Get a list of commands with; `./manage.py help`.
 
 * To reset the DB:
-  * On the VM run `sudo su postgres -c 'dropdb deis && createdb --encoding=utf8 --template=template0 deis'`
-  * When you restart the server with `sudo service deis-server restart` Django will reinstall the DB.
-  * You'll need to reupdate the Django's Site Object
-  `sudo su deis -c "psql deis -c \"UPDATE django_site SET domain = 'deis-controller.local', name = 'deis-controller.local' WHERE id = 1 \""`
+  * There is a script at `contrib/vagrant/util/reset-db.sh` that resets the DB and installs some basic fixtures.
+  * It installs a formation named 'dev' and a super user with username 'dev' and password 'dev'.
 
 * This is useful for uploading your own local version of the cookbooks, rather than the Github versions:
   * `knife cookbook upload deis --cookbook-path [deis-cookbook path] --force`

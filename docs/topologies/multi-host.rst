@@ -39,7 +39,7 @@ Create a Runtime Layer
     Creating runtime layer... done in 4s
 
 We create a new layer in the "dev" formation called "runtime" which
-has proxy set to "yes" and runtime set to "no".
+has proxy set to "no" and runtime set to "yes".
 This layer is purely for hosting containers.
 
 .. include:: scale-nodes.txt

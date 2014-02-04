@@ -71,7 +71,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -262,7 +262,7 @@ def dictify(args):
     data = {}
     for arg in args:
         try:
-            var, val = arg.split('=')
+            var, val = arg.split('=', 1)
         except ValueError:
             raise DocoptExit()
         # Try to coerce the value to an int since that's a common use case
@@ -784,17 +784,21 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more
         """
+        sys.argv[1] = 'config:list'
+        args = docopt(self.config_list.__doc__)
         return self.config_list(args)
 
     def config_list(self, args):
         """
         List environment variables for an application
 
-        Usage: deis config:list [--app=<app>]
+        Usage: deis config:list [--oneline] [--app=<app>]
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
+
+        oneline = args.get('--oneline')
         response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
@@ -804,8 +808,19 @@ class DeisClient(object):
             if len(items) == 0:
                 print('No configuration')
                 return
-            for k, v in values.items():
-                print("{k}: {v}".format(**locals()))
+            keys = sorted(values)
+
+            if not oneline:
+                width = max(map(len, keys)) + 5
+                for k in keys:
+                    v = values[k]
+                    print(("{k:<"+str(width)+"} {v}").format(**locals()))
+            else:
+                output = []
+                for k in keys:
+                    v = values[k]
+                    output.append("{k}={v}".format(**locals()))
+                print(' '.join(output))
         else:
             raise ResponseError(response)
 
@@ -873,17 +888,20 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more
         """
+        sys.argv[1] = 'containers:list'
+        args = docopt(self.containers_list.__doc__)
         return self.containers_list(args)
 
-    def containers_list(self, args):
+    def containers_list(self, args, app=None):
         """
         List containers servicing an application
 
         Usage: deis containers:list [--app=<app>]
         """
-        app = args.get('--app')
         if not app:
-            app = self._session.get_app()
+            app = args.get('--app')
+            if not app:
+                app = self._session.get_app()
         response = self._dispatch('get',
                                   "/api/apps/{}/containers".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
@@ -934,7 +952,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
-            self.containers_list({})
+            self.containers_list({}, app)
         else:
             raise ResponseError(response)
 
@@ -1260,59 +1278,68 @@ class DeisClient(object):
         Usage: deis keys:add [<key>]
         """
 
-        Key = namedtuple('Key', 'path name type str comment')
-
-        def parse_key(path):
-            """Parse an SSH public key path into a Key namedtuple."""
-            name = path.split(os.path.sep)[-1]
-            with open(path) as f:
-                data = f.read()
-                match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
-                if not match:
-                    print("Could not parse SSH public key {0}".format(name))
-                    return
-                key_type, key_str, key_comment = match.groups()
-                return Key(path, name, key_type, key_str, key_comment)
-
         path = args.get('<key>')
         if not path:
-            # find public keys and prompt the user to pick one
-            ssh_dir = os.path.expanduser('~/.ssh')
-            pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
-            if not pubkey_paths:
-                print('No SSH public keys found')
-                return
-            pubkeys_list = [parse_key(k) for k in pubkey_paths]
-            print('Found the following SSH public keys:')
-            for i, key_ in enumerate(pubkeys_list):
-                print("{}) {} {}".format(i + 1, key_.name, key_.comment))
-            inp = raw_input('Which would you like to use with Deis? ')
-            try:
-                selected_key = pubkeys_list[int(inp) - 1]
-            except:
-                print('Aborting')
-                return
+            selected_key = self._ask_pubkey_interactively()
         else:
             # check the specified key format
-            selected_key = parse_key(path)
+            selected_key = self._parse_key(path)
             if not selected_key:
                 return
         # Upload the key to Deis
-        if selected_key.comment:
-            key_id = selected_key.comment
-        else:
-            key_id = selected_key.name.replace('.pub', '')
         body = {
-            'id': key_id,
+            'id': selected_key.id,
             'public': "{} {}".format(selected_key.type, selected_key.str)
         }
-        sys.stdout.write("Uploading {} to Deis...".format(key_id))
+        sys.stdout.write("Uploading {} to Deis...".format(selected_key.id))
         sys.stdout.flush()
         response = self._dispatch('post', '/api/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             print('done')
         else:
             raise ResponseError(response)
+
+    def _parse_key(self, path):
+        """Parse an SSH public key path into a Key namedtuple."""
+        Key = namedtuple('Key', 'path name type str comment id')
+
+        name = path.split(os.path.sep)[-1]
+        with open(path) as f:
+            data = f.read()
+            match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+            if not match:
+                print("Could not parse SSH public key {0}".format(name))
+                return
+            key_type, key_str, key_comment = match.groups()
+            if key_comment:
+                key_id = key_comment
+            else:
+                key_id = name.replace('.pub', '')
+            return Key(path, name, key_type, key_str, key_comment, key_id)
+
+    def _ask_pubkey_interactively(self):
+        # find public keys and prompt the user to pick one
+        ssh_dir = os.path.expanduser('~/.ssh')
+        pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
+        if not pubkey_paths:
+            print('No SSH public keys found')
+            return
+        pubkeys_list = [self._parse_key(k) for k in pubkey_paths]
+        print('Found the following SSH public keys:')
+        for i, key_ in enumerate(pubkeys_list):
+            print("{}) {} {}".format(i + 1, key_.name, key_.comment))
+        print("0) Enter path to pubfile (or use keys:add <key_path>) ")
+        inp = raw_input('Which would you like to use with Deis? ')
+        try:
+            if int(inp) != 0:
+                selected_key = pubkeys_list[int(inp) - 1]
+            else:
+                selected_key_path = raw_input('Enter the path to the pubkey file: ')
+                selected_key = self._parse_key(os.path.expanduser(selected_key_path))
+        except:
+            print('Aborting')
+            return
+        return selected_key
 
     def keys_list(self, args):
         """
@@ -1715,6 +1742,8 @@ class DeisClient(object):
         Use `deis help perms:[command]` to learn more
         """
         # perms:transfer        transfer ownership of an app or formation
+        sys.argv[1] = 'perms:list'
+        args = docopt(self.perms_list.__doc__)
         return self.perms_list(args)
 
     def perms_list(self, args):
