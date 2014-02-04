@@ -699,7 +699,9 @@ class BuildHookViewSet(BaseHookViewSet):
             request._data = request.DATA.copy()
             request.DATA['app'] = app
             request.DATA['owner'] = user
-            return super(BuildHookViewSet, self).create(request, *args, **kwargs)
+            super(BuildHookViewSet, self).create(request, *args, **kwargs)
+            # return the application databag
+            return Response(app.calculate(), status=status.HTTP_200_OK)
         raise PermissionDenied()
 
     def post_save(self, obj, created=False):
