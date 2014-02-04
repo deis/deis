@@ -1897,20 +1897,7 @@ class DeisClient(object):
                 print("No {} credentials discovered.".format(name))
 
         # Check for locally booted Deis Controller VM
-        try:
-            running_vms = subprocess.check_output(
-                ['vboxmanage', 'list', 'runningvms'],
-                stderr=subprocess.PIPE
-            )
-        except subprocess.CalledProcessError:
-            running_vms = ""
-        # Vagrant internally names a running VM using the folder name in which the Vagrantfile
-        # resides, eg; my-deis-code-folder_default_1383326629
-        try:
-            deis_codebase_folder = self._session.git_root().split('/')[-1]
-        except EnvironmentError:
-            deis_codebase_folder = 'deis'
-        if deis_codebase_folder and deis_codebase_folder in running_vms:
+        if self._settings['controller'] == 'http://deis-controller.local':
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
@@ -1944,7 +1931,7 @@ class DeisClient(object):
             else:
                 raise ResponseError(response)
         else:
-            print("No Vagrant VMs discovered.")
+            print("No Vagrant Deis Controller discovered.")
 
     def providers_info(self, args):
         """
