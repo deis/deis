@@ -23,7 +23,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from api import models, serializers
+from api import docker, models, serializers
 
 from deis import settings
 
@@ -631,6 +631,11 @@ class AppReleaseViewSet(BaseAppViewSet):
             app.release_set.create(owner=request.user, version=last_version + 1,
                                    build=prev.build, config=prev.config,
                                    summary=summary)
+        # publish release to registry as new docker image
+        if settings.REGISTRY_URL:
+            repository_path = "{}/{}".format(app.owner.username, app.id)
+            tag = 'v{}'.format(last_version + 1)
+            docker.publish_release(repository_path, prev.config.values, tag)
             app.converge()
         msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
@@ -707,9 +712,6 @@ class BuildHookViewSet(BaseHookViewSet):
     def post_save(self, obj, created=False):
         if created:
             # create a new release
-            models.release_signal.send(
-                sender=self, build=obj, app=obj.app,
-                user=obj.owner)
             models.release_signal.send(sender=self, build=obj, app=obj.app, user=obj.owner)
             # see if we need to scale an initial web container
             app = obj.app
