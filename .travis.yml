@@ -10,6 +10,7 @@ branches:
   only:
     - master
     - release
+    - containerize
 
 services:
   - postgresql
