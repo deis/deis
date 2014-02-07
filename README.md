@@ -60,7 +60,6 @@ Deis stands on the shoulders of leading open source technologies:
   * [Celery](http://www.celeryproject.org/)
   * [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks)
   * [Slugbuilder](https://github.com/flynn/slugbuilder) and [slugrunner](https://github.com/flynn/slugrunner)
-  * [Gitosis](https://github.com/opdemand/gitosis)
 
 ## License
 
