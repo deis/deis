@@ -17,6 +17,7 @@ python-etcd==0.3.0
 pyrax==1.6.2
 PyYAML==3.10
 redis==2.8.0
+static==1.0.2
 South==0.8.4
 
 # Deis client requirements
