@@ -21,10 +21,7 @@ GitHub Issues
 Other Repos
 -----------
 
-- tag the opdemand/gitosis repo
-    * ``git checkout master``
-    * ``git tag vX.Y.Z``
-    * ``git push --tags origin vX.Y.Z``
+- TBD
 
 
 Chef Repo

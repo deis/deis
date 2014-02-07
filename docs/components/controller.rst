@@ -9,10 +9,10 @@ Controller
 The controller is the "brains" of the Deis platform.
 The controller manages container :ref:`Formations <formation>`,
 comprised of clusters of nodes providing proxy and runtime services for
-the application platform.  A single controller manages multiple 
+the application platform.  A single controller manages multiple
 container formations.
 
-Controllers are tied to a configuration management backend (typically a 
+Controllers are tied to a configuration management backend (typically a
 Chef Server) where data about users, applications and formations is stored.
 
 The controller is in charge of:
@@ -28,7 +28,7 @@ The controller stack includes:
 * Django API Server for handling API calls
 * PostgreSQL database as a backing store for Django
 * Celery / RabbitMQ for dispatching tasks
-* Gitosis to handle access control for Git Push over SSH
+* A lightweight *gitreceive* hook for ``git push`` access control
 * Docker and Buildstep to process Heroku Buildpacks
 
 Follow the :ref:`Operations Guide <operations>` to setup your own private

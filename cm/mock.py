@@ -59,7 +59,6 @@ drwxr-xr-x  5 deis deis 4096 Dec 21 10:05 build
 drwx------  2 deis deis 4096 Dec 21 10:08 .cache
 drwx------  2 deis deis 4096 Dec 21 10:00 .chef
 drwxr-xr-x 15 deis deis 4096 Dec 21 10:09 controller
-drwxr-xr-x  8 git  git  4096 Dec 21 10:14 gitosis
 -rw-r--r--  1 root root    0 Dec 21 10:00 prevent-apt-update
 -rw-r--r--  1 deis deis  675 Mar 28  2013 .profile
 drwxr-xr-x  2 deis deis 4096 Dec 21 10:07 .ssh
