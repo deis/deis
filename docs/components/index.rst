@@ -24,6 +24,7 @@ Components
     release
     
     provider
+    service
     flavor
     key
     

@@ -5,12 +5,14 @@ RESTful view classes for presenting Deis API objects.
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import json
+import importlib
 
 from Crypto.PublicKey import RSA
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils import timezone
+from django.http import Http404
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
 from guardian.shortcuts import get_users_with_perms
@@ -135,7 +137,7 @@ class UserRegistrationView(viewsets.GenericViewSet,
     serializer_class = serializers.UserSerializer
 
     def post_save(self, user, created=False):
-        """Seed both `Providers` and `Flavors` after registration."""
+        """Seed `Providers` and `Flavors` after registration."""
         if created:
             models.Provider.objects.seed(user)
             models.Flavor.objects.seed(user)
@@ -682,3 +684,100 @@ class AppContainerViewSet(OwnerViewSet):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(num=self.kwargs['num'])
         return obj
+
+
+class AppAddonViewSet(OwnerViewSet):
+    """
+    API endpoint that allows services to be viewed or edited.
+    """
+
+    model = models.Addon
+    serializer_class = serializers.AddonSerializer
+
+    def get_object(self, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        # TODO #231: it seems wrong that I have to use app.uuid when none of the other
+        # viewsets have to.
+        return get_object_or_404(
+            models.Addon, app=app.uuid, provider__type=self.kwargs['type'])
+
+    def pre_save(self, obj):
+        if not obj.provider.enabled:
+            # TODO #231: the message doesn't get passed to the CLI
+            raise Http404("Provider not enabled")
+        super(AppAddonViewSet, self).pre_save(obj)
+        obj.build()
+
+    def post_delete(self, obj):
+        obj.destroy()
+
+    def create(self, request, *args, **kwargs):
+        provider = get_object_or_404(models.Service, type=self.kwargs['type'])
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        request._data = request.DATA.copy()
+        request.DATA['provider'] = provider.id
+        request.DATA['app'] = app
+        return super(AppAddonViewSet, self).create(request, *args, **kwargs)
+
+
+class ServiceViewSet(OwnerViewSet):
+    """
+    API endpoint that allows providers to be created, viewed and edited.
+    """
+
+    model = models.Service
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrSafeMethod)
+    serializer_class = serializers.ServiceSerializer
+
+    def get_object(self, *args, **kwargs):
+        return get_object_or_404(
+            models.Service, owner=self.request.user, type=self.kwargs['type'])
+
+    def _get_details_from_provider_module(self, request):
+        """
+        All configuration values for a service are kept in services.* modules. So load the relevant
+        module splice those details into the request.
+        """
+        request._data = request.DATA.copy()
+        module = importlib.import_module('services.' + self.kwargs['type'])
+        request.DATA['docs'] = module.DOCS
+        request.DATA['dashboard'] = module.DASHBOARD
+        return request
+
+    def list(self, request, **kwargs):
+        """
+        Rather than seed the DB with all the available service providers, query available services
+        from the modules in services.*
+
+        Seeding the DB would have the downside of creating an obstacle to upgrading Deis with new
+        providers.
+        """
+        response = {}
+        enabled_providers = self.model.objects.filter(
+            enabled=True,
+            owner=request.user
+        ).values_list("type", flat=True)
+        for provider in settings.SERVICE_MODULES:
+            module = importlib.import_module('services.' + provider)
+            enabled = provider in enabled_providers
+            response[provider] = {'enabled': enabled, 'description': module.DESCRIPTION}
+        return Response(response, status=status.HTTP_200_OK)
+
+    def update(self, request, **kwargs):
+        """
+        This function serves 3 purposes:
+        1. Creating a service and its DB record.
+        2. Updating a service, eg; enabling it.
+        3. Without any new detials in the request it still serves the purpose of updating any
+           details that may have changed in the service.<provider> module.
+
+        1 & 2 are to save the CLI client having separate methods for creation and enabling.
+        """
+        if kwargs['type'] not in settings.SERVICE_MODULES:
+            return Response("Provider not available.", status=status.HTTP_404_NOT_FOUND)
+        request = self._get_details_from_provider_module(request)
+        request.DATA['type'] = kwargs['type']  # TODO #231: it errors without this line :(
+        if models.Service.objects.filter(owner=request.user, type=kwargs['type']):
+            return super(ServiceViewSet, self).update(request, **kwargs)
+        else:
+            return super(ServiceViewSet, self).create(request, **kwargs)

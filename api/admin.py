@@ -20,6 +20,8 @@ from .models import Layer
 from .models import Node
 from .models import Provider
 from .models import Release
+from .models import Addon
+from .models import Service
 
 
 class AppAdmin(GuardedModelAdmin):
@@ -130,3 +132,7 @@ class ReleaseAdmin(admin.ModelAdmin):
     list_display = ('owner', 'app', 'version')
     list_filter = ('owner', 'app')
 admin.site.register(Release, ReleaseAdmin)
+
+
+admin.site.register(Addon)
+admin.site.register(Service)

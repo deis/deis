@@ -2,7 +2,9 @@
 Helper functions used by the Deis server.
 """
 
+import models
 import random
+import string
 
 
 def generate_app_name():
@@ -63,6 +65,13 @@ def generate_app_name():
     ]
     return "{}-{}".format(
         random.choice(adjectives), random.choice(nouns))
+
+
+def generate_service_name():
+    while True:
+        name = ''.join(random.sample(string.letters*2, 8))
+        if not models.Addon.objects.filter(name=name).exists():
+            return name
 
 
 def dict_diff(dict1, dict2):

@@ -210,3 +210,44 @@ class ContainerSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
         read_only_fields = ('created', 'updated')
+
+
+class ServiceSerializer(serializers.ModelSerializer):
+
+    owner = serializers.Field(source='owner.username')
+    dashboard = serializers.CharField(required=False)
+    docs = serializers.CharField(required=False)
+
+    class Meta:
+        model = models.Service
+        fields = ('owner', 'type', 'enabled', 'dashboard', 'docs')
+
+    # TODO #231: I don't like this hack. Without it object creation complains about missing
+    # dashboard and docs fields.
+    def get_validation_exclusions(self):
+        exclusions = super(ServiceSerializer, self).get_validation_exclusions()
+        return exclusions + ['dashboard', 'docs']
+
+
+class AddonSerializer(serializers.ModelSerializer):
+
+    app = OwnerSlugRelatedField(slug_field='id')
+    owner = serializers.Field(source='owner.username')
+    name = serializers.SlugField(default=utils.generate_service_name)
+    plan = serializers.SlugField(default='free')
+    uri = serializers.CharField(required=False)
+    # TODO #231: This doesn't strike me as the most elegant way of including the nested provider
+    # data. But using other methods 'depth=1' or 'provider=ServiceSerializer' prevent
+    # writing to the AddonSerializer using the Provider type field.
+    docs = serializers.CharField(source='provider.docs', required=False)
+    dashboard = serializers.CharField(source='provider.dashboard', required=False)
+
+    class Meta:
+        model = models.Addon
+        fields = ('uri', 'provider', 'app', 'owner', 'name', 'plan', 'docs', 'dashboard')
+
+    # TODO #231: I don't like this hack. Without it Addon.build() can't generate the uri in the
+    # pre_save() because Django reports the field as missing.
+    def get_validation_exclusions(self):
+        exclusions = super(AddonSerializer, self).get_validation_exclusions()
+        return exclusions + ['uri']

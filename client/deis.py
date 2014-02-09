@@ -15,6 +15,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   formations    manage formations used to host applications
   layers        manage layers used for node configuration
   nodes         manage nodes used to host containers and proxies
+  services      manage builtin services such as MySQL or Memcache
 
   apps          manage applications used to provide services
   containers    manage containers used to handle requests and jobs
@@ -25,6 +26,8 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   providers     manage credentials used to access cloud providers
   flavors       manage flavors of nodes including size and location
   keys          manage ssh keys used for `git push` deployments
+
+  addons        manage addons such as databases or third-party APIs
 
   perms         manage permissions for shared apps and formations
 
@@ -1731,6 +1734,90 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def services(self, args):
+        """
+        Valid commands for services:
+
+        services:list         list avaiable services and their states
+        services:enable       enable a service
+        services:disable      disable a service
+
+        Use `deis help services:[command]` to learn more
+        """
+        return self.services_list(args)
+
+    def services_list(self, args):
+        """
+        List available builtin services
+
+        Usage: deis services:list
+        """
+        response = self._dispatch('get', "/api/services")
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            if len(data) == 0:
+                print('No services found')
+                return
+            print("=== Available Services")
+            for service in data:
+                enabled = "enabled" if data[service]['enabled'] else "disabled"
+                description = data[service]['description']
+                print("{service} ({description}) => {enabled}".format(**locals()))
+        else:
+            raise ResponseError(response)
+
+    def services_enable(self, args):
+        """
+        Enable a builtin service
+
+        Usage: deis services:enable <service>
+        """
+        service = args.get('<service>')
+        body = {'enabled': True}
+        print("Enabling '{}' service".format(service))
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch(
+                'put', "/api/services/{}".format(service), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if (
+            response.status_code == requests.codes.ok or
+            response.status_code == requests.codes.created
+        ):
+            print("'{}' service enabled in {}s\n".format(service, int(time.time() - before)))
+        else:
+            raise ResponseError(response)
+
+    def services_disable(self, args):
+        """
+        Disable a builtin service
+
+        Usage: deis services:disable <service>
+        """
+        service = args.get('<service>')
+        body = {'enabled': False}
+        print("Disabling '{}' service".format(service))
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch(
+                'put', "/api/services/{}".format(service), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if (
+            response.status_code == requests.codes.ok or
+            response.status_code == requests.codes.created
+        ):
+            print("'{}' service disabled in {}s\n".format(service, int(time.time() - before)))
+        else:
+            raise ResponseError(response)
+
     def perms(self, args):
         """
         Valid commands for perms:
@@ -2037,6 +2124,136 @@ class DeisClient(object):
         response = self._dispatch('post', url, json.dumps(body))
         if response.status_code == requests.codes.created:
             print(response.json())
+        else:
+            raise ResponseError(response)
+
+    def addons(self, args):
+        """
+        Valid commands for addons:
+
+        addons:list       list avaiable addons
+        addons:add        add an addon to the current app
+        addons:remove     remove an addon from the current app
+        addons:open       open an addon's dashboard in your browser
+        addons:docs       open an addon's documentation in your browser
+
+        Use `deis help addons:[command]` to learn more
+        """
+        return self.addons_list(args)
+
+    def addons_list(self, args):
+        """
+        List all available addons
+
+        Usage: deis addons:list
+        """
+        response = self._dispatch('get', "/api/services")
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            if len(data) == 0:
+                print('No addons found')
+                return
+            print("=== Available Addons")
+            for service in data:
+                if data[service]['enabled']:
+                    print("{} => {}".format(service, data[service]['description']))
+        else:
+            raise ResponseError(response)
+
+    def addons_add(self, args):
+        """
+        Provision a service and add its connection details to the app's config
+
+        Usage: deis addons:add <addon> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        addon = args.get('<addon>')
+        url = "/api/apps/{}/addons/{}".format(app, addon)
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch('post', url)
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:
+            data = response.json()
+            print("'{}' addon enabled in {}s\n".format(addon, int(time.time() - before)))
+            print("Adding service URI to app config ...")
+            args = {}
+            args['<var>=<value>'] = ['{}_URI={}'.format(addon.upper(), data['uri'])]
+            self.config_set(args)
+        else:
+            raise ResponseError(response)
+
+    def addons_remove(self, args):
+        """
+        Deprovision a service and remove its connection details from the app's config
+
+        Usage: deis addons:remove <addon> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        addon = args.get('<addon>')
+        url = "/api/apps/{}/addons/{}".format(app, addon)
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch('delete', url)
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.no_content:
+            print("'{}' addon removed in {}s\n".format(addon, int(time.time() - before)))
+            print("Removing service URI from app config ...")
+            args = {}
+            args['<key>'] = ['{}_URI'.format(addon.upper())]
+            self.config_unset(args)
+        else:
+            raise ResponseError(response)
+
+    def addons_open(self, args):
+        """
+        Open a URL to the addon's dashboard in a browser
+
+        Usage: deis addons:open <addon> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        addon = args.get('<addon>')
+        response = self._dispatch('get', "/api/apps/{}/addons/{}".format(app, addon))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            dashboard = data['dashboard']
+            if 'http' not in dashboard:
+                url = "{}{}".format(self._settings['controller'], dashboard)
+            webbrowser.open(url)
+        else:
+            raise ResponseError(response)
+
+    def addons_docs(self, args):
+        """
+        Open a URL to the addon's documentation in a browser
+
+        Usage: deis addons:docs <addon> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        addon = args.get('<addon>')
+        response = self._dispatch('get', "/api/apps/{}/addons/{}".format(app, addon))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            dashboard = data['docs']
+            if 'http' not in dashboard:
+                url = "{}{}".format(self._settings['controller'], dashboard)
+            webbrowser.open(url)
         else:
             raise ResponseError(response)
 

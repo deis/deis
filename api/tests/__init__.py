@@ -54,3 +54,4 @@ from .test_node import *  # noqa
 from .test_perm import *  # noqa
 from .test_provider import *  # noqa
 from .test_release import *  # noqa
+from .test_services import *  # noqa

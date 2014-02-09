@@ -25,7 +25,7 @@ from json_field.fields import JSONField  # @UnusedImport
 from api import fields, tasks
 from provider import import_provider_module
 from utils import dict_diff
-
+from .exceptions import ServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -869,6 +869,58 @@ class Release(UuidAuditedModel):
                     else:
                         self.summary = "{} changed nothing".format(self.owner)
         super(Release, self).save(*args, **kwargs)
+
+
+class Service(models.Model):
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    type = models.SlugField(max_length=16, unique=True)
+    enabled = models.BooleanField()
+    dashboard = models.CharField(max_length=100)
+    docs = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.type
+
+
+class Addon(models.Model):
+
+    app = models.ForeignKey('App')
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    name = models.CharField(max_length=50, unique=True)
+    provider = models.ForeignKey('Service')
+    plan = models.SlugField(max_length=16)
+    uri = models.CharField(max_length=300)
+
+    class Meta:
+        unique_together = (('app', 'provider'),)
+
+    def __str__(self):
+        return self.name
+
+    def build(self):
+        if not self.provider.enabled:
+            raise ServiceError('cannot provision; provider is disabled')
+        self.uri = tasks.build_service.delay(self).wait()
+
+    def destroy(self):
+        if not self.provider.enabled:
+            raise ServiceError('cannot deprovision; provider is disabled')
+        self.uri = None
+        return tasks.destroy_service.delay(self).wait()
+
+    def update(self, new_service):
+        if not self.provider.enabled:
+            raise ServiceError('cannot update; provider is disabled')
+        self.uri = tasks.update_service.delay(self, new_service)
+
+    def flat(self):
+        return {'id': self.id,
+                'name': self.name,
+                'provider': self.provider,
+                'plan': self.plan,
+                'dashboard': self.provider.dashboard,
+                'docs': self.provider.docs}
 
 
 @receiver(release_signal)

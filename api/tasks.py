@@ -10,10 +10,15 @@ from __future__ import unicode_literals
 import importlib
 
 from celery import task
+from celery.utils.log import get_task_logger
 
 from deis import settings
 from provider import import_provider_module
+from services import import_services_module
 from .exceptions import BuildNodeError
+
+
+logger = get_task_logger(__name__)
 
 
 # import user-defined config management module
@@ -108,3 +113,31 @@ def converge_controller():
     """
     CM.converge_controller()
     return None
+
+
+@task
+def build_service(service):
+    """
+    Create an instance of a service.
+    Eg; a MySQL database that a single app can use.
+    """
+    provider = import_services_module(service.provider.type)
+    return provider.build_service(service.flat())
+
+
+@task
+def destroy_service(service):
+    """
+    Destroy an instance of a service such as a MySQL database.
+    """
+    provider = import_services_module(service.provider.type)
+    provider.destroy_service(service.flat())
+
+
+@task
+def update_service(service, new_service):
+    """
+    Upadate an instance of a service.
+    """
+    provider = import_services_module(service.provider.type)
+    return provider.update_service(service.flat(), new_service.flat())

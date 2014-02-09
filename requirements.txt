@@ -16,3 +16,4 @@ pycrypto==2.6.1
 pyrax==1.6.2
 PyYAML==3.10
 South==0.8.4
+MySQL-python==1.2.5

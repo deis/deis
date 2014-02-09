@@ -158,6 +158,7 @@ INSTALLED_APPS = (
     'cm',
     'provider',
     'web',
+    'services',
 )
 
 AUTHENTICATION_BACKENDS = (
@@ -267,7 +268,7 @@ TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 # celery task execution settings
 BROKER_URL = 'amqp://guest:guest@localhost:5672/'
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
-CELERY_IMPORTS = ('api.tasks',)
+CELERY_IMPORTS = ('api.tasks')
 CELERY_RESULT_BACKEND = 'amqp'
 
 # hardcode celeryd concurrency
@@ -289,6 +290,9 @@ CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 
 # default providers, typically overriden in local_settings to include ec2, etc.
 PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'static')
+
+# Built-in service providers
+SERVICE_MODULES = ('mock', 'mysql')
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
