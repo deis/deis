@@ -1,12 +1,9 @@
-[submodule "images/etcd"]
-	path = images/etcd
-	url = https://github.com/deis/etcd.git
-[submodule "images/postgres"]
-	path = images/postgres
-	url = https://github.com/deis/postgres.git
-[submodule "images/redis"]
-	path = images/redis
-	url = https://github.com/deis/redis.git
+[submodule "images/discovery"]
+	path = images/discovery
+	url = https://github.com/deis/discovery.git
+[submodule "images/cache"]
+	path = images/cache
+	url = https://github.com/deis/cache.git
 [submodule "images/server"]
 	path = images/server
 	url = https://github.com/deis/server.git
@@ -19,6 +16,9 @@
 [submodule "images/registry"]
 	path = images/registry
 	url = https://github.com/deis/registry.git
-[submodule "images/rsyslog"]
-	path = images/rsyslog
-	url = https://github.com/deis/rsyslog.git
+[submodule "images/logger"]
+	path = images/logger
+	url = https://github.com/deis/logger.git
+[submodule "images/database"]
+	path = images/database
+	url = https://github.com/deis/database.git
