@@ -572,6 +572,12 @@ class ContainerManager(models.Manager):
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
         changed = False
+        available_containers = Build.objects.filter(app=app).order_by('-created').first().procfile or []
+        for container_type in requested_containers.keys():
+            if not container_type in available_containers:
+                raise EnvironmentError(
+                    'Container type {} does not exist in application'.format(container_type))
+
         for container_type in requested_containers.keys():
             containers = list(app.container_set.filter(type=container_type).order_by('created'))
             requested = requested_containers.pop(container_type)
@@ -788,7 +794,9 @@ class Build(UuidAuditedModel):
         release_signal.send(sender=user, build=new_build, app=app, user=user)
         # see if we need to scale an initial web container
         if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
-           len(app.container_set.filter(type='web')) < 1:
+           len(app.container_set.filter(type='web')) < 1 and \
+           new_build.procfile != None and \
+           'web' in new_build.procfile:
             # scale an initial web containers
             Container.objects.scale(app, {'web': 1})
         # publish and converge the application
