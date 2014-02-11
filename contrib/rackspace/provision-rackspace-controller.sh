@@ -73,7 +73,6 @@ else
 fi
 
 # create data bags
-knife data bag create deis-users 2>/dev/null
 knife data bag create deis-formations 2>/dev/null
 knife data bag create deis-apps 2>/dev/null
 

@@ -31,7 +31,7 @@ checkout the most recent tag using ``git checkout v0.3.0``, for example.
 Prepare your Ruby Environment
 -----------------------------
 You'll need a basic Ruby environment that allows the installation of
-`RubyGems`_ like ``knife`` and ``berkshelf``.  
+`RubyGems`_ like ``knife`` and ``berkshelf``.
 From the Deis checkout directory:
 
 .. code-block:: console
@@ -65,10 +65,9 @@ To update Deis cookbooks using Berkshelf:
 
 Create Data Bags
 ----------------
-Deis uses three data bags on the Chef Server for storing global state
+Deis uses two data bags on the Chef Server for storing global state
 used during chef-client runs:
 
- * deis-users
  * deis-formations
  * deis-apps
 
@@ -76,8 +75,6 @@ Use `knife`_ to create these data bags on the Chef Server:
 
 .. code-block:: console
 
-    $ knife data bag create deis-users
-    Created data_bag[deis-users]
     $ knife data bag create deis-formations
     Created data_bag[deis-formations]
     $ knife data bag create deis-apps

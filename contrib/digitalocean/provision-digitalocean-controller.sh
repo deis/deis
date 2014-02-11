@@ -100,7 +100,6 @@ fi
 ssh_key_id=$(knife digital_ocean sshkey list | grep "$key_name" | awk '{print $1}')
 
 # create data bags
-knife data bag create deis-users 2>/dev/null
 knife data bag create deis-formations 2>/dev/null
 knife data bag create deis-apps 2>/dev/null
 

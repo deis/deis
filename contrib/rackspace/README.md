@@ -69,7 +69,6 @@ Provision a Deis Controller on Rackspace
         + ssh-keygen -f /home/myuser/.ssh/deis-controller -t rsa -N '' -C deis-controller
         + set +x
         Saved to /home/myuser/.ssh/deis-controller
-        Created data_bag[deis-users]
         Created data_bag[deis-formations]
         Created data_bag[deis-apps]
         Provisioning deis-controller with knife rackspace...
