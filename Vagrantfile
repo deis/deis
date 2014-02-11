@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
     chef.validation_key_path = Chef::Config[:validation_key]
     chef.log_level = Chef::Config[:log_level]
     # TODO: replace with in-recipe public_ip lookup that handles vagrant/ec2/metal
-	chef.json = {
+    chef.json = {
         "deis" => {
             "public_ip" => "192.168.61.100",
             "dev" => {
