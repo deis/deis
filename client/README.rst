@@ -39,7 +39,7 @@ Deploy anything
 ---------------
 
 Deploy a wide range of languages and frameworks with a simple git push
-using Heroku Buildpacks or (coming soon) Dockerfiles. Use custom Chef layers
+using Heroku Buildpacks or Dockerfiles. Use custom Chef layers
 to deploy databases, middleware and other add-on services.
 
 

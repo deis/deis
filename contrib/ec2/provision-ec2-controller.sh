@@ -34,9 +34,9 @@ fi
 #################
 # chef settings #
 #################
-node_name=deis-controller
+node_name=deis-controller-ec2
 run_list="recipe[deis::controller]"
-chef_version=11.6.2
+chef_version=11.8.2
 
 #######################
 # Amazon EC2 settings #
@@ -59,7 +59,7 @@ elif [ "$region" == "us-east-1" ]; then
 elif [ "$region" == "us-west-1" ]; then
   image=ami-62477527
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-ea6001da
+  image=ami-ac690a9c
 else
   echo "Cannot find AMI for region: $region"
   exit 1
@@ -89,6 +89,7 @@ if ! ec2-describe-group | grep -q "$sg_name"; then
   ec2-authorize deis-controller -P tcp -p 80 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 443 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 514 -s $sg_src >/dev/null
+  ec2-authorize deis-controller -P tcp -p 2222 -s $sg_src >/dev/null
   set +x
 else
   echo_color "Security group $sg_name exists"
@@ -107,7 +108,6 @@ else
 fi
 
 # create data bags
-knife data bag create deis-users 2>/dev/null
 knife data bag create deis-formations 2>/dev/null
 knife data bag create deis-apps 2>/dev/null
 

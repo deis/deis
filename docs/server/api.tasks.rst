@@ -19,4 +19,3 @@ api.tasks
     .. autofunction:: destroy_node(node)
     .. autofunction:: converge_node(node)
     .. autofunction:: run_node(node, command)
-    .. autofunction:: converge_controller()

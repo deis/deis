@@ -17,7 +17,7 @@ Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java, Clojure,
 
 ##### Deploy anything
 
-Deploy a wide range of languages and frameworks with a simple `git push` using [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks) or (coming soon) [Dockerfiles](http://docs.docker.io/en/latest/use/builder/). Use custom Chef layers to deploy databases, middleware and other add-on services.
+Deploy a wide range of languages and frameworks with a simple `git push` using [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks) or [Dockerfiles](http://docs.docker.io/en/latest/use/builder/). Use custom Chef layers to deploy databases, middleware and other add-on services.
 
 ##### Control everything
 
@@ -60,7 +60,6 @@ Deis stands on the shoulders of leading open source technologies:
   * [Celery](http://www.celeryproject.org/)
   * [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks)
   * [Slugbuilder](https://github.com/flynn/slugbuilder) and [slugrunner](https://github.com/flynn/slugrunner)
-  * [Gitosis](https://github.com/opdemand/gitosis)
 
 ## License
 

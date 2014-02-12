@@ -19,12 +19,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
+import etcd
 from guardian.shortcuts import get_users_with_perms
 from json_field.fields import JSONField  # @UnusedImport
 
 from api import fields, tasks
+from docker import publish_release
 from provider import import_provider_module
-from utils import dict_diff
+from utils import dict_diff, fingerprint
 
 
 logger = logging.getLogger(__name__)
@@ -76,14 +78,6 @@ class Key(UuidAuditedModel):
 
     def __str__(self):
         return "{}...{}".format(self.public[:18], self.public[-31:])
-
-    def save(self, *args, **kwargs):
-        super(Key, self).save(*args, **kwargs)
-        self.owner.publish()
-
-    def delete(self, *args, **kwargs):
-        super(Key, self).delete(*args, **kwargs)
-        self.owner.publish()
 
 
 class ProviderManager(models.Manager):
@@ -198,22 +192,19 @@ class Formation(UuidAuditedModel):
         group(layer_tasks).apply_async().join()
         CM.purge_formation(self.flat())
         self.delete()
-        tasks.converge_controller.apply_async().wait()
 
     def publish(self):
         data = self.calculate()
         CM.publish_formation(self.flat(), data)
         return data
 
-    def converge(self, controller=False, **kwargs):
+    def converge(self, **kwargs):
         databag = self.publish()
         nodes = self.node_set.all()
         subtasks = []
         for n in nodes:
             subtask = tasks.converge_node.si(n)
             subtasks.append(subtask)
-        if controller is True:
-            subtasks.append(tasks.converge_controller.si())
         group(*subtasks).apply_async().join()
         return databag
 
@@ -509,7 +500,7 @@ class App(UuidAuditedModel):
             release = releases[0]
             d['release']['version'] = release.version
             d['release']['config'] = release.config.values
-            d['release']['build'] = {'image': release.build.image}
+            d['release']['build'] = {'image': release.build.image + ":v{}".format(release.version)}
             if release.build.url:
                 d['release']['build']['url'] = release.build.url
                 d['release']['build']['procfile'] = release.build.procfile
@@ -548,10 +539,8 @@ class App(UuidAuditedModel):
         release = self.release_set.order_by('-created')[0]
         # prepare ssh command
         version = release.version
-        docker_args = ' '.join(
-            ['-a', 'stdout', '-a', 'stderr', '-rm',
-             '-v', '/opt/deis/runtime/slugs/{app_id}-v{version}:/app'.format(**locals()),
-             'deis/slugrunner'])
+        image = release.build.image + ":v{}".format(release.version)
+        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '-rm', image])
         env_args = ' '.join(["-e '{k}={v}'".format(**locals())
                              for k, v in release.config.values.items()])
         log_event(self, "deis run '{}'".format(command))
@@ -765,35 +754,6 @@ class Build(UuidAuditedModel):
     def __str__(self):
         return "{0}-{1}".format(self.app.id, self.sha[:7])
 
-    @classmethod
-    def push(cls, push):
-        """Process a push from a local Git server.
-
-        Creates a new Build and returns the application's
-        databag for processing by the git-receive hook
-        """
-        # SECURITY:
-        # we assume the first part of the ssh key name
-        # is the authenticated user because we trust gitosis
-        username = push.pop('username').split('_')[0]
-        # retrieve the user and app instances
-        user = User.objects.get(username=username)
-        app = App.objects.get(id=push.pop('app'))
-        # merge the push with the required model instances
-        push['owner'] = user
-        push['app'] = app
-        # create the build
-        new_build = cls.objects.create(**push)
-        # send a release signal
-        release_signal.send(sender=user, build=new_build, app=app, user=user)
-        # see if we need to scale an initial web container
-        if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
-           len(app.container_set.filter(type='web')) < 1:
-            # scale an initial web containers
-            Container.objects.scale(app, {'web': 1})
-        # publish and converge the application
-        return app.converge()
-
 
 @python_2_unicode_compatible
 class Release(UuidAuditedModel):
@@ -900,33 +860,12 @@ def new_release(sender, **kwargs):
     release = Release.objects.create(
         owner=user, app=app, config=config,
         build=build, version=new_version)
+    # publish release to registry as new docker image
+    if settings.REGISTRY_URL:
+        repository_path = "{}/{}".format(user.username, app.id)
+        tag = 'v{}'.format(new_version)
+        publish_release(repository_path, config.values, tag)
     return release
-
-
-def _user_flat(self):
-    return {'username': self.username}
-
-
-def _user_calculate(self):
-    data = {'id': self.username, 'ssh_keys': {}}
-    for k in self.key_set.all():
-        data['ssh_keys'][k.id] = k.public
-    return data
-
-
-def _user_publish(self):
-    CM.publish_user(self.flat(), self.calculate())
-
-
-def _user_purge(self):
-    CM.purge_user(self.flat())
-
-
-# attach to built-in django user
-User.flat = _user_flat
-User.calculate = _user_calculate
-User.publish = _user_publish
-User.purge = _user_purge
 
 
 # define update/delete callbacks for synchronizing
@@ -934,16 +873,6 @@ User.purge = _user_purge
 
 def _publish_to_cm(**kwargs):
     kwargs['instance'].publish()
-
-
-def _publish_user_to_cm(**kwargs):
-    if kwargs.get('update_fields') == frozenset(['last_login']):
-        return
-    kwargs['instance'].publish()
-
-
-def _purge_user_from_cm(**kwargs):
-    kwargs['instance'].purge()
 
 
 def _log_build_created(**kwargs):
@@ -963,13 +892,41 @@ def _log_config_updated(**kwargs):
     log_event(config.app, "Config {} updated".format(config))
 
 
+def _etcd_publish_key(**kwargs):
+    key = kwargs['instance']
+    _etcd_client.write('/deis/builder/users/{}/{}'.format(
+        key.owner.username, fingerprint(key.public)), key.public)
+
+
+def _etcd_purge_key(**kwargs):
+    key = kwargs['instance']
+    _etcd_client.delete('/deis/builder/users/{}/{}'.format(
+        key.owner.username, fingerprint(key.public)))
+
+
+def _etcd_purge_user(**kwargs):
+    username = kwargs['instance'].username
+    _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+
+
 # Connect Django model signals
 # Sync database updates with the configuration management backend
 post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
 post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
-post_save.connect(_publish_user_to_cm, sender=User, dispatch_uid='api.models')
-post_delete.connect(_purge_user_from_cm, sender=User, dispatch_uid='api.models')
 # Log significant app-related events
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+
+# wire up etcd publishing if we can connect
+try:
+    _etcd_client = etcd.Client(host=settings.ETCD_HOST, port=int(settings.ETCD_PORT))
+    _etcd_client.get('/deis')
+except etcd.EtcdException:
+    logger.log(logging.WARNING, 'Cannot synchronize with etcd cluster')
+    _etcd_client = None
+
+if _etcd_client:
+    post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')

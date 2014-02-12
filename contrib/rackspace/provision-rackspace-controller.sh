@@ -46,9 +46,9 @@ if ! [[ "ord dfw iad lon" =~ $region ]]; then
   exit 1
 fi
 flavor='performance1-2'
-image=$(knife rackspace image list --rackspace-region $region | grep 'deis-base-image' | awk '{print $1}')
+image=$(knife rackspace image list --rackspace-region $region | grep 'deis-node-image' | awk '{print $1}')
 if [[ -z $image ]]; then
-  echo "Can't find saved image \"deis-base-image\" in region $region. Please follow the"
+  echo "Can't find saved image \"deis-node-image\" in region $region. Please follow the"
   echo "instructions in prepare-rackspace-image.sh before provisioning a Deis controller."
   echo
   exit 1
@@ -73,7 +73,6 @@ else
 fi
 
 # create data bags
-knife data bag create deis-users 2>/dev/null
 knife data bag create deis-formations 2>/dev/null
 knife data bag create deis-apps 2>/dev/null
 

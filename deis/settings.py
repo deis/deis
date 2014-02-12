@@ -4,8 +4,8 @@ Django settings for the Deis project.
 
 from __future__ import unicode_literals
 import os.path
+import sys
 import tempfile
-
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -150,6 +150,7 @@ INSTALLED_APPS = (
     'allauth.account',
     'guardian',
     'json_field',
+    'gunicorn',
     'rest_framework',
     'south',
     # Deis apps
@@ -263,17 +264,20 @@ LOGGING = {
 }
 TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 
-
-# celery task execution settings
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+# celery settings
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 CELERY_IMPORTS = ('api.tasks',)
-CELERY_RESULT_BACKEND = 'amqp'
-
-# hardcode celeryd concurrency
+BROKER_URL = 'redis://{}:{}/{}'.format(
+             os.environ.get('CACHE_HOST', '127.0.0.1'),
+             os.environ.get('CACHE_PORT', 6379),
+             os.environ.get('CACHE_NAME', 0))
+CELERY_RESULT_BACKEND = BROKER_URL
 # this number should be equal to N+1, where
 # N is number of nodes in largest formation
 CELERYD_CONCURRENCY = 8
+
+# etcd settings
+ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].split(':')
 
 # default deis settings
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
@@ -284,17 +288,20 @@ TEMPDIR = tempfile.mkdtemp(prefix='deis')
 SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 
+# registry settings
+REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
+
 # the config management module to use in api.models
 CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 
 # default providers, typically overriden in local_settings to include ec2, etc.
-PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'static')
+PROVIDER_MODULES = ('mock',)
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'postgresql_psycopg2'),
-        'NAME': os.environ.get('DATABASE_NAME', 'deis'),
+        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'sqlite3'),
+        'NAME': os.environ.get('DATABASE_NAME', 'deis.db'),
         'USER': os.environ.get('DATABASE_USER', 'deis'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'deis'),
         'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
@@ -305,13 +312,20 @@ DATABASES = {
 # see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
 ALLOWED_HOSTS = ['*']
 
+# import dynamic confd settings from /app, if they exist
+try:
+    if os.path.exists('/app/confd_settings.py'):
+        sys.path.append('/app')
+        from confd_settings import *  # noqa
+except ImportError:
+    pass
+
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development
 # and production.
 # The local_settings.py file should *not* be checked in to version control.
-
 try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
-    print('\033[96mdeis/local_settings.py \033[91mfile not found!\033[0m')
+    pass

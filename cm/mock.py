@@ -59,7 +59,6 @@ drwxr-xr-x  5 deis deis 4096 Dec 21 10:05 build
 drwx------  2 deis deis 4096 Dec 21 10:08 .cache
 drwx------  2 deis deis 4096 Dec 21 10:00 .chef
 drwxr-xr-x 15 deis deis 4096 Dec 21 10:09 controller
-drwxr-xr-x  8 git  git  4096 Dec 21 10:14 gitosis
 -rw-r--r--  1 root root    0 Dec 21 10:00 prevent-apt-update
 -rw-r--r--  1 deis deis  675 Mar 28  2013 .profile
 drwxr-xr-x  2 deis deis 4096 Dec 21 10:07 .ssh
@@ -78,28 +77,6 @@ def purge_node(node):
     :param node: a dict containing the id of a node to purge
     """
     pass
-
-
-def publish_user(user, data):
-    """
-    Publish a user to configuration management.
-
-    :param user: a dict containing the username
-    :param data: data to store with the user
-    """
-    path = os.path.join(settings.TEMPDIR, 'user-{username}'.format(**user))
-    with open(path, 'w') as f:
-        f.write(json.dumps(data))
-
-
-def purge_user(user):
-    """
-    Purge a user from configuration management.
-
-    :param user: a dict containing the username
-    """
-    path = os.path.join(settings.TEMPDIR, 'user-{username}'.format(**user))
-    os.remove(path)
 
 
 def publish_app(app, data):
@@ -144,17 +121,3 @@ def purge_formation(formation):
     """
     path = os.path.join(settings.TEMPDIR, 'formation-{id}'.format(**formation))
     os.remove(path)
-
-
-def converge_controller():
-    """
-    Converge this controller node.
-
-    "Converge" means to change a node's configuration to match that defined by
-    configuration management.
-
-    This is a no-op for the mock provider.
-
-    :returns: the output of the convergence command, in this case None
-    """
-    return None

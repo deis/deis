@@ -5,6 +5,7 @@ Django==1.6.2
 django-json-field==0.5.5
 djangorestframework==2.3.12
 dop==0.1.4
+etcd==2.0.1
 paramiko==1.12.1
 pyrax==1.6.2
 PyYAML==3.10
