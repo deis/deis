@@ -295,7 +295,7 @@ REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
 CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 
 # default providers, typically overriden in local_settings to include ec2, etc.
-PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'vagrant', 'static')
+PROVIDER_MODULES = ('mock',)
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
