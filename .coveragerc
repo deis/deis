@@ -4,6 +4,7 @@ omit =
     */virtualenv/*
     *tests*
     api/__init__.py
+    api/docker.py
     client/__init__.py
     client/models.py
     cm/__init__.py
@@ -16,6 +17,9 @@ omit =
     web/__init__.py
     web/models.py
     web/templatetags/__init__.py
+    # osx library files when not running in virtualenv
+    /Library/*
+    /System/*
 
 [report]
 ignore_errors = True
