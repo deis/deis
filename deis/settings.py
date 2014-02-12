@@ -301,7 +301,7 @@ PROVIDER_MODULES = ('mock',)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'sqlite3'),
-        'NAME': os.environ.get('DATABASE_NAME', 'deis'),
+        'NAME': os.environ.get('DATABASE_NAME', 'deis.db'),
         'USER': os.environ.get('DATABASE_USER', 'deis'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'deis'),
         'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
