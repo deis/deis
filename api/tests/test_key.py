@@ -12,6 +12,7 @@ from django.test import TestCase
 from django.test.utils import override_settings
 
 from api.models import Key
+from api.utils import fingerprint
 
 
 PUBKEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfQkkUUoxpvcNMkvv7jqnfodgs37M2eBO" \
@@ -79,3 +80,7 @@ class KeyTest(TestCase):
         self.assertEqual(response.status_code, 201)
         key = Key.objects.get(uuid=response.data['uuid'])
         self.assertEqual(str(key), 'ssh-rsa AAAAB3NzaC.../HJDw9QckTS0vN autotest@deis.io')
+
+    def test_key_fingerprint(self):
+        fp = fingerprint(PUBKEY)
+        self.assertEquals(fp, '54:6d:da:1f:91:b5:2b:6f:a2:83:90:c4:f9:73:76:f5')
