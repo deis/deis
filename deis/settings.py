@@ -300,7 +300,7 @@ PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'vagrant', 'stat
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'postgresql_psycopg2'),
+        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'sqlite3'),
         'NAME': os.environ.get('DATABASE_NAME', 'deis'),
         'USER': os.environ.get('DATABASE_USER', 'deis'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'deis'),
