@@ -143,23 +143,19 @@ class HookTest(TestCase):
         # post the build with the builder auth key
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
-        self.assertEqual(response.status_code, 201)
-        build = response.data
-        self.assertIn('sha', response.data)
-        self.assertIn('procfile', response.data)
-        procfile = json.loads(response.data['procfile'])
-        self.assertIn('web', procfile)
-        self.assertEqual(procfile['web'], 'node server.js')
-        # calculate the databag
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
-        url = '/api/apps/{app_id}/calculate'.format(**locals())
-        response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         databag = response.data
-        self.assertIn('release', databag)
-        self.assertIn('version', databag['release'])
+        # assert release structure
+        release = databag['release']
+        self.assertIn('config', release)
+        self.assertIn('build', release)
+        self.assertIn('version', release)
+        self.assertIn('domains', databag)
         self.assertIn('containers', databag)
         self.assertIn('web', databag['containers'])
         self.assertIn('1', databag['containers']['web'])
         self.assertEqual(databag['containers']['web']['1'], 'up')
+        # assert procfile structure
+        self.assertIn('procfile', release['build'])
+        self.assertIn('web', release['build']['procfile'])
+        self.assertEqual(release['build']['procfile']['web'], 'node server.js')
