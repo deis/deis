@@ -58,7 +58,6 @@
     },
     "sysctl": {
       "locked_version": "0.3.5"
->>>>>>> switch to containerized cookbooks branch
     }
   }
 }
