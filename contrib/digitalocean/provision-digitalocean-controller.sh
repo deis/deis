@@ -89,7 +89,6 @@ if ! test -e $ssh_key_path; then
     --data-urlencode "client_id=$client_id" \
     --data-urlencode "api_key=$api_key" \
     https://api.digitalocean.com/ssh_keys/new
-  ssh-add $ssh_key_path
   set +x
   echo_color "Saved to $ssh_key_path"
 else

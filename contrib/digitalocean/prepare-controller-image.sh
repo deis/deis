@@ -25,7 +25,7 @@ apt-get update
 apt-get upgrade -yq
 
 # install required packages
-apt-get install lxc-docker-0.7.6 fail2ban curl git inotify-tools make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.8.0 fail2ban curl git inotify-tools make python-setuptools python-pip -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
@@ -33,14 +33,15 @@ while [ ! -e /var/run/docker.sock ] ; do
 done
 
 # pull docker images
-docker pull deis/etcd
-docker pull deis/postgres
-docker pull deis/redis
+docker pull deis/logger
 docker pull deis/server
 docker pull deis/worker
-docker pull deis/registry
 docker pull deis/builder
-docker pull deis/rsyslog
+docker pull deis/database
+docker pull deis/registry
+docker pull deis/discovery
+docker pull deis/cache
+docker pull deis/data
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make
