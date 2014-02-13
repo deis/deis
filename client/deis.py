@@ -71,7 +71,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 
 locale.setlocale(locale.LC_ALL, '')
