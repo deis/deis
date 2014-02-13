@@ -1,7 +1,8 @@
 """
 Helper functions used by the Deis server.
 """
-
+import base64
+import hashlib
 import random
 
 
@@ -96,6 +97,15 @@ def dict_diff(dict1, dict2):
     # Find items that were deleted from dict2
     diff['deleted'] = {k: dict2[k] for k in (set2 - set1)}
     return {k: diff[k] for k in diff if diff[k]}
+
+
+def fingerprint(key):
+    """
+    Return the fingerprint for an SSH Public Key
+    """
+    key = base64.b64decode(key.strip().split()[1].encode('ascii'))
+    fp_plain = hashlib.md5(key).hexdigest()
+    return ':'.join(a + b for a, b in zip(fp_plain[::2], fp_plain[1::2]))
 
 
 if __name__ == "__main__":

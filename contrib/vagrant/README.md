@@ -48,6 +48,7 @@ you will need a running SSH server open on port 22 and a means to broadcast your
     * If you don't already have the deis-node Vagrant box installed (~1GB). This step might take a long time! If for some reason
     you want to manually add it, use:
     `vagrant box add deis-node https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box`
+    `vagrant plugin install vagrant-omnibus vagrant-berkshelf chef`
     * `cd contrib/vagrant && ./provision-controller.sh`
     * You will be asked to add the Controller's SSH key to your local SSH server. This will allow the Controller
     to run vagrant commands on your machine to bootstrap new nodes.

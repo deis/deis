@@ -99,12 +99,3 @@ def run_node(node, command):
     if rc != 0 and 'failed to setup the container' in output:
         output = '\033[35mPlease run `git push deis master` first.\033[0m\n' + output
     return output, rc
-
-
-@task
-def converge_controller():
-    """
-    Converge a the controller node, aligning it with an intended configuration.
-    """
-    CM.converge_controller()
-    return None

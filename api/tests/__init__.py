@@ -48,6 +48,7 @@ from .test_config import *  # noqa
 from .test_container import *  # noqa
 from .test_flavor import *  # noqa
 from .test_formation import *  # noqa
+from .test_hooks import *  # noqa
 from .test_key import *  # noqa
 from .test_layer import *  # noqa
 from .test_node import *  # noqa

@@ -29,7 +29,7 @@ def seed_flavors():
             'params': json.dumps({
                 'region': REGION_LIST[r],
                 'size': '4GB',
-                'image': 'deis-base'
+                'image': 'deis-node-image'
             })
         })
     return flavors
@@ -89,7 +89,7 @@ def _get_droplet_kwargs(node, conn):
     return {
         'name': node['id'],
         'size_id': _get_id(conn.sizes(), params.get('size', '4GB')),
-        'image_id': _get_id(conn.images(show_all=False), params.get('image', 'deis-base')),
+        'image_id': _get_id(conn.images(show_all=False), params.get('image', 'deis-node-image')),
         'region_id': _get_id(conn.regions(), params.get('region', 'San Francisco 1')),
         'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(),
                         "deis-{formation}-{layer}".format(**node)))],

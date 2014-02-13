@@ -21,7 +21,7 @@ CHEF_CONFIG_PATH = '/etc/chef'
 CHEF_INSTALL_TYPE = 'gems'
 CHEF_RUBY_VERSION = '1.9.1'
 CHEF_ENVIRONMENT = '_default'
-CHEF_CLIENT_VERSION = '11.6.2'
+CHEF_CLIENT_VERSION = '11.8.2'
 
 # load chef config using CHEF_CONFIG_PATH
 try:
@@ -44,11 +44,11 @@ try:
     # read the client key
     _client_pem_path = os.path.join(CHEF_CONFIG_PATH, 'client.pem')
     CHEF_CLIENT_KEY = subprocess.check_output(
-        ['sudo', '/bin/cat', _client_pem_path]).strip('\n')
+        ['/bin/cat', _client_pem_path]).strip('\n')
     # read the validation key
     _valid_pem_path = os.path.join(CHEF_CONFIG_PATH, 'validation.pem')
     CHEF_VALIDATION_KEY = subprocess.check_output(
-        ['sudo', '/bin/cat', _valid_pem_path]).strip('\n')
+        ['/bin/cat', _valid_pem_path]).strip('\n')
 except Exception as err:
     msg = "Failed to auto-configure Chef -- {}".format(err)
     if os.environ.get('READTHEDOCS'):
@@ -90,6 +90,7 @@ def bootstrap_node(node):
             f.write(node['ssh_private_key'])
         # build knife bootstrap command
         args = ['knife', 'bootstrap', node['fqdn']]
+        args.extend(['--config', '/etc/chef/client.rb'])
         args.extend(['--identity-file', pk_path])
         args.extend(['--node-name', node['id']])
         args.extend(['--sudo', '--ssh-user', node['ssh_username']])
@@ -102,14 +103,13 @@ def bootstrap_node(node):
         args.extend(['|', 'tee', output_path])
         # TODO: figure out why home isn't being set correctly for knife exec
         env = os.environ.copy()
-        env['HOME'] = '/opt/deis'
+        env['HOME'] = '/var/lib/deis'
         # execute knife bootstrap
         p = subprocess.Popen(' '.join(args), env=env, shell=True)
         rc = p.wait()
         # always print knife output
         with open(output_path) as f:
-            output = f.read()
-        print(output)
+            output = str(f.read())
         # raise an exception if bootstrap failed
         if rc != 0 or 'incorrect password' in output:
             raise RuntimeError('Node Bootstrap Error:\n' + output)
@@ -147,24 +147,6 @@ def purge_node(node):
     body, status = client.delete_client(node_id)
     if status not in [200, 404]:
         raise RuntimeError("Could not purge node client {node_id}: {body}".format(**locals()))
-
-
-def converge_controller():
-    """
-    Converge this controller node.
-
-    "Converge" means to change a node's configuration to match that defined by
-    configuration management.
-
-    :returns: the output of the convergence command, in this case `sudo chef-client`
-    """
-    try:
-        # we only need to run the gitosis recipe to update `git push` ACLs
-        return subprocess.check_output(['sudo', 'chef-client', '-o', 'recipe[deis::gitosis]'])
-    except subprocess.CalledProcessError as err:
-        print(err)
-        print(err.output)
-        raise err
 
 
 def converge_node(node):
@@ -223,29 +205,6 @@ def converge_formation(formation):
         subtasks.append(subtask)
     job = group(*subtasks)
     return job.apply_async().join()
-
-
-def publish_user(user, data):
-    """
-    Publish a user to configuration management.
-
-    :param user: a dict containing the username
-    :param data: data to store with the user
-    :returns: a tuple of (body, status) from the underlying HTTP response
-    :raises: RuntimeError
-    """
-    _publish('deis-users', user['username'], data)
-
-
-def purge_user(user):
-    """
-    Purge a user from configuration management.
-
-    :param app: a dict containing the username of the user
-    :returns: a tuple of (body, status) from the underlying HTTP response
-    :raises: RuntimeError
-    """
-    _purge('deis-users', user['username'])
 
 
 def publish_app(app, data):

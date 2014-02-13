@@ -71,7 +71,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.4.1'
+__version__ = '0.5.0'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -134,7 +134,7 @@ class Session(requests.Session):
             raise EnvironmentError(
                 'Could not find deis remote in `git remote -v`')
         url = m.groupdict()['url']
-        m = re.match('\S+:(?P<app>[a-z0-9-]+)(.git)?', url)
+        m = re.match('\S+/(?P<app>[a-z0-9-]+)(.git)?$', url)
         if not m:
             raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['app']
@@ -474,8 +474,8 @@ class DeisClient(object):
             app_id = data['id']
             print("done, created {}".format(app_id))
             # add a git remote
-            hostname = urlparse.urlparse(self._settings['controller']).netloc
-            git_remote = "git@{hostname}:{app_id}.git".format(**locals())
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             try:
                 subprocess.check_call(
                     ['git', 'remote', 'add', '-f', 'deis', git_remote],
@@ -814,7 +814,7 @@ class DeisClient(object):
                 width = max(map(len, keys)) + 5
                 for k in keys:
                     v = values[k]
-                    print(("{k:<"+str(width)+"} {v}").format(**locals()))
+                    print(("{k:<" + str(width) + "} {v}").format(**locals()))
             else:
                 output = []
                 for k in keys:
@@ -1897,20 +1897,7 @@ class DeisClient(object):
                 print("No {} credentials discovered.".format(name))
 
         # Check for locally booted Deis Controller VM
-        try:
-            running_vms = subprocess.check_output(
-                ['vboxmanage', 'list', 'runningvms'],
-                stderr=subprocess.PIPE
-            )
-        except subprocess.CalledProcessError:
-            running_vms = ""
-        # Vagrant internally names a running VM using the folder name in which the Vagrantfile
-        # resides, eg; my-deis-code-folder_default_1383326629
-        try:
-            deis_codebase_folder = self._session.git_root().split('/')[-1]
-        except EnvironmentError:
-            deis_codebase_folder = 'deis'
-        if deis_codebase_folder and deis_codebase_folder in running_vms:
+        if self._settings['controller'] == 'http://deis-controller.local':
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
@@ -1920,19 +1907,12 @@ class DeisClient(object):
                     "whoami",
                     stderr=subprocess.PIPE
                 ).strip()
-                hostname = subprocess.check_output(
-                    "hostname",
-                    stderr=subprocess.PIPE,
-                    shell=True
-                ).strip()
             except subprocess.CalledProcessError:
-                print("Error detecting username and host address.")
+                print("Error detecting username.")
                 sys.exit(1)
-            if not hostname.endswith('.local'):
-                hostname += '.local'
             creds = {
                 'user': user,
-                'host': hostname
+                'host': '192.168.61.1'
             }
             body = {'creds': json.dumps(creds)}
             sys.stdout.write('Activating Vagrant as a provider... ')
@@ -1944,7 +1924,7 @@ class DeisClient(object):
             else:
                 raise ResponseError(response)
         else:
-            print("No Vagrant VMs discovered.")
+            print("No Vagrant Deis Controller discovered.")
 
     def providers_info(self, args):
         """

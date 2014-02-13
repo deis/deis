@@ -77,11 +77,12 @@ def build_node(node):
 
     # Create a new Vagrantfile from a template
     node['params'].setdefault('memory', '512')
-    template = open('/opt/deis/controller/contrib/vagrant/nodes_vagrantfile_template.rb')
+    template = open('/app/deis/contrib/vagrant/nodes_vagrantfile_template.rb')
     raw = string.Template(template.read())
+    ip_addr = '192.168.61.' + str(Node.objects.all().count() + 100)
     result = raw.substitute({
         'id': uid,
-        'ipaddress': '192.168.61.' + str(Node.objects.all().count() + 100),
+        'ipaddress': ip_addr,
         'memory': node['params']['memory']
     })
 
@@ -107,15 +108,12 @@ def build_node(node):
     )
 
     provider_id = uid
-    fqdn = provider_id
-    if not fqdn.endswith('.local'):
-        fqdn += '.local'  # hostname is broadcast via avahi-daemon
     metadata = {
         'id': uid,
-        'fqdn': fqdn,
+        'fqdn': ip_addr,
         'flavor': node['params']['memory']
     }
-    return provider_id, fqdn, metadata
+    return provider_id, ip_addr, metadata
 
 
 def destroy_node(node):
