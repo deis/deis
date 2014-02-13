@@ -10,9 +10,7 @@
       "locked_version": "2.3.0"
     },
     "deis": {
-      "locked_version": "0.5.0",
-      "git": "https://github.com/opdemand/deis-cookbook.git",
-      "ref": "21a179de94ad7d82f84f43bc8b9a9a12c2568c60"
+      "locked_version": "0.5.0"
     },
     "docker": {
       "locked_version": "0.30.1"
@@ -39,7 +37,7 @@
       "locked_version": "3.0.6"
     },
     "yum-epel": {
-      "locked_version": "0.3.0"
+      "locked_version": "0.2.0"
     },
     "golang": {
       "locked_version": "1.3.0"
