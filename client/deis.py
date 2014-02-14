@@ -1496,18 +1496,18 @@ class DeisClient(object):
 
     def layers_update(self, args):
         """
-        Create a layer of nodes
+        Update a layer of nodes
 
         Usage: deis layers:update <formation> <id> [options]
 
         Options:
 
-        --proxy=<yn>                    layer can be used for proxy [default: y]
-        --runtime=<yn>                  layer can be used for runtime [default: y]
-        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
-        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
-        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
-        --ssh_port=<port>               port number for ssh comm (default: 22)
+        --proxy=<yn>                    layer can be used for proxy
+        --runtime=<yn>                  layer can be used for runtime
+        --ssh_username=USERNAME         username for ssh connections
+        --ssh_private_key=PRIVATE_KEY   private key for ssh comm
+        --ssh_public_key=PUBLIC_KEY     public key for ssh comm
+        --ssh_port=<port>               port number for ssh comm
 
         """
         formation = args.get('<formation>')
