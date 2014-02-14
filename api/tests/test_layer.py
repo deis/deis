@@ -66,10 +66,17 @@ class LayerTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['id'], layer_id)
-        body = {'config': {'new': 'value'}}
+        body = {'ssh_username': 'otto_test', 'config': {'new': 'value'}}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
+        self.assertEqual('otto_test', response.data['ssh_username'])
         self.assertIn('new', response.data['config'])
+        body = {'ssh_port': 9999, 'runtime': False}
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual('otto_test', response.data['ssh_username'])
+        self.assertEqual(9999, response.data['ssh_port'])
+        self.assertFalse(response.data['runtime'])
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
