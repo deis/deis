@@ -26,6 +26,9 @@ python-dateutil==2.2
 #PyYAML==3.10
 requests==2.2.1
 
+# PyInstaller builds client binaries
+PyInstaller==2.1
+
 # Deis documentation requirements
 Sphinx>=1.2.1
 smartypants>=1.8.3
