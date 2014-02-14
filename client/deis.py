@@ -1897,7 +1897,7 @@ class DeisClient(object):
                 print("No {} credentials discovered.".format(name))
 
         # Check for locally booted Deis Controller VM
-        if self._settings['controller'] == 'http://deis-controller.local':
+        if '//deis-controller.local' in self._settings['controller']:
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
