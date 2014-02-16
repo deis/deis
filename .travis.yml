@@ -20,6 +20,7 @@ before_install:
   - sudo apt-get install -qq libpq-dev
 
 install:
+  - pip install -r requirements.txt coveralls
   - pip install -r dev_requirements.txt coveralls
 
 before_script:
