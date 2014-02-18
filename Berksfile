@@ -1,6 +1,7 @@
 site :opscode
 
 cookbook 'apt'
+cookbook 'docker'
 cookbook 'rsyslog'
 cookbook 'sudo'
 #cookbook 'deis', '~> 0.5.1'
