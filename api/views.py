@@ -9,7 +9,6 @@ import json
 from Crypto.PublicKey import RSA
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -626,11 +625,10 @@ class AppReleaseViewSet(BaseAppViewSet):
         if version < 1:
             return Response(status=status.HTTP_404_NOT_FOUND)
         prev = app.release_set.get(version=version)
-        with transaction.atomic():
-            summary = "{} rolled back to v{}".format(request.user, version)
-            app.release_set.create(owner=request.user, version=last_version + 1,
-                                   build=prev.build, config=prev.config,
-                                   summary=summary)
+        summary = "{} rolled back to v{}".format(request.user, version)
+        app.release_set.create(owner=request.user, version=last_version + 1,
+                               build=prev.build, config=prev.config,
+                               summary=summary)
         # publish release to registry as new docker image
         if settings.REGISTRY_URL:
             repository_path = "{}/{}".format(app.owner.username, app.id)
