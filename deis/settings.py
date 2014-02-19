@@ -329,6 +329,3 @@ try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
     pass
-
-# Ensure that atomic DB transactions per view are enabled
-DATABASES['default']['ATOMIC_REQUESTS'] = True
