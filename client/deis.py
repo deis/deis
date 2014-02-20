@@ -521,12 +521,14 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
+            # If the requested app is in the current dir, delete the git remote
             try:
-                subprocess.check_call(
-                    ['git', 'remote', 'rm', 'deis'],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print('Git remote deis removed')
-            except subprocess.CalledProcessError:
+                if app == self._session.app:
+                    subprocess.check_call(
+                        ['git', 'remote', 'rm', 'deis'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    print('Git remote deis removed')
+            except (EnvironmentError, subprocess.CalledProcessError):
                 pass  # ignore error
         else:
             raise ResponseError(response)
