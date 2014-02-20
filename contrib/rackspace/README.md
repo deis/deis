@@ -44,9 +44,9 @@ Provision a Deis Controller on Rackspace
         ...
         ```
 
-1. Create a new image from the `deis-prepare-image` server named `deis-base-image`.
+1. Create a new image from the `deis-prepare-image` server named `deis-node-image`.
     1. In the server list in the Control Panel click the action cog for `deis-prepare-image`
-    1. Select "Create New Image" name that image `deis-base-image`
+    1. Select "Create New Image" name that image `deis-node-image`
     1. (optionally) Distribute the image to other regions
     1. (optionally) Create/update your Deis flavors to use your new images
 
