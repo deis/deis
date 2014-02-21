@@ -38,15 +38,15 @@ while [ ! -e /var/run/docker.sock ] ; do
   inotifywait -t 2 -e create $(dirname /var/run/docker.sock)
 done
 
-# pull docker images
-docker pull deis/logger
-docker pull deis/server
-docker pull deis/worker
-docker pull deis/builder
-docker pull deis/database
-docker pull deis/registry
-docker pull deis/discovery
-docker pull deis/cache
+# pull current docker images
+docker pull deis/logger:v0.1.0
+docker pull deis/server:v0.1.0
+docker pull deis/worker:v0.1.0
+docker pull deis/builder:v0.1.1
+docker pull deis/database:v0.1.0
+docker pull deis/registry:v0.1.1
+docker pull deis/discovery:v0.1.0
+docker pull deis/cache:v0.1.0
 docker pull deis/data
 
 # install chef 11.x deps
