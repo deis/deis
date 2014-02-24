@@ -69,6 +69,10 @@ Deis Repo
 - publish CLI to pypi.python.org
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
+- create CLI binaries for Windows and Mac OS X
+    - ``pip install pyinstaller && make client_binary``
+    - use Mac OS X 10.8 to avoid LLVM errors for others
+    - upload to aws-eng S3 bucket, set as publically downloadable
 - switch master to upcoming release
     * ``git checkout master``
     * update __version__ fields in Python packages to *next* version
