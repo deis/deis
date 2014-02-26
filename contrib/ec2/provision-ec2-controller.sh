@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-ec2-controller.sh <region>
+# Usage: ./provision-ec2-controller.sh <region> <knife params>
 #
 
 if [ -z $1 ]; then
-  echo usage: $0 [region]
+  echo usage: $0 [region] [knife params]
   exit 1
 fi
 
@@ -128,7 +128,8 @@ knife ec2 server create \
  --identity-file $ssh_key_path \
  --node-name $node_name \
  --ebs-size $ebs_size \
- --run-list $run_list
+ --run-list $run_list \
+ ${@//$region/}
 set +x
 
 # Need Chef admin permission in order to add and remove nodes and clients
