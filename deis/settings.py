@@ -312,6 +312,8 @@ DATABASES = {
 # see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
 ALLOWED_HOSTS = ['*']
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # import dynamic confd settings from /app, if they exist
 try:
     if os.path.exists('/app/confd_settings.py'):
