@@ -7,9 +7,9 @@
 #
 #   1. Create a server using the Ubuntu 12.04 LTS image,
 #      performance1-2, 2GB performance server
-#   2. SSH in as root with the password shown, then install the 3.8 kernel with:
-#      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
-#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
+#   2. SSH in as root with the password shown, then install the 3.11 kernel with:
+#      apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot
+#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.11
 #   4. Run this script (as root) to optimize the image for fast boot times
 #   5. Create a new image from the server named "deis-node-image".
 #   6. Distribute the image to other regions
