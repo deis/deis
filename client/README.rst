@@ -75,6 +75,12 @@ Get Started
 
     $ sudo pip install deis
 
+If you don't have `Python`_ installed, you can download a binary executable
+version of the Deis client for Mac OS X, Windows, or Debian Linux:
+
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.5.1.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.5.1.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.5.1.tgz
 
 2. `Register a User`_:
 
@@ -125,6 +131,7 @@ Get Started
 To learn more, use ``deis help`` or browse `the documentation`_.
 
 .. _`Install the Client`: http://docs.deis.io/en/latest/developer/install-client/
+.. _`Python`: http://www.python.org/
 .. _`Register a User`: http://docs.deis.io/en/latest/developer/register-user/
 .. _`Deploy an Application`: http://docs.deis.io/en/latest/developer/deploy-application/
 .. _`Manage an Application`: http://docs.deis.io/en/latest/developer/manage-application/
