@@ -30,7 +30,7 @@ requests==2.2.1
 PyInstaller==2.1
 
 # Deis documentation requirements
-Sphinx>=1.2.1
+Sphinx>=1.2.2
 smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0
 
