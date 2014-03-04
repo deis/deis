@@ -12,10 +12,12 @@ from api.models import Layer
 
 
 REGION_LIST = {
-    'san-francisco-1': 'San Francisco 1',
-    'amsterdam-1': 'Amsterdam 1',
     'new-york-1': 'New York 1',
-    'new-york-2': 'New York 2'
+    'amsterdam-1': 'Amsterdam 1',
+    'san-francisco-1': 'San Francisco 1',
+    'new-york-2': 'New York 2',
+    'amsterdam-2': 'Amsterdam 2',
+    'singapore-1': 'Singapore 1',
 }
 
 
