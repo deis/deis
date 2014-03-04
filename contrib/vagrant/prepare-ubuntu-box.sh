@@ -40,15 +40,15 @@ while [ ! -e /var/run/docker.sock ] ; do
 done
 
 # pull current docker images
-docker pull deis/logger:v0.1.1
-docker pull deis/server:v0.1.1
-docker pull deis/worker:v0.1.1
-docker pull deis/builder:v0.1.2
-docker pull deis/database:v0.1.1
-docker pull deis/registry:v0.1.2
-docker pull deis/discovery:v0.1.0
-docker pull deis/cache:v0.1.1
-docker pull deis/data
+docker pull deis/data:latest
+docker pull deis/discovery:latest
+docker pull deis/registry:latest
+docker pull deis/cache:latest
+docker pull deis/logger:latest
+docker pull deis/database:latest
+docker pull deis/server:latest
+docker pull deis/worker:latest
+docker pull deis/builder:latest
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make
