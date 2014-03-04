@@ -38,7 +38,7 @@ while [ ! -e /var/run/docker.sock ] ; do
 done
 
 # pull docker images
-docker pull deis/slugrunner
+docker pull deis/slugrunner:latest
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make
