@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "deis-node"
+  config.vm.box = "deis-controller"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
