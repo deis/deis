@@ -59,10 +59,4 @@ Vagrantfile.local
 contrib/vagrant/knife-config/admin.pem
 contrib/vagrant/knife-config/chef-validator.pem
 contrib/vagrant/nodes/
-
-# Broken symlinks that appear when mounting the codebase onto a vagrant VM
-# See Vagrantfile.local.example
-logs
-venv
-static
-!static/
+contrib/vagrant/.host_nodes_dir

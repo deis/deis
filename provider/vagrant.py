@@ -17,10 +17,12 @@ from api.models import Node
 
 logger = logging.getLogger(__name__)
 
+CONTRIB_PATH = '/app/deis/contrib/vagrant'
+
 # Collect details for connecting to the host machine
 try:
-    HOST_NODES_DIR = open('/home/vagrant/.host_nodes_dir').read().strip()
-    PKEY = open('/home/vagrant/.ssh/id_rsa').read()
+    HOST_NODES_DIR = open('{}/.host_nodes_dir'.format(CONTRIB_PATH)).read().strip()
+    PKEY = open('{}/util/ssh_keys/id_rsa_vagrant-deis-controller'.format(CONTRIB_PATH)).read()
 except IOError as err:
     logger.warn(err)
 
@@ -77,7 +79,7 @@ def build_node(node):
 
     # Create a new Vagrantfile from a template
     node['params'].setdefault('memory', '512')
-    template = open('/app/deis/contrib/vagrant/nodes_vagrantfile_template.rb')
+    template = open('/app/deis/contrib/vagrant/util/nodes_vagrantfile_template.rb')
     raw = string.Template(template.read())
     ip_addr = '192.168.61.' + str(Node.objects.all().count() + 100)
     result = raw.substitute({
