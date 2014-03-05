@@ -43,7 +43,7 @@ fi
 #################
 node_name="deis-controller-$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 5 | xargs)"
 run_list="recipe[deis::controller]"
-chef_version=11.6.2
+chef_version=11.8.2
 
 if [ $node_name = 'deis-controller-' ]; then
   echo "Couldn't generate unique name for deis-controller. Aborting."

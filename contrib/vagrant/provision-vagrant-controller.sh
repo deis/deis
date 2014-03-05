@@ -54,7 +54,7 @@ git submodule init && git submodule update
 #################
 node_name=deis-controller
 run_list="recipe[deis::controller]"
-chef_version=11.6.2
+chef_version=11.8.2
 
 ################
 # SSH settings #
