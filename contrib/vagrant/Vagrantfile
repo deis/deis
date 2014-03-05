@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "deis-controller"
+  config.vm.box = "deis-server"
 
   # Ubuntu 12.04.3 LTS base with 3.8 kernel (ready for Docker)
   config.vm.box_url = "https://oss-binaries.phusionpassenger.com/vagrant/boxes/ubuntu-12.04.3-amd64-vbox.box"
