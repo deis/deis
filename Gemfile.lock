@@ -25,7 +25,7 @@ GEM
     buff-config (0.4.0)
       buff-extensions (~> 0.3)
       varia_model (~> 0.1)
-    buff-extensions (0.6.0)
+    buff-extensions (1.0.0)
     buff-ignore (1.1.1)
     buff-ruby_engine (0.1.0)
     buff-shell_out (0.1.1)
