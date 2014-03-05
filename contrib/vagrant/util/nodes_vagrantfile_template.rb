@@ -1,9 +1,9 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "deis-node"
+  config.vm.box = "deis-server"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box"
+  config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/ubuntu-12.04.3-amd64-vbox.box"
 
   # Avahi-daemon will broadcast the node's address as $id.local
   config.vm.host_name = "$id"
