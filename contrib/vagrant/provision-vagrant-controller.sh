@@ -13,7 +13,7 @@ THIS_DIR="$(cd $(dirname $0); pwd)" # absolute path
 CONTRIB_DIR=$(dirname "$THIS_DIR")
 CODE_BASE_DIR=$(dirname "$CONTRIB_DIR/../../")
 
-# For those upgrading from the pre-containirize branch, they may still have some redundant files
+# For those upgrading from the pre-containerize branch, they may still have some redundant files
 # in their code base.
 if [ -h $CODE_BASE_DIR/deis/local_settings.py ]; then
   echo "Removing old local_settings symlink"
