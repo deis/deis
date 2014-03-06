@@ -95,7 +95,8 @@ def _get_droplet_kwargs(node, conn):
         'region_id': _get_id(conn.regions(), params.get('region', 'San Francisco 1')),
         'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(),
                         "deis-{formation}-{layer}".format(**node)))],
-        'virtio': True
+        'virtio': True,
+        'private_networking': True
     }
 
 
