@@ -22,7 +22,10 @@ knife[:digital_ocean_client_id] =   "your digital ocean client ID"
 knife[:digital_ocean_api_key] =     "your digital ocean API key"
 ```
 
+* Follow the steps provided in `contrib/digitalocean/prepare-controller-image.sh`
+* Ensure you create a snapshot of `deis-controller-image`
 * Follow the steps provided in `contrib/digitalocean/prepare-node-image.sh`
+* Ensure you create a snapshot of `deis-node-image`
 * Run this command to start the provisioning process
 
 ```
