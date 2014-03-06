@@ -21,7 +21,7 @@ if [ -h $CODE_BASE_DIR/deis/local_settings.py ]; then
   rm $CODE_BASE_DIR/deis/local_settings.pyc
 fi
 
-echo_color "Checking for Deis dependecnies..."
+echo_color "Checking for Deis dependencies..."
 
 # check for Deis' general dependencies
 # if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
