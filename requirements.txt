@@ -7,7 +7,8 @@ django-guardian==1.1.1
 django-json-field==0.5.5
 django-yamlfield==0.5
 djangorestframework==2.3.12
-dop==0.1.4
+#dop
+git+git://github.com/ahmontero/dop.git@6485d4eda8cd42dc44b3e6e5cf13d4974be0cdee
 gevent==1.0
 gunicorn==18.0
 paramiko==1.12.1
