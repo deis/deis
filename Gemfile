@@ -6,5 +6,5 @@ gem 'foodcritic'
 gem "berkshelf", "~> 2.0.10"
 
 gem 'knife-ec2'
-gem 'knife-rackspace'
+gem 'knife-rackspace', '~> 0.9.0'
 gem 'knife-digital_ocean'
