@@ -15,6 +15,12 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--memory", "$memory"]
   end
 
+  config.vm.provision :shell, inline: <<-SCRIPT
+    # Avahi-daemon broadcasts the machine's hostname to local DNS.
+    # Therefore 'deis-controller.local' in this case.
+    sudo apt-get install -yq avahi-daemon
+  SCRIPT
+
   # Enable [hostname].local autodiscovery between VMs
   config.vm.provision :shell, inline: <<-SCRIPT
     # Avahi-daemon broadcasts the machine's hostname to local DNS.
