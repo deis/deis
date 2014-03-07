@@ -6,9 +6,9 @@
 # Instructions:
 #
 #   1. Launch a vanilla Ubuntu 12.04 instance (64-bit with an EBS root volume)
-#   2. SSH in and install the 3.8 kernel with:
-#      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
-#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
+#   2. SSH in and install the 3.11 kernel as root with:
+#      apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot
+#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.11
 #   4. Run this script (as root!) to optimize the image for fast boot times
 #   5. Create a new AMI from the root volume
 #   6. Distribute the AMI to other regions using `ec2-copy-image`
@@ -37,16 +37,16 @@ while [ ! -e /var/run/docker.sock ] ; do
   inotifywait -t 2 -e create $(dirname /var/run/docker.sock)
 done
 
-# pull docker images
-docker pull deis/logger
-docker pull deis/server
-docker pull deis/worker
-docker pull deis/builder
-docker pull deis/database
-docker pull deis/registry
-docker pull deis/discovery
-docker pull deis/cache
-docker pull deis/data
+# pull current docker images
+docker pull deis/data:latest
+docker pull deis/discovery:latest
+docker pull deis/registry:latest
+docker pull deis/cache:latest
+docker pull deis/logger:latest
+docker pull deis/database:latest
+docker pull deis/server:latest
+docker pull deis/worker:latest
+docker pull deis/builder:latest
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make

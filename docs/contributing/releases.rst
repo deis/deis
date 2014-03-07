@@ -4,94 +4,116 @@
 
 .. _releases:
 
-Releases
-========
+Release Checklist
+=================
 
-When the maintainers create a new Deis release, here are the steps involved:
+These instructions are to assist the Deis maintainers with creating a new Deis
+product release.
 
+.. image:: http://upload.wikimedia.org/wikipedia/commons/3/37/Grace_Hopper_and_UNIVAC.jpg
+  :width: 220
+  :height: 193
+  :align: right
+  :alt: Grace Hopper and UNIVAC, from the Wikimedia Commons
 
-GitHub Issues
--------------
+Please keep this document up-to-date with any changes in this process.
 
-- create next `milestone`_
-- roll unfinished issues (if there are any) into next milestone
-- close current release milestone
-
-
-Other Repos
------------
-
-- TBD
-
-
-Chef Repo
----------
-
-- merge master into release branch locally
-    * ``git checkout release``
-    * ``git merge master``
-- change chef attributes to latest tags in attributes/default.rb
-    * default.deis.gitosis.revision
-    * default.deis.controller.revision
-    * (default.deis.build.revision for slugbuilder stays at master)
-- ``knife cookbook metadata .`` to update metadata.json
-- commit and push the opdemand/deis-cookbook release and tag
+opdemand/deis-cookbook Chef Repo
+--------------------------------
+- Create the next `deis-cookbook milestone`_
+- Move any `deis-cookbook open issues`_ from the current release to the
+  next milestone
+- Close the current `deis-cookbook milestone`_
+- Merge git master into release branch locally
+    * ``git checkout release && git merge master``
+- Run ``knife cookbook metadata .`` to update **metadata.json**. **DOUBLE-CHECK
+  the generated file after this step--this may be broken currently.**
+- Commit, push, and tag the opdemand/deis-cookbook release
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
-- update opscode community cookbook
-    * cd to parent dir of deis-cookbook
+- Update the deis Opscode Community cookbook
+    * ``cd`` to the parent dir of the deis-cookbook repository
     * ``cp -pr deis-cookbook /tmp/deis && cd /tmp``
     * ``tar cvfz deis-cookbook-vX.Y.Z.tar.gz --exclude='deis/.*' deis``
-    * log in to community.opscode.com and upload tarball
+    * log in to the `Opscode Community`_ site and upload the
+      **/tmp/deis-cookbook-vX.Y.Z.tar.gz** tarball
 - switch master to upcoming release
     * ``git checkout master``
-    * change cookbook revisions in metadata.rb to *next* version
-    * ``git commit -a -m 'Switch master to vA.B.C.'`` (next version)
+    * change **version** string in metadata.rb to *next* version
+    * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
     * ``git push origin master``
 
-
-Deis Repo
----------
-
-- merge master into release branch locally
-    * ``git checkout release``
-    * ``git merge master``
-- update berksfile with new release
-    * ensure Berksfile is pointing to opscode community cookbook
-    * ``berks update && berks install`` to update Berksfile.lock
-- commit and push the opdemand/deis release and tag
+opdemand/deis Server Repo
+-------------------------
+- Create the next `deis milestone`_
+- Move any `deis open issues`_ from the current release to the
+  next milestone
+- Close the current `deis milestone`_
+- Merge git master into release branch locally
+    * ``git checkout release && git merge master``
+- Update Berksfile with new release
+    * edit **Berksfile** and ensure it points to the Opscode Community cookbook
+      for Deis
+    * ``berks update && berks install`` to update **Berksfile.lock**
+- Commit and push the opdemand/deis release and tag
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
-- publish CLI to pypi.python.org
+- Publish CLI to pypi.python.org
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
-- switch master to upcoming release
+- Create CLI binaries for Windows, Mac OS X, Debian
+    - ``pip install pyinstaller && make client_binary``
+    - build **deis-osx-X.Y.Z.tgz** on Mac OS X 10.8 for all Macs (10.9 uses
+      LLVM, which makes our binary crash on earlier OS versions)
+    - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
+    - build **deis-deb-wheezy-X.Y.Z.tgz** on Debian Wheezy
+      (see https://github.com/opdemand/deis/issues/504)
+    - upload all binaries to the `aws-eng S3 bucket`_ and set each as
+      publically downloadable
+- Switch master to upcoming release
     * ``git checkout master``
     * update __version__ fields in Python packages to *next* version
     * switch from opscode community cookbook back to github cookbook
     * ``berks update && berks install`` to update Berksfile.lock
-    * ``git commit -a -m 'Switch master to vA.B.C.'`` (next version)
+    * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
     * ``git push origin master``
 
-Docs
-----
-- create release notes docs
-    - follow format of previous `release notes`_
-    - summarize all work done
-    - what's next and future directions
-- publish docs to http://docs.deis.io (deis.readthedocs.org)
-- visit readthedocs.org admin and add this release to published builds
-    - Rebuild *all* published versions so their "Versions" index is updated
-- publish docs to pythonhosted.org/deis
-    - from the project root, run ``make -C docs clean zipfile``
-    - zipfile will be at *docs/docs.zip*
-    - log in and use web form at https://pypi.python.org/pypi/deis/
-      to upload zipfile
+Documentation
+-------------
+- Docs are automatically published to http://docs.deis.io (the preferred alias
+  for deis.readthedocs.org)
+- Log in to the http://deis.readthedocs.org admin
+    * add the current release to the list of published builds
+    * rebuild all published versions so their "Versions" index links
+      are updated
+- Publish docs to pythonhosted.org/deis
+    * from the project root, run ``make -C docs clean zipfile``
+    * the zipfile will be at **docs/docs.zip**
+    * log in to http://pypi.python.org/ and use the web form at the
+      `Deis Pypi`_ page to upload the zipfile
+- Check documentation for deis/* projects at the `Docker Index`_
+    * click "Settings" for each project (deis/server, deis/cache, etc.)
+    * paste the contents of each README.md into the "long description" field if
+      there are discrepencies. (These don't automatically sync up after the
+      Trusted Build is first created.)
+- Create release notes docs
+    * follow the format of previous `release notes`_
+    * summarize all work done since the previous release
+    * visit all opdemand/* and deis/* project issues to make sure we don't
+      miss any contributors for the "Community Shout-Outs" section
+    * include "what's next" and "future directions" sections
 
 
-.. _`milestone`: https://github.com/opdemand/deis/issues/milestones
+.. _`deis-cookbook milestone`: https://github.com/opdemand/deis-cookbook/issues/milestones
+.. _`deis-cookbook open issues`: https://github.com/opdemand/deis-cookbook/issues?state=open
+.. _`Opscode Community`: http://community.opscode.com/cookbooks/deis/versions/new
+.. _`deis milestone`: https://github.com/opdemand/deis/issues/milestones
+.. _`deis open issues`: https://github.com/opdemand/deis/issues?state=open
 .. _`release notes`: https://github.com/opdemand/deis/releases
+.. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
+.. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
+.. _`Docker Index`: https://index.docker.io/

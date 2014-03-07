@@ -1,0 +1,13 @@
+=begin
+This file augments the standard Vagrantfile with some developer-specific settings.
+You can override any settings you want. 'Vagrantfile.local' is in .gitignore, so it can be specific
+to your own environment.
+=end
+
+Vagrant.configure("2") do |config|
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+
+end

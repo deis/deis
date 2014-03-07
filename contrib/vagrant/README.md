@@ -44,14 +44,11 @@ you will need a running SSH server open on port 22 and a means to broadcast your
     * Linux user's will need to install avahi-daemon, so that their machine is accessible via
     [hostname].local. Eg; `sudo apt-get install avahi-daemon`.
 
-5. Use the provision script to boot the Deis Controller.
-    * If you don't already have the deis-node Vagrant box installed (~1GB). This step might take a long time! If for some reason
-    you want to manually add it, use:
-    `vagrant box add deis-node https://s3-us-west-2.amazonaws.com/opdemand/deis-node.box`
-    `vagrant plugin install vagrant-omnibus vagrant-berkshelf chef`
-    * `cd contrib/vagrant && ./provision-controller.sh`
-    * You will be asked to add the Controller's SSH key to your local SSH server. This will allow the Controller
-    to run vagrant commands on your machine to bootstrap new nodes.
+5. Creating the Deis Controller.
+    * Run `./contrib/vagrant/provision_controller.sh`
+    * You may need to prepend the command with `bundle exec` depending on your Ruby setup.
+    * When running for the first time you will be asked to add the Controller's SSH key to your local SSH server.
+    This will allow the Controller to run vagrant commands on your machine to bootstrap new nodes.
     * You need to tell the Chef Server that your new Controller has permission to create
     and delete nodes. Use:
       * For a local Chef Server just type `knife client edit deis-controller` and your default text
@@ -60,38 +57,39 @@ you will need a running SSH server open on port 22 and a means to broadcast your
       click the 'edit' link on the 'admins' row and then under the 'clients' heading toggle the
       'deis-controller' radio button to be enabled. Then confirm the change by saving the group.
 
-6. If you want to hack on the actual codebase, you can mount your local codebase onto the VM
-   by using the custom Vagrantfile.local.
-   * `cp Vagrantfile.local.example Vagrantfile.local` (don't worry it's in .gitignore)
-   * Update the VM with `vagrant reload --provision`
-   * When mounted you can use your favourite editor to change the code _on your local machine's path_ and then run
-   `service deis-server restart` and/or `service deis-worker restart` on the VM for your changes to instantly take effect.
-   * It's worth having a read of `Vagrantfile.local.example`
-
-7. If you want to hack on the command line client (`client/deis.py`), install your local dev version rather than
+6. If you want to hack on the command line client (`client/deis.py`), install your local dev version rather than
 the one from Pip.
     * `cd deis && make install` This installs the client into your executables path.
     * `sudo rm /usr/local/bin/deis && sudo ln ./deis.py /usr/local/bin/deis` This will symlink the dev version to your executables path.
-    * Your deis controller is available at http://deis-controller.local so you can register with;
-    `deis register http://deis-controller.local`
+    * Your deis controller is available at http://deis-controller.local:8000 so you can register with;
+    `deis register http://deis-controller.local:8000`
 
-8. Right, time to boot up some nodes!
-  * Create a foramtion with a vagrant flavour, 512MB, 1024MB and 2048MB are available.
+7. Right, time to boot up some nodes!
+  * Create a formation with a vagrant flavour, 512MB, 1024MB and 2048MB are available.
   `deis formations:create dev --flavor=vagrant-512 --domain=deisapp.local`
   * Scale a node with `deis nodes:scale dev runtime=1` Be patient, this is the command that runs vagrant commands. Scaling a single node
-  can take about 5 mins.
+  can take over 15 mins.
   * Then create and push your app as per the usual documentation.
 
 ## Useful development commands
+* To get a shell session to a running container use the `dsh` command on the VM. Usage:
+  * `dsh deis-builder`
+  * `dsh deis-builder /bin/ls` Note the absolute path
+  * `echo 'ls' | dsh deis-builder` Note no need for path when piping
+
 * To use Django's manage.py:
   * SSH in to the VM with `vagrant ssh`
-  * Switch user to deis with `sudo su deis`
-  * `cd /opt/deis/controller` and activate Venv with `. venv/bin/activate`
-  * Get a list of commands with; `./manage.py help`.
+  * Use `dsh deis-server`
+  * Get into the Django server's path `cd /app/deis`
+  * Get a list of commands with; `./manage.py help`
+
+* Django's native web admin interface is available at http://deis-controller.local:8000/admin/
+You can add and update all of the models from there.
 
 * To reset the DB:
-  * There is a script at `contrib/vagrant/util/reset-db.sh` that resets the DB and installs some basic fixtures.
-  * It installs a formation named 'dev' and a super user with username 'dev' and password 'dev'.
+  * There is a script at contrib/vagrant/util/reset-db.sh that resets the DB and installs some basic fixtures.
+  It should be run from your host machine.
+  * It installs a formation named 'dev' and a super user with username 'devuser' and password 'devpass'.
 
 * This is useful for uploading your own local version of the cookbooks, rather than the Github versions:
   * `knife cookbook upload deis --cookbook-path [deis-cookbook path] --force`
@@ -112,6 +110,12 @@ the one from Pip.
         |__ recipes
         |__ ... and so on
   ```
+
+* Resolving submodule conflicts when merging master into your dev branch can be troublesome.
+You might have luck with `git submodule foreach git checkout master && git submodule foreach git pull --rebase`
+
+* There is a sample `Vagrantfile.local.example` that can be useful if you want any personal customisations
+to your vagrant setup, like using less RAM for post-installation boots.
 
 Notes
 -----

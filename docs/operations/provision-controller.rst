@@ -51,7 +51,7 @@ Here is an example ``knife bootstrap`` command:
 .. code-block:: console
 
     $ knife bootstrap 198.51.100.22 \
-    >  --bootstrap-version 11.6.2 \
+    >  --bootstrap-version 11.8.2 \
     >  --ssh-user ubuntu \
     >  --sudo \
     >  --identity-file ~/.ssh/id_rsa \

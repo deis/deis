@@ -4,8 +4,7 @@
 # with the nightmare of double escaping all these commands through `vagrant ssh -c "\\\\\\\\\AGH!"`
 
 # NB. Command for exporting fixtures
-# pg_dump --data-only --table=api_formations --table=auth_user --table=api_formation --table=api_provider --table=api_flavor deis > api/fixtures/deis_dev.sql
-# And then edit the resulting SQL to remove the default anonymous user
+# `./manage.py dumpdata --natural --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission -e south > /app/deis/api/fixtures/dev.json`
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
@@ -17,13 +16,21 @@ if [[ -z "$VP_HOST" && -z "$VP_USER" ]]; then
 	exit 1
 fi
 
+cd /vagrant/contrib/vagrant/util
+
 echo "Dropping and recreating Deis database..."
-su postgres -c 'dropdb deis && createdb --encoding=utf8 --template=template0 deis'
+echo "su postgres -c 'dropdb deis && createdb --encoding=utf8 --template=template0 deis'" | ./dshell deis-database
+
 echo "Running South migrations..."
-su deis -c '/opt/deis/controller/venv/bin/python /opt/deis/controller/manage.py syncdb --migrate --noinput'
-echo "Updating the Django site object..."
-su deis -c "psql deis -c \"UPDATE django_site SET domain = 'deis-controller.local', name = 'deis-controller.local' WHERE id = 1 \""
-echo "Importing fixtures for formation and super user..."
-su deis -c 'psql deis < /opt/deis/controller/api/fixtures/deis_dev.sql'
+echo '/app/deis/manage.py syncdb --migrate --noinput' | ./dshell deis-server
+
+echo "Importing fixtures"
+echo '/app/deis/manage.py loaddata /app/deis/api/fixtures/dev.json' | ./dshell deis-server
+
+# Most of the fixture data is generic. However the host machine's SSH credentials will change
+# from developer to developer.
 echo "Updating vagrant provider details"
-su deis -c "psql deis -c \"UPDATE api_provider SET creds = '{\\\"host\\\": \\\"$VP_HOST\\\", \\\"user\\\": \\\"$VP_USER\\\"}' WHERE owner_id = 1 AND type = 'vagrant' \""
+cat <<EOF | ./dshell deis-database
+su postgres
+psql deis -c "UPDATE api_provider SET creds = '{\"host\": \"$VP_HOST\", \"user\": \"$VP_USER\"}' WHERE owner_id = 1 AND type = 'vagrant' "
+EOF

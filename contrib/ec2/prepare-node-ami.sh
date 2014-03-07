@@ -6,9 +6,9 @@
 # Instructions:
 #
 #   1. Launch a vanilla Ubuntu 12.04 instance (64-bit with an EBS root volume)
-#   2. SSH in and install the 3.8 kernel with:
-#      apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot
-#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.8
+#   2. SSH in and install the 3.11 kernel as root with:
+#      apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot
+#   3. After reboot is complete, SSH in and `uname -r` to confirm kernel is 3.11
 #   4. Run this script (as root!) to optimize the image for fast boot times
 #   5. Create a new AMI from the root volume
 #   6. Distribute the AMI to other regions using `ec2-copy-image`
@@ -38,7 +38,7 @@ while [ ! -e /var/run/docker.sock ] ; do
 done
 
 # pull docker images
-docker pull deis/slugrunner
+docker pull deis/slugrunner:latest
 
 # install chef 11.x deps
 apt-get install -yq ruby1.9.1 ruby1.9.1-dev make

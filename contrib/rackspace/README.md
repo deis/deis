@@ -32,21 +32,21 @@ Provision a Deis Controller on Rackspace
 1. Prepare a new server
     1. Create a server named `deis-prepare-image` using the Ubuntu 12.04 LTS image, performance1-2, 1GB performance server
     1. SSH in as root with the password shown
-    1. Install the 3.8 kernel with: ```apt-get update && apt-get install -yq linux-image-generic-lts-raring linux-headers-generic-lts-raring && reboot```
-    1. After reboot is complete, SSH back in as root and `uname -r` to confirm kernel is `3.8.0-35-generic`
-    1. Run the `prepare-rackspace-image.sh` script to optimize the image for fast boot times
+    1. Install the 3.11 kernel with: ```apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot```
+    1. After reboot is complete, SSH back in as root and `uname -r` to confirm kernel is `3.11.0-17-generic`
+    1. Run the `prepare-controller-image.sh` script to optimize the image for fast boot times
 
         ```console
-        $ \curl -sSL https://raw2.github.com/opdemand/deis/master/contrib/rackspace/prepare-rackspace-image.sh | bash
+        $ \curl -sSL https://raw2.github.com/opdemand/deis/master/contrib/rackspace/prepare-controller-image.sh | bash
         Reading package lists... Done
         Building dependency tree
         Reading state information... Done
         ...
         ```
 
-1. Create a new image from the `deis-prepare-image` server named `deis-base-image`.
+1. Create a new image from the `deis-prepare-image` server named `deis-node-image`.
     1. In the server list in the Control Panel click the action cog for `deis-prepare-image`
-    1. Select "Create New Image" name that image `deis-base-image`
+    1. Select "Create New Image" name that image `deis-node-image`
     1. (optionally) Distribute the image to other regions
     1. (optionally) Create/update your Deis flavors to use your new images
 

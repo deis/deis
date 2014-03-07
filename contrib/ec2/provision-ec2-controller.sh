@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-ec2-controller.sh <region>
+# Usage: ./provision-ec2-controller.sh <region> <knife params>
 #
 
 if [ -z $1 ]; then
-  echo usage: $0 [region]
+  echo usage: $0 [region] [knife params]
   exit 1
 fi
 
@@ -45,21 +45,21 @@ region=$1
 # see contrib/prepare-ubuntu-ami.sh for instructions
 # on creating your own deis-optmized AMIs
 if [ "$region" == "ap-northeast-1" ]; then
-  image=ami-5d432d5c
+  image=ami-55007154
 elif [ "$region" == "ap-southeast-1" ]; then
-  image=ami-b4c493e6
+  image=ami-4eb4e51c
 elif [ "$region" == "ap-southeast-2" ]; then
-  image=ami-d59d03ef
+  image=ami-6f5bc255
 elif [ "$region" == "eu-west-1" ]; then
-  image=ami-ce30c5b9
+  image=ami-c7ef12b0
 elif [ "$region" == "sa-east-1" ]; then
-  image=ami-61b1117c
+  image=ami-3945e624
 elif [ "$region" == "us-east-1" ]; then
-  image=ami-8df9c9e4
+  image=ami-c50408ac
 elif [ "$region" == "us-west-1" ]; then
-  image=ami-62477527
+  image=ami-963906d3
 elif [ "$region" == "us-west-2" ]; then
-  image=ami-ac690a9c
+  image=ami-606a0550
 else
   echo "Cannot find AMI for region: $region"
   exit 1
@@ -83,13 +83,15 @@ if ! ec2-describe-group | grep -q "$sg_name"; then
   set -x
   ec2-create-group $sg_name -d "Created by Deis"
   set +x
-  echo_color "Authorizing TCP ports 22,80,443,514 from $sg_src..."
+  echo_color "Authorizing TCP ports 22,80,443,514,2222,5000,8000 from $sg_src..."
   set -x
   ec2-authorize deis-controller -P tcp -p 22 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 80 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 443 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 514 -s $sg_src >/dev/null
   ec2-authorize deis-controller -P tcp -p 2222 -s $sg_src >/dev/null
+  ec2-authorize deis-controller -P tcp -p 5000 -s $sg_src >/dev/null
+  ec2-authorize deis-controller -P tcp -p 8000 -s $sg_src >/dev/null
   set +x
 else
   echo_color "Security group $sg_name exists"
@@ -126,7 +128,8 @@ knife ec2 server create \
  --identity-file $ssh_key_path \
  --node-name $node_name \
  --ebs-size $ebs_size \
- --run-list $run_list
+ --run-list $run_list \
+ ${@//$region/}
 set +x
 
 # Need Chef admin permission in order to add and remove nodes and clients

@@ -71,7 +71,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -521,12 +521,14 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
+            # If the requested app is in the current dir, delete the git remote
             try:
-                subprocess.check_call(
-                    ['git', 'remote', 'rm', 'deis'],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print('Git remote deis removed')
-            except subprocess.CalledProcessError:
+                if app == self._session.app:
+                    subprocess.check_call(
+                        ['git', 'remote', 'rm', 'deis'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    print('Git remote deis removed')
+            except (EnvironmentError, subprocess.CalledProcessError):
                 pass  # ignore error
         else:
             raise ResponseError(response)
@@ -1496,18 +1498,18 @@ class DeisClient(object):
 
     def layers_update(self, args):
         """
-        Create a layer of nodes
+        Update a layer of nodes
 
         Usage: deis layers:update <formation> <id> [options]
 
         Options:
 
-        --proxy=<yn>                    layer can be used for proxy [default: y]
-        --runtime=<yn>                  layer can be used for runtime [default: y]
-        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
-        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
-        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
-        --ssh_port=<port>               port number for ssh comm (default: 22)
+        --proxy=<yn>                    layer can be used for proxy
+        --runtime=<yn>                  layer can be used for runtime
+        --ssh_username=USERNAME         username for ssh connections
+        --ssh_private_key=PRIVATE_KEY   private key for ssh comm
+        --ssh_public_key=PUBLIC_KEY     public key for ssh comm
+        --ssh_port=<port>               port number for ssh comm
 
         """
         formation = args.get('<formation>')
@@ -1897,7 +1899,7 @@ class DeisClient(object):
                 print("No {} credentials discovered.".format(name))
 
         # Check for locally booted Deis Controller VM
-        if self._settings['controller'] == 'http://deis-controller.local':
+        if '//deis-controller.local' in self._settings['controller']:
             print("Discovered locally running Deis Controller VM")
             # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
             # on the host machine. It does this via an SSH server. In order to access that server
@@ -1966,7 +1968,7 @@ class DeisClient(object):
 
         releases:list        list an application's release history
         releases:info        print information about a specific release
-        releases:rollback    coming soon!
+        releases:rollback    return to a previous release
 
         Use `deis help [command]` to learn more
         """
