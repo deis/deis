@@ -21,9 +21,8 @@ if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
   exit 1
 fi
 
-# check for knife-rackspace
-if ! knife rackspace server list > /dev/null; then
-  echo 'Please install the knife-rackspace Ruby gem and configure knife.rb.'
+if ! nova --version > /dev/null 2>&1; then
+  echo "Please install nova using 'pip install python-novaclient'."
   exit 1
 fi
 
@@ -74,7 +73,10 @@ fi
 
 # upload the user's SSH key to Rackspace.
 # if it fails, that means that it's already been uploaded.
-nova keypair-add --pub-key $ssh_key_path.pub deis > /dev/null 2>&1
+echo "uploading keypair to Rackspace, please wait"
+if ! nova keypair-add --pub-key $ssh_key_path.pub deis > /dev/null; then
+  echo "keypair already uploaded to Rackspace. Skipping."
+fi
 
 # create data bags
 knife data bag create deis-formations 2>/dev/null
