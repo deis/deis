@@ -1968,7 +1968,7 @@ class DeisClient(object):
 
         releases:list        list an application's release history
         releases:info        print information about a specific release
-        releases:rollback    coming soon!
+        releases:rollback    return to a previous release
 
         Use `deis help [command]` to learn more
         """
