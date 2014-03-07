@@ -30,7 +30,7 @@ fi
 #################
 # chef settings #
 #################
-node_name=deis-controller
+node_name="deis-controller-$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 5 | xargs)"
 run_list="recipe[deis::controller]"
 chef_version=11.8.2
 
@@ -57,20 +57,24 @@ fi
 ################
 # SSH settings #
 ################
-key_name=deis-controller
+key_name=id_rsa
 ssh_key_path=~/.ssh/$key_name
-ssh_user="ubuntu"  # doesn't work?
+ssh_user="root"
 
 # create ssh keypair and store it
 if ! test -e $ssh_key_path; then
   echo_color "Creating new SSH key: $key_name"
   set -x
-  ssh-keygen -f $ssh_key_path -t rsa -N '' -C "deis-controller" >/dev/null
+  ssh-keygen -f $ssh_key_path -t rsa -N '' -C "$USER" >/dev/null
   set +x
   echo_color "Saved to $ssh_key_path"
 else
   echo_color "WARNING: SSH key $ssh_key_path exists"
 fi
+
+# upload the user's SSH key to Rackspace.
+# if it fails, that means that it's already been uploaded.
+nova keypair-add --pub-key $ssh_key_path.pub deis > /dev/null 2>&1
 
 # create data bags
 knife data bag create deis-formations 2>/dev/null
@@ -86,7 +90,6 @@ knife rackspace server create \
  --flavor $flavor \
  --rackspace-metadata "{\"Name\": \"$node_name\"}" \
  --rackspace-disk-config MANUAL \
- --identity-file $ssh_key_path \
  --server-name $node_name \
  --node-name $node_name \
  --run-list $run_list
