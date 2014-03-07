@@ -19,6 +19,7 @@ Provision a Deis Controller on Rackspace
     $ cat <<'EOF' >> $HOME/.bash_profile
     export RACKSPACE_USERNAME=<your_rackspace_username>
     export RACKSPACE_API_KEY=<your_rackspace_api_key>
+    source $HOME/.rackspacerc
     EOF
     $ cat <<'EOF' > $HOME/.rackspacerc
     export OS_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0/"
