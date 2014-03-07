@@ -93,8 +93,8 @@ def build_node(node):
     params, creds = node['params'], node['creds']
     region = params.setdefault('region', RACKSPACE_DEFAULT_REGION)
     conn = _create_rackspace_connection(creds, region)
-    name = 'deis-{formation}-{layer}'.format(**node)
-    params['key_name'] = name
+    name = 'deis-{formation}-{layer}-{id}'.format(**node)
+    params['key_name'] = 'deis-{formation}-{layer}'.format(**node)
     tags = {'Name': name}
     # look up the saved image / snapshot by name 'deis-node-image', until we
     # can create a public image at Rackspace--at which point we call list_images().
@@ -122,14 +122,14 @@ def destroy_node(node):
     """
     Destroy a node.
 
-    :param node: a dict containing a node's provider_id, params, and creds
+    :param node: a dict containing a node's id, params, and creds
     """
     params, creds = node['params'], node['creds']
     region = params.setdefault('region', 'dfw')
     conn = _create_rackspace_connection(creds, region)
-    provider_id = node['provider_id']
+    name = 'deis-{formation}-{layer}-{id}'.format(**node)
     try:
-        server = conn.servers.get(provider_id)
+        server = conn.servers.get(name)
         server.delete()
         pyrax.utils.wait_until(server, 'status', ['DELETED', 'ERROR'])
     except (novaclient.exceptions.NotFound, pyrax.exceptions.NotFound) as err:
