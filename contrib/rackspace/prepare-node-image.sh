@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 #
-# Prepare a Deis Controller image for Rackspace.
+# Prepare a Deis image for Rackspace.
 #
 # Instructions:
 #
