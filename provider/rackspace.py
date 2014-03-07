@@ -57,7 +57,7 @@ def build_layer(layer):
     region = layer['params'].setdefault('region', RACKSPACE_DEFAULT_REGION)
     creds = layer['creds']
     conn = _create_rackspace_connection(creds, region)
-    name = "{formation}-{id}".format(**layer)
+    name = "deis-{formation}-{id}".format(**layer)
     # import a new keypair using the layer key material
     conn.keypairs.create(name, layer['ssh_public_key'])
     # Rackspace images only have the root user created by default
@@ -75,7 +75,7 @@ def destroy_layer(layer):
     region = layer['params'].setdefault('region', RACKSPACE_DEFAULT_REGION)
     creds = layer['creds']
     conn = _create_rackspace_connection(creds, region)
-    name = "{formation}-{id}".format(**layer)
+    name = "deis-{formation}-{id}".format(**layer)
     # delete the keypair we created in build_layer
     try:
         conn.keypairs.delete(name)
@@ -93,7 +93,7 @@ def build_node(node):
     params, creds = node['params'], node['creds']
     region = params.setdefault('region', RACKSPACE_DEFAULT_REGION)
     conn = _create_rackspace_connection(creds, region)
-    name = "{formation}-{layer}".format(**node)
+    name = 'deis-{formation}-{layer}'.format(**node)
     params['key_name'] = name
     tags = {'Name': name}
     # look up the saved image / snapshot by name 'deis-node-image', until we
