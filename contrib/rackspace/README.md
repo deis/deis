@@ -56,7 +56,7 @@ Provision a Deis Controller on Rackspace
     2. SSH in as root with the password shown
     3. Install the 3.11 kernel with: ```apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot```
     4. After reboot is complete, SSH back in as root and `uname -r` to confirm kernel is `3.11.0-17-generic`
-    5. Run the `prepare-controller-image.sh` script to optimize the image for fast boot times
+    5. Run the `prepare-node-image.sh` script to optimize the image for fast boot times
 
         ```console
         $ ssh root@ip-address 'bash -s' < contrib/rackspace/prepare-node-image.sh
