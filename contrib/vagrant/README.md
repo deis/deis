@@ -45,7 +45,7 @@ you will need a running SSH server open on port 22 and a means to broadcast your
     [hostname].local. Eg; `sudo apt-get install avahi-daemon`.
 
 5. Creating the Deis Controller.
-    * Run `./contrib/vagrant/provision_controller.sh`
+    * Run `./contrib/vagrant/provision-vagrant-controller.sh`
     * You may need to prepend the command with `bundle exec` depending on your Ruby setup.
     * When running for the first time you will be asked to add the Controller's SSH key to your local SSH server.
     This will allow the Controller to run vagrant commands on your machine to bootstrap new nodes.
