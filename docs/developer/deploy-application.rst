@@ -4,23 +4,40 @@
 
 Deploy an Application
 =====================
-Deis allows you to deploy and scale your :ref:`Application` in seconds
-using Docker's industry-standard `Linux container engine`_.
+
+An :ref:`Application` is typically deployed to Deis by pushing source code using the deis
+client or other clients that communicate with Deis' API endpoints. Deploying
+applications will be different depending on the source code and its requirements.
+
+Authenticating with the API
+---------------------------
+
+Before deploying an application, all users must first authenticate against the Deis
+:ref:`Controller`. For example:
+
+.. code-block:: console
+
+    $ deis login http://example.com
+    username: deis
+    password:
+    Logged in as deis
 
 Create an Application
 ---------------------
-Change directory into a git repository for the app you'd like to deploy,
-then use the ``deis create`` command to create a new Deis application.
+
+Change to the root directory of your project you'd like to deploy, then use the ``deis
+create`` command to create a remote repository for you to push your application to.
 
 .. code-block:: console
 
     $ cd example-java-jetty    # change into your application's git root
-    $ deis create
+    $ deis create --formation=dev
     Creating application... done, created peachy-waxworks
     Git remote deis added
 
 Deploy the Application
 ----------------------
+
 With the application created and associated with the SSH :ref:`Key` on your account,
 deploy it with ``git push deis master``. If you don't have an application to test with,
 you can use `our Dockerfile example`_.
@@ -70,6 +87,7 @@ you can use `our Dockerfile example`_.
 
 Supported Applications
 ----------------------
+
 As a Heroku-inspired Platform-as-a-Service, Deis is designed to deploy and scale
 apps that adhere to `twelve-factor methodology`_.  
 
@@ -80,24 +98,6 @@ it is not twelve-factor compatible and may not be suitable for Deis or other Paa
 Fortunately, most modern applications feature a stateless application tier that
 can scale horizontally behind a load balancer.  These applications are a perfect
 fit for Deis.  Deis currently suppports the following languages:
-
- * Java
- * Python
- * Ruby
- * Node.js
- * Clojure
- * Scala
- * Play Framework
- * PHP
- * Perl
- * Dart
- * Go
-
-Support for many other languages and frameworks is possible through
-use of custom `Heroku Buildpacks`_ and `Dockerfiles`_.
-
-Example Applications
---------------------
 
  * Clojure: https://github.com/opdemand/example-clojure-ring
  * Dart: https://github.com/opdemand/example-dart
@@ -112,6 +112,9 @@ Example Applications
  * Python/Flask: https://github.com/opdemand/example-python-flask
  * Ruby: https://github.com/opdemand/example-ruby-sinatra
  * Scala: https://github.com/opdemand/example-scala
+
+Support for many other languages and frameworks is possible through
+use of custom `Heroku Buildpacks`_ and `Dockerfiles`_.
 
 .. _`Linux container engine`: http://docker.io/
 .. _`twelve-factor methodology`: http://12factor.net/
