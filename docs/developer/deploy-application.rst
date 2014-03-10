@@ -15,7 +15,7 @@ then use the ``deis create`` command to create a new Deis application.
 .. code-block:: console
 
     $ cd example-java-jetty    # change into your application's git root
-    $ deis create
+    $ deis create --domain=deisapp.com
     Creating application... done, created peachy-waxworks
     Git remote deis added
 
