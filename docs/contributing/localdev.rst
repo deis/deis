@@ -13,7 +13,7 @@ automating or simplifying this process.
 Prerequisites
 -------------
 
-We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can  develop inside a set
+We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can develop inside a set
 of isolated virtual machines. You will need:
 
  * Vagrant 1.3.5+
@@ -42,7 +42,7 @@ Local Chef Server
 `````````````````
 
 For development purposes, you can spin up a local Chef Server using Vagrant. Please note
-that it will take up at least 1GB of RAM.  From your workstation:
+that it will take up at least 1GB of RAM. From your workstation:
 
 .. code-block:: console
 
@@ -231,7 +231,7 @@ formation with a 512MB nodes:
     $ deis nodes:scale dev runtime=1
 
 This will use the Deis :ref:`Provider` API to spin up a new Vagrant node as part of a
-single-host formation.  The scaling process can take ~ 5 min as Vagrant boots a host and
+single-host formation. The scaling process can take ~ 5 min as Vagrant boots a host and
 runs through the first Chef converge.
 
 Once ``nodes:scale`` returns, your local development environment is running! Follow the
