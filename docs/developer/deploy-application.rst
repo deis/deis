@@ -99,23 +99,34 @@ Fortunately, most modern applications feature a stateless application tier that
 can scale horizontally behind a load balancer.  These applications are a perfect
 fit for Deis.  Deis currently suppports the following languages:
 
- * Clojure: https://github.com/opdemand/example-clojure-ring
- * Dart: https://github.com/opdemand/example-dart
- * Dockerfile: https://github.com/opdemand/example-dockerfile-python
- * Golang: https://github.com/opdemand/example-go
- * Java: https://github.com/opdemand/example-java-jetty
- * Node.js: https://github.com/opdemand/example-nodejs-express
- * Perl: https://github.com/opdemand/example-perl
- * PHP: https://github.com/opdemand/example-php
- * Play: https://github.com/opdemand/example-play
- * Python/Django: https://github.com/opdemand/example-python-django
- * Python/Flask: https://github.com/opdemand/example-python-flask
- * Ruby: https://github.com/opdemand/example-ruby-sinatra
- * Scala: https://github.com/opdemand/example-scala
+ * `Clojure`_
+ * `Dart`_
+ * `Dockerfile`_
+ * `Golang`_
+ * `Java`_
+ * `Nodejs`_
+ * `Perl`_
+ * `PHP`_
+ * `Play`_
+ * `Python`_
+ * `Ruby`_
+ * `Scala`_
 
 Support for many other languages and frameworks is possible through
 use of custom `Heroku Buildpacks`_ and `Dockerfiles`_.
 
+.. _`Clojure`: https://github.com/opdemand/example-clojure-ring
+.. _`Dart`: https://github.com/opdemand/example-dart
+.. _`Dockerfile`: https://github.com/opdemand/example-dockerfile-python
+.. _`Golang`: https://github.com/opdemand/example-go
+.. _`Java`: https://github.com/opdemand/example-java-jetty
+.. _`Nodejs`: https://github.com/opdemand/example-nodejs-express
+.. _`Perl`: https://github.com/opdemand/example-perl
+.. _`PHP`: https://github.com/opdemand/example-php
+.. _`Play`: https://github.com/opdemand/example-play
+.. _`Python`: https://github.com/opdemand/example-python-flask
+.. _`Ruby`: https://github.com/opdemand/example-ruby-sinatra
+.. _`Scala`: https://github.com/opdemand/example-scala
 .. _`Linux container engine`: http://docker.io/
 .. _`twelve-factor methodology`: http://12factor.net/
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
