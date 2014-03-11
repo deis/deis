@@ -58,6 +58,23 @@ Now use ``knife client list`` to test connectivity to the local Chef Server:
     chef-validator
     chef-webui
 
+Self-hosted Chef Server
+```````````````````````
+
+Alternatively, you can `host your own Chef server`_ on your own hardware.
+From your server:
+
+ * visit `the Chef install page`_ in your web browser
+ * Click on the "Chef Server" tab and then select the menus that match your operating system
+ * Right-click on the debian package and select the option that is similar to "copy link location".
+ * use the wget utility to download the deb
+ * install the debian package
+ * configure your machine automatically with :code:`sudo chef-server-ctl reconfigure`
+ * configure your admin key and validator
+ * configure the knife command with :code:`knife configure --initial`
+
+You should now have a Chef server and a separate workstation to create your configurations.
+
 Hosted Chef Server
 ``````````````````
 If you don't want to run your own Chef server, you can
@@ -274,6 +291,8 @@ Please see `deis-cookbook`_ for information about contributing Chef code to Deis
 
 .. _`Vagrant`: http://www.vagrantup.com/
 .. _`VirtualBox`: https://www.virtualbox.org/
+.. _`host your own chef server`: https://www.digitalocean.com/community/articles/how-to-install-a-chef-server-workstation-and-client-on-ubuntu-vps-instances
+.. _`the Chef install page`: http://www.getchef.com/chef/install/
 .. _`sign up for a free Hosted Chef account`: https://getchef.opscode.com/signup
 .. _`knife.rb`: http://docs.opscode.com/config_rb_knife.html
 .. _`cookbooks`: http://docs.opscode.com/essentials_cookbooks.html

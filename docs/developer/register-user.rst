@@ -22,6 +22,15 @@ to create a new account.  You will be logged in automatically.
     Registered myuser
     Logged in as myuser
 
+.. note::
+
+    As of v0.5.1, the proxy was removed for Deis platform services. It has yet to be added
+    back in. See `issue 535`_ for more details.
+
+    As a workaround, use the following:
+
+    :code:`deis register http://deis.example.com:8000`
+
 Upload Your SSH Public Key
 --------------------------
 Use the ``deis keys:add`` command to upload your default SSH public key, usually one of:
@@ -37,3 +46,4 @@ Use the ``deis keys:add`` command to upload your default SSH public key, usually
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
+.. _`issue 535`: https://github.com/opdemand/deis/issues/535
