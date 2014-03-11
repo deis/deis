@@ -98,5 +98,4 @@ See Also
 .. _`Twelve Factor model`: http://12factor.net/build-release-run
 .. _`backing services`: http://12factor.net/backing-services
 .. _`environment variables`: http://12factor.net/config
-.. _`Buildstep`: https://github.com/opdemand/buildstep
 .. _`converges`: http://docs.opscode.com/essentials_nodes_chef_run.html
