@@ -10,17 +10,15 @@ branches:
   only:
     - master
     - release
-    - containerize
 
 services:
   - postgresql
-  - rabbitmq
 
 before_install:
   - sudo apt-get install -qq libpq-dev
 
 install:
-  - pip install -r requirements.txt coveralls
+  - pip install -r requirements.txt
   - pip install -r dev_requirements.txt coveralls
 
 before_script:
