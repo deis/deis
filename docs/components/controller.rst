@@ -29,7 +29,7 @@ The controller stack includes:
 * PostgreSQL database as a backing store for Django
 * Celery / RabbitMQ for dispatching tasks
 * A lightweight *gitreceive* hook for ``git push`` access control
-* Docker and Buildstep to process Heroku Buildpacks
+* Docker and Slugbuilder to process Heroku Buildpacks and Dockerfiles
 
 Follow the :ref:`Operations Guide <operations>` to setup your own private
 Deis controller.
