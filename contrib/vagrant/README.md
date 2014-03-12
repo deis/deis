@@ -28,6 +28,7 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
     interface and has more features, like being able to add clients to permission groups.
 
 3. Now you can follow the standard deis setup:
+  * If you're running a local chef server, you should adjust the `Gemfile` and make sure the version of berkshelf is 3.0.x. This is needed for the `--ssl-verify` option to work correctly.
   ```bash
   bundle install # Installs gem files like the knife tool
   berks install # Downloads the relevant cookbooks
