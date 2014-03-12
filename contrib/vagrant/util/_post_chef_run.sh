@@ -14,7 +14,7 @@ if [ ! -h /usr/local/bin/dsh ]; then
 fi
 
 echo_bold "Updating Django site object from 'example.com' to 'deis-controller'..."
-cat <<EOF | dsh deis-database
+cat <<EOF | sudo dsh deis-database
 su postgres
 psql deis -c " \
   UPDATE django_site \
