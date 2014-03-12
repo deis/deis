@@ -17,6 +17,14 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
     * copy the admin.pem and validation.pem files for your own knife client
     `scp -r root@chefserver.local:/etc/chef-server/admin.pem [DEIS_DIR]/contrib/vagrant/knife-config/`
     `scp -r root@chefserver.local:/etc/chef-server/chef-validator.pem [DEIS_DIR]/contrib/vagrant/knife-config/`
+    * If you are on a OS X your should `vagrant ssh` into the chef server and set the hostname to `chefserver.local`.
+      Do this by running:
+      
+      ```
+      sudo hostname 'chefserver.local'
+      echo "chefserver.local" | sudo tee /etc/hostname
+      sudo chef-server-ctl reconfigure
+      ```
 
     **Hosted Chef Server**
     * Goto https://getchef.opscode.com/signup and fill in your details.
@@ -28,12 +36,14 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
     interface and has more features, like being able to add clients to permission groups.
 
 3. Now you can follow the standard deis setup:
+  * If your running a local chef server you should adjust the `Gemfile` and make sure the version of berkshelf is 3.0.x. This is needed for the `--ssl-verify=false` to work correctly.
   ```bash
   bundle install # Installs gem files like the knife tool
   berks install # Downloads the relevant cookbooks
   # '--ssl-verify' is only needed when using a local Chef Server
   berks upload [--ssl-verify=false] # Upload the cookbooks to the Chef Server
   ```
+  
 
 4. The Controller needs to be able to run Vagrant commands on your host machine. It does this via SSH. Therefore
 you will need a running SSH server open on port 22 and a means to broadcast your hostname to local DNS.
