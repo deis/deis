@@ -27,6 +27,8 @@ Vagrant.configure("2") do |config|
       sudo aptitude install avahi-daemon avahi-discover libnss-mdns -y
       sudo wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
       sudo dpkg -i chef-server_11.0.8-1.ubuntu.12.04_amd64.deb
+      sudo hostname 'chefserver.local'
+      echo "chefserver.local" | sudo tee /etc/hostname
       sudo chef-server-ctl reconfigure
       sudo chef-server-ctl test # Optional
     fi

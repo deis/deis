@@ -17,14 +17,6 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
     * copy the admin.pem and validation.pem files for your own knife client
     `scp -r root@chefserver.local:/etc/chef-server/admin.pem [DEIS_DIR]/contrib/vagrant/knife-config/`
     `scp -r root@chefserver.local:/etc/chef-server/chef-validator.pem [DEIS_DIR]/contrib/vagrant/knife-config/`
-    * If you are on a OS X your should `vagrant ssh` into the chef server and set the hostname to `chefserver.local`.
-      Do this by running:
-      
-      ```
-      sudo hostname 'chefserver.local'
-      echo "chefserver.local" | sudo tee /etc/hostname
-      sudo chef-server-ctl reconfigure
-      ```
 
     **Hosted Chef Server**
     * Goto https://getchef.opscode.com/signup and fill in your details.
