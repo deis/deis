@@ -58,18 +58,6 @@ class ReleaseTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        # check to see that an initial release was created
-        url = '/api/apps/{app_id}/releases'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 1)
-        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        release1 = response.data
-        self.assertIn('config', response.data)
-        self.assertIn('build', response.data)
-        self.assertEquals(release1['version'], 1)
         # check that updating config rolls a new release
         url = '/api/apps/{app_id}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
@@ -77,6 +65,19 @@ class ReleaseTest(TestCase):
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
+        # check to see that an initial release was created
+        url = '/api/apps/{app_id}/releases'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        # account for the config release as well
+        self.assertEqual(response.data['count'], 2)
+        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        release1 = response.data
+        self.assertIn('config', response.data)
+        self.assertIn('build', response.data)
+        self.assertEquals(release1['version'], 1)
         # check to see that a new release was created
         url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
