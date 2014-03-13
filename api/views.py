@@ -24,6 +24,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import docker, models, serializers
+from .exceptions import BuildFormationError
 
 from deis import settings
 
@@ -318,11 +319,17 @@ class FormationLayerViewSet(FormationScopedViewSet):
 
     def post_save(self, layer, created=False, **kwargs):
         if created:
-            layer.build()
+            try:
+                layer.build()
+            except EnvironmentError as err:
+                raise BuildFormationError(str(err))
 
     def destroy(self, request, **kwargs):
         layer = self.get_object()
-        layer.destroy()
+        try:
+            layer.destroy()
+        except EnvironmentError as err:
+            raise BuildFormationError(str(err))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

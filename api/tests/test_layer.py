@@ -58,6 +58,12 @@ class LayerTest(TestCase):
         self.assertIn('runtime', response.data)
         self.assertIn('config', response.data)
         self.assertIn('key', json.loads(response.data['config']))
+        # test layer build failure
+        url = '/api/formations/{formation_id}/layers'.format(**locals())
+        body = {'id': 'autotest-fail', 'flavor': 'autotest-fail',
+                'config': json.dumps({'key': 'value'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
         url = '/api/formations/{formation_id}/layers'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

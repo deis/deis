@@ -20,3 +20,17 @@ class BuildNodeError(APIException):
 
     def __init__(self, detail=None):
         self.detail = detail
+
+
+class BuildFormationError(APIException):
+    """
+    Indicates a problem in creating a formation.
+
+    This exception is subclassed from rest_framework's APIException so it
+    isn't reported as "500 SERVER ERROR."
+    """
+
+    status_code = status.HTTP_400_BAD_REQUEST
+
+    def __init__(self, detail=None):
+        self.detail = detail
