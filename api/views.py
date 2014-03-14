@@ -24,7 +24,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import docker, models, serializers
-from .exceptions import BuildFormationError
+from .exceptions import BuildFormationError, UserRegistrationException
 
 from deis import settings
 
@@ -149,6 +149,9 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
+        # FIXME: move this business logic to the model
+        if len(obj.username) < 4:
+            raise UserRegistrationException('username must be >= 4 characters in length')
         # Make this first signup an admin / superuser
         if not User.objects.filter(is_superuser=True).exists():
             obj.is_superuser = obj.is_staff = True
