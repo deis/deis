@@ -70,7 +70,7 @@ class TestAdminPerms(TestCase):
 
     def test_create(self):
         submit = {
-            'username': 'one',
+            'username': 'first',
             'password': 'password',
             'email': 'autotest@deis.io',
         }
@@ -79,7 +79,7 @@ class TestAdminPerms(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['is_superuser'])
         submit = {
-            'username': 'two',
+            'username': 'second',
             'password': 'password',
             'email': 'autotest@deis.io',
         }
@@ -88,20 +88,20 @@ class TestAdminPerms(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertFalse(response.data['is_superuser'])
         self.assertTrue(
-            self.client.login(username='one', password='password'))
+            self.client.login(username='first', password='password'))
         # grant user 2 the superuser perm
         url = '/api/admin/perms'
-        body = {'username': 'two'}
+        body = {'username': 'second'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
-        self.assertIn('two', str(response.data['results']))
+        self.assertIn('second', str(response.data['results']))
 
     def test_delete(self):
         submit = {
-            'username': 'uno',
+            'username': 'first',
             'password': 'password',
             'email': 'autotest@deis.io',
         }
@@ -110,7 +110,7 @@ class TestAdminPerms(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(response.data['is_superuser'])
         submit = {
-            'username': 'dos',
+            'username': 'second',
             'password': 'password',
             'email': 'autotest@deis.io',
         }
@@ -119,14 +119,14 @@ class TestAdminPerms(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertFalse(response.data['is_superuser'])
         self.assertTrue(
-            self.client.login(username='uno', password='password'))
+            self.client.login(username='first', password='password'))
         # grant user 2 the superuser perm
         url = '/api/admin/perms'
-        body = {'username': 'dos'}
+        body = {'username': 'second'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # revoke the superuser perm
-        response = self.client.delete(url + '/dos')
+        response = self.client.delete(url + '/second')
         self.assertEqual(response.status_code, 204)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
