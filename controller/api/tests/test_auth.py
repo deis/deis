@@ -11,6 +11,7 @@ import urllib
 
 from django.conf import settings
 from django.test import TestCase
+from django.test.utils import override_settings
 
 
 class AuthTest(TestCase):
@@ -84,6 +85,22 @@ class AuthTest(TestCase):
         url = '/api/providers'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    @override_settings(REGISTRATION_ENABLED=False)
+    def test_auth_registration_disabled(self):
+        """test that a new user cannot register when registration is disabled."""
+        url = '/api/auth/register'
+        submit = {
+            'username': 'testuser',
+            'password': 'password',
+            'first_name': 'test',
+            'last_name': 'user',
+            'email': 'test@user.com',
+            'is_superuser': False,
+            'is_staff': False,
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
 
     def test_cancel(self):
         """Test that a registered user can cancel her account."""

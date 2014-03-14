@@ -111,6 +111,14 @@ class IsAdminOrSafeMethod(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS or request.user.is_superuser
 
 
+class HasRegistrationAuth(permissions.BasePermission):
+    """
+    Checks to see if registration is enabled
+    """
+    def has_permission(self, request, view):
+        return settings.REGISTRATION_ENABLED
+
+
 class HasBuilderAuth(permissions.BasePermission):
     """
     View permission to allow builder to perform actions
@@ -132,7 +140,7 @@ class UserRegistrationView(viewsets.GenericViewSet,
     model = User
 
     authentication_classes = (AnonymousAuthentication,)
-    permission_classes = (IsAnonymous,)
+    permission_classes = (IsAnonymous, HasRegistrationAuth)
     serializer_class = serializers.UserSerializer
 
     def post_save(self, user, created=False):
