@@ -10,7 +10,7 @@ dop==0.1.4
 gunicorn==18.0
 paramiko==1.12.1
 pyrax==1.6.2
-python-etcd=0.3.0
+python-etcd==0.3.0
 PyYAML==3.10
 
 # Deis client requirements
