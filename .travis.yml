@@ -22,21 +22,7 @@ install:
   - pip install -r dev_requirements.txt coveralls
 
 before_script:
-  - "psql -c 'create database deis_testing;' -U postgres"
-  - |
-    cat > deis/local_settings.py <<EOF
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'deis_testing',
-            'USER': 'postgres',
-            'PASSWORD': '',
-            'HOST': '',
-            'PORT': '',
-        }
-    }
-    SECRET_KEY = 'TotallyFake-SECRET_KEY-ForTravisCI'
-    EOF
+  - psql -c 'create database deis;' -U postgres
 
 script:
   - make flake8

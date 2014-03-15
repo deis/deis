@@ -14,8 +14,10 @@ import pexpect
 
 
 # Constants and data used throughout the test suite
+CODE_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
 DEIS = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', 'deis.py'))
+    os.path.join(CODE_PATH, 'client', 'deis.py'))
 try:
     DEIS_SERVER = os.environ['DEIS_SERVER']
 except KeyError:
@@ -135,6 +137,28 @@ ssh -F {} "$@"
     child.expect("Registered {}".format(username))
     child.expect("Logged in as {}".format(username))
     child.expect(pexpect.EOF)
+    # The above registration assumes that auotester is the first user on the system and so will
+    # automatically be given superuser privileges.
+    # If autotester *isn't* the first user make them a superuser so they can create formations and
+    # so on.
+    if os.environ['DEIS_SUPER_USER'] and os.environ['DEIS_SUPER_PASS']:
+        # Log in as superuser
+        child = pexpect.spawn("{} login {}".format(DEIS, DEIS_SERVER))
+        child.expect('username: ')
+        child.sendline(os.environ['DEIS_SUPER_USER'])
+        child.expect('password: ')
+        child.sendline(os.environ['DEIS_SUPER_PASS'])
+        child.expect("Logged in as {}".format(os.environ['DEIS_SUPER_USER']))
+        # Make autotester a superuser
+        child = pexpect.spawn("{} perms:create {} --admin".format(DEIS, username))
+        child.expect("done".format(username))
+        # Log back in as autotester
+        child = pexpect.spawn("{} login {}".format(DEIS, DEIS_SERVER))
+        child.expect('username: ')
+        child.sendline(username)
+        child.expect('password: ')
+        child.sendline(password)
+        child.expect("Logged in as {}".format(username))
     # add keys
     if add_keys:
         child = pexpect.spawn("{} keys:add".format(DEIS))

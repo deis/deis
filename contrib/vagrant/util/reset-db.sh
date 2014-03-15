@@ -3,6 +3,7 @@
 VP_HOST="$(hostname | sed -e 's/^ *//g' -e 's/ *$//g').local"
 VP_USER=$(whoami | sed -e 's/^ *//g' -e 's/ *$//g')
 
+cd $(dirname $0)/../
 vagrant ssh -c "sudo VP_HOST=$VP_HOST VP_USER=$VP_USER /vagrant/contrib/vagrant/util/_controller-reset-db.sh"
 
 echo "Logging in user 'devuser' with password 'devpass'..."

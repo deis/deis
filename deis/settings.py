@@ -7,6 +7,9 @@ import os.path
 import sys
 import tempfile
 
+TESTING = 'test' in sys.argv
+TRAVIS = os.environ.get('TRAVIS', '') == 'true'
+
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
 DEBUG = False
@@ -295,6 +298,7 @@ REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
 CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 
 # default providers, typically overriden in local_settings to include ec2, etc.
+
 PROVIDER_MODULES = ('mock',)
 
 # default to sqlite3, but allow postgresql config through envvars
@@ -333,3 +337,18 @@ try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
     pass
+
+if TESTING:
+    SECRET_KEY = 'allHailTheTestingUnicornPrincessMayOurSpecsNeverFail(UnlessWePracticeTDD)Amen'
+    DEBUG = True
+    CM_MODULE = 'cm.mock'
+    REGISTRY_URL = None
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'deis',
+            'USER': 'deis' if not TRAVIS else 'postgres',
+            'PASSWORD': 'changeme123' if not TRAVIS else '',
+            'HOST': '192.168.61.100' if not TRAVIS else '/var/run/postgresql'
+        }
+    }

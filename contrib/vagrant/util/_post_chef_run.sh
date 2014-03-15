@@ -26,3 +26,22 @@ EOF
 if [ $? -eq 0 ]; then
   echo_bold "Site object updated."
 fi
+
+echo_bold  "Giving deis role permission to create databases for testing..."
+cat <<EOF | dsh deis-database
+su postgres
+psql -c "ALTER USER deis CREATEDB;" > /dev/null
+EOF
+
+if [ $? -eq 0 ]; then
+  echo_bold "Deis role granted create permission."
+fi
+
+echo_bold "Installing development dependencies..."
+cat <<-EOF | dsh deis-server
+	cd /app/deis
+	pip install -r dev_requirements.txt > /dev/null
+EOF
+if [ $? -eq 0 ]; then
+  echo_bold "Development dependencies installed."
+fi

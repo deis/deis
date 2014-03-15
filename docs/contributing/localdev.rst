@@ -278,15 +278,20 @@ Specifically, when you change local code, you must run
 ``make flake8 && make coverage``, then check the HTML report to see
 that test coverage has improved as a result of your changes and new unit tests.
 
+There are 2 test suites; codebase tests and integration tests.
+
+Codebase Tests
+``````````````
+Tests and linters can be run on a Vagrant Controller as follows;
 .. code-block:: console
 
-	$ make flake8
+	$ echo "cd /app/deis && make flake8" | dsh deis-server
 	flake8
 	./api/models.py:17:1: F401 'Group' imported but unused
 	./api/models.py:81:1: F841 local variable 'result' is assigned to but never used
 	make: *** [flake8] Error 1
 	$
-	$ make coverage
+	$ echo "cd /app/deis && make coverage" | dsh deis-server
 	coverage run manage.py test api celerytasks client web
 	Creating test database for alias 'default'...
 	...................ss
@@ -298,6 +303,20 @@ that test coverage has improved as a result of your changes and new unit tests.
 	coverage html
 	$ head -n 25 htmlcov/index.html | grep pc_cov
 	            <span class='pc_cov'>81%</span>
+
+Inegration Tests
+````````````````
+These are ideally run from outside the controller server. They need an existing deis installation. If you're running the
+tests for an installation that doesn't have any registered users yet, you can run this command from the root of the
+project:
+``DEIS_SERVER=<controller domain> python -m unittest client.tests``
+Where <controller domain> is the FQDN for the Deis Controller, eg. 'deis-controller.local' for a vagrant installation.
+
+If you're running the tests for an existing installation with users already registered then you will need to use the
+following:
+``DEIS_SERVER=<controller domain> DEIS_SUPER_USER=<user> DEIS_SUPER_PASS=<password> python -m unittest client.tests``
+Where <user> and <password> are replaced with the first registered user or a known superuser.
+
 
 Pull Requests
 -------------
