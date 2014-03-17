@@ -17,4 +17,4 @@ Operations Guide
     provision-controller
     register-admin-user
     deploy-formation
-    send-rsyslog-messages
+    manage-controller
