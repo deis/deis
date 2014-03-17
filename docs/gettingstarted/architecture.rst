@@ -10,7 +10,7 @@ Architecture
 Deis consists of 9 modules that combine to create a distributed PaaS.
 Each Deis module is deployed as a :ref:`Container`.
 
-.. _controller:
+.. _arch_controller:
 
 Controller
 ----------
@@ -59,7 +59,7 @@ The builder:
  #. Pushes the new Docker image to the platform's :ref:`Registry`
  #. Creates a new :ref:`Release` on the :ref:`Controller`
 
-Once a new :ref:`Release` is generated, a new set of containers 
+Once a new :ref:`Release` is generated, a new set of containers
 is deployed across the platform automatically.
 
 .. _registry:
@@ -68,7 +68,7 @@ Registry
 --------
 
 The registry module hosts `Docker`_ images on behalf of the platform.
-Image data is typically stored on a storage service like 
+Image data is typically stored on a storage service like
 `Amazon S3`_ or `OpenStack Storage`_.
 
 .. _logserver:
@@ -76,7 +76,7 @@ Image data is typically stored on a storage service like
 Log Server
 ----------
 
-The log server module uses `rsyslog`_ to aggregate log data from 
+The log server module uses `rsyslog`_ to aggregate log data from
 across the platform.
 This data can then be queried by the :ref:`Controller`.
 
@@ -93,7 +93,7 @@ Proxy
 -----
 
 The proxy module uses `Nginx`_ to route traffic to application containers.
- 
+
 .. _`Django`: https://www.djangoproject.com/
 .. _`Celery`: http://www.celeryproject.org/
 .. _`PostgreSQL`: http://www.postgresql.org/
