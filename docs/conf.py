@@ -21,7 +21,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 # create local_settings.py for SECRET_KEY if necessary
 local_settings_path = os.path.abspath(
-    os.path.join('..', 'deis', 'local_settings.py'))
+    os.path.join('..', 'controller', 'deis', 'local_settings.py'))
 if not os.path.exists(local_settings_path):
     with open(local_settings_path, 'w') as local_settings:
         local_settings.write("SECRET_KEY = 'DummySecretKey'\n")
