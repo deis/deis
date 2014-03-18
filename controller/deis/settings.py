@@ -155,7 +155,6 @@ INSTALLED_APPS = (
     'south',
     # Deis apps
     'api',
-    'client',
     'cm',
     'provider',
     'web',
