@@ -53,6 +53,7 @@ venv/
 Vagrantfile.local
 *.swp
 .bundle
+/__init__.py
 
 # Chef setup
 .chef
