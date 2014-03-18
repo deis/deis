@@ -13,6 +13,7 @@ from .models import App
 from .models import Build
 from .models import Config
 from .models import Container
+from .models import Domain
 from .models import Flavor
 from .models import Formation
 from .models import Key
@@ -60,6 +61,16 @@ class ContainerAdmin(admin.ModelAdmin):
     list_display = ('short_name', 'owner', 'formation', 'app', 'status')
     list_filter = ('owner', 'formation', 'app', 'status')
 admin.site.register(Container, ContainerAdmin)
+
+
+class DomainAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Domain` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('owner', 'app', 'domain')
+    list_filter = ('owner', 'app')
+admin.site.register(Domain, DomainAdmin)
 
 
 class FlavorAdmin(admin.ModelAdmin):

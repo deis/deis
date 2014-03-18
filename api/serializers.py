@@ -210,3 +210,41 @@ class ContainerSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
         read_only_fields = ('created', 'updated')
+
+
+class DomainSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Domain` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`DomainSerializer`."""
+        model = models.Domain
+        fields = ('domain', 'owner', 'created', 'updated', 'app')
+        read_only_fields = ('created', 'updated')
+
+    def validate_domain(self, attrs, source):
+        """
+        Check that the hostname is valid
+        """
+        value = attrs[source]
+        match = re.match(r'^(\*\.)?([a-z0-9-]+\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$', value)
+        if not match:
+            raise serializers.ValidationError(
+                "Hostname does not look like a valid hostname. "
+                "Only lowercase characters are allowed.")
+
+        if models.Domain.objects.filter(domain=value).exists():
+            raise serializers.ValidationError(
+                "The domain {} is already in use by another app".format(value))
+
+        domain_parts = value.split('.')
+        domain_parent = '.'.join(domain_parts[1:])
+        attrs['domain_parent'] = domain_parent
+
+        if domain_parts[0] == '*':
+            raise serializers.ValidationError(
+                "Adding a wildcard subdomain is currently not supported".format(value))
+
+        return attrs
