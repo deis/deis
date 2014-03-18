@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# fail hard and fast even on pipelines
+set -eo pipefail
+
+# check for required variables
+: ${PUBLIC_IP:?"PUBLIC_IP environment variable required"}
+export PUBLIC_IP=$PUBLIC_IP
+
+# set etcd variable defaults
+export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD_PEER_PORT=${ETCD_PEER_PORT:-7001}
+export ETCD_NODE_NAME=${ETCD_NODE_NAME:-$(hostname)}
+
+# spawn the service in the background
+$(dirname ${BASH_SOURCE[0]})/start &
+SERVICE_PID=$!
+
+# smart shutdown on SIGINT and SIGTERM
+function on_exit() {
+	kill -TERM $SERVICE_PID
+	wait $SERVICE_PID 2>/dev/null
+}
+trap on_exit INT TERM
+
+# wait for the service to become available
+HOST=${HOST:-localhost}
+PORT=${PORT:-4001}
+PROTO=${PROTO:-tcp}
+sleep 1 && while ! $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.\"" >/dev/null) ; do sleep 1; done
+
+wait

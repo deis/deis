@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+PATH=$PATH:/usr/lib/postgresql/9.3/bin
+
+# provide defaults for required envvars
+PG_CONFIG=${PG_CONFIG:-/etc/postgresql/9.3/main/postgresql.conf}
+PG_LISTEN=${PG_LISTEN:-*}
+
+# run idemptoent database configuration
+sudo -i -u postgres psql postgres <<EOF
+ALTER ROLE postgres WITH PASSWORD '{{ .deis_database_adminPass }}';
+CREATE ROLE {{ .deis_database_user }} WITH LOGIN;
+ALTER ROLE {{ .deis_database_user }} WITH PASSWORD '{{ .deis_database_password }}';
+CREATE DATABASE {{ .deis_database_name }} WITH OWNER {{ .deis_database_user }};
+EOF
+
+exit 0

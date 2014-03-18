@@ -1,0 +1,11 @@
+[template]
+src   = "reload"
+dest  = "/usr/local/bin/reload"
+owner = "root"
+group = "root"
+mode  = "0755"
+keys = [
+  "/deis/database",
+]
+check_cmd = "netstat -lnt | awk '$6 == \"LISTEN\" && $4 ~ \".5432\"' "
+reload_cmd = "/usr/local/bin/reload"
