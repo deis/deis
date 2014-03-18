@@ -78,9 +78,9 @@ Get Started
 If you don't have `Python`_ installed, you can download a binary executable
 version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.5.1.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.5.1.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.5.1.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.5.2.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.5.2.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.5.2.tgz
 
 2. `Register a User`_:
 
