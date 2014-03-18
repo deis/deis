@@ -3,20 +3,20 @@ omit =
     */venv/*
     */virtualenv/*
     *tests*
-    api/__init__.py
-    api/docker.py
+    controller/api/__init__.py
+    controller/api/docker.py
     client/__init__.py
     client/models.py
-    cm/__init__.py
-    cm/models.py
-    provider/digitalocean.py
-    provider/ec2.py
-    provider/models.py
-    provider/rackspace.py
-    provider/static.py
-    web/__init__.py
-    web/models.py
-    web/templatetags/__init__.py
+    controller/cm/__init__.py
+    controller/cm/models.py
+    controller/provider/digitalocean.py
+    controller/provider/ec2.py
+    controller/provider/models.py
+    controller/provider/rackspace.py
+    controller/provider/static.py
+    controller/web/__init__.py
+    controller/web/models.py
+    controller/web/templatetags/__init__.py
     # osx library files when not running in virtualenv
     /Library/*
     /System/*
@@ -34,5 +34,5 @@ exclude_lines =
     if __name__ == .__main__.:
 
 [html]
-extra_css = web/static/css/main.css
+extra_css = controller/web/static/css/main.css
 title = Deis Coverage Report
