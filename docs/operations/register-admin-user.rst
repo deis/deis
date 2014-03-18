@@ -43,6 +43,15 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
     Registered myuser
     Logged in as myuser
 
+.. note::
+
+    As of v0.5.1, the proxy was removed for Deis platform services. It has yet to be added
+    back in. See `issue 535`_ for more details.
+
+    As a workaround, use the following:
+
+    :code:`deis register http://deis.example.com:8000`
+
 Discover Provider Credentials
 -----------------------------
 .. important:: Provider API
@@ -87,3 +96,4 @@ To discover providers using the Deis client:
 
 
 .. _`pip`: http://www.pip-installer.org/en/latest/installing.html
+.. _`issue 535`: https://github.com/opdemand/deis/issues/535

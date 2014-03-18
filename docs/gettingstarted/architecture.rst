@@ -7,46 +7,47 @@
 Architecture
 ============
 
-Deis consists of 8 modules that combine to create a distributed PaaS.
-Each Deis module is deployed as one or more `Docker`_ containers.
+Deis consists of 9 modules that combine to create a distributed PaaS.
+Each Deis module is deployed as a :ref:`Container`.
 
-.. _controller:
+.. _arch_controller:
 
 Controller
 ----------
-The controller module is the "brains" of the Deis platform, in charge of:
 
-* Processing client API calls
-* Managing nodes that host containers and provide services
-* Managing containers that perform work
-* Managing proxies that route traffic to containers
-* Managing users, providers, flavors, keys and other base configuration
-
-The controller module includes:
-
-* `Django`_ for processing API calls
-* `Celery`_ for managing task queues
+See :ref:`Controller`.
 
 .. _database:
 
 Database
 --------
+
 The database module uses `PostgreSQL`_  to store durable platform state.
+
+.. _discovery:
+
+Discovery
+---------
+
+The discovery module uses `etcd`_ for shared configuration and service discovery across
+the cluster.
 
 .. _cache:
 
 Cache
 -----
+
 The cache module uses `Redis`_ to:
 
- * Store work queue data for Celery
- * Cache sessions and synchronize locks for Django
+ * Store work queue data for `Celery`_
+ * Cache sessions and synchronize locks for `Django`_
  * Store recent log data for the :ref:`Controller`
 
 .. _builder:
 
 Builder
 -------
+
 The builder module uses a `Git`_ server to process :ref:`Application` builds.
 The builder:
 
@@ -58,22 +59,24 @@ The builder:
  #. Pushes the new Docker image to the platform's :ref:`Registry`
  #. Creates a new :ref:`Release` on the :ref:`Controller`
 
-Once a new :ref:`Release` is generated, a new set of containers 
+Once a new :ref:`Release` is generated, a new set of containers
 is deployed across the platform automatically.
 
 .. _registry:
 
 Registry
 --------
+
 The registry module hosts `Docker`_ images on behalf of the platform.
-Image data is typically stored on a storage service like 
+Image data is typically stored on a storage service like
 `Amazon S3`_ or `OpenStack Storage`_.
 
 .. _logserver:
 
 Log Server
 ----------
-The log server module uses `rsyslog`_ to aggregate log data from 
+
+The log server module uses `rsyslog`_ to aggregate log data from
 across the platform.
 This data can then be queried by the :ref:`Controller`.
 
@@ -81,17 +84,20 @@ This data can then be queried by the :ref:`Controller`.
 
 Runtime
 -------
+
 The runtime module uses `Docker`_ to run containers for deployed applications.
 
 .. _proxy:
 
 Proxy
 -----
+
 The proxy module uses `Nginx`_ to route traffic to application containers.
- 
+
 .. _`Django`: https://www.djangoproject.com/
 .. _`Celery`: http://www.celeryproject.org/
 .. _`PostgreSQL`: http://www.postgresql.org/
+.. _`etcd`: https://github.com/coreos/etcd
 .. _`Redis`: http://redis.io/
 .. _`Git`: http://git-scm.com/
 .. _`Docker`: http://docker.io/

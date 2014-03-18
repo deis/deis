@@ -10,11 +10,11 @@ function echo_red {
 
 # Create a globally accessible command for dshell. So you can easily log in to a container.
 if [ ! -h /usr/local/bin/dsh ]; then
-	ln -s /vagrant/contrib/vagrant/util/dshell /usr/local/bin/dsh
+	sudo ln -s /vagrant/contrib/vagrant/util/dshell /usr/local/bin/dsh
 fi
 
 echo_bold "Updating Django site object from 'example.com' to 'deis-controller'..."
-cat <<EOF | dsh deis-database
+cat <<EOF | sudo dsh deis-database
 su postgres
 psql deis -c " \
   UPDATE django_site \

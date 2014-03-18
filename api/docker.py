@@ -20,20 +20,43 @@ def publish_release(repository_path, config, tag):
     results in a new Docker image at: <registry_url>/gabrtv/myapp:v23
     which contains the new configuration as ENV entries.
     """
-    image_id = _get_tag(repository_path, 'latest')
+    try:
+        image_id = _get_tag(repository_path, 'latest')
+    except RuntimeError:
+        # no image exists yet, so let's build one!
+        _put_first_image(repository_path)
+        image_id = _get_tag(repository_path, 'latest')
     image = _get_image(image_id)
     # construct the new image
     image['parent'] = image['id']
     image['id'] = _new_id()
     image['config']['Env'] = _construct_env(image['config']['Env'], config)
     # update and tag the new image
-    _put_image(image)
-    cookies = _put_layer(image['id'], _empty_tar_archive())
-    _put_checksum(image, cookies)
-    _put_tag(image['id'], repository_path, tag)
+    _commit(repository_path, image, _empty_tar_archive(), tag)
 
 
 # registry access
+
+
+def _commit(repository_path, image, layer, tag):
+    _put_image(image)
+    cookies = _put_layer(image['id'], layer)
+    _put_checksum(image, cookies)
+    _put_tag(image['id'], repository_path, tag)
+    # point latest to the new tag
+    _put_tag(image['id'], repository_path, 'latest')
+
+
+def _put_first_image(repository_path):
+    image = {
+        'id': _new_id(),
+        'parent': '',
+        'config': {
+            'Env': []
+        }
+    }
+    # tag as v0 in the registry
+    _commit(repository_path, image, _empty_tar_archive(), 'v0')
 
 
 def _get_tag(repository, tag):

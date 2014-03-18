@@ -16,4 +16,6 @@ Developer Guide
     install-client
     register-user
     deploy-application
+    buildpack
+    dockerfile
     manage-application

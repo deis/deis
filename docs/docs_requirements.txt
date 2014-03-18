@@ -1,20 +1,31 @@
 # Deis requirements for Sphinx documentation generation
+# This avoids readthedocs.org having to install many packages that aren't
+# actually needed to make the docs, while honoring their limitation of
+# one requirements file. Please keep it up-to-date with the root
+# requirements.txt and dev_requirements.txt files.
+#
+# NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
+# ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [pycrypto]
+#
 boto==2.23.0
 celery==3.1.8
 Django==1.6.2
+django-allauth==0.15.0
 django-guardian==1.1.1
 django-json-field==0.5.5
 djangorestframework==2.3.12
-dop==0.1.4
-etcd==2.0.1
+dop==0.1.6
+gunicorn==18.0
 paramiko==1.12.1
 pyrax==1.6.2
+python-etcd==0.3.0
 PyYAML==3.10
+South==0.8.4
 
 # Deis client requirements
 docopt==0.6.1
 
 # Deis documentation requirements
-Sphinx>=1.2.1
+Sphinx>=1.2.2
 smartypants>=1.8.3
 sphinxcontrib-httpdomain>=1.2.0

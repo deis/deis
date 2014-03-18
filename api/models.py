@@ -5,6 +5,7 @@ Data models for the Deis API.
 """
 
 from __future__ import unicode_literals
+import etcd
 import importlib
 import logging
 import os
@@ -19,7 +20,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
-import etcd
 from guardian.shortcuts import get_users_with_perms
 from json_field.fields import JSONField  # @UnusedImport
 

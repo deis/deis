@@ -1,4 +1,8 @@
 # Deis controller requirements
+#
+# NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
+# ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [pycrypto]
+#
 boto==2.23.0
 celery==3.1.8
 Django==1.6.2
@@ -7,7 +11,7 @@ django-guardian==1.1.1
 django-json-field==0.5.5
 django-yamlfield==0.5
 djangorestframework==2.3.12
-dop==0.1.4
+dop==0.1.6
 gevent==1.0
 gunicorn==18.0
 paramiko==1.12.1
