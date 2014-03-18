@@ -39,8 +39,8 @@ before_script:
     EOF
 
 script:
-  - cd controller && make flake8
-  - cd controller && make coverage
+  - make -C controller flake8
+  - make -C controller coverage
   - make -C docs
 
 after_success:
