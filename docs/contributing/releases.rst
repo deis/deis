@@ -66,7 +66,7 @@ opdemand/deis Server Repo
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
 - Create CLI binaries for Windows, Mac OS X, Debian
-    - ``pip install pyinstaller && make client_binary``
+    - ``pip install pyinstaller && make -C controller client``
     - build **deis-osx-X.Y.Z.tgz** on Mac OS X 10.8 for all Macs (10.9 uses
       LLVM, which makes our binary crash on earlier OS versions)
     - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
