@@ -96,7 +96,7 @@ Documentation
     * log in to http://pypi.python.org/ and use the web form at the
       `Deis Pypi`_ page to upload the zipfile
 - Check documentation for deis/* projects at the `Docker Index`_
-    * click "Settings" for each project (deis/server, deis/cache, etc.)
+    * click "Settings" for each project (deis/controller, deis/cache, etc.)
     * paste the contents of each README.md into the "long description" field if
       there are discrepencies. (These don't automatically sync up after the
       Trusted Build is first created.)

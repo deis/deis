@@ -43,8 +43,7 @@ docker pull deis/registry:latest
 docker pull deis/cache:latest
 docker pull deis/logger:latest
 docker pull deis/database:latest
-docker pull deis/server:latest
-docker pull deis/worker:latest
+docker pull deis/controller:latest
 docker pull deis/builder:latest
 
 # install chef 11.x deps
