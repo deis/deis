@@ -5,7 +5,7 @@ MAINTAINER Gabriel A. Monroy <gabriel@opdemand.com>
 RUN apt-get update
 RUN apt-get install -yq python-dev libpq-dev
 # install latest pip
-RUN wget -q https://raw.github.com/pypa/pip/master/contrib/get-pip.py && \
+RUN wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
     python get-pip.py && \
     rm get-pip.py
 
