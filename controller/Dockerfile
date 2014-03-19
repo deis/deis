@@ -3,7 +3,11 @@ MAINTAINER Gabriel A. Monroy <gabriel@opdemand.com>
 
 # install required system packages
 RUN apt-get update
-RUN apt-get install -yq python-pip python-dev libpq-dev
+RUN apt-get install -yq python-dev libpq-dev
+# install latest pip
+RUN wget -q https://raw.github.com/pypa/pip/master/contrib/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
 
 # install chef
 RUN apt-get install -yq ruby1.9.1 rubygems

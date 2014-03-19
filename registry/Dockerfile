@@ -5,7 +5,10 @@ MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list && apt-get update
 RUN apt-get install -y git-core build-essential python-dev \
     libevent-dev python-openssl liblzma-dev wget
-RUN apt-get install -yq python-pip
+# install latest pip
+RUN wget -q https://raw.github.com/pypa/pip/master/contrib/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
 
 # create a registry user
 RUN useradd -s /bin/bash registry
