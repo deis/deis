@@ -17,7 +17,7 @@ RUN apt-get update -q
 RUN apt-get install -yq lxc-docker-0.8.0
 
 # install latest pip
-RUN wget -q https://raw.github.com/pypa/pip/master/contrib/get-pip.py && \
+RUN wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
     python get-pip.py && \
     rm get-pip.py
 # install hook dependencies

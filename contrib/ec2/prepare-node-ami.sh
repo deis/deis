@@ -30,7 +30,7 @@ apt-get update
 apt-get dist-upgrade -yq
 
 # install latest pip
-wget -q https://raw.github.com/pypa/pip/master/contrib/get-pip.py && \
+wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
     python get-pip.py && \
     rm get-pip.py
 # install required packages
