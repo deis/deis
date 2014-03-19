@@ -1,0 +1,11 @@
+[template]
+src   = "authorized_keys"
+dest  = "/home/git/.ssh/authorized_keys"
+uid = 1000
+git = 1000
+mode  = "0600"
+keys = [
+  "/deis/builder/users",
+]
+#check_cmd  = "cat {{ .src }}"
+#reload_cmd = "/usr/sbin/service nginx restart"

@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# cleanup old pidfile's
+rm -f /var/run/rsyslog.pid
+
+# run the service in the foreground
+/usr/sbin/rsyslogd -n

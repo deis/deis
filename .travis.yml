@@ -18,13 +18,13 @@ before_install:
   - sudo apt-get install -qq libpq-dev
 
 install:
-  - pip install -r requirements.txt
-  - pip install -r dev_requirements.txt coveralls
+  - pip install -r controller/requirements.txt
+  - pip install -r controller/dev_requirements.txt coveralls
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
   - |
-    cat > deis/local_settings.py <<EOF
+    cat > controller/deis/local_settings.py <<EOF
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -39,8 +39,8 @@ before_script:
     EOF
 
 script:
-  - make flake8
-  - make coverage
+  - make -C controller flake8
+  - make -C controller coverage
   - make -C docs
 
 after_success:

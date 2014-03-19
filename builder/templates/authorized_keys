@@ -1,0 +1,3 @@
+{{ range $user := .deis_builder_users }}{{ range $key := $user.Nodes }}
+command="/usr/local/bin/gitreceive run {{ Base $user.Key }} {{ Base $key.Key }}",no-agent-forwarding,no-pty,no-user-rc,no-X11-forwarding,no-port-forwarding {{ $key.Value }}
+{{ end }}{{ end }}

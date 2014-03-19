@@ -1,0 +1,9 @@
+[template]
+src   = "config.yml"
+dest  = "/docker-registry/config/config.yml"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/registry",
+]

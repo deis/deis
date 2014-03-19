@@ -38,8 +38,8 @@ nosetests.xml
 *.sublime-workspace
 
 # Deis' config file
-deis/local_settings.py
-.secret_key
+controller/deis/local_settings.py
+controller/.secret_key
 
 # deis application logs
 logs/
@@ -53,6 +53,7 @@ venv/
 Vagrantfile.local
 *.swp
 .bundle
+/__init__.py
 
 # Chef setup
 .chef
