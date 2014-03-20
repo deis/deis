@@ -1,6 +1,6 @@
 [template]
 src   = "confd_settings.py"
-dest  = "/app/confd_settings.py"
+dest  = "/templates/confd_settings.py"
 uid = 1000
 gid = 1000
 mode  = "0640"

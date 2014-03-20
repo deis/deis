@@ -317,8 +317,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # import dynamic confd settings from /app, if they exist
 try:
-    if os.path.exists('/app/confd_settings.py'):
-        sys.path.append('/app')
+    if os.path.exists('/templates/confd_settings.py'):
+        sys.path.append('/templates')
         from confd_settings import *  # noqa
 except ImportError:
     pass

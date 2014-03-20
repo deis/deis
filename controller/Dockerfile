@@ -30,8 +30,11 @@ RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash
 RUN sed -i -e 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers
 RUN chown -R deis:deis /app
 
+# create directory for confd templates
+RUN mkdir -p /templates && chown -R deis:deis /templates
+
 # create directory for logs
-RUN mkdir -p /app/logs && chown -R deis:deis /app/logs
+RUN mkdir -p /var/log/deis && chown -R deis:deis /var/log/deis
 
 # define the execution environment
 CMD ["/app/bin/boot"]
