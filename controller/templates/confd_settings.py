@@ -26,7 +26,7 @@ BROKER_URL = 'redis://{{ .deis_cache_host }}:{{ .deis_cache_port }}/0'
 CELERY_RESULT_BACKEND = BROKER_URL
 
 # move log directory out of /app/deis
-DEIS_LOG_DIR = '/app/logs'
+DEIS_LOG_DIR = '/var/log/deis'
 
 # specify which provider API modules to load
 PROVIDER_MODULES = ('mock', 'digitalocean', 'ec2', 'rackspace', 'vagrant', 'static')
