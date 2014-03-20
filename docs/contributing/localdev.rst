@@ -153,7 +153,7 @@ For a Local Chef Server
 For a Hosted Chef Server
 
  * Login to the Web UI
- * Navigate to the Groups tab 
+ * Navigate to the Groups tab
  * Click "Edit" on the "Admins" row
  * Under "Clients" heading, toggle the "deis-controller" radio button
  * Save changes
@@ -247,15 +247,14 @@ Tail Logs
 
 .. code-block:: console
 
-    $ vagrant ssh -c 'sudo docker logs --follow=true deis-server'
-    $ vagrant ssh -c 'sudo docker logs --follow=true deis-worker'
+    $ vagrant ssh -c 'sudo docker logs --follow=true deis-controller'
 
 Restart Services
 ````````````````
 
 .. code-block:: console
 
-    $ vagrant ssh -c 'sudo restart deis-worker && sudo restart deis-server'
+    $ vagrant ssh -c 'sudo restart deis-controller'
 
 Django Admin
 ````````````

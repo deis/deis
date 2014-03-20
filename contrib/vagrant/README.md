@@ -80,8 +80,8 @@ the one from Pip.
 
 * To use Django's manage.py:
   * SSH in to the VM with `vagrant ssh`
-  * Use `dsh deis-server`
-  * Get into the Django server's path `cd /app/deis`
+  * Use `dsh deis-controller`
+  * Get into the Django server's path `cd /app/deis/controller`
   * Get a list of commands with; `./manage.py help`
 
 * Django's native web admin interface is available at http://deis-controller.local:8000/admin/
