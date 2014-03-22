@@ -29,7 +29,7 @@ wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
     python get-pip.py && \
     rm get-pip.py
 # install required packages
-apt-get install lxc-docker-0.8.0 fail2ban curl git inotify-tools make -yq
+apt-get install lxc-docker-0.9.0 fail2ban curl git inotify-tools make -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
