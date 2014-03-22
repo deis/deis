@@ -96,6 +96,7 @@
               {{ toctree(collapse=False, maxdepth=3) }}
               <ul class="current">
                 <li class="toctree-l1">
+                  {% if READTHEDOCS %}
                   <a class="reference internal" href="../" state="open">Versions</a>
                   <ul class="current">
                     {% for slug, url in versions %}
@@ -109,6 +110,7 @@
                     title="Switch to {{ slug }}">{{ slug }}</a></li>
                     {% endfor %}
                   </ul>
+                  {% endif %}
                 </li>
               </ul>
             </div>
