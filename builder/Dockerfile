@@ -51,6 +51,7 @@ RUN chown -R root:root /app
 
 # define the execution environment
 VOLUME /var/lib/docker
+WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22

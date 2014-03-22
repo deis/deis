@@ -31,5 +31,6 @@ VOLUME /data
 ADD . /app
 
 # define the execution environment
+WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5000

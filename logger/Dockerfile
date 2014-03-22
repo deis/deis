@@ -15,5 +15,6 @@ RUN mkdir -p /var/log/deis
 ADD . /app
 
 # prepare execution environment
+WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 514

@@ -11,5 +11,6 @@ RUN apt-get install -yq redis-server
 ADD . /app
 
 # define the execution environment
+WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 6379
