@@ -24,6 +24,11 @@ opdemand/deis-cookbook Chef Repo
 - Move any `deis-cookbook open issues`_ from the current release to the
   next milestone
 - Close the current `deis-cookbook milestone`_
+- Recreate CHANGELOG.md in the root of the project
+    * ``npm install github-changes``
+    * ``github-changes -o opdemand -r deis-cookbook -n vX.Y.Z``
+    * proofread the new CHANGELOG.md to ensure it was generated correctly
+    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
 - Run ``knife cookbook metadata .`` to update **metadata.json**. **DOUBLE-CHECK
@@ -51,6 +56,10 @@ opdemand/deis Server Repo
 - Move any `deis open issues`_ from the current release to the
   next milestone
 - Close the current `deis milestone`_
+- Recreate CHANGELOG.md in the root of the project
+    * ``github-changes -o opdemand -r deis -n vX.Y.Z``
+    * proofread the new CHANGELOG.md to ensure it was generated correctly
+    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
 - Update Berksfile with new release
@@ -84,6 +93,7 @@ opdemand/deis Server Repo
 
 Documentation
 -------------
+- (CHANGELOG.md files were regenerated and committed above.)
 - Docs are automatically published to http://docs.deis.io (the preferred alias
   for deis.readthedocs.org)
 - Log in to the http://deis.readthedocs.org admin
