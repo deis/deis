@@ -75,7 +75,7 @@ if [ $? -gt 0 ]; then
 fi
 
 # 'deis provider:discover' detects the host machine's user and IP address, however, that command cannot
-# be guareteed to run inside the deis codebase. Therefore we can't use that opportunity to discover
+# be guaranteed to run inside the deis codebase. Therefore we can't use that opportunity to discover
 # the path of the codebase on the host machine. Therefore we do it now as this script has to exist
 # inside the codebase.
 nodes_dir="$CODE_BASE_DIR/provider/vagrant/nodes"
