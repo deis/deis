@@ -17,14 +17,14 @@ from deis import settings
 # Deis-optimized EC2 amis -- with 3.8 kernel, chef 11 deps,
 # and large docker images (e.g. buildstep) pre-installed
 IMAGE_MAP = {
-    'ap-northeast-1': 'ami-59007158',
-    'ap-southeast-1': 'ami-4cb4e51e',
-    'ap-southeast-2': 'ami-6d5bc257',
-    'eu-west-1': 'ami-c3ef12b4',
-    'sa-east-1': 'ami-3b45e626',
-    'us-east-1': 'ami-d90408b0',
-    'us-west-1': 'ami-9c3906d9',
-    'us-west-2': 'ami-8c6a05bc',
+    'ap-northeast-1': 'ami-ae85ec9e',
+    'ap-southeast-1': 'ami-904919c2',
+    'ap-southeast-2': 'ami-a9db4393',
+    'eu-west-1': 'ami-01eb1576',
+    'sa-east-1': 'ami-d3cc6ece',
+    'us-east-1': 'ami-51382c38',
+    'us-west-1': 'ami-ec0d33a9',
+    'us-west-2': 'ami-a085ec90',
 }
 
 
