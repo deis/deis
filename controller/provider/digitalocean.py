@@ -91,7 +91,7 @@ def _get_droplet_kwargs(node, conn):
     return {
         'name': node['id'],
         'size_id': _get_id(conn.sizes(), params.get('size', '4GB')),
-        'image_id': _get_id(conn.images(show_all=False), params.get('image', 'deis-node-image')),
+        'image_id': _get_id(conn.images(my_images=True), params.get('image', 'deis-node-image')),
         'region_id': _get_id(conn.regions(), params.get('region', 'San Francisco 1')),
         'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(),
                         "deis-{formation}-{layer}".format(**node)))],
