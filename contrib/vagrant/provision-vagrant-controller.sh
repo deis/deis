@@ -11,7 +11,7 @@ function echo_color {
 
 THIS_DIR="$(cd $(dirname $0); pwd)" # absolute path
 CONTRIB_DIR=$(dirname "$THIS_DIR")
-CODE_BASE_DIR=$(dirname "$CONTRIB_DIR/../../")
+CODE_BASE_DIR="$CONTRIB_DIR/../controller"
 
 # For those upgrading from the pre-containerize branch, they may still have some redundant files
 # in their code base.
@@ -43,11 +43,6 @@ if [[ `uname -s` =~ Linux ]]; then
     exit 1
   fi
 fi
-
-echo_color "Ensuring submodules are cloned and up to date..."
-
-# Ensure all submodules are cloned and up to date
-git submodule init && git submodule update
 
 #################
 # chef settings #
@@ -83,14 +78,14 @@ fi
 # be guareteed to run inside the deis codebase. Therefore we can't use that opportunity to discover
 # the path of the codebase on the host machine. Therefore we do it now as this script has to exist
 # inside the codebase.
-nodes_dir="$CONTRIB_DIR/vagrant/nodes"
-nodes_path_file="$CONTRIB_DIR/vagrant/.host_nodes_dir"
+nodes_dir="$CODE_BASE_DIR/provider/vagrant/nodes"
+nodes_path_file="$CODE_BASE_DIR/provider/vagrant/.host_nodes_dir"
 echo $nodes_dir > $nodes_path_file
 
 # Add the Controller's public SSH key to user's machine. This allows the Controller to
 # issue vagrant commands on the host machine.
 echo_color "Ensuring presence of Controller's public key in your ~/.ssh/authorized_keys file..."
-KEY=$(cat util/ssh_keys/id_rsa_vagrant-deis-controller.pub)
+KEY=$(cat $CODE_BASE_DIR/provider/vagrant-util/ssh_keys/id_rsa_vagrant-deis-controller.pub)
 if [ -z "$(grep "$KEY" ~/.ssh/authorized_keys )" ]; then
   echo $KEY >> ~/.ssh/authorized_keys;
   echo_color "Key added."

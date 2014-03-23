@@ -5,7 +5,7 @@ cd /vagrant/contrib/vagrant/util/
 echo "which coverage > /dev/null" | ./dshell deis-controller
 if [ $? -ne 0 ]; then
 	cat <<-EOF | ./dshell deis-controller
-		cd /app/deis/controller
+		cd /app
 		pip install -r dev_requirements.txt
 	EOF
 else
