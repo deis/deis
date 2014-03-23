@@ -59,5 +59,5 @@ Vagrantfile.local
 .chef
 contrib/vagrant/knife-config/admin.pem
 contrib/vagrant/knife-config/chef-validator.pem
-contrib/vagrant/nodes/
-contrib/vagrant/.host_nodes_dir
+controller/provider/vagrant-util/nodes/
+controller/provider/vagrant-util/.host_nodes_dir

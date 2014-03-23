@@ -22,10 +22,10 @@ echo "Dropping and recreating Deis database..."
 echo "su postgres -c 'dropdb deis && createdb --encoding=utf8 --template=template0 deis'" | ./dshell deis-database
 
 echo "Running South migrations..."
-echo '/app/deis/controller/manage.py syncdb --migrate --noinput' | ./dshell deis-controller
+echo '/app/manage.py syncdb --migrate --noinput' | ./dshell deis-controller
 
 echo "Importing fixtures"
-echo '/app/deis/controller/manage.py loaddata /app/deis/api/fixtures/dev.json' | ./dshell deis-controller
+echo '/app/manage.py loaddata /app/api/fixtures/dev.json' | ./dshell deis-controller
 
 # Most of the fixture data is generic. However the host machine's SSH credentials will change
 # from developer to developer.
