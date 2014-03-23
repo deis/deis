@@ -78,8 +78,8 @@ fi
 # be guaranteed to run inside the deis codebase. Therefore we can't use that opportunity to discover
 # the path of the codebase on the host machine. Therefore we do it now as this script has to exist
 # inside the codebase.
-nodes_dir="$CODE_BASE_DIR/provider/vagrant/nodes"
-nodes_path_file="$CODE_BASE_DIR/provider/vagrant/.host_nodes_dir"
+nodes_dir="$CODE_BASE_DIR/provider/vagrant-util/nodes"
+nodes_path_file="$CODE_BASE_DIR/provider/vagrant-util/.host_nodes_dir"
 echo $nodes_dir > $nodes_path_file
 
 # Add the Controller's public SSH key to user's machine. This allows the Controller to
