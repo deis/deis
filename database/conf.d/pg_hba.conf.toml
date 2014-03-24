@@ -1,0 +1,11 @@
+[template]
+src   = "pg_hba.conf"
+dest  = "/etc/postgresql/9.3/main/pg_hba.conf"
+uid = 101
+gid = 104
+mode  = "0640"
+keys = [
+  "/deis/database",
+]
+#check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
+#reload_cmd = "/app/bin/reload"

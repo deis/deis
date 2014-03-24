@@ -1,0 +1,100 @@
+# The `common' part is automatically included (and possibly overriden by all
+# other flavors)
+common:
+    # Bucket for storage
+    boto_bucket: REPLACEME
+
+    # Google Cloud Storage Configuration
+    # See:
+    # https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
+    # for details on access and secret keys.
+    gs_access_key: REPLACEME
+    gs_secret_key: REPLACEME
+    gs_secure: REPLACEME
+
+    # Set a random string here
+    secret_key: {{ .deis_registry_secretKey }}
+
+
+# This is the default configuration when no flavor is specified
+dev:
+    storage: local
+    storage_path: /data
+    loglevel: debug
+
+{{ if .deis_registry_s3accessKey }}
+# To specify another flavor, set the environment variable SETTINGS_FLAVOR
+# $ export SETTINGS_FLAVOR=prod
+prod:
+    storage: s3
+    storage_path: "_env:STORAGE_PATH:/prod"
+    # Amazon S3 Storage Configuration
+    s3_access_key: {{ .deis_registry_s3accessKey }}
+    s3_secret_key: {{ .deis_registry_s3secretKey }}
+    s3_bucket: {{ .deis_registry_s3bucket }}
+    s3_encrypt: {{ .deis_registry_s3encrypt }}
+    s3_secure: {{ .deis_registry_s3secure }}
+    # Enabling LRU cache for small files. This speeds up read/write on small files
+    # when using a remote storage backend (like S3).
+    cache:
+        host: _env:CACHE_REDIS_HOST
+        port: _env:CACHE_REDIS_PORT
+        password: _env:CACHE_REDIS_PASSWORD
+    cache_lru:
+        host: _env:CACHE_LRU_REDIS_HOST
+        port: _env:CACHE_LRU_REDIS_PORT
+        password: _env:CACHE_LRU_REDIS_PASSWORD
+    # Enabling these options makes the Registry send an email on each code Exception
+    email_exceptions:
+        smtp_host: {{ .deis_registry_smtpHost }}
+        smtp_port: {{ .deis_registry_smtpPort }}
+        smtp_login: {{ .deis_registry_smtpLogin }}
+        smtp_password: {{ .deis_registry_smtpPassword }}
+        smtp_secure: {{ .deis_registry_smtpSecure }}
+        from_addr: {{ .deis_registry_smtpFrom }}
+        to_addr: {{ .deis_registry_smtpTo }}
+    # Enable bugsnag (set the API key)
+    bugsnag: REPLACEME
+{{ end }}
+
+# This flavor is automatically used by unit tests
+test:
+    storage: local
+    storage_path: /tmp/test
+
+# This flavor is for storing images in Openstack Swift
+{{ if .deis_registry_swiftAuthURL }}
+swift:
+    storage: swift
+    storage_path: "_env:STORAGE_PATH:/registry"
+    swift_authurl: {{ .deis_registry_swiftAuthURL }}
+    swift_container: {{ .deis_registry_swiftContainer }}
+    swift_user: {{ .deis_registry_swiftUser }}
+    swift_password: {{ .deis_registry_swiftPassword }}
+    swift_tenant_name: {{ .deis_registry_swiftTenantName }}
+    swift_region_name: {{ .deis_registry_swiftRegionName }}
+{{ end }}
+
+# This flavor stores the images in Glance (to integrate with openstack)
+# See also: https://github.com/dotcloud/openstack-docker
+openstack:
+    storage: glance
+    storage_alternate: local
+    storage_path: /tmp/registry
+    loglevel: debug
+
+# This flavor stores the images in Glance (to integrate with openstack)
+# and tags in Swift.
+{{ if .deis_registry_swiftAuthURL }}
+openstack-swift:
+    storage: glance
+    storage_path: /registry
+    storage_alternate: swift
+    # keystone authorization
+    swift_authurl: {{ .deis_registry_swiftAuthURL }}
+    swift_container: {{ .deis_registry_swiftContainer }}
+    swift_user: {{ .deis_registry_swiftUser }}
+    swift_password: {{ .deis_registry_swiftPassword }}
+    swift_tenant_name: {{ .deis_registry_swiftTenantName }}
+    swift_region_name: {{ .deis_registry_swiftRegionName }}
+{{ end }}

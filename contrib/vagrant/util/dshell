@@ -3,9 +3,9 @@
 # Convenience script for getting a terminal session on a docker container.
 # Usage: ./dshell <continer name> <command>
 # Examples:
-# `./dshell deis-server /bin/ls` lists the contents of the root home folder
-# `./dshell deis-server` gives an interactive prompt
-# echo "ls" | `./dshell deis-server` lists the contents of the root home folder
+# `./dshell deis-controller /bin/ls` lists the contents of the root home folder
+# `./dshell deis-controller` gives an interactive prompt
+# echo "ls" | `./dshell deis-controller` lists the contents of the root home folder
 
 ID=$(docker inspect $1 | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[0]["ID"]')
 lxc-attach -n $ID $2

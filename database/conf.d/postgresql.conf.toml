@@ -1,0 +1,11 @@
+[template]
+src   = "postgresql.conf"
+dest  = "/etc/postgresql/9.3/main/postgresql.conf"
+uid = 101
+gid = 104
+mode  = "0644"
+keys = [
+  "/deis/database",
+]
+#check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
+#reload_cmd = "/app/bin/reload"

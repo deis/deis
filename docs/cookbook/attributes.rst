@@ -86,8 +86,8 @@ mode
 * ``type: Boolean``
 
 When set to true, the cookbook will automatically mount ``default.deis.dev.source``'s
-submodules into their respective containers. For example, ``deis-server`` will
-automatically have the ``server`` project mounted for development.
+submodules into their respective containers. For example, ``deis-logger`` will
+automatically have the ``logger`` project mounted for development.
 
 source
 ~~~~~~

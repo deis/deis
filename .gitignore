@@ -38,8 +38,8 @@ nosetests.xml
 *.sublime-workspace
 
 # Deis' config file
-deis/local_settings.py
-.secret_key
+controller/deis/local_settings.py
+controller/.secret_key
 
 # deis application logs
 logs/
@@ -53,10 +53,11 @@ venv/
 Vagrantfile.local
 *.swp
 .bundle
+/__init__.py
 
 # Chef setup
 .chef
 contrib/vagrant/knife-config/admin.pem
 contrib/vagrant/knife-config/chef-validator.pem
-contrib/vagrant/nodes/
-contrib/vagrant/.host_nodes_dir
+controller/provider/vagrant-util/nodes/
+controller/provider/vagrant-util/.host_nodes_dir

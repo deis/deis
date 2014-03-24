@@ -2,10 +2,10 @@
 cd /vagrant/contrib/vagrant/util/
 
 # Use the `coverage' command to signal whether the container has the dev dependencies
-echo "which coverage > /dev/null" | ./dshell deis-server
+echo "which coverage > /dev/null" | ./dshell deis-controller
 if [ $? -ne 0 ]; then
-	cat <<-EOF | ./dshell deis-server
-		cd /app/deis
+	cat <<-EOF | ./dshell deis-controller
+		cd /app
 		pip install -r dev_requirements.txt
 	EOF
 else

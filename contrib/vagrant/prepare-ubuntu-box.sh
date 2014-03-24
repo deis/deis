@@ -31,8 +31,12 @@ echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/dock
 apt-get update
 apt-get dist-upgrade -yq
 
+# install latest pip
+wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
 # install required packages
-apt-get install lxc-docker-0.8.0 fail2ban curl git inotify-tools make python-setuptools python-pip -yq
+apt-get install lxc-docker-0.8.0 fail2ban curl git inotify-tools make -yq
 
 # wait for docker to start
 while [ ! -e /var/run/docker.sock ] ; do
@@ -46,8 +50,7 @@ docker pull deis/registry:latest
 docker pull deis/cache:latest
 docker pull deis/logger:latest
 docker pull deis/database:latest
-docker pull deis/server:latest
-docker pull deis/worker:latest
+docker pull deis/controller:latest
 docker pull deis/builder:latest
 
 # install chef 11.x deps

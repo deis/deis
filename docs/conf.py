@@ -17,11 +17,14 @@ import sys
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('..'))
+
+# Some hackery here to get deis.py to be importable as client.deis
+open(os.path.join('..', '__init__.py'), 'a')
+sys.path.insert(0, os.path.abspath(os.path.join('..')))
+sys.path.insert(0, os.path.abspath(os.path.join('..', 'controller')))
 # create local_settings.py for SECRET_KEY if necessary
 local_settings_path = os.path.abspath(
-    os.path.join('..', 'deis', 'local_settings.py'))
+    os.path.join('..', 'controller', 'deis', 'local_settings.py'))
 if not os.path.exists(local_settings_path):
     with open(local_settings_path, 'w') as local_settings:
         local_settings.write("SECRET_KEY = 'DummySecretKey'\n")
@@ -137,7 +140,7 @@ html_theme_path = ['theme']
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['../web/static']
+html_static_path = ['../controller/web/static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

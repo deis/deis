@@ -24,6 +24,11 @@ opdemand/deis-cookbook Chef Repo
 - Move any `deis-cookbook open issues`_ from the current release to the
   next milestone
 - Close the current `deis-cookbook milestone`_
+- Recreate CHANGELOG.md in the root of the project
+    * ``npm install github-changes``
+    * ``github-changes -o opdemand -r deis-cookbook -n vX.Y.Z``
+    * proofread the new CHANGELOG.md to ensure it was generated correctly
+    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
 - Run ``knife cookbook metadata .`` to update **metadata.json**. **DOUBLE-CHECK
@@ -51,6 +56,10 @@ opdemand/deis Server Repo
 - Move any `deis open issues`_ from the current release to the
   next milestone
 - Close the current `deis milestone`_
+- Recreate CHANGELOG.md in the root of the project
+    * ``github-changes -o opdemand -r deis -n vX.Y.Z``
+    * proofread the new CHANGELOG.md to ensure it was generated correctly
+    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
 - Update Berksfile with new release
@@ -66,7 +75,7 @@ opdemand/deis Server Repo
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
 - Create CLI binaries for Windows, Mac OS X, Debian
-    - ``pip install pyinstaller && make client_binary``
+    - ``pip install pyinstaller && make -C controller client``
     - build **deis-osx-X.Y.Z.tgz** on Mac OS X 10.8 for all Macs (10.9 uses
       LLVM, which makes our binary crash on earlier OS versions)
     - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
@@ -84,6 +93,7 @@ opdemand/deis Server Repo
 
 Documentation
 -------------
+- (CHANGELOG.md files were regenerated and committed above.)
 - Docs are automatically published to http://docs.deis.io (the preferred alias
   for deis.readthedocs.org)
 - Log in to the http://deis.readthedocs.org admin
@@ -96,7 +106,7 @@ Documentation
     * log in to http://pypi.python.org/ and use the web form at the
       `Deis Pypi`_ page to upload the zipfile
 - Check documentation for deis/* projects at the `Docker Index`_
-    * click "Settings" for each project (deis/server, deis/cache, etc.)
+    * click "Settings" for each project (deis/controller, deis/cache, etc.)
     * paste the contents of each README.md into the "long description" field if
       there are discrepencies. (These don't automatically sync up after the
       Trusted Build is first created.)

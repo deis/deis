@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# Run container-level tests for deis/cache.
+# This script is designed to be run inside the container.
+#
+
+# The absence of tests is considered an error.
+echo "Error: no tests"
+exit 1
