@@ -103,6 +103,13 @@ Commits that fix or close an issue should include a reference like
 *Closes #XXX* or *Fixes #XXX* in the commit message. Doing so will
 automatically close the `GitHub issue`_ when the pull request is merged.
 
+Merge Approval
+--------------
+Deis maintainers add "**LGTM**" (Looks Good To Me) in code
+review comments to indicate that a PR is acceptable. Any code change--other than
+a simple typo fix or one-line documentation change--requires at least two of
+Deis' maintainers to accept the change in this manner before it can be merged.
+
 .. _Python: http://www.python.org/
 .. _flake8: https://pypi.python.org/pypi/flake8/
 .. _pep8_tool: https://pypi.python.org/pypi/pep8/
