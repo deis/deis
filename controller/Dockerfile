@@ -9,7 +9,7 @@ RUN apt-get update && \
 RUN apt-get install -yq ruby1.9.1 rubygems
 RUN gem install --no-ri --no-rdoc chef
 
-# install latest pip
+# install recent pip
 RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
 
 # install requirements before ADD to cache layer and speed build
