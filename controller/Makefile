@@ -12,7 +12,7 @@ clean:
 	-docker rmi deis/controller
 
 test:
-	python manage.py test --noinput api cm provider web
+	python manage.py test --noinput api web
 
 runserver:
 	python manage.py runserver
@@ -21,7 +21,7 @@ db:
 	python manage.py syncdb --migrate --noinput
 
 coverage:
-	coverage run manage.py test --noinput api cm provider web
+	coverage run manage.py test --noinput api web
 	coverage html
 
 flake8:
