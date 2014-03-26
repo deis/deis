@@ -19,7 +19,9 @@ coverage>=3.7.1
 docutils>=0.11
 
 # Run "make flake8" to check python syntax and style
-flake8>=2.1.0
+flake8==2.1.0
+pep8==1.4.6
+pyflakes==0.7.3
 
 # Python expect is used to automate client-driven tests
 pexpect>=3.1
