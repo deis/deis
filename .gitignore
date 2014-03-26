@@ -45,6 +45,7 @@ controller/.secret_key
 logs/
 
 # Misc.
+Berksfile.lock
 .DS_Store
 htmlcov/
 .ruby-version
