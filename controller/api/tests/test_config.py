@@ -24,28 +24,19 @@ class ConfigTest(TestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        url = '/api/providers'
-        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
-        body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        url = '/api/flavors'
-        body = {'id': 'autotest', 'provider': 'autotest',
-                'params': json.dumps({'region': 'us-west-2'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post('/api/formations', json.dumps(
-            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
-            content_type='application/json')
+        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
+                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
+        response = self.client.post('/api/clusters', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_config(self):
         """
-        Test that config is auto-created during a new formation and that
-        new versions can be created using a PATCH
+        Test that config is auto-created for a new app and that
+        config can be updated using a PATCH
         """
         url = '/api/apps'
-        body = {'formation': 'autotest'}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -106,4 +97,4 @@ class ConfigTest(TestCase):
         """Test the text representation of a node."""
         config5 = self.test_config()
         config = Config.objects.get(uuid=config5['uuid'])
-        self.assertEqual(str(config), "{}-v4".format(config5['app']))
+        self.assertEqual(str(config), "{}-{}".format(config5['app'], config5['uuid'][:7]))

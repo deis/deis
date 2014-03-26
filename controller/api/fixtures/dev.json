@@ -44,86 +44,18 @@
     }
 },
 {
-    "pk": "1ef7e631-79e9-40f5-9702-e2edeab2d066", 
-    "model": "api.provider", 
-    "fields": {
-        "updated": "2014-01-27T22:45:55.145Z", 
-        "created": "2014-01-27T22:23:49.861Z", 
-        "owner": [
-            "devuser"
-        ], 
-        "type": "vagrant", 
-        "id": "vagrant", 
-        "creds": "{}"
-    }
-},
-{
-    "pk": "74ae11e2-6080-4817-934b-826d85418ce8", 
-    "model": "api.provider", 
-    "fields": {
-        "updated": "2014-01-27T22:23:49.857Z", 
-        "created": "2014-01-27T22:23:49.857Z", 
-        "owner": [
-            "devuser"
-        ], 
-        "type": "static", 
-        "id": "static", 
-        "creds": "{}"
-    }
-},
-{
-    "pk": "4b65ecb5-3c05-4d9b-9efa-e6b8195099ce", 
-    "model": "api.flavor", 
-    "fields": {
-        "updated": "2014-01-27T22:23:52.079Z", 
-        "created": "2014-01-27T22:23:52.078Z", 
-        "params": "{\"memory\": \"512\"}", 
-        "provider": "1ef7e631-79e9-40f5-9702-e2edeab2d066", 
-        "owner": [
-            "devuser"
-        ], 
-        "id": "vagrant-512"
-    }
-},
-{
-    "pk": "e62447cb-c08d-4e79-b3a4-ad19e52ad616", 
-    "model": "api.flavor", 
-    "fields": {
-        "updated": "2014-01-27T22:23:52.092Z", 
-        "created": "2014-01-27T22:23:52.092Z", 
-        "params": "{\"memory\": \"2048\"}", 
-        "provider": "1ef7e631-79e9-40f5-9702-e2edeab2d066", 
-        "owner": [
-            "devuser"
-        ], 
-        "id": "vagrant-2048"
-    }
-},
-{
-    "pk": "ebddfd0f-9d16-42b7-9f74-ac9ba4479234", 
-    "model": "api.flavor", 
-    "fields": {
-        "updated": "2014-01-27T22:23:52.090Z", 
-        "created": "2014-01-27T22:23:52.090Z", 
-        "params": "{\"memory\": \"1024\"}", 
-        "provider": "1ef7e631-79e9-40f5-9702-e2edeab2d066", 
-        "owner": [
-            "devuser"
-        ], 
-        "id": "vagrant-1024"
-    }
-},
-{
     "pk": "8b196fb8-5774-4512-b3cc-569af8894a6c", 
-    "model": "api.formation", 
+    "model": "api.cluster",
     "fields": {
         "updated": "2014-01-27T23:32:51.173Z", 
         "created": "2014-01-27T23:32:02.148Z", 
         "domain": "deis-controller.local", 
         "owner": [
             "devuser"
-        ], 
-        "nodes": "{}", 
+        ],
+	"hosts": "host1,host2,host3",
+	"auth": "base64string",
+	"options": "{}",
         "id": "dev"
     }
 }

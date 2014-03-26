@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import uuid
 
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -25,28 +24,16 @@ class HookTest(TestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        url = '/api/providers'
-        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
-        body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        url = '/api/flavors'
-        body = {
-            'id': 'autotest',
-            'provider': 'autotest',
-            'params': json.dumps({'region': 'us-west-2'}),
-        }
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post('/api/formations', json.dumps(
-            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
-            content_type='application/json')
+        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
+                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
+        response = self.client.post('/api/clusters', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_push_hook(self):
         """Test creating a Push via the API"""
         url = '/api/apps'
-        body = {'formation': 'autotest'}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -75,7 +62,7 @@ class HookTest(TestCase):
         """Test a user pushing to an unauthorized application"""
         # create a legit app as "autotest"
         url = '/api/apps'
-        body = {'formation': 'autotest'}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -109,33 +96,17 @@ class HookTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_build_hook(self):
-        """Test creating a Build via the API"""
-        formation_id = 'autotest'
-        url = '/api/formations/{formation_id}/layers'.format(**locals())
-        body = {'id': 'runtime', 'flavor': 'autotest', 'runtime': True, 'proxy': True}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        url = '/api/formations/{formation_id}/scale'.format(**locals())
-        body = {'runtime': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        """Test creating a Build via an API Hook"""
         url = '/api/apps'
-        body = {'formation': formation_id}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
         url = '/api/hooks/builds'.format(**locals())
-        sha, checksum = uuid.uuid4().hex, uuid.uuid4().hex
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
-                'sha': sha,
-                'checksum': checksum,
-                'procfile': {'web': 'node server.js'},
-                'config': {'PATH': '/usr/local/bin:/usr/bin:/usr/sbin'},
-                'url':
-                'http://deis-controller.local/slugs/{app_id}-{sha}.tar.gz'.format(**locals()),
-                'size': 12345}
+                'image': 'registry.local:5000/autotest/{app_id}:v2'.format(**locals())}
         # post the build without a session
         self.assertIsNone(self.client.logout())
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -144,18 +115,6 @@ class HookTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
         self.assertEqual(response.status_code, 200)
-        databag = response.data
-        # assert release structure
-        release = databag['release']
-        self.assertIn('config', release)
-        self.assertIn('build', release)
-        self.assertIn('version', release)
-        self.assertIn('domains', databag)
-        self.assertIn('containers', databag)
-        self.assertIn('web', databag['containers'])
-        self.assertIn('1', databag['containers']['web'])
-        self.assertEqual(databag['containers']['web']['1'], 'up')
-        # assert procfile structure
-        self.assertIn('procfile', release['build'])
-        self.assertIn('web', release['build']['procfile'])
-        self.assertEqual(release['build']['procfile']['web'], 'node server.js')
+        self.assertIn('release', response.data)
+        self.assertIn('version', response.data['release'])
+        self.assertIn('domains', response.data)

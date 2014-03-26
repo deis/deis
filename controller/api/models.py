@@ -17,29 +17,21 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.dispatch.dispatcher import Signal
 from django.utils.encoding import python_2_unicode_compatible
-from guardian.shortcuts import get_users_with_perms
-from json_field.fields import JSONField  # @UnusedImport
+from json_field.fields import JSONField
 
 from api import fields, tasks
 from docker import publish_release
-from provider import import_provider_module
 from utils import dict_diff, fingerprint
 
 
 logger = logging.getLogger(__name__)
 
-# import user-defined configuration management module
-CM = importlib.import_module(settings.CM_MODULE)
 
+def log_event(app, msg, level=logging.INFO):
+    msg = "{}: {}".format(app.id, msg)
+    logger.log(level, msg)
 
-# define custom signals
-release_signal = Signal(providing_args=['user', 'app'])
-
-
-# base models
 
 class AuditedModel(models.Model):
     """Add created and updated fields to a model."""
@@ -62,386 +54,25 @@ class UuidAuditedModel(AuditedModel):
         abstract = True
 
 
-# deis core models
-
 @python_2_unicode_compatible
-class Key(UuidAuditedModel):
-    """An SSH public key."""
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.CharField(max_length=128)
-    public = models.TextField(unique=True)
-
-    class Meta:
-        verbose_name = 'SSH Key'
-        unique_together = (('owner', 'id'))
-
-    def __str__(self):
-        return "{}...{}".format(self.public[:18], self.public[-31:])
-
-
-class ProviderManager(models.Manager):
-    """Manage database interactions for :class:`Provider`."""
-
-    def seed(self, user, **kwargs):
-        """
-        Seeds the database with Providers for clouds supported by Deis.
-        """
-        providers = [(p, p) for p in settings.PROVIDER_MODULES]
-        for p_id, p_type in providers:
-            self.create(owner=user, id=p_id, type=p_type, creds='{}')
-
-
-@python_2_unicode_compatible
-class Provider(UuidAuditedModel):
-    """Cloud provider settings for a user.
-
-    Available as `user.provider_set`.
+class Cluster(UuidAuditedModel):
+    """
+    Cluster used to run jobs
     """
 
-    objects = ProviderManager()
-
-    PROVIDERS = (
-        ('ec2', 'Amazon Elastic Compute Cloud (EC2)'),
-        ('mock', 'Mock Reference Provider'),
-        ('rackspace', 'Rackspace Open Cloud'),
-        ('static', 'Static Node'),
-        ('digitalocean', 'Digital Ocean'),
-        ('vagrant', 'Local Vagrant VMs'),
-    )
+    CLUSTER_TYPES = (('mock', 'Mock Cluster'),)
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64)
-    type = models.SlugField(max_length=16, choices=PROVIDERS)
-    creds = JSONField(blank=True)
+    id = models.CharField(max_length=128, unique=True)
+    type = models.CharField(max_length=16, choices=CLUSTER_TYPES)
 
-    class Meta:
-        unique_together = (('owner', 'id'),)
-
-    def __str__(self):
-        return "{}-{}".format(self.id, self.get_type_display())
-
-
-class FlavorManager(models.Manager):
-    """Manage database interactions for :class:`Flavor`\s."""
-
-    def seed(self, user, **kwargs):
-        """Seed the database with default Flavors for each cloud region."""
-        for provider_type in settings.PROVIDER_MODULES:
-            provider = import_provider_module(provider_type)
-            flavors = provider.seed_flavors()
-            p = Provider.objects.get(owner=user, id=provider_type)
-            for flavor in flavors:
-                flavor['provider'] = p
-                Flavor.objects.create(owner=user, **flavor)
-
-
-@python_2_unicode_compatible
-class Flavor(UuidAuditedModel):
-    """
-    Virtual machine flavors associated with a Provider
-
-    Params is a JSON field including unstructured data
-    for provider API calls, like region, zone, and size.
-    """
-    objects = FlavorManager()
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64)
-    provider = models.ForeignKey('Provider')
-    params = JSONField(blank=True)
-
-    class Meta:
-        unique_together = (('owner', 'id'),)
+    domain = models.CharField(max_length=128)
+    hosts = models.CharField(max_length=256)
+    auth = models.TextField()
+    options = JSONField(default='{}', blank=True)
 
     def __str__(self):
         return self.id
-
-
-@python_2_unicode_compatible
-class Formation(UuidAuditedModel):
-    """
-    Formation of nodes used to host applications
-    """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64, unique=True)
-    domain = models.CharField(max_length=128, blank=True, null=True)
-    nodes = JSONField(default='{}', blank=True)
-
-    class Meta:
-        unique_together = (('owner', 'id'),)
-
-    def __str__(self):
-        return self.id
-
-    def flat(self):
-        return {'id': self.id,
-                'domain': self.domain,
-                'nodes': self.nodes}
-
-    def build(self):
-        return
-
-    def destroy(self, *args, **kwargs):
-        for app in self.app_set.all():
-            app.destroy()
-        node_tasks = [tasks.destroy_node.si(n) for n in self.node_set.all()]
-        layer_tasks = [tasks.destroy_layer.si(l) for l in self.layer_set.all()]
-        group(node_tasks).apply_async().join()
-        group(layer_tasks).apply_async().join()
-        CM.purge_formation(self.flat())
-        self.delete()
-
-    def publish(self):
-        data = self.calculate()
-        CM.publish_formation(self.flat(), data)
-        return data
-
-    def converge(self, **kwargs):
-        databag = self.publish()
-        nodes = self.node_set.all()
-        subtasks = []
-        for n in nodes:
-            subtask = tasks.converge_node.si(n)
-            subtasks.append(subtask)
-        group(*subtasks).apply_async().join()
-        return databag
-
-    def calculate(self):
-        """Return a representation of this formation for config management"""
-        d = {}
-        d['id'] = self.id
-        d['domain'] = self.domain
-        d['nodes'] = {}
-        proxies = []
-        for n in self.node_set.all():
-            d['nodes'][n.id] = {'fqdn': n.fqdn,
-                                'runtime': n.layer.runtime,
-                                'proxy': n.layer.proxy}
-            if n.layer.proxy is True:
-                proxies.append(n.fqdn)
-        d['apps'] = {}
-        for a in self.app_set.all():
-            d['apps'][a.id] = a.calculate()
-            d['apps'][a.id]['proxy'] = {}
-            d['apps'][a.id]['proxy']['nodes'] = proxies
-            d['apps'][a.id]['proxy']['algorithm'] = 'round_robin'
-            d['apps'][a.id]['proxy']['port'] = 80
-            d['apps'][a.id]['proxy']['backends'] = []
-            d['apps'][a.id]['containers'] = containers = {}
-            for c in a.container_set.all().order_by('created'):
-                containers.setdefault(c.type, {})
-                containers[c.type].update(
-                    {c.num: "{0}:{1}".format(c.node.id, c.port)})
-                if c.type == 'web':
-                    d['apps'][a.id]['proxy']['backends'].append(
-                        "{0}:{1}".format(c.node.fqdn, c.port))
-        return d
-
-
-@python_2_unicode_compatible
-class Layer(UuidAuditedModel):
-    """
-    Layer of nodes used by the formation
-
-    All nodes in a layer share the same flavor and configuration.
-
-    The layer stores SSH settings used to trigger node convergence,
-    as well as other configuration used during node bootstrapping
-    (e.g. Chef Run List, Chef Environment)
-    """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64)
-
-    formation = models.ForeignKey('Formation')
-    flavor = models.ForeignKey('Flavor')
-
-    proxy = models.BooleanField(default=False)
-    runtime = models.BooleanField(default=False)
-
-    ssh_username = models.CharField(max_length=64, default='ubuntu')
-    ssh_private_key = models.TextField()
-    ssh_public_key = models.TextField()
-    ssh_port = models.SmallIntegerField(default=22)
-
-    # example: {'run_list': [deis::runtime'], 'environment': 'dev'}
-    config = JSONField(default='{}', blank=True)
-
-    class Meta:
-        unique_together = (('formation', 'id'),)
-
-    def __str__(self):
-        return self.id
-
-    def flat(self):
-        return {'id': self.id,
-                'provider_type': self.flavor.provider.type,
-                'creds': dict(self.flavor.provider.creds),
-                'formation': self.formation.id,
-                'flavor': self.flavor.id,
-                'params': dict(self.flavor.params),
-                'proxy': self.proxy,
-                'runtime': self.runtime,
-                'ssh_username': self.ssh_username,
-                'ssh_private_key': self.ssh_private_key,
-                'ssh_public_key': self.ssh_public_key,
-                'ssh_port': self.ssh_port,
-                'config': dict(self.config)}
-
-    def build(self):
-        return tasks.build_layer.delay(self).wait()
-
-    def destroy(self):
-        return tasks.destroy_layer.delay(self).wait()
-
-
-class NodeManager(models.Manager):
-
-    def new(self, formation, layer, fqdn=None):
-        existing_nodes = self.filter(formation=formation, layer=layer).order_by('-created')
-        if existing_nodes:
-            next_num = existing_nodes[0].num + 1
-        else:
-            next_num = 1
-        node = self.create(owner=formation.owner,
-                           formation=formation,
-                           layer=layer,
-                           num=next_num,
-                           id="{0}-{1}-{2}".format(formation.id, layer.id, next_num),
-                           fqdn=fqdn)
-        return node
-
-    def scale(self, formation, structure, **kwargs):
-        """Scale layers up or down to match requested structure."""
-        funcs = []
-        changed = False
-        for layer_id, requested in structure.items():
-            layer = formation.layer_set.get(id=layer_id)
-            nodes = list(layer.node_set.all().order_by('created'))
-            diff = requested - len(nodes)
-            if diff == 0:
-                continue
-            while diff < 0:
-                node = nodes.pop(0)
-                funcs.append(tasks.destroy_node.si(node))
-                diff = requested - len(nodes)
-                changed = True
-            while diff > 0:
-                node = self.new(formation, layer)
-                nodes.append(node)
-                funcs.append(tasks.build_node.si(node))
-                diff = requested - len(nodes)
-                changed = True
-        # launch/terminate nodes in parallel
-        if funcs:
-            group(*funcs).apply_async().join()
-        # always scale and balance every application
-        if nodes:
-            for app in formation.app_set.all():
-                Container.objects.scale(app, app.containers)
-                Container.objects.balance(formation)
-        # save new structure now that scaling was successful
-        formation.nodes.update(structure)
-        formation.save()
-        # force-converge nodes if there were new nodes or container rebalancing
-        if changed:
-            return formation.converge()
-        return formation.calculate()
-
-    def next_runtime_node(self, formation, container_type, reverse=False):
-        count = []
-        layers = formation.layer_set.filter(runtime=True)
-        runtime_nodes = []
-        for l in layers:
-            runtime_nodes.extend(Node.objects.filter(
-                formation=formation, layer=l).order_by('created'))
-        container_map = {n: [] for n in runtime_nodes}
-        containers = list(Container.objects.filter(
-            formation=formation, type=container_type).order_by('created'))
-        for c in containers:
-            container_map[c.node].append(c)
-        for n in container_map.keys():
-            # (2, node3), (2, node2), (3, node1)
-            count.append((len(container_map[n]), n))
-        if not count:
-            raise EnvironmentError('No nodes available for containers')
-        count.sort()
-        # reverse means order by greatest # of containers, otherwise fewest
-        if reverse:
-            count.reverse()
-        return count[0][1]
-
-    def next_runtime_port(self, formation):
-        containers = Container.objects.filter(formation=formation).order_by('-port')
-        if not containers:
-            return 10001
-        return containers[0].port + 1
-
-
-@python_2_unicode_compatible
-class Node(UuidAuditedModel):
-    """
-    Node used to host containers
-
-    List of nodes available as `formation.nodes`
-    """
-
-    objects = NodeManager()
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.CharField(max_length=64)
-    formation = models.ForeignKey('Formation')
-    layer = models.ForeignKey('Layer')
-    num = models.PositiveIntegerField()
-
-    # TODO: add celery beat tasks for monitoring node health
-    status = models.CharField(max_length=64, default='up')
-
-    provider_id = models.SlugField(max_length=64, blank=True, null=True)
-    fqdn = models.CharField(max_length=256, blank=True, null=True)
-    status = JSONField(blank=True, null=True)
-
-    class Meta:
-        unique_together = (('formation', 'id'),)
-
-    def __str__(self):
-        return self.id
-
-    def flat(self):
-        return {'id': self.id,
-                'provider_type': self.layer.flavor.provider.type,
-                'formation': self.formation.id,
-                'layer': self.layer.id,
-                'creds': dict(self.layer.flavor.provider.creds),
-                'params': dict(self.layer.flavor.params),
-                'runtime': self.layer.runtime,
-                'proxy': self.layer.proxy,
-                'ssh_username': self.layer.ssh_username,
-                'ssh_public_key': self.layer.ssh_public_key,
-                'ssh_private_key': self.layer.ssh_private_key,
-                'ssh_port': self.layer.ssh_port,
-                'config': dict(self.layer.config),
-                'provider_id': self.provider_id,
-                'fqdn': self.fqdn}
-
-    def build(self):
-        return tasks.build_node.delay(self).wait()
-
-    def destroy(self):
-        return tasks.destroy_node.delay(self).wait()
-
-    def converge(self):
-        return tasks.converge_node.delay(self).wait()
-
-    def run(self, command, **kwargs):
-        return tasks.run_node.delay(self, command).wait()
-
-
-def log_event(app, msg, level=logging.INFO):
-    msg = "{}: {}".format(app.id, msg)
-    logger.log(level, msg)
 
 
 @python_2_unicode_compatible
@@ -452,8 +83,8 @@ class App(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
-    formation = models.ForeignKey('Formation')
-    containers = JSONField(default='{}', blank=True)
+    cluster = models.ForeignKey('Cluster')
+    structure = JSONField(default='{}', blank=True)
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)
@@ -461,65 +92,60 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def flat(self):
-        return {'id': self.id,
-                'formation': self.formation.id,
-                'containers': dict(self.containers)}
+    def init(self, *args, **kwargs):
+        config = Config.objects.create(owner=self.owner, app=self, values={})
+        build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
+        Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
-    def build(self):
-        config = Config.objects.create(
-            version=1, owner=self.owner, app=self, values={})
-        build = Build.objects.create(owner=self.owner, app=self)
-        Release.objects.create(
-            version=1, owner=self.owner, app=self, config=config, build=build)
-        self.formation.publish()
+    def delete(self, *args, **kwargs):
+        for c in self.container_set.all():
+            c.destroy()
+        super(App, self).delete(*args, **kwargs)
 
-    def destroy(self):
-        CM.purge_app(self.flat())
-        self.delete()
-        self.formation.publish()
+    def deploy(self, release):
+        return tasks.deploy_release.delay(self, release)
 
-    def publish(self):
-        """Publish the application to configuration management"""
-        data = self.calculate()
-        CM.publish_app(self.flat(), data)
-        return data
-
-    def converge(self):
-        databag = self.publish()
-        self.formation.converge()
-        return databag
-
-    def calculate(self):
-        """Return a representation for configuration management"""
-        d = {}
-        d['id'] = self.id
-        d['release'] = {}
-        releases = self.release_set.all().order_by('-created')
-        if releases:
-            release = releases[0]
-            d['release']['version'] = release.version
-            d['release']['config'] = release.config.values
-            d['release']['build'] = {'image': release.build.image + ":v{}".format(release.version)}
-            if release.build.url:
-                d['release']['build']['url'] = release.build.url
-                d['release']['build']['procfile'] = release.build.procfile
-        d['containers'] = {}
-        containers = self.container_set.all()
-        if containers:
-            for c in containers:
-                d['containers'].setdefault(c.type, {})[str(c.num)] = c.status
-        d['domains'] = []
-        if self.formation.domain:
-            d['domains'].append('{}.{}'.format(self.id, self.formation.domain))
-        else:
-            for n in self.formation.node_set.filter(layer__proxy=True):
-                d['domains'].append(n.fqdn)
-        # add proper sharing and access controls
-        d['users'] = {self.owner.username: 'owner'}
-        for u in (get_users_with_perms(self)):
-            d['users'][u.username] = 'user'
-        return d
+    def scale(self, **kwargs):
+        """Scale containers up or down to match requested."""
+        requested_containers = self.structure.copy()
+        release = self.release_set.latest()
+        # increment new container nums off the most recent container
+        all_containers = self.container_set.all().order_by('-created')
+        container_num = 1 if not all_containers else all_containers[0].num + 1
+        msg = 'Containers scaled ' + ' '.join(
+            "{}={}".format(k, v) for k, v in requested_containers.items())
+        # iterate and scale by container type (web, worker, etc)
+        changed = False
+        to_add, to_remove = [], []
+        for container_type in requested_containers.keys():
+            containers = list(self.container_set.filter(type=container_type).order_by('created'))
+            requested = requested_containers.pop(container_type)
+            diff = requested - len(containers)
+            if diff == 0:
+                continue
+            changed = True
+            while diff < 0:
+                c = containers.pop()
+                to_remove.append(c)
+                diff += 1
+            while diff > 0:
+                c = Container.objects.create(owner=self.owner,
+                                             app=self,
+                                             release=release,
+                                             type=container_type,
+                                             num=container_num)
+                to_add.append(c)
+                container_num += 1
+                diff -= 1
+        if changed:
+            subtasks = []
+            if to_add:
+                subtasks.append(tasks.start_containers.s(to_add))
+            if to_remove:
+                subtasks.append(tasks.stop_containers.s(to_remove))
+            group(*subtasks).apply_async().join()
+            log_event(self, msg)
+        return changed
 
     def logs(self):
         """Return aggregated log data for this application."""
@@ -532,11 +158,9 @@ class App(UuidAuditedModel):
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
         # TODO: add support for interactive shell
-        nodes = self.formation.node_set.filter(layer__runtime=True).order_by('?')
-        if not nodes:
-            raise EnvironmentError('No nodes available to run command')
-        app_id, node = self.id, nodes[0]
-        release = self.release_set.order_by('-created')[0]
+        release = self.release_set.latest()
+        if not release.build:
+            raise EnvironmentError('No build exists, please run `git push deis master` first')
         # prepare ssh command
         version = release.version
         image = release.build.image + ":v{}".format(release.version)
@@ -545,104 +169,8 @@ class App(UuidAuditedModel):
                              for k, v in release.config.values.items()])
         log_event(self, "deis run '{}'".format(command))
         command = "sudo docker run {env_args} {docker_args} {command}".format(**locals())
-        return node.run(command)
-
-
-class ContainerManager(models.Manager):
-
-    def scale(self, app, structure, **kwargs):
-        """Scale containers up or down to match requested."""
-        requested_containers = structure.copy()
-        formation = app.formation
-        # increment new container nums off the most recent container
-        all_containers = app.container_set.all().order_by('-created')
-        container_num = 1 if not all_containers else all_containers[0].num + 1
-        msg = 'Containers scaled ' + ' '.join(
-            "{}={}".format(k, v) for k, v in requested_containers.items())
-        # iterate and scale by container type (web, worker, etc)
-        changed = False
-        for container_type in requested_containers.keys():
-            containers = list(app.container_set.filter(type=container_type).order_by('created'))
-            requested = requested_containers.pop(container_type)
-            diff = requested - len(containers)
-            if diff == 0:
-                continue
-            changed = True
-            while diff < 0:
-                # get the next node with the most containers
-                node = Node.objects.next_runtime_node(
-                    formation, container_type, reverse=True)
-                # delete a container attached to that node
-                for c in containers:
-                    if node == c.node:
-                        containers.remove(c)
-                        c.delete()
-                        diff += 1
-                        break
-            while diff > 0:
-                # get the next node with the fewest containers
-                node = Node.objects.next_runtime_node(formation, container_type)
-                port = Node.objects.next_runtime_port(formation)
-                c = Container.objects.create(owner=app.owner,
-                                             formation=formation,
-                                             node=node,
-                                             app=app,
-                                             type=container_type,
-                                             num=container_num,
-                                             port=port)
-                containers.append(c)
-                container_num += 1
-                diff -= 1
-        log_event(app, msg)
-        return changed
-
-    def balance(self, formation, **kwargs):
-        runtime_nodes = formation.node_set.filter(layer__runtime=True).order_by('created')
-        all_containers = self.filter(formation=formation).order_by('-created')
-        # get the next container number (e.g. web.19)
-        container_num = 1 if not all_containers else all_containers[0].num + 1
-        changed = False
-        app = None
-        # iterate by unique container type
-        for container_type in set([c.type for c in all_containers]):
-            # map node container counts => { 2: [b3, b4], 3: [ b1, b2 ] }
-            n_map = {}
-            for node in runtime_nodes:
-                ct = len(node.container_set.filter(type=container_type))
-                n_map.setdefault(ct, []).append(node)
-            # loop until diff between min and max is 1 or 0
-            while max(n_map.keys()) - min(n_map.keys()) > 1:
-                # get the most over-utilized node
-                n_max = max(n_map.keys())
-                n_over = n_map[n_max].pop(0)
-                if len(n_map[n_max]) == 0:
-                    del n_map[n_max]
-                # get the most under-utilized node
-                n_min = min(n_map.keys())
-                n_under = n_map[n_min].pop(0)
-                if len(n_map[n_min]) == 0:
-                    del n_map[n_min]
-                # delete the oldest container from the most over-utilized node
-                c = n_over.container_set.filter(type=container_type).order_by('created')[0]
-                app = c.app  # pull ref to app for recreating the container
-                c.delete()
-                # create a container on the most under-utilized node
-                self.create(owner=formation.owner,
-                            formation=formation,
-                            app=app,
-                            type=container_type,
-                            num=container_num,
-                            node=n_under,
-                            port=Node.objects.next_runtime_port(formation))
-                container_num += 1
-                # update the n_map accordingly
-                for n in (n_over, n_under):
-                    ct = len(n.container_set.filter(type=container_type))
-                    n_map.setdefault(ct, []).append(n)
-                changed = True
-        if app:
-            log_event(app, 'Containers balanced')
-        return changed
+        # TODO: wire up to job dispath
+        return 0, 'Not implemented yet'
 
 
 @python_2_unicode_compatible
@@ -651,53 +179,90 @@ class Container(UuidAuditedModel):
     Docker container used to securely host an application process.
     """
 
-    objects = ContainerManager()
-
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    formation = models.ForeignKey('Formation')
-    node = models.ForeignKey('Node')
     app = models.ForeignKey('App')
-    type = models.CharField(max_length=128)
+    release = models.ForeignKey('Release')
+    type = models.CharField(max_length=128, blank=True)
     num = models.PositiveIntegerField()
-    port = models.PositiveIntegerField()
-
-    # TODO: add celery beat tasks for monitoring node health
-    status = models.CharField(max_length=64, default='up')
+    # TODO: implement fsm
+    state = models.CharField(max_length=64, default='initializing')
 
     def short_name(self):
-        return "{}.{}".format(self.type, self.num)
+        if self.type:
+            return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
+        return "{}.{}".format(self.release.app.id, self.num)
     short_name.short_description = 'Name'
 
     def __str__(self):
-        return "{0} {1}".format(self.formation.id, self.short_name())
+        return self.short_name()
 
     class Meta:
         get_latest_by = '-created'
         ordering = ['created']
-        unique_together = (('app', 'type', 'num'),
-                           ('formation', 'port'))
 
+    def _scheduler(self, *args, **kwargs):
+        module_name = 'scheduler.' + self.app.cluster.type
+        mod = importlib.import_module(module_name)
+        return mod.SchedulerClient(self.app.cluster.id,
+                                   self.app.cluster.hosts,
+                                   self.app.cluster.auth)
 
-@python_2_unicode_compatible
-class Config(UuidAuditedModel):
-    """
-    Set of configuration values applied as environment variables
-    during runtime execution of the Application.
-    """
+    def job_id(self):
+        app = self.app.id
+        release = self.release
+        version = "v{}".format(release.version)
+        num = self.num
+        c_type = self.type
+        if not c_type:
+            job_id = "{app}.{version}.{num}".format(**locals())
+        else:
+            job_id = "{app}_{c_type}.{version}.{num}".format(**locals())
+        return job_id
 
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    app = models.ForeignKey('App')
-    version = models.PositiveIntegerField()
+    def create(self):
+        image = self.release.build.image
+        self._scheduler().create(self.job_id(), image, 'docker run {image}'.format(**locals()))
+        self.state = 'created'
+        self.save()
 
-    values = JSONField(default='{}', blank=True)
+    def start(self):
+        self.state = 'starting'
+        self.save()
+        self._scheduler().start(self.job_id())
+        self.state = 'up'
+        self.save()
 
-    class Meta:
-        get_latest_by = 'created'
-        ordering = ['-created']
-        unique_together = (('app', 'version'),)
+    def deploy(self, release):
+        old_job_id = self.job_id()
+        self.state = 'deploying'
+        self.save()
+        # update release
+        self.release = release
+        self.save()
+        # deploy new container
+        new_job_id = self.job_id()
+        image = self.release.build.image
+        self._scheduler().create(new_job_id, image, 'docker run {image}'.format(**locals()))
+        self._scheduler().start(new_job_id)
+        # destroy old container
+        self._scheduler().destroy(old_job_id)
+        self.state = 'up'
+        self.save()
 
-    def __str__(self):
-        return "{0}-v{1}".format(self.app.id, self.version)
+    def stop(self):
+        self.state = 'stopping'
+        self.save()
+        self._scheduler().stop(self.job_id())
+        self.state = 'stopped'
+        self.save()
+
+    def destroy(self):
+        self.state = 'destroying'
+        self.save()
+        # TODO: add check for active connections before killing
+        self._scheduler().destroy(self.job_id())
+        self.state = 'destroyed'
+        self.save()
 
 
 @python_2_unicode_compatible
@@ -733,18 +298,7 @@ class Build(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
-    sha = models.CharField('SHA', max_length=255, blank=True)
-    output = models.TextField(blank=True)
-
-    image = models.CharField(max_length=256, default='deis/slugbuilder')
-
-    procfile = JSONField(blank=True)
-    dockerfile = models.TextField(blank=True)
-    config = JSONField(blank=True)
-
-    url = models.URLField('URL')
-    size = models.IntegerField(blank=True, null=True)
-    checksum = models.CharField(max_length=255, blank=True)
+    image = models.CharField(max_length=256)
 
     class Meta:
         get_latest_by = 'created'
@@ -752,7 +306,27 @@ class Build(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.app.id, self.sha[:7])
+        return "{0}-{1}".format(self.app.id, self.uuid[:7])
+
+
+@python_2_unicode_compatible
+class Config(UuidAuditedModel):
+    """
+    Set of configuration values applied as environment variables
+    during runtime execution of the Application.
+    """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    values = JSONField(default='{}', blank=True)
+
+    class Meta:
+        get_latest_by = 'created'
+        ordering = ['-created']
+        unique_together = (('app', 'uuid'),)
+
+    def __str__(self):
+        return "{}-{}".format(self.app.id, self.uuid[:7])
 
 
 @python_2_unicode_compatible
@@ -769,7 +343,7 @@ class Release(UuidAuditedModel):
     summary = models.TextField(blank=True, null=True)
 
     config = models.ForeignKey('Config')
-    build = models.ForeignKey('Build', blank=True, null=True)
+    build = models.ForeignKey('Build')
 
     class Meta:
         get_latest_by = 'created'
@@ -778,6 +352,29 @@ class Release(UuidAuditedModel):
 
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
+
+    def new(self, user, config=None, build=None):
+        """
+        Create a new application release using the provided Build and Config
+        on behalf of a user.
+
+        Releases start at v1 and auto-increment.
+        """
+        if not config:
+            config = self.config
+        if not build:
+            build = self.build
+        # create new release and auto-increment version
+        new_version = self.version + 1
+        release = Release.objects.create(
+            owner=user, app=self.app, config=config,
+            build=build, version=new_version)
+        # publish release to registry as new docker image
+        if settings.REGISTRY_URL:
+            repository_path = "{}/{}".format(user.username, self.app.id)
+            tag = 'v{}'.format(new_version)
+            publish_release(repository_path, config.values, tag)
+        return release
 
     def previous(self):
         """
@@ -802,8 +399,8 @@ class Release(UuidAuditedModel):
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
-            if self.build != old_build and self.build.sha:
-                self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
+            if self.build != old_build:
+                self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
             # compare this config to the previous config
             old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff
@@ -831,48 +428,24 @@ class Release(UuidAuditedModel):
         super(Release, self).save(*args, **kwargs)
 
 
-@receiver(release_signal)
-def new_release(sender, **kwargs):
-    """
-    Catch a release_signal and create a new release
-    using the latest Build and Config for an application.
+@python_2_unicode_compatible
+class Key(UuidAuditedModel):
+    """An SSH public key."""
 
-    Releases start at v1 and auto-increment.
-    """
-    user, app, = kwargs['user'], kwargs['app']
-    last_release = app.release_set.latest()
-    config = kwargs.get('config', last_release.config)
-    build = kwargs.get('build', last_release.build)
-    # overwrite config with build.config if the keys don't exist
-    if build and build.config:
-        new_values = {}
-        for k, v in build.config.items():
-            if not k in config.values:
-                new_values[k] = v
-        if new_values:
-            # update with current config
-            new_values.update(config.values)
-            config = Config.objects.create(
-                version=config.version + 1, owner=user,
-                app=app, values=new_values)
-    # create new release and auto-increment version
-    new_version = last_release.version + 1
-    release = Release.objects.create(
-        owner=user, app=app, config=config,
-        build=build, version=new_version)
-    # publish release to registry as new docker image
-    if settings.REGISTRY_URL:
-        repository_path = "{}/{}".format(user.username, app.id)
-        tag = 'v{}'.format(new_version)
-        publish_release(repository_path, config.values, tag)
-    return release
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    id = models.CharField(max_length=128)
+    public = models.TextField(unique=True)
+
+    class Meta:
+        verbose_name = 'SSH Key'
+        unique_together = (('owner', 'id'))
+
+    def __str__(self):
+        return "{}...{}".format(self.public[:18], self.public[-31:])
 
 
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
-
-def _publish_to_cm(**kwargs):
-    kwargs['instance'].publish()
 
 
 def _log_build_created(**kwargs):
@@ -909,10 +482,6 @@ def _etcd_purge_user(**kwargs):
     _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
 
 
-# Connect Django model signals
-# Sync database updates with the configuration management backend
-post_save.connect(_publish_to_cm, sender=App, dispatch_uid='api.models')
-post_save.connect(_publish_to_cm, sender=Formation, dispatch_uid='api.models')
 # Log significant app-related events
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')

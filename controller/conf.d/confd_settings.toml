@@ -5,5 +5,9 @@ uid = 1000
 gid = 1000
 mode  = "0640"
 keys = [
-  "/deis",
+  "/deis/controller",
+  "/deis/cache",
+  "/deis/database",
 ]
+check_cmd = "test -e {{ .src }}"
+reload_cmd = "/app/bin/reload"

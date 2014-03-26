@@ -6,7 +6,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import json
 
-from Crypto.PublicKey import RSA
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -24,7 +23,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import docker, models, serializers
-from .exceptions import BuildFormationError, UserRegistrationException
+from .exceptions import UserRegistrationException
 
 from django.conf import settings
 
@@ -60,8 +59,6 @@ class IsOwner(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if hasattr(obj, 'owner'):
             return obj.owner == request.user
-        elif hasattr(obj, 'formation'):
-            return obj.formation.owner == request.user
         else:
             return False
 
@@ -143,12 +140,6 @@ class UserRegistrationView(viewsets.GenericViewSet,
     permission_classes = (IsAnonymous, HasRegistrationAuth)
     serializer_class = serializers.UserSerializer
 
-    def post_save(self, user, created=False):
-        """Seed both `Providers` and `Flavors` after registration."""
-        if created:
-            models.Provider.objects.seed(user)
-            models.Flavor.objects.seed(user)
-
     def pre_save(self, obj):
         """Replicate UserManager.create_user functionality."""
         now = timezone.now()
@@ -191,185 +182,17 @@ class OwnerViewSet(viewsets.ModelViewSet):
         return self.model.objects.filter(owner=self.request.user)
 
 
-class KeyViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Key`."""
+class ClusterViewSet(viewsets.ModelViewSet):
+    """RESTful views for :class:`~api.models.Cluster`."""
 
-    model = models.Key
-    serializer_class = serializers.KeySerializer
-    lookup_field = 'id'
-
-
-class ProviderViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Provider`."""
-
-    model = models.Provider
-    serializer_class = serializers.ProviderSerializer
-    lookup_field = 'id'
-
-
-class FlavorViewSet(OwnerViewSet):
-    """RESTful views for :class:`~api.models.Flavor`."""
-
-    model = models.Flavor
-    serializer_class = serializers.FlavorSerializer
-    lookup_field = 'id'
-
-    def update(self, request, *args, **kwargs):
-        """
-        Override default update behavior to ensure that the params
-        field is handled as a dict merge.
-        """
-        params = self.get_object().params
-        new_params = json.loads(request.DATA.get('params', '{}'))
-        params.update(new_params)
-        # remove param if we provided a null value
-        [params.pop(k) for k, v in params.items() if v is None]
-        request.DATA['params'] = json.dumps(params)
-        return super(FlavorViewSet, self).update(request, *args, **kwargs)
-
-
-class FormationViewSet(viewsets.ModelViewSet):
-    """RESTful views for :class:`~api.models.Formation`."""
-
-    model = models.Formation
-    serializer_class = serializers.FormationSerializer
+    model = models.Cluster
+    serializer_class = serializers.ClusterSerializer
     permission_classes = (permissions.IsAuthenticated, IsAdminOrSafeMethod)
     lookup_field = 'id'
 
     def pre_save(self, obj):
         if not hasattr(obj, 'owner'):
             obj.owner = self.request.user
-
-    def post_save(self, formation, created=False, **kwargs):
-        if created:
-            formation.build()
-
-    def scale(self, request, **kwargs):
-        new_structure = {}
-        try:
-            for target, count in request.DATA.items():
-                new_structure[target] = int(count)
-        except ValueError:
-            return Response('Invalid scaling format',
-                            status=status.HTTP_400_BAD_REQUEST)
-        # check for empty credentials
-        for p in models.Provider.objects.filter(owner=request.user):
-            if p.creds:
-                break
-        else:
-            return Response('No provider credentials available',
-                            status=status.HTTP_400_BAD_REQUEST)
-        formation = self.get_object()
-        try:
-            databag = models.Node.objects.scale(formation, new_structure)
-        except (models.Layer.DoesNotExist, EnvironmentError) as err:
-            return Response(str(err),
-                            status=status.HTTP_400_BAD_REQUEST)
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def balance(self, request, **kwargs):
-        formation = self.get_object()
-        databag = models.Container.objects.balance(formation)
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def calculate(self, request, **kwargs):
-        formation = self.get_object()
-        databag = formation.calculate()
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def converge(self, request, **kwargs):
-        formation = self.get_object()
-        databag = formation.converge()
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def destroy(self, request, **kwargs):
-        formation = self.get_object()
-        formation.destroy()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class FormationScopedViewSet(viewsets.ModelViewSet):
-
-    permission_classes = (permissions.IsAuthenticated, IsAdmin)
-
-    def pre_save(self, obj):
-        if not hasattr(obj, 'owner'):
-            obj.owner = self.request.user
-
-    def get_queryset(self, **kwargs):
-        formations = models.Formation.objects.all()
-        formation = get_object_or_404(formations, id=self.kwargs['id'])
-        return self.model.objects.filter(formation=formation)
-
-
-class FormationLayerViewSet(FormationScopedViewSet):
-    """RESTful views for :class:`~api.models.Layer`."""
-
-    model = models.Layer
-    serializer_class = serializers.LayerSerializer
-
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = get_object_or_404(qs, id=self.kwargs['layer'])
-        return obj
-
-    def create(self, request, **kwargs):
-        request._data = request.DATA.copy()
-        formation = models.Formation.objects.get(id=self.kwargs['id'])
-        request.DATA['formation'] = formation.id
-        if not 'ssh_private_key' in request.DATA and not 'ssh_public_key' in request.DATA:
-            # SECURITY: figure out best way to get keys with proper entropy
-            key = RSA.generate(2048)
-            request.DATA['ssh_private_key'] = key.exportKey('PEM')
-            request.DATA['ssh_public_key'] = key.exportKey('OpenSSH')
-        return super(FormationLayerViewSet, self).create(request, **kwargs)
-
-    def post_save(self, layer, created=False, **kwargs):
-        if created:
-            try:
-                layer.build()
-            except EnvironmentError as err:
-                raise BuildFormationError(str(err))
-
-    def destroy(self, request, **kwargs):
-        layer = self.get_object()
-        try:
-            layer.destroy()
-        except EnvironmentError as err:
-            raise BuildFormationError(str(err))
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class FormationNodeViewSet(FormationScopedViewSet):
-    """RESTful views for :class:`~api.models.Node`."""
-
-    model = models.Node
-    serializer_class = serializers.NodeSerializer
-
-    def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = get_object_or_404(qs, id=self.kwargs['node'])
-        return obj
-
-    def add(self, request, **kwargs):
-        fqdn = request.DATA['fqdn']
-        formation = models.Formation.objects.get(id=self.kwargs['id'])
-        layer = models.Layer.objects.get(id=request.DATA['layer'])
-        if self.model.objects.filter(fqdn=fqdn, formation=formation, layer=layer).exists():
-            msg = "A node with fqdn={} already exists in the {} formation".format(fqdn, formation)
-            return Response(data=msg, status=status.HTTP_409_CONFLICT)
-        node = models.Node.objects.new(formation, layer, fqdn)
-        node.build()
-        return Response(status=status.HTTP_201_CREATED)
-
-    def destroy(self, request, **kwargs):
-        node = self.get_object()
-        node.destroy()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AppPermsViewSet(viewsets.ViewSet):
@@ -393,7 +216,6 @@ class AppPermsViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
-        app.publish()
         models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
@@ -404,7 +226,6 @@ class AppPermsViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, username=kwargs['username'])
         if user.has_perm(self.perm, app):
             remove_perm(self.perm, user, app)
-            app.publish()
             models.log_event(app, "User {} was revoked access to {}".format(user, app))
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
@@ -434,22 +255,6 @@ class AdminPermsViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class NodeViewSet(FormationNodeViewSet):
-    """RESTful views for :class:`~api.models.Node`."""
-
-    def get_queryset(self, **kwargs):
-        return self.model.objects.all()
-
-    def converge(self, request, **kwargs):
-        node = self.get_object()
-        try:
-            output, _ = node.converge()
-        except RuntimeError as e:
-            return Response(e.output, status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content_type='text/plain')
-        return Response(output, status=status.HTTP_200_OK, content_type='text/plain')
-
-
 class AppViewSet(OwnerViewSet):
     """RESTful views for :class:`~api.models.App`."""
 
@@ -460,37 +265,14 @@ class AppViewSet(OwnerViewSet):
 
     def get_queryset(self, **kwargs):
         """
-        Filter Apps by `owner` attribute or the
-        `api.use_formation` permission.
+        Filter Apps by `owner` attribute or the `api.use_app` permission.
         """
         return super(AppViewSet, self).get_queryset(**kwargs) | \
             get_objects_for_user(self.request.user, 'api.use_app')
 
     def post_save(self, app, created=False, **kwargs):
         if created:
-            app.build()
-        app.formation.converge(controller=True)
-
-    def pre_save(self, app, created=False, **kwargs):
-        if not app.pk and not app.formation.domain and app.formation.app_set.count() > 0:
-            raise EnvironmentError('Formation does not support multiple apps')
-        return super(AppViewSet, self).pre_save(app, **kwargs)
-
-    def create(self, request, **kwargs):
-        if not 'formation' in request.DATA:
-            count = models.Formation.objects.count()
-            if count == 1:
-                request.DATA['formation'] = models.Formation.objects.first()
-            elif count == 0:
-                return Response('No formations available',
-                                status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response('Could not determine default formation',
-                                status=status.HTTP_400_BAD_REQUEST)
-        try:
-            return OwnerViewSet.create(self, request, **kwargs)
-        except EnvironmentError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            app.init()
 
     def scale(self, request, **kwargs):
         new_structure = {}
@@ -502,20 +284,11 @@ class AppViewSet(OwnerViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
-            models.Container.objects.scale(app, new_structure)
+            app.structure = new_structure
+            app.scale()
         except EnvironmentError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
-        # save new structure now that scaling was successful
-        app.containers.update(new_structure)
-        app.save()
-        databag = app.converge()
-        return Response(databag, status=status.HTTP_200_OK,
-                        content_type='application/json')
-
-    def calculate(self, request, **kwargs):
-        app = self.get_object()
-        databag = app.calculate()
-        return Response(databag, status=status.HTTP_200_OK,
+        return Response(status=status.HTTP_204_NO_CONTENT,
                         content_type='application/json')
 
     def logs(self, request, **kwargs):
@@ -539,12 +312,6 @@ class AppViewSet(OwnerViewSet):
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
-    def destroy(self, request, **kwargs):
-        app = self.get_object()
-        app.destroy()
-        app.formation.converge(controller=True)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class BaseAppViewSet(viewsets.ModelViewSet):
 
@@ -565,6 +332,25 @@ class BaseAppViewSet(viewsets.ModelViewSet):
         raise PermissionDenied()
 
 
+class AppBuildViewSet(BaseAppViewSet):
+    """RESTful views for :class:`~api.models.Build`."""
+
+    model = models.Build
+    serializer_class = serializers.BuildSerializer
+
+    def post_save(self, obj, created=False):
+        if created:
+            release = obj.app.release_set.latest()
+            new_release = release.new(self.request.user, build=obj)
+            obj.app.deploy(new_release)
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+        return super(AppBuildViewSet, self).create(request, *args, **kwargs)
+
+
 class AppConfigViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Config`."""
 
@@ -581,18 +367,14 @@ class AppConfigViewSet(BaseAppViewSet):
 
     def post_save(self, obj, created=False):
         if created:
-            models.release_signal.send(
-                sender=self, config=obj, app=obj.app,
-                user=self.request.user)
-            # converge after each config update
-            obj.app.formation.converge()
+            release = obj.app.release_set.latest()
+            new_release = release.new(self.request.user, config=obj)
+            obj.app.deploy(new_release)
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
         # assume an existing config object exists
         obj = self.get_object()
-        # increment version and use the same formation
-        request.DATA['version'] = obj.version + 1
         request.DATA['app'] = obj.app
         # merge config values
         values = obj.values.copy()
@@ -602,25 +384,6 @@ class AppConfigViewSet(BaseAppViewSet):
         [values.pop(k) for k, v in provided.items() if v is None]
         request.DATA['values'] = values
         return super(AppConfigViewSet, self).create(request, *args, **kwargs)
-
-
-class AppBuildViewSet(BaseAppViewSet):
-    """RESTful views for :class:`~api.models.Build`."""
-
-    model = models.Build
-    serializer_class = serializers.BuildSerializer
-
-    def post_save(self, obj, created=False):
-        if created:
-            models.release_signal.send(
-                sender=self, build=obj, app=obj.app,
-                user=self.request.user)
-
-    def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
-        request._data = request.DATA.copy()
-        request.DATA['app'] = app
-        return super(AppBuildViewSet, self).create(request, *args, **kwargs)
 
 
 class AppReleaseViewSet(BaseAppViewSet):
@@ -679,6 +442,14 @@ class AppContainerViewSet(OwnerViewSet):
         return obj
 
 
+class KeyViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Key`."""
+
+    model = models.Key
+    serializer_class = serializers.KeySerializer
+    lookup_field = 'id'
+
+
 class BaseHookViewSet(viewsets.ModelViewSet):
 
     permission_classes = (HasBuilderAuth,)
@@ -724,18 +495,13 @@ class BuildHookViewSet(BaseHookViewSet):
             request.DATA['owner'] = user
             super(BuildHookViewSet, self).create(request, *args, **kwargs)
             # return the application databag
-            return Response(app.calculate(), status=status.HTTP_200_OK)
+            response = {'release': {'version': app.release_set.latest().version},
+                        'domains': ['.'.join([app.id, app.cluster.domain])]}
+            return Response(response, status=status.HTTP_200_OK)
         raise PermissionDenied()
 
-    def post_save(self, obj, created=False):
+    def post_save(self, build, created=False):
         if created:
-            # create a new release
-            models.release_signal.send(sender=self, build=obj, app=obj.app, user=obj.owner)
-            # see if we need to scale an initial web container
-            app = obj.app
-            if len(app.formation.node_set.filter(layer__runtime=True)) > 0 and \
-               len(app.container_set.filter(type='web')) < 1:
-                # scale an initial web containers
-                models.Container.objects.scale(app, {'web': 1})
-            # publish and converge the application
-            app.converge()
+            release = build.app.release_set.latest()
+            new_release = release.new(build.owner, build=build)
+            build.app.deploy(new_release)
