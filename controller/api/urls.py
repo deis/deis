@@ -1,169 +1,25 @@
 """
 RESTful URL patterns and routing for the Deis API app.
 
-Keys
-====
 
-.. http:get:: /api/keys/(string:id)/
+Clusters
+========
 
-  Retrieve a :class:`~api.models.Key` by its `id`.
+.. http:get:: /api/clusters/(string:id)/
 
-.. http:delete:: /api/keys/(string:id)/
+  Retrieve a :class:`~api.models.Cluster` by its `id`.
 
-  Destroy a :class:`~api.models.Key` by its `id`.
+.. http:delete:: /api/clusters/(string:id)/
 
-.. http:get:: /api/keys/
+  Destroy a :class:`~api.models.Cluster` by its `id`.
 
-  List all :class:`~api.models.Key`\s.
+.. http:get:: /api/clusters/
 
-.. http:post:: /api/keys/
+  List all :class:`~api.models.Cluster`\s.
 
-  Create a new :class:`~api.models.Key`.
+.. http:post:: /api/clusters/
 
-
-Providers
-=========
-
-.. http:get:: /api/providers/(string:id)/
-
-  Retrieve a :class:`~api.models.Provider` by its `id`.
-
-.. http:patch:: /api/providers/(string:id)/
-
-  Update parts of a :class:`~api.models.Provider`.
-
-.. http:delete:: /api/providers/(string:id)/
-
-  Destroy a :class:`~api.models.Provider` by its `id`.
-
-.. http:get:: /api/providers/
-
-  List all :class:`~api.models.Provider`\s.
-
-.. http:post:: /api/providers/
-
-  Create a new :class:`~api.models.Provider`.
-
-
-Flavors
-=======
-
-.. http:get:: /api/flavors/(string:id)/
-
-  Retrieve a :class:`~api.models.Flavor` by its `id`.
-
-.. http:patch:: /api/flavors/(string:id)/
-
-  Update parts of a :class:`~api.models.Flavor`.
-
-.. http:delete:: /api/flavors/(string:id)/
-
-  Destroy a :class:`~api.models.Flavor` by its `id`.
-
-.. http:get:: /api/flavors/
-
-  List all :class:`~api.models.Flavor`\s.
-
-.. http:post:: /api/flavors/
-
-  Create a new :class:`~api.models.Flavor`.
-
-
-Formations
-==========
-
-.. http:get:: /api/formations/(string:id)/
-
-  Retrieve a :class:`~api.models.Formation` by its `id`.
-
-.. http:patch:: /api/formations/(string:id)/
-
-  Update parts of a :class:`~api.models.Formation`.
-
-.. http:delete:: /api/formations/(string:id)/
-
-  Destroy a :class:`~api.models.Formation` by its `id`.
-
-.. http:get:: /api/formations/
-
-  List all :class:`~api.models.Formation`\s.
-
-.. http:post:: /api/formations/
-
-  Create a new :class:`~api.models.Formation`.
-
-  See also
-  :meth:`FormationViewSet.post_save() <api.views.FormationViewSet.post_save>`
-
-
-Formation Infrastructure
-------------------------
-
-.. http:get:: /api/formations/(string:id)/layers/(string:id)/
-
-  Retrieve a :class:`~api.models.Layer` by its `id`.
-
-.. http:patch:: /api/formations/(string:id)/layers/(string:id)/
-
-  Update parts of a :class:`~api.models.Layer`.
-
-.. http:delete:: /api/formations/(string:id)/layers/(string:id)/
-
-  Destroy a :class:`~api.models.Layer` by its `id`.
-
-  See also
-  :meth:`FormationLayerViewSet.destroy() <api.views.FormationLayerViewSet.destroy>`
-
-.. http:get:: /api/formations/(string:id)/layers/
-
-  List all :class:`~api.models.Layer`\s.
-
-.. http:post:: /api/formations/(string:id)/layers/
-
-  Create a new :class:`~api.models.Layer`.
-
-  See also
-  :meth:`FormationLayerViewSet.create() <api.views.FormationLayerViewSet.create>`
-
-.. http:get:: /api/formations/(string:id)/nodes/(string:id)/
-
-  Retrieve a :class:`~api.models.Node` by its `id`.
-
-.. http:post:: /api/formations/(string:id)/nodes/
-
-  Create a new :class:`~api.models.Node` for an existing instance.
-
-.. http:delete:: /api/formations/(string:id)/nodes/(string:id)/
-
-  Destroy a :class:`~api.models.Node` by its `id`.
-
-.. http:get:: /api/formations/(string:id)/nodes/
-
-  List all :class:`~api.models.Node`\s.
-
-
-Formation Actions
------------------
-
-.. http:post:: /api/formations/(string:id)/scale/
-
-  See also
-  :meth:`FormationViewSet.scale() <api.views.FormationViewSet.scale>`
-
-.. http:post:: /api/formations/(string:id)/balance/
-
-  See also
-  :meth:`FormationViewSet.balance() <api.views.FormationViewSet.balance>`
-
-.. http:post:: /api/formations/(string:id)/calculate/
-
-  See also
-  :meth:`FormationViewSet.calculate() <api.views.FormationViewSet.calculate>`
-
-.. http:post:: /api/formations/(string:id)/converge/
-
-  See also
-  :meth:`FormationViewSet.converge() <api.views.FormationViewSet.converge>`
+  Create a new :class:`~api.models.Cluster`.
 
 
 Applications
@@ -175,15 +31,15 @@ Applications
 
 .. http:delete:: /api/apps/(string:id)/
 
-  Destroy a :class:`~api.models.Formation` by its `id`.
+  Destroy a :class:`~api.models.App` by its `id`.
 
 .. http:get:: /api/apps/
 
-  List all :class:`~api.models.Formation`\s.
+  List all :class:`~api.models.App`\s.
 
 .. http:post:: /api/apps/
 
-  Create a new :class:`~api.models.Formation`.
+  Create a new :class:`~api.models.App`.
 
 
 Application Release Components
@@ -278,6 +134,26 @@ Application Sharing
   Create a new app permission.
 
 
+Keys
+====
+
+.. http:get:: /api/keys/(string:id)/
+
+  Retrieve a :class:`~api.models.Key` by its `id`.
+
+.. http:delete:: /api/keys/(string:id)/
+
+  Destroy a :class:`~api.models.Key` by its `id`.
+
+.. http:get:: /api/keys/
+
+  List all :class:`~api.models.Key`\s.
+
+.. http:post:: /api/keys/
+
+  Create a new :class:`~api.models.Key`.
+
+
 API Hooks
 =========
 
@@ -288,30 +164,6 @@ API Hooks
 .. http:post:: /api/hooks/build/
 
   Create a new :class:`~api.models.Build`.
-
-
-Nodes
-=====
-
-.. http:get:: /api/nodes/(string:id)/
-
-  Retrieve a :class:`~api.models.Node` by its `id`.
-
-.. http:patch:: /api/nodes/(string:id)/
-
-  Update parts of a :class:`~api.models.Node`.
-
-.. http:delete:: /api/nodes/(string:id)/
-
-  Destroy a :class:`~api.models.Node` by its `id`.
-
-.. http:get:: /api/nodes/
-
-  List all :class:`~api.models.Node`\s.
-
-.. http:post:: /api/nodes/
-
-  Create a new :class:`~api.models.Node`.
 
 
 Auth
@@ -371,51 +223,12 @@ router = routers.ApiRouter()
 urlpatterns = patterns(
     '',
     url(r'^', include(router.urls)),
-
-    # key
-    url(r'^keys/(?P<id>.+)/?',
-        views.KeyViewSet.as_view({
-            'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^keys/?',
-        views.KeyViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # provider
-    url(r'^providers/(?P<id>[-_\w]+)/?',
-        views.ProviderViewSet.as_view({
+    # clusters
+    url(r'^clusters/(?P<id>[-_\w]+)/?',
+        views.ClusterViewSet.as_view({
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
-    url(r'^providers/?',
-        views.ProviderViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # flavor
-    url(r'^flavors/(?P<id>[-_\w]+)/?',
-        views.FlavorViewSet.as_view({
-            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
-    url(r'^flavors/?',
-        views.FlavorViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # formation infrastructure
-    url(r'^formations/(?P<id>[-_\w]+)/layers/(?P<layer>[-_\w]+)/?',
-        views.FormationLayerViewSet.as_view({
-            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
-    url(r'^formations/(?P<id>[-_\w]+)/layers/?',
-        views.FormationLayerViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^formations/(?P<id>[-_\w]+)/nodes/(?P<node>[-_\w]+)/?',
-        views.FormationNodeViewSet.as_view({
-            'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^formations/(?P<id>[-_\w]+)/nodes/?',
-        views.FormationNodeViewSet.as_view({'get': 'list', 'post': 'add'})),
-    # formation actions
-    url(r'^formations/(?P<id>[-_\w]+)/scale/?',
-        views.FormationViewSet.as_view({'post': 'scale'})),
-    url(r'^formations/(?P<id>[-_\w]+)/balance/?',
-        views.FormationViewSet.as_view({'post': 'balance'})),
-    url(r'^formations/(?P<id>[-_\w]+)/calculate/?',
-        views.FormationViewSet.as_view({'post': 'calculate'})),
-    url(r'^formations/(?P<id>[-_\w]+)/converge/?',
-        views.FormationViewSet.as_view({'post': 'converge'})),
-    # formation base endpoint
-    url(r'^formations/(?P<id>[-_\w]+)/?',
-        views.FormationViewSet.as_view({
-            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
-    url(r'^formations/?',
-        views.FormationViewSet.as_view({'get': 'list', 'post': 'create'})),
+    url(r'^clusters/?',
+        views.ClusterViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
@@ -455,19 +268,17 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # key
+    url(r'^keys/(?P<id>.+)/?',
+        views.KeyViewSet.as_view({
+            'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^keys/?',
+        views.KeyViewSet.as_view({'get': 'list', 'post': 'create'})),
     # hooks
     url(r'^hooks/push/?',
         views.PushHookViewSet.as_view({'post': 'create'})),
     url(r'^hooks/build/?',
         views.BuildHookViewSet.as_view({'post': 'create'})),
-    # nodes
-    url(r'^nodes/(?P<node>[-_\w]+)/converge/?',
-        views.NodeViewSet.as_view({'post': 'converge'})),
-    url(r'^nodes/(?P<node>[-_\w]+)/?',
-        views.NodeViewSet.as_view({
-            'get': 'retrieve', 'delete': 'destroy'})),
-    url(r'^nodes/?',
-        views.NodeViewSet.as_view({'get': 'list'})),
     # authn / authz
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),

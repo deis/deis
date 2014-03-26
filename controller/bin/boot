@@ -4,7 +4,7 @@
 #
 
 # configure etcd
-export ETCD=${ETCD:-127.0.0.1:4001}
+export ETCD=${ETCD:-172.17.42.1:4001}
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-10}
 
@@ -37,9 +37,6 @@ while grep -q '<no value>' /templates/confd_settings.py; do
        confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null
        sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
-
-# perform a one-time reload to install check config
-/usr/local/bin/reload
 
 # spawn the service in the background
 $(dirname ${BASH_SOURCE[0]})/start &

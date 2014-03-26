@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import json
 import urllib
 
-from django.conf import settings
 from django.test import TestCase
 from django.test.utils import override_settings
 
@@ -61,30 +60,15 @@ class AuthTest(TestCase):
         submit['username'] = 'new'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        # test for default objects
-        url = '/api/providers'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], len(settings.PROVIDER_MODULES))
-        url = '/api/flavors'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertGreater(response.data['count'], 0)
         # test logout and login
         url = '/api/auth/logout/'
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        url = '/api/providers'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 403)
         url = '/api/auth/login/'
         payload = urllib.urlencode({'username': username, 'password': password})
         response = self.client.post(url, data=payload,
                                     content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 302)
-        url = '/api/providers'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
 
     @override_settings(REGISTRATION_ENABLED=False)
     def test_auth_registration_disabled(self):
@@ -123,11 +107,6 @@ class AuthTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue(
             self.client.login(username=username, password=password))
-        # test for default objects
-        url = '/api/providers'
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], len(settings.PROVIDER_MODULES))
         # cancel the account
         url = '/api/auth/cancel'
         response = self.client.delete(url)

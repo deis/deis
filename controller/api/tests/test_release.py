@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import uuid
 
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -25,36 +24,19 @@ class ReleaseTest(TestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        url = '/api/providers'
-        creds = {'secret_key': 'x' * 64, 'access_key': 1 * 20}
-        body = {'id': 'autotest', 'type': 'mock', 'creds': json.dumps(creds)}
-        response = self.client.post(
-            url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        url = '/api/flavors'
-        body = {
-            'id': 'autotest',
-            'provider': 'autotest',
-            'params': json.dumps({
-                'region': 'us-west-2',
-                'instance_size': 'm1.medium',
-            })
-        }
-        response = self.client.post(
-            url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        response = self.client.post('/api/formations', json.dumps(
-            {'id': 'autotest', 'domain': 'localhost.localdomain'}),
-            content_type='application/json')
+        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
+                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
+        response = self.client.post('/api/clusters', json.dumps(body),
+                                    content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
     def test_release(self):
         """
-        Test that a release is created when a formation is created, and
+        Test that a release is created when a cluster is created, and
         that updating config or build or triggers a new release
         """
         url = '/api/apps'
-        body = {'formation': 'autotest'}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -90,18 +72,11 @@ class ReleaseTest(TestCase):
         # check that updating the build rolls a new release
         url = '/api/apps/{app_id}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
-        body = {
-            'sha': uuid.uuid4().hex,
-            'slug_size': 4096000,
-            'procfile': json.dumps({'web': 'node server.js'}),
-            'url':
-            'http://deis.local/slugs/1c52739bbf3a44d3bfb9a58f7bbdd5fb.tar.gz',
-            'checksum': uuid.uuid4().hex, 'config': build_config,
-        }
+        body = {'image': 'autotest/example'}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['url'], body['url'])
+        self.assertEqual(response.data['image'], body['image'])
         # check to see that a new release was created
         url = '/api/apps/{app_id}/releases/v3'.format(**locals())
         response = self.client.get(url)
@@ -110,16 +85,6 @@ class ReleaseTest(TestCase):
         self.assertNotEqual(release2['uuid'], release3['uuid'])
         self.assertNotEqual(release2['build'], release3['build'])
         self.assertEquals(release3['version'], 3)
-        # check that build config was respected
-        self.assertNotEqual(release2['config'], release3['config'])
-        url = '/api/apps/{app_id}/config'.format(**locals())
-        response = self.client.get(url)
-        config3 = response.data
-        config3_values = json.loads(config3['values'])
-        self.assertIn('NEW_URL1', config3_values)
-        self.assertIn('PATH', config3_values)
-        self.assertEqual(
-            config3_values['PATH'], 'bin:/usr/local/bin:/usr/bin:/bin')
         # check that we can fetch a previous release
         url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
@@ -138,7 +103,7 @@ class ReleaseTest(TestCase):
 
     def test_release_rollback(self):
         url = '/api/apps'
-        body = {'formation': 'autotest'}
+        body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -155,14 +120,7 @@ class ReleaseTest(TestCase):
         # update the build to roll a new release
         url = '/api/apps/{app_id}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
-        body = {
-            'sha': uuid.uuid4().hex,
-            'slug_size': 4096000,
-            'procfile': json.dumps({'web': 'node server.js'}),
-            'url':
-            'http://deis.local/slugs/1c52739bbf3a44d3bfb9a58f7bbdd5fb.tar.gz',
-            'checksum': uuid.uuid4().hex, 'config': build_config,
-        }
+        body = {'image': 'autotest/example'}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
@@ -228,8 +186,6 @@ class ReleaseTest(TestCase):
         values = json.loads(response.data['values'])
         self.assertIn('NEW_URL1', values)
         self.assertEqual('http://localhost:8080/', values['NEW_URL1'])
-        self.assertIn('PATH', values)
-        self.assertEqual('bin:/usr/local/bin:/usr/bin:/bin', values['PATH'])
 
     def test_release_str(self):
         """Test the text representation of a release."""
@@ -243,4 +199,3 @@ class ReleaseTest(TestCase):
         release = Release.objects.get(uuid=release3['uuid'])
         # check that the release has push and env change messages
         self.assertIn('autotest deployed ', release.summary)
-        self.assertIn('autotest added PATH', release.summary)

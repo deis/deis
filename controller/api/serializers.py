@@ -52,37 +52,14 @@ class AdminUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('username',)
 
 
-class KeySerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Key` model."""
+class ClusterSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Cluster` model."""
 
     owner = serializers.Field(source='owner.username')
 
     class Meta:
-        """Metadata options for a KeySerializer."""
-        model = models.Key
-        read_only_fields = ('created', 'updated')
-
-
-class ProviderSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Provider` model."""
-
-    owner = serializers.Field(source='owner.username')
-
-    class Meta:
-        """Metadata options for a ProviderSerializer."""
-        model = models.Provider
-        read_only_fields = ('created', 'updated')
-
-
-class FlavorSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Flavor` model."""
-
-    owner = serializers.Field(source='owner.username')
-    provider = OwnerSlugRelatedField(slug_field='id')
-
-    class Meta:
-        """Metadata options for a :class:`FlavorSerializer`."""
-        model = models.Flavor
+        """Metadata options for a :class:`ClusterSerializer`."""
+        model = models.Cluster
         read_only_fields = ('created', 'updated')
 
 
@@ -95,6 +72,18 @@ class PushSerializer(serializers.ModelSerializer):
     class Meta:
         """Metadata options for a :class:`PushSerializer`."""
         model = models.Push
+        read_only_fields = ('uuid', 'created', 'updated')
+
+
+class BuildSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Build` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`BuildSerializer`."""
+        model = models.Build
         read_only_fields = ('uuid', 'created', 'updated')
 
 
@@ -112,25 +101,13 @@ class ConfigSerializer(serializers.ModelSerializer):
         read_only_fields = ('uuid', 'created', 'updated')
 
 
-class BuildSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Build` model."""
-
-    owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
-
-    class Meta:
-        """Metadata options for a :class:`BuildSerializer`."""
-        model = models.Build
-        read_only_fields = ('uuid', 'created', 'updated')
-
-
 class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
-    build = serializers.SlugRelatedField(slug_field='uuid', required=False)
+    build = serializers.SlugRelatedField(slug_field='uuid')
 
     class Meta:
         """Metadata options for a :class:`ReleaseSerializer`."""
@@ -138,49 +115,12 @@ class ReleaseSerializer(serializers.ModelSerializer):
         read_only_fields = ('uuid', 'created', 'updated')
 
 
-class FormationSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Formation` model."""
-
-    owner = serializers.Field(source='owner.username')
-
-    class Meta:
-        """Metadata options for a :class:`FormationSerializer`."""
-        model = models.Formation
-        read_only_fields = ('created', 'updated')
-
-
-class LayerSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Layer` model."""
-
-    owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
-    flavor = OwnerSlugRelatedField(slug_field='id')
-
-    class Meta:
-        """Metadata options for a :class:`LayerSerializer`."""
-        model = models.Layer
-        read_only_fields = ('created', 'updated')
-
-
-class NodeSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Node` model."""
-
-    owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
-    layer = OwnerSlugRelatedField(slug_field='id')
-
-    class Meta:
-        """Metadata options for a :class:`NodeSerializer`."""
-        model = models.Node
-        read_only_fields = ('created', 'updated')
-
-
 class AppSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.App` model."""
 
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
-    formation = serializers.SlugRelatedField(slug_field='id', required=False)
+    cluster = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""
@@ -202,11 +142,24 @@ class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
 
     owner = serializers.Field(source='owner.username')
-    formation = OwnerSlugRelatedField(slug_field='id')
-    node = OwnerSlugRelatedField(slug_field='id')
     app = OwnerSlugRelatedField(slug_field='id')
+    release = serializers.SlugRelatedField(slug_field='uuid')
 
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
+        read_only_fields = ('created', 'updated')
+
+    def transform_release(self, obj, value):
+        return "v{}".format(obj.release.version)
+
+
+class KeySerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Key` model."""
+
+    owner = serializers.Field(source='owner.username')
+
+    class Meta:
+        """Metadata options for a KeySerializer."""
+        model = models.Key
         read_only_fields = ('created', 'updated')

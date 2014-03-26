@@ -24,20 +24,6 @@ class AbstractDeisException(APIException):
         abstract = True
 
 
-class BuildNodeError(AbstractDeisException):
-    """
-    Indicates a problem in building or bootstrapping a node.
-    """
-    status_code = status.HTTP_401_UNAUTHORIZED
-
-
-class BuildFormationError(AbstractDeisException):
-    """
-    Indicates a problem in creating a formation.
-    """
-    status_code = status.HTTP_400_BAD_REQUEST
-
-
 class UserRegistrationException(AbstractDeisException):
     """
     Indicates that there was a problem registering the user.

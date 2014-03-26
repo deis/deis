@@ -11,4 +11,4 @@ sudo -E -u deis ./manage.py syncdb --migrate --noinput
 sudo -E -u deis celery worker --app=deis --loglevel=INFO --workdir=/app --pidfile=/tmp/celery.pid &
 
 # spawn a gunicorn server in the foreground
-sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid # -k gevent
+sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload # -k gevent

@@ -11,14 +11,10 @@ from guardian.admin import GuardedModelAdmin
 
 from .models import App
 from .models import Build
+from .models import Cluster
 from .models import Config
 from .models import Container
-from .models import Flavor
-from .models import Formation
 from .models import Key
-from .models import Layer
-from .models import Node
-from .models import Provider
 from .models import Release
 
 
@@ -27,8 +23,8 @@ class AppAdmin(GuardedModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'formation')
-    list_filter = ('owner', 'formation')
+    list_display = ('id', 'owner', 'cluster')
+    list_filter = ('owner', 'cluster')
 admin.site.register(App, AppAdmin)
 
 
@@ -40,6 +36,16 @@ class BuildAdmin(admin.ModelAdmin):
     list_display = ('sha', 'owner', 'app')
     list_filter = ('owner', 'app')
 admin.site.register(Build, BuildAdmin)
+
+
+class ClusterAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Cluster` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('id', 'owner',)
+    list_filter = ('owner',)
+admin.site.register(Cluster, ClusterAdmin)
 
 
 class ConfigAdmin(admin.ModelAdmin):
@@ -57,29 +63,9 @@ class ContainerAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('short_name', 'owner', 'formation', 'app', 'status')
-    list_filter = ('owner', 'formation', 'app', 'status')
+    list_display = ('short_name', 'owner', 'cluster', 'app', 'state')
+    list_filter = ('owner', 'cluster', 'app', 'state')
 admin.site.register(Container, ContainerAdmin)
-
-
-class FlavorAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Flavor` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'provider')
-    list_filter = ('owner', 'provider')
-admin.site.register(Flavor, FlavorAdmin)
-
-
-class FormationAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Formation` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner')
-    list_filter = ('owner',)
-admin.site.register(Formation, FormationAdmin)
 
 
 class KeyAdmin(admin.ModelAdmin):
@@ -90,36 +76,6 @@ class KeyAdmin(admin.ModelAdmin):
     list_display = ('id', 'owner', '__str__')
     list_filter = ('owner',)
 admin.site.register(Key, KeyAdmin)
-
-
-class LayerAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Layer` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'formation', 'flavor', 'proxy', 'runtime', 'config')
-    list_filter = ('owner', 'formation', 'flavor')
-admin.site.register(Layer, LayerAdmin)
-
-
-class NodeAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Node` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'formation', 'fqdn')
-    list_filter = ('owner', 'formation')
-admin.site.register(Node, NodeAdmin)
-
-
-class ProviderAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Provider` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'type')
-    list_filter = ('owner', 'type')
-admin.site.register(Provider, ProviderAdmin)
 
 
 class ReleaseAdmin(admin.ModelAdmin):
