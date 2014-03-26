@@ -12,21 +12,14 @@ Auth commands::
 
 Subcommands, use ``deis help [subcommand]`` to learn more::
 
-  formations    manage formations used to host applications
-  layers        manage layers used for node configuration
-  nodes         manage nodes used to host containers and proxies
-
   apps          manage applications used to provide services
   containers    manage containers used to handle requests and jobs
   config        manage environment variables that define app config
   builds        manage builds created using `git push`
   releases      manage releases of an application
 
-  providers     manage credentials used to access cloud providers
-  flavors       manage flavors of nodes including size and location
   keys          manage ssh keys used for `git push` deployments
-
-  perms         manage permissions for shared apps and formations
+  perms         manage permissions for shared apps and clusters
 
 Developer shortcut commands::
 
@@ -51,6 +44,7 @@ from getpass import getpass
 from itertools import cycle
 from threading import Event
 from threading import Thread
+import base64
 import glob
 import json
 import locale
@@ -59,7 +53,6 @@ import random
 import re
 import subprocess
 import sys
-import tempfile
 import time
 import urlparse
 import webbrowser
@@ -333,7 +326,7 @@ def readable_datetime(datetime_str):
         else:
             return "{}{}ago".format(hour_str, min_str)
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days=-1)
+    yesterday = now + relativedelta.relativedelta(days= -1)
     if delta.days <= 2 and dt.day == yesterday.day:
         return dt.strftime("Yesterday at %X")
     # otherwise return locale-specific date/time format
@@ -440,11 +433,14 @@ class DeisClient(object):
         Create a new application
 
         If no ID is provided, one will be generated automatically.
-        If no formation is provided, the first available will be used.
+        If no cluster is provided, a cluster named "dev" will be used.
 
-        Usage: deis apps:create [--id=<id> --formation=<formation>]
+        Usage: deis apps:create [<id> --cluster=<cluster>] [options]
+
+        Options
+
+        --cluster=CLUSTER      target cluster to host application [default: dev]
         """
-        body = {}
         try:
             self._session.git_root()  # check for a git repository
         except EnvironmentError:
@@ -456,10 +452,13 @@ class DeisClient(object):
             sys.exit(1)
         except EnvironmentError:
             pass
-        for opt in ('--id', '--formation'):
-            o = args.get(opt)
-            if o:
-                body.update({opt.strip('-'): o})
+        body = {}
+        app_name = args.get('<id>')
+        if app_name:
+            body.update({'id': app_name})
+        cluster = args.get('--cluster')
+        if cluster:
+            body.update({'cluster': cluster})
         sys.stdout.write('Creating application... ')
         sys.stdout.flush()
         try:
@@ -545,7 +544,7 @@ class DeisClient(object):
             data = response.json()
             print('=== Apps')
             for item in data['results']:
-                print('{id} {containers}'.format(**item))
+                print('{id}'.format(**item))
         else:
             raise ResponseError(response)
 
@@ -752,7 +751,7 @@ class DeisClient(object):
         """
         Valid commands for builds:
 
-        builds:list        list build history for a formation
+        builds:list        list build history for an application
         builds:create      coming soon!
 
         Use `deis help [command]` to learn more
@@ -761,7 +760,7 @@ class DeisClient(object):
 
     def builds_list(self, args):
         """
-        List build history for a formation
+        List build history for an application
 
         Usage: deis builds:list [--app=<app>]
         """
@@ -774,6 +773,154 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 print("{0[uuid]:<23} {0[created]}".format(item))
+        else:
+            raise ResponseError(response)
+
+    def clusters(self, args):
+        """
+        Valid commands for clusters:
+
+        clusters:create        create a new cluster
+        clusters:list          list accessible clusters
+        clusters:update        update cluster fields
+        clusters:info          print a represenation of the cluster
+        clusters:destroy       destroy a cluster
+
+        Use `deis help [command]` to learn more
+        """
+        return self.clusters_list(args)
+
+    def clusters_create(self, args):
+        """
+        Create a new cluster
+
+        A globally unique cluster ID must be provided.
+
+        A domain field must also be provided to support multiple
+        applications hosted on the cluster.  Note this requires
+        wildcard DNS configuration on the domain.
+
+        For example, a domain of "deisapp.com" requires that \\*.deisapp.com\\
+        resolve to the cluster's router endpoints.
+
+        Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
+
+        Options:
+
+        --type=TYPE      cluster type [default: coreos]
+        """
+        body = {'id': args['<id>'], 'domain': args['<domain>'],
+                'hosts': args['--hosts'], 'type': args['--type']}
+        auth_path = os.path.expanduser(args['--auth'])
+        if not os.path.exists(auth_path):
+            print('Path to authentication credentials does not exist: {}'.format(auth_path))
+            sys.exit(1)
+        with open(auth_path) as f:
+            data = f.read()
+        body.update({'auth': base64.b64encode(data)})
+        sys.stdout.write('Creating cluster... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', '/api/clusters', json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            data = response.json()
+            cluster = data['id']
+            print("done, created {}".format(cluster))
+        else:
+            raise ResponseError(response)
+
+    def clusters_info(self, args):
+        """
+        Print info about a cluster
+
+        Usage: deis clusters:info <id>
+        """
+        cluster = args.get('<id>')
+        response = self._dispatch('get', "/api/clusters/{}".format(cluster))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print("=== {} Cluster".format(cluster))
+            print(json.dumps(response.json(), indent=2))
+            print()
+        else:
+            raise ResponseError(response)
+
+    def clusters_list(self, args):
+        """
+        List available clusters
+
+        Usage: deis clusters:list
+        """
+        response = self._dispatch('get', '/api/clusters')
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            print("=== Clusters")
+            for item in data['results']:
+                print("{id}".format(**item))
+        else:
+            raise ResponseError(response)
+
+    def clusters_destroy(self, args):
+        """
+        Destroy a cluster
+
+        Usage: deis clusters:destroy <id> [--confirm=<confirm>]
+        """
+        cluster = args.get('<id>')
+        confirm = args.get('--confirm')
+        if confirm == cluster:
+            pass
+        else:
+            print("""
+ !    WARNING: Potentially Destructive Action
+ !    This command will destroy the cluster: {cluster}
+ !    To proceed, type "{cluster}" or re-run this command with --confirm={cluster}
+""".format(**locals()))
+            confirm = raw_input('> ').strip('\n')
+            if confirm != cluster:
+                print('Destroy aborted')
+                return
+        sys.stdout.write("Destroying cluster... ".format(cluster))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            response = self._dispatch('delete', "/api/clusters/{}".format(cluster))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
+                                    requests.codes.not_found):  # @UndefinedVariable
+            print('done in {}s'.format(int(time.time() - before)))
+        else:
+            raise ResponseError(response)
+
+    def clusters_update(self, args):
+        """
+        Update cluster fields
+
+        Usage: deis clusters:update <id> [--domain=<domain> --hosts=<hosts> --auth=<auth>] [options]
+
+        Options:
+
+        --type=TYPE      cluster type [default: coreos]
+        """
+        cluster = args['<id>']
+        body = {}
+        for k, arg in (('domain', '--domain'), ('hosts', '--hosts'),
+                       ('auth', '--auth'), ('type', '--type')):
+            v = args.get(arg)
+            if v:
+                body.update({k: v})
+        response = self._dispatch('patch', '/api/clusters/{}'.format(cluster),
+                                  json.dumps(body))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -904,27 +1051,21 @@ class DeisClient(object):
         if not app:
             app = args.get('--app')
             if not app:
-                app = self._session.get_app()
+                app = self._session.app
         response = self._dispatch('get',
                                   "/api/apps/{}/containers".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
             raise ResponseError(response)
         containers = response.json()
-        response = self._dispatch('get', "/api/apps/{}/builds".format(app))
-        if response.status_code != requests.codes.ok:  # @UndefinedVariable
-            raise ResponseError(response)
-        txt = response.json()['results'][0]['procfile']
-        procfile = json.loads(txt) if txt else {}
         print("=== {} Containers".format(app))
         c_map = {}
         for item in containers['results']:
             c_map.setdefault(item['type'], []).append(item)
         print()
         for c_type in c_map.keys():
-            command = procfile.get(c_type, '<none>')
-            print("--- {c_type}: `{command}`".format(**locals()))
+            print("--- {c_type}: ".format(**locals()))
             for c in c_map[c_type]:
-                print("{type}.{num} up {created} ({node})".format(**c))
+                print("{type}.{num} {state} ({release})".format(**c))
             print()
 
     def containers_scale(self, args):
@@ -953,312 +1094,9 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
             self.containers_list({}, app)
-        else:
-            raise ResponseError(response)
-
-    def flavors(self, args):
-        """
-        Valid commands for flavors:
-
-        flavors:create        create a new node flavor
-        flavors:info          print information about a node flavor
-        flavors:list          list available flavors
-        flavors:update        update an existing node flavor
-        flavors:delete        delete a node flavor
-
-        Use `deis help [command]` to learn more
-        """
-        return self.flavors_list(args)
-
-    def flavors_create(self, args):
-        """
-        Create a new node flavor
-
-        Usage: deis flavors:create <id> --provider=<provider> --params=<params>
-        """
-        body = {'id': args.get('<id>'), 'provider': args.get('--provider'),
-                'params': args.get('--params', json.dumps({}))}
-        response = self._dispatch('post', '/api/flavors', json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print("{0[id]}".format(response.json()))
-        else:
-            raise ResponseError(response)
-
-    def flavors_delete(self, args):
-        """
-        Delete a node flavor
-
-        Usage: deis flavors:delete <id>
-        """
-        flavor = args.get('<id>')
-        response = self._dispatch('delete', "/api/flavors/{}".format(flavor))
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            pass
-        else:
-            print('Error!', response.status_code, response.text)
-
-    def flavors_info(self, args):
-        """
-        Print information about a node flavor
-
-        Usage: deis flavors:info <flavor>
-        """
-        flavor = args.get('<flavor>')
-        response = self._dispatch('get', "/api/flavors/{}".format(flavor))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def flavors_list(self, args):
-        """
-        List available node flavors
-
-        Usage: deis flavors:list
-        """
-        response = self._dispatch('get', '/api/flavors')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            if data['count'] == 0:
-                print('No flavors found')
-                return
-            print("=== {owner} Flavors".format(**data['results'][0]))
-            for item in data['results']:
-                print("{id}: params => {params}".format(**item))
-        else:
-            raise ResponseError(response)
-
-    def flavors_update(self, args):
-        """
-        Update an existing node flavor
-
-        Usage: deis flavors:update <id> [<params>] [--provider=<provider>]
-        """
-        id_ = args.get('<id>')
-        body = {'id': id_}
-        params = args.get('<params>')
-        if params:
-            body['params'] = params
-        provider = args.get('--provider')
-        if provider:
-            body['provider'] = provider
-        response = self._dispatch(
-            'patch', '/api/flavors/{}'.format(id_), json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def formations(self, args):
-        """
-        Valid commands for formations:
-
-        formations:create        create a new container formation
-        formations:list          list accessible formations
-        formations:update        update formation fields
-        formations:info          print a represenation of the formation
-        formations:converge      force-converge all nodes in the formation
-        formations:calculate     calculate and display the formation databag
-        formations:destroy       destroy a container formation
-
-        Use `deis help [command]` to learn more
-        """
-        return self.formations_list(args)
-
-    def formations_calculate(self, args, quiet=False):
-        """
-        Calculate and display the formation's databag
-
-        This command will calculate the databag and return
-        its JSON representation.
-
-        Usage: deis formations:calculate <formation>
-        """
-        formation = args.get('<formation>')
-        response = self._dispatch('post',
-                                  "/api/formations/{}/calculate".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            if quiet is False:
-                print(json.dumps(databag, indent=2))
-            return databag
-        else:
-            raise ResponseError(response)
-
-    def formations_converge(self, args):
-        """
-        Force converge a formation
-
-        Converging a formation will force a converge on all nodes in the
-        formation, ensuring it is completely up-to-date.
-
-        Usage: deis formations:converge <id>
-        """
-        formation = args.get('<id>')
-        sys.stdout.write('Converging {} formation... '.format(formation))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('post',
-                                      "/api/formations/{}/converge".format(formation))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-            databag = json.loads(response.content)
-            print(json.dumps(databag, indent=2))
-        else:
-            raise ResponseError(response)
-
-    def formations_create(self, args):
-        """
-        Create a new container formation
-
-        A globally unique formation ID must be provided.
-
-        If a flavor is provided, a default layer will be initialized
-        with dual proxy and runtime capability, faciliating a simple
-        single-node formation with a `deis nodes:scale` command.
-
-        The name of the default layer is "runtime" unless overriden
-        with the --layer=<layer> option.
-
-        The domain field is required for a single formation to host
-        multiple applications.  Note this requires wildcard DNS
-        configuration on the provided domain.
-
-        For example: --domain=deisapp.com requires that \\*.deisapp.com\\
-        resolve to the formation's proxy nodes.
-
-        Usage: deis formations:create <id> [--flavor=<flavor>] [--domain=<domain> --layer=<layer>]
-        """
-        body = {'id': args['<id>'], 'domain': args.get('--domain')}
-        flavor = args.get('--flavor')
-        if flavor:
-            response = self._dispatch('get', '/api/flavors/{}'.format(flavor))
-            if response.status_code != 200:
-                print('Flavor not found')
-                return
-        sys.stdout.write('Creating formation... ')
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            response = self._dispatch('post', '/api/formations',
-                                      json.dumps(body))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            data = response.json()
-            formation = data['id']
-            print("done, created {}".format(formation))
-            if flavor:
-                layer = args.get('--layer') or 'runtime'
-                self.layers_create({'<formation>': formation, '<id>': layer,
-                                    '<flavor>': flavor, '--proxy': True, '--runtime': True})
-                print('\nUse `deis nodes:scale {formation} {layer}=1` '
-                      'to scale a basic formation'.format(**locals()))
-            else:
-                print('\nSee `deis help layers:create` to begin '
-                      'building your formation'.format(**locals()))
-        else:
-            raise ResponseError(response)
-
-    def formations_info(self, args):
-        """
-        Print info about a formation
-
-        Usage: deis formations:info <id>
-        """
-        formation = args.get('<id>')
-        response = self._dispatch('get', "/api/formations/{}".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            print("=== {} Formation".format(formation))
-            print(json.dumps(response.json(), indent=2))
-            print()
-            args = {'<formation>': data['id']}
-            self.layers_list(args)
-            print()
-            self.nodes_list(args)
-            print()
-        else:
-            raise ResponseError(response)
-
-    def formations_list(self, args):
-        """
-        List available formations
-
-        Usage: deis formations:list
-        """
-        response = self._dispatch('get', '/api/formations')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            print("=== Formations")
-            for item in data['results']:
-                print("{id} {nodes}".format(**item))
-        else:
-            raise ResponseError(response)
-
-    def formations_destroy(self, args):
-        """
-        Destroy a formation
-
-        Usage: deis formations:destroy <id> [--confirm=<confirm>]
-        """
-        formation = args.get('<id>')
-        confirm = args.get('--confirm')
-        if confirm == formation:
-            pass
-        else:
-            print("""
- !    WARNING: Potentially Destructive Action
- !    This command will destroy the formation: {formation}
- !    To proceed, type "{formation}" or re-run this command with --confirm={formation}
-""".format(**locals()))
-            confirm = raw_input('> ').strip('\n')
-            if confirm != formation:
-                print('Destroy aborted')
-                return
-        sys.stdout.write("Destroying formation... ".format(formation))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('delete', "/api/formations/{}".format(formation))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
-                                    requests.codes.not_found):  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def formations_update(self, args):
-        """
-        Update formation fields
-
-        This is typically used to add a "domain" to to host
-        multiple applications on a single formation
-
-        Usage: deis formations:update <id> [--domain=<domain>]
-        """
-        formation = args['<id>']
-        domain = args.get('--domain')
-        body = {'domain': domain}
-        response = self._dispatch('patch', '/api/formations/{}'.format(formation),
-                                  json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -1379,372 +1217,17 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def layers(self, args):
-        """
-        Valid commands for node layers:
-
-        layers:create        create a layer of nodes for a formation
-        layers:list          list layers in a formation
-        layers:info          print info about a particular layer
-        layers:destroy       destroy a layer of nodes in a formation
-
-        Use `deis help [command]` to learn more
-        """
-        sys.argv[1] = 'layers:list'
-        args = docopt(self.layers_list.__doc__)
-        return self.layers_list(args)
-
-    def layers_create(self, args):
-        """
-        Create a layer of nodes
-
-        Usage: deis layers:create <formation> <id> <flavor> [options]
-
-        Options:
-        --proxy=<yn>                    layer can be used for proxy [default: y]
-        --runtime=<yn>                  layer can be used for runtime [default: y]
-        --ssh_username=USERNAME         username for ssh connections [default: ubuntu]
-        --ssh_private_key=PRIVATE_KEY   private key for ssh comm (default: auto-gen)
-        --ssh_public_key=PUBLIC_KEY     public key for ssh comm (default: auto-gen)
-        --ssh_port=<port>               port number for ssh comm (default: 22)
-
-        """
-        formation = args.get('<formation>')
-        body = {'id': args['<id>'], 'flavor': args['<flavor>']}
-        for opt in ('--formation', '--ssh_username', '--ssh_private_key',
-                    '--ssh_public_key'):
-            o = args.get(opt)
-            if o:
-                body.update({opt.strip('-'): o})
-        o = args.get('--ssh_port')
-        if o:
-            body.update({'ssh_port': int(o)})
-        for opt in ('--proxy', '--runtime'):
-            o = args.get(opt)
-            if o and str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
-                body.update({opt.strip('-'): False})
-            else:
-                body.update({opt.strip('-'): True})
-        sys.stdout.write("Creating {} layer... ".format(args['<id>']))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('post', "/api/formations/{}/layers".format(formation),
-                                      json.dumps(body))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def layers_destroy(self, args):
-        """
-        Destroy a layer of nodes
-
-        Usage: deis layers:destroy <formation> <id>
-        """
-        formation = args.get('<formation>')
-        layer = args['<id>']
-        sys.stdout.write("Destroying {layer} layer... ".format(**locals()))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch(
-                'delete', "/api/formations/{formation}/layers/{layer}".format(**locals()))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def layers_info(self, args):
-        """
-        Print info about a layer of nodes
-
-        Usage: deis layers:info <formation> <id>
-        """
-        formation = args.get('<formation>')
-        layer = args.get('<id>')
-        response = self._dispatch('get', "/api/formations/{}/layers/{}".format(formation, layer))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def layers_list(self, args):
-        """
-        List a formation's layers
-
-        Usage: deis layers:list <formation>
-        """
-        formation = args.get('<formation>')
-        response = self._dispatch('get',
-                                  "/api/formations/{}/layers".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Layers".format(formation))
-            data = response.json()
-            format_str = "{id} => flavor: {flavor}, proxy: {proxy}, runtime: {runtime}"
-            for item in data['results']:
-                print(format_str.format(**item))
-        else:
-            raise ResponseError(response)
-
-    def layers_update(self, args):
-        """
-        Update a layer of nodes
-
-        Usage: deis layers:update <formation> <id> [options]
-
-        Options:
-
-        --proxy=<yn>                    layer can be used for proxy
-        --runtime=<yn>                  layer can be used for runtime
-        --ssh_username=USERNAME         username for ssh connections
-        --ssh_private_key=PRIVATE_KEY   private key for ssh comm
-        --ssh_public_key=PUBLIC_KEY     public key for ssh comm
-        --ssh_port=<port>               port number for ssh comm
-
-        """
-        formation = args.get('<formation>')
-        layer = args['<id>']
-        body = {'id': args['<id>']}
-        for opt in ('--ssh_username', '--ssh_private_key', '--ssh_public_key',
-                    '--ssh_port'):
-            o = args.get(opt)
-            if o:
-                body.update({opt.strip('-'): o})
-        o = args.get('--ssh_port')
-        if o:
-            body.update({'ssh_port': int(o)})
-        for opt in ('--proxy', '--runtime'):
-            o = args.get(opt)
-            if o is not None:
-                if str(o).lower() in ['n', 'no', 'f', 'false', '0', 'off']:
-                    body.update({opt.strip('-'): False})
-                else:
-                    body.update({opt.strip('-'): True})
-        sys.stdout.write("Updating {} layer... ".format(args['<id>']))
-        sys.stdout.flush()
-        response = self._dispatch(
-            'patch', "/api/formations/{formation}/layers/{layer}".format(**locals()),
-            json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('done.')
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def nodes(self, args):
-        """
-        Valid commands for nodes:
-
-        nodes:list            list nodes in a formation
-        nodes:info            print info for a given node
-        nodes:scale           scale nodes by layer (e.g. runtime=4)
-        nodes:converge        force-converge a node and return the output
-        nodes:ssh             ssh directly into a node
-        nodes:destroy         destroy a node by ID
-
-        Use `deis help [command]` to learn more
-        """
-        sys.argv[1] = 'nodes:list'
-        args = docopt(self.nodes_list.__doc__)
-        return self.nodes_list(args)
-
-    def nodes_create(self, args):
-        """
-        Add an existing node to a formation.
-
-        Usage: deis nodes:create <formation> <fqdn> --layer=<layer>
-        """
-        formation = args.get('<formation>')
-        fqdn, layer = args.get('<fqdn>'), args.get('--layer')
-        body = {'fqdn': fqdn, 'layer': layer}
-        sys.stdout.write("Creating node for {}... ".format(fqdn))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('post', "/api/formations/{}/nodes".format(formation),
-                                      json.dumps(body))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def nodes_info(self, args):
-        """
-        Print info about a particular node
-
-        Usage: deis nodes:info <node>
-        """
-        node = args.get('<node>')
-        response = self._dispatch('get', "/api/nodes/{}".format(node))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def nodes_list(self, args):
-        """
-        List nodes in a formation
-
-        Usage: deis nodes:list <formation>
-        """
-        formation = args.get('<formation>')
-        response = self._dispatch('get',
-                                  "/api/formations/{}/nodes".format(formation))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Nodes".format(formation))
-            data = response.json()
-            format_str = "{id} {provider_id} {fqdn}"
-            for item in data['results']:
-                print(format_str.format(**item))
-        else:
-            raise ResponseError(response)
-
-    def nodes_destroy(self, args):
-        """
-        Destroy a node by ID
-
-        Usage: deis nodes:destroy <id>
-        """
-        node = args['<id>']
-        sys.stdout.write("Destroying {}... ".format(node))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch(
-                'delete', "/api/nodes/{node}".format(**locals()))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def nodes_scale(self, args):
-        """
-        Scale nodes in a formation
-
-        Scaling nodes will launch or terminate nodes to meet the
-        requested structure.  For example, to scale up to 4 nodes
-        in the "dev" formation's runtime layer:
-
-        ``deis nodes:scale dev runtime=4``
-
-        Usage: deis nodes:scale <formation> <type=num>...
-        """
-        formation = args.get('<formation>')
-        body = {}
-        runtimes = True
-        for type_num in args.get('<type=num>'):
-            typ, count = type_num.split('=')
-            if (typ, count) == ('runtime', '0'):
-                runtimes = False
-            body.update({typ: int(count)})
-        print('Scaling nodes... but first, coffee!')
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('post',
-                                      "/api/formations/{}/scale".format(formation),
-                                      json.dumps(body))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('done in {}s\n'.format(int(time.time() - before)))
-            if runtimes:
-                print('Use `deis create --formation={}` to create an application'.format(
-                      formation))
-        else:
-            raise ResponseError(response)
-
-    def nodes_converge(self, args):
-        """
-        Force converge a node
-
-        Converging a node will force a chef-client run and
-        return its output
-
-        Usage: deis nodes:converge <id>
-        """
-        node = args.get('<id>')
-        sys.stdout.write('Converging {} node... '.format(node))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('post',
-                                      "/api/nodes/{}/converge".format(node))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
-            output = json.loads(response.content)
-            print(output)
-        else:
-            raise ResponseError(response)
-
-    def nodes_ssh(self, args):
-        """
-        SSH into a node and optionally run a command
-
-        Usage: deis nodes:ssh <node> [<command>...]
-        """
-        node = args.get('<node>')
-        response = self._dispatch('get',
-                                  "/api/nodes/{node}".format(**locals()))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            node = response.json()
-            response = self._dispatch('get',
-                                      '/api/formations/{formation}/layers/{layer}'.format(**node))
-            if response.status_code != requests.codes.ok:  # @UndefinedVariable
-                raise ResponseError(response)
-            layer = response.json()
-            _, key_path = tempfile.mkstemp()
-            os.chmod(key_path, 0600)
-            with open(key_path, 'w') as f:
-                f.write(layer['ssh_private_key'])
-            ssh_args = ['-o UserKnownHostsFile=/dev/null', '-o StrictHostKeyChecking=no',
-                        '-i', key_path, '{}@{}'.format(layer['ssh_username'], node['fqdn'])]
-            command = args.get('<command>')
-            if command:
-                ssh_args.extend(command)
-            os.execvp('ssh', ssh_args)
-        else:
-            raise ResponseError(response)
-
     def perms(self, args):
         """
         Valid commands for perms:
 
-        perms:list            list permissions granted on an app or formation
+        perms:list            list permissions granted on an app or cluster
         perms:create          create a new permission for a user
         perms:delete          delete a permission for a user
 
         Use `deis help perms:[command]` to learn more
         """
-        # perms:transfer        transfer ownership of an app or formation
+        # perms:transfer        transfer ownership of an app or cluster
         sys.argv[1] = 'perms:list'
         args = docopt(self.perms_list.__doc__)
         return self.perms_list(args)
@@ -2051,8 +1534,8 @@ class DeisClient(object):
 SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),
     ('destroy', 'apps:destroy'),
+    ('init', 'clusters:create'),
     ('info', 'apps:info'),
-    ('calculate', 'apps:calculate'),
     ('run', 'apps:run'),
     ('open', 'apps:open'),
     ('logs', 'apps:logs'),
@@ -2061,8 +1544,6 @@ SHORTCUTS = OrderedDict([
     ('logout', 'auth:logout'),
     ('ps', 'containers:list'),
     ('scale', 'containers:scale'),
-    ('converge', 'formations:converge'),
-    ('ssh', 'nodes:ssh'),
     ('rollback', 'releases:rollback'),
     ('sharing', 'perms:list'),
     ('sharing:list', 'perms:list'),
