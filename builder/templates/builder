@@ -105,21 +105,6 @@ if __name__ == '__main__':
         body['receive_user'] = user
         body['receive_repo'] = app
         body['image'] = target_image
-        body['url'] = 'http://localhost/to/be/deprecated'
-        # extract the Procfile and convert to JSON
-        if os.path.exists(procfile):
-            with open(procfile) as f:
-                raw_procfile = f.read()
-                body['procfile'] = json.dumps(yaml.safe_load(raw_procfile))
-                body['size'] = os.stat(slug_path).st_size
-            # calculate sha256
-            sha256 = hashlib.sha256()
-            with open(slug_path) as f:
-                for chunk in iter(lambda: f.read(128), b''):
-                    sha256.update(chunk)
-        # use sha of master
-        with open(os.path.join(repo_dir, 'refs/heads/master')) as f:
-            body['sha'] = f.read().strip('\n')
         # trigger build hook
         sys.stdout.write('\n       Launching... ')
         sys.stdout.flush()
@@ -129,15 +114,15 @@ if __name__ == '__main__':
         if r.status_code != 200:
             raise Exception('Build hook error: {} {}'.format(r.status_code, r.text))
         # write out results for git user
-        databag = r.json()
-        sys.stdout.write('done, v{version}\n\n'.format(**databag['release']))
+        response = r.json()
+        sys.stdout.write('done, v{version}\n\n'.format(**response['release']))
         print("-----> {app} deployed to Deis".format(**locals()))
-        domains = databag.get('domains', [])
+        domains = response.get('domains', [])
         if domains:
             for domain in domains:
                 print("       http://{domain}".format(**locals()))
         else:
-            print('       No proxy nodes found for this formation.\n')
+            print('       No domains found for this application')
         print('\n       To learn more, use `deis help` or visit http://deis.io\n')
     except Exception as e:
         print(e.message)
