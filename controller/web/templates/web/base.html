@@ -33,7 +33,7 @@
             <li><a href="{% url "dashboard" %}"><img class="logo" src="{% static "img/menu-logo.png" %}" alt="deis logo"></a></li>
             <li class="divider"></li>
             {% if user.is_authenticated %}
-            <li class="navitem{% ifequal page "formations" %} selected pink{% endifequal %}"><a href="{% url "formations" %}">Formations</a></li>
+            <li class="navitem{% ifequal page "clusters" %} selected pink{% endifequal %}"><a href="{% url "clusters" %}">Clusters</a></li>
             <li class="divider"></li>
             <li class="navitem{% ifequal page "apps" %} selected blue{% endifequal %}"><a href="{% url "apps" %}">Apps</a></li>
             <li class="divider"></li>
