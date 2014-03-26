@@ -13,6 +13,6 @@ urlpatterns = patterns(
     url(r'^$', 'dashboard', name='dashboard'),
     url(r'^account/$', 'account', name='account'),
     url(r'^apps/$', 'apps', name='apps'),
-    url(r'^formations/$', 'formations', name='formations'),
+    url(r'^clusters/$', 'clusters', name='clusters'),
     url(r'^support/$', 'support', name='support'),
 )

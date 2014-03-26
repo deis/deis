@@ -54,81 +54,16 @@
   }
 },
 {
-  "pk": "3daa9d07-d6b8-40c2-869d-792e2438140d",
-  "model": "api.flavor",
-  "fields": {
-    "updated": "2013-11-25T21:58:46.672Z",
-    "created": "2013-11-25T21:58:46.671Z",
-    "params": "{}",
-    "provider": "d879d3c5-1953-4b1e-92ef-e14ab3d52cf8",
-    "owner": 2,
-    "id": "mock-west"
-  }
-},
-{
-  "pk": "79121781-9cbb-4300-94ac-59131a0bc487",
-  "model": "api.flavor",
-  "fields": {
-    "updated": "2013-11-25T21:59:31.237Z",
-    "created": "2013-11-25T21:59:31.237Z",
-    "params": "{}",
-    "provider": "1f251c8b-c72b-4616-9c92-126890bf1567",
-    "owner": 3,
-    "id": "mock-west"
-  }
-},
-{
-  "pk": "1f251c8b-c72b-4616-9c92-126890bf1567",
-  "model": "api.provider",
-  "fields": {
-    "updated": "2013-11-25T21:59:31.227Z",
-    "created": "2013-11-25T21:59:31.227Z",
-    "owner": 3,
-    "type": "mock",
-    "id": "mock",
-    "creds": "{}"
-  }
-},
-{
-  "pk": "d879d3c5-1953-4b1e-92ef-e14ab3d52cf8",
-  "model": "api.provider",
-  "fields": {
-    "updated": "2013-11-25T21:58:46.658Z",
-    "created": "2013-11-25T21:58:46.658Z",
-    "owner": 2,
-    "type": "mock",
-    "id": "mock",
-    "creds": "{}"
-  }
-},
-{
-  "pk": "f74ab47c-d20e-4cb5-893a-9bcda9f40f08",
-  "model": "api.layer",
-  "fields": {
-    "updated": "2013-11-25T22:09:38.150Z",
-    "created": "2013-11-25T22:09:38.150Z",
-    "ssh_port": 22,
-    "ssh_username": "ubuntu",
-    "formation": "2345a3e0-867e-4839-928b-449380dd99f7",
-    "proxy": true,
-    "owner": 2,
-    "ssh_public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUnuepSvLVxC1XUbZE2LAMdu4tqOSJFx9aZ2HMY7xmeYovHVUFOb8+AGgwhOfHuAh7E1N3dB4/HbbUoO/l6eyU6RHiQn7eq0OltaGn1WgGLNSjDRZwf/4MoFAKGZr3BUGQ6cN9O65K8FsnK0urQTRoTmA5m/QtFGBC9AJLu1/XWIYs/IHs/HrVWecsAMdM/6ulgdrsosammhkv89mfBSJHY5Wuy1Eg1EArG/cv5Bi0LRDuzz3j1sASKZIug82N5QfVZ4xRPz0ZEpotFOAu7KC4r078XQakBH+arphTunyScTZO30ysak2SACBT9kprbIW8FXwf23e19ygAFDo8l1/J",
-    "flavor": "3daa9d07-d6b8-40c2-869d-792e2438140d",
-    "runtime": true,
-    "config": "{}",
-    "id": "runtime",
-    "ssh_private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA1J7nqUry1cQtV1G2RNiwDHbuLajkiRcfWmdhzGO8ZnmKLx1V\nBTm/PgBoMITnx7gIexNTd3QePx221KDv5enslOkR4kJ+3qtDpbWhp9VoBizUow0W\ncH/+DKBQChma9wVBkOnDfTuuSvBbJytLq0E0aE5gOZv0LRRgQvQCS7tf11iGLPyB\n7Px61VnnLADHTP+rpYHa7KLGppoZL/PZnwUiR2OVrstRINRAKxv3L+QYtC0Q7s89\n49bAEimSLoPNjeUH1WeMUT89GRKaLRTgLuyguK9O/F0GpAR/mq6YU7p8knE2Tt9M\nrGpNkgAgU/ZKa2yFvBV8H9t3tfcoABQ6PJdfyQIDAQABAoIBADZuwAwdPfHwGVOD\nfdA+UUO/ptZVqLxYCRTR5r22wuLRNsk9DykZUZaD8CiLvfLpcHJhzjqEpcGuz8G7\nue74ZjLxQDzWnThQTC8+QrZ+8fSywXVEwnvmqJl+6T7Ms1mOJOz+i6eiAcr5obxz\nXxnmxY32krfs7yQjVUmOwo+01qKAdadfnOoOCLTGc/UG7IEsutjtu18x7nkvDs0s\nj12t/osJ8OBWXpwbitYYxSUkVPrivyvO8W5yvKPRpsSrSD7yDLr1SHNp1OHqZbed\nDZJHx8eXdZxmthxRW4Vb8H2nDRZznpUs3VDuevghaD5VmoLgeYf15ogtoMApqjaw\ncXF5MckCgYEA3QJz7jWKWQ3774FWDT6Q8kHoJdYDEr4k6S545v9pHt0H0YeN2AGG\nOBmDIca5CBN37nwT0UR8eXZYxLw6RaEiF1VC7Ld6j4L9k3USYVCYJm/epESh+b8X\nm1MrKbqzc7auJF647VQ/1DmdZ68l+df8D0i5m28w2vJ69sDSPARUe38CgYEA9khz\nVVi9X4f3ore24R2UiIm0zRcnOuT8b3IAyIm9NiXnQcDmhKZtkiEa74DjIvMLV4Hd\nzA5GupeRxxgceaPK+Fu8sccUmGlyr5hSfahyx3/4KrwuXPPyiid6zFl/9XUvuOkM\nTdyb70AWypdbwrrCdBBP6GjUOOMvYKIevq+46LcCgYAS09Wqclcx1PYkZiE9iZnx\neVncd0nVu+sLDlFwZEvBPFUhLWoQ/7g+aTX5l6NFo9rwrxNFHY95DXLsd5iDPAHa\neQH1hn/jX+ZYPH3vWl1L0PXnio096GCLc99Wc7g74FEfeg5I8YdqfeoB3jLfAN5R\nMwHU0vkXfdap1K1UPY4w4wKBgGwFgRi5EG67S2GCZOM+PyzYAYZHFnzdfN9AyJks\n2OHMJC+R9UnPWZXTkWXlSTrGEX5zRp4+0MT8wALsT2kG73qZeh0bravf7F6aV+wn\nmxhnx6iu20MH+KSiBlllFBvMJ39aMHxiO77nhFedpbC2i52une3ZNOQyuVAQK54F\novvnAoGBAKqCEF0HCEmDIMyWy4dZhwA+9+I6q1hmXVuVZxSk1iTO7S4rKT590jAl\nWcRw/kS3rdrmLZvoBYnIOUJk356TCVNOVDwp3CXmD9/P/GIXzhWQtScZdBd91ekU\n4h+84S5yGdaF3SEJz1+UIdlh1lWxndBVyFucuSI0RF/FOB9jK7iE\n-----END RSA PRIVATE KEY-----"
-  }
-},
-{
-  "pk": "2345a3e0-867e-4839-928b-449380dd99f7",
-  "model": "api.formation",
+  "pk": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
+  "model": "api.cluster",
   "fields": {
     "updated": "2013-11-25T22:09:36.726Z",
     "created": "2013-11-25T22:09:36.726Z",
-    "domain": null,
+    "domain": "autotest.local",
     "owner": 2,
-    "nodes": "{}",
+    "hosts": "host1,host2",
+    "auth": "base64string",
+    "options": "{}",
     "id": "autotest-1"
   }
 },
@@ -138,9 +73,8 @@
   "fields": {
     "updated": "2013-11-25T22:09:36.726Z",
     "created": "2013-11-25T22:09:36.726Z",
-    "formation": "2345a3e0-867e-4839-928b-449380dd99f7",
+    "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
     "owner": 2,
-    "containers": "{}",
     "id": "autotest-1-app"
   }
 }
