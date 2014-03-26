@@ -1,0 +1,43 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "deis-controller"
+
+  # Ubuntu 12.04.3 LTS base with 3.8 kernel (ready for Docker)
+  config.vm.box_url = "https://s3-us-west-2.amazonaws.com/opdemand/ubuntu-12.04.3-amd64-vbox.box"
+
+  # Avahi-daemon will broadcast the server's address as deis-controller.local
+  config.vm.host_name = "deis-controller"
+
+  # IP will be associated to 'deis-controller.local' using avahi-daemon
+  config.vm.network :private_network, ip: "192.168.61.100"
+
+  # The Deis Controller requires at least 2G of RAM to install.
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+  end
+
+  config.vm.provision :shell, inline: <<-SCRIPT
+    # Avahi-daemon broadcasts the machine's hostname to local DNS.
+    # Therefore 'deis-controller.local' in this case.
+    sudo apt-get install -yq avahi-daemon
+    # install docker
+    apt-get install -yq aufs-tools iptables ca-certificates
+    echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+    apt-get update -q
+    apt-get install -yq lxc lxc-docker-0.9.0
+    # bind to private interface
+    sed -i -e 's/#DOCKER_OPTS="-dns 8.8.8.8 -dns 8.8.4.4"/DOCKER_OPTS="-e lxc -H unix:\\/\\/var\\/run\\/docker.sock -H tcp:\\/\\/192.168.61.100:4243"/' /etc/default/docker
+    restart docker
+    echo
+    echo To connect to the Docker Host:
+    echo
+    echo    export DOCKER_HOST=tcp://192.168.61.100:4243
+  SCRIPT
+
+end
+
+# If you want to do some funky custom stuff to your box, but don't want those things tracked by git,
+# add a Vagrantfile.local and it will be included. You can use the exact same syntax as above. For
+# example if you're low on RAM you can boot the VM with less RAM. Note that 2GB is recommended
+# for installation, but you may be able to get away with 1GB once everything is installed.
+load "Vagrantfile.local" if File.exists? "Vagrantfile.local"
