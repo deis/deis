@@ -2035,12 +2035,29 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+def shortcuts():
+    """
+    Valid shortcuts are:
 
-def parse_args(cmd):
+    create      ->  apps:create
+    destroy     ->  apps:destroy
+    info        ->  apps:info
+    calculate   ->  apps:calculate
+    run         ->  apps:run
+    open        ->  apps:open
+    logs        ->  apps:logs
+    register    ->  auth:register
+    login       ->  auth:login
+    logout      ->  auth:logout
+    ps          ->  containers:list
+    scale       ->  containers:scale
+    converge    ->  formations:converge
+    ssh         ->  nodes:ssh
+    rollback    ->  releases:rollback
+
+    Use `deis help [command]` to learn more
     """
-    Parse command-line args applying shortcuts and looking for help flags
-    """
-    shortcuts = {
+    return {
         'register': 'auth:register',
         'login': 'auth:login',
         'logout': 'auth:logout',
@@ -2061,6 +2078,12 @@ def parse_args(cmd):
         'sharing:add': 'perms:create',
         'sharing:remove': 'perms:delete',
     }
+
+def parse_args(cmd):
+    """
+    Parse command-line args applying shortcuts and looking for help flags
+    """
+    cmd_shortcuts = shortcuts()
     if cmd == 'help':
         cmd = sys.argv[-1]
         help_flag = True
@@ -2068,8 +2091,8 @@ def parse_args(cmd):
         cmd = sys.argv[1]
         help_flag = False
     # swap cmd with shortcut
-    if cmd in shortcuts:
-        cmd = shortcuts[cmd]
+    if cmd in cmd_shortcuts:
+        cmd = cmd_shortcuts[cmd]
         # change the cmdline arg itself for docopt
         if not help_flag:
             sys.argv[1] = cmd
@@ -2113,6 +2136,10 @@ def main():
                   options_first=True)
     cmd = args['<command>']
     cmd, help_flag = parse_args(cmd)
+    # print shortcuts if was asked for
+    if cmd == 'shortcuts':
+        print(trim(shortcuts.__doc__))
+        return
     # print help if it was asked for
     if help_flag:
         if cmd != 'help' and cmd in dir(cli):
