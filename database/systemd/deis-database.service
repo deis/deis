@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-database
+After=docker.service
+Requires=docker.service
+Requires=docker-tcp.socket
+
+[Service]
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-database || /usr/bin/docker run --name deis-database -P -e HOST=10.1.42.1 -e ETCD=10.1.42.1:4001 deis/database'
+ExecStop=/usr/bin/docker stop deis-database
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=deis-discovery
+After=docker.service
+Requires=docker.service
+Requires=docker-tcp.socket
+StandardOutput=null
+
+[Service]
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-discovery || /usr/bin/docker run --name deis-discovery -p 5001:4001 -e PUBLIC_IP=10.1.42.1 deis/discovery'
+ExecStop=/usr/bin/docker stop deis-discovery
+
+[Install]
+WantedBy=multi-user.target

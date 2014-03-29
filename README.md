@@ -1,71 +1,138 @@
 # Deis
 
-Deis is a Django/Celery API server, Python CLI and set of [Chef cookbooks](https://github.com/opdemand/deis-cookbook) that combine to provide a Heroku-inspired application platform for public and private clouds.  Your PaaS. Your Rules.
+Deis is an open source PaaS that makes it easy to deploy, scale and manage Docker containers used to host applications and services. Deis builds upon Docker and CoreOS to provide a private PaaS that is lightweight and flexible.
 
 [![Build Status](https://travis-ci.org/opdemand/deis.png?branch=master)](https://travis-ci.org/opdemand/deis)
 [![Coverage Status](https://coveralls.io/repos/opdemand/deis/badge.png?branch=master)](https://coveralls.io/r/opdemand/deis?branch=master)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
-## What is Deis?
+# Installation
 
-Deis is an open source PaaS that makes it easy to deploy and scale LXC containers and Chef nodes used to host applications, databases, middleware and other services. Deis leverages Chef, Docker and Heroku Buildpacks to provide a private PaaS that is lightweight and flexible.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation.  You will need Docker and a CoreOS cluster to get started.
 
-Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java, Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy *anything* using Heroku Buildpacks, Docker images or Chef recipes.  Deis can be deployed on any system including every public cloud, private cloud or bare metal.
+## Run Deis
 
-## Why Deis?
+Build Deis and run the `deis/deis` Docker image.
 
-##### Deploy anything
+```
+make build
+make run
+```
 
-Deploy a wide range of languages and frameworks with a simple `git push` using [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks) or [Dockerfiles](http://docs.docker.io/en/latest/use/builder/). Use custom Chef layers to deploy databases, middleware and other add-on services.
+## Install the Deis Client
+Use `pip` to install the latest Deis Client, or download pre-compiled binares.
 
-##### Control everything
+```
+pip install deis
+```
 
-Choose your hosting provider configuration. Define a [formation](http://docs.deis.io/en/latest/gettingstarted/concepts) with your own proxy and runtime layers. Retain full root access to every node. Manage your platform with a private Deis controller.
+## Register a User
+Use the Deis Client to register a new user.
 
-##### Scale effortlessly
+```
+deis register http://localhost:8000
+```
 
-Scale nodes and containers with a single command.  Node provisioning, container balancing and proxy reconfiguration are completely automated.
+## Initalize a Cluster
 
-##### 100% Open Source
+Initalize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
 
-Free, transparent and easily customized. Join the open-source PaaS and DevOps community by using Deis and complimentary projects like Docker, Chef and Heroku Buildpacks.
+```
+deis clusters:create dev deisapp.com --hosts=coreos-host1,coreos-host2,coreos-host3 --auth=~/.ssh/coreos
+```
 
-## Getting Started
+The `dev` cluster will be used as the default cluster for future `deis` commands.
 
-First read about Deis core [concepts](http://docs.deis.io/en/latest/gettingstarted/concepts/) so you can answer:
+# Usage
 
- * What is a [Formation](http://docs.deis.io/en/latest/gettingstarted/concepts/#formations) and how does it relate to an application?
- * What are [Layers and Nodes](http://docs.deis.io/en/latest/gettingstarted/concepts/#layers), and how do they work with Chef?
- * How does the [Build, Release, Run](http://docs.deis.io/en/latest/gettingstarted/concepts/#build-release-run) process work?
- * How do I connect an application to [backing services](http://docs.deis.io/en/latest/gettingstarted/concepts/#backing-services)?
+## Create an Application
+Create an application on the default `dev` cluster.
 
-Next, choose which cloud provider should host your Deis controller.
-Regardless of whether your controller is hosted with
-[Amazon EC2](http://docs.deis.io/en/latest/installation/ec2/),
-[Rackspace](http://docs.deis.io/en/latest/installation/rackspace/), or
-[DigitalOcean](http://docs.deis.io/en/latest/installation/digitalocean/),
-it can create and manage nodes on any of those cloud providers.
+```
+deis create
+```
 
-Proceed to the [Operations Guide](http://docs.deis.io/en/latest/operations/)
-documentation to start building your own private PaaS.
+Use `deis create --cluster=prod` to place the app on a different cluster.  Don't like our name-generator?  Use `deis create myappname`.
 
-## Credits
+## Push
+Push builds of your application from your local git repository or from a Docker Registry.  Each build creates a new release, which can be rolled back.
 
-Deis stands on the shoulders of leading open source technologies:
+#### From a Git Repository
+When you created the application, a git remote for Deis was added automatically.
 
-  * [Chef](http://www.opscode.com/)
-  * [Docker](http://www.docker.io/)
-  * [Django](https://www.djangoproject.com/)
-  * [Celery](http://www.celeryproject.org/)
-  * [Heroku Buildpacks](https://devcenter.heroku.com/articles/buildpacks)
-  * [Slugbuilder](https://github.com/flynn/slugbuilder) and [slugrunner](https://github.com/flynn/slugrunner)
+```
+git push deis master
+```
+This will use the Deis builder to package your application as a Docker Image and deploy it on your application's cluster.
+
+#### From a Docker Registry
+
+You can also push builds directly from the Docker Index or a private Docker registry.  First, build and push the Docker images as you normally do:
+
+```
+docker build -t gabrtv/example
+docker push gabrtv/example
+```
+
+Then use `deis push` to deploy.
+
+```
+deis push gabrtv/example
+```
+
+Use the fully qualfied image path to push from a private registry: `deis push registry.local:5000/gabrtv/example`
+
+## Configure
+Configure your application with environment variables.  Each config change also creates a new release.
+
+```
+deis config:set DATABASE_URL=postgres://
+```
+
+Coming soon: Use the integrated ETCD namespace for service discovery between applications on the same cluster.
+
+## Test
+Test your application by running commands inside an ephemeral Docker container.
+
+```
+deis run make test
+```
+
+To integrate with your CI system, check the return code.
+
+## Scale
+Scale containers horizontally with ease.
+
+```
+deis scale 8
+```
+
+To scale by process type, use `deis scale web=8 worker=2` .  Just make sure the process types can be run via `/start web`.
+
+## Publish
+Publish your application via each cluster's integrated router.
+
+```
+deis publish 8080/http
+deis domain myapp.example.com
+```
+
+Use `deis open` to pop into a browser pointed at your application.  Use `--sslCert=cert.pem --sslKey=key.pem` to secure the connection with SSL/TLS.
+
+## Debug
+Access to aggregated logs makes it easy to troubleshoot problems with your application.
+
+```
+deis logs
+```
+
+Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
 
 ## License
 
-Copyright 2013, OpDemand LLC
+Copyright 2014, OpDemand LLC
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-

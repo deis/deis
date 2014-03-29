@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-logger
+After=docker.service
+Requires=docker.service
+Requires=docker-tcp.socket
+
+[Service]
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-logger || /usr/bin/docker run --name deis-logger -P -e HOST=10.1.42.1 -e ETCD=10.1.42.1:4001 deis/logger'
+ExecStop=/usr/bin/docker stop deis-logger
+
+[Install]
+WantedBy=multi-user.target

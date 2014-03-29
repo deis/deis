@@ -9,14 +9,14 @@ from __future__ import unicode_literals
 import json
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Container, App
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
-class ContainerTest(TestCase):
+class ContainerTest(TransactionTestCase):
 
     """Tests creation of containers on nodes"""
 

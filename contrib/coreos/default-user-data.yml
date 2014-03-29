@@ -1,0 +1,6 @@
+#cloud-config
+coreos:
+  etcd:
+      addr: 172.17.8.100:4001
+      peer-addr: 172.17.8.100:7001
+  units: []

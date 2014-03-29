@@ -1,0 +1,48 @@
+#cloud-config
+---
+coreos:
+  etcd:
+    addr: 172.17.8.100:4001
+    peer-addr: 172.17.8.100:7001
+  units:
+  - name: docker-tcp.socket
+    command: start
+    content: |
+      [Unit]
+      Description=Docker Socket for Remote API
+
+      [Socket]
+      ListenStream=4243
+      Service=docker.service
+      BindIPv6Only=both
+
+      [Install]
+      WantedBy=sockets.target
+  - name: etcd.service
+    command: start
+    content: "[Unit]\nDescription=etcd\n\n[Service]\nUser=etcd\nPermissionsStartOnly=true\nEnvironment=ETCD_DATA_DIR=/var/lib/etcd
+      ETCD_NAME=default\nExecStart=/usr/bin/etcd \nRestart=always\nRestartSec=10s"
+  - name: fleet.service
+    command: start
+    content: |-
+      [Unit]
+      Description=fleet
+
+      [Service]
+      ExecStart=/usr/bin/fleet
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: stop-reboot-manager.service
+    command: start
+    content: |
+      [Unit]
+      Description=stop update-engine-reboot-manager
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
+      ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
+
+      [Install]
+      WantedBy=multi-user.target

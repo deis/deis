@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-cache
+After=docker.service
+Requires=docker.service
+Requires=docker-tcp.socket
+
+[Service]
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-cache || /usr/bin/docker run --name deis-cache -P -e HOST=10.1.42.1 -e ETCD=10.1.42.1:4001 deis/cache'
+ExecStop=/usr/bin/docker stop deis-cache
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Docker Socket for Remote API
+
+[Socket]
+ListenStream=4243
+Service=docker.service
+BindIPv6Only=both
+
+[Install]
+WantedBy=sockets.target

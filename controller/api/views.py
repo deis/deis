@@ -194,6 +194,13 @@ class ClusterViewSet(viewsets.ModelViewSet):
         if not hasattr(obj, 'owner'):
             obj.owner = self.request.user
 
+    def post_save(self, cluster, created=False, **kwargs):
+        if created:
+            cluster.create()
+
+    def pre_delete(self, cluster):
+        cluster.destroy()
+
 
 class AppPermsViewSet(viewsets.ViewSet):
     """RESTful views for sharing apps with collaborators."""
@@ -272,7 +279,7 @@ class AppViewSet(OwnerViewSet):
 
     def post_save(self, app, created=False, **kwargs):
         if created:
-            app.init()
+            app.create()
 
     def scale(self, request, **kwargs):
         new_structure = {}
