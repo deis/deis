@@ -51,6 +51,7 @@ class ConfigTest(TestCase):
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        self.assertIn('x-deis-release', response._headers)
         config2 = response.data
         self.assertNotEqual(config1['uuid'], config2['uuid'])
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
