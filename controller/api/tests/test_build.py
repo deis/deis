@@ -62,6 +62,7 @@ class BuildTest(TestCase):
         body = {'image': 'autotest/example'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+        self.assertIn('x-deis-release', response._headers)
         build3 = response.data
         self.assertEqual(response.data['image'], body['image'])
         self.assertNotEqual(build2['uuid'], build3['uuid'])

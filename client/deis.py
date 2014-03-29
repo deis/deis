@@ -758,6 +758,31 @@ class DeisClient(object):
         """
         return self.builds_list(args)
 
+    def builds_create(self, args):
+        """
+        Create a new build of an application
+
+        Usage: deis builds:create <image> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        body = {'image': args['<image>']}
+        sys.stdout.write('Creating build... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/builds".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}".format(version))
+        else:
+            raise ResponseError(response)
+
     def builds_list(self, args):
         """
         List build history for an application
@@ -984,10 +1009,18 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         body = {'values': json.dumps(dictify(args['<var>=<value>']))}
-        response = self._dispatch('post',
-                                  "/api/apps/{}/config".format(app),
-                                  json.dumps(body))
+        sys.stdout.write('Creating config... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
             config = response.json()
             values = json.loads(config['values'])
             print("=== {}".format(app))
@@ -1013,10 +1046,18 @@ class DeisClient(object):
         for k in args.get('<key>'):
             values[k] = None
         body = {'values': json.dumps(values)}
-        response = self._dispatch('post',
-                                  "/api/apps/{}/config".format(app),
-                                  json.dumps(body))
+        sys.stdout.write('Creating config... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
             config = response.json()
             values = json.loads(config['values'])
             print("=== {}".format(app))

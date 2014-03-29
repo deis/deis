@@ -345,11 +345,16 @@ class AppBuildViewSet(BaseAppViewSet):
     model = models.Build
     serializer_class = serializers.BuildSerializer
 
-    def post_save(self, obj, created=False):
+    def post_save(self, build, created=False):
         if created:
-            release = obj.app.release_set.latest()
-            new_release = release.new(self.request.user, build=obj)
-            obj.app.deploy(new_release)
+            release = build.app.release_set.latest()
+            self.release = release.new(self.request.user, build=build)
+            build.app.deploy(self.release)
+
+    def get_success_headers(self, data):
+        headers = super(AppBuildViewSet, self).get_success_headers(data)
+        headers.update({'X-Deis-Release': self.release.version})
+        return headers
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
@@ -372,11 +377,16 @@ class AppConfigViewSet(BaseAppViewSet):
             return app.release_set.latest().config
         raise PermissionDenied()
 
-    def post_save(self, obj, created=False):
+    def post_save(self, config, created=False):
         if created:
-            release = obj.app.release_set.latest()
-            new_release = release.new(self.request.user, config=obj)
-            obj.app.deploy(new_release)
+            release = config.app.release_set.latest()
+            self.release = release.new(self.request.user, config=config)
+            config.app.deploy(self.release)
+
+    def get_success_headers(self, data):
+        headers = super(AppConfigViewSet, self).get_success_headers(data)
+        headers.update({'X-Deis-Release': self.release.version})
+        return headers
 
     def create(self, request, *args, **kwargs):
         request._data = request.DATA.copy()
