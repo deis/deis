@@ -239,9 +239,19 @@ class Container(UuidAuditedModel):
 
     _scheduler = property(_get_scheduler)
 
+    def _get_command(self):
+        c_type = self.type
+        if c_type:
+            return 'start {c_type}'
+        else:
+            return ''
+
+    _command = property(_get_command)
+
     def create(self):
         image = self.release.build.image
-        self._scheduler.create(self._job_id, image, 'docker run {image}'.format(**locals()))
+        c_type = self.type
+        self._scheduler.create(self._job_id, image, self._command.format(**locals()))
         self.state = 'created'
         self.save()
 
