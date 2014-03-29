@@ -60,7 +60,8 @@ class Cluster(UuidAuditedModel):
     Cluster used to run jobs
     """
 
-    CLUSTER_TYPES = (('mock', 'Mock Cluster'),)
+    CLUSTER_TYPES = (('mock', 'Mock Cluster'),
+                     ('coreos', 'CoreOS Cluster'))
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128, unique=True)
@@ -73,6 +74,26 @@ class Cluster(UuidAuditedModel):
 
     def __str__(self):
         return self.id
+
+    def _get_scheduler(self, *args, **kwargs):
+        module_name = 'scheduler.' + self.type
+        mod = importlib.import_module(module_name)
+        return mod.SchedulerClient(self.id, self.hosts, self.auth,
+                                   self.domain, self.options)
+
+    _scheduler = property(_get_scheduler)
+
+    def create(self):
+        """
+        Initialize a cluster's router and log aggregator
+        """
+        return tasks.create_cluster.delay(self).get()
+
+    def destroy(self):
+        """
+        Destroy a cluster's router and log aggregator
+        """
+        return tasks.destroy_cluster.delay(self).get()
 
 
 @python_2_unicode_compatible
@@ -92,18 +113,17 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
-    def init(self, *args, **kwargs):
+    def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self, values={})
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
-    def delete(self, *args, **kwargs):
+    def destroy(self, *args, **kwargs):
         for c in self.container_set.all():
             c.destroy()
-        super(App, self).delete(*args, **kwargs)
 
     def deploy(self, release):
-        return tasks.deploy_release.delay(self, release)
+        return tasks.deploy_release.delay(self, release).get()
 
     def scale(self, **kwargs):
         """Scale containers up or down to match requested."""
@@ -200,59 +220,59 @@ class Container(UuidAuditedModel):
         get_latest_by = '-created'
         ordering = ['created']
 
-    def _scheduler(self, *args, **kwargs):
-        module_name = 'scheduler.' + self.app.cluster.type
-        mod = importlib.import_module(module_name)
-        return mod.SchedulerClient(self.app.cluster.id,
-                                   self.app.cluster.hosts,
-                                   self.app.cluster.auth)
-
-    def job_id(self):
+    def _get_job_id(self):
         app = self.app.id
         release = self.release
         version = "v{}".format(release.version)
         num = self.num
         c_type = self.type
         if not c_type:
-            job_id = "{app}.{version}.{num}".format(**locals())
+            job_id = "{app}_{version}.{num}".format(**locals())
         else:
-            job_id = "{app}_{c_type}.{version}.{num}".format(**locals())
+            job_id = "{app}_{version}.{c_type}.{num}".format(**locals())
         return job_id
+
+    _job_id = property(_get_job_id)
+
+    def _get_scheduler(self):
+        return self.app.cluster._scheduler
+
+    _scheduler = property(_get_scheduler)
 
     def create(self):
         image = self.release.build.image
-        self._scheduler().create(self.job_id(), image, 'docker run {image}'.format(**locals()))
+        self._scheduler.create(self._job_id, image, 'docker run {image}'.format(**locals()))
         self.state = 'created'
         self.save()
 
     def start(self):
         self.state = 'starting'
         self.save()
-        self._scheduler().start(self.job_id())
+        self._scheduler.start(self._job_id)
         self.state = 'up'
         self.save()
 
     def deploy(self, release):
-        old_job_id = self.job_id()
+        old_job_id = self._job_id
         self.state = 'deploying'
         self.save()
         # update release
         self.release = release
         self.save()
         # deploy new container
-        new_job_id = self.job_id()
+        new_job_id = self._job_id
         image = self.release.build.image
-        self._scheduler().create(new_job_id, image, 'docker run {image}'.format(**locals()))
-        self._scheduler().start(new_job_id)
+        self._scheduler.create(new_job_id, image, 'docker run {image}'.format(**locals()))
+        self._scheduler.start(new_job_id)
         # destroy old container
-        self._scheduler().destroy(old_job_id)
+        self._scheduler.destroy(old_job_id)
         self.state = 'up'
         self.save()
 
     def stop(self):
         self.state = 'stopping'
         self.save()
-        self._scheduler().stop(self.job_id())
+        self._scheduler.stop(self._job_id)
         self.state = 'stopped'
         self.save()
 
@@ -260,7 +280,7 @@ class Container(UuidAuditedModel):
         self.state = 'destroying'
         self.save()
         # TODO: add check for active connections before killing
-        self._scheduler().destroy(self.job_id())
+        self._scheduler.destroy(self._job_id)
         self.state = 'destroyed'
         self.save()
 
