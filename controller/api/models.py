@@ -21,7 +21,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from json_field.fields import JSONField
 
 from api import fields, tasks
-from docker import publish_release
+from registry import publish_release
 from utils import dict_diff, fingerprint
 
 
@@ -183,7 +183,7 @@ class App(UuidAuditedModel):
             raise EnvironmentError('No build exists, please run `git push deis master` first')
         # prepare ssh command
         version = release.version
-        image = release.build.image + ":v{}".format(release.version)
+        image = release.image
         docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '-rm', image])
         env_args = ' '.join(["-e '{k}={v}'".format(**locals())
                              for k, v in release.config.values.items()])
@@ -249,7 +249,7 @@ class Container(UuidAuditedModel):
     _command = property(_get_command)
 
     def create(self):
-        image = self.release.build.image
+        image = self.release.image
         c_type = self.type
         self._scheduler.create(self._job_id, image, self._command.format(**locals()))
         self.state = 'created'
@@ -271,8 +271,9 @@ class Container(UuidAuditedModel):
         self.save()
         # deploy new container
         new_job_id = self._job_id
-        image = self.release.build.image
-        self._scheduler.create(new_job_id, image, 'docker run {image}'.format(**locals()))
+        image = self.release.image
+        c_type = self.type
+        self._scheduler.create(new_job_id, image, self._command.format(**locals()))
         self._scheduler.start(new_job_id)
         # destroy old container
         self._scheduler.destroy(old_job_id)
@@ -374,6 +375,8 @@ class Release(UuidAuditedModel):
 
     config = models.ForeignKey('Config')
     build = models.ForeignKey('Build')
+    # NOTE: image contains combined build + config, ready to run
+    image = models.CharField(max_length=256)
 
     class Meta:
         get_latest_by = 'created'
@@ -394,16 +397,17 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
-        # create new release and auto-increment version
+        # prepare release tag
         new_version = self.version + 1
+        tag = 'v{}'.format(new_version)
+        image = build.image + ':{tag}'.format(**locals())
+        # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
-            build=build, version=new_version)
+            build=build, version=new_version, image=image)
         # publish release to registry as new docker image
-        if settings.REGISTRY_URL:
-            repository_path = "{}/{}".format(user.username, self.app.id)
-            tag = 'v{}'.format(new_version)
-            publish_release(repository_path, config.values, tag)
+        repository_path = "{}/{}".format(user.username, self.app.id)
+        publish_release(repository_path, config.values, tag)
         return release
 
     def previous(self):

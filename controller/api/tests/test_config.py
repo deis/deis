@@ -94,6 +94,28 @@ class ConfigTest(TestCase):
         self.assertEqual(self.client.delete(url).status_code, 405)
         return config5
 
+    def test_config_set_same_key(self):
+        """
+        Test that config sets on the same key function properly
+        """
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = "/api/apps/{app_id}/config".format(**locals())
+        # set an initial config value
+        body = {'values': json.dumps({'PORT': '5000'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('PORT', json.loads(response.data['values']))
+        # reset same config value
+        body = {'values': json.dumps({'PORT': '5001'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('PORT', json.loads(response.data['values']))
+        self.assertEqual(json.loads(response.data['values'])['PORT'], '5001')
+
     def test_config_str(self):
         """Test the text representation of a node."""
         config5 = self.test_config()
