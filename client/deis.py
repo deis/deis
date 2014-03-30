@@ -621,7 +621,7 @@ class DeisClient(object):
                                   "/api/apps/{}/run".format(app),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            output, rc = json.loads(response.content)
+            rc, output = json.loads(response.content)
             if rc != 0:
                 print('Warning: non-zero return code {}'.format(rc))
             sys.stdout.write(output)

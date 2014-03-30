@@ -50,6 +50,12 @@ class MockSchedulerClient(object):
         """
         return {'state': 'inactive'}
 
+    def run(self, name, image, command):
+        """
+        Run a one-off command
+        """
+        return 0, ''
+
     def attach(self, name):
         """
         Attach to a job's stdin, stdout and stderr

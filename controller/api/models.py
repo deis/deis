@@ -178,19 +178,15 @@ class App(UuidAuditedModel):
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
         # TODO: add support for interactive shell
-        release = self.release_set.latest()
-        if not release.build:
-            raise EnvironmentError('No build exists, please run `git push deis master` first')
-        # prepare ssh command
-        version = release.version
-        image = release.image
-        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '-rm', image])
-        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
-                             for k, v in release.config.values.items()])
         log_event(self, "deis run '{}'".format(command))
-        command = "sudo docker run {env_args} {docker_args} {command}".format(**locals())
-        # TODO: wire up to job dispath
-        return 0, 'Not implemented yet'
+        c_num = max([c.num for c in self.container_set.filter(type='admin')] or [0]) + 1
+        c = Container.objects.create(owner=self.owner,
+                                     app=self,
+                                     release=self.release_set.latest(),
+                                     type='admin',
+                                     num=c_num)
+        rc, output = tasks.run_command.delay(c, command).get()
+        return rc, output
 
 
 @python_2_unicode_compatible
@@ -294,6 +290,14 @@ class Container(UuidAuditedModel):
         self._scheduler.destroy(self._job_id)
         self.state = 'destroyed'
         self.save()
+
+    def run(self, command):
+        self.state = 'running'
+        self.save()
+        rc, output = self._scheduler.run(self._job_id, self.release.image, command)
+        self.state = 'completed'
+        self.save()
+        return rc, output
 
 
 @python_2_unicode_compatible
