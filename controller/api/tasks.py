@@ -76,3 +76,23 @@ def stop_containers(containers):
             c.state = 'error'
             c.save()
             raise
+
+
+@task
+def run_command(c, command):
+    release = c.release
+    version = release.version
+    image = release.image
+    try:
+        # pull the image first
+        rc, pull_output = c.run("docker pull {image}".format(**locals()))
+        if rc != 0:
+            raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
+        # run the command
+        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '--rm', image])
+        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
+                             for k, v in release.config.values.items()])
+        command = "docker run {env_args} {docker_args} {command}".format(**locals())
+        return c.run(command)
+    finally:
+        c.delete()
