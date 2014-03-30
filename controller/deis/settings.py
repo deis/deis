@@ -276,6 +276,7 @@ SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29r
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 
 # registry settings
+REGISTRY_MODULE = 'registry.mock'
 REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
 
 # check if we can register users with `deis register`

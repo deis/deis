@@ -8,6 +8,7 @@ keys = [
   "/deis/controller",
   "/deis/cache",
   "/deis/database",
+  "/deis/registry",
 ]
 check_cmd = "test -e {{ .src }}"
 reload_cmd = "/app/bin/reload"

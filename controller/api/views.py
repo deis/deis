@@ -22,7 +22,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from api import docker, models, serializers
+from api import models, serializers
+from registry import publish_release
 from .exceptions import UserRegistrationException
 
 from django.conf import settings
@@ -413,6 +414,7 @@ class AppReleaseViewSet(BaseAppViewSet):
         """Get Release by version always."""
         return self.get_queryset(**kwargs).get(version=self.kwargs['version'])
 
+    # TODO: move logic into model
     def rollback(self, request, *args, **kwargs):
         """
         Create a new release as a copy of the state of the compiled slug and
@@ -430,11 +432,9 @@ class AppReleaseViewSet(BaseAppViewSet):
                                    build=prev.build, config=prev.config,
                                    summary=summary)
         # publish release to registry as new docker image
-        if settings.REGISTRY_URL:
-            repository_path = "{}/{}".format(app.owner.username, app.id)
-            tag = 'v{}'.format(last_version + 1)
-            docker.publish_release(repository_path, prev.config.values, tag)
-            app.converge()
+        repository_path = "{}/{}".format(app.owner.username, app.id)
+        tag = 'v{}'.format(last_version + 1)
+        publish_release(repository_path, prev.config.values, tag)
         msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
 
