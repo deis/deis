@@ -266,8 +266,9 @@ Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -P -e ETCD=172.17.42.1:4001 {image} {command}
+ExecStart=-/usr/bin/docker run --name {name} -p 80:80 -p 443:443 -e ETCD=172.17.42.1:4001 {image} {command}
 ExecStop=-/usr/bin/docker rm -f {name}
+TimeoutStartSec=10min
 """
 
 LOGGER_TEMPLATE = """
