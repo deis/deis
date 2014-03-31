@@ -576,20 +576,18 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        # TODO: replace with a proxy lookup that doesn't have any side effects
-        # this currently recalculates and updates the databag
-        response = self._dispatch('post',
-                                  "/api/apps/{}/calculate".format(app))
+        # TODO: replace with a single API call to apps endpoint
+        response = self._dispatch('get', "/api/apps/{}".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            domains = databag.get('domains', [])
-            if domains:
-                domain = random.choice(domains)
-                # use the OS's default handler to open this URL
-                webbrowser.open('http://{}/'.format(domain))
-                return domain
-            else:
-                print('No proxies found. Use `deis nodes:scale myformation proxy=1` to scale up.')
+            cluster = response.json()['cluster']
+        else:
+            raise ResponseError(response)
+        response = self._dispatch('get', "/api/clusters/{}".format(cluster))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            domain = response.json()['domain']
+            # use the OS's default handler to open this URL
+            webbrowser.open('http://{}.{}/'.format(app, domain))
+            return domain
         else:
             raise ResponseError(response)
 
