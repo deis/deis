@@ -1,0 +1,11 @@
+[template]
+src   = "nginx.conf"
+dest  = "/etc/nginx/nginx.conf"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/services",
+]
+check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
+reload_cmd = "/usr/sbin/nginx -s reload"
