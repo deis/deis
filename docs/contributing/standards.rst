@@ -33,10 +33,10 @@ into the official repository, your code must pass two tests:
 
 .. code-block:: console
 
-	$ cd $HOME/projects/deis
-	$ make flake8
-	flake8
-	$
+    $ cd $HOME/projects/deis
+    $ make flake8
+    flake8
+    $
 
 No output, as above, means ``flake8`` found no errors. If errors
 are reported, fix them in your source code and try ``flake8`` again.
@@ -60,18 +60,18 @@ ensure that everything passes and that code coverage has not declined.
 
 .. code-block:: console
 
-	$ cd $HOME/projects/deis
-	$ make coverage
-	coverage run manage.py test api celerytasks client web
-	Creating test database for alias 'default'...
-	...................ss.
-	----------------------------------------------------------------------
-	Ran 22 tests in 22.630s
+    $ cd $HOME/projects/deis
+    $ make coverage
+    coverage run manage.py test api celerytasks client web
+    Creating test database for alias 'default'...
+    ...................ss.
+    ----------------------------------------------------------------------
+    Ran 22 tests in 22.630s
 
-	OK (skipped=2)
-	Destroying test database for alias 'default'...
-	coverage html
-	$
+    OK (skipped=2)
+    Destroying test database for alias 'default'...
+    coverage html
+    $
 
 If a test fails, fixing it is obviously the first priority. And if you
 have introduced new code, it must be accompanied by unit tests.
@@ -91,6 +91,7 @@ changes. Current test coverage can be found here:
 
 Pull Request
 ------------
+
 Now create a GitHub `pull request`_ with a description of what your code
 fixes or improves.
 
@@ -105,6 +106,7 @@ automatically close the `GitHub issue`_ when the pull request is merged.
 
 Merge Approval
 --------------
+
 Deis maintainers add "**LGTM**" (Looks Good To Me) in code
 review comments to indicate that a PR is acceptable. Any code change--other than
 a simple typo fix or one-line documentation change--requires at least two of
@@ -119,3 +121,180 @@ Deis' maintainers to accept the change in this manner before it can be merged.
 .. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
 .. _`pull request`: https://github.com/opdemand/deis/pulls
 .. _`GitHub issue`: https://github.com/opdemand/deis/issues
+
+
+.. _commit_style_guide:
+
+Commit Style Guide
+------------------
+
+There are several reasons why we try to follow a specific style guide for commits:
+
+- it allows us to recognize unimportant commits like formatting
+- it provides better information when browsing the git history
+
+Recognizing Unimportant Commits
+```````````````````````````````
+
+These commits are usually just formatting changes like adding/removing spaces/empty lines,
+fixing indentation, or adding comments. So when you are looking for some change in the
+logic, you can ignore these commits - there's no logic change inside this commit.
+
+When bisecting, you can ignore these by running:
+
+.. code-block:: console
+
+    git bisect skip $(git rev-list --grep irrelevant <good place> HEAD)
+
+Providing more Information when Browsing the History
+````````````````````````````````````````````````````
+
+This would add kinda “context” information. Look at these messages (taken from last few
+angular’s commits):
+
+- Fix small typo in docs widget (tutorial instructions)
+- Fix test for scenario.Application - should remove old iframe
+- docs - various doc fixes
+- docs - stripping extra new lines
+- Replaced double line break with single when text is fetched from Google
+- Added support for properties in documentation
+
+All of these messages try to specify where is the change. But they don’t share any
+convention. Look at these messages:
+
+- fix comment stripping
+- fixing broken links
+- Bit of refactoring
+- Check whether links do exist and throw exception
+- Fix sitemap include (to work on case sensitive linux)
+
+Are you able to guess what’s inside?
+
+It's true that you can find this information by checking which files had been changed, but
+that’s slow. And when looking in git history I can see all of us tries to specify the
+place, only missing the convention. Cue commit message formatting entrance stage left.
+
+Format of the Commit Message
+````````````````````````````
+
+.. code-block:: console
+
+    {type}({scope}): {subject}
+    <BLANK LINE>
+    {body}
+    <BLANK LINE>
+    {footer}
+
+Any line of the commit message cannot be longer than 90 characters, with the subject
+line limited to 70 characters. This allows the message to be easier to read on github
+as well as in various git tools.
+
+Subject Line
+""""""""""""
+
+The subject line contains a succinct description of the change to the logic.
+
+The allowed {types} are as follows:
+
+- feat -> feature
+- fix -> bug fix
+- docs -> documentation
+- style -> formatting
+- refactor
+- test -> adding missing tests
+- chore -> maintenance
+
+The {scope} can be anything specifying place of the commit change e.g. the controller,
+the client, the logger, etc.
+
+The {subject} needs to use imperative, present tense: “change”, not “changed” nor
+“changes”. The first letter should not be capitalized, and there is no dot (.) at the end.
+
+Message Body
+""""""""""""
+
+Just like the {subject}, the message {body} needs to be in the present tense, and includes
+the motivation for the change, as well as a contrast with the previous behavior.
+
+Message Footer
+""""""""""""""
+
+All breaking changes need to be mentioned in the footer with the description of the
+change, the justification behind the change and any migration notes required. For example:
+
+.. code-block:: console
+
+    BREAKING CHANGE: the controller no longer listens on port 80. It now listens on
+        port 8000, with the router redirecting requests on port 80 to the controller. To
+        migrate to this change, SSH into your controller and run:
+
+        $ docker kill deis-controller
+        $ docker rm deis-controller
+
+        and then restart the controller on port 8000:
+
+        $ docker run -d -p 8000:8000 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> \
+        -e PORT=8000 -name deis-controller deis/controller
+
+        now you can start the proxy component by running:
+
+        $ docker run -d -p 80:80 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> -e PORT=80 \
+        -name deis-router deis/router
+
+        The router should then start proxying requests from port 80 to the controller.
+
+Referencing Issues
+""""""""""""""""""
+
+Closed bugs should be listed on a separate line in the footer prefixed with the "closes"
+keyword like this:
+
+.. code-block::console
+
+    closes #123
+
+Or in the case of multiple issues:
+
+.. code-block::console
+
+    closes #123, #456, #789
+
+Examples
+````````
+
+.. code-block:: console
+
+    feat(controller): add router component
+
+    This introduces a new router component to Deis, which proxies requests to Deis
+    components.
+
+    closes #123
+
+    BREAKING CHANGE: the controller no longer listens on port 80. It now listens on
+        port 8000, with the router redirecting requests on port 80 to the controller. To
+        migrate to this change, SSH into your controller and run:
+
+        $ docker kill deis-controller
+        $ docker rm deis-controller
+
+        and then restart the controller on port 8000:
+
+        $ docker run -d -p 8000:8000 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> \
+        -e PORT=8000 -name deis-controller deis/controller
+
+        now you can start the proxy component by running:
+
+        $ docker run -d -p 80:80 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> -e PORT=80 \
+        -name deis-router deis/router
+
+        The router should then start proxying requests from port 80 to the controller.
+    ----------------------------------------------------------------------------------
+    test(client): add unit tests for app domains
+
+    Nginx does not allow domain names larger than 128 characters, so we need to make
+    sure that we do not allow the client to add domains larger than 128 characters.
+    A DomainException is raised when the domain name is larger than the maximum
+    character size.
+
+    closes #392
