@@ -146,8 +146,8 @@ When bisecting, you can ignore these by running:
 Providing more Information when Browsing the History
 ````````````````````````````````````````````````````
 
-This would add kinda “context” information. Look at these messages (taken from last few
-angular’s commits):
+This adds extra context to our commit logs. Look at these messages (taken from the last
+few AngularJS commits):
 
 - Fix small typo in docs widget (tutorial instructions)
 - Fix test for scenario.Application - should remove old iframe
@@ -156,8 +156,8 @@ angular’s commits):
 - Replaced double line break with single when text is fetched from Google
 - Added support for properties in documentation
 
-All of these messages try to specify where is the change. But they don’t share any
-convention. Look at these messages:
+All of these messages try to specify where the change occurs, but they don’t share any
+convention. Now look at these messages:
 
 - fix comment stripping
 - fixing broken links
@@ -165,11 +165,12 @@ convention. Look at these messages:
 - Check whether links do exist and throw exception
 - Fix sitemap include (to work on case sensitive linux)
 
-Are you able to guess what’s inside?
+Are you able to guess what’s inside each commit diff?
 
 It's true that you can find this information by checking which files had been changed, but
-that’s slow. And when looking in git history I can see all of us tries to specify the
-place, only missing the convention. Cue commit message formatting entrance stage left.
+that’s slow. When looking in the git history, we can see that all of the developers are
+trying to specify where the change takes place, but the message is missing a convention.
+Cue commit message formatting entrance stage left.
 
 Format of the Commit Message
 ````````````````````````````
