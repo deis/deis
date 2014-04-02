@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from api import docker, models, serializers
 from .exceptions import BuildFormationError, UserRegistrationException
 
-from deis import settings
+from django.conf import settings
 
 
 class AnonymousAuthentication(BaseAuthentication):
