@@ -87,7 +87,7 @@ If you don't want to run your own Chef server, you can
 `sign up for a free Hosted Chef account`_. This is a free service for up to 5 nodes. After
 that, you'll have to start paying.
 
- * `Login to the Chef Server <https://preview.opscode.com/login>`_
+ * `Login to the Chef Server <https://manage.opscode.com/login>`_
  * Click on the ``Administration`` tab and choose your organization
  * Click ``Starter Kit`` in the sidebar to start a download
  * Copy the ``.chef`` directory inside the Starter Kit into the root of your Deis checkout
