@@ -44,10 +44,10 @@ you can use `our Dockerfile example`_.
 
 .. code-block:: console
 
-    ><> deis create --formation=dev
+    $ deis create --formation=dev
     Creating application... done, created owlish-huntress
     Git remote deis added
-    ><> git push deis master
+    $ git push deis master
     Counting objects: 10, done.
     Delta compression using up to 8 threads.
     Compressing objects: 100% (9/9), done.
@@ -82,7 +82,7 @@ you can use `our Dockerfile example`_.
     
            To learn more, use `deis help` or visit http://deis.io
     
-    ><> curl -s http://owlish-huntress.example.com
+    $ curl -s http://owlish-huntress.example.com
     <h1>Powered by Deis</h1>
 
 Supported Applications

@@ -2,7 +2,7 @@ test_client:
 	python -m unittest discover client.tests
 
 build:
-	for image in builder cache controller database discovery logger registry; do \
+	for image in builder cache controller database discovery logger registry router; do \
 		pushd $$image; \
 		docker build -t deis/$$image .; \
 		popd; \

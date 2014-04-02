@@ -1,0 +1,9 @@
+[template]
+src   = "nginx.conf"
+dest  = "/usr/local/nginx/conf/nginx.conf"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis",
+]

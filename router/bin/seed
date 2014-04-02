@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Seed etcd with default configuration
+etcdctl -C $ETCD set $ETCD_PATH/port ${PORT:-80}
+etcdctl -C $ETCD set $ETCD_PATH/workerConnections 1024
+etcdctl -C $ETCD set $ETCD_PATH/workerProcesses 2
+
+exit 0

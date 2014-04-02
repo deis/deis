@@ -1,0 +1,4 @@
+#!/bin/bash
+#
+# run the service in the foreground
+/usr/local/nginx/sbin/nginx
