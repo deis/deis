@@ -6,6 +6,9 @@ DISCOVERY_PORT=4001
 DISCOVERY_PEER_PORT=7001
 DISCOVERY_IMAGE=deis/discovery:latest
 DISCOVERY_NAME=deis-discovery
+REGISTRY_PORT=5000
+REGISTRY_IMAGE=deis/registry:latest
+REGISTRY_NAME=deis-registry
 LOGGER_PORT=514
 LOGGER_IMAGE=deis/logger:latest
 LOGGER_NAME=deis-logger
@@ -28,6 +31,7 @@ ETCD=$PUBLIC_IP:4001
 
 # pull images unless already cached
 docker history $DISCOVERY_IMAGE >/dev/null 2>&1 || docker pull $DISCOVERY_IMAGE
+docker history $REGISTRY_IMAGE >/dev/null 2>&1 || docker pull $REGISTRY_IMAGE
 docker history $LOGGER_IMAGE >/dev/null 2>&1 || docker pull $LOGGER_IMAGE
 docker history $DATABASE_IMAGE >/dev/null 2>&1 || docker pull $DATABASE_IMAGE
 docker history $CACHE_IMAGE >/dev/null 2>&1 || docker pull $CACHE_IMAGE
@@ -36,6 +40,7 @@ docker history $BUILDER_IMAGE >/dev/null 2>&1 || docker pull $BUILDER_IMAGE
 
 # run containers if not running already
 docker inspect $DISCOVERY_NAME >/dev/null 2>&1 || docker run -d --name=$DISCOVERY_NAME -p $DISCOVERY_PORT:$DISCOVERY_PORT -p $DISCOVERY_PEER_PORT:$DISCOVERY_PEER_PORT -e PUBLIC_IP=$PUBLIC_IP $DISCOVERY_IMAGE
+docker inspect $REGISTRY_NAME >/dev/null 2>&1 || docker run -d --name=$REGISTRY_NAME -p $REGISTRY_PORT:$REGISTRY_PORT -e ETCD=$ETCD -e HOST=$PUBLIC_IP $REGISTRY_IMAGE
 docker inspect $LOGGER_NAME >/dev/null 2>&1 || docker run -d --name=$LOGGER_NAME -p $LOGGER_PORT:$LOGGER_PORT -e ETCD=$ETCD -e HOST=$PUBLIC_IP $LOGGER_IMAGE
 docker inspect $DATABASE_NAME >/dev/null 2>&1 || docker run -d --name=$DATABASE_NAME -p $DATABASE_PORT:$DATABASE_PORT -e ETCD=$ETCD -e HOST=$PUBLIC_IP $DATABASE_IMAGE
 docker inspect $CACHE_NAME >/dev/null 2>&1 || docker run -d --name=$CACHE_NAME -p $CACHE_PORT:$CACHE_PORT -e ETCD=$ETCD -e HOST=$PUBLIC_IP $CACHE_IMAGE
