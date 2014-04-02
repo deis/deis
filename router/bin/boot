@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
+
+# configure etcd
+export ETCD=${ETCD:-172.17.42.1:4001}
+export ETCD_PATH=${ETCD_PATH:-/deis/router}
+export ETCD_TTL=${ETCD_TTL:-10}
+
+# configure service discovery
+export HOST=${HOST:-localhost}
+export PORT=${PORT:-80}
+export PROTO=${PROTO:-tcp}
+
+# wait for etcd to be available
+until etcdctl -C $ETCD ls >/dev/null; do
+    echo "waiting for etcd at $ETCD..."
+    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
+
+# wait until etcd has discarded potentially stale values
+sleep $(($ETCD_TTL+1))
+
+# seed initial service configuration if necessary
+$(dirname ${BASH_SOURCE[0]})/seed >/dev/null 2>&1
+
+# wait for confd to run once and install initial templates
+until confd -onetime -node $ETCD -config-file /app/confd.toml; do
+    echo "waiting for confd to write initial templates..."
+    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
+
+# spawn the service in the background
+/usr/sbin/nginx &
+SERVICE_PID=$!
+
+# smart shutdown on SIGINT and SIGTERM
+function on_exit() {
+    kill -TERM $SERVICE_PID
+    wait $SERVICE_PID 2>/dev/null
+}
+trap on_exit INT TERM
+
+# spawn confd in the background to update services based on etcd changes
+confd -node $ETCD -config-file /app/confd.toml &
+CONFD_PID=$!
+
+wait
