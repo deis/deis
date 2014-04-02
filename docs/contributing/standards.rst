@@ -33,10 +33,8 @@ into the official repository, your code must pass two tests:
 
 .. code-block:: console
 
-    $ cd $HOME/projects/deis
-    $ make flake8
+    $ make -C controller flake8
     flake8
-    $
 
 No output, as above, means ``flake8`` found no errors. If errors
 are reported, fix them in your source code and try ``flake8`` again.
@@ -60,18 +58,17 @@ ensure that everything passes and that code coverage has not declined.
 
 .. code-block:: console
 
-    $ cd $HOME/projects/deis
-    $ make coverage
-    coverage run manage.py test api celerytasks client web
+    $ make -C controller coverage
+    coverage run manage.py test --noinput api cm provider web
+    WARNING Cannot synchronize with etcd cluster
     Creating test database for alias 'default'...
-    ...................ss.
+    ....................................................................
     ----------------------------------------------------------------------
-    Ran 22 tests in 22.630s
+    Ran 68 tests in 84.856s
 
-    OK (skipped=2)
+    OK
     Destroying test database for alias 'default'...
     coverage html
-    $
 
 If a test fails, fixing it is obviously the first priority. And if you
 have introduced new code, it must be accompanied by unit tests.
