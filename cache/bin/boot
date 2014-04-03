@@ -35,6 +35,7 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 done
 
 # spawn the service in the background
+cd /var/lib/redis
 sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf &
 SERVICE_PID=$!
 
