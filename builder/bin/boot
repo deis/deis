@@ -32,7 +32,7 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 done
 
 # remove any pre-existing docker.sock
-test -e /var/run/run/docker.sock && rm -f /var/run/docker.sock
+test -e /var/run/docker.sock && rm -f /var/run/docker.sock
 
 # spawn a docker daemon to run builds
 docker -d &
@@ -53,7 +53,6 @@ SSHD_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
-    rm -f /var/run/docker.pid
 	kill -TERM $DOCKER_PID $SSHD_PID
 	wait $DOCKER_PID $SSHD_PID 2>/dev/null
 }
