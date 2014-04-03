@@ -9,37 +9,62 @@ Deis is an open source PaaS that makes it easy to deploy, scale and manage Docke
 
 # Installation
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation.  You will need Docker and a CoreOS cluster to get started.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation.  You will need Docker and Vagrant to get started.
 
-## Run Deis
+## Boot CoreOS
 
-Build Deis and run the `deis/deis` Docker image.
+Start a CoreOS virtual machine on VirtualBox.
+
+```
+vagrant up
+```
+
+Export some environment variables so you can connect to the VM using the `docker` and `fleetctl` clients on your workstation.
+
+```
+export DOCKER_HOST=tcp://172.17.8.100:4243
+export FLEETCTL_TUNNEL=172.17.8.100
+```
+
+## Build Deis
+
+Use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on the CoreOS VM (it can take a while).
 
 ```
 make build
+```
+
+## Run Deis
+
+Use `make run` to start all Deis containers and attach to their log output.
+
+```
 make run
 ```
 
 ## Install the Deis Client
-Use `pip` to install the latest Deis Client, or download pre-compiled binares.
+Use `pip` to install the latest Deis Client, download pre-compiled binares, or symlink `client/deis.py` to use the latest version.
 
 ```
-pip install deis
+ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 
 ## Register a User
 Use the Deis Client to register a new user.
 
 ```
-deis register http://localhost:8000
+deis register http://local.deisapp.com:8000
+deis keys:add
 ```
+
+Use `deis keys:add` to add your SSH public key for `git push` access.
 
 ## Initalize a Cluster
 
 Initalize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
 
 ```
-deis clusters:create dev deisapp.com --hosts=coreos-host1,coreos-host2,coreos-host3 --auth=~/.ssh/coreos
+deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/.vagrant.d/insecure_private_key
 ```
 
 The `dev` cluster will be used as the default cluster for future `deis` commands.
@@ -66,23 +91,6 @@ git push deis master
 ```
 This will use the Deis builder to package your application as a Docker Image and deploy it on your application's cluster.
 
-#### From a Docker Registry
-
-You can also push builds directly from the Docker Index or a private Docker registry.  First, build and push the Docker images as you normally do:
-
-```
-docker build -t gabrtv/example
-docker push gabrtv/example
-```
-
-Then use `deis push` to deploy.
-
-```
-deis push gabrtv/example
-```
-
-Use the fully qualfied image path to push from a private registry: `deis push registry.local:5000/gabrtv/example`
-
 ## Configure
 Configure your application with environment variables.  Each config change also creates a new release.
 
@@ -105,20 +113,8 @@ To integrate with your CI system, check the return code.
 Scale containers horizontally with ease.
 
 ```
-deis scale 8
+deis scale web=8
 ```
-
-To scale by process type, use `deis scale web=8 worker=2` .  Just make sure the process types can be run via `/start web`.
-
-## Publish
-Publish your application via each cluster's integrated router.
-
-```
-deis publish 8080/http
-deis domain myapp.example.com
-```
-
-Use `deis open` to pop into a browser pointed at your application.  Use `--sslCert=cert.pem --sslKey=key.pem` to secure the connection with SSL/TLS.
 
 ## Debug
 Access to aggregated logs makes it easy to troubleshoot problems with your application.
