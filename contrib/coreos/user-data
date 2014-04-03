@@ -20,8 +20,17 @@ coreos:
       WantedBy=sockets.target
   - name: etcd.service
     command: start
-    content: "[Unit]\nDescription=etcd\n\n[Service]\nUser=etcd\nPermissionsStartOnly=true\nEnvironment=ETCD_DATA_DIR=/var/lib/etcd
-      ETCD_NAME=default\nExecStart=/usr/bin/etcd \nRestart=always\nRestartSec=10s"
+    content: |
+      [Unit]
+      Description=etcd
+
+      [Service]
+      User=etcd
+      PermissionsStartOnly=true
+      Environment=ETCD_DATA_DIR=/var/lib/etcd ETCD_NAME=default
+      ExecStart=/usr/bin/etcd
+      Restart=always
+      RestartSec=10s
   - name: fleet.service
     command: start
     content: |-
