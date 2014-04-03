@@ -5,7 +5,7 @@ Requires=docker.service
 Requires=docker-tcp.socket
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-builder || /usr/bin/docker run --name deis-builder -P -e HOST=10.1.42.1 -e ETCD=10.1.42.1:4001--privileged deis/builder'
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-builder || /usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e HOST=172.17.8.100 -e PORT=2222 -e ETCD=172.17.8.100:4001 --privileged deis/builder'
 ExecStop=/usr/bin/docker stop deis-builder
 
 [Install]
