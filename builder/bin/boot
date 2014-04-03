@@ -32,7 +32,7 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 done
 
 # remove any pre-existing docker.sock
-rm -f /var/run/docker.sock
+test -e /var/run/run/docker.sock && rm -f /var/run/docker.sock
 
 # spawn a docker daemon to run builds
 docker -d &
@@ -68,7 +68,7 @@ if [[ ! -z $PUBLISH ]]; then
 
 	# configure service discovery
 	HOST=${HOST:-localhost}
-	PORT=${PORT:-22}
+	PORT=${PORT:-2222}
 	PROTO=${PROTO:-tcp}
 
 	# wait for the service to become available on PUBLISH port
