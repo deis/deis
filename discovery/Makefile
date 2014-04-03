@@ -1,11 +1,28 @@
 build:
-	docker build -t deis/discovery .
-	
-run:
-	docker run -p 4001:4001 -p 7001:7001 -e PUBLIC_IP=10.0.1.8 -rm deis/discovery ; exit 0
+	vagrant ssh -c 'cd share/discovery && sudo docker build -t deis/discovery .'
 
-shell:
-	docker run -t -i -rm -e PUBLIC_IP=10.0.1.8 deis/discovery /bin/bash
+install:
+	vagrant ssh -c 'sudo systemctl enable /home/core/share/discovery/systemd/*'
 
-clean:
-	docker rmi deis/discovery
+uninstall:
+	-vagrant ssh -c 'sudo systemctl disable /home/core/share/discovery/systemd/*'
+
+start:
+	vagrant ssh -c 'sudo systemctl start deis-discovery.service'
+
+stop:
+	-vagrant ssh -c 'sudo systemctl stop deis-discovery.service'
+
+restart:
+	vagrant ssh -c 'sudo systemctl restart deis-discovery.service'
+
+logs:
+	vagrant ssh -c 'sudo journalctl -f -u deis-discovery.service'
+
+run: install restart logs
+
+clean: stop uninstall
+	vagrant ssh -c 'sudo docker rm -f deis-discovery'
+
+full-clean: clean
+	vagrant ssh -c 'sudo docker rmi deis/discovery'

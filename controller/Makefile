@@ -1,15 +1,35 @@
+.PHONY: all test logs
+
+all: build run
+
 build:
-	docker build -t deis/controller .
+	vagrant ssh -c 'cd share/controller && sudo docker build -t deis/controller .'
 
-run:
-	docker run -p $${PORT:-8000}:$${PORT:-8000} -e ETCD=$${ETCD:-127.0.0.1:4001} -name deis-controller deis/controller
-	exit 0
+install:
+	vagrant ssh -c 'sudo systemctl enable /home/core/share/controller/systemd/*'
 
-shell:
-	docker run -t -i -e ETCD=$${ETCD:-127.0.0.1:4001} deis/controller /bin/bash
+uninstall: stop
+	vagrant ssh -c 'sudo systemctl disable /home/core/share/controller/systemd/*'
 
-clean:
-	-docker rmi deis/controller
+start:
+	vagrant ssh -c 'sudo systemctl start deis-controller.service'
+
+stop:
+	vagrant ssh -c 'sudo systemctl stop deis-controller.service'
+
+restart:
+	vagrant ssh -c 'sudo systemctl restart deis-controller.service'
+
+logs:
+	vagrant ssh -c 'sudo journalctl -f -u deis-controller.service'
+
+run: install restart logs
+
+clean: uninstall
+	vagrant ssh -c 'sudo docker rm -f deis-controller'
+
+full-clean: clean
+	vagrant ssh -c 'sudo docker rmi deis/controller'
 
 test:
 	python manage.py test --noinput api web
