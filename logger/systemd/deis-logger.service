@@ -5,7 +5,7 @@ Requires=docker.service
 Requires=docker-tcp.socket
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-logger || /usr/bin/docker run --name deis-logger -P -e HOST=10.1.42.1 -e ETCD=10.1.42.1:4001 deis/logger'
+ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-logger || /usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/logger'
 ExecStop=/usr/bin/docker stop deis-logger
 
 [Install]
