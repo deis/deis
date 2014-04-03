@@ -42,7 +42,7 @@ CONFD_PID=$!
 test -e /var/run/docker.sock && rm -f /var/run/docker.sock
 
 # spawn a docker daemon to run builds
-docker -d &
+docker -d --bip=172.19.42.1/16 &
 DOCKER_PID=$!
 
 # wait for docker to start
