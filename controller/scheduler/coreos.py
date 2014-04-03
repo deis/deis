@@ -37,10 +37,11 @@ class FleetClient(object):
         """
         Setup a CoreOS cluster including router and log aggregator
         """
-        print 'Creating deis-router.1'
-        self._create_router('deis-router.1', 'deis/router', command='', port=80)
-        print 'Creating deis-logger.1'
-        self._create_logger('deis-logger.1', 'deis/logger', command='', port=514)
+        #print 'Creating deis-router.1'
+        #self._create_router('deis-router.1', 'deis/router', command='', port=80)
+        #print 'Creating deis-logger.1'
+        #self._create_logger('deis-logger.1', 'deis/logger', command='', port=514)
+        return
 
     def _create_router(self, name, image, command, port):
         env = self.env.copy()
@@ -69,11 +70,12 @@ class FleetClient(object):
         """
         Tear down a CoreOS cluster including router and log aggregator
         """
-        env = self.env.copy()
-        print 'Destroying deis-router.1'
-        self._destroy_router('deis-router.1', env)
-        print 'Destroying deis-logger.1'
-        self._destroy_logger('deis-logger.1', env)
+        #env = self.env.copy()
+        #print 'Destroying deis-router.1'
+        #self._destroy_router('deis-router.1', env)
+        #print 'Destroying deis-logger.1'
+        #self._destroy_logger('deis-logger.1', env)
+        return
 
     # job api
 
