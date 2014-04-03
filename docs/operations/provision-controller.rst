@@ -116,6 +116,6 @@ Save and close the file. The "deis-controller" user is now in the "admins" group
 .. _`Digital Ocean`: https://github.com/opdemand/deis/tree/master/contrib/digitalocean#readme
 .. _`add the controller to the admins group`: #add-controller-to-admins-group
 .. _`knife`: http://docs.opscode.com/knife.html
-.. _`OpsCode management interface`: https://manage.opscode.com/groups/admins/edit
+.. _`OpsCode management interface`: https://manage.opscode.com/
 .. _`steps`: http://docs.opscode.com/manage_server_hosted_groups.html#add-user-to-group
 

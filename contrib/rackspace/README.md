@@ -72,8 +72,7 @@ Provision a Deis Controller on Rackspace
     3. (optionally) Distribute the image to other regions
     4. (optionally) Create/update your Deis flavors to use your new images
 
-6. Make sure to add the `deis-controller` and the `<your_username>-validator` usernames to the Chef 'admins' group.
-    * If you are using hosted Chef, you may need to use the older console to do this: <https://manage.opscode.com/groups/admins/edit>
+6. Make sure to add the `deis-controller` client object and the `<your_username>-validator` usernames to the Chef 'admins' group.
 
 7. Back on your machine with deis cloned and the deis CLI installed, run the provisioning script to create a new Deis controller:
     * Change ```<region>``` to match the region your image is in (we will add SYD and HKG as soon as performance flavors are available there):
