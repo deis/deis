@@ -1,8 +1,0 @@
-#!/bin/bash
-#
-# This script is designed to be run inside the container
-#
-
-# run the service in the foreground
-cd /var/lib/redis
-sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf

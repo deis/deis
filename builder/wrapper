@@ -1,2 +1,0 @@
-#!/bin/sh
-/usr/bin/ssh -p 2222 $@
