@@ -1,31 +1,28 @@
 build:
-	docker build -t deis/router .
+	vagrant ssh -c 'cd share/router && sudo docker build -t deis/router .'
 
-env:
-	export ROUTER_HOST=`etcdctl -C $${ETCD:-127.0.0.1:4001} get /deis/router/host`
-	export ROUTER_PORT=`etcdctl -C $${ETCD:-127.0.0.1:4001} get /deis/router/port`
-	export ROUTER_WORKER_CONNECTIONS=`etcdctl -C $${ETCD:-127.0.0.1:4001} get /deis/router/workerConnections`
-	export ROUTER_WORKER_PROCESSES=`etcdctl -C $${ETCD:-127.0.0.1:4001} get /deis/router/workerProcesses`
-	env
+install:
+	vagrant ssh -c 'sudo systemctl enable /home/core/share/router/systemd/*'
 
-config:
-	etcdctl -C $${ETCD:-127.0.0.1:4001} set /deis/router/host $${ROUTER_HOST:-127.0.0.1}
-	etcdctl -C $${ETCD:-127.0.0.1:4001} set /deis/router/port $${ROUTER_PORT:-80}
-	etcdctl -C $${ETCD:-127.0.0.1:4001} set /deis/router/workerConnections $${ROUTER_WORKER_CONNECTIONS:-1024}
-	etcdctl -C $${ETCD:-127.0.0.1:4001} set /deis/router/workerProcesses $${ROUTER_WORKER_PROCESSES:-2}
+uninstall: stop
+	vagrant ssh -c 'sudo systemctl disable /home/core/share/router/systemd/*'
 
-run:
-	docker run -d -p 80:80 -e ETCD=$${ETCD:-172.17.42.1:4001} -e HOST=$${HOST:-172.17.42.1} --name deis-router deis/router
+start:
+	vagrant ssh -c 'sudo systemctl start deis-router.service'
 
-shell:
-	docker run -t -i -rm deis/router /bin/bash
+stop:
+	vagrant ssh -c 'sudo systemctl stop deis-router.service'
 
-kill:
-	docker kill deis-router
-	docker rm deis-router
+restart:
+	vagrant ssh -c 'sudo systemctl restart deis-router.service'
 
-clean:
-	docker rmi deis/router
+logs:
+	vagrant ssh -c 'sudo journalctl -f -u deis-router.service'
 
-test:
-	docker build .
+run: install restart logs
+
+clean: uninstall
+	vagrant ssh -c 'sudo docker rm -f deis-router'
+
+full-clean: clean
+	vagrant ssh -c 'sudo docker rmi deis/router'
