@@ -3,13 +3,16 @@
 # This script is designed to be run inside the container
 #
 
+# fail hard and fast even on pipelines
+set -eo pipefail
+
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
+
 # configure etcd
 export ETCD=${ETCD:-172.17.42.1:4001}
 export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-10}
-
-# fail hard and fast even on pipelines
-set -eo pipefail
 
 # wait for etcd to be available
 until etcdctl -C $ETCD ls >/dev/null; do
@@ -30,6 +33,10 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 	echo "waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
+
+# spawn confd in the background to update services based on etcd changes
+confd -node $ETCD -config-file /app/confd.toml &
+CONFD_PID=$!
 
 # remove any pre-existing docker.sock
 test -e /var/run/docker.sock && rm -f /var/run/docker.sock
@@ -57,10 +64,6 @@ function on_exit() {
 	wait $DOCKER_PID $SSHD_PID 2>/dev/null
 }
 trap on_exit INT TERM EXIT
-
-# spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
-CONFD_PID=$!
 
 # publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then

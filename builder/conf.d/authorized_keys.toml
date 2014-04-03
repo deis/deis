@@ -7,5 +7,3 @@ mode  = "0600"
 keys = [
   "/deis/builder/users",
 ]
-#check_cmd  = "cat {{ .src }}"
-#reload_cmd = "/usr/sbin/service nginx restart"
