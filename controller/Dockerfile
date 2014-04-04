@@ -38,6 +38,10 @@ RUN mkdir -p /templates && chown -R deis:deis /templates
 # create directory for logs
 RUN mkdir -p /var/log/deis && chown -R deis:deis /var/log/deis
 
+# install latest etcdctl including no-sync options
+RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
+RUN chmod +x /usr/local/bin/etcdctl
+
 # define the execution environment
 WORKDIR /app
 CMD ["/app/bin/boot"]

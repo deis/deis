@@ -15,7 +15,7 @@ export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-10}
 
 # wait for etcd to be available
-until etcdctl -C $ETCD ls >/dev/null; do
+until etcdctl --no-sync -C $ETCD ls >/dev/null; do
 	echo "waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -24,8 +24,8 @@ done
 sleep $(($ETCD_TTL+1))
 
 # seed initial service configuration if necessary
-if ! etcdctl -C $ETCD ls $ETCD_PATH >/dev/null 2>&1 ; then
-	etcdctl -C $ETCD mkdir $ETCD_PATH/users >/dev/null 2>&1 || true
+if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1 ; then
+	etcdctl --no-sync -C $ETCD mkdir $ETCD_PATH/users >/dev/null 2>&1 || true
 fi
 
 # wait for confd to run once and install initial templates
@@ -80,8 +80,8 @@ if [[ ! -z $PUBLISH ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 
