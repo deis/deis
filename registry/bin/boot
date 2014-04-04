@@ -34,7 +34,7 @@ fi
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "waiting for confd to write initial templates..."
+	echo "registry: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -54,6 +54,8 @@ trap on_exit INT TERM
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
+
+echo deis-registry running...
 
 # publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then

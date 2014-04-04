@@ -24,18 +24,18 @@ done
 sleep $(($ETCD_TTL+1))
 
 # seed initial service configuration if necessary
-if ! etcdctl -C $ETCD ls $ETCD_PATH >/dev/null 2>/dev/null; then
+if ! etcdctl -C $ETCD ls $ETCD_PATH >/dev/null 2>&1; then
 	etcdctl -C $ETCD mkdir $ETCD_PATH >/dev/null 2>&1 || true
 fi
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "waiting for confd to write initial templates..."
+	echo "logger: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # cleanup old pidfile's
-rm -f /var/run/rsyslog.pid
+test -e /var/run/rsyslog.pid && rm -f /var/run/rsyslog.pid
 
 # spawn the service in the background
 /usr/sbin/rsyslogd -n &
@@ -51,6 +51,8 @@ trap on_exit INT TERM
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
+
+echo deis-logger running...
 
 # publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then

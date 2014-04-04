@@ -25,13 +25,13 @@ sleep $(($ETCD_TTL+1))
 
 # seed initial service configuration if necessary
 if ! etcdctl -C $ETCD ls /deis/services >/dev/null 2>&1; then
-	etcdctl -C $ETCD mkdir /deis/services || true 2>/dev/null
-	etcdctl -C $ETCD set $ETCD_PATH/port ${PORT:-80}
+	etcdctl -C $ETCD mkdir /deis/services || true >/dev/null 2>&1
+	etcdctl -C $ETCD set $ETCD_PATH/port ${PORT:-80} >/dev/null
 fi
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do
-    echo "waiting for confd to write initial templates..."
+    echo "router: waiting for confd to write initial templates..."
     sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -50,6 +50,8 @@ trap on_exit INT TERM
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
+
+echo deis-router running...
 
 # publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then
