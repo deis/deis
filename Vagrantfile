@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
 
     # workaround missing /etc/hosts
-    config.vm.provision :shell, :inline => "echo 127.0.0.1 #{vm_name} > /etc/hosts", :privileged => true
+    config.vm.provision :shell, :inline => "echo #{ip} #{vm_name} > /etc/hosts", :privileged => true
 
     # workaround missing /etc/environment
     config.vm.provision :shell, :inline => "touch /etc/environment", :privileged => true
