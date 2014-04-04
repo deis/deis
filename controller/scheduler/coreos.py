@@ -239,8 +239,8 @@ Description={name} announce
 BindsTo={name}.service
 
 [Service]
-ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); echo Waiting for $port/tcp...; until cat </dev/null>/dev/tcp/%H/$port; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); echo Connected to $port/tcp, publishing to etcd...; while netstat -lnt | grep $port >/dev/null; do etcdctl set /deis/services/{app}/{name} %H:$port --ttl 60; sleep 45; done"
+ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Waiting for $port/tcp...; until cat </dev/null>/dev/tcp/$host/$port; do sleep 1; done"
+ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Connected to $host:$port/tcp, publishing to etcd...; while netstat -lnt | grep $port >/dev/null; do etcdctl set /deis/services/{app}/{name} $host:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 
 [X-Fleet]
