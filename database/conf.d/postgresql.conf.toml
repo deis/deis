@@ -7,5 +7,3 @@ mode  = "0644"
 keys = [
   "/deis/database",
 ]
-#check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
-#reload_cmd = "/app/bin/reload"
