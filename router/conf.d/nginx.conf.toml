@@ -7,5 +7,5 @@ mode  = "0644"
 keys = [
   "/deis/services",
 ]
-check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
+#check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
 reload_cmd = "/usr/sbin/nginx -s reload"
