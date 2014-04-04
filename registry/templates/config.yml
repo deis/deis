@@ -20,7 +20,7 @@ common:
 dev:
     storage: local
     storage_path: /data
-    loglevel: debug
+    loglevel: info
 
 {{ if .deis_registry_s3accessKey }}
 # To specify another flavor, set the environment variable SETTINGS_FLAVOR
