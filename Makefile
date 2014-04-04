@@ -10,6 +10,9 @@ all: build run
 test_client:
 	python -m unittest discover client.tests
 
+pull:
+	vagrant ssh -c 'for c in $(COMPONENTS); do docker pull deis/$$c; done'
+
 build:
 	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done'
 

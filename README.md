@@ -28,9 +28,10 @@ export FLEETCTL_TUNNEL=172.17.8.100
 
 ## Build Deis
 
-Use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on the CoreOS VM (it can take a while).
+Use `make pull` to download cached layers from the public Docker Index.  Then use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on the CoreOS VM (it can take a while).
 
 ```
+make pull
 make build
 ```
 
