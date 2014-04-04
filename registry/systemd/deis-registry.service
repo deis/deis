@@ -3,6 +3,7 @@ Description=deis-registry
 After=docker.service
 Requires=docker.service
 Requires=docker-tcp.socket
+Requires=etcd.service
 
 [Service]
 ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-registry || /usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/registry'

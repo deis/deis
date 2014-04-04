@@ -3,6 +3,7 @@ Description=deis-logger
 After=docker.service
 Requires=docker.service
 Requires=docker-tcp.socket
+Requires=etcd.service
 
 [Service]
 ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-logger || /usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/logger'
