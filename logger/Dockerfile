@@ -12,6 +12,10 @@ RUN apt-get install -yq --force-yes rsyslog
 # create /var/log/deis for holding logs (access via bind mount)
 RUN mkdir -p /var/log/deis
 
+# install latest etcdctl including no-sync options
+RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
+RUN chmod +x /usr/local/bin/etcdctl
+
 # add the current build context to /app
 ADD . /app
 
