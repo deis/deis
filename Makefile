@@ -29,7 +29,7 @@ restart:
 	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c/systemd && sudo systemctl restart * && cd ../..; done'
 
 logs:
-	vagrant ssh -c 'journalctl -f -u deis-* -u docker.service'
+	vagrant ssh -c 'journalctl -f -u deis-*'
 
 run: install restart logs
 
