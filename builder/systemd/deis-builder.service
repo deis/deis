@@ -3,6 +3,7 @@ Description=deis-builder
 After=docker.service
 Requires=docker.service
 Requires=docker-tcp.socket
+Requires=etcd.service
 
 [Service]
 ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-builder || /usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e HOST=172.17.8.100 -e PORT=2222 -e ETCD=172.17.8.100:4001 --privileged deis/builder'
