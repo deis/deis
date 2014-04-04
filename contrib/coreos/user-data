@@ -69,3 +69,16 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+  - name: seed-deis-images.service
+    command: start
+    content: |
+      [Unit]
+      Description=Seed Docker images used by Deis
+      Requires=docker.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c 'docker pull deis/slugrunner:latest'
+
+      [Install]
+      WantedBy=multi-user.target
