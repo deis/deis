@@ -69,7 +69,7 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
-  - name: seed-deis-images.service
+  - name: seed-docker-images.service
     command: start
     content: |
       [Unit]
@@ -79,6 +79,19 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/bin/sh -c 'docker pull deis/slugrunner:latest'
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: seed-deis-registry.service
+    command: start
+    content: |
+      [Unit]
+      Description=Seed Deis Registry with Docker Images
+      Requires=seed-docker-images.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c 'docker pull deis/slugrunner:latest && docker tag deis/slugrunner 172.17.8.100:5000/deis/slugrunner && docker push 172.17.8.100:5000/deis/slugrunner'
 
       [Install]
       WantedBy=multi-user.target
