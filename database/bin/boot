@@ -31,18 +31,18 @@ done
 sleep $(($ETCD_TTL+1))
 
 # seed initial service configuration if necessary
-if ! etcdctl -C $ETCD ls $ETCD_PATH >/dev/null 2>/dev/null; then
-	etcdctl -C $ETCD set $ETCD_PATH/engine postgresql_psycopg2
-	etcdctl -C $ETCD set $ETCD_PATH/adminUser ${PG_ADMIN_USER:-postgres}
-	etcdctl -C $ETCD set $ETCD_PATH/adminPass ${PG_ADMIN_PASS:-changeme123}
+if ! etcdctl -C $ETCD ls $ETCD_PATH >/dev/null 2>&1; then
+	etcdctl -C $ETCD set $ETCD_PATH/engine postgresql_psycopg2 >/dev/null
+	etcdctl -C $ETCD set $ETCD_PATH/adminUser ${PG_ADMIN_USER:-postgres} >/dev/null
+	etcdctl -C $ETCD set $ETCD_PATH/adminPass ${PG_ADMIN_PASS:-changeme123} >/dev/null
 	etcdctl -C $ETCD set $ETCD_PATH/user ${PG_USER_NAME:-deis} >/dev/null
-	etcdctl -C $ETCD set $ETCD_PATH/password ${PG_USER_PASS:-changeme123}
-	etcdctl -C $ETCD set $ETCD_PATH/name ${PG_USER_DB:-deis}
+	etcdctl -C $ETCD set $ETCD_PATH/password ${PG_USER_PASS:-changeme123} >/dev/null
+	etcdctl -C $ETCD set $ETCD_PATH/name ${PG_USER_DB:-deis} >/dev/null
 fi
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "waiting for confd to write initial templates..."
+	echo "database: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -69,6 +69,8 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 
 # perform a one-time reload to populate database entries
 /usr/local/bin/reload
+
+echo deis-database running...
 
 # publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then
