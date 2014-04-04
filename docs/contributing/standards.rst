@@ -247,13 +247,13 @@ Referencing Issues
 Closed bugs should be listed on a separate line in the footer prefixed with the "closes"
 keyword like this:
 
-.. code-block::console
+.. code-block:: console
 
     closes #123
 
 Or in the case of multiple issues:
 
-.. code-block::console
+.. code-block:: console
 
     closes #123, #456, #789
 
