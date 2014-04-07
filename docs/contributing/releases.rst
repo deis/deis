@@ -42,7 +42,7 @@ opdemand/deis-cookbook Chef Repo
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - Update the deis Opscode Community cookbook
-    * ``bake vX.Y.Z --no-bump --no-changelog --no-dev --no-git --no-github --no-jira``
+    * ``bake X.Y.Z --no-bump --no-changelog --no-dev --no-git --no-github --no-jira``
 - switch master to upcoming release
     * ``git checkout master``
     * change **version** string in metadata.rb to *next* version
