@@ -54,7 +54,7 @@ def destroy_layer(layer):
     conn = _create_digitalocean_connection(layer['creds'])
     name = "deis-{formation}-{id}".format(**layer)
     # retrieve and delete the SSH key created
-    for k in conn.all_ssh_keys():
+    for k in conn.ssh_keys():
         if k.name == name:
             conn.destroy_ssh_key(k.id)
 
@@ -93,7 +93,7 @@ def _get_droplet_kwargs(node, conn):
         'size_id': _get_id(conn.sizes(), params.get('size', '4GB')),
         'image_id': _get_id(conn.images(my_images=True), params.get('image', 'deis-node-image')),
         'region_id': _get_id(conn.regions(), params.get('region', 'San Francisco 1')),
-        'ssh_key_ids': [str(_get_id(conn.all_ssh_keys(),
+        'ssh_key_ids': [str(_get_id(conn.ssh_keys(),
                         "deis-{formation}-{layer}".format(**node)))],
         'virtio': True,
         'private_networking': True
