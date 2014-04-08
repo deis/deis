@@ -2,7 +2,7 @@
 src   = "authorized_keys"
 dest  = "/home/git/.ssh/authorized_keys"
 uid = 1000
-git = 1000
+gid = 1000
 mode  = "0600"
 keys = [
   "/deis/builder/users",
