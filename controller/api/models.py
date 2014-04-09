@@ -123,7 +123,12 @@ class App(UuidAuditedModel):
             c.destroy()
 
     def deploy(self, release):
-        return tasks.deploy_release.delay(self, release).get()
+        tasks.deploy_release.delay(self, release).get()
+        if self.structure == {}:
+            # scale the web process by 1 initially
+            self.structure = {'web': 1}
+            self.save()
+            self.scale()
 
     def scale(self, **kwargs):
         """Scale containers up or down to match requested."""
