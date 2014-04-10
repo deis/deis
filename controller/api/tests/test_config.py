@@ -8,14 +8,14 @@ from __future__ import unicode_literals
 
 import json
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Config
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
-class ConfigTest(TestCase):
+class ConfigTest(TransactionTestCase):
 
     """Tests setting and updating config values"""
 
