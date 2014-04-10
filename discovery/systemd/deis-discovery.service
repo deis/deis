@@ -1,8 +1,7 @@
 [Unit]
 Description=deis-discovery
-After=docker.service
-Requires=docker.service
-Requires=docker-tcp.socket
+Requires=docker.service docker-tcp.socket etcd.service
+After=docker.service etcd.service
 StandardOutput=null
 
 [Service]
