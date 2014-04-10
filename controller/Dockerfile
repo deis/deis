@@ -5,10 +5,6 @@ MAINTAINER Gabriel A. Monroy <gabriel@opdemand.com>
 RUN apt-get update && \
     apt-get install -yq python-dev libpq-dev libyaml-dev
 
-# install chef
-RUN apt-get install -yq ruby1.9.1 rubygems
-RUN gem install --no-ri --no-rdoc chef
-
 # install recent pip
 RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
 
