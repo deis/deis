@@ -8,14 +8,14 @@ from __future__ import unicode_literals
 
 import json
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Release
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
-class ReleaseTest(TestCase):
+class ReleaseTest(TransactionTestCase):
 
     """Tests push notification from build system"""
 
