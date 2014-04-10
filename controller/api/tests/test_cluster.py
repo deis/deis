@@ -25,7 +25,7 @@ class ClusterTest(TestCase):
 
     def test_cluster(self):
         """
-        Test that a user can create, read, update and delete a cluster
+        Test that an administrator can create, read, update and delete a cluster
         """
         url = '/api/clusters'
         options = {'key': 'val'}
@@ -56,3 +56,15 @@ class ClusterTest(TestCase):
         self.assertEqual(json.loads(response.data['options']), new_options)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
+
+    def test_cluster_perms_denied(self):
+        """
+        Test that a user cannot make changes to a cluster
+        """
+        url = '/api/clusters'
+        options = {'key': 'val'}
+        self.client.login(username='autotest2', password='password')
+        body = {'id': 'autotest2', 'domain': 'autotest.local', 'type': 'mock',
+                'hosts': 'host1,host2', 'auth': 'base64string', 'options': options}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
