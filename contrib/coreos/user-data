@@ -87,7 +87,8 @@ coreos:
     content: |
       [Unit]
       Description=Seed Deis Registry with Docker Images
-      Requires=seed-docker-images.service
+      Requires=seed-docker-images.service deis-registry.service
+      After=deis-registry.service
 
       [Service]
       Type=oneshot
