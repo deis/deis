@@ -5,6 +5,8 @@ import random
 import re
 import subprocess
 
+from subprocess import CalledProcessError
+
 
 ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
 if not os.path.exists(ROOT_DIR):
@@ -37,44 +39,12 @@ class FleetClient(object):
         """
         Setup a CoreOS cluster including router and log aggregator
         """
-        #print 'Creating deis-router.1'
-        #self._create_router('deis-router.1', 'deis/router', command='', port=80)
-        #print 'Creating deis-logger.1'
-        #self._create_logger('deis-logger.1', 'deis/logger', command='', port=514)
         return
-
-    def _create_router(self, name, image, command, port):
-        env = self.env.copy()
-        self._create_container(name, image, command, ROUTER_TEMPLATE, env, port)
-        self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env, port)
-        self._start_container(name, env)
-        self._start_announcer(name, env)
-
-    def _create_logger(self, name, image, command, port):
-        env = self.env.copy()
-        self._create_container(name, image, command, LOGGER_TEMPLATE, env, port)
-        self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env, port)
-        self._start_container(name, env)
-        self._start_announcer(name, env)
-
-    def _destroy_router(self, name, env):
-        env = self.env.copy()
-        self._destroy_container(name, env)
-        self._destroy_announcer(name, env)
-
-    def _destroy_logger(self, name, env):
-        self._destroy_container(name, env)
-        self._destroy_announcer(name, env)
 
     def tearDown(self):
         """
         Tear down a CoreOS cluster including router and log aggregator
         """
-        #env = self.env.copy()
-        #print 'Destroying deis-router.1'
-        #self._destroy_router('deis-router.1', env)
-        #print 'Destroying deis-logger.1'
-        #self._destroy_logger('deis-logger.1', env)
         return
 
     # job api
