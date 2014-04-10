@@ -133,4 +133,4 @@ knife ec2 server create \
 set +x
 
 # Need Chef admin permission in order to add and remove nodes and clients
-echo -e "\033[35mPlease ensure that \"deis-controller\" is added to the Chef \"admins\" group.\033[0m"
+echo -e "\033[35mPlease ensure that the \"deis-controller-ec2\" client object is added to the Chef \"admins\" group.\033[0m"

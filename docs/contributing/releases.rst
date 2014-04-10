@@ -20,6 +20,9 @@ Please keep this document up-to-date with any changes in this process.
 
 opdemand/deis-cookbook Chef Repo
 --------------------------------
+- One-time setup:
+    * ``gem install stove --pre``
+    * Configure your ``~/.stove`` file as outlined in `Installing Stove`_
 - Create the next `deis-cookbook milestone`_
 - Move any `deis-cookbook open issues`_ from the current release to the
   next milestone
@@ -39,11 +42,7 @@ opdemand/deis-cookbook Chef Repo
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - Update the deis Opscode Community cookbook
-    * ``cd`` to the parent dir of the deis-cookbook repository
-    * ``cp -pr deis-cookbook /tmp/deis && cd /tmp``
-    * ``tar cvfz deis-cookbook-vX.Y.Z.tar.gz --exclude='deis/.*' deis``
-    * log in to the `Opscode Community`_ site and upload the
-      **/tmp/deis-cookbook-vX.Y.Z.tar.gz** tarball
+    * ``bake X.Y.Z --no-bump --no-changelog --no-dev --no-git --no-github --no-jira``
 - switch master to upcoming release
     * ``git checkout master``
     * change **version** string in metadata.rb to *next* version
@@ -127,3 +126,4 @@ Documentation
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
 .. _`Docker Index`: https://index.docker.io/
+.. _`Installing Stove`: https://github.com/sethvargo/stove#installation

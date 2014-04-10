@@ -296,6 +296,9 @@ CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
 # default providers, typically overriden in local_settings to include ec2, etc.
 PROVIDER_MODULES = ('mock',)
 
+# check if we can register users with `deis register`
+REGISTRATION_ENABLED = True
+
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {

@@ -93,6 +93,10 @@ else
   echo_color "Key already added."
 fi
 
+# create data bags
+knife data bag create deis-formations 2>/dev/null
+knife data bag create deis-apps 2>/dev/null
+
 chef_json=$(echo '
 {
   "deis": {

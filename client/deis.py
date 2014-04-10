@@ -44,6 +44,7 @@ Use ``git push deis master`` to deploy to an application.
 
 from __future__ import print_function
 from collections import namedtuple
+from collections import OrderedDict
 from cookielib import MozillaCookieJar
 from datetime import datetime
 from getpass import getpass
@@ -71,7 +72,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -2035,32 +2036,45 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def shortcuts(self, args):
+        """
+        Show valid shortcuts for client commands.
+
+        Usage: deis shortcuts
+        """
+        print('Valid shortcuts are:\n')
+        for shortcut, command in SHORTCUTS.items():
+            if ':' not in shortcut:
+                print("{:<10} -> {}".format(shortcut, command))
+        print('\nUse `deis help [command]` to learn more')
+
+SHORTCUTS = OrderedDict([
+    ('create', 'apps:create'),
+    ('destroy', 'apps:destroy'),
+    ('info', 'apps:info'),
+    ('calculate', 'apps:calculate'),
+    ('run', 'apps:run'),
+    ('open', 'apps:open'),
+    ('logs', 'apps:logs'),
+    ('register', 'auth:register'),
+    ('login', 'auth:login'),
+    ('logout', 'auth:logout'),
+    ('ps', 'containers:list'),
+    ('scale', 'containers:scale'),
+    ('converge', 'formations:converge'),
+    ('ssh', 'nodes:ssh'),
+    ('rollback', 'releases:rollback'),
+    ('sharing', 'perms:list'),
+    ('sharing:list', 'perms:list'),
+    ('sharing:add', 'perms:create'),
+    ('sharing:remove', 'perms:delete'),
+])
+
 
 def parse_args(cmd):
     """
     Parse command-line args applying shortcuts and looking for help flags
     """
-    shortcuts = {
-        'register': 'auth:register',
-        'login': 'auth:login',
-        'logout': 'auth:logout',
-        'create': 'apps:create',
-        'destroy': 'apps:destroy',
-        'ps': 'containers:list',
-        'info': 'apps:info',
-        'scale': 'containers:scale',
-        'converge': 'formations:converge',
-        'calculate': 'apps:calculate',
-        'ssh': 'nodes:ssh',
-        'open': 'apps:open',
-        'logs': 'apps:logs',
-        'rollback': 'releases:rollback',
-        'run': 'apps:run',
-        'sharing': 'perms:list',
-        'sharing:list': 'perms:list',
-        'sharing:add': 'perms:create',
-        'sharing:remove': 'perms:delete',
-    }
     if cmd == 'help':
         cmd = sys.argv[-1]
         help_flag = True
@@ -2068,8 +2082,8 @@ def parse_args(cmd):
         cmd = sys.argv[1]
         help_flag = False
     # swap cmd with shortcut
-    if cmd in shortcuts:
-        cmd = shortcuts[cmd]
+    if cmd in SHORTCUTS:
+        cmd = SHORTCUTS[cmd]
         # change the cmdline arg itself for docopt
         if not help_flag:
             sys.argv[1] = cmd

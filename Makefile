@@ -3,7 +3,5 @@ test_client:
 
 build:
 	for image in builder cache controller database discovery logger registry; do \
-		pushd $$image; \
-		docker build -t deis/$$image .; \
-		popd; \
+		make -C $$image build; \
 	done

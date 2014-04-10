@@ -13,5 +13,6 @@ ADD . /app
 
 # define the execution environment
 VOLUME ["/var/lib/postgresql"]
+WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5432

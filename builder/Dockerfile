@@ -14,12 +14,11 @@ RUN apt-get install -yq aufs-tools iptables ca-certificates lxc
 RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 RUN apt-get update -q
-RUN apt-get install -yq lxc-docker-0.8.0
+RUN apt-get install -yq lxc lxc-docker-0.9.0
 
-# install latest pip
-RUN wget -q https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py && \
-    python get-pip.py && \
-    rm get-pip.py
+# install recent pip
+RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
+
 # install hook dependencies
 RUN pip install pyyaml requests
 
@@ -51,6 +50,7 @@ RUN chown -R root:root /app
 
 # define the execution environment
 VOLUME /var/lib/docker
+WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22

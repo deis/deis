@@ -20,12 +20,10 @@ bear in mind that a local Chef Server VM will take up at least 1GB of RAM.
 
     **Hosted Chef Server**
     * Goto https://getchef.opscode.com/signup and fill in your details.
-    * Goto https://preview.opscode.com/login and sign in to your Chef Server.
+    * Goto https://manage.opscode.com/login and sign in to your Chef Server.
     * Click on the 'Administration' tab and choose your organisation. There should be a tab in the sidebar that says
     'Starter Kit'. Click it and it will start a small download.
     * Inside the Starter Kit there is a '.chef' folder. Copy it to the root of your Deis codebase.
-    * **NB**: You can also manage your Chef Server through https://manage.opscode.com This is the old
-    interface and has more features, like being able to add clients to permission groups.
 
 3. Now you can follow the standard deis setup:
   * If you're running a local chef server, you should adjust the `Gemfile` and make sure the version of berkshelf is 3.0.x. This is needed for the `--ssl-verify` option to work correctly.
@@ -54,9 +52,11 @@ you will need a running SSH server open on port 22 and a means to broadcast your
     and delete nodes. Use:
       * For a local Chef Server just type `knife client edit deis-controller` and your default text
       editor will launch, you need to set 'admin' to 'true'.
-      * For Hosted Chef you need to log into https://manage.opscode.com/ Then goto the Groups tab,
-      click the 'edit' link on the 'admins' row and then under the 'clients' heading toggle the
-      'deis-controller' radio button to be enabled. Then confirm the change by saving the group.
+      * For Hosted Chef, log in to https://manage.opscode.com/. Go to the
+      Administration tab, click on the "Groups" entry to the left, then the "admins" entry
+      under "All Groups". Choose the "Permissions" tab and click the "+ Add" button, then
+      type in "deis-controller" and add it. Assign all permissions to the "deis-controller"
+      client object.
 
 6. If you want to hack on the command line client (`client/deis.py`), install your local dev version rather than
 the one from Pip.
