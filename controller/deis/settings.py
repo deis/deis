@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
+    'django_fsm',
     'guardian',
     'json_field',
     'gunicorn',

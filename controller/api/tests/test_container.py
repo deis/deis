@@ -43,7 +43,7 @@ class ContainerTest(TransactionTestCase):
                                      release=App.objects.get(id=app_id).release_set.latest(),
                                      type='web',
                                      num=1)
-        self.assertEqual(c.state, 'initializing')
+        self.assertEqual(c.state, 'initialized')
         c.create()
         self.assertEqual(c.state, 'created')
         c.start()

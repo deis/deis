@@ -19,4 +19,16 @@ filesystem as a temporary scratchpad, but no files that are written are visible 
 processes in any other container. Any files written to the ephemeral filesystem will be
 discarded the moment the container is either stopped or restarted.
 
+Container States
+----------------
+
+There are several states that a container can be in at any time. The states are:
+
+1) initialized - the initial state of the container before it is created
+2) created - the container is built and ready for operation
+3) up - the container is running
+4) down - the container crashed or is stopped
+5) destroyed - the container has been destroyed
+
+
 .. _`Docker`: http://docker.io/
