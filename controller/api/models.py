@@ -18,6 +18,7 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
+from django_fsm import FSMField, transition
 from json_field.fields import JSONField
 
 from api import fields, tasks
@@ -199,14 +200,25 @@ class Container(UuidAuditedModel):
     """
     Docker container used to securely host an application process.
     """
+    INITIALIZED = 'initialized'
+    CREATED = 'created'
+    UP = 'up'
+    DOWN = 'down'
+    DESTROYED = 'destroyed'
+    STATE_CHOICES = (
+        (INITIALIZED, 'initialized'),
+        (CREATED, 'created'),
+        (UP, 'up'),
+        (DOWN, 'down'),
+        (DESTROYED, 'destroyed')
+    )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     release = models.ForeignKey('Release')
     type = models.CharField(max_length=128, blank=True)
     num = models.PositiveIntegerField()
-    # TODO: implement fsm
-    state = models.CharField(max_length=64, default='initializing')
+    state = FSMField(default=INITIALIZED, choices=STATE_CHOICES, protected=True)
 
     def short_name(self):
         if self.type:
@@ -249,24 +261,24 @@ class Container(UuidAuditedModel):
 
     _command = property(_get_command)
 
+    @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
         c_type = self.type
         self._scheduler.create(self._job_id, image, self._command.format(**locals()))
-        self.state = 'created'
-        self.save()
 
+    @transition(field=state,
+                source=[CREATED, UP, DOWN],
+                target=UP, crashed=DOWN)
     def start(self):
-        self.state = 'starting'
-        self.save()
         self._scheduler.start(self._job_id)
-        self.state = 'up'
-        self.save()
 
+    @transition(field=state,
+                source=[INITIALIZED, CREATED, UP, DOWN],
+                target=UP,
+                crashed=DOWN)
     def deploy(self, release):
         old_job_id = self._job_id
-        self.state = 'deploying'
-        self.save()
         # update release
         self.release = release
         self.save()
@@ -278,30 +290,24 @@ class Container(UuidAuditedModel):
         self._scheduler.start(new_job_id)
         # destroy old container
         self._scheduler.destroy(old_job_id)
-        self.state = 'up'
-        self.save()
 
+    @transition(field=state, source=UP, target=DOWN)
     def stop(self):
-        self.state = 'stopping'
-        self.save()
         self._scheduler.stop(self._job_id)
-        self.state = 'stopped'
-        self.save()
 
+    @transition(field=state,
+                source=[INITIALIZED, CREATED, UP, DOWN],
+                target=DESTROYED)
     def destroy(self):
-        self.state = 'destroying'
-        self.save()
         # TODO: add check for active connections before killing
         self._scheduler.destroy(self._job_id)
-        self.state = 'destroyed'
-        self.save()
 
+    @transition(field=state,
+                source=[INITIALIZED, CREATED, DESTROYED],
+                target=DESTROYED)
     def run(self, command):
-        self.state = 'running'
-        self.save()
+        """Run a one-off command"""
         rc, output = self._scheduler.run(self._job_id, self.release.image, command)
-        self.state = 'completed'
-        self.save()
         return rc, output
 
 
