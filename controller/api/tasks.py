@@ -30,14 +30,8 @@ def deploy_release(app, release):
     threads = []
     for c in containers:
         threads.append(threading.Thread(target=c.deploy, args=(release,)))
-    try:
-        [t.start() for t in threads]
-        [t.join() for t in threads]
-    except Exception:
-        for c in containers:
-            c.state = 'error'
-            c.save()
-        raise
+    [t.start() for t in threads]
+    [t.join() for t in threads]
 
 
 @task
@@ -47,16 +41,10 @@ def start_containers(containers):
     for c in containers:
         create_threads.append(threading.Thread(target=c.create))
         start_threads.append(threading.Thread(target=c.start))
-    try:
-        [t.start() for t in create_threads]
-        [t.join() for t in create_threads]
-        [t.start() for t in start_threads]
-        [t.join() for t in start_threads]
-    except Exception:
-        for c in containers:
-            c.state = 'error'
-            c.save()
-            raise
+    [t.start() for t in create_threads]
+    [t.join() for t in create_threads]
+    [t.start() for t in start_threads]
+    [t.join() for t in start_threads]
 
 
 @task
@@ -66,16 +54,10 @@ def stop_containers(containers):
     for c in containers:
         destroy_threads.append(threading.Thread(target=c.destroy))
         delete_threads.append(threading.Thread(target=c.delete))
-    try:
-        [t.start() for t in destroy_threads]
-        [t.join() for t in destroy_threads]
-        [t.start() for t in delete_threads]
-        [t.join() for t in delete_threads]
-    except Exception:
-        for c in containers:
-            c.state = 'error'
-            c.save()
-            raise
+    [t.start() for t in destroy_threads]
+    [t.join() for t in destroy_threads]
+    [t.start() for t in delete_threads]
+    [t.join() for t in delete_threads]
 
 
 @task
