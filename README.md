@@ -9,17 +9,17 @@ Deis is an open source PaaS that makes it easy to deploy, scale and manage Docke
 
 # Installation
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation.  You will need Docker and Vagrant to get started.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. You will need [Docker](https://www.docker.io/) and [Vagrant](http://www.vagrantup.com/) to get started.
 
 ## Boot CoreOS
 
-Start a CoreOS virtual machine on VirtualBox.
+First, start a CoreOS virtual machine on VirtualBox. From a command prompt, `cd` to the root of the Deis project code and type:
 
 ```
 vagrant up
 ```
 
-Export some environment variables so you can connect to the VM using the `docker` and `fleetctl` clients on your workstation.
+Export some environment variables so you can connect to the VM using the `docker` and [`fleetctl`](https://github.com/coreos/fleet#building) clients on your workstation.
 
 ```
 export DOCKER_HOST=tcp://172.17.8.100:4243
@@ -44,13 +44,14 @@ make run
 ```
 
 ## Install the Deis Client
-Use `pip` to install the latest Deis Client, download pre-compiled binares, or symlink `client/deis.py` to use the latest version.
+Either use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/), download [pre-compiled binaries](https://github.com/opdemand/deis/tree/master/client#get-started), or symlink `client/deis.py` to use your local development version.
 
 ```
 ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 
 ## Register a User
+
 Use the Deis Client to register a new user.
 
 ```
