@@ -1,6 +1,6 @@
 :title: Provision a Deis PaaS Controller
 :description: Guide to provisioning a Deis controller, the brains of a Deis private PaaS.
-:keywords: tutorial, guide, walkthrough, howto, deis, sysadmins, operations
+
 
 .. _provision-controller:
 

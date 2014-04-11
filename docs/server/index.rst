@@ -1,19 +1,16 @@
 :description: API Reference for Deis Server
-:keywords: deis, documentation, api, server
 
 .. _server:
 
 Server Reference
 ================
-
 :Release: |version|
 :Date: |today|
 
 .. toctree::
     :maxdepth: 1
 
-    rest
-
+    rest-api
     api.admin
     api.exceptions
     api.fields
@@ -25,13 +22,6 @@ Server Reference
     api.urls
     api.utils
     api.views
-
-    registry.mock
-    registry.private
-
-    scheduler.coreos
-    scheduler.mock
-
-    web.templatetags.gravatar_tags
-    web.urls
-    web.views
+    registry
+    scheduler
+    web

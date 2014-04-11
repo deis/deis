@@ -1,5 +1,5 @@
 :title: Login
-:description: Learn how to login by authenticating against a Deis controller using the Deis client. 
+:description: Learn how to login by authenticating against a Deis controller using the Deis client.
 
 =====
 login

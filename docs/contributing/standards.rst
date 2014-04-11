@@ -1,6 +1,5 @@
 :title: Coding Standards
 :description: Deis project coding standards. Contributors to Deis should feel welcome to make changes to any part of the codebase.
-:keywords: deis, contributing, coding, python, test, tests, testing
 
 .. _standards:
 

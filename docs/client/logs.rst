@@ -1,5 +1,5 @@
 :title: Logs
-:description: Learn how to retrieve an application's aggregated logs using the Deis client. 
+:description: Learn how to retrieve an application's aggregated logs using the Deis client.
 
 
 logs

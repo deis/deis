@@ -1,6 +1,5 @@
 :title: client
 :description: Deis Client Reference
-:keywords: deis, documentation, client, reference
 
 .. _client:
 

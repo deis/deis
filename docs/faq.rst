@@ -1,6 +1,5 @@
 :title: FAQ
 :description: Frequently asked questions about the Deis project. Deis FAQ.
-:keywords: deis, PaaS, cloud, faq, custom buildpack
 
 .. _faq:
 

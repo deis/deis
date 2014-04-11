@@ -1,43 +1,33 @@
 :title: Deis Architecture
 :description: Architecture of the Deis application platform (PaaS)
-:keywords: deis, paas, application platform, architecture
 
 .. _architecture:
 
 Architecture
 ============
-
-Deis consists of 9 modules that combine to create a distributed PaaS.
-Each Deis module is deployed as a :ref:`Container`.
+Deis consists of 7 components that combine to create a distributed PaaS.
+Each Deis component is deployed as a :ref:`Container`.
 
 .. _arch_controller:
 
 Controller
 ----------
-
-See :ref:`Controller`.
+The :ref:`controller <Controller>` component is a RESTful API server
+written with `Django`_ and `Celery`_. Command-line clients interact with
+this component.
 
 .. _database:
 
 Database
 --------
-
-The database module uses `PostgreSQL`_  to store durable platform state.
-
-.. _discovery:
-
-Discovery
----------
-
-The discovery module uses `etcd`_ for shared configuration and service discovery across
-the cluster.
+The database component is a `PostgreSQL`_ server used to store durable
+platform state.
 
 .. _cache:
 
 Cache
 -----
-
-The cache module uses `Redis`_ to:
+The cache component uses `Redis`_ to:
 
  * Store work queue data for `Celery`_
  * Cache sessions and synchronize locks for `Django`_
@@ -47,9 +37,8 @@ The cache module uses `Redis`_ to:
 
 Builder
 -------
-
-The builder module uses a `Git`_ server to process :ref:`Application` builds.
-The builder:
+The builder component uses a `Git`_ server to process
+:ref:`Application` builds. The builder:
 
  #. Receives incoming ``git push`` requests over SSH
  #. Authenticates the user via SSH key fingerprint
@@ -66,8 +55,7 @@ is deployed across the platform automatically.
 
 Registry
 --------
-
-The registry module hosts `Docker`_ images on behalf of the platform.
+The registry component hosts `Docker`_ images on behalf of the platform.
 Image data is typically stored on a storage service like
 `Amazon S3`_ or `OpenStack Storage`_.
 
@@ -75,24 +63,16 @@ Image data is typically stored on a storage service like
 
 Log Server
 ----------
-
-The log server module uses `rsyslog`_ to aggregate log data from
+The log server component uses `rsyslog`_ to aggregate log data from
 across the platform.
 This data can then be queried by the :ref:`Controller`.
 
-.. _runtime:
-
-Runtime
--------
-
-The runtime module uses `Docker`_ to run containers for deployed applications.
-
 .. _proxy:
 
-Proxy
------
-
-The proxy module uses `Nginx`_ to route traffic to application containers.
+Router
+------
+The router component uses `Nginx`_ to route traffic to
+application containers.
 
 .. _`Django`: https://www.djangoproject.com/
 .. _`Celery`: http://www.celeryproject.org/

@@ -1,6 +1,5 @@
 ﻿:title: Contributor Overview
 :description: Interested in contributing to the Deis project? There are lots of ways to help.
-:keywords: Deis
 
 .. _contributor:
 

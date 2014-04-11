@@ -1,6 +1,5 @@
 :title: Community
 :description: Deis is a fully open source project. Join the Deis community of developers.
-:keywords: deis, documentation, community, code, conduct, code of conduct
 
 .. _community:
 

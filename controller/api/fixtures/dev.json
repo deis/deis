@@ -1,55 +1,55 @@
 [
 {
-    "pk": -1, 
-    "model": "auth.user", 
+    "pk": -1,
+    "model": "auth.user",
     "fields": {
-        "username": "AnonymousUser", 
-        "first_name": "", 
-        "last_name": "", 
-        "is_active": true, 
-        "is_superuser": false, 
-        "is_staff": false, 
-        "last_login": "2014-02-16T13:13:47.539Z", 
-        "groups": [], 
-        "user_permissions": [], 
-        "password": "", 
-        "email": "", 
+        "username": "AnonymousUser",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2014-02-16T13:13:47.539Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "",
+        "email": "",
         "date_joined": "2014-02-16T13:13:47.539Z"
     }
 },
 {
-    "pk": 1, 
-    "model": "auth.user", 
+    "pk": 1,
+    "model": "auth.user",
     "fields": {
-        "username": "devuser", 
-        "first_name": "", 
-        "last_name": "", 
-        "is_active": true, 
-        "is_superuser": true, 
-        "is_staff": true, 
-        "last_login": "2014-01-27T23:30:25.062Z", 
-        "groups": [], 
-        "user_permissions": [], 
-        "password": "pbkdf2_sha256$12000$sGISfpN866YM$+pWXpirYh4rSfa0XX9kxvH047GTycDa8U9axRLHuJhk=", 
-        "email": "dev@dev.com", 
+        "username": "devuser",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": true,
+        "is_staff": true,
+        "last_login": "2014-01-27T23:30:25.062Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$12000$sGISfpN866YM$+pWXpirYh4rSfa0XX9kxvH047GTycDa8U9axRLHuJhk=",
+        "email": "dev@dev.com",
         "date_joined": "2014-01-27T22:23:49.793Z"
     }
 },
 {
-    "pk": 1, 
-    "model": "sites.site", 
+    "pk": 1,
+    "model": "sites.site",
     "fields": {
-        "domain": "deis-controller.local", 
-        "name": "deis-controller.local"
+        "domain": "local.deisapp.com",
+        "name": "local.deisapp.com"
     }
 },
 {
-    "pk": "8b196fb8-5774-4512-b3cc-569af8894a6c", 
+    "pk": "8b196fb8-5774-4512-b3cc-569af8894a6c",
     "model": "api.cluster",
     "fields": {
-        "updated": "2014-01-27T23:32:51.173Z", 
-        "created": "2014-01-27T23:32:02.148Z", 
-        "domain": "deis-controller.local", 
+        "updated": "2014-01-27T23:32:51.173Z",
+        "created": "2014-01-27T23:32:02.148Z",
+        "domain": "local.deisapp.com",
         "owner": [
             "devuser"
         ],

@@ -1,5 +1,5 @@
 :title: Info
-:description: Learn how to print info about a Deis application's containers using the Deis client. 
+:description: Learn how to print info about a Deis application's containers using the Deis client.
 
 
 containers

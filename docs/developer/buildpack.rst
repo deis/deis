@@ -1,6 +1,5 @@
 :title: Deploying with Heroku Buildpacks on Deis
 :description: A howto on deploying applications using Heroku Buildpacks
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev, buildpack, heroku
 
 Buildpacks
 ==========
