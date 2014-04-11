@@ -13,6 +13,7 @@ Auth commands::
 Subcommands, use ``deis help [subcommand]`` to learn more::
 
   apps          manage applications used to provide services
+  clusters      manage clusters used to host applications
   containers    manage containers used to handle requests and jobs
   config        manage environment variables that define app config
   builds        manage builds created using `git push`
