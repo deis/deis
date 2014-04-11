@@ -26,16 +26,5 @@ Server Reference
     api.utils
     api.views
 
-    cm.chef
-    cm.chef_api
-    cm.chef_rsa
-    cm.mock
-
-    provider.ec2
-    provider.digitalocean
-    provider.mock
-    provider.rackspace
-    provider.static
-
     web.urls
     web.views

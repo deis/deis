@@ -24,17 +24,12 @@ Client Reference
     logs
     run
     destroy
-    
-    formations
-    layers
-    nodes
-    
+
+    clusters
+    keys
+
     apps
     containers
     config
     builds
     releases
-    
-    providers
-    flavors
-    keys
