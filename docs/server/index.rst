@@ -26,5 +26,12 @@ Server Reference
     api.utils
     api.views
 
+    registry.mock
+    registry.private
+
+    scheduler.coreos
+    scheduler.mock
+
+    web.templatetags.gravatar_tags
     web.urls
     web.views

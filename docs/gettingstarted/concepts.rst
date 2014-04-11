@@ -8,7 +8,7 @@ Concepts
 ========
 
 Deis is an application platform that deploys and scales `Twelve Factor`_ apps
-using formations of `Chef`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
+using clusters of `CoreOS`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
 
 Formations
 ----------
@@ -91,7 +91,7 @@ See Also
 * `The Twelve Factor App <http://12factor.net/>`_
 
 .. _`Twelve Factor`: http://12factor.net/
-.. _`Chef`: http://www.opscode.com/chef/
+.. _`CoreOS`: https://coreos.com/
 .. _`Docker`: http://docker.io/
 .. _`Nginx`: http://wiki.nginx.org/Main
 .. _`Chef Databag`: http://docs.opscode.com/essentials_data_bags.html

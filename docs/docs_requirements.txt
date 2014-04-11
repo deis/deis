@@ -17,6 +17,7 @@ djangorestframework==2.3.12
 dop==0.1.6
 gunicorn==18.0
 paramiko==1.12.1
+psycopg2==2.5.2
 pyrax==1.6.2
 python-etcd==0.3.0
 PyYAML==3.10
@@ -28,4 +29,4 @@ docopt==0.6.1
 # Deis documentation requirements
 Sphinx>=1.2.2
 smartypants>=1.8.3
-sphinxcontrib-httpdomain>=1.2.0
+sphinxcontrib-httpdomain>=1.2.1

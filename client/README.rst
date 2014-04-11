@@ -20,16 +20,15 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 What is Deis?
 -------------
 
-Deis is an open source PaaS that makes it easy to deploy and scale LXC
-containers and Chef nodes used to host applications, databases, middleware
-and other services. Deis leverages Chef, Docker and Heroku Buildpacks to
-provide a private PaaS that is lightweight and flexible.
+Deis is an open source PaaS that makes it easy to deploy and scale containers
+to host applications, databases, middleware and other services. Deis leverages
+Docker, CoreOS and Heroku Buildpacks to provide a private PaaS that is
+lightweight and flexible.
 
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
-anything using Heroku Buildpacks, Docker images or Chef recipes. Deis is
-designed to work with any cloud provider. Currently Amazon EC2, Rackspace,
-and DigitalOcean are supported.
+anything using Docker images or Heroku Buildpacks. Deis is designed to work
+with any cloud provider. Currently Amazon EC2 and Rackspace are supported.
 
 
 Why Deis?
@@ -39,23 +38,23 @@ Deploy anything
 ---------------
 
 Deploy a wide range of languages and frameworks with a simple git push
-using Heroku Buildpacks or Dockerfiles. Use custom Chef layers
-to deploy databases, middleware and other add-on services.
+using Heroku Buildpacks or Dockerfiles.
 
 
 Control everything
 ------------------
 
-Choose your hosting provider configuration. Define a formation with your
-own proxy and runtime layers. Retain full root access to every node.
-Manage your platform with a private Deis controller.
+Choose your hosting provider configuration. Define a cluster to meet your own
+needs. Retain full root access to every node. Manage your platform with a
+private Deis controller.
 
 
 Scale effortlessly
 ------------------
 
-Scale nodes and containers with a single command. Node provisioning,
-container balancing and proxy reconfiguration are completely automated.
+Add nodes automatically and scale containers with a single command. Smart
+scheduling, container balancing and proxy reconfiguration are completely
+automated.
 
 
 100% Open Source
@@ -63,7 +62,7 @@ container balancing and proxy reconfiguration are completely automated.
 
 Free, transparent and easily customized. Join the open-source PaaS
 and DevOps community by using Deis and complimentary projects like
-Docker, Chef and Heroku Buildpacks.
+Docker, CoreOS and Heroku Buildpacks.
 
 
 Get Started
@@ -86,7 +85,7 @@ version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com
+    $ deis register http://local.deisapp.com:8000
     $ deis keys:add
 
 
