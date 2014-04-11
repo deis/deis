@@ -8,6 +8,9 @@ RUN apt-get update && \
 # install recent pip
 RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
 
+# HACK: install git so we can install bacongobbler's fork of django-fsm
+RUN apt-get install -yq git
+
 # install requirements before ADD to cache layer and speed build
 RUN pip install boto==2.23.0 \
                 celery==3.1.8 \
