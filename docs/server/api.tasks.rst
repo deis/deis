@@ -13,9 +13,9 @@ api.tasks
     :members:
     :undoc-members:
 
-    .. autofunction:: build_layer(layer)
-    .. autofunction:: destroy_layer(layer)
-    .. autofunction:: build_node(node)
-    .. autofunction:: destroy_node(node)
-    .. autofunction:: converge_node(node)
-    .. autofunction:: run_node(node, command)
+    .. autofunction:: create_cluster(cluster)
+    .. autofunction:: destroy_cluster(cluster)
+    .. autofunction:: deploy_release(app, release)
+    .. autofunction:: start_containers(containers)
+    .. autofunction:: stop_containers(containers)
+    .. autofunction:: run_command(c, command)
