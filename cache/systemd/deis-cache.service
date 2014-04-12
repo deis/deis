@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-cache
-Requires=docker.service docker-tcp.socket etcd.service
-After=docker.service etcd.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-cache || /usr/bin/docker run --name deis-cache -p 6379:6379 -e PUBLISH=6379 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/cache'
-ExecStop=/usr/bin/docker stop deis-cache
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/cache:latest
+ExecStart=/usr/bin/docker run --name deis-cache -p 6379:6379 -e PUBLISH=6379 deis/cache
+ExecStop=/usr/bin/docker rm -f deis-cache
 
 [Install]
 WantedBy=multi-user.target

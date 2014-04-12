@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-database
-Requires=docker.service docker-tcp.socket etcd.service
-After=docker.service etcd.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-database || /usr/bin/docker run --name deis-database -p 5432:5432 -e PUBLISH=5432 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/database'
-ExecStop=/usr/bin/docker stop deis-database
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/database:latest
+ExecStart=/usr/bin/docker run --name deis-database -p 5432:5432 -e PUBLISH=5432 deis/database
+ExecStop=/usr/bin/docker rm -f deis-database
 
 [Install]
 WantedBy=multi-user.target

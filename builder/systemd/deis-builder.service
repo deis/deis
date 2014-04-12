@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-builder
-Requires=docker.service docker-tcp.socket etcd.service
-After=docker.service etcd.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-builder || /usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e HOST=172.17.8.100 -e PORT=2222 -e ETCD=172.17.8.100:4001 --privileged deis/builder'
-ExecStop=/usr/bin/docker stop deis-builder
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/builder:latest
+ExecStart=/usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e PORT=2222 --privileged deis/builder
+ExecStop=/usr/bin/docker rm -f deis-builder
 
 [Install]
 WantedBy=multi-user.target

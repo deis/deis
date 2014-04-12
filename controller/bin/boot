@@ -9,8 +9,12 @@ set -eo pipefail
 # set debug based on envvar
 [[ $DEBUG ]] && set -x
 
+# HACK: get the host IP address through the default gateway
+export HOST=$(netstat -nr | grep '^0\.0\.0\.0' | awk '{print $2}')
+
 # configure etcd
-export ETCD=${ETCD:-172.17.42.1:4001}
+export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-10}
 
@@ -69,11 +73,10 @@ CONFD_PID=$!
 
 echo deis-controller running...
 
-# publish the service to etcd using the injected HOST and PORT
+# publish the service to etcd using the injected PORT
 if [[ ! -z $PUBLISH ]]; then
 
 	# configure service discovery
-	HOST=${HOST:-localhost}
 	PORT=${PORT:-8000}
 	PROTO=${PROTO:-tcp}
 

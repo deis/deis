@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-controller
-Requires=docker.service docker-tcp.socket etcd.service deis-builder.service
-After=docker.service etcd.service deis-builder.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-controller || /usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/controller'
-ExecStop=/usr/bin/docker stop deis-controller
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/controller:latest
+ExecStart=/usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 deis/controller
+ExecStop=/usr/bin/docker rm -f deis-controller
 
 [Install]
 WantedBy=multi-user.target
