@@ -20,7 +20,7 @@ Default output format [None]:
 
 3. Upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
 
-4. Edit [cloudformation-parameters.json][cf-params], ensuring to add a new discovery URL.
+4. Edit [cloudformation.json][cf-params], ensuring to add a new discovery URL.
 You can get a new one by sending a new request to http://discovery.etcd.io/new.
 ```console
     {
@@ -31,8 +31,7 @@ You can get a new one by sending a new request to http://discovery.etcd.io/new.
 NOTE: If you're interested in running your own discovery endpoint or want to know more
 about the discovery URL, see http://discovery.etcd.io for more information. You can also
 read more on how you can customize this cluster by looking at the
-[CoreOS EC2 template][template] and applying it to
-[cloudformation-parameters.json][cf-params].
+[CoreOS EC2 template][template] and applying it to [cloudformation.json][cf-params].
 
 5. Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
 ```console
@@ -85,6 +84,6 @@ email: info@opdemand.com
 
 [aws-cli]: https://github.com/aws/aws-cli
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
-[cf-params]: cloudformation-parameters.json
+[cf-params]: cloudformation.json
 [pro-script]: provision-ec2-cluster.sh
 [init-script]: initialize-ec2-cluster.sh
