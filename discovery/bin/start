@@ -1,7 +1,0 @@
-#!/bin/bash
-#
-# This script is designed to be run inside the container
-#
-
-# spawn etcd in the foreground
-sudo -u etcd etcd -v $ETCD_PEERS -peer-addr $PUBLIC_IP:$ETCD_PEER_PORT -addr $PUBLIC_IP:$ETCD_PORT -name $ETCD_NODE_NAME
