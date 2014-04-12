@@ -4,7 +4,8 @@ Description=deis-builder
 [Service]
 TimeoutStartSec=20m
 ExecStartPre=/usr/bin/docker pull deis/builder:latest
-ExecStart=/usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e PORT=2222 --privileged deis/builder
+ExecStartPre=/usr/bin/docker run --name deis-builder-data -v /buildpacks -v /var/lib/docker/graph deis/data
+ExecStart=/usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e PORT=2222 --volumes-from deis-builder-data --privileged deis/builder
 ExecStop=/usr/bin/docker rm -f deis-builder
 
 [Install]

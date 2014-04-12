@@ -4,7 +4,8 @@ Description=deis-registry
 [Service]
 TimeoutStartSec=20m
 ExecStartPre=/usr/bin/docker pull deis/registry:latest
-ExecStart=/usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 deis/registry
+ExecStartPre=/usr/bin/docker run --name deis-registry-data -v /data deis/data
+ExecStart=/usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 --volumes-from deis-registry-data deis/registry
 ExecStop=/usr/bin/docker rm -f deis-registry
 
 [Install]
