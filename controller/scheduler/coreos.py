@@ -199,7 +199,7 @@ Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -P -e PORT={port} -e ETCD=172.17.42.1:4001 {image} {command}
+ExecStart=-/usr/bin/docker run --name {name} -P -e PORT={port} {image} {command}
 ExecStop=-/usr/bin/docker rm -f {name}
 """
 
@@ -238,7 +238,7 @@ Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 80:80 -p 443:443 -e ETCD=172.17.42.1:4001 {image} {command}
+ExecStart=-/usr/bin/docker run --name {name} -p 80:80 -p 443:443 {image} {command}
 ExecStop=-/usr/bin/docker rm -f {name}
 TimeoutStartSec=10min
 """
@@ -251,6 +251,6 @@ Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 514:514 -e HOST=%H -e PORT=514 -e ETCD=172.17.42.1:4001 {image} {command}
+ExecStart=-/usr/bin/docker run --name {name} -p 514:514 -e PORT=514 {image} {command}
 ExecStop=-/usr/bin/docker rm -f {name}
 """

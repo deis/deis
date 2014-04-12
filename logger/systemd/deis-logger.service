@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-logger
-Requires=docker.service docker-tcp.socket etcd.service
-After=docker.service etcd.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-logger || /usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/logger'
-ExecStop=/usr/bin/docker stop deis-logger
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/logger:latest
+ExecStart=/usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 deis/logger
+ExecStop=/usr/bin/docker rm -f deis-logger
 
 [Install]
 WantedBy=multi-user.target

@@ -1,11 +1,11 @@
 [Unit]
 Description=deis-registry
-Requires=docker.service docker-tcp.socket etcd.service
-After=docker.service etcd.service
 
 [Service]
-ExecStart=/bin/bash -c '/usr/bin/docker start -a deis-registry || /usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 -e HOST=172.17.8.100 -e ETCD=172.17.8.100:4001 deis/registry'
-ExecStop=/usr/bin/docker stop deis-registry
+TimeoutStartSec=20m
+ExecStartPre=/usr/bin/docker pull deis/registry:latest
+ExecStart=/usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 deis/registry
+ExecStop=/usr/bin/docker rm -f deis-registry
 
 [Install]
 WantedBy=multi-user.target
