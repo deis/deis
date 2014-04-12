@@ -1,65 +1,90 @@
-Provision a Deis Controller on Amazon EC2
-=========================================
+Provision a Deis Cluster on Amazon EC2
+======================================
 
-1. Install [knife-ec2][knifec2] with `gem install knife-ec2` or just
-`bundle install` from the root directory of your deis repository:
+1. Install the [AWS Command Line Interface][aws-cli]:
 ```console
-$ cd $HOME/projects/deis
-$ gem install knife-ec2
-Fetching: knife-ec2-0.6.4.gem (100%)
-Successfully installed knife-ec2-0.6.4
-1 gem installed
-Installing ri documentation for knife-ec2-0.6.4...
-Installing RDoc documentation for knife-ec2-0.6.4...
+$ pip install awscli
+Downloading/unpacking awscli
+  Downloading awscli-1.3.6.tar.gz (173kB): 173kB downloaded
+  ...
 ```
 
-2. Export your EC2 credentials as environment variables and edit knife.rb
-to read them:
+2. Run `aws configure` to set your AWS credentials:
 ```console
-$ cat <<'EOF' >> $HOME/.bash_profile
-export AWS_ACCESS_KEY=<your_aws_access_key>
-export AWS_SECRET_KEY=<your_aws_secret_key>
-EOF
-$ source $HOME/.bash_profile
-$ cat <<'EOF' >> $HOME/.chef/knife.rb
-knife[:aws_access_key_id] = "#{ENV['AWS_ACCESS_KEY']}"
-knife[:aws_secret_access_key] = "#{ENV['AWS_SECRET_KEY']}"
-EOF
-$ knife ec2 server list
-Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State
+$ aws configure
+AWS Access Key ID [None]: ***************
+AWS Secret Access Key [None]: ************************
+Default region name [None]: us-west-1
+Default output format [None]:
 ```
 
-3. Download and install the [EC2 Command Line Tools][ec2cli] as described in
-[AWS' documentation][ec2cli] and ensure they are available in your $PATH:
+3. Upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
+
+4. Edit [cloudformation-parameters.json][cf-params], ensuring to add a new discovery URL.
+You can get a new one by sending a new request to http://discovery.etcd.io/new.
 ```console
-$ ec2-describe-group
-GROUP	sg-33d1045a	693041077886	default	default group
-PERMISSION	693041077886	default	ALLOWS	tcp	0	65535	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
-PERMISSION	693041077886	default	ALLOWS	udp	0	65535	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
-PERMISSION	693041077886	default	ALLOWS	icmp	-1	-1	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
+    {
+        "ParameterKey":     "DiscoveryURL",
+        "ParameterValue":   "https://discovery.etcd.io/40826e8da55f4d9026935ab67b243c6a"
+    }
+```
+NOTE: If you're interested in running your own discovery endpoint or want to know more
+about the discovery URL, see http://discovery.etcd.io for more information. You can also
+read more on how you can customize this cluster by looking at the
+[CoreOS EC2 template][template] and applying it to
+[cloudformation-parameters.json][cf-params].
+
+5. Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
+```console
+$ ./provision-ec2-cluster.sh
+{
+    "StackId": "arn:aws:cloudformation:us-west-1:413516094235:stack/deis/9699ec20-c257-11e3-99eb-50fa01cd4496"
+}
+Your Deis cluster has successfully deployed.
+Please wait for it to come up, then run ./initialize-ec2-cluster.sh
 ```
 
-4. Run the provisioning script to create a new Deis controller:
+6. Once the cluster is up, get the hostname of any of the machines from EC2, set
+FLEETCTL_TUNNEL, then run [the init script][init-script] to bootstrap the cluster
+remotely:
 ```console
-$ ./contrib/ec2/provision-ec2-controller.sh us-west-2
-Creating security group: deis-controller
-+ ec2-create-group deis-controller -d 'Created by Deis'
-GROUP	sg-3c3a1c0c	deis-controller	Created by Deis
-+ set +x
-Authorizing TCP ports 22,80,443,514 from 0.0.0.0/0...
-+ ec2-authorize deis-controller -P tcp -p 22 -s 0.0.0.0/0
-...
-ec2-203.0.113.33.us-west-2.compute.amazonaws.com
-ec2-203-0-113-33.us-west-2.compute.amazonaws.com Chef Client finished, 74 resources updated
-...
-Instance ID: i-31c8d106
-Flavor: m1.large
-Image: ami-72e27c42
-Region: us-west-2
-Public DNS Name: ec2-203-0-113-33.us-west-2.compute.amazonaws.com
-Public IP Address: 203.0.113.33
-Run List: recipe[deis::controller]
-...
+$ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
+$ ./initialize-ec2-cluster.sh
+The authenticity of host '54.215.248.50:22' can't be established.
+RSA key fingerprint is 86:10:74:b9:6a:ee:3b:21:d0:0f:b4:63:cc:10:64:c9.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '54.215.248.50:22' (RSA) to the list of known hosts.
+Job deis-registry.service started on aec641dc.../172.31.21.4
+Job deis-logger.service started on 494dcb6a.../172.31.5.226
+Job deis-database.service started on aec641dc.../172.31.21.4
+Job deis-cache.service started on aec641dc.../172.31.21.4
+Job deis-controller.service started on aec641dc.../172.31.21.4
+Job deis-builder.service started on 494dcb6a.../172.31.5.226
+Job deis-router.service started on aec641dc.../172.31.21.4
+done!
 ```
 
-[knifec2]: http://docs.opscode.com/plugin_knife_ec2.html
+7. After that, wait for the components to come up, check which host the controller is
+running on and register with Deis!
+```
+$ fleetctl list-units
+UNIT                    LOAD    ACTIVE  SUB     DESC            MACHINE
+deis-builder.service    loaded  active  running deis-builder    d9f1f3ea.../172.31.5.62
+deis-cache.service      loaded  active  running deis-cache      d9f1f3ea.../172.31.5.62
+deis-controller.service loaded  active  running deis-controller d9f1f3ea.../172.31.5.62
+deis-database.service   loaded  active  running deis-database   13c5541b.../172.31.5.61
+deis-logger.service     loaded  active  running deis-logger     d9f1f3ea.../172.31.5.62
+deis-registry.service   loaded  active  running deis-registry   4c263e91.../172.31.24.155
+deis-router.service     loaded  active  running deis-router     13c5541b.../172.31.5.61
+$ deis register ec2-12-345-678-90.us-west-1.compute.amazonaws.com:8000
+username: deis
+password:
+password (confirm):
+email: info@opdemand.com
+```
+
+[aws-cli]: https://github.com/aws/aws-cli
+[template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
+[cf-params]: cloudformation-parameters.json
+[pro-script]: provision-ec2-cluster.sh
+[init-script]: initialize-ec2-cluster.sh

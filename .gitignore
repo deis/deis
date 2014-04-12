@@ -56,7 +56,5 @@ Vagrantfile.local
 .bundle
 /__init__.py
 
-# Chef setup
-.chef
-contrib/vagrant/knife-config/admin.pem
-contrib/vagrant/knife-config/chef-validator.pem
+# EC2 CloudFormation Setup
+contrib/ec2/cloudformation.json
