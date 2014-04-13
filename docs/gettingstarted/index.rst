@@ -1,5 +1,5 @@
 :title: Getting Started
-:description: Deis getting started.
+:description: Get started with Deis, the open source PaaS.
 
 .. _gettingstarted:
 

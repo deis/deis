@@ -1,4 +1,4 @@
-:title: Deis Architecture
+:title: Architecture
 :description: Architecture of the Deis application platform (PaaS)
 
 .. _architecture:
