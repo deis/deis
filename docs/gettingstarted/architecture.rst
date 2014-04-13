@@ -5,6 +5,12 @@
 
 Architecture
 ============
+
+.. image:: DeisArchitecturalDiagram.png
+    :alt: Draft Architectural Diagram
+
+.. TODO: Need a caption for the Deis architectural diagram
+
 Deis consists of 7 components that combine to create a distributed PaaS.
 Each Deis component is deployed as a :ref:`Container`.
 
