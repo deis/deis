@@ -456,6 +456,7 @@ class DeisClient(object):
             app_id = data['id']
             print("done, created {}".format(app_id))
             # add a git remote
+            # TODO: retrieve the hostname from service discovery
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             try:
