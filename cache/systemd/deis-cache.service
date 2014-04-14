@@ -3,8 +3,8 @@ Description=deis-cache
 
 [Service]
 TimeoutStartSec=20m
-ExecStartPre=/usr/bin/docker pull deis/cache
-ExecStart=/bin/sh -c "HOST_IP=$(/bin/ifconfig eth0 | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-cache -p 6379:6379 -e PUBLISH=6379 -e HOST=$HOST_IP deis/cache"
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/cache || /usr/bin/docker pull deis/cache"
+ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-cache -p 6379:6379 -e PUBLISH=6379 -e HOST=$HOST_IP deis/cache"
 ExecStop=/usr/bin/docker rm -f deis-cache
 
 [Install]
