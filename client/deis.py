@@ -410,25 +410,6 @@ class DeisClient(object):
         """
         return self.apps_list(args)
 
-    def apps_calculate(self, args, quiet=False):
-        """
-        Calculate the application's JSON representation
-
-        Usage: deis apps:calculate [--app=<app>]
-        """
-        app = args.get('--app')
-        if not app:
-            app = self._session.app
-        response = self._dispatch('post',
-                                  "/api/apps/{}/calculate".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            databag = json.loads(response.content)
-            if quiet is False:
-                print(json.dumps(databag, indent=2))
-            return databag
-        else:
-            raise ResponseError(response)
-
     def apps_create(self, args):
         """
         Create a new application
