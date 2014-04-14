@@ -77,6 +77,8 @@ if [[ ! -z $PUBLISH ]]; then
 	PORT=${PORT:-8000}
 	PROTO=${PROTO:-tcp}
 
+	set +e
+
 	# wait for the service to become available on PUBLISH port
 	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 

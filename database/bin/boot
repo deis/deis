@@ -77,9 +77,10 @@ echo deis-database running...
 if [[ ! -z $PUBLISH ]]; then
 
 	# configure service discovery
-	HOST=${HOST:-localhost}
 	PORT=${PORT:-5432}
 	PROTO=${PROTO:-tcp}
+
+	set +e
 
 	# wait for the service to become available on PUBLISH port
 	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
