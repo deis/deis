@@ -19,6 +19,7 @@ from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
+from django_fsm.signals import post_transition
 from json_field.fields import JSONField
 
 from api import fields, tasks
@@ -535,6 +536,13 @@ def _etcd_purge_user(**kwargs):
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+
+
+# save FSM transitions as they happen
+def _save_transition(**kwargs):
+    kwargs['instance'].save()
+
+post_transition.connect(_save_transition)
 
 # wire up etcd publishing if we can connect
 try:
