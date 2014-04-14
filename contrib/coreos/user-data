@@ -5,6 +5,20 @@ coreos:
     addr: 172.17.8.100:4001
     peer-addr: 172.17.8.100:7001
   units:
+  - name: docker-patch.service
+    command: start
+    content: |
+      [Unit]
+      Description=patch /usr/bin/docker with an S3 binary
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/wget --no-check-certificate -q -O /home/core/docker.symlink-fix https://s3-us-west-2.amazonaws.com/deis/docker.symlink-fix
+      ExecStartPost=/bin/chmod 0755 /home/core/docker.symlink-fix
+      ExecStartPost=/bin/mount --bind /home/core/docker.symlink-fix /usr/bin/docker
+
+      [Install]
+      WantedBy=multi-user.target
   - name: docker.service
     content: |
       [Unit]
