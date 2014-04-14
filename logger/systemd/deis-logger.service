@@ -3,9 +3,9 @@ Description=deis-logger
 
 [Service]
 TimeoutStartSec=20m
-ExecStartPre=/usr/bin/docker pull deis/logger:latest
-ExecStartPre=/usr/bin/docker run --name deis-logger-data -v /var/log/deis deis/data
-ExecStart=/usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 --volumes-from deis-logger-data deis/logger
+ExecStartPre=/usr/bin/docker pull deis/logger
+ExecStartPre=/bin/bash -c "/usr/bin/docker start deis-logger-data || /usr/bin/docker run --name deis-logger-data -v /var/log/deis deis/data"
+ExecStart=/bin/sh -c "HOST_IP=$(/bin/ifconfig eth0 | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-logger -p 514:514 -e PUBLISH=514 -e HOST=$HOST_IP --volumes-from deis-logger-data deis/logger"
 ExecStop=/usr/bin/docker rm -f deis-logger
 
 [Install]

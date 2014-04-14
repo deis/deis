@@ -3,8 +3,8 @@ Description=deis-router
 
 [Service]
 TimeoutStartSec=20m
-ExecStartPre=/usr/bin/docker pull deis/router:latest
-ExecStart=/usr/bin/docker run --name deis-router -p 80:80 -e PUBLISH=80 deis/router
+ExecStartPre=/usr/bin/docker pull deis/router
+ExecStart=/bin/sh -c "HOST_IP=$(/bin/ifconfig eth0 | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-router -p 80:80 -e PUBLISH=80 -e HOST=$HOST_IP deis/router"
 ExecStop=/usr/bin/docker rm -f deis-router
 
 [Install]

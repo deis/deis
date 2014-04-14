@@ -9,9 +9,6 @@ set -eo pipefail
 # set debug based on envvar
 [[ $DEBUG ]] && set -x
 
-# HACK: get the host IP address through the default gateway
-export HOST=$(netstat -nr | grep '^0\.0\.0\.0' | awk '{print $2}')
-
 # configure etcd
 export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"

@@ -3,9 +3,9 @@ Description=deis-builder
 
 [Service]
 TimeoutStartSec=20m
-ExecStartPre=/usr/bin/docker pull deis/builder:latest
-ExecStartPre=/usr/bin/docker run --name deis-builder-data -v /buildpacks -v /var/lib/docker/graph deis/data
-ExecStart=/usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e PORT=2222 --volumes-from deis-builder-data --privileged deis/builder
+ExecStartPre=/usr/bin/docker pull deis/builder
+ExecStartPre=/bin/bash -c "/usr/bin/docker start deis-builder-data || /usr/bin/docker run --name deis-builder-data -v /buildpacks -v /var/lib/docker/graph deis/data"
+ExecStart=/bin/sh -c "HOST_IP=$(/bin/ifconfig eth0 | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e HOST=$HOST_IP -e PORT=2222 --volumes-from deis-builder-data --privileged deis/builder"
 ExecStop=/usr/bin/docker rm -f deis-builder
 
 [Install]
