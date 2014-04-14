@@ -39,6 +39,9 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
+# reset filesystem permissions for data container
+test -d /data && chown registry:registry /data
+
 # spawn the service in the background
 cd /docker-registry
 ./setup-configs.sh
