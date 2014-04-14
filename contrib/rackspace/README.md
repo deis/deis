@@ -1,111 +1,86 @@
-Provision a Deis Controller on Rackspace
-========================================
+Provision a Deis Cluster on Rackspace
+======================================
 
-1. Install [knife-rackspace][kniferack] with `gem install knife-rackspace` or just `bundle install` from the root directory of your deis repository:
+We'll mostly be following the [CoreOS on Rackspace](https://coreos.com/docs/running-coreos/cloud-providers/rackspace/) guide. You'll need to have a sane python environment with pip already installed (`sudo easy_install pip`).
 
-    ```console
-    $ cd $HOME/projects/deis
-    $ gem install knife-rackspace
-    Fetching: knife-rackspace-0.9.0.gem (100%)
-    Successfully installed knife-rackspace-0.9.0
-    1 gem installed
-    Installing ri documentation for knife-rackspace-0.9.0...
-    Installing RDoc documentation for knife-rackspace-0.9.0...
-    ```
+1. Install supernova and its dependencies:
+```console
+$ sudo pip install keyring
+$ sudo pip install rackspace-novaclient
+$ sudo pip install supernova
+```
 
-2. Export your Rackspace credentials as environment variables and edit knife.rb to read them:
+2. Edit `~/.supernova` to match the following:
+```
+[production]
+OS_AUTH_URL = https://identity.api.rackspacecloud.com/v2.0/
+OS_USERNAME = {rackspace_username}
+OS_PASSWORD = {rackspace_api_key}
+OS_TENANT_NAME = {rackspace_account_id}
+OS_REGION_NAME = DFW (or ORD or another region)
+OS_AUTH_SYSTEM = rackspace
+```
 
-    ```console
-    $ cat <<'EOF' >> $HOME/.bash_profile
-    export RACKSPACE_USERNAME=<your_rackspace_username>
-    export RACKSPACE_API_KEY=<your_rackspace_api_key>
-    source $HOME/.rackspacerc
-    EOF
-    $ cat <<'EOF' > $HOME/.rackspacerc
-    export OS_AUTH_URL="https://identity.api.rackspacecloud.com/v2.0/"
-    export OS_USERNAME=$RACKSPACE_USERNAME
-    export OS_PASSWORD=$RACKSPACE_API_KEY
-    export OS_TENANT_NAME=$RACKSPACE_USERNAME
-    export OS_TENANT_ID=<your_rackspace_tenant_id>
-    export OS_REGION_NAME=<your_rackspace_region_name>
-    export OS_AUTH_SYSTEM="rackspace"
-    EOF
-    $ source $HOME/.bash_profile
-    $ source $HOME/.rackspacerc
-    $ cat <<'EOF' >> $HOME/.chef/knife.rb
-    knife[:rackspace_api_username] = "#{ENV['RACKSPACE_USERNAME']}"
-    knife[:rackspace_api_key] = "#{ENV['RACKSPACE_API_KEY']}"
-    knife[:rackspace_ssh_keypair]   = "deis"
-    knife[:rackspace_region]        = #{ENV['OS_REGION_NAME']}
-    EOF
-    $ knife rackspace server list
-    Instance ID  Name  Public IP  Private IP  Flavor  Image  State
-    ```
+Your account ID is displayed in the upper right-hand corner of the cloud control panel UI, and your API key can be found on the Account Settings page.
 
-3. Now you can follow the standard deis setup:
-  ```bash
-  bundle install # Installs gem files like the knife tool
-  berks install # Downloads the relevant cookbooks
-  # '--ssl-verify' is only needed when using a self-hosted Chef Server
-  # hint: you can also set that at $HOME/.berkshelf/config.json
-  berks upload [--ssl-verify=false] # Upload the cookbooks to the Chef Server
-  ```
+3. Choose an existing keypair or generate a new one, if desired. Tell supernova about the key pair and give it an identifiable name:
 
-4. Prepare a new server
-    1. Create a server named `deis-prepare-image` using the Ubuntu 12.04 LTS image, performance1-2, 1GB performance server
-    2. SSH in as root with the password shown
-    3. Install the 3.11 kernel with: ```apt-get update && apt-get install -yq linux-image-generic-lts-saucy linux-headers-generic-lts-saucy && reboot```
-    4. After reboot is complete, SSH back in as root and `uname -r` to confirm kernel is `3.11.0-17-generic`
-    5. Run the `prepare-node-image.sh` script to optimize the image for fast boot times
+``console
+supernova production keypair-add --pub-key ~/.ssh/deis.pub deis-key
+```
 
-        ```console
-        $ ssh root@ip-address 'bash -s' < contrib/rackspace/prepare-node-image.sh
-        Reading package lists... Done
-        Building dependency tree
-        Reading state information... Done
-        ...
-        ```
+4. Edit [cloud-config.yml](cloud-config.yml) and add a discovery URL. This URL will be used by all nodes in this Deis cluster.
+You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
 
-5. Create a new image from the `deis-prepare-image` server named `deis-node-image`.
-    1. In the server list in the Control Panel click the action cog for `deis-prepare-image`
-    2. Select "Create New Image" name that image `deis-node-image`
-    3. (optionally) Distribute the image to other regions
-    4. (optionally) Create/update your Deis flavors to use your new images
+5. Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
+You'll need to provide the name of the key pair you just added. Optionally, you can also specify a flavor name.
+```console
+$ ./provision-rackspace-cluster.sh
+Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
+$ ./provision-rackspace-cluster.sh deis-key
+```
 
-6. Make sure to add the `deis-controller` client object and the `<your_username>-validator` usernames to the Chef 'admins' group.
+By default, the script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
+```console
+$ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
+```
 
-7. Back on your machine with deis cloned and the deis CLI installed, run the provisioning script to create a new Deis controller:
-    * Change ```<region>``` to match the region your image is in (we will add SYD and HKG as soon as performance flavors are available there):
-        * dfw
-        * ord
-        * iad
-        * lon
+6. Once the cluster is up, get the IP address for any of the machines in the cluster, set
+FLEETCTL_TUNNEL, and run [the init script](initialize-rackspace-cluster.sh) to bootstrap the cluster
+remotely:
+```console
+$ export FLEETCTL_TUNNEL=23.253.219.94
+$ ./initialize-rackspace-cluster.sh
+The authenticity of host '23.253.219.94:22' can't be established.
+RSA key fingerprint is ce:3a:c1:3a:ad:11:bd:60:84:8e:60:a8:2f:19:1a:a6.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added '23.253.219.94:22' (RSA) to the list of known hosts.
+Job deis-registry.service scheduled to 73c7d285.../23.253.218.114
+Job deis-logger.service scheduled to 21ad134c.../23.253.217.229
+Job deis-database.service scheduled to 73c7d285.../23.253.218.114
+Job deis-cache.service scheduled to 73c7d285.../23.253.218.114
+Job deis-controller.service scheduled to e5c14be6.../23.253.219.94
+Job deis-builder.service scheduled to e5c14be6.../23.253.219.94
+Job deis-router.service scheduled to 73c7d285.../23.253.218.114
+done!
+```
 
-        ```console
-        $ cd deis
-        $ bundle install # if you have not already done so
-        $ ./contrib/rackspace/provision-rackspace-controller.sh <region>
-        Provisioning a deis controller on Rackspace...
-        Creating new SSH key: id_rsa
-        + ssh-keygen -f /home/deis/.ssh/id_rsa -t rsa -N '' -C deis
-        + set +x
-        Saved to /home/deis/.ssh/id_rsa
-        Created data_bag[deis-formations]
-        Created data_bag[deis-apps]
-        Provisioning deis-controller-H7WVl with knife rackspace...
-        + knife rackspace server create --bootstrap-version 11.8.2 --rackspace-region ord --image f569b831-afe5-44f5-85eb-3bf9e1d0d336 --flavor performance1-2 --rackspace-metadata '{"Name": "deis-controller-H7WVl"}' --rackspace-disk-config MANUAL --server-name deis-controller-H7WVl --node-name deis-controller-H7WVl --run-list 'recipe[deis::controller]'
-        Instance ID: cf7aeadd-4bb1-4f69-9238-7a0586a863b9
-        Name: deis-controller-H7WVl
-        Flavor: 2 GB Performance
-        Image: deis-node-image
-        Metadata: [  <Fog::Compute::RackspaceV2::Metadatum
-            key="Name",
-            value="deis-controller-H7WVl"
-          >]
-        RackConnect Wait: no
-        ServiceLevel Wait: no
-        SSH Key: deis
-        ...
-        ```
+7. After that, wait for the components to come up, check which host the controller is
+running on and register with Deis!
+```
+$ fleetctl list-units
+UNIT                    LOAD    ACTIVE  SUB     DESC            MACHINE
+deis-builder.service    loaded  active  running deis-builder    e5c14be6.../23.253.219.94
+deis-cache.service      loaded  active  running deis-cache      73c7d285.../23.253.218.114
+deis-controller.service loaded  active  running deis-controller e5c14be6.../23.253.219.94
+deis-database.service   loaded  active  running deis-database   73c7d285.../23.253.218.114
+deis-logger.service     loaded  active  running deis-logger     21ad134c.../23.253.217.229
+deis-registry.service   loaded  active  running deis-registry   73c7d285.../23.253.218.114
+deis-router.service     loaded  active  running deis-router     73c7d285.../23.253.218.114
 
-[kniferack]: http://docs.opscode.com/plugin_knife_rackspace.html
+$ deis register 23.253.219.94:8000
+username: deis
+password:
+password (confirm):
+email: info@opdemand.com
+```
