@@ -10,12 +10,6 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 
 source $CONTRIB_DIR/utils.sh
 
-# check for Deis' general dependencies
-if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
-  echo_red 'Deis is missing some dependencies.'
-  exit 1
-fi
-
 # check for EC2 API tools in $PATH
 if ! which aws > /dev/null; then
   echo_red 'Please install the AWS command-line tool and ensure it is in your $PATH.'
