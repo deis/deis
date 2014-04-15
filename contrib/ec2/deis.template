@@ -80,13 +80,8 @@
         "GroupDescription": "Deis SecurityGroup",
         "SecurityGroupIngress": [
           {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "514", "ToPort": "514", "CidrIp": "0.0.0.0/0"},
           {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "5000", "ToPort": "5000", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "6379", "ToPort": "6379", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "49156", "ToPort": "65535", "CidrIp": "0.0.0.0/0"}
+          {"IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "CidrIp": "0.0.0.0/0"}
         ]
       }
     },
@@ -103,6 +98,46 @@
       "Properties": {
         "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "7001", "ToPort": "7001", "SourceSecurityGroupId": {
           "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress514": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "514", "ToPort": "514", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress5000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "5000", "ToPort": "5000", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress5432": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress6379": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "6379", "ToPort": "6379", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "IngressEphemeral": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "49156", "ToPort": "65535", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
         }
       }
     },
