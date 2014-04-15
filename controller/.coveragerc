@@ -1,0 +1,29 @@
+[run]
+omit =
+    */venv/*
+    */virtualenv/*
+    *tests*
+    api/__init__.py
+    api/docker.py
+    web/__init__.py
+    web/models.py
+    web/templatetags/__init__.py
+    # osx library files when not running in virtualenv
+    /Library/*
+    /System/*
+
+[report]
+ignore_errors = True
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+
+[html]
+extra_css = web/static/css/main.css
+title = Deis Coverage Report

@@ -1,101 +1,112 @@
 :title: Concepts
-:description: Concepts of the Deis application platform, which deploys and scales twelve factor apps. Learn about formations, layers, build, release, run & backing services.
-:keywords: deis, formations, layers, build, release, run, backing services
+:description: Deis scales Twelve-Factor apps as containers over a cluster of machines.
 
 .. _concepts:
 
 Concepts
 ========
+Deis is a lightweight, flexible and powerful application platform that
+deploys and scales :ref:`concepts_twelve_factor` apps as
+:ref:`concepts_docker` containers across :ref:`concepts_clusters` of
+:ref:`concepts_coreos` machines.
 
-Deis is an application platform that deploys and scales `Twelve Factor`_ apps
-using formations of `Chef`_ nodes, `Docker`_ containers and `Nginx`_ proxies.
+.. _concepts_twelve_factor:
 
-Formations
-----------
-A :ref:`formation` is a set of infrastructure used to host applications.
-Each formation includes :ref:`Layers <layer>` of :ref:`Nodes <node>`
-that provide different services to the formation.
+Twelve-Factor
+-------------
+The `Twelve-Factor App`_ is a DevOps manifesto for building and
+deploying scalable, modern applications and services.
 
-Layers
+We consider it an invaluable synthesis of much experience with
+software-as-a-service apps in the wild, especially on the
+Heroku platform.
+
+Deis works best with applications in a `Twelve-Factor App`_ style.
+Following the twelve-factor model, Deis enforces a strict separation of
+the :ref:`Build and Run <concepts_build_release_run>` stages.
+
+.. _concepts_docker:
+
+Docker
 ------
-:ref:`Layers <layer>` are homogeneous groups of :ref:`Nodes <node>` that
-perform work on behalf of a formation.  Each node in a layer has
-the same :ref:`Flavor` and configuration, allowing them to be scaled
-easily.  Formations have two primary types of layers.
+`Docker`_ is an open source project to pack, ship and run any
+application as a lightweight, portable, self-sufficient container.
 
-Runtime Layers
-^^^^^^^^^^^^^^
-Runtime layers host :ref:`Containers <container>` for a formation.
-Nodes in a runtime layer use a `Chef Databag`_ to deploy containers for
-each :ref:`application` in the formation.
+When you deploy an app with ``git push deis master``, Deis builds and
+packages it as a Docker image, then distributes it as Docker containers
+across your cluster.
 
-Proxy Layers
-^^^^^^^^^^^^
-Proxy layers expose :ref:`Applications <application>` to the outside world.
-Nodes in a proxy layer use a `Chef Databag`_ to configure routing of
-inbound requests to :ref:`Containers <container>` hosted on runtime layers.
+(Deis itself is also a set of coordinated Docker containers.)
+
+.. _concepts_coreos:
+
+CoreOS
+------
+`CoreOS`_ is a lean new Linux distribution, rearchitected for features
+needed by modern infrastructure stacks and targeted at massive
+server deployments.
+
+Deis applications are containers running on CoreOS machines, which can
+be private or public cloud instances, or bare metal. CoreOS clusters
+allow Deis to host applications and services at scale with
+high resilience.
+
+Yet Deis and CoreOS run identically in a Vagrant virtual machine on
+your laptop, for convenient testing and rapid development.
+
+.. _concepts_clusters:
+
+Clusters
+--------
+A :ref:`cluster` is a named group of CoreOS machines, or hosts. A
+Deis cluster runs jobs on these hosts to distribute applications and
+services intelligently across its resources.
+
+Once a cluster is created with the Deis command-line client, developers
+can create applications and deploy them across the cluster with a simple
+``git push deis master`` command.
+
+.. _concepts_applications:
 
 Applications
 ------------
-An :ref:`application` lives on a :ref:`formation` where it uses
-:ref:`Containers <container>` to process requests and run background jobs
-for a deployed git repository.
-Developers use :ref:`Applications <application>` to push code, change config,
-scale containers, view logs, or run admin commands --
-regardless of the formation's underlying infrastructure.
+An :ref:`application`, or app, lives on a :ref:`cluster`, where it uses
+:ref:`Containers <container>` to process requests and run tasks for a
+deployed git repository.
+
+Developers use :ref:`Applications <application>` to push code, change
+configuration, scale containers, view logs, or run admin commands --
+regardless of the cluster's underlying infrastructure.
+
+.. _concepts_build_release_run:
 
 Build, Release, Run
 -------------------
-Deis enforces strict separation between Build and Run stages
-following the `Twelve Factor model`_.
 
-Build Stage
-^^^^^^^^^^^
-The :ref:`Controller` includes a *gitreceive* hook that receives
-incoming git push requests over SSH and builds applications
-inside ephemeral Docker containers.
-Tarballs of the /app directory are extracted into a slug and exposed
-on the Controller using an Nginx static file server.
-The slug is later downloaded by the runtime layer and bind-mounted
-into a Docker container for execution.
-
-Release Stage
-^^^^^^^^^^^^^
-During the release stage, a :ref:`build` is combined with :ref:`config`
-to create a new numbered :ref:`release`.
-The release stage is triggered any time a new build is created or
-config is changed, making it easy to rollback code and configuration.
-
-Run Stage
-^^^^^^^^^
-The run stage updates Chef databags and `converges`_ all nodes in the formation.
-The databag specifies the current application releases,
-the placement of containers across the runtime layer,
-and the configuration of the proxy layer.
-SSH is used to converge nodes in runtime layers followed
-by nodes in proxy layers, making zero downtime deployment possible.
+.. _concepts_backing_services:
 
 Backing Services
 ----------------
-In keeping with `Twelve Factor`_ methodology, `backing services`_ like
-databases, queues and storage are decoupled and attached using `environment
-variables`_.  This allows applications to use backing services provided by
-other applications, or external/third-party services accessible over the network.
-The use of environment variables makes it easy to swap backing services
-when necessary.
+Deis treats databases, caches, storage, messaging systems, and other
+`backing services`_ as attached resources, in keeping with Twelve-Factor
+best practices.
+
+Applications can be decoupled this way, using simple
+`environment variables`_ to configure and attach to any services needed.
+Apps are then free to scale up independently, to use services provided
+by other apps, or to switch easily to external or third-party vendor
+services.
 
 See Also
 --------
 * :ref:`Developer Guide <developer>`
-* :ref:`Operations Guide <developer>`
-* `The Twelve Factor App <http://12factor.net/>`_
+* :ref:`Operations Guide <operations>`
+* The `Twelve-Factor App`_
 
-.. _`Twelve Factor`: http://12factor.net/
-.. _`Chef`: http://www.opscode.com/chef/
+
+.. _`Twelve-Factor App`: http://12factor.net/
 .. _`Docker`: http://docker.io/
-.. _`Nginx`: http://wiki.nginx.org/Main
-.. _`Chef Databag`: http://docs.opscode.com/essentials_data_bags.html
-.. _`Twelve Factor model`: http://12factor.net/build-release-run
+.. _`CoreOS`: https://coreos.com/
+.. _`Build and Run`: http://12factor.net/build-release-run
 .. _`backing services`: http://12factor.net/backing-services
 .. _`environment variables`: http://12factor.net/config
-.. _`converges`: http://docs.opscode.com/essentials_nodes_chef_run.html

@@ -1,6 +1,5 @@
 :title: Contributing
 :description: TOOD
-:keywords: todo
 
 Contributing
 ============

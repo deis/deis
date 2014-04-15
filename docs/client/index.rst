@@ -1,6 +1,5 @@
 :title: client
 :description: Deis Client Reference
-:keywords: deis, documentation, client, reference
 
 .. _client:
 
@@ -24,17 +23,12 @@ Client Reference
     logs
     run
     destroy
-    
-    formations
-    layers
-    nodes
-    
+
+    clusters
+    keys
+
     apps
     containers
     config
     builds
     releases
-    
-    providers
-    flavors
-    keys

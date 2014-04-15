@@ -1,6 +1,5 @@
 :title: Releases
 :description: Details the Deis release process. Deis releases.
-:keywords: deis, release, process, build, tag
 
 .. _releases:
 

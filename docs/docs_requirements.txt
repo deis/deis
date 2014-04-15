@@ -11,12 +11,16 @@ boto==2.23.0
 celery==3.1.8
 Django==1.6.2
 django-allauth==0.15.0
+# HACK: use bacongobbler's feature branch until
+# https://github.com/kmmbvnr/django-fsm/pull/31 is merged
+git+https://github.com/bacongobbler/django-fsm@add-exception-handling
 django-guardian==1.1.1
 django-json-field==0.5.5
 djangorestframework==2.3.12
 dop==0.1.6
 gunicorn==18.0
 paramiko==1.12.1
+psycopg2==2.5.2
 pyrax==1.6.2
 python-etcd==0.3.0
 PyYAML==3.10
@@ -28,4 +32,4 @@ docopt==0.6.1
 # Deis documentation requirements
 Sphinx>=1.2.2
 smartypants>=1.8.3
-sphinxcontrib-httpdomain>=1.2.0
+sphinxcontrib-httpdomain>=1.2.1

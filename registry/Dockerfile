@@ -22,6 +22,10 @@ RUN cd /docker-registry && git checkout 0.6.6
 RUN cp /docker-registry/config/boto.cfg /etc/boto.cfg
 RUN cd /docker-registry && pip install -r requirements.txt
 
+# install latest etcdctl including no-sync options
+RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
+RUN chmod +x /usr/local/bin/etcdctl
+
 # create data volume
 RUN mkdir -p /data/repositories && chown -R registry:registry /data
 VOLUME /data

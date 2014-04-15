@@ -1,8 +1,0 @@
-#!/bin/bash
-set -eo pipefail
-
-# seed etcd with default configuration
-etcdctl -C $ETCD set $ETCD_PATH/protocol http
-etcdctl -C $ETCD ls $ETCD_PATH/secretKey >/dev/null || etcdctl -C $ETCD set $ETCD_PATH/secretKey ${REGISTRY_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
-
-exit 0

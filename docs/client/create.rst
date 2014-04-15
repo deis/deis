@@ -1,5 +1,5 @@
-:title: Create 
-:description: Learn how to create a new Deis application using the Deis client. 
+:title: Create
+:description: Learn how to create a new Deis application using the Deis client.
 
 
 create

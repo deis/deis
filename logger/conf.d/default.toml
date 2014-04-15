@@ -1,6 +1,0 @@
-[template]
-src   = "default.conf"
-dest  = "/etc/rsyslog.d/50-default.conf"
-uid = 0
-gid = 0
-mode  = "0644"

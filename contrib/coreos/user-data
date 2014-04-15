@@ -1,0 +1,112 @@
+#cloud-config
+---
+coreos:
+  etcd:
+    addr: 172.17.8.100:4001
+    peer-addr: 172.17.8.100:7001
+  units:
+  - name: docker-patch.service
+    command: start
+    content: |
+      [Unit]
+      Description=patch /usr/bin/docker with an S3 binary
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/wget --no-check-certificate -q -O /home/core/docker.symlink-fix https://s3-us-west-2.amazonaws.com/deis/docker.symlink-fix
+      ExecStartPost=/bin/chmod 0755 /home/core/docker.symlink-fix
+      ExecStartPost=/bin/mount --bind /home/core/docker.symlink-fix /usr/bin/docker
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: docker.service
+    content: |
+      [Unit]
+      Description=Docker Application Container Engine
+      Documentation=http://docs.docker.io
+
+      [Service]
+      ExecStartPre=/bin/mount --make-rprivate /
+      # Run docker but don't have docker automatically restart
+      # containers. This is a job for systemd and unit files.
+      ExecStart=/usr/bin/docker -d -s=btrfs --bip=10.212.0.1/16 -r=false -H fd://
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: docker-tcp.socket
+    command: start
+    content: |
+      [Unit]
+      Description=Docker Socket for Remote API
+
+      [Socket]
+      ListenStream=4243
+      Service=docker.service
+      BindIPv6Only=both
+
+      [Install]
+      WantedBy=sockets.target
+  - name: etcd.service
+    command: start
+    content: |
+      [Unit]
+      Description=etcd
+
+      [Service]
+      User=etcd
+      PermissionsStartOnly=true
+      Environment=ETCD_DATA_DIR=/var/lib/etcd ETCD_NAME=default
+      ExecStart=/usr/bin/etcd
+      Restart=always
+      RestartSec=10s
+  - name: fleet.service
+    command: start
+    content: |-
+      [Unit]
+      Description=fleet
+
+      [Service]
+      ExecStart=/usr/bin/fleet
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: stop-reboot-manager.service
+    command: start
+    content: |
+      [Unit]
+      Description=stop update-engine-reboot-manager
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
+      ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: seed-docker-images.service
+    command: start
+    content: |
+      [Unit]
+      Description=Seed Docker images used by Deis
+      Requires=docker.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c 'docker pull deis/slugrunner:latest'
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: seed-deis-registry.service
+    command: start
+    content: |
+      [Unit]
+      Description=Seed Deis Registry with Docker Images
+      Requires=seed-docker-images.service deis-registry.service
+      After=deis-registry.service
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && docker pull deis/slugrunner:latest && docker tag deis/slugrunner $HOST_IP:5000/deis/slugrunner && docker push $HOST_IP:5000/deis/slugrunner"
+
+      [Install]
+      WantedBy=multi-user.target

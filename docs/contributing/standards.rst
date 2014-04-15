@@ -1,16 +1,22 @@
 :title: Coding Standards
 :description: Deis project coding standards. Contributors to Deis should feel welcome to make changes to any part of the codebase.
-:keywords: deis, contributing, coding, python, test, tests, testing
 
 .. _standards:
 
 Coding Standards
 ================
 
-Deis is a `Python`_ project. We chose Python over other compelling
-languages because it is widespread, well-documented, and friendly to
-a large number of developers. Source code benefits from many eyes
-upon it.
+Deis is a Python_ and Go_ project.
+
+We chose Go_ because it is simple, reliable, and efficient. These are
+values Deis shares. Go also excels at programming systems-level tasks,
+with powerful and simple networking, concurrency, and testing facilities
+included. Our coding standards and recommendations for Go code in the
+Deis project are evolving, but will be added to this document soon.
+
+We chose Python_ over other compelling languages because it is
+widespread, well-documented, and friendly to a large number of
+developers. Source code benefits from many eyes upon it.
 
 `The Zen of Python`_ emphasizes simple over clever, and we agree.
 Readability counts. Deis also aims for complete test coverage.
@@ -110,6 +116,7 @@ a simple typo fix or one-line documentation change--requires at least two of
 Deis' maintainers to accept the change in this manner before it can be merged.
 
 .. _Python: http://www.python.org/
+.. _Go: http://golang.org/
 .. _flake8: https://pypi.python.org/pypi/flake8/
 .. _pep8_tool: https://pypi.python.org/pypi/pep8/
 .. _pyflakes: https://pypi.python.org/pypi/pyflakes/

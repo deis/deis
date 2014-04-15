@@ -1,37 +1,9 @@
-How to Provision a Deis Controller on Digital Ocean
-===================================================
+Deis on DigitalOcean
+====================
 
-Here are the steps to get started on Digital Ocean:
+Unfortunately, DigitalOcean does not yet provide CoreOS images. This
+prevents Deis from being deployed on DigitalOcean.
 
-* install [knife-digital_ocean][kdo]
-
-```
-bundle install
-```
-
-* install python requirements
-
-```
-pip install -r requirements.txt
-```
-
-* add the following to ~/.chef/knife.rb
-
-```
-knife[:digital_ocean_client_id] =   "your digital ocean client ID"
-knife[:digital_ocean_api_key] =     "your digital ocean API key"
-```
-
-* Follow the steps provided in `contrib/digitalocean/prepare-controller-image.sh`
-* Ensure you create a snapshot of `deis-controller-image`
-* Follow the steps provided in `contrib/digitalocean/prepare-node-image.sh`
-* Ensure you create a snapshot of `deis-node-image`
-* Run this command to start the provisioning process
-
-```
-./contrib/digitalocean/provision-digitalocean-controller.sh
-```
-
-This script will read from your knife config file, create a new SSH key for the controller, upload the SSH key to digital ocean, and provision a Deis Controller from the snapshot created.
-
-[kdo]: https://github.com/rmoriz/knife-digital_ocean
+If you use DigitalOcean, please
+[show your support](http://digitalocean.uservoice.com/forums/136585-digital-ocean/suggestions/4250154-suport-coreos-as-a-deployment-platform)
+for CoreOS and help us to support Deis on DO.

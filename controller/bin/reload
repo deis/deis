@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# gracefully reload celery
+kill -HUP $(cat /tmp/celery.pid)
+
+# gracefully reload gunicorn
+kill -HUP $(cat /tmp/gunicorn.pid)
+
+exit 0

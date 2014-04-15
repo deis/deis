@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-logger
+
+[Service]
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/logger >/dev/null || /usr/bin/docker pull deis/logger"
+ExecStartPre=/bin/bash -c "/usr/bin/docker start deis-logger-data || /usr/bin/docker run --name deis-logger-data -v /var/log/deis deis/data"
+ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-logger -p 514:514/udp -e PUBLISH=514 -e HOST=$HOST_IP --volumes-from deis-logger-data deis/logger"
+ExecStop=/usr/bin/docker rm -f deis-logger
+
+[Install]
+WantedBy=multi-user.target

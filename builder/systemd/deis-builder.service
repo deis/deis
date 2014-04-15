@@ -1,0 +1,15 @@
+[Unit]
+Description=deis-builder
+
+[Service]
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/builder >/dev/null || /usr/bin/docker pull deis/builder"
+ExecStartPre=/bin/bash -c "/usr/bin/docker start deis-builder-data || /usr/bin/docker run --name deis-builder-data -v /var/lib/docker deis/data"
+ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-builder -p 2222:22 -e PUBLISH=22 -e HOST=$HOST_IP -e PORT=2222 --volumes-from deis-builder-data --privileged deis/builder"
+ExecStop=/usr/bin/docker rm -f deis-builder
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=deis-controller.service

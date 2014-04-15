@@ -1,6 +1,6 @@
 :title: Register a new Deis user using the client
 :description: First steps for developers using Deis to deploy and scale applications.
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev
+
 
 Register a User
 ===============
@@ -14,7 +14,7 @@ to create a new account.  You will be logged in automatically.
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com
+    $ deis register http://deis.example.com:8000
     username: myuser
     password:
     password (confirm):

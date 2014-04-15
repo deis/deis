@@ -1,0 +1,8 @@
+[Unit]
+Description=fleet
+
+[Service]
+ExecStart=/usr/bin/fleet
+
+[Install]
+WantedBy=multi-user.target

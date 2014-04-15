@@ -1,6 +1,5 @@
 :title: Deploying with Heroku Buildpacks on Deis
-:description: A howto on deploying applications using Heroku Buildpacks
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev, buildpack, heroku
+:description: How to deploy applications using Heroku Buildpacks
 
 Buildpacks
 ==========
@@ -53,10 +52,6 @@ push. For example:
     === classy-hardtack
     BUILDPACK_URL: https://github.com/bacongobbler/heroku-buildpack-jekyll
 
-.. note::
-
-    Setting config variables before your first deployment results in an error. See `issue
-    542`_ for more details.
 
 .. _`Java buildpack`: https://github.com/heroku/heroku-buildpack-java.git
 .. _`Ruby buildpack`: https://github.com/heroku/heroku-buildpack-ruby.git
@@ -71,4 +66,3 @@ push. For example:
 .. _`Perl buildpack`: https://github.com/miyagawa/heroku-buildpack-perl/tree/carton
 .. _`builder recipe`: https://github.com/opdemand/deis-cookbook/blob/master/recipes/builder.rb
 .. _`Deis cookbook`: https://github.com/opdemand/deis-cookbook.git
-.. _`issue 542`: https://github.com/opdemand/deis/issues/542

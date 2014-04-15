@@ -32,12 +32,12 @@ class WebViewsTest(TestCase):
         self.assertContains(response, '<title>Deis | Dashboard</title>', html=True)
         self.assertContains(
             response,
-            r'You have <a href="/formations/">one formation</a> and <a href="/apps/">one app</a>.')
+            r'You have <a href="/clusters/">one cluster</a> and <a href="/apps/">one app</a>.')
 
-    def test_formations(self):
-        response = self.client.get('/formations/')
-        self.assertContains(response, '<title>Deis | Formations</title>', html=True)
-        self.assertContains(response, '<h1>One Formation</h1>')
+    def test_clusters(self):
+        response = self.client.get('/clusters/')
+        self.assertContains(response, '<title>Deis | Clusters</title>', html=True)
+        self.assertContains(response, '<h1>One Cluster</h1>')
         self.assertContains(response, '<h3>autotest-1</h3>')
         self.assertContains(response, '<dt>Owned by</dt>')
         self.assertContains(response, '<dd>autotest-1</dd>')
@@ -58,9 +58,9 @@ class WebViewsTest(TestCase):
 
 class GravatarTagsTest(TestCase):
 
-    def _render_template(self, str, ctx=None):
+    def _render_template(self, t, ctx=None):
         """Test that the tag renders a gravatar URL."""
-        tmpl = Template(str)
+        tmpl = Template(t)
         return tmpl.render(Context(ctx)).strip()
 
     def test_render(self):

@@ -42,6 +42,9 @@ from django.conf import settings  # noqa
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.autosummary',
               'sphinx.ext.viewcode', 'sphinxcontrib.httpdomain']
 
+# default flags for auto-generated python code documetation
+autodoc_default_flags = ['members', 'undoc-members']
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -81,7 +84,7 @@ release = __version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ['_build', 'venv']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

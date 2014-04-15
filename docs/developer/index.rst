@@ -1,6 +1,5 @@
 :title: Developer Guide
 :description: Step-by-step guide for developers using Deis to deploy and scale applications.
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev
 
 .. _developer:
 

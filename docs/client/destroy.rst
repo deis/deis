@@ -1,5 +1,5 @@
-:title: Destroy 
-:description: Learn how to destroy a Deis application using the Deis client. 
+:title: Destroy
+:description: Learn how to destroy a Deis application using the Deis client.
 
 
 destroy
