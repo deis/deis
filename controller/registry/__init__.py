@@ -1,6 +1,6 @@
 import importlib
 
-from deis import settings
+from django.conf import settings
 
 # import the registry module specified in settings
 _registry_module = importlib.import_module(settings.REGISTRY_MODULE)

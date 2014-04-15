@@ -6,7 +6,7 @@ import tarfile
 import urlparse
 import uuid
 
-from deis import settings
+from django.conf import settings
 
 
 def publish_release(repository_path, config, tag):
