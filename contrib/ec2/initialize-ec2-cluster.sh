@@ -37,4 +37,4 @@ do
 done
 
 echo_green "Done! Inspect the state of the services with: fleetctl list-units"
-echo_green "Once all the services are running, you can register with your Deis cluster: deis register 1.2.3.4:8000"
+echo_green "Once all the services are running, you can register with your Deis cluster: deis register http://ec2-34-567-890-123.us-west-1.compute.amazonaws.com:8000"
