@@ -101,10 +101,18 @@
         }
       }
     },
-    "Ingress514": {
+    "Ingress514TCP": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "514", "ToPort": "514", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress514UDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "udp", "FromPort": "514", "ToPort": "514", "SourceSecurityGroupId": {
           "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
         }
       }
