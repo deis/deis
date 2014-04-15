@@ -224,7 +224,7 @@ BindsTo={name}.service
 
 [Service]
 ExecStartPre=/bin/sh -c "until /usr/bin/docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --tcp --server $(etcdctl get /deis/services/deis-logger/deis-logger.1 | cut -d ':' -f1) --port $(etcdctl get /deis/services/deis-logger/deis-logger.1 | cut -d ':' -f2)"
+ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service

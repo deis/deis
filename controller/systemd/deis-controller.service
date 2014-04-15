@@ -1,10 +1,11 @@
 [Unit]
 Description=deis-controller
+Requires=deis-logger.service
 
 [Service]
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/controller >/dev/null || /usr/bin/docker pull deis/controller"
-ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=$HOST_IP deis/controller"
+ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && exec /usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=$HOST_IP --volumes-from=deis-logger deis/controller"
 ExecStop=/usr/bin/docker rm -f deis-controller
 
 [Install]
