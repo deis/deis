@@ -18,7 +18,7 @@ fi
 
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
-    --template-url https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template \
+    --template-body "$(<deis.template)" \
     --stack-name deis \
     --parameters "$(<cloudformation.json)"
 
