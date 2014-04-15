@@ -4,8 +4,7 @@ import os
 import random
 import re
 import subprocess
-
-from subprocess import CalledProcessError
+import time
 
 
 ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
@@ -94,6 +93,12 @@ class FleetClient(object):
         self._start_log(name, env)
         self._start_container(name, env)
         self._start_announcer(name, env)
+        self._wait_for_announcer(name, env)
+
+    def _start_log(self, name, env):
+        subprocess.check_call(
+            'fleetctl.sh start {name}-log.service'.format(**locals()),
+            shell=True, env=env)
 
     def _start_container(self, name, env):
         return subprocess.check_call(
@@ -105,10 +110,17 @@ class FleetClient(object):
             'fleetctl.sh start {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
-    def _start_log(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh start {name}-log.service'.format(**locals()),
-            shell=True, env=env)
+    def _wait_for_announcer(self, name, env):
+        status = None
+        for _ in range(60):
+            status = subprocess.check_output(
+                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $4}}'".format(**locals()),
+                shell=True, env=env).strip('\n')
+            if status == 'running':
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError('Container failed to start')
 
     def stop(self, name):
         """
@@ -209,8 +221,8 @@ Description={name} announce
 BindsTo={name}.service
 
 [Service]
-ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Waiting for $port/tcp...; until cat </dev/null>/dev/tcp/$host/$port; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Connected to $host:$port/tcp, publishing to etcd...; while netstat -lnt | grep $port >/dev/null; do etcdctl set /deis/services/{app}/{name} $host:$port --ttl 60 >/dev/null; sleep 45; done"
+ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
+ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Connected to $host:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $host:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 
 [X-Fleet]
