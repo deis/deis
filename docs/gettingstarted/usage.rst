@@ -1,15 +1,15 @@
 :title: Usage
-:description: Use the Deis Command-line interface to create a formation for your app, push your code, and scale your own cloud resources.
+:description: The command-line interface (CLI) is how you interact with Deis.
 
 .. _usage:
 
 Usage
 =====
-
-Once you have set up a Deis Controller (see the :ref:`Operations Guide <operations>`), you
-will use the Deis CLI (command-line interface) to create a formation for
-your app, push your code, and scale your own cloud resources.
+Once you have provisioned a Deis Controller
+(see the :ref:`Operations Guide <operations>`), use the
+command-line interface (CLI) to create a cluster for your app, to push
+your code, and to scale your cloud resources.
 
 .. automodule:: client.deis
-	:no-members:
-	:no-undoc-members:
+    :no-members:
+    :no-undoc-members:

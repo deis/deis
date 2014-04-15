@@ -16,7 +16,7 @@ Before deploying an application, all users must first authenticate against the D
 
 .. code-block:: console
 
-    $ deis login http://example.com
+    $ deis login http://example.com:8000
     username: deis
     password:
     Logged in as deis
@@ -30,7 +30,7 @@ create`` command to create a remote repository for you to push your application 
 .. code-block:: console
 
     $ cd example-java-jetty    # change into your application's git root
-    $ deis create --formation=dev
+    $ deis create --cluster=dev
     Creating application... done, created peachy-waxworks
     Git remote deis added
 
@@ -43,7 +43,7 @@ you can use `our Dockerfile example`_.
 
 .. code-block:: console
 
-    ><> deis create --formation=dev
+    ><> deis create --cluster=dev
     Creating application... done, created owlish-huntress
     Git remote deis added
     ><> git push deis master
