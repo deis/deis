@@ -402,7 +402,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None):
+    def new(self, user, config=None, build=None, summary=None):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -420,7 +420,7 @@ class Release(UuidAuditedModel):
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
-            build=build, version=new_version, image=image)
+            build=build, version=new_version, image=image, summary=summary)
         # publish release to registry as new docker image
         repository_path = "{}/{}".format(user.username, self.app.id)
         publish_release(repository_path, config.values, tag)

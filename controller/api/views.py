@@ -8,7 +8,6 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
-from django.db import transaction
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -23,7 +22,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import models, serializers
-from registry import publish_release
 from .exceptions import UserRegistrationException
 
 from django.conf import settings
@@ -421,20 +419,16 @@ class AppReleaseViewSet(BaseAppViewSet):
         config vars of a previous release.
         """
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        last_version = app.release_set.latest().version
+        release = app.release_set.latest()
+        last_version = release.version
         version = int(request.DATA.get('version', last_version - 1))
         if version < 1:
             return Response(status=status.HTTP_404_NOT_FOUND)
+        summary = "{} rolled back to v{}".format(request.user, version)
         prev = app.release_set.get(version=version)
-        with transaction.atomic():
-            summary = "{} rolled back to v{}".format(request.user, version)
-            app.release_set.create(owner=request.user, version=last_version + 1,
-                                   build=prev.build, config=prev.config,
-                                   summary=summary)
-        # publish release to registry as new docker image
-        repository_path = "{}/{}".format(app.owner.username, app.id)
-        tag = 'v{}'.format(last_version + 1)
-        publish_release(repository_path, prev.config.values, tag)
+        new_release = release.new(
+            request.user, build=prev.build, config=prev.config, summary=summary)
+        app.deploy(new_release)
         msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
 
