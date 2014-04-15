@@ -8,15 +8,17 @@ set -e
 THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 
+source $CONTRIB_DIR/utils.sh
+
 # check for Deis' general dependencies
 if ! "$CONTRIB_DIR/check-deis-deps.sh"; then
-  echo 'Deis is missing some dependencies.'
+  echo_red 'Deis is missing some dependencies.'
   exit 1
 fi
 
 # check for EC2 API tools in $PATH
 if ! which aws > /dev/null; then
-  echo 'Please install the AWS command-line tool and ensure it is in your $PATH.'
+  echo_red 'Please install the AWS command-line tool and ensure it is in your $PATH.'
   exit 1
 fi
 
@@ -26,5 +28,5 @@ aws cloudformation create-stack \
     --stack-name deis \
     --parameters "$(<cloudformation.json)"
 
-echo "Your Deis cluster has successfully deployed to AWS CloudFormation."
-echo "Please continue to follow the instructions in the README."
+echo_green "Your Deis cluster has successfully deployed to AWS CloudFormation."
+echo_green "Please continue to follow the instructions in the README."

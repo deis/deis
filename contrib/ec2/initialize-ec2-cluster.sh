@@ -9,17 +9,19 @@ THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 ROOT_DIR=$(dirname $CONTRIB_DIR)
 
+source $CONTRIB_DIR/utils.sh
+
 # check for fleetctl in $PATH
 if ! which fleetctl > /dev/null; then
-  echo 'Please install fleetctl and ensure it is in your $PATH.'
-  echo 'See https://github.com/coreos/fleet for more information'
+  echo_red 'Please install fleetctl and ensure it is in your $PATH.'
+  echo_red 'See https://github.com/coreos/fleet for more information'
   exit 1
 fi
 
 if [ -z "$FLEETCTL_TUNNEL" ]
 then
-    echo 'Please set $FLEETCTL_TUNNEL.'
-    echo 'See https://github.com/coreos/fleet/blob/master/Documentation/remote-access.md'
+    echo_red 'Please set $FLEETCTL_TUNNEL.'
+    echo_red 'See https://github.com/coreos/fleet/blob/master/Documentation/remote-access.md'
     exit 1
 fi
 
@@ -34,4 +36,5 @@ do
   popd > /dev/null
 done
 
-echo "done!"
+echo_green "Done! Inspect the state of the services with: fleetctl list-units"
+echo_green "Once all the services are running, you can register with your Deis cluster: deis register 1.2.3.4:8000"

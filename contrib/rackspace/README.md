@@ -1,16 +1,16 @@
-Provision a Deis Cluster on Rackspace
-======================================
+# Provision a Deis Cluster on Rackspace
 
 We'll mostly be following the [CoreOS on Rackspace](https://coreos.com/docs/running-coreos/cloud-providers/rackspace/) guide. You'll need to have a sane python environment with pip already installed (`sudo easy_install pip`).
 
-1. Install supernova and its dependencies:
+### Install supernova and its dependencies:
 ```console
 $ sudo pip install keyring
 $ sudo pip install rackspace-novaclient
 $ sudo pip install supernova
 ```
 
-2. Edit `~/.supernova` to match the following:
+### Configure supernova
+Edit `~/.supernova` to match the following:
 ```
 [production]
 OS_AUTH_URL = https://identity.api.rackspacecloud.com/v2.0/
@@ -23,16 +23,18 @@ OS_AUTH_SYSTEM = rackspace
 
 Your account ID is displayed in the upper right-hand corner of the cloud control panel UI, and your API key can be found on the Account Settings page.
 
-3. Choose an existing keypair or generate a new one, if desired. Tell supernova about the key pair and give it an identifiable name:
+### Set up your keys
+Choose an existing keypair or generate a new one, if desired. Tell supernova about the key pair and give it an identifiable name:
 
-``console
-supernova production keypair-add --pub-key ~/.ssh/deis.pub deis-key
+```console
+$ supernova production keypair-add --pub-key ~/.ssh/deis.pub deis-key
 ```
 
-4. Edit [cloud-config.yml](cloud-config.yml) and add a discovery URL. This URL will be used by all nodes in this Deis cluster.
-You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
+### Customize cloud-config.yml
+Edit [cloud-config.yml](cloud-config.yml) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
 
-5. Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
+### Run the provision script
+Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
 You'll need to provide the name of the key pair you just added. Optionally, you can also specify a flavor name.
 ```console
 $ ./provision-rackspace-cluster.sh
@@ -45,7 +47,8 @@ By default, the script will provision 3 servers. You can override this by settin
 $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 ```
 
-6. Once the cluster is up, get the IP address for any of the machines in the cluster, set
+### Initialize the cluster
+Once the cluster is up, get the IP address for any of the machines in the cluster, set
 FLEETCTL_TUNNEL, and run [the init script](initialize-rackspace-cluster.sh) to bootstrap the cluster
 remotely:
 ```console
@@ -65,7 +68,8 @@ Job deis-router.service scheduled to 73c7d285.../23.253.218.114
 done!
 ```
 
-7. After that, wait for the components to come up, check which host the controller is
+### Use Deis!
+After that, wait for the components to come up, check which host the controller is
 running on and register with Deis!
 ```
 $ fleetctl list-units

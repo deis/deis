@@ -1,7 +1,6 @@
-Provision a Deis Cluster on Amazon EC2
-======================================
+# Provision a Deis Cluster on Amazon EC2
 
-1. Install the [AWS Command Line Interface][aws-cli]:
+## Install the [AWS Command Line Interface][aws-cli]:
 ```console
 $ pip install awscli
 Downloading/unpacking awscli
@@ -9,7 +8,8 @@ Downloading/unpacking awscli
   ...
 ```
 
-2. Run `aws configure` to set your AWS credentials:
+## Configure aws-cli
+Run `aws configure` to set your AWS credentials:
 ```console
 $ aws configure
 AWS Access Key ID [None]: ***************
@@ -18,9 +18,11 @@ Default region name [None]: us-west-1
 Default output format [None]:
 ```
 
-3. Upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
+## Upload keys
+Upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
 
-4. Edit [cloudformation.json][cf-params], ensuring to add a new discovery URL.
+## Customize cloudformation.json
+Edit [cloudformation.json][cf-params], ensuring to add a new discovery URL.
 You can get a new one by sending a new request to http://discovery.etcd.io/new.
 ```console
     {
@@ -33,7 +35,8 @@ about the discovery URL, see http://discovery.etcd.io for more information. You 
 read more on how you can customize this cluster by looking at the
 [CoreOS EC2 template][template] and applying it to [cloudformation.json][cf-params].
 
-5. Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
+## Run the provision script
+Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
 ```console
 $ ./provision-ec2-cluster.sh
 {
@@ -43,7 +46,8 @@ Your Deis cluster has successfully deployed.
 Please wait for it to come up, then run ./initialize-ec2-cluster.sh
 ```
 
-6. Once the cluster is up, get the hostname of any of the machines from EC2, set
+## Initialize the cluster
+Once the cluster is up, get the hostname of any of the machines from EC2, set
 FLEETCTL_TUNNEL, then run [the init script][init-script] to bootstrap the cluster
 remotely:
 ```console
@@ -63,7 +67,8 @@ Job deis-router.service started on aec641dc.../172.31.21.4
 done!
 ```
 
-7. After that, wait for the components to come up, check which host the controller is
+## Run Deis!
+After that, wait for the components to come up, check which host the controller is
 running on and register with Deis!
 ```
 $ fleetctl list-units
