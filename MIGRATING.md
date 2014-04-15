@@ -4,6 +4,10 @@ Migrating to Deis 0.8.0
 If you are updating from Deis version 0.7.0 or earlier, there are
 several big changes you should know about.
 
+If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
+on DigitalOcean, you should use the
+[v0.7.0 release](https://github.com/opdemand/deis/tree/v0.7.0) of Deis.
+
 Upgrading
 ---------
 During the last several months of pre-release development of Deis, we

@@ -7,6 +7,16 @@ Deis is an open source PaaS that makes it easy to deploy, scale and manage conta
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
+# New Deis
+Deis has undergone several improvements recently. If you are updating
+from Deis version 0.7.0 or earlier, there are several big changes you
+should know about. Read the [MIGRATING.md](MIGRATING.md) document for
+details.
+
+If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
+on DigitalOcean, you should use the
+[v0.7.0 release](https://github.com/opdemand/deis/tree/v0.7.0) of Deis.
+
 # Installation
 
 Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. You will need [Docker](https://www.docker.io/) and [Vagrant](http://www.vagrantup.com/) to get started.
