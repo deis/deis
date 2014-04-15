@@ -64,7 +64,7 @@ services intelligently across its resources.
 
 Once a cluster is created with the Deis command-line client, developers
 can create applications and deploy them across the cluster with a simple
-`git push deis master` command.
+``git push deis master`` command.
 
 .. _concepts_applications:
 

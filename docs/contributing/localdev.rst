@@ -4,22 +4,22 @@
 
 Local Development
 =================
-We have tried to make it simple to hack on Deis, but as an open PaaS, there are
-necessarily several moving pieces and some setup required. We welcome any suggestions for
-automating or simplifying this process.
+We try to make it simple to hack on Deis, but as an open PaaS, there are
+necessarily several moving pieces and some setup required. We welcome
+any suggestions for automating or simplifying this process.
 
 Prerequisites
 -------------
-We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can develop inside a set
-of isolated virtual machines. You will need:
+We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can
+develop inside a set of isolated virtual machines. You will need:
 
  * Vagrant 1.3.5+
  * VirtualBox 4.2+
 
 Fork the Repository
 -------------------
-To get Deis running locally, first `fork the Deis repository`_, then clone your fork of
-the repository for local development:
+To get Deis running locally, first `fork the Deis repository`_, then
+clone your fork of the repository for local development:
 
 .. code-block:: console
 
@@ -29,11 +29,82 @@ the repository for local development:
 
 Provision the Controller
 ------------------------
+First bring up a virtual machine to host Deis. To share your local
+codebase into the CoreOS VM, Deis uses NFS mounts, so you will be
+prompted for an administrative password.
+
 .. code-block:: console
 
     $ vagrant up
+    Bringing machine 'deis' up with 'virtualbox' provider...
+    ==> deis: Importing base box 'coreos-alpha'...
+    ...
+    ==> deis: Exporting NFS shared folders...
+    ==> deis: Preparing to edit /etc/exports. Administrator privileges will be required...
+    Password:
+    ==> deis: Mounting NFS shared folders...
+    ...
+    ==> deis: Running provisioner: shell...
+    deis: Running: inline script
+    $
 
-Yes, really. That's it.
+Set environment variables to have the `docker` and `fleetctl` clients on
+your workstation connect to the VM:
+
+.. code-block:: console
+
+    export DOCKER_HOST=tcp://172.17.8.100:4243
+    export FLEETCTL_TUNNEL=172.17.8.100
+
+Next, run ``make pull && make build`` to SSH into the VM, pull Deis'
+images from the Docker Index, then update those images with any local
+changes.
+
+.. code-block:: console
+
+    $ make pull
+    vagrant ssh -c 'for c in registry logger database cache controller \
+      builder router; do docker pull deis/$c; done'
+    Pulling repository deis/registry
+    d2c347aa26dd: Pulling dependent layers
+    511136ea3c5a: Download complete
+    6170bb7b0ad1: Download complete
+    79fdb1362c84: Downloading [====>
+    ...
+    e5efa1477310: Download complete
+    Connection to 127.0.0.1 closed.
+    $ make build
+    vagrant ssh -c 'cd share && for c in registry logger database \
+      cache controller builder router; \
+      do cd $c && docker build -t deis/$c . && cd ..; done'
+    Uploading context 22.53 kB
+    Uploading context
+    Step 0 : FROM deis/base:latest
+    Pulling repository deis/base
+    60024338bc63: Download complete
+    ...
+    Step 12 : CMD ["/app/bin/boot"]
+     ---> Running in ccdc3d283f4f
+     ---> cf4b7a398500
+    Removing intermediate container ccdc3d283f4f
+    Successfully built cf4b7a398500
+    Connection to 127.0.0.1 closed.
+
+Finally, do ``make run`` to start all Deis containers and displays their
+collected log output:
+
+.. code-block:: console
+
+    $ make run
+    vagrant ssh -c 'cd share && for c in registry logger database \
+      cache controller builder router; \
+      do cd $c && sudo systemctl enable $(pwd)/systemd/* && cd ..; done'
+    ln -s '/home/core/share/registry/systemd/deis-registry.service' \
+      '/etc/systemd/system/multi-user.target.wants/deis-registry.service'
+    ...
+    Apr 15 18:53:23 deis sh[9101]: 2014-04-15 12:53:23 [149] [INFO] Booting worker with pid: 149
+    Apr 15 18:53:24 deis sh[9101]: [2014-04-15 12:53:24,842: INFO/MainProcess] mingle: all alone
+    Apr 15 18:53:24 deis sh[9101]: [2014-04-15 12:53:24,852: WARNING/MainProcess] celery@121f56ff9ae5 ready.
 
 Install the Client
 ------------------

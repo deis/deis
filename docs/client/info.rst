@@ -1,9 +1,9 @@
 :title: Info
-:description: Learn how to print info about a Deis application's containers using the Deis client.
+:description: Display info about a Deis application using the Deis client.
 
 
-containers
-==========
+info
+====
 
-.. automethod:: client.deis.DeisClient.containers_list
+.. automethod:: client.deis.DeisClient.apps_info
    :noindex:
