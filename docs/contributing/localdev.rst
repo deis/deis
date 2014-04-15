@@ -13,7 +13,7 @@ Prerequisites
 We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can
 develop inside a set of isolated virtual machines. You will need:
 
- * Vagrant 1.3.5+
+ * Vagrant 1.5.1+
  * VirtualBox 4.2+
 
 Fork the Repository

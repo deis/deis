@@ -28,9 +28,11 @@ Versions of Deis previous to v0.8.0 relied on Chef for provisioning
 a controller and nodes, for tracking users and apps, and for deploying
 applications. Chef is now no longer a requirement to use Deis.
 
-Provisioning a contoller and nodes can now be done through a variety of
-IT-friendly methods available for everything from Rackspace Cloud to
-Vagrant to PXE hardware boot--see the CoreOS documentation for details.
+Now anywhere you can run CoreOS, you can run Deis. Provisioning a
+contoller and nodes can be done through a variety of IT-friendly methods
+available for everything from Rackspace Cloud to Vagrant to PXE hardware
+boot--see the CoreOS documentation for details.
+
 Users and apps are tracked in Deis' controller and database, and apps
 are deployed across a cluster of machines by the `fleet` distributed
 init system.
@@ -71,7 +73,7 @@ DigitalOcean does not yet support deploying CoreOS on droplets. Until
 there is a CoreOS solution, Deis cannot support clusters
 on DigitalOcean.
 
-If you use Digital Ocean, please
+If you use DigitalOcean, please
 [show your support](http://digitalocean.uservoice.com/forums/136585-digital-ocean/suggestions/4250154-suport-coreos-as-a-deployment-platform)
 for CoreOS and help us to support Deis on DO.
 
