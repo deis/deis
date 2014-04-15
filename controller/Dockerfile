@@ -16,7 +16,7 @@ RUN pip install boto==2.23.0 \
                 celery==3.1.8 \
                 Django==1.6.2 \
                 django-allauth==0.15.0 \
-                git+https://github.com/bacongobbler/django-fsm@add-exception-handling \
+                git+https://github.com/deis/django-fsm@add-exception-handling \
                 django-guardian==1.1.1 \
                 django-json-field==0.5.5 \
                 django-yamlfield==0.5 \
