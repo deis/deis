@@ -51,6 +51,7 @@ Once the cluster is up, get the hostname of any of the machines from EC2, set
 FLEETCTL_TUNNEL, then run [the init script][init-script] to bootstrap the cluster
 remotely:
 ```console
+$ ssh-add ~/.ssh/id_rsa
 $ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
 $ ./initialize-ec2-cluster.sh
 The authenticity of host '54.215.248.50:22' can't be established.
