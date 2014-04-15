@@ -127,6 +127,14 @@ deis logs
 
 Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
 
+## Known Issues
+
+We have sometimes seen the VM reboot while doing `make build` against a
+Vagrant virtual machine. If you see this issue using a recent version of
+Vagrant and the current master version of Deis, please add to the issue
+report at https://github.com/coreos/coreos-vagrant/issues/68 to help us
+pin it down.
+
 ## License
 
 Copyright 2014, OpDemand LLC
