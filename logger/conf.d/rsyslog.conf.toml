@@ -1,6 +1,0 @@
-[template]
-src   = "rsyslog.conf"
-dest  = "/etc/rsyslog.conf"
-uid = 0
-gid = 0
-mode  = "0644"

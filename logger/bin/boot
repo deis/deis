@@ -15,31 +15,11 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/logs}
 export ETCD_TTL=${ETCD_TTL:-10}
 
-# wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null; do
-	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
-
-# wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
-
-# seed initial service configuration if necessary
-if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1; then
-	etcdctl --no-sync -C $ETCD mkdir $ETCD_PATH >/dev/null 2>&1 || true
-fi
-
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "logger: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
-
-# cleanup old pidfile's
-test -e /var/run/rsyslog.pid && rm -f /var/run/rsyslog.pid
+# fix perms on log directory
+chmod 755 /var/log/deis
 
 # spawn the service in the background
-/usr/sbin/rsyslogd -n &
+/go/bin/syslogd &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
@@ -48,10 +28,6 @@ function on_exit() {
 	wait $SERVICE_PID 2>/dev/null
 }
 trap on_exit INT TERM
-
-# spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
-CONFD_PID=$!
 
 echo deis-logger running...
 
