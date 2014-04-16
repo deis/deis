@@ -8,6 +8,11 @@ We try to make it simple to hack on Deis, but as an open PaaS, there are
 necessarily several moving pieces and some setup required. We welcome
 any suggestions for automating or simplifying this process.
 
+If you're just getting into the Deis codebase, look for GitHub issues
+with the label `easy-fix`_. These are more straightforward or low-risk
+issues for which we need pull requests. Issues tagged `easy-fix`_ are a
+great way to become more familiar with Deis.
+
 Prerequisites
 -------------
 We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can
@@ -230,6 +235,7 @@ Creating a pull request on the Deis repository also runs a Travis CI build to
 ensure the pull request doesn't break any tests or reduce code coverage.
 
 
+.. _`easy-fix`: https://github.com/opdemand/deis/issues?labels=easy-fix&state=open
 .. _`Vagrant`: http://www.vagrantup.com/
 .. _`VirtualBox`: https://www.virtualbox.org/
 .. _`fork the Deis repository`: https://github.com/opdemand/deis/fork
