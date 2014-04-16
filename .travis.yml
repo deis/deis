@@ -10,7 +10,6 @@ branches:
   only:
     - master
     - release
-    - scheduler
 
 services:
   - postgresql
