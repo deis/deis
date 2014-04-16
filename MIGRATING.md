@@ -91,6 +91,5 @@ code will be:
 $ git clone https://github.com/deis/deis.git
 ```
 
-Nothing else about the project changes; we just think it will be easier
-to find Deis there, next to related projects such as deis/tester,
-deis/base, and deis/slugbuilder.
+We think it will be easier to find Deis there, next to related projects
+such as deis/tester, deis/base, and deis/slugbuilder.
