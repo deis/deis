@@ -65,12 +65,12 @@ ensure that everything passes and that code coverage has not declined.
 .. code-block:: console
 
     $ make -C controller coverage
-    coverage run manage.py test --noinput api cm provider web
+    coverage run --timid manage.py test --noinput api web
     WARNING Cannot synchronize with etcd cluster
     Creating test database for alias 'default'...
-    ....................................................................
+    ...............................................
     ----------------------------------------------------------------------
-    Ran 68 tests in 84.856s
+    Ran 47 tests in 47.768s
 
     OK
     Destroying test database for alias 'default'...

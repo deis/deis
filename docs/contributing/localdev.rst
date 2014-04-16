@@ -213,13 +213,14 @@ that test coverage has improved as a result of your changes and new unit tests.
 	make: *** [flake8] Error 1
 	$
 	$ make coverage
-	coverage run manage.py test api celerytasks client web
+	coverage run --timid manage.py test --noinput api web
+	WARNING Cannot synchronize with etcd cluster
 	Creating test database for alias 'default'...
-	...................ss
+	...............................................
 	----------------------------------------------------------------------
-	Ran 21 tests in 18.135s
+	Ran 47 tests in 47.768s
 
-	OK (skipped=2)
+	OK
 	Destroying test database for alias 'default'...
 	coverage html
 	$ head -n 25 htmlcov/index.html | grep pc_cov
