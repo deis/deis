@@ -6,7 +6,7 @@ The Vagrantfile and Makefile provided in this directory will launch a multi-host
 On your workstation:
 * Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * Install [Go](http://golang.org/doc/install) and configure your GOPATH, if necessary
-* Install the fleetctl client: `go get github.com/coreos/fleetctl`
+* Install the fleetctl client: `go get github.com/coreos/fleet && go install github.com/coreos/fleet/fleetctl`
 * Set the `DEIS_NUM_INSTANCES` environment variable if you'd like more (or less) than the default of 3 machines to test:
   * `export DEIS_NUM_INSTANCES=5`
 * Configure the fleetctl client to tunnel through one of the VMs:
