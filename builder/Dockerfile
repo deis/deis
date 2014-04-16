@@ -16,7 +16,7 @@ RUN apt-get install -yq aufs-tools iptables ca-certificates lxc
 RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 RUN apt-get update -qy
-RUN apt-get install -yq lxc-docker-0.9.1
+RUN apt-get install -yq lxc-docker-0.10.0
 
 # install recent pip
 RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
