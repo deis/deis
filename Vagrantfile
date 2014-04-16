@@ -38,8 +38,9 @@ Vagrant.configure("2") do |config|
     # workaround missing /etc/environment
     config.vm.provision :shell, :inline => "touch /etc/environment", :privileged => true
 
-	# disable update-engine to prevent reboots
-	config.vm.provision :shell, :inline => "systemctl disable update-engine && systemctl mask update-engine", :privileged => true
+    # disable update-engine to prevent reboots
+    config.vm.provision :shell, :inline => "systemctl stop update-engine-reboot-manager && systemctl disable update-engine-reboot-manager && systemctl mask update-engine-reboot-manager", :privileged => true
+    config.vm.provision :shell, :inline => "systemctl stop update-engine && systemctl disable update-engine && systemctl mask update-engine", :privileged => true
 
     # user-data bootstrapping
     config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/user-data"
