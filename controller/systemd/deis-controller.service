@@ -10,3 +10,6 @@ ExecStop=/usr/bin/docker rm -f deis-controller
 
 [Install]
 WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=deis-logger.service
