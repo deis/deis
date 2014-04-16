@@ -63,11 +63,12 @@ class Cluster(UuidAuditedModel):
     """
 
     CLUSTER_TYPES = (('mock', 'Mock Cluster'),
-                     ('coreos', 'CoreOS Cluster'))
+                     ('coreos', 'CoreOS Cluster'),
+                     ('faulty', 'Faulty Cluster'))
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128, unique=True)
-    type = models.CharField(max_length=16, choices=CLUSTER_TYPES)
+    type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
 
     domain = models.CharField(max_length=128)
     hosts = models.CharField(max_length=256)
