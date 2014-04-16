@@ -88,6 +88,8 @@ password (confirm):
 email: info@opdemand.com
 ```
 
+Follow the instructions in the [README](../../README.md) to deploy your first application, or check out the [docs](http://docs.deis.io/en/latest/) for more information. Have fun!
+
 [aws-cli]: https://github.com/aws/aws-cli
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
 [cf-params]: cloudformation.json

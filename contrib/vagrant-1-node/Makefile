@@ -8,7 +8,7 @@ COMPONENTS=registry logger database cache controller builder router
 all: build run
 
 test_client:
-	python -m unittest discover client.tests
+	python -m unittest ../../discover client.tests
 
 pull:
 	vagrant ssh -c 'for c in $(COMPONENTS); do docker pull deis/$$c; done'

@@ -7,7 +7,7 @@ Deis is an open source PaaS that makes it easy to deploy, scale and manage conta
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
-# New Deis
+## New Deis
 Deis has undergone several improvements recently. If you are updating
 from Deis version 0.7.0 or earlier, there are several big changes you
 should know about. Read the [MIGRATING.md](MIGRATING.md) document for
@@ -17,73 +17,24 @@ If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
 on DigitalOcean, you should use the
 [v0.7.0 release](https://github.com/opdemand/deis/tree/v0.7.0) of Deis.
 
-# Installation
+## Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. You will need [Docker](https://www.docker.io/) and [Vagrant](http://www.vagrantup.com/) to get started.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Vagrant](contrib/vagrant-n-node/README.md) (local testing), [Rackspace](contrib/rackspace/README.md), or [EC2](contrib/ec2/README.md). Documentation for OpenStack and bare-metal provisioning are forthcoming.
 
-## Boot CoreOS
+Trying out Deis for the first time? We recommend local testing with a [one-node](contrib/vagrant-1-node/README.md) Vagrant setup.
 
-First, start a CoreOS virtual machine on VirtualBox. From a command prompt, `cd` to the root of the Deis project code and type:
+## Using Deis
 
-```
-vagrant up
-```
+Once you've deployed Deis, it's time to start playing around!
 
-Export some environment variables so you can connect to the VM using the `docker` and [`fleetctl`](https://github.com/coreos/fleet#building) clients on your workstation.
-
-```
-export DOCKER_HOST=tcp://172.17.8.100:4243
-export FLEETCTL_TUNNEL=172.17.8.100
-```
-
-## Build Deis
-
-Use `make pull` to download cached layers from the public Docker Index.  Then use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on the CoreOS VM (it can take a while).
-
-```
-make pull
-make build
-```
-
-## Run Deis
-
-Use `make run` to start all Deis containers and attach to their log output.
-
-```
-make run
-```
-
-## Install the Deis Client
+### Install the Deis Client
 Either use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/), download [pre-compiled binaries](https://github.com/opdemand/deis/tree/master/client#get-started), or symlink `client/deis.py` to use your local development version.
 
 ```
 ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 
-## Register a User
-
-Use the Deis Client to register a new user.
-
-```
-deis register http://local.deisapp.com:8000
-deis keys:add
-```
-
-Use `deis keys:add` to add your SSH public key for `git push` access.
-
-## Initalize a Cluster
-
-Initalize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
-
-```
-deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/.vagrant.d/insecure_private_key
-```
-
-The `dev` cluster will be used as the default cluster for future `deis` commands.
-
-# Usage
-
-## Create an Application
+### Create an Application
 Create an application on the default `dev` cluster.
 
 ```
@@ -92,7 +43,7 @@ deis create
 
 Use `deis create --cluster=prod` to place the app on a different cluster.  Don't like our name-generator?  Use `deis create myappname`.
 
-## Push
+### Push
 Push builds of your application from your local git repository or from a Docker Registry.  Each build creates a new release, which can be rolled back.
 
 #### From a Git Repository
@@ -103,7 +54,7 @@ git push deis master
 ```
 This will use the Deis builder to package your application as a Docker Image and deploy it on your application's cluster.
 
-## Configure
+### Configure
 Configure your application with environment variables.  Each config change also creates a new release.
 
 ```
@@ -112,7 +63,7 @@ deis config:set DATABASE_URL=postgres://
 
 Coming soon: Use the integrated ETCD namespace for service discovery between applications on the same cluster.
 
-## Test
+### Test
 Test your application by running commands inside an ephemeral Docker container.
 
 ```
@@ -121,14 +72,14 @@ deis run make test
 
 To integrate with your CI system, check the return code.
 
-## Scale
+### Scale
 Scale containers horizontally with ease.
 
 ```
 deis scale web=8
 ```
 
-## Debug
+### Debug
 Access to aggregated logs makes it easy to troubleshoot problems with your application.
 
 ```
@@ -137,7 +88,7 @@ deis logs
 
 Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
 
-## Known Issues
+### Known Issues
 
 We have sometimes seen the VM reboot while doing `make build` against a
 Vagrant virtual machine. If you see this issue using a recent version of
@@ -145,7 +96,7 @@ Vagrant and the current master version of Deis, please add to the issue
 report at https://github.com/coreos/coreos-vagrant/issues/68 to help us
 pin it down.
 
-## License
+### License
 
 Copyright 2014, OpDemand LLC
 

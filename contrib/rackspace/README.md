@@ -88,3 +88,5 @@ password:
 password (confirm):
 email: info@opdemand.com
 ```
+
+Follow the instructions in the [README](../../README.md) to deploy your first application, or check out the [docs](http://docs.deis.io/en/latest/) for more information. Have fun!
