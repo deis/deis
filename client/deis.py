@@ -417,11 +417,12 @@ class DeisClient(object):
         If no ID is provided, one will be generated automatically.
         If no cluster is provided, a cluster named "dev" will be used.
 
-        Usage: deis apps:create [<id> --cluster=<cluster>] [options]
+        Usage: deis apps:create [<id> --cluster=<cluster> --no-remote] [options]
 
         Options
 
         --cluster=CLUSTER      target cluster to host application [default: dev]
+        --no-remote            do not create a 'deis' git remote
         """
         try:
             self._session.git_root()  # check for a git repository
@@ -460,9 +461,12 @@ class DeisClient(object):
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             try:
-                subprocess.check_call(
-                    ['git', 'remote', 'add', '-f', 'deis', git_remote],
-                    stdout=subprocess.PIPE)
+                if args.get('--no-remote'):
+                    print('remote available at {}'.format(git_remote))
+                else:
+                    subprocess.check_call(
+                        ['git', 'remote', 'add', '-f', 'deis', git_remote],
+                        stdout=subprocess.PIPE)
             except subprocess.CalledProcessError:
                 sys.exit(1)
             print('Git remote deis added')
