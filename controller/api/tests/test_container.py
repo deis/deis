@@ -83,7 +83,12 @@ class ContainerTest(TransactionTestCase):
         # test an illegal transition
         self.assertRaises(TransitionNotAllowed, lambda: c.start())
         self.assertEqual(c.state, 'initialized')
-        self.assertRaises(Exception, lambda: c.deploy(App.objects.get(id=app_id).release_set.latest()))
+        self.assertRaises(
+            Exception,
+            lambda: c.deploy(
+                App.objects.get(id=app_id).release_set.latest()
+            )
+        )
         self.assertEqual(c.state, 'down')
         self.assertRaises(Exception, lambda: c.destroy())
         self.assertEqual(c.state, 'down')
