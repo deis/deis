@@ -64,7 +64,7 @@ class ContainerAdmin(admin.ModelAdmin):
     """
     date_hierarchy = 'created'
     list_display = ('short_name', 'owner', 'app', 'state')
-    list_filter = ('owner', 'cluster', 'app', 'state')
+    list_filter = ('owner', 'app', 'state')
 admin.site.register(Container, ContainerAdmin)
 
 
