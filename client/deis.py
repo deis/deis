@@ -460,16 +460,16 @@ class DeisClient(object):
             # TODO: retrieve the hostname from service discovery
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
-            try:
-                if args.get('--no-remote'):
-                    print('remote available at {}'.format(git_remote))
-                else:
+            if args.get('--no-remote'):
+                print('remote available at {}'.format(git_remote))
+            else:
+                try:
                     subprocess.check_call(
                         ['git', 'remote', 'add', '-f', 'deis', git_remote],
                         stdout=subprocess.PIPE)
-            except subprocess.CalledProcessError:
-                sys.exit(1)
-            print('Git remote deis added')
+                    print('Git remote deis added')
+                except subprocess.CalledProcessError:
+                    sys.exit(1)
         else:
             raise ResponseError(response)
 
