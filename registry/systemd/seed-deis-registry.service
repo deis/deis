@@ -1,0 +1,11 @@
+[Unit]
+Description=Seed Deis Registry with Docker Images
+Requires=seed-docker-images.service deis-registry.service
+After=deis-registry.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "IFACE=$(netstat -nr | grep ^0.0.0.0 | awk '{print $8}') && HOST_IP=$(/bin/ifconfig $IFACE | awk '/inet /{print $2}') && docker pull deis/slugrunner:latest && docker tag deis/slugrunner $HOST_IP:5000/deis/slugrunner && docker push $HOST_IP:5000/deis/slugrunner"
+
+[Install]
+WantedBy=multi-user.target
