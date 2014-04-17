@@ -6,7 +6,7 @@ coreos:
     peer-addr: 172.17.8.100:7001
   units:
   - name: docker-patch.service
-    command: enable
+    command: start
     content: |
       [Unit]
       Description=patch /usr/bin/docker with an S3 binary
