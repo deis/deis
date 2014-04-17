@@ -7,9 +7,9 @@ ifndef $(DEIS_NUM_INSTANCES)
 endif
 
 define ssh_all
-  i=1 ; while [[ $$i -le $(DEIS_NUM_INSTANCES) ]] ; do \
+  i=1 ; while [ $$i -le $(DEIS_NUM_INSTANCES) ] ; do \
       vagrant ssh deis-$$i -c $(1) ; \
-      ((i = i + 1)) ; \
+      i=`expr $$i + 1` ; \
   done
 endef
 
