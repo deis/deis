@@ -31,9 +31,11 @@ prod:
     # Amazon S3 Storage Configuration
     s3_access_key: {{ .deis_registry_s3accessKey }}
     s3_secret_key: {{ .deis_registry_s3secretKey }}
+    s3_region: {{ .deis_registry_s3region }}
     s3_bucket: {{ .deis_registry_s3bucket }}
     s3_encrypt: {{ .deis_registry_s3encrypt }}
     s3_secure: {{ .deis_registry_s3secure }}
+    storage_redirect: True
     # Enabling query cache on Redis
     cache:
         host: {{ .deis_cache_host }}
