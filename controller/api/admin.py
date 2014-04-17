@@ -33,7 +33,7 @@ class BuildAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('sha', 'owner', 'app')
+    list_display = ('created', 'owner', 'app')
     list_filter = ('owner', 'app')
 admin.site.register(Build, BuildAdmin)
 
@@ -43,7 +43,7 @@ class ClusterAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('id', 'owner',)
+    list_display = ('id', 'owner', 'domain')
     list_filter = ('owner',)
 admin.site.register(Cluster, ClusterAdmin)
 
@@ -53,7 +53,7 @@ class ConfigAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('version', 'owner', 'app')
+    list_display = ('created', 'owner', 'app')
     list_filter = ('owner', 'app')
 admin.site.register(Config, ConfigAdmin)
 
@@ -83,6 +83,7 @@ class ReleaseAdmin(admin.ModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('owner', 'app', 'version')
+    list_display = ('created', 'version', 'owner', 'app')
+    list_display_links = ('created', 'version')
     list_filter = ('owner', 'app')
 admin.site.register(Release, ReleaseAdmin)
