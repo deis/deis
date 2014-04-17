@@ -12,6 +12,8 @@ On your workstation:
 * Configure the fleetctl client to tunnel through one of the VMs:
   * `export FLEETCTL_TUNNEL=172.17.8.100`
   * (Note that IP addressing for the VMs starts at .100, but you can connect to any VM in the cluster)
+* Add your Vagrant-generated SSH key to the ssh-agent (fleetctl tunnel requires the agent to have this key)
+  * `ssh-add ~/.vagrant.d/insecure_private_key`
 
 ## Launching Deis
 Follow the normal instructions in the [README](../../README.md) for launching and using Deis, with the caveat that
