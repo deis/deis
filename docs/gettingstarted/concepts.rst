@@ -83,6 +83,26 @@ regardless of the cluster's underlying infrastructure.
 Build, Release, Run
 -------------------
 
+Build Stage
+^^^^^^^^^^^
+The :ref:`Controller` includes a *gitreceive* hook that receives incoming git push requests over
+SSH and builds applications inside ephemeral Docker containers. Tarballs of the /app directory are
+extracted into a slug and is injected into another container, which will create the app image. The
+image is then pushed to a private registry for later execution.
+
+Release Stage
+^^^^^^^^^^^^^
+During the release stage, a :ref:`build` is combined with :ref:`config` to create a new numbered
+:ref:`release`. The release stage is triggered any time a new build is created or config is
+changed, making it easy to rollback code and configuration.
+
+Run Stage
+^^^^^^^^^
+The run stage shells out jobs to the scheduler. The scheduler is in control of balancing the
+containers evenly across the cluster, as well as the announcers and the loggers for each
+application. The scheduler uses SSH to submit jobs to each node in the cluster and updates
+the proxy component between releases, making zero downtime deployments possible.
+
 .. _concepts_backing_services:
 
 Backing Services
