@@ -2,8 +2,11 @@
 ---
 coreos:
   etcd:
-    addr: 172.17.8.100:4001
-    peer-addr: 172.17.8.100:7001
+    # generate a new token for each unique cluster from https://discovery.etcd.io/new
+    # uncomment the following line and replace it with your discovery URL
+    # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
+    addr: $public_ipv4:4001
+    peer-addr: $private_ipv4:7001
   units:
   - name: docker.service
     content: |
@@ -15,7 +18,7 @@ coreos:
       ExecStartPre=/bin/mount --make-rprivate /
       # Run docker but don't have docker automatically restart
       # containers. This is a job for systemd and unit files.
-      ExecStart=/usr/bin/docker -d -s=btrfs --bip=10.212.0.1/16 -r=false -H fd://
+      ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd://
 
       [Install]
       WantedBy=multi-user.target
@@ -34,38 +37,12 @@ coreos:
       WantedBy=sockets.target
   - name: etcd.service
     command: start
-    content: |
-      [Unit]
-      Description=etcd
-
-      [Service]
-      User=etcd
-      PermissionsStartOnly=true
-      Environment=ETCD_DATA_DIR=/var/lib/etcd ETCD_NAME=default
-      ExecStart=/usr/bin/etcd
-      Restart=always
-      RestartSec=10s
   - name: fleet.service
     command: start
-    content: |-
+    content: |
       [Unit]
       Description=fleet
 
       [Service]
+      Environment=FLEET_PUBLIC_IP=$public_ipv4
       ExecStart=/usr/bin/fleet
-
-      [Install]
-      WantedBy=multi-user.target
-  - name: stop-reboot-manager.service
-    command: start
-    content: |
-      [Unit]
-      Description=stop update-engine-reboot-manager
-
-      [Service]
-      Type=oneshot
-      ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
-      ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
-
-      [Install]
-      WantedBy=multi-user.target

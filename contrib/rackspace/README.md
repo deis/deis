@@ -31,7 +31,7 @@ $ supernova production keypair-add --pub-key ~/.ssh/deis.pub deis-key
 ```
 
 ### Customize cloud-config.yml
-Edit [cloud-config.yml](cloud-config.yml) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
+Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
 
 ### Run the provision script
 Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
