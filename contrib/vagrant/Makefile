@@ -3,7 +3,7 @@
 #
 
 ifndef $(DEIS_NUM_INSTANCES)
-    DEIS_NUM_INSTANCES = 3
+    DEIS_NUM_INSTANCES ?= 3
 endif
 
 define ssh_all
