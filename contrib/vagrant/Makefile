@@ -2,7 +2,7 @@
 # Deis Makefile
 #
 
-ifndef $(DEIS_NUM_INSTANCES)
+ifndef DEIS_NUM_INSTANCES
     DEIS_NUM_INSTANCES = 3
 endif
 
