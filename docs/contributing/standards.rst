@@ -114,6 +114,10 @@ Deis maintainers add "**LGTM**" (Looks Good To Me) in code
 review comments to indicate that a PR is acceptable. Any code change--other than
 a simple typo fix or one-line documentation change--requires at least two of
 Deis' maintainers to accept the change in this manner before it can be merged.
+If the PR is from a Deis maintainer, then he or she should be the one to merge
+it. This is for cleanliness in the commit stream as well as giving the
+maintainer the benefit of adding more fixes or commits to a PR before the
+merge.
 
 .. _Python: http://www.python.org/
 .. _Go: http://golang.org/
