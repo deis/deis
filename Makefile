@@ -34,7 +34,7 @@ restart:
 logs:
 	vagrant ssh -c 'journalctl -f -u deis-*'
 
-run: install restart logs
+run: install start logs
 
 clean: uninstall
 	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do docker rm -f deis-$$c; done'
