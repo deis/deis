@@ -59,10 +59,26 @@ def _put_first_image(repository_path):
     _commit(repository_path, image, _empty_tar_archive(), 'v0')
 
 
+def _api_call(endpoint, data=None, headers={}, cookies=None, request_type='GET'):
+    # FIXME: update API calls for docker 0.10.0+
+    base_headers = {'user-agent': 'docker/0.9.0'}
+    r = None
+    if len(headers) > 0:
+        for header, value in headers.iteritems():
+            base_headers[header] = value
+    if request_type == 'GET':
+        r = requests.get(endpoint, headers=base_headers)
+    elif request_type == 'PUT':
+        r = requests.put(endpoint, data=data, headers=base_headers, cookies=cookies)
+    else:
+        raise AttributeError("request type not supported: {}".format(request_type))
+    return r
+
+
 def _get_tag(repository, tag):
     path = "/v1/repositories/{repository}/tags/{tag}".format(**locals())
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    r = requests.get(url)
+    r = _api_call(url)
     if not r.status_code == 200:
         raise RuntimeError("GET Image Error ({}: {})".format(r.status_code, r.text))
     print r.text
@@ -72,7 +88,7 @@ def _get_tag(repository, tag):
 def _get_image(image_id):
     path = "/v1/images/{image_id}/json".format(**locals())
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    r = requests.get(url)
+    r = _api_call(url)
     if not r.status_code == 200:
         raise RuntimeError("GET Image Error ({}: {})".format(r.status_code, r.text))
     return r.json()
@@ -81,7 +97,7 @@ def _get_image(image_id):
 def _put_image(image):
     path = "/v1/images/{id}/json".format(**image)
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    r = requests.put(url, data=json.dumps(image))
+    r = _api_call(url, data=json.dumps(image), request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Image Error ({}: {})".format(r.status_code, r.text))
     return r.json()
@@ -90,7 +106,7 @@ def _put_image(image):
 def _put_layer(image_id, layer_fileobj):
     path = "/v1/images/{image_id}/layer".format(**locals())
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    r = requests.put(url, data=layer_fileobj.read())
+    r = _api_call(url, data=layer_fileobj.read(), request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Layer Error ({}: {})".format(r.status_code, r.text))
     return r.cookies
@@ -101,7 +117,7 @@ def _put_checksum(image, cookies):
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
     tarsum = TarSum(json.dumps(image)).compute()
     headers = {'X-Docker-Checksum': tarsum}
-    r = requests.put(url, headers=headers, cookies=cookies)
+    r = _api_call(url, headers=headers, cookies=cookies, request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Checksum Error ({}: {})".format(r.status_code, r.text))
     print r.json()
@@ -110,7 +126,7 @@ def _put_checksum(image, cookies):
 def _put_tag(image_id, repository_path, tag):
     path = "/v1/repositories/{repository_path}/tags/{tag}".format(**locals())
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    r = requests.put(url, data=json.dumps(image_id))
+    r = _api_call(url, data=json.dumps(image_id), request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Tag Error ({}: {})".format(r.status_code, r.text))
     print r.json()
