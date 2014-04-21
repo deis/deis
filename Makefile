@@ -3,7 +3,7 @@
 #
 
 # ordered list of deis components
-COMPONENTS=registry logger database cache controller builder router
+COMPONENTS=builder cache controller database logger registry router
 
 all: build run
 
