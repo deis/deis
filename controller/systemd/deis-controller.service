@@ -1,6 +1,7 @@
 [Unit]
 Description=deis-controller
-Requires=deis-logger.service
+Requires=deis-logger.service deis-builder.service
+After=deis-logger.service deis-builder.service
 
 [Service]
 TimeoutStartSec=20m

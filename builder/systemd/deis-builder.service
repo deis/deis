@@ -1,5 +1,7 @@
 [Unit]
 Description=deis-builder
+Requires=deis-registry.service
+After=deis-registry.service
 
 [Service]
 TimeoutStartSec=20m
