@@ -9,7 +9,7 @@ import (
 	"path"
 	"regexp"
 	"syscall"
-	"syslog"
+	"github.com/opdemand/deis/logger/syslog"
 )
 
 const logRoot = "/var/log/deis"
