@@ -34,9 +34,7 @@ clone your fork of the repository for local development:
 
 Provision the Controller
 ------------------------
-First bring up a virtual machine to host Deis. To share your local
-codebase into the CoreOS VM, Deis uses NFS mounts, so you will be
-prompted for an administrative password.
+First bring up a virtual machine to host Deis:
 
 .. code-block:: console
 
@@ -64,6 +62,11 @@ your workstation connect to the VM:
 Next, run ``make pull && make build`` to SSH into the VM, pull Deis'
 images from the Docker Index, then update those images with any local
 changes.
+
+.. note::
+
+    Deis uses rsync to share your local codebase into the CoreOS VM, so you will have
+    to re-synchronize your changes using vagrant rsync.
 
 .. code-block:: console
 
