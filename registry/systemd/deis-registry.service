@@ -1,7 +1,5 @@
 [Unit]
 Description=deis-registry
-Requires=seed-docker-images.service
-After=seed-docker-images.service
 
 [Service]
 TimeoutStartSec=20m

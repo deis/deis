@@ -47,7 +47,7 @@ make build
 
 ## Run Deis
 
-Use `make run` to start all Deis containers and attach to their log output.
+Use `make run` to start all Deis containers and attach to their log output. This can take some time - the registry service will pull and prepare a Docker image. Grab some more coffee!
 
 ```
 make run

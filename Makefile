@@ -23,6 +23,7 @@ uninstall: stop
 	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c && sudo systemctl disable $$(pwd)/systemd/* && cd ..; done'
 
 start:
+	echo "\033[0;33mStarting services can take some time... grab some coffee!\033[0m"
 	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c/systemd && sudo systemctl start * && cd ../..; done'
 
 stop:

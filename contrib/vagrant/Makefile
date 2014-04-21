@@ -31,6 +31,7 @@ uninstall: stop
 	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false destroy ../../$$c/systemd/*; done
 
 start:
+	echo "\033[0;33mStarting services can take some time... grab some coffee!\033[0m"
 	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false start ../../$$c/systemd/*; done
 
 stop:
