@@ -46,4 +46,4 @@ Use the ``deis keys:add`` command to upload your default SSH public key, usually
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
-.. _`issue 535`: https://github.com/opdemand/deis/issues/535
+.. _`issue 535`: https://github.com/deis/deis/issues/535

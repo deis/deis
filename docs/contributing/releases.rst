@@ -17,8 +17,8 @@ product release.
 
 Please keep this document up-to-date with any changes in this process.
 
-opdemand/deis-cookbook Chef Repo
---------------------------------
+deis/deis-cookbook Chef Repo
+----------------------------
 - One-time setup:
     * ``gem install stove --pre``
     * Configure your ``~/.stove`` file as outlined in `Installing Stove`_
@@ -35,7 +35,7 @@ opdemand/deis-cookbook Chef Repo
     * ``git checkout release && git merge master``
 - Run ``knife cookbook metadata .`` to update **metadata.json**. **DOUBLE-CHECK
   the generated file after this step--this may be broken currently.**
-- Commit, push, and tag the opdemand/deis-cookbook release
+- Commit, push, and tag the deis/deis-cookbook release
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
@@ -48,8 +48,8 @@ opdemand/deis-cookbook Chef Repo
     * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
     * ``git push origin master``
 
-opdemand/deis Server Repo
--------------------------
+deis/deis Server Repo
+---------------------
 - Create the next `deis milestone`_
 - Move any `deis open issues`_ from the current release to the
   next milestone
@@ -64,7 +64,7 @@ opdemand/deis Server Repo
     * edit **Berksfile** and ensure it points to the Opscode Community cookbook
       for Deis
     * ``berks update && berks install`` to update **Berksfile.lock**
-- Commit and push the opdemand/deis release and tag
+- Commit and push the deis/deis release and tag
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
@@ -78,7 +78,7 @@ opdemand/deis Server Repo
       LLVM, which makes our binary crash on earlier OS versions)
     - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
     - build **deis-deb-wheezy-X.Y.Z.tgz** on Debian Wheezy
-      (see https://github.com/opdemand/deis/issues/504)
+      (see https://github.com/deis/deis/issues/504)
     - upload all binaries to the `aws-eng S3 bucket`_ and set each as
       publically downloadable
 - Switch master to upcoming release
@@ -116,12 +116,12 @@ Documentation
     * include "what's next" and "future directions" sections
 
 
-.. _`deis-cookbook milestone`: https://github.com/opdemand/deis-cookbook/issues/milestones
-.. _`deis-cookbook open issues`: https://github.com/opdemand/deis-cookbook/issues?state=open
+.. _`deis-cookbook milestone`: https://github.com/deis/deis-cookbook/issues/milestones
+.. _`deis-cookbook open issues`: https://github.com/deis/deis-cookbook/issues?state=open
 .. _`Opscode Community`: http://community.opscode.com/cookbooks/deis/versions/new
-.. _`deis milestone`: https://github.com/opdemand/deis/issues/milestones
-.. _`deis open issues`: https://github.com/opdemand/deis/issues?state=open
-.. _`release notes`: https://github.com/opdemand/deis/releases
+.. _`deis milestone`: https://github.com/deis/deis/issues/milestones
+.. _`deis open issues`: https://github.com/deis/deis/issues?state=open
+.. _`release notes`: https://github.com/deis/deis/releases
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
 .. _`Docker Index`: https://index.docker.io/

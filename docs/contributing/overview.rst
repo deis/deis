@@ -26,7 +26,7 @@ Deis core is a Django/Celery application with a Python CLI.
 We are always looking for help improving the core framework, tooling and test
 coverage. Interested in contributing to Deis core? Let’s chat in IRC.
 
-.. _`Github issue`: https://github.com/opdemand/deis/issues/new
-.. _`docs/`: https://github.com/opdemand/deis/tree/master/docs
-.. _`deis-cookbook`: https://github.com/opdemand/deis-cookbook
-.. _`EC2 Example`: https://github.com/opdemand/deis/blob/master/celerytasks/ec2.py
+.. _`Github issue`: https://github.com/deis/deis/issues/new
+.. _`docs/`: https://github.com/deis/deis/tree/master/docs
+.. _`deis-cookbook`: https://github.com/deis/deis-cookbook
+.. _`EC2 Example`: https://github.com/deis/deis/blob/master/celerytasks/ec2.py

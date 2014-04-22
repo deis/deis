@@ -64,5 +64,5 @@ push. For example:
 .. _`Scala buildpack`: https://github.com/heroku/heroku-buildpack-scala.git
 .. _`Dart buildpack`: https://github.com/igrigorik/heroku-buildpack-dart.git
 .. _`Perl buildpack`: https://github.com/miyagawa/heroku-buildpack-perl/tree/carton
-.. _`builder recipe`: https://github.com/opdemand/deis-cookbook/blob/master/recipes/builder.rb
-.. _`Deis cookbook`: https://github.com/opdemand/deis-cookbook.git
+.. _`builder recipe`: https://github.com/deis/deis-cookbook/blob/master/recipes/builder.rb
+.. _`Deis cookbook`: https://github.com/deis/deis-cookbook.git

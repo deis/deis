@@ -25,7 +25,7 @@ Deis uses the timeless, highly efficient, and totally unfair system known as
 Deis, is our BDFL and has final say over all decisions related to Deis.
 
 
-.. _`on Github`: https://github.com/opdemand/deis
+.. _`on Github`: https://github.com/deis/deis
 .. _`OpDemand`: http://www.opdemand.com/
 .. _`BDFL`: http://en.wikipedia.org/wiki/Benevolent_Dictator_for_Life
 .. _`Gabriel Monroy`: https://github.com/gabrtv

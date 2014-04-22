@@ -43,10 +43,10 @@ Please see `contrib/vagrant`_ for details on using Deis with Vagrant.
 
 
 .. _`CoreOS Documentation`: https://coreos.com/docs/
-.. _`Amazon EC2`: https://github.com/opdemand/deis/tree/master/contrib/ec2#readme
-.. _`contrib/ec2`: https://github.com/opdemand/deis/tree/master/contrib/ec2
-.. _Rackspace: https://github.com/opdemand/deis/tree/master/contrib/rackspace#readme
-.. _`contrib/rackspace`: https://github.com/opdemand/deis/tree/master/contrib/rackspace
+.. _`Amazon EC2`: https://github.com/deis/deis/tree/master/contrib/ec2#readme
+.. _`contrib/ec2`: https://github.com/deis/deis/tree/master/contrib/ec2
+.. _Rackspace: https://github.com/deis/deis/tree/master/contrib/rackspace#readme
+.. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
 .. _Vagrant: http://www.vagrantup.com/
-.. _`contrib/vagrant`: https://github.com/opdemand/deis/tree/master/contrib/vagrant
+.. _`contrib/vagrant`: https://github.com/deis/deis/tree/master/contrib/vagrant
 

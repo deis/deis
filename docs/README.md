@@ -7,7 +7,7 @@ Documentation in this tree consists of plain text files named with the
 [Sphinx](http://sphinx-doc.org/) system to create an HTML version.
 
 Please add any issues you find with this documentation to the
-[Deis project](https://github.com/opdemand/deis/issues).
+[Deis project](https://github.com/deis/deis/issues).
 
 ## Usage
 
@@ -43,4 +43,4 @@ a lightweight, flexible and powerful open source PaaS.
 
 4. Fork this repository and send your changes or additions to Deis'
 documentation as GitHub
-[Pull Requests](https://github.com/opdemand/deis/pulls). Thank you!
+[Pull Requests](https://github.com/deis/deis/pulls). Thank you!

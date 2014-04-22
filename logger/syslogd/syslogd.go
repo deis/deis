@@ -3,13 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/deis/deis/logger/syslog"
 	"io"
 	"os"
 	"os/signal"
 	"path"
 	"regexp"
 	"syscall"
-	"github.com/opdemand/deis/logger/syslog"
 )
 
 const logRoot = "/var/log/deis"
