@@ -33,7 +33,7 @@ setup(name='deis',
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',
       author_email='info@opdemand.com',
-      url='https://github.com/opdemand/deis',
+      url='https://github.com/deis/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'chef', 'docker', 'heroku',
           'aws', 'ec2', 'rackspace', 'digitalocean'

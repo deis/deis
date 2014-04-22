@@ -85,8 +85,8 @@ of what code was exercised while the tests were running. Open the file
 overall coverage percentage has not receded as a result of your
 changes. Current test coverage can be found here:
 
-.. image:: https://coveralls.io/repos/opdemand/deis/badge.png?branch=master
-    :target: https://coveralls.io/r/opdemand/deis?branch=master
+.. image:: https://coveralls.io/repos/deis/deis/badge.png?branch=master
+    :target: https://coveralls.io/r/deis/deis?branch=master
     :alt: Coverage Status
 
 
@@ -127,8 +127,8 @@ merge.
 .. _mccabe: https://pypi.python.org/pypi/mccabe/
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
-.. _`pull request`: https://github.com/opdemand/deis/pulls
-.. _`GitHub issue`: https://github.com/opdemand/deis/issues
+.. _`pull request`: https://github.com/deis/deis/pulls
+.. _`GitHub issue`: https://github.com/deis/deis/issues
 
 
 .. _commit_style_guide:

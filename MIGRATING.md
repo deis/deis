@@ -6,7 +6,7 @@ several big changes you should know about.
 
 If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
 on DigitalOcean, you should use the
-[v0.7.0 release](https://github.com/opdemand/deis/tree/v0.7.0) of Deis.
+[v0.7.0 release](https://github.com/deis/deis/tree/v0.7.0) of Deis.
 
 Upgrading
 ---------
@@ -83,13 +83,12 @@ for CoreOS and help us to support Deis on DO.
 
 deis/deis in GitHub
 -------------------
-The https://github.com/opdemand/deis will soon move under the banner of
-*The Deis Project* at https://github.com/deis, so getting the source
-code will be:
+The project has moved under the banner of *The Deis Project* at
+https://github.com/deis, so getting the source code is now:
 
 ```console
 $ git clone https://github.com/deis/deis.git
 ```
 
-We think it will be easier to find Deis there, next to related projects
+We think it is easier to find Deis there, next to related projects
 such as deis/tester, deis/base, and deis/slugbuilder.

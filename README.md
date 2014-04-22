@@ -2,8 +2,8 @@
 
 Deis is an open source PaaS that makes it easy to deploy, scale and manage containers used to host applications and services. Deis builds upon Docker and CoreOS to provide a private PaaS that is lightweight and flexible.
 
-[![Build Status](https://travis-ci.org/opdemand/deis.png?branch=master)](https://travis-ci.org/opdemand/deis)
-[![Coverage Status](https://coveralls.io/repos/opdemand/deis/badge.png?branch=master)](https://coveralls.io/r/opdemand/deis?branch=master)
+[![Build Status](https://travis-ci.org/deis/deis.png?branch=master)](https://travis-ci.org/deis/deis)
+[![Coverage Status](https://coveralls.io/repos/deis/deis/badge.png?branch=master)](https://coveralls.io/r/deis/deis?branch=master)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
@@ -15,7 +15,7 @@ details.
 
 If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
 on DigitalOcean, you should use the
-[v0.7.0 release](https://github.com/opdemand/deis/tree/v0.7.0) of Deis.
+[v0.7.0 release](https://github.com/deis/deis/tree/v0.7.0) of Deis.
 
 # Installation
 
@@ -54,7 +54,7 @@ make run
 ```
 
 ## Install the Deis Client
-Either use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/), download [pre-compiled binaries](https://github.com/opdemand/deis/tree/master/client#get-started), or symlink `client/deis.py` to use your local development version.
+Either use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/), download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started), or symlink `client/deis.py` to use your local development version.
 
 ```
 ln -fs $(pwd)/client/deis.py /usr/local/bin/deis

@@ -236,9 +236,9 @@ Creating a pull request on the Deis repository also runs a Travis CI build to
 ensure the pull request doesn't break any tests or reduce code coverage.
 
 
-.. _`easy-fix`: https://github.com/opdemand/deis/issues?labels=easy-fix&state=open
+.. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
 .. _`Vagrant`: http://www.vagrantup.com/
 .. _`VirtualBox`: https://www.virtualbox.org/
-.. _`fork the Deis repository`: https://github.com/opdemand/deis/fork
-.. _`pull request`: https://github.com/opdemand/deis/pulls
-.. _`issue 535`: https://github.com/opdemand/deis/issues/535
+.. _`fork the Deis repository`: https://github.com/deis/deis/fork
+.. _`pull request`: https://github.com/deis/deis/pulls
+.. _`issue 535`: https://github.com/deis/deis/issues/535

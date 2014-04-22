@@ -62,4 +62,4 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
 
 .. _pip: http://www.pip-installer.org/en/latest/installing.html
 .. _Python: https://www.python.org/
-.. _`issue 535`: https://github.com/opdemand/deis/issues/535
+.. _`issue 535`: https://github.com/deis/deis/issues/535

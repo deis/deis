@@ -12,7 +12,7 @@ This Docker image is based on the trusted build
 on the official [ubuntu:12.04](https://index.docker.io/_/ubuntu/) image.
 
 Please add any issues you find with this software to the
-[Deis project](https://github.com/opdemand/deis/issues).
+[Deis project](https://github.com/deis/deis/issues).
 
 ## Usage
 
