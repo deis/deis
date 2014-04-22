@@ -13,7 +13,7 @@ RUN apt-get install -yq git
 
 # install requirements before ADD to cache layer and speed build
 RUN pip install celery==3.1.8 \
-                Django==1.6.2 \
+                Django==1.6.3 \
                 django-allauth==0.15.0 \
                 git+https://github.com/deis/django-fsm@add-exception-handling \
                 django-guardian==1.1.1 \
