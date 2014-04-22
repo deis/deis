@@ -12,11 +12,10 @@ ENV PATH /usr/local/bin:/usr/bin:/bin:/sbin:/usr/local/go/bin
 
 # add the current build context to /app
 ADD . /app
-ADD syslog /go/src/syslog
-ADD syslogd /go/src/syslogd
+ADD . /go/src/github.com/opdemand/deis/logger
 
 # compile the binary
-RUN cd /go/src/syslogd && go install -v syslogd
+RUN cd /go/src/github.com/opdemand/deis/logger/syslogd && go install -v .
 
 # create /var/log/deis for holding logs (access via bind mount)
 RUN mkdir -p /var/log/deis
