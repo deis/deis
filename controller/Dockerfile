@@ -12,8 +12,7 @@ RUN wget -qO- https://raw.github.com/pypa/pip/1.5.4/contrib/get-pip.py | python 
 RUN apt-get install -yq git
 
 # install requirements before ADD to cache layer and speed build
-RUN pip install boto==2.23.0 \
-                celery==3.1.8 \
+RUN pip install celery==3.1.8 \
                 Django==1.6.2 \
                 django-allauth==0.15.0 \
                 git+https://github.com/deis/django-fsm@add-exception-handling \
@@ -21,14 +20,12 @@ RUN pip install boto==2.23.0 \
                 django-json-field==0.5.5 \
                 django-yamlfield==0.5 \
                 djangorestframework==2.3.12 \
-                dop==0.1.6 \
                 gevent==1.0 \
                 gunicorn==18.0 \
                 paramiko==1.12.1 \
                 psycopg2==2.5.2 \
                 pycrypto==2.6.1 \
                 python-etcd==0.3.0 \
-                pyrax==1.6.2 \
                 PyYAML==3.10 \
                 redis==2.8.0 \
                 static==1.0.2 \
