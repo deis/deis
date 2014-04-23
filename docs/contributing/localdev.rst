@@ -213,7 +213,7 @@ that test coverage has improved as a result of your changes and new unit tests.
 	make: *** [flake8] Error 1
 	$
 	$ make coverage
-	coverage run --timid manage.py test --noinput api web
+	coverage run manage.py test --noinput api web
 	WARNING Cannot synchronize with etcd cluster
 	Creating test database for alias 'default'...
 	...............................................

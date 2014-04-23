@@ -41,7 +41,7 @@ db:
 	python manage.py syncdb --migrate --noinput
 
 coverage:
-	coverage run --timid manage.py test --noinput api web
+	coverage run manage.py test --noinput api web
 	coverage html
 
 flake8:
