@@ -45,7 +45,7 @@ $ vagrant up
 
 This instructs Vagrant to spin up each VM. To be able to connect to the VMs, you must add your Vagrant-generated SSH key to the ssh-agent (fleetctl tunnel requires the agent to have this key):
 ```console
-$ ssh-add ~/.vagrant.d/insecure_private_key`
+$ ssh-add ~/.vagrant.d/insecure_private_key
 ```
 
 Export some environment variables so you can connect to the VM using the `docker` and `fleetctl` clients on your workstation.
