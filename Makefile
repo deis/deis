@@ -2,43 +2,52 @@
 # Deis Makefile
 #
 
+ifndef DEIS_NUM_INSTANCES
+    DEIS_NUM_INSTANCES = 1
+endif
+
+define ssh_all
+  i=1 ; while [ $$i -le $(DEIS_NUM_INSTANCES) ] ; do \
+      vagrant ssh deis-$$i -c $(1) ; \
+      i=`expr $$i + 1` ; \
+  done
+endef
+
 # ordered list of deis components
-COMPONENTS=builder cache controller database logger registry router
+# we don't manage the router if we're setting up a local cluster
+ifeq ($(DEIS_NUM_INSTANCES),1)
+	COMPONENTS=builder cache controller database logger registry router
+else
+	COMPONENTS=builder cache controller database logger registry
+endif
 
 all: build run
 
-test_client:
-	python -m unittest discover client.tests
-
 pull:
-	vagrant ssh -c 'for c in $(COMPONENTS); do docker pull deis/$$c; done'
+	$(call ssh_all,'for c in $(COMPONENTS); do docker pull deis/$$c; done')
 
 build:
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done'
+	$(call ssh_all,'cd share && for c in $(COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
 
 install:
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c && sudo systemctl enable $$(pwd)/systemd/* && cd ..; done'
+	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false submit $$c/systemd/*; done
 
 uninstall: stop
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c && sudo systemctl disable $$(pwd)/systemd/* && cd ..; done'
+	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false destroy $$c/systemd/*; done
 
 start:
 	echo "\033[0;33mStarting services can take some time... grab some coffee!\033[0m"
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c/systemd && sudo systemctl start * && cd ../..; done'
+	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false start $$c/systemd/*; done
 
 stop:
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c/systemd && sudo systemctl stop * && cd ../..; done'
+	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false stop $$c/systemd/*; done
 
-restart:
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do cd $$c/systemd && sudo systemctl restart * && cd ../..; done'
+restart: stop start
 
-logs:
-	vagrant ssh -c 'journalctl -f -u deis-*'
-
-run: install start logs
+run: install start
 
 clean: uninstall
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do docker rm -f deis-$$c; done'
+	$(call ssh_all,'for c in $(COMPONENTS); do docker rm -f deis-$$c; done')
 
 full-clean: clean
-	vagrant ssh -c 'cd share && for c in $(COMPONENTS); do docker rmi deis-$$c; done'
+	$(call ssh_all,'for c in $(COMPONENTS); do docker rmi deis-$$c; done')
