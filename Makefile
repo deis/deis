@@ -21,6 +21,8 @@ else
 	COMPONENTS=builder cache controller database logger registry
 endif
 
+UNIT_FILES = $(foreach C, $(COMPONENTS), $(wildcard $(C)/systemd/*))
+
 all: build run
 
 pull:
@@ -30,17 +32,17 @@ build:
 	$(call ssh_all,'cd share && for c in $(COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
 
 install:
-	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false submit $$c/systemd/*; done
+	fleetctl --strict-host-key-checking=false submit $(UNIT_FILES)
 
-uninstall: stop
-	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false destroy $$c/systemd/*; done
+uninstall:  stop
+	fleetctl --strict-host-key-checking=false destroy $(UNIT_FILES)
 
 start:
 	echo "\033[0;33mStarting services can take some time... grab some coffee!\033[0m"
-	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false start $$c/systemd/*; done
+	fleetctl --strict-host-key-checking=false start $(UNIT_FILES)
 
 stop:
-	for c in $(COMPONENTS); do fleetctl --strict-host-key-checking=false stop $$c/systemd/*; done
+	fleetctl --strict-host-key-checking=false stop $(UNIT_FILES)
 
 restart: stop start
 
