@@ -27,14 +27,14 @@ fi
 
 cd $ROOT_DIR
 
-# upload each component's systemd unit to the fleet cluster
-for component in registry logger database cache controller builder router
-do
-  pushd $component/systemd > /dev/null
-  fleetctl submit deis-$component.service
-  fleetctl start deis-$component.service
-  popd > /dev/null
+# upload all systemd unit to the fleet cluster
+units=()
+for component in builder cache controller database logger registry router; do
+  units+=($component/systemd/*)
 done
+
+fleetctl submit ${units[@]}
+fleetctl start ${units[@]}
 
 echo_green "Done! Inspect the state of the services with: fleetctl list-units"
 echo_green "Once all the services are running, you can register with your Deis cluster: deis register 1.2.3.4:8000"
