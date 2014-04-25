@@ -221,8 +221,9 @@ Description={name} announce
 BindsTo={name}.service
 
 [Service]
-ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); host=$(getent hosts deis | awk {{'print $1'}}); echo Connected to $host:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $host:$port --ttl 60 >/dev/null; sleep 45; done"
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
+ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); echo Connected to $COREOS_PUBLIC_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PUBLIC_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 
 [X-Fleet]
