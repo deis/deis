@@ -26,8 +26,7 @@ Trying out Deis? Continue following these instructions for a local cluster setup
 ## Install prerequisites
 On your workstation:
 * Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install [Go](http://golang.org/doc/install) and configure your GOPATH, if necessary
-* Install the fleetctl client: `go get github.com/coreos/fleet && go install github.com/coreos/fleet/fleetctl`
+* Install the fleetctl client: Install v0.2.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
 ## Additional setup for a multi-node cluster

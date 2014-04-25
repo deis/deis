@@ -32,7 +32,7 @@ fi
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    supernova production boot --image 6bdbd558-e66c-49cc-9ff3-126e7411f602 --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --config-drive true deis-$i ; \
+    supernova production boot --image c431c19c-4c09-48ef-a7c1-f4a43f65a1de --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 

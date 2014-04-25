@@ -48,12 +48,11 @@ Please wait for it to come up, then run ./initialize-ec2-cluster.sh
 
 ## Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from EC2, set
-FLEETCTL_TUNNEL, then run [the init script][init-script] to bootstrap the cluster
-remotely:
+FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
 $ ssh-add ~/.ssh/id_rsa
 $ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
-$ ./initialize-ec2-cluster.sh
+$ cd ../.. && make run
 The authenticity of host '54.215.248.50:22' can't be established.
 RSA key fingerprint is 86:10:74:b9:6a:ee:3b:21:d0:0f:b4:63:cc:10:64:c9.
 Are you sure you want to continue connecting (yes/no)? yes
@@ -92,4 +91,3 @@ email: info@opdemand.com
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
 [cf-params]: cloudformation.json
 [pro-script]: provision-ec2-cluster.sh
-[init-script]: initialize-ec2-cluster.sh

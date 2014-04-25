@@ -48,12 +48,11 @@ $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 ```
 
 ### Initialize the cluster
-Once the cluster is up, get the IP address for any of the machines in the cluster, set
-FLEETCTL_TUNNEL, and run [the init script](initialize-rackspace-cluster.sh) to bootstrap the cluster
-remotely:
+Once the cluster is up, get the hostname of any of the machines from EC2, set
+FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
 $ export FLEETCTL_TUNNEL=23.253.219.94
-$ ./initialize-rackspace-cluster.sh
+$ cd ../.. && make run
 The authenticity of host '23.253.219.94:22' can't be established.
 RSA key fingerprint is ce:3a:c1:3a:ad:11:bd:60:84:8e:60:a8:2f:19:1a:a6.
 Are you sure you want to continue connecting (yes/no)? yes

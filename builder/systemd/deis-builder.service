@@ -1,7 +1,5 @@
 [Unit]
 Description=deis-builder
-Requires=deis-registry.service
-After=deis-registry.service
 
 [Service]
 TimeoutStartSec=20m
@@ -13,5 +11,7 @@ ExecStop=/usr/bin/docker rm -f deis-builder
 [Install]
 WantedBy=multi-user.target
 
+# We only need this so that when we start controller, it's guaranteed to be scheduled
+# (If logger and builder are on separate machines, controller can never be scheduled)
 [X-Fleet]
-X-ConditionMachineOf=deis-controller.service
+X-ConditionMachineOf=deis-logger.service
