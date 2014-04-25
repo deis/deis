@@ -14,11 +14,11 @@ else
 end
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "coreos-295.0.0"
-  config.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/295.0.0/coreos_production_vagrant.box"
+  config.vm.box = "coreos-296.0.0"
+  config.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/296.0.0/coreos_production_vagrant.box"
 
   config.vm.provider :vmware_fusion do |vb, override|
-    override.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/295.0.0/coreos_production_vagrant_vmware_fusion.box"
+    override.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/296.0.0/coreos_production_vagrant_vmware_fusion.box"
   end
 
   config.vm.provider :virtualbox do |vb, override|
