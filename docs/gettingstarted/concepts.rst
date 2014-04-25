@@ -46,7 +46,7 @@ CoreOS
 needed by modern infrastructure stacks and targeted at massive
 server deployments.
 
-Deis applications are containers running on CoreOS machines, which can
+Deis applications are processes running on CoreOS machines, which can
 be private or public cloud instances, or bare metal. CoreOS clusters
 allow Deis to host applications and services at scale with
 high resilience.
@@ -75,7 +75,7 @@ An :ref:`application`, or app, lives on a :ref:`cluster`, where it uses
 deployed git repository.
 
 Developers use :ref:`Applications <application>` to push code, change
-configuration, scale containers, view logs, or run admin commands --
+configuration, scale processes, view logs, or run admin commands --
 regardless of the cluster's underlying infrastructure.
 
 .. _concepts_build_release_run:
@@ -99,7 +99,7 @@ changed, making it easy to rollback code and configuration.
 Run Stage
 ^^^^^^^^^
 The run stage shells out jobs to the scheduler. The scheduler is in control of balancing the
-containers evenly across the cluster, as well as the announcers and the loggers for each
+processes evenly across the cluster, as well as the announcers and the loggers for each
 application. The scheduler uses SSH to submit jobs to each node in the cluster and updates
 the proxy component between releases, making zero downtime deployments possible.
 

@@ -32,10 +32,10 @@ that power your app.
 .. code-block:: console
 
     $ deis scale web=8
-    Scaling containers... but first, coffee!
+    Scaling processes... but first, coffee!
     done in 20s
 
-    === peachy-waxworks Containers
+    === peachy-waxworks Processes
 
     --- web: `java -cp target/classes:target/dependency/* HelloWorld`
     web.1 up 2013-12-03T00:00:25.836Z (dev-runtime-1)
