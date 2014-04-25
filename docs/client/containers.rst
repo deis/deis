@@ -1,10 +1,10 @@
-:title: Containers
-:description: Learn how to list and scale Deis containers for an application using the Deis client.
+:title: Processes
+:description: Learn how to list and scale Deis processes for an application using the Deis client.
 
 
-containers
-==========
+processes
+=========
 
-.. automethod:: client.deis.DeisClient.containers_list
-.. automethod:: client.deis.DeisClient.containers_scale
+.. automethod:: client.deis.DeisClient.ps_list
+.. automethod:: client.deis.DeisClient.ps_scale
 

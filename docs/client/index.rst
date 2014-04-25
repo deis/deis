@@ -28,7 +28,7 @@ Client Reference
     keys
 
     apps
-    containers
+    ps
     config
     builds
     releases

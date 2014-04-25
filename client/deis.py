@@ -14,7 +14,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
 
   apps          manage applications used to provide services
   clusters      manage clusters used to host applications
-  containers    manage containers used to handle requests and jobs
+  ps            manage processes inside an app container
   config        manage environment variables that define app config
   builds        manage builds created using `git push`
   releases      manage releases of an application
@@ -25,7 +25,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
 Developer shortcut commands::
 
   create        create a new application
-  scale         scale containers by type (web=2, worker=1)
+  scale         scale processes by type (web=2, worker=1)
   info          view information about the current app
   open          open a URL to the app in a browser
   logs          view aggregated log info for the app
@@ -549,7 +549,7 @@ class DeisClient(object):
             print("=== {} Application".format(app))
             print(json.dumps(response.json(), indent=2))
             print()
-            self.containers_list(args)
+            self.ps_list(args)
             print()
         else:
             raise ResponseError(response)
@@ -1055,24 +1055,24 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def containers(self, args):
+    def ps(self, args):
         """
-        Valid commands for containers:
+        Valid commands for processes:
 
-        containers:list        list application containers
-        containers:scale       scale app containers (e.g. web=4 worker=2)
+        ps:list        list application processes
+        ps:scale       scale processes (e.g. web=4 worker=2)
 
         Use `deis help [command]` to learn more
         """
-        sys.argv[1] = 'containers:list'
-        args = docopt(self.containers_list.__doc__)
-        return self.containers_list(args)
+        sys.argv[1] = 'ps:list'
+        args = docopt(self.ps_list.__doc__)
+        return self.ps_list(args)
 
-    def containers_list(self, args, app=None):
+    def ps_list(self, args, app=None):
         """
-        List containers servicing an application
+        List processes servicing an application
 
-        Usage: deis containers:list [--app=<app>]
+        Usage: deis ps:list [--app=<app>]
         """
         if not app:
             app = args.get('--app')
@@ -1082,10 +1082,10 @@ class DeisClient(object):
                                   "/api/apps/{}/containers".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
             raise ResponseError(response)
-        containers = response.json()
-        print("=== {} Containers".format(app))
+        processes = response.json()
+        print("=== {} Processes".format(app))
         c_map = {}
-        for item in containers['results']:
+        for item in processes['results']:
             c_map.setdefault(item['type'], []).append(item)
         print()
         for c_type in c_map.keys():
@@ -1094,13 +1094,13 @@ class DeisClient(object):
                 print("{type}.{num} {state} ({release})".format(**c))
             print()
 
-    def containers_scale(self, args):
+    def ps_scale(self, args):
         """
-        Scale an application's containers by type
+        Scale an application's processes by type
 
-        Example: deis containers:scale web=4 worker=2
+        Example: deis ps:scale web=4 worker=2
 
-        Usage: deis containers:scale <type=num>... [--app=<app>]
+        Usage: deis ps:scale <type=num>... [--app=<app>]
         """
         app = args.get('--app')
         if not app:
@@ -1109,7 +1109,7 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        print('Scaling containers... but first, coffee!')
+        print('Scaling processes... but first, coffee!')
         try:
             progress = TextProgress()
             progress.start()
@@ -1122,7 +1122,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             print('done in {}s\n'.format(int(time.time() - before)))
-            self.containers_list({}, app)
+            self.ps_list({}, app)
         else:
             raise ResponseError(response)
 
@@ -1568,8 +1568,7 @@ SHORTCUTS = OrderedDict([
     ('register', 'auth:register'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
-    ('ps', 'containers:list'),
-    ('scale', 'containers:scale'),
+    ('scale', 'ps:scale'),
     ('rollback', 'releases:rollback'),
     ('sharing', 'perms:list'),
     ('sharing:list', 'perms:list'),
