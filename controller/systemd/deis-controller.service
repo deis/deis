@@ -14,3 +14,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 X-ConditionMachineOf=deis-logger.service
+X-ConditionMachineOf=deis-builder.service
