@@ -81,7 +81,7 @@ start-controller: check-fleet
 	fleetctl --strict-host-key-checking=false submit controller/systemd/*
 	fleetctl --strict-host-key-checking=false start controller/systemd/*
 	$(call echo_yellow,"Use 'make status' to monitor the service")
-	@if [ "$$SKIP_ROUTER" == true ]; then \
+	@if [ "$$SKIP_ROUTER" = true ]; then \
 		echo "\033[0;33mYou'll need to configure DNS and start the router manually for multi-node clusters.\033[0m" ; \
 		echo "\033[0;33mRun 'make start-router' to schedule and start deis-router.\033[0m" ; \
 	else \
