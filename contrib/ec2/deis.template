@@ -144,7 +144,7 @@
     "IngressEphemeral": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
-        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "49156", "ToPort": "65535", "SourceSecurityGroupId": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "49152", "ToPort": "65535", "SourceSecurityGroupId": {
           "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
         }
       }
