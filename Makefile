@@ -61,6 +61,7 @@ install: check-fleet
 
 pull:
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c; done')
+	$(call ssh_all,'docker pull deis/slugrunner')
 
 restart: stop start
 
