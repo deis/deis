@@ -19,6 +19,14 @@ define ssh_all
 	done
 endef
 
+define check_for_errors
+	@if fleetctl --strict-host-key-checking=false list-units|grep -q "failed"; then \
+		echo "\033[0;31mOne or more services failed! Check which services by running 'make status'\033[0m" ; \
+		echo "\033[0;31mYou can get detailed output with 'fleetctl status deis-servicename.service'\033[0m" ; \
+		echo "\033[0;31mThis usually indicates an error with Deis - please open an issue on GitHub or ask for help in IRC\033[0m" ; \
+	fi
+endef
+
 define echo_yellow
 	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
@@ -45,7 +53,7 @@ build:
 
 check-fleet:
 	@LOCAL_VERSION=`fleetctl -version`; \
-	REMOTE_VERSION=`ssh core@$(FLEETCTL_TUNNEL) fleetctl -version`; \
+	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(FLEETCTL_TUNNEL) fleetctl -version`; \
 	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
 			echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Uninstall your local version and install the latest build from https://github.com/coreos/fleet/releases"; exit 1; \
 	fi
@@ -68,25 +76,30 @@ restart: stop start
 run: install start
 
 start: check-fleet
+	# registry logger cache database (router)
 	fleetctl --strict-host-key-checking=false start $(START_UNITS)
-	$(call echo_yellow,"Use 'make status' to monitor these services")
-	$(call echo_yellow,"Run 'make start-builder' to continue once all are running")
+	$(call echo_yellow,"Waiting for initial services to start (this can take some time)... ")
+	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-registry.+(running|failed)"; do sleep 10; done
+	$(call check_for_errors)
+	$(call echo_yellow,"Done! Waiting for deis-builder...")
 
-start-builder: check-fleet
+	# builder
 	fleetctl --strict-host-key-checking=false submit builder/systemd/*
 	fleetctl --strict-host-key-checking=false start builder/systemd/*
-	$(call echo_yellow,"Use 'make status' to monitor the service")
-	$(call echo_yellow,"Run 'make start-controller' to continue once the service is running")
+	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-builder.+(running|failed)"; do sleep 10; done
+	$(call check_for_errors)
+	$(call echo_yellow,"Done! Waiting for deis-controller...")
 
-start-controller: check-fleet
+	# controller
 	fleetctl --strict-host-key-checking=false submit controller/systemd/*
 	fleetctl --strict-host-key-checking=false start controller/systemd/*
-	$(call echo_yellow,"Use 'make status' to monitor the service")
+	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-controller.+(running|failed)"; do sleep 10; done
+	$(call check_for_errors)
 	@if [ "$$SKIP_ROUTER" = true ]; then \
 		echo "\033[0;33mYou'll need to configure DNS and start the router manually for multi-node clusters.\033[0m" ; \
 		echo "\033[0;33mRun 'make start-router' to schedule and start deis-router.\033[0m" ; \
 	else \
-		echo "\033[0;33mYour Deis cluster is ready to go once the controller is live! Follow the README to login and use Deis.\033[0m" ; \
+		echo "\033[0;33mYour Deis cluster is ready to go! Follow the README to login and use Deis.\033[0m" ; \
 	fi
 
 start-router: check-fleet
