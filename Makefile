@@ -115,5 +115,8 @@ status: check-fleet
 stop: check-fleet
 	fleetctl --strict-host-key-checking=false stop $(ALL_UNITS)
 
+tests:
+	cd test && bundle install && bundle exec rake
+
 uninstall: check-fleet stop
 	fleetctl --strict-host-key-checking=false destroy $(ALL_UNITS)
