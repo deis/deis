@@ -45,4 +45,4 @@ coverage:
 	coverage html
 
 flake8:
-	flake8
+	flake8 --exclude=./api/migrations,./scheduler/coreos.py

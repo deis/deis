@@ -11,7 +11,10 @@ ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
 if not os.path.exists(ROOT_DIR):
     os.mkdir(ROOT_DIR)
 
-MATCH = re.compile('(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+MATCH = re.compile(
+    '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)'
+)
+
 
 class FleetClient(object):
 
@@ -114,12 +117,14 @@ class FleetClient(object):
         status = None
         for _ in range(60):
             status = subprocess.check_output(
-                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $4}}'".format(**locals()),
+                "fleetctl.sh list-units | grep {name}-announce.service "
+                + "| awk '{{print $4}}'".format(**locals()),
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
             time.sleep(1)
-        else:
+        # if 60 seconds is up and the container hasn't started
+        if status is None:
             raise RuntimeError('Container failed to start')
 
     def stop(self, name):
@@ -183,17 +188,6 @@ class FleetClient(object):
         rc = p.wait()
         return rc, p.stdout.read()
 
-    def run(self, name, image, command):
-        """
-        Run a one-off command
-        """
-        print 'Running {name}'.format(**locals())
-        output = subprocess.PIPE
-        p = subprocess.Popen('fleetrun.sh {command}'.format(**locals()), shell=True, env=self.env,
-                             stdout=output, stderr=subprocess.STDOUT)
-        rc = p.wait()
-        return rc, p.stdout.read()
-
     def attach(self, name):
         """
         Attach to a job's stdin, stdout and stderr
@@ -206,8 +200,6 @@ SchedulerClient = FleetClient
 CONTAINER_TEMPLATE = """
 [Unit]
 Description={name}
-After=docker.service
-Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
@@ -241,29 +233,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.inf
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
-
-ROUTER_TEMPLATE = """
-[Unit]
-Description={name} router
-After=docker.service
-Requires=docker.service
-
-[Service]
-ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 80:80 -p 443:443 {image} {command}
-ExecStop=-/usr/bin/docker rm -f {name}
-TimeoutStartSec=10min
-"""
-
-LOGGER_TEMPLATE = """
-[Unit]
-Description={name} logger
-After=docker.service
-Requires=docker.service
-
-[Service]
-ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 514:514 -e PORT=514 {image} {command}
-ExecStop=-/usr/bin/docker rm -f {name}
 """
