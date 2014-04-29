@@ -121,9 +121,10 @@ class App(UuidAuditedModel):
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
-    def destroy(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):
         for c in self.container_set.all():
             c.destroy()
+        return super(App, self).delete(*args, **kwargs)
 
     def deploy(self, release):
         tasks.deploy_release.delay(self, release).get()
