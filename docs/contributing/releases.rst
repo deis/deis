@@ -1,5 +1,5 @@
 :title: Releases
-:description: Details the Deis release process. Deis releases.
+:description: The Deis software release process.
 
 .. _releases:
 
@@ -17,53 +17,18 @@ product release.
 
 Please keep this document up-to-date with any changes in this process.
 
-deis/deis-cookbook Chef Repo
-----------------------------
-- One-time setup:
-    * ``gem install stove --pre``
-    * Configure your ``~/.stove`` file as outlined in `Installing Stove`_
-- Create the next `deis-cookbook milestone`_
-- Move any `deis-cookbook open issues`_ from the current release to the
-  next milestone
-- Close the current `deis-cookbook milestone`_
-- Recreate CHANGELOG.md in the root of the project
-    * ``npm install github-changes``
-    * ``github-changes -o opdemand -r deis-cookbook -n vX.Y.Z``
-    * proofread the new CHANGELOG.md to ensure it was generated correctly
-    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
-- Merge git master into release branch locally
-    * ``git checkout release && git merge master``
-- Run ``knife cookbook metadata .`` to update **metadata.json**. **DOUBLE-CHECK
-  the generated file after this step--this may be broken currently.**
-- Commit, push, and tag the deis/deis-cookbook release
-    * ``git commit -a -m 'Updated for vX.Y.Z release.'``
-    * ``git push origin release``
-    * ``git tag vX.Y.Z``
-    * ``git push --tags origin vX.Y.Z``
-- Update the deis Opscode Community cookbook
-    * ``bake X.Y.Z --no-bump --no-changelog --no-dev --no-git --no-github --no-jira``
-- switch master to upcoming release
-    * ``git checkout master``
-    * change **version** string in metadata.rb to *next* version
-    * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
-    * ``git push origin master``
-
-deis/deis Server Repo
----------------------
+github.com/deis/deis Repo
+-------------------------
 - Create the next `deis milestone`_
 - Move any `deis open issues`_ from the current release to the
   next milestone
 - Close the current `deis milestone`_
-- Recreate CHANGELOG.md in the root of the project
+- Recreate CHANGELOG.md in the root of the project using `github-changes`_
     * ``github-changes -o opdemand -r deis -n vX.Y.Z``
     * proofread the new CHANGELOG.md to ensure it was generated correctly
     * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
-- Update Berksfile with new release
-    * edit **Berksfile** and ensure it points to the Opscode Community cookbook
-      for Deis
-    * ``berks update && berks install`` to update **Berksfile.lock**
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
@@ -84,8 +49,6 @@ deis/deis Server Repo
 - Switch master to upcoming release
     * ``git checkout master``
     * update __version__ fields in Python packages to *next* version
-    * switch from opscode community cookbook back to github cookbook
-    * ``berks update && berks install`` to update Berksfile.lock
     * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
     * ``git push origin master``
 
@@ -96,6 +59,7 @@ Documentation
   for deis.readthedocs.org)
 - Log in to the http://deis.readthedocs.org admin
     * add the current release to the list of published builds
+    * remove the oldest release from the list of published builds
     * rebuild all published versions so their "Versions" index links
       are updated
 - Publish docs to pythonhosted.org/deis
@@ -114,15 +78,14 @@ Documentation
     * visit all opdemand/* and deis/* project issues to make sure we don't
       miss any contributors for the "Community Shout-Outs" section
     * include "what's next" and "future directions" sections
+    * add Markdown version of release notes to `deis/deis.io`_ website project
 
 
-.. _`deis-cookbook milestone`: https://github.com/deis/deis-cookbook/issues/milestones
-.. _`deis-cookbook open issues`: https://github.com/deis/deis-cookbook/issues?state=open
-.. _`Opscode Community`: http://community.opscode.com/cookbooks/deis/versions/new
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
 .. _`deis open issues`: https://github.com/deis/deis/issues?state=open
+.. _`github-changes`: https://lalitkapoor.github.io/github-changes/
 .. _`release notes`: https://github.com/deis/deis/releases
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
 .. _`Docker Index`: https://index.docker.io/
-.. _`Installing Stove`: https://github.com/sethvargo/stove#installation
+.. _`deis/deis.io`: https://github.com/deis/deis.io
