@@ -164,6 +164,17 @@ access using:
 Your local development environment is running! Follow the
 rest of the :ref:`Developer Guide <developer>` to deploy your first application.
 
+Test Your Changes
+-----------------
+In the single-node Vagrant environment, testing your changes to Deis itself
+is easy:
+
+    - Make changes to the code in one of the component subdirectories, such
+      as ``controller/``
+    - run ``make -C controller/ build run``
+    - Test your changes with ``make -C controller/ test`` and interactively
+      with the Deis client
+
 Useful Commands
 ---------------
 
