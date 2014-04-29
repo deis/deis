@@ -43,7 +43,7 @@ $ ./provision-ec2-cluster.sh
     "StackId": "arn:aws:cloudformation:us-west-1:413516094235:stack/deis/9699ec20-c257-11e3-99eb-50fa01cd4496"
 }
 Your Deis cluster has successfully deployed.
-Please wait for it to come up, then run ./initialize-ec2-cluster.sh
+Please wait for all instances to come up as "running" before continuing.
 ```
 
 ## Initialize the cluster
