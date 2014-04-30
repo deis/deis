@@ -26,7 +26,7 @@ If you don't have Python_ installed, you can download a binary executable
 version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
     - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.8.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.8.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.8.0.zip
     - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.8.0.tgz
 
 

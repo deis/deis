@@ -41,7 +41,7 @@ github.com/deis/deis Repo
     - ``pip install pyinstaller && make -C controller client``
     - build **deis-osx-X.Y.Z.tgz** on Mac OS X 10.8 for all Macs (10.9 uses
       LLVM, which makes our binary crash on earlier OS versions)
-    - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
+    - build **deis-win32-X.Y.Z.zip** on Windows 7 32-bit
     - build **deis-deb-wheezy-X.Y.Z.tgz** on Debian Wheezy
       (see https://github.com/deis/deis/issues/504)
     - upload all binaries to the `aws-eng S3 bucket`_ and set each as
