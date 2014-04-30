@@ -58,9 +58,7 @@ if __name__ == '__main__':
         # check for Procfile
         dockerfile = os.path.join(temp_dir, 'Dockerfile')
         procfile = os.path.join(temp_dir, 'Procfile')
-        if not os.path.exists(procfile):
-            raise Exception('Procfile must exist')
-        if not os.path.exists(dockerfile):
+        if not os.path.exists(dockerfile) and os.path.exists(procfile):
             if os.path.exists('/buildpacks'):
                 build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
