@@ -46,3 +46,23 @@ coreos:
       [Service]
       Environment=FLEET_PUBLIC_IP=$public_ipv4
       ExecStart=/usr/bin/fleet
+  - name: stop-reboot-manager.service
+    command: start
+    content: |
+      [Unit]
+      Description=stop update-engine-reboot-manager
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
+      ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
+  - name: stop-reboot-manager.service
+    command: start
+    content: |
+      [Unit]
+      Description=stop update-engine
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
+      ExecStartPost=/usr/bin/systemctl mask update-engine.service
