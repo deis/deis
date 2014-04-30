@@ -19,7 +19,10 @@ Default output format [None]:
 ```
 
 ## Upload keys
-Upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
+Generate and upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
+```console
+$ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+```
 
 ## Customize cloudformation.json
 Edit [cloudformation.json][cf-params], ensuring to add a new discovery URL.
