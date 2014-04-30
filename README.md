@@ -75,6 +75,22 @@ $ make run
 * Configure local DNS. For a one-node cluster we do this for you: `local.deisapp.com` resolves to the IP of the first VM, 172.17.8.100. Since we cannot know where the `deis-router` container will be running in your cluster, you'll need to setup DNS and resolve a wildcard entry to use for your apps.
 * Because of the DNS quandary, we don't start the deis-router component for you. You'll need to start this manually once DNS is setup: `systemctl start deis-router`.
 
+## Testing the cluster
+Logging into one of the CoreOS machines and stopping a container service should cause the same component on another CoreOS
+host to take over as master
+
+These systemd services run the various containers which compose Deis, and can be stopped on a machine with `sudo systemctl stop servicename`.
+* deis-builder.service
+* deis-cache.service
+* deis-controller.service
+* deis-database.service
+* deis-discovery.service
+* deis-logger.service
+* deis-registry.service
+* deis-router.service
+
+Similarly, bringing down a VM should enable the services on another VM to take over as master
+
 ## Install the Deis Client
 If you're using the latest Deis release, use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
 
@@ -149,22 +165,6 @@ $ deis run make test
 ```
 
 To integrate with your CI system, check the return code.
-
-### Testing the cluster
-Logging into one of the CoreOS machines and stopping a container service should cause the same component on another CoreOS
-host to take over as master
-
-These systemd services run the various containers which compose Deis, and can be stopped on a machine with `sudo systemctl stop servicename`.
-* deis-builder.service
-* deis-cache.service
-* deis-controller.service
-* deis-database.service
-* deis-discovery.service
-* deis-logger.service
-* deis-registry.service
-* deis-router.service
-
-Similarly, bringing down a VM should enable the services on another VM to take over as master
 
 ## Scale
 Scale containers horizontally with ease.
