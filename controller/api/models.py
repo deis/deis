@@ -258,7 +258,11 @@ class Container(UuidAuditedModel):
     def _get_command(self):
         c_type = self.type
         if c_type:
-            return "cat Procfile | grep ^{c_type} | cut -f 1 -d ' ' --complement | sh -"
+            # handle special case for Dockerfile deployments
+            if c_type == 'cmd':
+                return ''
+            else:
+                return 'start {c_type}'
         else:
             return ''
 
