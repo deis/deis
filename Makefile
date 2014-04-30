@@ -20,10 +20,11 @@ define ssh_all
 endef
 
 define check_for_errors
-	@if fleetctl --strict-host-key-checking=false list-units|grep -q "failed"; then \
+	@if fleetctl --strict-host-key-checking=false list-units | egrep -q "(failed|dead)"; then \
 		echo "\033[0;31mOne or more services failed! Check which services by running 'make status'\033[0m" ; \
 		echo "\033[0;31mYou can get detailed output with 'fleetctl status deis-servicename.service'\033[0m" ; \
 		echo "\033[0;31mThis usually indicates an error with Deis - please open an issue on GitHub or ask for help in IRC\033[0m" ; \
+		exit 1 ; \
 	fi
 endef
 
@@ -78,22 +79,22 @@ run: install start
 start: check-fleet
 	# registry logger cache database (router)
 	fleetctl --strict-host-key-checking=false start $(START_UNITS)
-	$(call echo_yellow,"Waiting for initial services to start (this can take some time)... ")
-	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-registry.+(running|failed)"; do sleep 10; done
+	$(call echo_yellow,"Waiting for deis-registry to start (this can take some time)... ")
+	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-registry.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "registry" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 	$(call echo_yellow,"Done! Waiting for deis-builder...")
 
 	# builder
 	fleetctl --strict-host-key-checking=false submit builder/systemd/*
 	fleetctl --strict-host-key-checking=false start builder/systemd/*
-	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-builder.+(running|failed)"; do sleep 10; done
+	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-builder.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "builder" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 	$(call echo_yellow,"Done! Waiting for deis-controller...")
 
 	# controller
 	fleetctl --strict-host-key-checking=false submit controller/systemd/*
 	fleetctl --strict-host-key-checking=false start controller/systemd/*
-	until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-controller.+(running|failed)"; do sleep 10; done
+	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-controller.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "controller" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 	@if [ "$$SKIP_ROUTER" = true ]; then \
 		echo "\033[0;33mYou'll need to configure DNS and start the router manually for multi-node clusters.\033[0m" ; \
