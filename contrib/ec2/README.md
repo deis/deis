@@ -53,7 +53,7 @@ Please wait for all instances to come up as "running" before continuing.
 Once the cluster is up, get the hostname of any of the machines from EC2, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
-$ ssh-add ~/.ssh/id_rsa
+$ ssh-add ~/.ssh/deis
 $ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
 $ cd ../.. && make run
 The authenticity of host '54.215.248.50:22' can't be established.
