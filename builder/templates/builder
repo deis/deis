@@ -28,7 +28,7 @@ def parse_args():
 DOCKERFILE_SHIM = """FROM deis/slugrunner
 RUN mkdir -p /app
 ADD slug.tgz /app
-ENTRYPOINT ["/runner/init"]
+EXPOSE 5000
 """
 
 

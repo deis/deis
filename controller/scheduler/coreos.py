@@ -206,8 +206,6 @@ SchedulerClient = FleetClient
 CONTAINER_TEMPLATE = """
 [Unit]
 Description={name}
-After=docker.service
-Requires=docker.service
 
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
