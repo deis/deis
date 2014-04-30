@@ -1,7 +1,7 @@
 [Unit]
 Description=deis-controller
-Requires=deis-logger.service deis-builder.service
-After=deis-logger.service deis-builder.service
+Requires=deis-logger.service
+After=deis-logger.service
 
 [Service]
 EnvironmentFile=/etc/environment
@@ -15,4 +15,3 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 X-ConditionMachineOf=deis-logger.service
-X-ConditionMachineOf=deis-builder.service
