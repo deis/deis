@@ -47,10 +47,6 @@ Vagrant.configure("2") do |config|
       # Enable NFS for sharing the host machine into the coreos-vagrant VM.
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
 
-      # disable update-engine to prevent reboots
-      config.vm.provision :shell, :inline => "systemctl stop update-engine-reboot-manager && systemctl disable update-engine-reboot-manager && systemctl mask update-engine-reboot-manager", :privileged => true
-      config.vm.provision :shell, :inline => "systemctl stop update-engine && systemctl disable update-engine && systemctl mask update-engine", :privileged => true
-
       # user-data bootstrapping
       config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/vagrantfile-user-data"
       config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
