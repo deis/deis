@@ -54,11 +54,6 @@
       "AllowedValues": ["private", "public"],
       "Type": "String"
     },
-    "AllowSSHFrom": {
-      "Description": "The net block (CIDR) that SSH is available to.",
-      "Default": "0.0.0.0/0",
-      "Type": "String"
-    },
     "KeyPair" : {
       "Description" : "The name of an EC2 Key Pair to allow SSH access to the instance.",
       "Type" : "String"
@@ -70,7 +65,8 @@
       "Properties": {
         "GroupDescription": "CoreOS SecurityGroup",
         "SecurityGroupIngress": [
-          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": {"Ref": "AllowSSHFrom"}}
+          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "4001", "ToPort": "4001", "CidrIp": "0.0.0.0/0"}
         ]
       }
     },
@@ -83,22 +79,6 @@
           {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"},
           {"IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "CidrIp": "0.0.0.0/0"}
         ]
-      }
-    },
-    "Ingress4001": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "4001", "ToPort": "4001", "SourceSecurityGroupId": {
-          "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
-        }
-      }
-    },
-    "Ingress7001": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties": {
-        "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "7001", "ToPort": "7001", "SourceSecurityGroupId": {
-          "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
-        }
       }
     },
     "Ingress514TCP": {
@@ -138,6 +118,14 @@
       "Properties": {
         "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "6379", "ToPort": "6379", "SourceSecurityGroupId": {
           "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress7001": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "7001", "ToPort": "7001", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
         }
       }
     },
