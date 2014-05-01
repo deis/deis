@@ -22,6 +22,7 @@ Default output format [None]:
 Generate and upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
 ```console
 $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+$ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis
 ```
 
 ## Customize cloudformation.json
@@ -41,6 +42,7 @@ read more on how you can customize this cluster by looking at the
 ## Run the provision script
 Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
 ```console
+$ cd contrib/ec2
 $ ./provision-ec2-cluster.sh
 {
     "StackId": "arn:aws:cloudformation:us-west-1:413516094235:stack/deis/9699ec20-c257-11e3-99eb-50fa01cd4496"

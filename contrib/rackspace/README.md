@@ -37,6 +37,7 @@ Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be 
 Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
 You'll need to provide the name of the key pair you just added. Optionally, you can also specify a flavor name.
 ```console
+$ cd contrib/rackspace
 $ ./provision-rackspace-cluster.sh
 Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
 $ ./provision-rackspace-cluster.sh deis-key
