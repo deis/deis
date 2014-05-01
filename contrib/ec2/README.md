@@ -22,7 +22,7 @@ Default output format [None]:
 Generate and upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
 ```console
 $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
-$ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis
+$ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis.pub
 ```
 
 ## Customize cloudformation.json
