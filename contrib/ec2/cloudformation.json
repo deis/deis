@@ -2,9 +2,5 @@
     {
         "ParameterKey":     "KeyPair",
         "ParameterValue":   "deis"
-    },
-    {
-        "ParameterKey":     "DiscoveryURL",
-        "ParameterValue":   "https://discovery.etcd.io/06f9b54a2ffe65f072109924604b4cd7"
     }
 ]

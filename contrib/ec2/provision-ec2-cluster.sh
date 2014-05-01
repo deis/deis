@@ -18,7 +18,7 @@ fi
 
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
-    --template-body "$(<deis.template)" \
+    --template-body "$(./gen-json.py)" \
     --stack-name deis \
     --parameters "$(<cloudformation.json)"
 
