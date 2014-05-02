@@ -7,6 +7,7 @@ After=deis-logger.service
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/controller >/dev/null || /usr/bin/docker pull deis/controller"
+ExecStartPre=/bin/sh -c "/usr/bin/docker inspect deis-controller >/dev/null && /usr/bin/docker rm -f deis-controller || true"
 ExecStart=/bin/sh -c "docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger deis/controller"
 ExecStop=/usr/bin/docker rm -f deis-controller
 
