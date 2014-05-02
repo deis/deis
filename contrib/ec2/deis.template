@@ -44,16 +44,6 @@
       "Description": "Number of nodes in cluster (3-12).",
       "Type": "Number"
     },
-    "DiscoveryURL": {
-      "Description": "An unique etcd cluster discovery URL. Grab a new token from https://discovery.etcd.io/new",
-      "Type": "String"
-    },
-    "AdvertisedIPAddress": {
-      "Description": "Use 'private' if your etcd cluster is within one region or 'public' if it spans regions or cloud providers.",
-      "Default": "private",
-      "AllowedValues": ["private", "public"],
-      "Type": "String"
-    },
     "AllowSSHFrom": {
       "Description": "The net block (CIDR) that SSH is available to.",
       "Default": "0.0.0.0/0",
@@ -169,21 +159,7 @@
         "InstanceType": {"Ref": "InstanceType"},
         "KeyName": {"Ref": "KeyPair"},
         "SecurityGroups": [{"Ref": "CoreOSSecurityGroup"}, {"Ref": "DeisSecurityGroup"}],
-        "UserData" : { "Fn::Base64":
-          { "Fn::Join": [ "", [
-            "#cloud-config\n\n",
-            "coreos:\n",
-            "  etcd:\n",
-            "    discovery: ", { "Ref": "DiscoveryURL" }, "\n",
-            "    addr: $", { "Ref": "AdvertisedIPAddress" }, "_ipv4:4001\n",
-            "    peer-addr: $", { "Ref": "AdvertisedIPAddress" }, "_ipv4:7001\n",
-            "  units:\n",
-            "    - name: etcd.service\n",
-            "      command: start\n",
-            "    - name: fleet.service\n",
-            "      command: start\n"
-            ] ]
-          }
+        "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] }
         }
       }
     }
