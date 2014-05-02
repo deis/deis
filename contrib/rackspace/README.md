@@ -54,35 +54,16 @@ FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
 $ export FLEETCTL_TUNNEL=23.253.219.94
 $ cd ../.. && make run
-The authenticity of host '23.253.219.94:22' can't be established.
-RSA key fingerprint is ce:3a:c1:3a:ad:11:bd:60:84:8e:60:a8:2f:19:1a:a6.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added '23.253.219.94:22' (RSA) to the list of known hosts.
-Job deis-registry.service scheduled to 73c7d285.../23.253.218.114
-Job deis-logger.service scheduled to 21ad134c.../23.253.217.229
-Job deis-database.service scheduled to 73c7d285.../23.253.218.114
-Job deis-cache.service scheduled to 73c7d285.../23.253.218.114
-Job deis-controller.service scheduled to e5c14be6.../23.253.219.94
-Job deis-builder.service scheduled to e5c14be6.../23.253.219.94
-Job deis-router.service scheduled to 73c7d285.../23.253.218.114
-done!
 ```
+The script will deploy Deis and make sure the services start properly.
+
+### Configure DNS
+You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
 
 ### Use Deis!
-After that, wait for the components to come up, check which host the controller is
-running on and register with Deis!
+After that, register with Deis!
 ```
-$ fleetctl list-units
-UNIT                    LOAD    ACTIVE  SUB     DESC            MACHINE
-deis-builder.service    loaded  active  running deis-builder    e5c14be6.../23.253.219.94
-deis-cache.service      loaded  active  running deis-cache      73c7d285.../23.253.218.114
-deis-controller.service loaded  active  running deis-controller e5c14be6.../23.253.219.94
-deis-database.service   loaded  active  running deis-database   73c7d285.../23.253.218.114
-deis-logger.service     loaded  active  running deis-logger     21ad134c.../23.253.217.229
-deis-registry.service   loaded  active  running deis-registry   73c7d285.../23.253.218.114
-deis-router.service     loaded  active  running deis-router     73c7d285.../23.253.218.114
-
-$ deis register 23.253.219.94:8000
+$ deis register deis.example.org:8000
 username: deis
 password:
 password (confirm):

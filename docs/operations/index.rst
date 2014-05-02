@@ -15,3 +15,4 @@ Operations Guide
     provision-controller
     register-admin-user
     manage-controller
+    configure-dns

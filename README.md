@@ -71,9 +71,7 @@ Use `make run` to start all Deis containers and attach to their log output. This
 $ make run
 ```
 
-## Additional steps for a multi-node cluster
-* Configure local DNS. For a one-node cluster we do this for you: `local.deisapp.com` resolves to the IP of the first VM, 172.17.8.100. Since we cannot know where the `deis-router` container will be running in your cluster, you'll need to setup DNS and resolve a wildcard entry to use for your apps.
-* Because of the DNS quandary, we don't start the deis-router component for you. You'll need to start this manually once DNS is setup: `systemctl start deis-router`.
+Your Vagrant VM is accessible at `local.deisapp.com`. For clusters with more than one node, see our guide to [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.

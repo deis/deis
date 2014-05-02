@@ -35,14 +35,7 @@ endef
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
 ALL_COMPONENTS=builder cache controller database logger registry router
-
-ifeq ($(DEIS_NUM_INSTANCES),1)
-	export SKIP_ROUTER=false
-	START_COMPONENTS=registry logger cache database router
-else
-	export SKIP_ROUTER=true
-	START_COMPONENTS=registry logger cache database
-endif
+START_COMPONENTS=registry logger cache database router
 
 ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
@@ -97,20 +90,7 @@ start: check-fleet
 	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-builder.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "builder" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 
-	@# router
-	@if [ "$$SKIP_ROUTER" = true ]; then \
-		echo "\033[0;33mYou'll need to configure DNS and start the router manually for multi-node clusters.\033[0m" ; \
-		echo "\033[0;33mRun 'make start-router' to schedule and start deis-router.\033[0m" ; \
-	else \
-		echo "\033[0;33mYour Deis cluster is ready to go! Follow the README to login and use Deis.\033[0m" ; \
-	fi
-
-start-router: check-fleet
-	fleetctl --strict-host-key-checking=false submit router/systemd/*
-	fleetctl --strict-host-key-checking=false start router/systemd/*
-	$(call echo_yellow,"Use 'make status' to monitor the service and note the IP it has been scheduled to.")
-	$(call echo_yellow,"Create a wildcard DNS domain which resolves to this host and use that domain when creating clusters/apps in the README.")
-	$(call echo_yellow,"Your Deis cluster is ready to go! Follow the README to login and use Deis.")
+	$(call echo_yellow,"Your Deis cluster is ready to go! Continue following the README to login and use Deis.")
 
 status: check-fleet
 	fleetctl --strict-host-key-checking=false list-units
