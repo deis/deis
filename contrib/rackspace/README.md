@@ -49,7 +49,7 @@ $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 ```
 
 ### Initialize the cluster
-Once the cluster is up, get the hostname of any of the machines from EC2, set
+Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
 $ export FLEETCTL_TUNNEL=23.253.219.94
