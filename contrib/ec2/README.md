@@ -25,19 +25,29 @@ $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
 $ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis.pub
 ```
 
-## Customize cloudformation.json
-Edit [cloudformation.json][cf-params], ensuring to add a new discovery URL.
-You can get a new one by sending a new request to http://discovery.etcd.io/new.
+## Choose number of instances
+By default, the script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
 ```console
+$ export DEIS_NUM_INSTANCES=5
+```
+
+## Customize user-data
+Edit [user-data](../coreos/user-data) and add a new discovery URL.
+You can get a new one by sending a request to http://discovery.etcd.io/new.
+
+## Customize cloudformation.json
+By default, this script spins up m3.large instances. You can override this
+by adding a new entry to [cloudformation.json](cloudformation.json) like so:
+
+```
     {
-        "ParameterKey":     "DiscoveryURL",
-        "ParameterValue":   "https://discovery.etcd.io/40826e8da55f4d9026935ab67b243c6a"
+        "ParameterKey":     "InstanceType",
+        "ParameterValue":   "m3.xlarge"
     }
 ```
-NOTE: If you're interested in running your own discovery endpoint or want to know more
-about the discovery URL, see http://discovery.etcd.io for more information. You can also
-read more on how you can customize this cluster by looking at the
-[CoreOS EC2 template][template] and applying it to [cloudformation.json][cf-params].
+
+The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
+which is already filled out. The defaults will be applied for the other settings.
 
 ## Run the provision script
 Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
@@ -77,5 +87,4 @@ email: info@opdemand.com
 
 [aws-cli]: https://github.com/aws/aws-cli
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
-[cf-params]: cloudformation.json
 [pro-script]: provision-ec2-cluster.sh
