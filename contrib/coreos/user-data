@@ -5,7 +5,7 @@ coreos:
     # generate a new token for each unique cluster from https://discovery.etcd.io/new
     # uncomment the following line and replace it with your discovery URL
     # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
-    addr: $public_ipv4:4001
+    addr: $private_ipv4:4001
     peer-addr: $private_ipv4:7001
   units:
   - name: docker.service
@@ -44,7 +44,7 @@ coreos:
       Description=fleet
 
       [Service]
-      Environment=FLEET_PUBLIC_IP=$public_ipv4
+      Environment=FLEET_PUBLIC_IP=$private_ipv4
       ExecStart=/usr/bin/fleet
   - name: stop-reboot-manager.service
     command: start
@@ -56,7 +56,7 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine-reboot-manager.service
       ExecStartPost=/usr/bin/systemctl mask update-engine-reboot-manager.service
-  - name: stop-reboot-manager.service
+  - name: stop-update-engine.service
     command: start
     content: |
       [Unit]
