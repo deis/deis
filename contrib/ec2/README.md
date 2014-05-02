@@ -63,7 +63,7 @@ The script will deploy Deis and make sure the services start properly.
 
 ## Configure DNS
 While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
-you configure your own DNS records using a domain you own. See [Configuring DNS for multi-node clusters](../../README.md#configuring-dns-for-multi-node-clusters) for details.
+you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
 
 ## Use Deis!
 After that, register with Deis!

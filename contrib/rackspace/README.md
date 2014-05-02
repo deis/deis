@@ -58,7 +58,7 @@ $ cd ../.. && make run
 The script will deploy Deis and make sure the services start properly.
 
 ### Configure DNS
-You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS for multi-node clusters](../../README.md#configuring-dns-for-multi-node-clusters) for details.
+You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
 
 ### Use Deis!
 After that, register with Deis!
