@@ -58,34 +58,17 @@ FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 $ ssh-add ~/.ssh/deis
 $ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
 $ cd ../.. && make run
-The authenticity of host '54.215.248.50:22' can't be established.
-RSA key fingerprint is 86:10:74:b9:6a:ee:3b:21:d0:0f:b4:63:cc:10:64:c9.
-Are you sure you want to continue connecting (yes/no)? yes
-Warning: Permanently added '54.215.248.50:22' (RSA) to the list of known hosts.
-Job deis-registry.service started on aec641dc.../172.31.21.4
-Job deis-logger.service started on 494dcb6a.../172.31.5.226
-Job deis-database.service started on aec641dc.../172.31.21.4
-Job deis-cache.service started on aec641dc.../172.31.21.4
-Job deis-controller.service started on aec641dc.../172.31.21.4
-Job deis-builder.service started on 494dcb6a.../172.31.5.226
-Job deis-router.service started on aec641dc.../172.31.21.4
-done!
 ```
+The script will deploy Deis and make sure the services start properly.
 
-## Run Deis!
-After that, wait for the components to come up, check which host the controller is
-running on and register with Deis!
+## Configure DNS
+While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
+you configure your own DNS records using a domain you own. See [Configuring DNS for multi-node clusters](../../README.md#configuring-dns-for-multi-node-clusters) for details.
+
+## Use Deis!
+After that, register with Deis!
 ```
-$ fleetctl list-units
-UNIT                    LOAD    ACTIVE  SUB     DESC            MACHINE
-deis-builder.service    loaded  active  running deis-builder    d9f1f3ea.../172.31.5.62
-deis-cache.service      loaded  active  running deis-cache      d9f1f3ea.../172.31.5.62
-deis-controller.service loaded  active  running deis-controller d9f1f3ea.../172.31.5.62
-deis-database.service   loaded  active  running deis-database   13c5541b.../172.31.5.61
-deis-logger.service     loaded  active  running deis-logger     d9f1f3ea.../172.31.5.62
-deis-registry.service   loaded  active  running deis-registry   4c263e91.../172.31.24.155
-deis-router.service     loaded  active  running deis-router     13c5541b.../172.31.5.61
-$ deis register ec2-12-345-678-90.us-west-1.compute.amazonaws.com:8000
+$ deis register deis.example.org:8000
 username: deis
 password:
 password (confirm):

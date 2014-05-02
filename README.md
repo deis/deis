@@ -71,9 +71,16 @@ Use `make run` to start all Deis containers and attach to their log output. This
 $ make run
 ```
 
-## Additional steps for a multi-node cluster
-* Configure local DNS. For a one-node cluster we do this for you: `local.deisapp.com` resolves to the IP of the first VM, 172.17.8.100. Since we cannot know where the `deis-router` container will be running in your cluster, you'll need to setup DNS and resolve a wildcard entry to use for your apps.
-* Because of the DNS quandary, we don't start the deis-router component for you. You'll need to start this manually once DNS is setup: `systemctl start deis-router`.
+## Configuring DNS for multi-node clusters
+For a one-node cluster, both deis-router and deis-controller will run on the same host. For convenience, we've created the DNS record `local.deisapp.com` which resolves to the IP of the first VM, 172.17.8.100.
+You can use `local.deisapp.com` to both log into the controller and to access applications that you've deployed (they will be subdomains of `local.deisapp.com`, like `happy-unicorn.local.deisapp.com`).
+
+On a multi-node cluster, however, the router and controller will likely be scheduled on separate machines. Since we cannot know the IP addresses ahead of time, you'll need to setup resolution yourself using your own domain (unfortunately, wildcard hostnames are not permitted in `/etc/hosts`). The records should be as follows:
+
+* `deis.example.org` should resolve to the IP of the machine that runs `deis-controller`
+* `*.deis.example.org` (a wildcard DNS entry) should resolve to the IP of the machine that runs `deis-router`
+
+These records are necessary for multi-node Vagrant as well as any other multi-node deployments of Deis (EC2, Rackspace, etc.).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.
