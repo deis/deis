@@ -90,8 +90,8 @@ class FleetClient(object):
         """
         print 'Starting {name}'.format(**locals())
         env = self.env.copy()
-        self._start_log(name, env)
         self._start_container(name, env)
+        self._start_log(name, env)
         self._start_announcer(name, env)
         self._wait_for_announcer(name, env)
 
