@@ -82,6 +82,7 @@ start: check-fleet
 	fleetctl --strict-host-key-checking=false submit controller/systemd/*
 	fleetctl --strict-host-key-checking=false start controller/systemd/*
 	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-controller.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "controller" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(call check_for_errors)
 
 	@# builder
 	$(call echo_yellow,"Done! Waiting for deis-builder to start (this can also take some time)... ")
