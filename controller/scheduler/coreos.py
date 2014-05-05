@@ -199,10 +199,10 @@ Description={name}
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=-/usr/bin/docker run --name {name} -P -e PORT={port} {image} {command}
-ExecStartPost=-/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
-    -/bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
-ExecStop=-/usr/bin/docker rm -f {name}
+ExecStart=/usr/bin/docker run --name {name} -P -e PORT={port} {image} {command}
+ExecStartPost=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
+    /bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
+ExecStop=/usr/bin/docker rm -f {name}
 """
 
 ANNOUNCE_TEMPLATE = """
