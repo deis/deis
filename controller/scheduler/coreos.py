@@ -183,17 +183,6 @@ class FleetClient(object):
         rc = p.wait()
         return rc, p.stdout.read()
 
-    def run(self, name, image, command):
-        """
-        Run a one-off command
-        """
-        print 'Running {name}'.format(**locals())
-        output = subprocess.PIPE
-        p = subprocess.Popen('fleetrun.sh {command}'.format(**locals()), shell=True, env=self.env,
-                             stdout=output, stderr=subprocess.STDOUT)
-        rc = p.wait()
-        return rc, p.stdout.read()
-
     def attach(self, name):
         """
         Attach to a job's stdin, stdout and stderr
@@ -243,29 +232,4 @@ ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.inf
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
-
-ROUTER_TEMPLATE = """
-[Unit]
-Description={name} router
-After=docker.service
-Requires=docker.service
-
-[Service]
-ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 80:80 -p 443:443 {image} {command}
-ExecStop=-/usr/bin/docker rm -f {name}
-TimeoutStartSec=10min
-"""
-
-LOGGER_TEMPLATE = """
-[Unit]
-Description={name} logger
-After=docker.service
-Requires=docker.service
-
-[Service]
-ExecStartPre=/usr/bin/docker pull {image}
-ExecStart=-/usr/bin/docker run --name {name} -p 514:514 -e PORT=514 {image} {command}
-ExecStop=-/usr/bin/docker rm -f {name}
 """
