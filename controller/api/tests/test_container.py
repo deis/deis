@@ -151,6 +151,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
+        self.assertEqual(max(c['num'] for c in response.data['results']), 2)
         url = "/api/apps/{app_id}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

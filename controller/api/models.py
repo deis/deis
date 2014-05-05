@@ -15,6 +15,7 @@ from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Max
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
@@ -138,9 +139,6 @@ class App(UuidAuditedModel):
         """Scale containers up or down to match requested."""
         requested_containers = self.structure.copy()
         release = self.release_set.latest()
-        # increment new container nums off the most recent container
-        all_containers = self.container_set.all().order_by('-created')
-        container_num = 1 if not all_containers else all_containers[0].num + 1
         msg = 'Containers scaled ' + ' '.join(
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
@@ -148,6 +146,9 @@ class App(UuidAuditedModel):
         to_add, to_remove = [], []
         for container_type in requested_containers.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
+            # increment new container nums off the most recent container
+            results = self.container_set.filter(type=container_type).aggregate(Max('num'))
+            container_num = results.get('num__max') or 0 + 1
             requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
             if diff == 0:
