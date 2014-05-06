@@ -583,6 +583,19 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def auth(self, args):
+        """
+        Valid commands for auth:
+
+        auth:register          register a new user
+        auth:cancel            remove the current account
+        auth:login             authenticate against a controller
+        auth:logout            clear the current user session
+
+        Use `deis help [command]` to learn more
+        """
+        return
+
     def auth_register(self, args):
         """
         Register a new user with a Deis controller
