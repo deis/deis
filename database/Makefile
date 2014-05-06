@@ -1,5 +1,5 @@
 build:
-	vagrant ssh -c 'cd share/database && sudo docker build -t deis/database .'
+	vagrant ssh -c 'cd share/database && sudo docker build -t deisreleases/database-v0.8.0 .'
 
 install:
 	vagrant ssh -c 'sudo systemctl enable /home/core/share/database/systemd/*'
@@ -25,4 +25,4 @@ clean: uninstall
 	vagrant ssh -c 'sudo docker rm -f deis-database'
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/database'
+	vagrant ssh -c 'sudo docker rmi deisreleases/database-v0.8.0'

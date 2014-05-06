@@ -3,7 +3,7 @@
 all: build run
 
 build:
-	vagrant ssh -c 'cd share/controller && sudo docker build -t deis/controller .'
+	vagrant ssh -c 'cd share/controller && sudo docker build -t deisreleases/controller-v0.8.0 .'
 
 install:
 	vagrant ssh -c 'sudo systemctl enable /home/core/share/controller/systemd/*'
@@ -29,7 +29,7 @@ clean: uninstall
 	vagrant ssh -c 'sudo docker rm -f deis-controller'
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/controller'
+	vagrant ssh -c 'sudo docker rmi deisreleases/controller-v0.8.0'
 
 test:
 	python manage.py test --noinput api web

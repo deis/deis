@@ -4,10 +4,10 @@ Description=deis-logger
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/logger >/dev/null || /usr/bin/docker pull deis/logger"
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deisreleases/logger-v0.8.0 >/dev/null || /usr/bin/docker pull deisreleases/logger-v0.8.0"
 ExecStartPre=/bin/sh -c "/usr/bin/docker inspect deis-logger >/dev/null && /usr/bin/docker rm -f deis-logger || true"
 ExecStartPre=/bin/sh -c "/usr/bin/docker start deis-logger-data || /usr/bin/docker run --name deis-logger-data -v /var/log/deis deis/base /bin/true"
-ExecStart=/bin/sh -c "docker run --name deis-logger -p 514:514/udp -e PUBLISH=514 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from deis-logger-data deis/logger"
+ExecStart=/bin/sh -c "docker run --name deis-logger -p 514:514/udp -e PUBLISH=514 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from deis-logger-data deisreleases/logger-v0.8.0"
 ExecStop=/usr/bin/docker rm -f deis-logger
 
 [Install]

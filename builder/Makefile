@@ -1,5 +1,5 @@
 build:
-	vagrant ssh -c 'cd share/builder && docker build -t deis/builder .'
+	vagrant ssh -c 'cd share/builder && docker build -t deisreleases/builder-v0.8.0 .'
 
 install:
 	vagrant ssh -c 'sudo systemctl enable /home/core/share/builder/systemd/*'
@@ -25,4 +25,4 @@ clean: uninstall
 	vagrant ssh -c 'sudo docker rm -f deis-builder'
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/builder'
+	vagrant ssh -c 'sudo docker rmi deisreleases/builder-v0.8.0'

@@ -4,9 +4,9 @@ Description=deis-router
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/router >/dev/null || /usr/bin/docker pull deis/router"
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deisreleases/router-v0.8.0 >/dev/null || /usr/bin/docker pull deisreleases/router-v0.8.0"
 ExecStartPre=/bin/sh -c "/usr/bin/docker inspect deis-router >/dev/null && /usr/bin/docker rm -f deis-router || true"
-ExecStart=/bin/sh -c "docker run --name deis-router -p 80:80 -e PUBLISH=80 -e HOST=$COREOS_PRIVATE_IPV4 deis/router"
+ExecStart=/bin/sh -c "docker run --name deis-router -p 80:80 -e PUBLISH=80 -e HOST=$COREOS_PRIVATE_IPV4 deisreleases/router-v0.8.0"
 ExecStop=/usr/bin/docker rm -f deis-router
 
 [Install]
