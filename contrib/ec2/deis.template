@@ -159,8 +159,13 @@
         "InstanceType": {"Ref": "InstanceType"},
         "KeyName": {"Ref": "KeyPair"},
         "SecurityGroups": [{"Ref": "CoreOSSecurityGroup"}, {"Ref": "DeisSecurityGroup"}],
-        "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] }
-        }
+        "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] } },
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/sda",
+            "Ebs" : { "VolumeSize" : "100" }
+          }
+        ]
       }
     }
   }
