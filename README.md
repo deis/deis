@@ -28,7 +28,7 @@ On your workstation:
 * Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * Install the fleetctl client: Install v0.2.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
-* Install nfs server (nfs-kernel-server on Ubuntu)
+* Need to have nfs server installed (nfs-kernel-server on Ubuntu)
 
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
