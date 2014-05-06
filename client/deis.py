@@ -469,6 +469,7 @@ class DeisClient(object):
                         stdout=subprocess.PIPE)
                     print('Git remote deis added')
                 except subprocess.CalledProcessError:
+                    print('Could not create Deis remote')
                     sys.exit(1)
         else:
             raise ResponseError(response)
@@ -607,10 +608,9 @@ class DeisClient(object):
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             rc, output = json.loads(response.content)
-            if rc != 0:
-                print('Warning: non-zero return code {}'.format(rc))
             sys.stdout.write(output)
             sys.stdout.flush()
+            sys.exit(rc)
         else:
             raise ResponseError(response)
 
@@ -638,7 +638,7 @@ class DeisClient(object):
             confirm = getpass('password (confirm): ')
             if password != confirm:
                 print('Password mismatch, aborting registration.')
-                return False
+                sys.exit(1)
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
@@ -712,10 +712,9 @@ class DeisClient(object):
             print("Logged in as {}".format(username))
             return username
         else:
-            print('Login failed')
             self._session.cookies.clear()
             self._session.cookies.save()
-            return False
+            raise ResponseError(response)
 
     def auth_logout(self, args):
         """
@@ -1176,7 +1175,7 @@ class DeisClient(object):
             match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
             if not match:
                 print("Could not parse SSH public key {0}".format(name))
-                return
+                sys.exit(1)
             key_type, key_str, key_comment = match.groups()
             if key_comment:
                 key_id = key_comment
