@@ -29,6 +29,10 @@ On your workstation:
 * Install the fleetctl client: Install v0.2.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
+If you're on Ubuntu, you need to install the nfs-kernel-server package as it's required for sharing folders between your host and your CoreOS VM:
+
+    sudo apt-get install nfs-kernel-server
+
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
 * Set `DEIS_NUM_INSTANCES` to the desired size of your cluster: ```$ export DEIS_NUM_INSTANCES=3```
