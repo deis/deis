@@ -6,11 +6,6 @@ language: python
 python:
   - "2.7"
 
-branches:
-  only:
-    - master
-    - release
-
 services:
   - postgresql
 
