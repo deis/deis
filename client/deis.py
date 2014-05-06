@@ -600,7 +600,9 @@ class DeisClient(object):
 
         Usage: deis apps:run <command>...
         """
-        app = self._session.app
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         body = {'command': ' '.join(sys.argv[2:])}
         response = self._dispatch('post',
                                   "/api/apps/{}/run".format(app),
