@@ -1,0 +1,18 @@
+[Unit]
+Description=deis-controller
+Requires=deis-logger.service
+After=deis-logger.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "/usr/bin/docker history deis/controller >/dev/null || /usr/bin/docker pull deis/controller"
+ExecStartPre=/bin/sh -c "/usr/bin/docker inspect deis-controller >/dev/null && /usr/bin/docker rm -f deis-controller || true"
+ExecStart=/bin/sh -c "docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger deis/controller"
+ExecStop=/usr/bin/docker rm -f deis-controller
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineOf=deis-logger.service

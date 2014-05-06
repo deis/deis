@@ -1,101 +1,80 @@
 """
-Core Deis API functions that interact with providers and
-configuration management.
+Long-running tasks for the Deis Controller API
 
 This module orchestrates the real "heavy lifting" of Deis, and as such these
 functions are decorated to run as asynchronous celery tasks.
 """
 
 from __future__ import unicode_literals
-import importlib
+
+import threading
 
 from celery import task
 
-from deis import settings
-from provider import import_provider_module
-from .exceptions import BuildNodeError
 
-
-# import user-defined config management module
-CM = importlib.import_module(settings.CM_MODULE)
+@task
+def create_cluster(cluster):
+    cluster._scheduler.setUp()
 
 
 @task
-def build_layer(layer):
-    """
-    Build a layer using its cloud provider.
-
-    :param layer: a :class:`~api.models.Layer` to build
-    """
-    provider = import_provider_module(layer.flavor.provider.type)
-    provider.build_layer(layer.flat())
+def destroy_cluster(cluster):
+    for app in cluster.app_set.all():
+        app.destroy()
+    cluster._scheduler.tearDown()
 
 
 @task
-def destroy_layer(layer):
-    """
-    Destroy a layer.
-
-    :param layer: a :class:`~api.models.Layer` to destroy
-    """
-    provider = import_provider_module(layer.flavor.provider.type)
-    provider.destroy_layer(layer.flat())
-    layer.delete()
+def deploy_release(app, release):
+    containers = app.container_set.all()
+    threads = []
+    for c in containers:
+        threads.append(threading.Thread(target=c.deploy, args=(release,)))
+    [t.start() for t in threads]
+    [t.join() for t in threads]
 
 
 @task
-def build_node(node):
-    """
-    Build a node using its cloud provider.
+def start_containers(containers):
+    create_threads = []
+    start_threads = []
+    for c in containers:
+        create_threads.append(threading.Thread(target=c.create))
+        start_threads.append(threading.Thread(target=c.start))
+    [t.start() for t in create_threads]
+    [t.join() for t in create_threads]
+    [t.start() for t in start_threads]
+    [t.join() for t in start_threads]
 
-    :param node: a :class:`~api.models.Node` to build
-    """
-    provider = import_provider_module(node.layer.flavor.provider.type)
-    provider_id, fqdn, metadata = provider.build_node(node.flat())
-    node.provider_id = provider_id
-    node.fqdn = fqdn
-    node.metadata = metadata
-    node.save()
+
+@task
+def stop_containers(containers):
+    destroy_threads = []
+    delete_threads = []
+    for c in containers:
+        destroy_threads.append(threading.Thread(target=c.destroy))
+        delete_threads.append(threading.Thread(target=c.delete))
+    [t.start() for t in destroy_threads]
+    [t.join() for t in destroy_threads]
+    [t.start() for t in delete_threads]
+    [t.join() for t in delete_threads]
+
+
+@task
+def run_command(c, command):
+    release = c.release
+    version = release.version
+    image = release.image
     try:
-        CM.bootstrap_node(node.flat())
-    except RuntimeError as err:
-        raise BuildNodeError(str(err))
-
-
-@task
-def destroy_node(node):
-    """
-    Destroy a node.
-
-    :param node: a :class:`~api.models.Node` to destroy
-    """
-    provider = import_provider_module(node.layer.flavor.provider.type)
-    provider.destroy_node(node.flat())
-    CM.purge_node(node.flat())
-    node.delete()
-
-
-@task
-def converge_node(node):
-    """
-    Converge a node, aligning it with an intended configuration.
-
-    :param node: a :class:`~api.models.Node` to converge
-    """
-    output, rc = CM.converge_node(node.flat())
-    return output, rc
-
-
-@task
-def run_node(node, command):
-    """
-    Run a single shell command on a container on a node.
-
-    Does not support interactive commands.
-
-    :param node: a :class:`~api.models.Node` on which to run a command
-    """
-    output, rc = CM.run_node(node.flat(), command)
-    if rc != 0 and 'failed to setup the container' in output:
-        output = '\033[35mPlease run `git push deis master` first.\033[0m\n' + output
-    return output, rc
+        # pull the image first
+        rc, pull_output = c.run("docker pull {image}".format(**locals()))
+        if rc != 0:
+            raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
+        # run the command
+        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '--rm', image])
+        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
+                             for k, v in release.config.values.items()])
+        command = "docker run {env_args} {docker_args} {command}".format(**locals())
+        return c.run(command)
+    finally:
+        c.delete()

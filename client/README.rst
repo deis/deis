@@ -6,8 +6,8 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 .. image:: https://badge.fury.io/py/deis.png
     :target: http://badge.fury.io/py/deis
 
-.. image:: https://travis-ci.org/opdemand/deis.png?branch=master
-    :target: https://travis-ci.org/opdemand/deis
+.. image:: https://travis-ci.org/deis/deis.png?branch=master
+    :target: https://travis-ci.org/deis/deis
 
 .. image:: https://pypip.in/d/deis/badge.png
     :target: https://pypi.python.org/pypi/deis/
@@ -20,16 +20,15 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 What is Deis?
 -------------
 
-Deis is an open source PaaS that makes it easy to deploy and scale LXC
-containers and Chef nodes used to host applications, databases, middleware
-and other services. Deis leverages Chef, Docker and Heroku Buildpacks to
-provide a private PaaS that is lightweight and flexible.
+Deis is an open source PaaS that makes it easy to deploy and scale containers
+to host applications, databases, middleware and other services. Deis leverages
+Docker, CoreOS and Heroku Buildpacks to provide a private PaaS that is
+lightweight and flexible.
 
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
-anything using Heroku Buildpacks, Docker images or Chef recipes. Deis is
-designed to work with any cloud provider. Currently Amazon EC2, Rackspace,
-and DigitalOcean are supported.
+anything using Docker images or Heroku Buildpacks. Deis is designed to work
+with any cloud provider. Currently Amazon EC2 and Rackspace are supported.
 
 
 Why Deis?
@@ -39,23 +38,23 @@ Deploy anything
 ---------------
 
 Deploy a wide range of languages and frameworks with a simple git push
-using Heroku Buildpacks or Dockerfiles. Use custom Chef layers
-to deploy databases, middleware and other add-on services.
+using Heroku Buildpacks or Dockerfiles.
 
 
 Control everything
 ------------------
 
-Choose your hosting provider configuration. Define a formation with your
-own proxy and runtime layers. Retain full root access to every node.
-Manage your platform with a private Deis controller.
+Choose your hosting provider configuration. Define a cluster to meet your own
+needs. Retain full root access to every node. Manage your platform with a
+private Deis controller.
 
 
 Scale effortlessly
 ------------------
 
-Scale nodes and containers with a single command. Node provisioning,
-container balancing and proxy reconfiguration are completely automated.
+Add nodes automatically and scale containers with a single command. Smart
+scheduling, container balancing and proxy reconfiguration are completely
+automated.
 
 
 100% Open Source
@@ -63,7 +62,7 @@ container balancing and proxy reconfiguration are completely automated.
 
 Free, transparent and easily customized. Join the open-source PaaS
 and DevOps community by using Deis and complimentary projects like
-Docker, Chef and Heroku Buildpacks.
+Docker, CoreOS and Heroku Buildpacks.
 
 
 Get Started
@@ -78,15 +77,15 @@ Get Started
 If you don't have `Python`_ installed, you can download a binary executable
 version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.7.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.7.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.7.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.8.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.8.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.8.0.tgz
 
 2. `Register a User`_:
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com
+    $ deis register http://local.deisapp.com:8000
     $ deis keys:add
 
 

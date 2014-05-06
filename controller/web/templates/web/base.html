@@ -23,7 +23,7 @@
   <![endif]-->
 
   {% ifequal page 'support' %}
-  <a class="fork" href="http://github.com/opdemand/deis"><div class="forkImage"></div></a>
+  <a class="fork" href="http://github.com/deis/deis"><div class="forkImage"></div></a>
   {% endifequal %}
   <div class="container">
     <div class="row">
@@ -33,7 +33,7 @@
             <li><a href="{% url "dashboard" %}"><img class="logo" src="{% static "img/menu-logo.png" %}" alt="deis logo"></a></li>
             <li class="divider"></li>
             {% if user.is_authenticated %}
-            <li class="navitem{% ifequal page "formations" %} selected pink{% endifequal %}"><a href="{% url "formations" %}">Formations</a></li>
+            <li class="navitem{% ifequal page "clusters" %} selected pink{% endifequal %}"><a href="{% url "clusters" %}">Clusters</a></li>
             <li class="divider"></li>
             <li class="navitem{% ifequal page "apps" %} selected blue{% endifequal %}"><a href="{% url "apps" %}">Apps</a></li>
             <li class="divider"></li>
@@ -49,7 +49,7 @@
           <div class="social-menu">
             <a href="https://twitter.com/opendeis" target="_blank"><span class="twitter"></span></a>
             <a href="http://freenode.net" target="_blank"><span class="irc"></span></a>
-            <a href="https://github.com/opdemand/deis" target="_blank"><span class="github"></span></a>
+            <a href="https://github.com/deis/deis" target="_blank"><span class="github"></span></a>
             <a href="http://stackoverflow.com/" target="_blank"><span class="stack"></span></a>
           </div>
           <div class="byline-menu">

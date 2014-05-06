@@ -10,7 +10,6 @@ branches:
   only:
     - master
     - release
-    - scheduler
 
 services:
   - postgresql
@@ -45,4 +44,4 @@ script:
   - make -C docs
 
 after_success:
-  - coveralls
+  - cd controller && coveralls

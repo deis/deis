@@ -1,7 +1,0 @@
-#!/bin/bash
-set -eo pipefail
-
-# if the keyspace already exists, exit early
-etcdctl -C $ETCD ls $ETCD_PATH >/dev/null && exit 0
-
-etcdctl -C $ETCD mkdir $ETCD_PATH/users || true

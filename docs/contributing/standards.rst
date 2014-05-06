@@ -1,16 +1,22 @@
 :title: Coding Standards
 :description: Deis project coding standards. Contributors to Deis should feel welcome to make changes to any part of the codebase.
-:keywords: deis, contributing, coding, python, test, tests, testing
 
 .. _standards:
 
 Coding Standards
 ================
 
-Deis is a `Python`_ project. We chose Python over other compelling
-languages because it is widespread, well-documented, and friendly to
-a large number of developers. Source code benefits from many eyes
-upon it.
+Deis is a Python_ and Go_ project.
+
+We chose Go_ because it is simple, reliable, and efficient. These are
+values Deis shares. Go also excels at programming systems-level tasks,
+with powerful and simple networking, concurrency, and testing facilities
+included. Our coding standards and recommendations for Go code in the
+Deis project are evolving, but will be added to this document soon.
+
+We chose Python_ over other compelling languages because it is
+widespread, well-documented, and friendly to a large number of
+developers. Source code benefits from many eyes upon it.
 
 `The Zen of Python`_ emphasizes simple over clever, and we agree.
 Readability counts. Deis also aims for complete test coverage.
@@ -59,12 +65,12 @@ ensure that everything passes and that code coverage has not declined.
 .. code-block:: console
 
     $ make -C controller coverage
-    coverage run manage.py test --noinput api cm provider web
+    coverage run manage.py test --noinput api web
     WARNING Cannot synchronize with etcd cluster
     Creating test database for alias 'default'...
-    ....................................................................
+    ...............................................
     ----------------------------------------------------------------------
-    Ran 68 tests in 84.856s
+    Ran 47 tests in 47.768s
 
     OK
     Destroying test database for alias 'default'...
@@ -79,8 +85,8 @@ of what code was exercised while the tests were running. Open the file
 overall coverage percentage has not receded as a result of your
 changes. Current test coverage can be found here:
 
-.. image:: https://coveralls.io/repos/opdemand/deis/badge.png?branch=master
-    :target: https://coveralls.io/r/opdemand/deis?branch=master
+.. image:: https://coveralls.io/repos/deis/deis/badge.png?branch=master
+    :target: https://coveralls.io/r/deis/deis?branch=master
     :alt: Coverage Status
 
 
@@ -108,16 +114,21 @@ Deis maintainers add "**LGTM**" (Looks Good To Me) in code
 review comments to indicate that a PR is acceptable. Any code change--other than
 a simple typo fix or one-line documentation change--requires at least two of
 Deis' maintainers to accept the change in this manner before it can be merged.
+If the PR is from a Deis maintainer, then he or she should be the one to merge
+it. This is for cleanliness in the commit stream as well as giving the
+maintainer the benefit of adding more fixes or commits to a PR before the
+merge.
 
 .. _Python: http://www.python.org/
+.. _Go: http://golang.org/
 .. _flake8: https://pypi.python.org/pypi/flake8/
 .. _pep8_tool: https://pypi.python.org/pypi/pep8/
 .. _pyflakes: https://pypi.python.org/pypi/pyflakes/
 .. _mccabe: https://pypi.python.org/pypi/mccabe/
 .. _PEP8: http://www.python.org/dev/peps/pep-0008/
 .. _`The Zen of Python`: http://www.python.org/dev/peps/pep-0020/
-.. _`pull request`: https://github.com/opdemand/deis/pulls
-.. _`GitHub issue`: https://github.com/opdemand/deis/issues
+.. _`pull request`: https://github.com/deis/deis/pulls
+.. _`GitHub issue`: https://github.com/deis/deis/issues
 
 
 .. _commit_style_guide:
@@ -296,3 +307,17 @@ Examples
     character size.
 
     closes #392
+
+Forcing no Build for TravisCI
+"""""""""""""""""""""""""""""
+
+If you're committing a PR that is just a small typo fix or a README change, you can force
+TravisCI to not build your commit by adding [skip ci] below the message body. For example:
+
+.. code-block:: console
+
+    fix(README): typo
+
+    It's spelled tomato, not tomatoe.
+
+    [skip ci]

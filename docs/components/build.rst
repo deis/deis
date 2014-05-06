@@ -1,6 +1,5 @@
 :title: Build
 :description: Deis builds are created automatically on the controller when a developer uses git push.
-:keywords: build, release, git, git push, deis
 
 .. _build:
 

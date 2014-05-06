@@ -3,56 +3,56 @@
 # This script is designed to be run inside the container
 #
 
-# configure etcd
-export ETCD=${ETCD:-127.0.0.1:4001}
-export ETCD_PATH=${ETCD_PATH:-/deis/logs}
-export ETCD_TTL=${ETCD_TTL:-10}
-
 # fail hard and fast even on pipelines
 set -eo pipefail
 
-# configure service discovery
-export HOST=${HOST:-localhost}
-export PORT=${PORT:-514}
-export PROTO=${PROTO:-tcp}
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
 
-# wait for etcd to be available
-until etcdctl -C $ETCD ls >/dev/null; do
-	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+# configure etcd
+export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD="$HOST:$ETCD_PORT"
+export ETCD_PATH=${ETCD_PATH:-/deis/logs}
+export ETCD_TTL=${ETCD_TTL:-10}
 
-# wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
-
-# seed initial service configuration if necessary
-$(dirname ${BASH_SOURCE[0]})/seed >/dev/null 2>&1
-
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+# fix perms on log directory
+chmod 755 /var/log/deis
 
 # spawn the service in the background
-$(dirname ${BASH_SOURCE[0]})/start &
+/go/bin/syslogd &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
-	kill -TERM $SERVICE_PID
-	wait $SERVICE_PID 2>/dev/null
+    kill -TERM $SERVICE_PID
+    wait $SERVICE_PID 2>/dev/null
 }
 trap on_exit INT TERM
 
-# spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
-CONFD_PID=$!
+echo deis-logger running...
 
-# wait for the service to become available
-sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+# publish the service to etcd using the injected PORT
+if [[ ! -z $PUBLISH ]]; then
 
-# as long as the service remains up, keep publishing to etcd with a TTL
-$(dirname ${BASH_SOURCE[0]})/publish &
+    # configure service discovery
+    PORT=${PORT:-514}
+    PROTO=${PROTO:-udp}
+
+    set +e
+
+    # wait for the service to become available on PUBLISH port
+    sleep 1 && while [[ -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+
+    # while the port is listening, publish to etcd
+    while [[ ! -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/host $HOST --no-sync >/dev/null
+        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/port $PORT --no-sync >/dev/null
+        sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+    done
+
+    # if the loop quits, something went wrong
+    exit 1
+
+fi
 
 wait

@@ -1,28 +1,26 @@
-:title: Deis Docs | Your PaaS. Your Rules.
-:description: Welcome to Deis
-:keywords: Deis, Django Celery, API, Python, Chef, PaaS, commandline, command-line, contributing, faq, terms, tutorial
+:title: Your PaaS. Your Rules.
+:description: Welcome to Deis, the open source PaaS.
 
 Welcome
 =======
-
-Deis is a Django/Celery API server, Python CLI and set of
-`Chef cookbooks`_ that combine to provide a Heroku-inspired application
-platform for public and private clouds. Your PaaS. Your Rules.
+Deis is a lightweight, flexible and powerful open source PaaS. Building
+on Docker and CoreOS, Deis provides a familiar, Heroku-inspired workflow
+using efficient containerization, on your cloud or hardware.
+Your PaaS. Your Rules.
 
 .. image:: ../controller/web/static/img/deis-graphic.png
     :alt: Deis cover logo
 
-If you are new to Deis, you should start with :ref:`Concepts`
-and basic :ref:`Usage` of the command-line client.
-Follow the :ref:`Developer Guide <developer>` to deploy an application on Deis.
-The :ref:`Operations Guide <operations>` will walk you through deploying Deis itself.
+If you are new to Deis, start with :ref:`Concepts` and basic
+:ref:`Usage` of the command-line client. Follow the
+:ref:`Developer Guide <developer>` to learn how to deploy and scale
+your own application. The :ref:`Operations Guide <operations>` will
+walk you through provisioning and managing Deis itself.
 
-Want to learn about Deis internals?  You'll find complete API documentation
-in the :ref:`client` and :ref:`server` sections.
+So how does it work? Read about the overall :ref:`architecture` and
+individual :ref:`components`, or search the API reference for the
+:ref:`Client <client>` and :ref:`Server <server>`.
 
-Interested in contributing to the Deis project?  Check out our
-:ref:`Contributor Overview <contributor>` and
-:ref:`localdev` instructions.
-
-.. _`Chef cookbooks`: https://github.com/opdemand/deis-cookbook
-
+Interested in contributing to the Deis project? Check out our
+:ref:`Local Development <localdev>` instructions
+and :ref:`Contributor Overview <contributor>`.

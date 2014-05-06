@@ -1,6 +1,5 @@
 :title: Deploy an Application on Deis
 :description: First steps for developers using Deis to deploy and scale applications.
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev
 
 Deploy an Application
 =====================
@@ -17,7 +16,7 @@ Before deploying an application, all users must first authenticate against the D
 
 .. code-block:: console
 
-    $ deis login http://example.com
+    $ deis login http://example.com:8000
     username: deis
     password:
     Logged in as deis
@@ -31,7 +30,7 @@ create`` command to create a remote repository for you to push your application 
 .. code-block:: console
 
     $ cd example-java-jetty    # change into your application's git root
-    $ deis create --formation=dev
+    $ deis create --cluster=dev
     Creating application... done, created peachy-waxworks
     Git remote deis added
 
@@ -44,7 +43,7 @@ you can use `our Dockerfile example`_.
 
 .. code-block:: console
 
-    ><> deis create --formation=dev
+    ><> deis create --cluster=dev
     Creating application... done, created owlish-huntress
     Git remote deis added
     ><> git push deis master
@@ -74,14 +73,14 @@ you can use `our Dockerfile example`_.
      ---> 5a55b32b8da2
     Successfully built 5a55b32b8da2
     -----> Pushing image to private registry
-    
+
            Launching... done, v2
-    
+
     -----> owlish-huntress deployed to Deis
            http://owlish-huntress.example.com
-    
+
            To learn more, use `deis help` or visit http://deis.io
-    
+
     ><> curl -s http://owlish-huntress.example.com
     <h1>Powered by Deis</h1>
 
@@ -89,10 +88,10 @@ Supported Applications
 ----------------------
 
 As a Heroku-inspired Platform-as-a-Service, Deis is designed to deploy and scale
-apps that adhere to `twelve-factor methodology`_.  
+apps that adhere to `twelve-factor methodology`_.
 
-For example, if your application persists state to the local filesystem 
--- common with content management systems like Wordpress and Drupal -- 
+For example, if your application persists state to the local filesystem
+-- common with content management systems like Wordpress and Drupal --
 it is not twelve-factor compatible and may not be suitable for Deis or other PaaSes.
 
 Fortunately, most modern applications feature a stateless application tier that

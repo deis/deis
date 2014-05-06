@@ -1,6 +1,5 @@
 :title: Key
 :description: Deis keys are SSH keys used during the git push process. Use the Deis client to manage a list of keys on the Deis controller.
-:keywords: key, ssh, deis
 
 .. _key:
 

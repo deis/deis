@@ -1,65 +1,90 @@
-Provision a Deis Controller on Amazon EC2
-=========================================
+# Provision a Deis Cluster on Amazon EC2
 
-1. Install [knife-ec2][knifec2] with `gem install knife-ec2` or just
-`bundle install` from the root directory of your deis repository:
+## Install the [AWS Command Line Interface][aws-cli]:
 ```console
-$ cd $HOME/projects/deis
-$ gem install knife-ec2
-Fetching: knife-ec2-0.6.4.gem (100%)
-Successfully installed knife-ec2-0.6.4
-1 gem installed
-Installing ri documentation for knife-ec2-0.6.4...
-Installing RDoc documentation for knife-ec2-0.6.4...
+$ pip install awscli
+Downloading/unpacking awscli
+  Downloading awscli-1.3.6.tar.gz (173kB): 173kB downloaded
+  ...
 ```
 
-2. Export your EC2 credentials as environment variables and edit knife.rb
-to read them:
+## Configure aws-cli
+Run `aws configure` to set your AWS credentials:
 ```console
-$ cat <<'EOF' >> $HOME/.bash_profile
-export AWS_ACCESS_KEY=<your_aws_access_key>
-export AWS_SECRET_KEY=<your_aws_secret_key>
-EOF
-$ source $HOME/.bash_profile
-$ cat <<'EOF' >> $HOME/.chef/knife.rb
-knife[:aws_access_key_id] = "#{ENV['AWS_ACCESS_KEY']}"
-knife[:aws_secret_access_key] = "#{ENV['AWS_SECRET_KEY']}"
-EOF
-$ knife ec2 server list
-Instance ID  Name  Public IP  Private IP  Flavor  Image  SSH Key  Security Groups  State
+$ aws configure
+AWS Access Key ID [None]: ***************
+AWS Secret Access Key [None]: ************************
+Default region name [None]: us-west-1
+Default output format [None]:
 ```
 
-3. Download and install the [EC2 Command Line Tools][ec2cli] as described in
-[AWS' documentation][ec2cli] and ensure they are available in your $PATH:
+## Upload keys
+Generate and upload a new keypair to AWS, ensuring that the name of the keypair is set to "deis".
 ```console
-$ ec2-describe-group
-GROUP	sg-33d1045a	693041077886	default	default group
-PERMISSION	693041077886	default	ALLOWS	tcp	0	65535	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
-PERMISSION	693041077886	default	ALLOWS	udp	0	65535	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
-PERMISSION	693041077886	default	ALLOWS	icmp	-1	-1	FROM	USER	693041077886	NAME default	ID sg-33d1045a	ingress
+$ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+$ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis.pub
 ```
 
-4. Run the provisioning script to create a new Deis controller:
+## Choose number of instances
+By default, the script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
 ```console
-$ ./contrib/ec2/provision-ec2-controller.sh us-west-2
-Creating security group: deis-controller
-+ ec2-create-group deis-controller -d 'Created by Deis'
-GROUP	sg-3c3a1c0c	deis-controller	Created by Deis
-+ set +x
-Authorizing TCP ports 22,80,443,514 from 0.0.0.0/0...
-+ ec2-authorize deis-controller -P tcp -p 22 -s 0.0.0.0/0
-...
-ec2-203.0.113.33.us-west-2.compute.amazonaws.com
-ec2-203-0-113-33.us-west-2.compute.amazonaws.com Chef Client finished, 74 resources updated
-...
-Instance ID: i-31c8d106
-Flavor: m1.large
-Image: ami-72e27c42
-Region: us-west-2
-Public DNS Name: ec2-203-0-113-33.us-west-2.compute.amazonaws.com
-Public IP Address: 203.0.113.33
-Run List: recipe[deis::controller]
-...
+$ export DEIS_NUM_INSTANCES=5
 ```
 
-[knifec2]: http://docs.opscode.com/plugin_knife_ec2.html
+## Customize user-data
+Edit [user-data](../coreos/user-data) and add a new discovery URL.
+You can get a new one by sending a request to http://discovery.etcd.io/new.
+
+## Customize cloudformation.json
+By default, this script spins up m3.large instances. You can override this
+by adding a new entry to [cloudformation.json](cloudformation.json) like so:
+
+```
+    {
+        "ParameterKey":     "InstanceType",
+        "ParameterValue":   "m3.xlarge"
+    }
+```
+
+The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
+which is already filled out. The defaults will be applied for the other settings.
+
+## Run the provision script
+Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
+```console
+$ cd contrib/ec2
+$ ./provision-ec2-cluster.sh
+{
+    "StackId": "arn:aws:cloudformation:us-west-1:413516094235:stack/deis/9699ec20-c257-11e3-99eb-50fa01cd4496"
+}
+Your Deis cluster has successfully deployed.
+Please wait for all instances to come up as "running" before continuing.
+```
+
+## Initialize the cluster
+Once the cluster is up, get the hostname of any of the machines from EC2, set
+FLEETCTL_TUNNEL, and issue a `make run` from the project root:
+```console
+$ ssh-add ~/.ssh/deis
+$ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
+$ cd ../.. && make run
+```
+The script will deploy Deis and make sure the services start properly.
+
+## Configure DNS
+While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
+you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
+
+## Use Deis!
+After that, register with Deis!
+```
+$ deis register deis.example.org:8000
+username: deis
+password:
+password (confirm):
+email: info@opdemand.com
+```
+
+[aws-cli]: https://github.com/aws/aws-cli
+[template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
+[pro-script]: provision-ec2-cluster.sh

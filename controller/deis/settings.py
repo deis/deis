@@ -18,17 +18,6 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
-    }
-}
-
 CONN_MAX_AGE = 60 * 3
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
@@ -148,6 +137,7 @@ INSTALLED_APPS = (
     # Third-party apps
     'allauth',
     'allauth.account',
+    'django_fsm',
     'guardian',
     'json_field',
     'gunicorn',
@@ -155,8 +145,6 @@ INSTALLED_APPS = (
     'south',
     # Deis apps
     'api',
-    'cm',
-    'provider',
     'web',
 )
 
@@ -282,19 +270,15 @@ ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].sp
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
+DEFAULT_BUILD = 'deis/helloworld'
 
 # security keys and auth tokens
 SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 
 # registry settings
+REGISTRY_MODULE = 'registry.mock'
 REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
-
-# the config management module to use in api.models
-CM_MODULE = os.environ.get('DEIS_CM_MODULE', 'cm.mock')
-
-# default providers, typically overriden in local_settings to include ec2, etc.
-PROVIDER_MODULES = ('mock',)
 
 # check if we can register users with `deis register`
 REGISTRATION_ENABLED = True
@@ -302,11 +286,8 @@ REGISTRATION_ENABLED = True
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'sqlite3'),
-        'NAME': os.environ.get('DATABASE_NAME', 'deis.db'),
-        'USER': os.environ.get('DATABASE_USER', 'deis'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'deis'),
-        'HOST': os.environ.get('DATABASE_HOST', 'localhost'),
+        'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'postgresql_psycopg2'),
+        'NAME': os.environ.get('DATABASE_NAME', 'deis'),
     }
 }
 
@@ -318,14 +299,6 @@ ALLOWED_HOSTS = ['*']
 # see https://docs.djangoproject.com/en/1.6/ref/settings/#secure-proxy-ssl-header
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# import dynamic confd settings from /app, if they exist
-try:
-    if os.path.exists('/templates/confd_settings.py'):
-        sys.path.append('/templates')
-        from confd_settings import *  # noqa
-except ImportError:
-    pass
-
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development
@@ -335,3 +308,10 @@ try:
     from .local_settings import *  # @UnusedWildImport # noqa
 except ImportError:
     pass
+
+
+# have confd_settings within container execution override all others
+# including local_settings (which may end up in the container)
+if os.path.exists('/templates/confd_settings.py'):
+    sys.path.append('/templates')
+    from confd_settings import *  # noqa

@@ -1,35 +1,32 @@
 :title: Controller
-:description: The Deis controller is the brains of the Deis platform. Details on what the Deis controller is in charge of and what the Deis controller stack includes.
-:keywords: controller, deis
+:description: The controller is the brain of the Deis platform.
 
 .. _controller:
 
 Controller
 ==========
-The controller is the "brains" of the Deis platform.
-The controller manages container :ref:`Formations <formation>`,
-comprised of clusters of nodes providing proxy and runtime services for
-the application platform.  A single controller manages multiple
-container formations.
-
-Controllers are tied to a configuration management backend (typically a
-Chef Server) where data about users, applications and formations is stored.
+The controller is the "brain" of the Deis platform. A controller
+manages :ref:`Clusters <cluster>`, comprised of groups of nodes
+providing proxy and runtime services for the application platform. A
+single controller manages multiple clusters and applications.
 
 The controller is in charge of:
 
+* Authenticating and authorizing clients
 * Processing client API calls
-* Managing nodes that provide services to a formation
+* Managing a cluster with nodes to host services
 * Managing containers that perform work for applications
 * Managing proxies that route traffic to containers
-* Managing users, providers, flavors, keys and other base configuration
+* Managing users, keys and other base configuration
 
 The controller stack includes:
 
 * Django API Server for handling API calls
-* PostgreSQL database as a backing store for Django
-* Celery / RabbitMQ for dispatching tasks
-* A lightweight *gitreceive* hook for ``git push`` access control
-* Docker and Slugbuilder to process Heroku Buildpacks and Dockerfiles
+* Celery, backed by Redis, for dispatching tasks
 
-Follow the :ref:`Operations Guide <operations>` to setup your own private
-Deis controller.
+.. * PostgreSQL database as a backing store for Django
+.. * A lightweight *gitreceive* hook for ``git push`` access control
+.. * Docker and Slugbuilder to process Heroku Buildpacks and Dockerfiles
+
+Follow the :ref:`Operations Guide <operations>` to create your own
+private Deis controller.

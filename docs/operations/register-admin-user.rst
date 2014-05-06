@@ -1,30 +1,37 @@
 :title: Register an Admin User with Deis
 :description: Learn how to operate a Deis formation using the Deis command line interface.
-:keywords: tutorial, guide, walkthrough, howto, deis, formations
 
 .. _register-admin-user:
 
 Register an Admin User
 ======================
-Once your :ref:`Controller` is running you need to register an admin user
-using the Deis command-line client.
+Once your :ref:`Controller` is running, you must register an admin user.
+using the Deis client. The Deis command-line interface (CLI), or client,
+allows you to interact with a Deis :ref:`Controller`. You must install
+the client to use Deis.
 
-Install the Deis Client
------------------------
-Install the latest stable client using Python's `pip`_:
+Install with Pip
+----------------
+Install the latest Deis client using Python's pip_ package manager:
 
 .. code-block:: console
 
-    $ sudo pip install deis
-    Password:
+    $ pip install deis
     Downloading/unpacking deis
-      Downloading deis-0.3.0.tar.gz
+      Downloading deis-0.8.0.tar.gz
       Running setup.py egg_info for package deis
-    ...
+      ...
     Successfully installed deis
     Cleaning up...
     $ deis
     Usage: deis <command> [<args>...]
+
+If you don't have Python_ installed, you can download a binary executable
+version of the Deis client for Mac OS X, Windows, or Debian Linux:
+
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.8.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.8.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.8.0.tgz
 
 Register a User
 ---------------
@@ -32,10 +39,10 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
 
 .. important:: First User Gets Admin
    The first user to register with Deis receives "superuser" priviledges.
- 
+
 .. code-block:: console
 
-    $ deis register http://deis.example.com
+    $ deis register http://deis.example.com:8000
     username: myuser
     password:
     password (confirm):
@@ -52,48 +59,7 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
 
     :code:`deis register http://deis.example.com:8000`
 
-Discover Provider Credentials
------------------------------
-.. important:: Provider API
-   If you don't want the ability to scale servers automatically
-   using the Deis :ref:`Provider` API you can skip this section.
 
-If you want to use automated provisioning, you'll need to provide Deis 
-with cloud provider credentials used to bootstrap :ref:`Nodes <node>`.
-
-The ``deis providers:discover`` command
-will look at standard environment variables on your workstation to discover
-credentials for supported cloud providers.
-The table below shows how the environment variables on your workstation map to
-provider types and fields stored in your Deis user account.
-
-======================= =============== ==============
-Variable Name           Provider Type   Provider Field
-======================= =============== ==============
-AWS_ACCESS_KEY_ID       ec2             access_key
-AWS_SECRET_ACCESS_KEY   ec2             secret_key
-AWS_ACCESS_KEY          ec2             access_key
-AWS_SECRET_KEY          ec2             secret_key
-RACKSPACE_USERNAME      rackspace       username
-RACKSPACE_API_KEY       rackspace       api_key
-DIGITALOCEAN_CLIENT_ID  digitalocean    client_id
-DIGITALOCEAN_API_KEY    digitalocean    api_key
-======================= =============== ==============
-
-----
-
-To discover providers using the Deis client:
-
-.. code-block:: console
-
-    $ deis providers:discover
-    Discovered EC2 credentials: AAAAAAAAAAAAAAAAAAAA
-    Import EC2 credentials? (y/n) : y
-    Uploading EC2 credentials... done
-    No Rackspace credentials discovered.
-    No DigitalOcean credentials discovered.
-    No Vagrant VMs discovered.
-
-
-.. _`pip`: http://www.pip-installer.org/en/latest/installing.html
-.. _`issue 535`: https://github.com/opdemand/deis/issues/535
+.. _pip: http://www.pip-installer.org/en/latest/installing.html
+.. _Python: https://www.python.org/
+.. _`issue 535`: https://github.com/deis/deis/issues/535

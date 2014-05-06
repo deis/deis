@@ -1,6 +1,5 @@
 ﻿:title: Conduct
 :description: Deis community conduct.
-:keywords: deis, documentation, community, code, conduct, code of conduct
 
 .. _conduct:
 

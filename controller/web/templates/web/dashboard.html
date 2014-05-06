@@ -7,7 +7,7 @@
 <div class="green">
   <h1>Dashboard</h1>
   <p>
-    You have <a href="{% url "formations" %}">{% if formations %}{{ formations|length|apnumber }}{% else %}no{% endif %} formation{{ formations|pluralize }}</a> and <a href="{% url "apps" %}">{% if apps %}{{ apps|length|apnumber }}{% else %}no{% endif %} app{{ apps|pluralize }}</a>.
+    You have <a href="{% url "clusters" %}">{% if clusters %}{{ clusters|length|apnumber }}{% else %}no{% endif %} cluster{{ clusters|pluralize }}</a> and <a href="{% url "apps" %}">{% if apps %}{{ apps|length|apnumber }}{% else %}no{% endif %} app{{ apps|pluralize }}</a>.
   </p>
   <p>
     Connected to Deis controller v{{ version }} at

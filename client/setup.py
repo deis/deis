@@ -28,12 +28,12 @@ else:
 
 
 setup(name='deis',
-      version='0.7.0',
+      version='0.8.0',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',
       author_email='info@opdemand.com',
-      url='https://github.com/opdemand/deis',
+      url='https://github.com/deis/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'chef', 'docker', 'heroku',
           'aws', 'ec2', 'rackspace', 'digitalocean'

@@ -1,6 +1,5 @@
 :title: Deploying with Dockerfiles on Deis
 :description: A howto on deploying applications using Dockerfiles
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev, docker, dockerfile
 
 Dockerfiles
 ===========
@@ -12,8 +11,8 @@ own custom Docker image.
 Deploy using Dockerfiles
 ------------------------
 
-With Dockerfiles, the stack you deploy your application upon is limitless. 
-The only requirement is that your application listens on the $PORT environment variable. 
+With Dockerfiles, the stack you deploy your application upon is limitless.
+The only requirement is that your application listens on the $PORT environment variable.
 This is so `slugrunner`_ can bind your application to an available port on the runtime host.
 
 For example:

@@ -1,6 +1,5 @@
 :title: Manage an Application on Deis
 :description: First steps for developers using Deis to deploy and scale applications.
-:keywords: tutorial, guide, walkthrough, howto, deis, developer, dev
 
 Manage an Application
 =====================
@@ -33,10 +32,10 @@ that power your app.
 .. code-block:: console
 
     $ deis scale web=8
-    Scaling containers... but first, coffee!
+    Scaling processes... but first, coffee!
     done in 20s
 
-    === peachy-waxworks Containers
+    === peachy-waxworks Processes
 
     --- web: `java -cp target/classes:target/dependency/* HelloWorld`
     web.1 up 2013-12-03T00:00:25.836Z (dev-runtime-1)
@@ -100,7 +99,7 @@ the original repository and add Deis' git remote entry before attempting to
   $ git clone https://github.com/opdemand/example-java-jetty.git
   Cloning into 'example-java-jetty'... done
   $ cd example-java-jetty
-  $ git remote add -f deis git@deis-controller.local:peachy-waxworks.git
+  $ git remote add -f deis git@local.deisapp.com:peachy-waxworks.git
   Updating deis
   From deis-controller.local:peachy-waxworks
    * [new branch]      master     -> deis/master

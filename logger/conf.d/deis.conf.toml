@@ -1,6 +1,0 @@
-[template]
-src   = "deis.conf"
-dest  = "/etc/rsyslog.d/34-deis.conf"
-uid = 0
-gid = 0
-mode  = "0644"
