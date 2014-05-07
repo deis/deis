@@ -19,7 +19,7 @@ RUN apt-get update -qy
 RUN apt-get install -yq lxc-docker-0.10.0
 
 # install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
+RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
 
 # install hook dependencies
 RUN pip install pyyaml requests

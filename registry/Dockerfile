@@ -7,7 +7,7 @@ RUN apt-get install -y git-core build-essential python-dev \
     libevent-dev python-openssl liblzma-dev wget
 
 # install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.4/contrib/get-pip.py | python -
+RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
 
 # create a registry user
 RUN useradd -s /bin/bash registry
