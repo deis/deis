@@ -35,11 +35,11 @@ Rackspace cloud.
 
 Vagrant
 -------
-The `contrib/vagrant` section of the Deis project includes shell
-scripts, documentation, a Makefile and a Vagrantfile to make it easy to
-provision a multi-node Deis cluster on Vagrant_ virtual machines.
+The root of the Deis project includes documentation in README.md, a
+Makefile and a Vagrantfile to make it easy to provision a single- or
+multi-node Deis cluster on Vagrant_ virtual machines.
 
-Please see `contrib/vagrant`_ for details on using Deis with Vagrant.
+Please see README.md_ for details on using Deis with Vagrant.
 
 
 .. _`CoreOS Documentation`: https://coreos.com/docs/
@@ -48,5 +48,5 @@ Please see `contrib/vagrant`_ for details on using Deis with Vagrant.
 .. _Rackspace: https://github.com/deis/deis/tree/master/contrib/rackspace#readme
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
 .. _Vagrant: http://www.vagrantup.com/
-.. _`contrib/vagrant`: https://github.com/deis/deis/tree/master/contrib/vagrant
+.. _README.md: https://github.com/deis/deis/tree/master/README.md
 
