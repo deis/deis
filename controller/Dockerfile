@@ -20,7 +20,6 @@ RUN pip install celery==3.1.8 \
                 django-json-field==0.5.5 \
                 django-yamlfield==0.5 \
                 djangorestframework==2.3.12 \
-                gevent==1.0 \
                 gunicorn==18.0 \
                 paramiko==1.12.1 \
                 psycopg2==2.5.2 \
