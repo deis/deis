@@ -50,7 +50,6 @@ import glob
 import json
 import locale
 import os.path
-import random
 import re
 import subprocess
 import sys
@@ -639,7 +638,7 @@ class DeisClient(object):
                 print('Login failed')
         else:
             print('Registration failed', response.content)
-            return False
+            sys.exit(1)
         return True
 
     def auth_cancel(self, args):
@@ -651,7 +650,7 @@ class DeisClient(object):
         controller = self._settings.get('controller')
         if not controller:
             print('Not logged in to a Deis controller')
-            return False
+            sys.exit(1)
         print('Please log in again in order to cancel this account')
         username = self.auth_login({'<controller>': controller})
         if username:
