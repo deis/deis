@@ -26,7 +26,7 @@ RUN pip install celery==3.1.11 \
                 pycrypto==2.6.1 \
                 python-etcd==0.3.0 \
                 PyYAML==3.10 \
-                redis==2.8.0 \
+                redis==2.9.1 \
                 static==1.0.2 \
                 South==0.8.4
 
