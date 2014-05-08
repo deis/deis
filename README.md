@@ -1,6 +1,6 @@
 # Deis
 
-Deis is an open source PaaS that makes it easy to deploy, scale and manage containers used to host applications and services. Deis builds upon Docker and CoreOS to provide a private PaaS that is lightweight and flexible.
+Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
 [![Build Status](https://travis-ci.org/deis/deis.png?branch=master)](https://travis-ci.org/deis/deis)
 [![Coverage Status](https://coveralls.io/repos/deis/deis/badge.png?branch=master)](https://coveralls.io/r/deis/deis?branch=master)
