@@ -47,7 +47,7 @@ build:
 
 check-fleet:
 	@LOCAL_VERSION=`fleetctl -version`; \
-	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(FLEETCTL_TUNNEL) fleetctl -version`; \
+	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(subst :, -p ,$(FLEETCTL_TUNNEL)) fleetctl -version`; \
 	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
 			echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Uninstall your local version and install the latest build from https://github.com/coreos/fleet/releases"; exit 1; \
 	fi
