@@ -7,7 +7,7 @@
 # NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
 # ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [pycrypto]
 #
-celery==3.1.8
+celery==3.1.11
 Django==1.6.4
 django-allauth==0.15.0
 # HACK: use bacongobbler's feature branch until
