@@ -134,6 +134,9 @@ class App(UuidAuditedModel):
             self.save()
             self.scale()
 
+    def destroy(self, *args, **kwargs):
+        return self.delete(*args, **kwargs)
+
     def scale(self, **kwargs):
         """Scale containers up or down to match requested."""
         requested_containers = self.structure.copy()
