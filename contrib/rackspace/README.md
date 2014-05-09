@@ -48,6 +48,11 @@ By default, the script will provision 3 servers. You can override this by settin
 $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 ```
 
+Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
+For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+
+Deis clusters of less than 3 nodes are unsupported.
+
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:

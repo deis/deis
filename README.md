@@ -35,8 +35,13 @@ If you're on Ubuntu, you need to install the nfs-kernel-server package as it's r
 
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
-* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster: ```$ export DEIS_NUM_INSTANCES=3```
 * Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
+* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster: ```$ export DEIS_NUM_INSTANCES=3```
+
+Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
+For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+
+Deis clusters of less than 3 nodes are unsupported for anything other than local development. A painless 3+ node development environment is a priority.
 
 ## Boot CoreOS
 
