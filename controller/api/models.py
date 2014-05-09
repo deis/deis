@@ -419,9 +419,9 @@ class Release(UuidAuditedModel):
 
         Releases start at v1 and auto-increment.
         """
-        if not config:
+        if config is None:
             config = self.config
-        if not build:
+        if build is None:
             build = self.build
         # prepare release tag
         new_version = self.version + 1
