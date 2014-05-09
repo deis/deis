@@ -106,7 +106,7 @@ class HookTest(TransactionTestCase):
         url = '/api/hooks/builds'.format(**locals())
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
-                'image': 'registry.local:5000/autotest/{app_id}:v2'.format(**locals())}
+                'image': 'registry.local:5000/{app_id}:v2'.format(**locals())}
         # post the build without a session
         self.assertIsNone(self.client.logout())
         response = self.client.post(url, json.dumps(body), content_type='application/json')

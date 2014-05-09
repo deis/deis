@@ -5,7 +5,6 @@ Deis API exception classes.
 from __future__ import unicode_literals
 
 from rest_framework.exceptions import APIException
-from rest_framework import status
 
 
 class AbstractDeisException(APIException):
@@ -22,10 +21,3 @@ class AbstractDeisException(APIException):
 
     class Meta:
         abstract = True
-
-
-class UserRegistrationException(AbstractDeisException):
-    """
-    Indicates that there was a problem registering the user.
-    """
-    status_code = status.HTTP_400_BAD_REQUEST
