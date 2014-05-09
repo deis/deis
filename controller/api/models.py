@@ -209,6 +209,7 @@ class App(UuidAuditedModel):
             if to_remove:
                 subtasks.append(tasks.stop_containers.s(to_remove))
             group(*subtasks).apply_async().join()
+            _publish_domains(app=str(self), domains=list(self.domain_set.all()))
             log_event(self, msg)
         return changed
 
@@ -540,7 +541,7 @@ class Domain(AuditedModel):
     domain = models.TextField(blank=False, null=False, unique=True)
 
     def __str__(self):
-        return "{0} -> {1}".format(self.domain, self.app.id)
+        return self.domain
 
 
 @python_2_unicode_compatible
@@ -562,6 +563,12 @@ class Key(UuidAuditedModel):
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
+def _publish_domains(**kwargs):
+    app = kwargs['app']
+    domains = kwargs['domains']
+    _etcd_client.write(
+        '/deis/domains/{}'.format(app),
+        ' '.join(str(i) for i in domains))
 
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
