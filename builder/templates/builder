@@ -55,10 +55,9 @@ if __name__ == '__main__':
         rc = p.wait()
         if rc != 0:
             raise Exception('Could not extract git archive')
-        # check for Procfile
         dockerfile = os.path.join(temp_dir, 'Dockerfile')
-        procfile = os.path.join(temp_dir, 'Procfile')
-        if not os.path.exists(dockerfile) and os.path.exists(procfile):
+        # some applications do not have a Procfile, so only check for a Dockerfile
+        if not os.path.exists(dockerfile):
             if os.path.exists('/buildpacks'):
                 build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
