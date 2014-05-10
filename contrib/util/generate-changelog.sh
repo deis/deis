@@ -9,7 +9,7 @@ retrieve() {
 }
 
 subheading() {
-    echo "## $1\n"
+    echo "#### $1\n"
     retrieve "$2"
     echo
 }
@@ -23,7 +23,7 @@ then
     exit 1
 fi
 
-echo "# $FROM -> $TO\n"
+echo "### $FROM -> $TO\n"
 
 subheading "Features" "feat("
 subheading "Fixes" "fix("
