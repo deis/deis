@@ -1,5 +1,3 @@
-## Change Log
-
 ### v0.8.0 (2014/05/06 18:30 +00:00)
 - [54ff9ca](https://github.com/deis/deis/commit/54ff9caaaaa2be20960afe41c883014a796b81b2) Updated CLI binaries and links in client README. (@mboersma)
 - [4694844](https://github.com/deis/deis/commit/4694844e603583d2b0cee0fa0b4922a9857dc5d9) Switch master to v0.8.0. (@mboersma)
