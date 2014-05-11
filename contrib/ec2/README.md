@@ -31,6 +31,11 @@ By default, the script will provision 3 servers. You can override this by settin
 $ export DEIS_NUM_INSTANCES=5
 ```
 
+Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
+For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+
+Deis clusters of less than 3 nodes are unsupported.
+
 ## Customize user-data
 Edit [user-data](../coreos/user-data) and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
