@@ -77,6 +77,19 @@ coreos:
       Type=oneshot
       ExecStartPre=/usr/bin/rm /etc/motd
       ExecStart=/usr/bin/ln -s /run/deis/motd /etc/motd
+  - name: docker-index-network-logging.service
+    command: reload
+    content: |
+      [Unit]
+      Description=Log Docker index requests.
+
+      [Service]
+      TimeoutSec=5m
+      Environment="USER=core"
+      ExecStartPre=/usr/bin/mkdir /dumps
+      ExecStartPre=/usr/bin/chmod -R ugo+rw /dumps
+      ExecStartPre=/usr/bin/toolbox yum install -y tcpdump
+      ExecStart=/usr/bin/toolbox tcpdump -C 10 -s 4096 -tttt -vv -W 50 -w /media/root/dumps/docker-index-logs.pcap port 443
 write_files:
   - path: /run/deis/motd
     content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
