@@ -242,7 +242,6 @@ class Container(UuidAuditedModel):
     class Meta:
         get_latest_by = '-created'
         ordering = ['created']
-        unique_together = (('type', 'num'),)
 
     def _get_job_id(self):
         app = self.app.id
