@@ -48,19 +48,17 @@ class FleetClient(object):
 
     # job api
 
-    def create(self, name, image, command='', template=None, port=5000):
+    def create(self, name, image, command='', template=None):
         """
         Create a new job
         """
         print 'Creating {name}'.format(**locals())
         env = self.env.copy()
-        self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env, port)
-        self._create_log(name, image, command, LOG_TEMPLATE, env, port)
-        self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env, port)
+        self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env)
+        self._create_log(name, image, command, LOG_TEMPLATE, env)
+        self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
 
-    # TODO: remove hardcoded ports
-
-    def _create_container(self, name, image, command, template, env, port):
+    def _create_container(self, name, image, command, template, env):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
         env.update({'FLEETW_UNIT': name + '.service'})
@@ -68,7 +66,7 @@ class FleetClient(object):
         return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
                                      shell=True, env=env)
 
-    def _create_announcer(self, name, image, command, template, env, port):
+    def _create_announcer(self, name, image, command, template, env):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
         env.update({'FLEETW_UNIT': name + '-announce' + '.service'})
@@ -76,7 +74,7 @@ class FleetClient(object):
         return subprocess.check_call('fleetctl.sh submit {name}-announce.service'.format(**l),  # noqa
                                      shell=True, env=env)
 
-    def _create_log(self, name, image, command, template, env, port):
+    def _create_log(self, name, image, command, template, env):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
         env.update({'FLEETW_UNIT': name + '-log' + '.service'})
@@ -199,7 +197,7 @@ Description={name}
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/usr/bin/docker run --name {name} -P -e PORT={port} {image} {command}
+ExecStart=/usr/bin/docker run --name {name} -P {image} {command}
 ExecStartPost=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
     /bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
 ExecStop=/usr/bin/docker rm -f {name}
@@ -212,8 +210,8 @@ BindsTo={name}.service
 
 [Service]
 EnvironmentFile=/etc/environment
-ExecStartPre=/bin/sh -c "until /usr/bin/docker port {name} {port} >/dev/null 2>&1; do sleep 2; done; port=$(docker port {name} {port} | cut -d ':' -f2); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker port {name} {port} | cut -d ':' -f2); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
+ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
+ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 
 [X-Fleet]
