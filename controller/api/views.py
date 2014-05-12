@@ -345,9 +345,14 @@ class AppBuildViewSet(BaseAppViewSet):
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
             build.app.deploy(self.release)
-            # scale the web process by 1 initially
+            # if the structure is empty (first build)
             if build.app.structure == {}:
-                build.app.structure = {'web': 1}
+                # if there is a procfile, scale by web=1
+                if build.procfile:
+                    build.app.structure = {'web': 1}
+                # otherwise assume dockerfile, scale cmd=1
+                else:
+                    build.app.structure = {'cmd': 1}
                 build.app.save()
                 build.app.scale()
 

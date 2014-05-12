@@ -133,10 +133,18 @@ class App(UuidAuditedModel):
     def destroy(self, *args, **kwargs):
         return self.delete(*args, **kwargs)
 
-    def scale(self, **kwargs):
+    def scale(self, **kwargs):  # noqa
         """Scale containers up or down to match requested."""
         requested_containers = self.structure.copy()
         release = self.release_set.latest()
+        # test for available process types
+        available_process_types = release.build.procfile or {}
+        for container_type in requested_containers.keys():
+            if container_type == 'cmd':
+                continue  # allow docker cmd types in case we don't have the image source
+            if not container_type in available_process_types:
+                raise EnvironmentError(
+                    'Container type {} does not exist in application'.format(container_type))
         msg = 'Containers scaled ' + ' '.join(
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
@@ -146,7 +154,7 @@ class App(UuidAuditedModel):
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
             # increment new container nums off the most recent container
             results = self.container_set.filter(type=container_type).aggregate(Max('num'))
-            container_num = results.get('num__max') or 0 + 1
+            container_num = (results.get('num__max') or 0) + 1
             requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
             if diff == 0:
@@ -234,6 +242,7 @@ class Container(UuidAuditedModel):
     class Meta:
         get_latest_by = '-created'
         ordering = ['created']
+        unique_together = (('type', 'num'),)
 
     def _get_job_id(self):
         app = self.app.id
@@ -352,6 +361,11 @@ class Build(UuidAuditedModel):
     app = models.ForeignKey('App')
     image = models.CharField(max_length=256)
 
+    # optional fields populated by builder
+    sha = models.CharField(max_length=40, blank=True)
+    procfile = JSONField(default='{}', blank=True)
+    dockerfile = models.TextField(blank=True)
+
     class Meta:
         get_latest_by = 'created'
         ordering = ['-created']
@@ -455,7 +469,10 @@ class Release(UuidAuditedModel):
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
             if self.build != old_build:
-                self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
+                if self.build.sha:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
+                else:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
             # compare this config to the previous config
             old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff
