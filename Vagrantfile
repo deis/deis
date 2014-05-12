@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
       config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
       # FALLBACK use rsync if NFS has issues (mandatory if using Windows, or any Linux with an encrypted filesystem)
       # config.vm.synced_folder ".", "/home/core/share", type: "rsync"
-      # Note that with rsync, local Deis code changes need to be re-synced to the VM by issuing a `vagrant reload --provision`
+      # Note that with rsync, local Deis code changes need to be re-synced to the VM by issuing a `vagrant rsync`
 
       # user-data bootstrapping
       config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/vagrantfile-user-data"
