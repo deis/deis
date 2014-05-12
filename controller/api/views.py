@@ -347,8 +347,8 @@ class AppBuildViewSet(BaseAppViewSet):
             build.app.deploy(self.release)
             # if the structure is empty (first build)
             if build.app.structure == {}:
-                # if there is a procfile, scale by web=1
-                if build.procfile:
+                # if there is procfile with a web worker, scale by web=1
+                if 'web' in build.procfile:
                     build.app.structure = {'web': 1}
                 # otherwise assume dockerfile, scale cmd=1
                 else:
