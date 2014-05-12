@@ -56,6 +56,7 @@ if __name__ == '__main__':
         if rc != 0:
             raise Exception('Could not extract git archive')
         dockerfile = os.path.join(temp_dir, 'Dockerfile')
+        procfile = os.path.join(temp_dir, 'Procfile')
         # pull config to be used during build
         body = {}
         body['receive_user'], body['receive_repo'] = user, app
@@ -113,6 +114,18 @@ if __name__ == '__main__':
         body['receive_user'] = user
         body['receive_repo'] = app
         body['image'] = target_image
+        # use sha of master
+        with open(os.path.join(repo_dir, 'refs/heads/master')) as f:
+            body['sha'] = f.read().strip('\n')
+        # extract the Procfile and convert to JSON
+        if os.path.exists(procfile):
+            with open(procfile) as f:
+                raw_procfile = f.read()
+                body['procfile'] = json.dumps(yaml.safe_load(raw_procfile))
+        # extract Dockerfile
+        if os.path.exists(dockerfile):
+            with open(dockerfile) as f:
+                body['dockerfile'] = f.read()
         # trigger build hook
         sys.stdout.write('\n       Launching... ')
         sys.stdout.flush()
