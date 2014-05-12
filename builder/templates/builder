@@ -56,12 +56,21 @@ if __name__ == '__main__':
         if rc != 0:
             raise Exception('Could not extract git archive')
         dockerfile = os.path.join(temp_dir, 'Dockerfile')
+        # pull config to be used during build
+        body = {}
+        body['receive_user'], body['receive_repo'] = user, app
+        url = "{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/config"
+        headers = {'Content-Type': 'application/json', 'X-Deis-Builder-Auth': '{{ .deis_controller_builderKey }}'}
+        r = requests.post(url, headers=headers, data=json.dumps(body))
+        if r.status_code != 200:
+            raise Exception('Config hook error: {} {}'.format(r.status_code, r.text))
+        config_env = " ".join([ "-e {}='{}'".format(*kv) for kv in json.loads(r.json().get('values', '{}')).items()])
         # some applications do not have a Procfile, so only check for a Dockerfile
         if not os.path.exists(dockerfile):
             if os.path.exists('/buildpacks'):
-                build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
+                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
-                build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
+                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
             # run slugbuilder in the background
             p = subprocess.Popen("git archive master | " + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
             container = p.stdout.read().strip('\n')

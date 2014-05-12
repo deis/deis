@@ -118,3 +118,31 @@ class HookTest(TransactionTestCase):
         self.assertIn('release', response.data)
         self.assertIn('version', response.data['release'])
         self.assertIn('domains', response.data)
+
+    def test_config_hook(self):
+        """Test creating a Config via an API Hook"""
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = '/api/apps/{app_id}/config'.format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('values', response.data)
+        values = response.data['values']
+        # prepare the config hook
+        config = {'username': 'autotest', 'app': app_id}
+        url = '/api/hooks/config'.format(**locals())
+        body = {'receive_user': 'autotest',
+                'receive_repo': app_id}
+        # post without a session
+        self.assertIsNone(self.client.logout())
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+        # post with the builder auth key
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('values', response.data)
+        self.assertEqual(values, response.data['values'])
