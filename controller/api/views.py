@@ -344,11 +344,12 @@ class AppBuildViewSet(BaseAppViewSet):
         if created:
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
+            build.app.deploy(self.release)
             # scale the web process by 1 initially
             if build.app.structure == {}:
                 build.app.structure = {'web': 1}
                 build.app.save()
-            build.app.deploy(self.release)
+                build.app.scale()
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
