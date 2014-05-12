@@ -8,6 +8,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
 # New Deis
+
 Deis has undergone several improvements recently. If you are updating
 from Deis version 0.7.0 or earlier, there are several big changes you
 should know about. Read the [MIGRATING.md](MIGRATING.md) document for
@@ -123,9 +124,9 @@ $ deis keys:add
 
 Use `deis keys:add` to add your SSH public key for `git push` access.
 
-## Initalize a Cluster
+## Initialize a Cluster
 
-Initalize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
+Initialize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
 
 ```console
 $ deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/.vagrant.d/insecure_private_key
@@ -197,6 +198,37 @@ Vagrant virtual machine. If you see this issue using a recent version of
 Vagrant and the current master version of Deis, please add to the issue
 report at https://github.com/coreos/coreos-vagrant/issues/68 to help us
 pin it down.
+
+## Troubleshooting
+
+Common issues that users have run into when provisioning Deis are detailed below.
+
+#### When running a `make` action - 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'
+Did you remember to add your SSH key to the ssh-agent? `ssh-agent -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K `/path/to/your/key`.
+
+#### Various NFS issues, specifically an 'access denied' error
+The easiest workaround for this is to use rsync instead of NFS. In the Vagrantfile, swap out the `config.vm.synced_folder` line for the commented version.
+
+#### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
+This means the controller failed to submit jobs for the app to fleet. `fleetctl status deis-controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
+
+#### A Deis component fails to start
+Use `fleetctl status deis-<component>.service` to get the output of the service. The most common cause of services failing to start are sporadic issues with the Docker index. The telltale sign of this is:
+
+```console
+May 12 18:24:37 deis-3 systemd[1]: Starting deis-controller...
+May 12 18:24:37 deis-3 sh[6176]: 2014/05/12 18:24:37 Error: No such id: deis/controller
+May 12 18:24:37 deis-3 sh[6176]: Pulling repository deis/controller
+May 12 18:29:47 deis-3 sh[6176]: 2014/05/12 18:29:47 Could not find repository on any of the indexed registries.
+May 12 18:29:47 deis-3 systemd[1]: deis-controller.service: control process exited, code=exited status=1
+May 12 18:29:47 deis-3 systemd[1]: Failed to start deis-controller.
+May 12 18:29:47 deis-3 systemd[1]: Unit deis-controller.service entered failed state.
+```
+
+We are exploring workarounds and are working with the Docker team to improve their index. In the meantime, try starting the service again with `fleetctl start deis-<component>.service`.
+
+### Any other issues
+Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into #deis and we'll help!
 
 ## License
 
