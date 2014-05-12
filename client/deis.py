@@ -797,6 +797,13 @@ class DeisClient(object):
 
         Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
 
+        Parameters:
+
+        <id>             a name for the cluster
+        <domain>         a domain under which app hostnames will live
+        <hosts>          a comma-separated list of cluster members
+        <auth>           a path to an SSH private key used to connect to cluster members
+
         Options:
 
         --type=TYPE      cluster type [default: coreos]
