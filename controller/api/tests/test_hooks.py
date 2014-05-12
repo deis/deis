@@ -120,7 +120,7 @@ class HookTest(TransactionTestCase):
         self.assertIn('domains', response.data)
 
     def test_config_hook(self):
-        """Test creating a Config via an API Hook"""
+        """Test reading Config via an API Hook"""
         url = '/api/apps'
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')

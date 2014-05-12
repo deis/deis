@@ -530,7 +530,7 @@ class ConfigHookViewSet(BaseHookViewSet):
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
         if user == app.owner or user in get_users_with_perms(app):
-            config =  app.release_set.latest().config
+            config = app.release_set.latest().config
             serializer = self.get_serializer(config)
             return Response(serializer.data, status=status.HTTP_200_OK)
         raise PermissionDenied()
