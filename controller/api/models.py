@@ -129,11 +129,6 @@ class App(UuidAuditedModel):
 
     def deploy(self, release):
         tasks.deploy_release.delay(self, release).get()
-        if self.structure == {}:
-            # scale the web process by 1 initially
-            self.structure = {'web': 1}
-            self.save()
-            self.scale()
 
     def destroy(self, *args, **kwargs):
         return self.delete(*args, **kwargs)
