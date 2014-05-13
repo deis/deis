@@ -8,13 +8,31 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Removing unique constraint on 'Container', fields ['type', 'num']
-        db.delete_unique(u'api_container', ['type', 'num'])
+        # Adding field 'Build.sha'
+        db.add_column(u'api_build', 'sha',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=40, blank=True),
+                      keep_default=False)
+
+        # Adding field 'Build.procfile'
+        db.add_column(u'api_build', 'procfile',
+                      self.gf('json_field.fields.JSONField')(default=u'{}', blank=True),
+                      keep_default=False)
+
+        # Adding field 'Build.dockerfile'
+        db.add_column(u'api_build', 'dockerfile',
+                      self.gf('django.db.models.fields.TextField')(default='', blank=True),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Adding unique constraint on 'Container', fields ['type', 'num']
-        db.create_unique(u'api_container', ['type', 'num'])
+        # Deleting field 'Build.sha'
+        db.delete_column(u'api_build', 'sha')
+
+        # Deleting field 'Build.procfile'
+        db.delete_column(u'api_build', 'procfile')
+
+        # Deleting field 'Build.dockerfile'
+        db.delete_column(u'api_build', 'dockerfile')
 
 
     models = {
@@ -149,3 +167,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['api']
+
