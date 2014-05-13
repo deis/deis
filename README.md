@@ -20,18 +20,18 @@ The simplest way to use logspout is to just take all logs and ship to a remote s
 
 	$ docker run -v=/var/run/docker.sock:/tmp/docker.sock progrium/logspout syslog://logs.papertrailapp.com:55555
 
-Logs will be tagged with the container name. The hostname will be the hostname of the logspout container, so you probably want to set it to the hostname of the host by adding `-h $HOSTNAME`.
+Logs will be tagged with the container name. The hostname will be the hostname of the logspout container, so you probably want to set the container hostname to the actual hostname by adding `-h $HOSTNAME`.
 
 #### Inspect log streams using curl
 
-Whether or not you run it with a default routing target, if you publish it's port 8000, you can connect with curl to see your local aggregated logs in realtime.
+Whether or not you run it with a default routing target, if you publish its port 8000, you can connect with curl to see your local aggregated logs in realtime.
 
 	$ docker run -d -p 8000:8000 \
 		-v=/var/run/docker.sock:/tmp/docker.sock \
 		progrium/logspout
 	$ curl $(docker port `docker ps -lq` 8000)/logs
 
-You should see a nicely colored stream of all your container logs. You can also filter by container name, log type, and more. You can also get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
+You should see a nicely colored stream of all your container logs. You can filter by container name, log type, and more. You can also get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
 
 See [Streaming Endpoints](#streaming-endpoints) for all options.
 
