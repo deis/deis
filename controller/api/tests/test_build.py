@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import unittest
 
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
@@ -45,10 +44,6 @@ class BuildTest(TransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
-        # TODO: the next test section seems to break `make test`.
-        # See https://github.com/deis/deis/issues/727
-        raise unittest.SkipTest(
-            "Breaks database cleanup, see https://github.com/deis/deis/issues/727")
         # post a new build
         body = {'image': 'autotest/example'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -75,6 +70,46 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
+
+    def test_build_default_containers(self):
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        url = "/api/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # test default container
+        url = "/api/apps/{app_id}/containers/cmd".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        container = response.data['results'][0]
+        self.assertEqual(container['type'], 'cmd')
+        self.assertEqual(container['num'], 1)
+        # start with a new app
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build with procfile
+        url = "/api/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'procfile': json.dumps({'web': 'node server.js',
+                                                                     'worker': 'node worker.js'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # test listing/retrieving container info
+        url = "/api/apps/{app_id}/containers/web".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        container = response.data['results'][0]
+        self.assertEqual(container['type'], 'web')
+        self.assertEqual(container['num'], 1)
 
     def test_build_str(self):
         """Test the text representation of a build."""

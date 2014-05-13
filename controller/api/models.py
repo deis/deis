@@ -127,8 +127,18 @@ class App(UuidAuditedModel):
             c.destroy()
         return super(App, self).delete(*args, **kwargs)
 
-    def deploy(self, release):
+    def deploy(self, release, initial=False):
         tasks.deploy_release.delay(self, release).get()
+        # TODO: figure out if the logic below is what we really want
+        if initial:
+            # if there is procfile with a web worker, scale by web=1
+            if release.build.procfile and 'web' in release.build.procfile:
+                self.structure = {'web': 1}
+            # otherwise assume dockerfile, scale cmd=1
+            else:
+                release.build.app.structure = {'cmd': 1}
+            self.save()
+            self.scale()
 
     def destroy(self, *args, **kwargs):
         return self.delete(*args, **kwargs)

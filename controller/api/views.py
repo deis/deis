@@ -344,17 +344,8 @@ class AppBuildViewSet(BaseAppViewSet):
         if created:
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
-            build.app.deploy(self.release)
-            # if the structure is empty (first build)
-            if build.app.structure == {}:
-                # if there is procfile with a web worker, scale by web=1
-                if 'web' in build.procfile:
-                    build.app.structure = {'web': 1}
-                # otherwise assume dockerfile, scale cmd=1
-                else:
-                    build.app.structure = {'cmd': 1}
-                build.app.save()
-                build.app.scale()
+            initial = True if build.app.structure == {} else False
+            build.app.deploy(self.release, initial=initial)
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -521,7 +512,8 @@ class BuildHookViewSet(BaseHookViewSet):
         if created:
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
-            build.app.deploy(new_release)
+            initial = True if build.app.structure == {} else False
+            build.app.deploy(new_release, initial=initial)
 
 
 class ConfigHookViewSet(BaseHookViewSet):

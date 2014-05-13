@@ -156,6 +156,14 @@ class HookTest(TransactionTestCase):
         build = response.data['results'][0]
         self.assertEqual(build['sha'], SHA)
         self.assertEqual(build['procfile'], json.dumps(PROCFILE))
+        # test listing/retrieving container info
+        url = "/api/apps/{app_id}/containers/web".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        container = response.data['results'][0]
+        self.assertEqual(container['type'], 'web')
+        self.assertEqual(container['num'], 1)
 
     def test_build_hook_dockerfile(self):
         """Test creating a Dockerfile build via an API Hook"""
@@ -197,6 +205,14 @@ class HookTest(TransactionTestCase):
         build = response.data['results'][0]
         self.assertEqual(build['sha'], SHA)
         self.assertEqual(build['dockerfile'], DOCKERFILE)
+        # test default container
+        url = "/api/apps/{app_id}/containers/cmd".format(**locals())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        container = response.data['results'][0]
+        self.assertEqual(container['type'], 'cmd')
+        self.assertEqual(container['num'], 1)
 
     def test_config_hook(self):
         """Test reading Config via an API Hook"""
