@@ -1,6 +1,6 @@
 # logspout
 
-A log router for Docker container log streams that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. 
+A log router for Docker container output that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. 
 
 It's a 100% stateless log appliance (unless you persist routes). It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
 
