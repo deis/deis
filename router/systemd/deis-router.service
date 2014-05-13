@@ -11,3 +11,6 @@ ExecStop=/usr/bin/docker rm -f deis-router
 
 [Install]
 WantedBy=multi-user.target
+
+[X-Fleet]
+X-Conflicts=deis-router.*.service
