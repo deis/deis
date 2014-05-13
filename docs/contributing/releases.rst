@@ -23,8 +23,8 @@ github.com/deis/deis Repo
 - Move any `deis open issues`_ from the current release to the
   next milestone
 - Close the current `deis milestone`_
-- Recreate CHANGELOG.md in the root of the project using `github-changes`_
-    * ``github-changes -o opdemand -r deis -n vX.Y.Z``
+- Recreate CHANGELOG.md in the root of the project using the `changelog script`_
+    * ``./contrib/util/generate-changelog.sh v0.7.0 v0.8.0 | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
     * proofread the new CHANGELOG.md to ensure it was generated correctly
     * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
@@ -83,7 +83,7 @@ Documentation
 
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
 .. _`deis open issues`: https://github.com/deis/deis/issues?state=open
-.. _`github-changes`: https://lalitkapoor.github.io/github-changes/
+.. _`changelog script`: https://github.com/deis/deis/blob/master/contrib/util/generate-changelog.sh
 .. _`release notes`: https://github.com/deis/deis/releases
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
