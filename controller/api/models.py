@@ -129,14 +129,19 @@ class App(UuidAuditedModel):
 
     def deploy(self, release, initial=False):
         tasks.deploy_release.delay(self, release).get()
-        # TODO: figure out if the logic below is what we really want
         if initial:
-            # if there is procfile with a web worker, scale by web=1
-            if release.build.procfile and 'web' in release.build.procfile:
-                self.structure = {'web': 1}
-            # otherwise assume dockerfile, scale cmd=1
+            # if there is no SHA, assume a docker image is being promoted
+            if not release.build.sha:
+                self.structure = {'cmd': 1}
+            # if a dockerfile exists without a procfile, assume docker workflow
+            elif release.build.dockerfile and not release.build.procfile:
+                self.structure = {'cmd': 1}
+            # if a procfile exists without a web entry, assume docker workflow
+            elif release.build.procfile and not 'web' in release.build.procfile:
+                self.structure = {'cmd': 1}
+            # default to heroku workflow
             else:
-                release.build.app.structure = {'cmd': 1}
+                self.structure = {'web': 1}
             self.save()
             self.scale()
 
