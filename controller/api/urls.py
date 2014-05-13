@@ -165,6 +165,10 @@ API Hooks
 
   Create a new :class:`~api.models.Build`.
 
+.. http:post:: /api/hooks/config/
+
+  Retrieve latest application :class:`~api.models.Config`.
+
 
 Auth
 ====
@@ -279,6 +283,8 @@ urlpatterns = patterns(
         views.PushHookViewSet.as_view({'post': 'create'})),
     url(r'^hooks/build/?',
         views.BuildHookViewSet.as_view({'post': 'create'})),
+    url(r'^hooks/config/?',
+        views.ConfigHookViewSet.as_view({'post': 'create'})),
     # authn / authz
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),

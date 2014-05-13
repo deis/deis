@@ -345,6 +345,11 @@ class AppBuildViewSet(BaseAppViewSet):
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
             build.app.deploy(self.release)
+            # scale the web process by 1 initially
+            if build.app.structure == {}:
+                build.app.structure = {'web': 1}
+                build.app.save()
+                build.app.scale()
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -512,3 +517,21 @@ class BuildHookViewSet(BaseHookViewSet):
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
             build.app.deploy(new_release)
+
+
+class ConfigHookViewSet(BaseHookViewSet):
+    """API hook to grab latest :class:`~api.models.Config`"""
+
+    model = models.Config
+    serializer_class = serializers.ConfigSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        user = get_object_or_404(
+            User, username=request.DATA['receive_user'])
+        # check the user is authorized for this app
+        if user == app.owner or user in get_users_with_perms(app):
+            config = app.release_set.latest().config
+            serializer = self.get_serializer(config)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        raise PermissionDenied()
