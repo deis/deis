@@ -1,28 +1,46 @@
 # logspout
 
-A log router and HTTP interface for Docker container log streams, made to run inside Docker. Besides the routes you make, it's a stateless log appliance. It's not meant for managing log files or looking at history, just a means to get your logs out to live somewhere else, where they belong.
+A log router for Docker container log streams that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. Other than the routes you make, it's a stateless log appliance. It's not meant for managing log files or looking at history, just a means to get your logs out to live somewhere else, where they belong.
 
-## Getting and running
+## Getting logspout
 
 Logspout is a (very small) Docker container, so you can just pull it from the index:
 
 	$ docker pull progrium/logspout
 
-When running logspout, it exposes port 8000 and needs two mounts. The first is the Docker Unix socket. The second is a directory to persist routes. We mount both with `-v`:
+### Using logspout
 
-	$ docker run -d -P \
-		-v=/var/run/docker.sock:/var/run/docker.sock \
-		-v=/var/lib/logspout:/mnt/routes \
+#### Route all logs to remote syslog
+
+The simplest way to use logspout is to just take all logs and ship to a remote syslog. Just pass a default syslog target URI as the command. Also, we always mount the Docker Unix socket with `-v` to `/tmp/docker.sock`:
+
+	$ docker run -v=/var/run/docker.sock:/tmp/docker.sock progrium/logspout syslog://logs.papertrailapp.com:55555
+
+Logs will be tagged with the container name. The hostname will be the hostname of the logspout container, so you probably want to set it to the hostname of the host by adding `-h $HOSTNAME`.
+
+#### Inspect log streams using curl
+
+Whether or not you run it with a default routing target, if you publish it's port 8000, you can connect with curl to see your local aggregated logs in realtime.
+
+	$ docker run -d -p 8000:8000 \
+		-v=/var/run/docker.sock:/tmp/docker.sock \
 		progrium/logspout
+	$ curl $(docker port `docker ps -lq` 8000)/logs
 
-Both need to be mounted in these specific paths inside the container, but where you keep the routes on the host could be anywhere. It could also be a regular Docker volume. If you don't mount a volume at `/mnt/routes`, it will only store routes in memory.
+You should see a nicely colored stream of all your container logs. You can also filter by name, ID, log type, and more. Or you can get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
 
-You can optionally pass an argument to install a catch-all route in the form `<type>://<addr>`. For example, to route all logs via syslog to `192.168.1.111:514`, run like this:
+See [Streaming Endpoints](#streaming-endpoints) for more details.
 
-	$ docker run -d -P \
-		-v=/var/run/docker.sock:/var/run/docker.sock \
-		-v=/var/lib/logspout:/mnt/routes \
-		progrium/logspout syslog://192.168.1.111:514
+#### Create custom routes via HTTP
+
+Along with streaming endpoints, logspout also exposes a `/routes` resource to create and manage routes. 
+
+	$ curl $(docker port `docker ps -lq` 8000)/logs -X POST \
+		-d '{"source": {"filter": "db", "types": ["stderr"]}, target": {"type": "syslog", "addr": "logs.papertrailapp.com:55555"}}'
+
+That example creates a new syslog route to [Papertrail](https://papertrailapp.com) of only `stderr` for containers with `db` in their name. 
+
+By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, they will be persisted to disk. 
 
 ## HTTP API
 

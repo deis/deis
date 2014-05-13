@@ -193,8 +193,7 @@ func main() {
 			return http.StatusBadRequest, "Bad request: " + err.Error()
 		}
 
-		// TODO: validate
-
+		// TODO: validate?
 		router.Add(route)
 
 		w.Header().Add("Content-Type", "application/json")

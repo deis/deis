@@ -33,7 +33,7 @@ func NewAttachManager(client *docker.Client) *AttachManager {
 		assert(client.AddEventListener(events), "attacher")
 		for msg := range events {
 			debug("event:", msg.ID[:12], msg.Status)
-			if msg.Status == "create" {
+			if msg.Status == "start" {
 				go m.attach(msg.ID[:12])
 			}
 		}
