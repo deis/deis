@@ -117,11 +117,21 @@ if __name__ == '__main__':
         # use sha of master
         with open(os.path.join(repo_dir, 'refs/heads/master')) as f:
             body['sha'] = f.read().strip('\n')
-        # extract the Procfile and convert to JSON
+        # extract the user-defined Procfile and any default_process_types
+        procfile_dict = {}
+        p = subprocess.Popen('tar --to-stdout -xzf {temp_dir}/slug.tgz ./.release'.format(**locals()), shell=True, cwd=temp_dir,
+                            stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
+        rc = p.wait()
+        if rc == 0:
+            stdout = p.stdout.read()
+            default_process_types = yaml.safe_load(stdout).get('default_process_types', {})
+            procfile_dict.update(default_process_types)
         if os.path.exists(procfile):
             with open(procfile) as f:
                 raw_procfile = f.read()
-                body['procfile'] = json.dumps(yaml.safe_load(raw_procfile))
+                procfile_dict.update(yaml.safe_load(raw_procfile))
+        if procfile_dict:
+            body['procfile'] = json.dumps(procfile_dict)
         # extract Dockerfile
         if os.path.exists(dockerfile):
             with open(dockerfile) as f:
