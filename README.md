@@ -2,7 +2,7 @@
 
 A log router for Docker container log streams that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. 
 
-Other than the routes you make, it's a stateless log appliance. It's not meant for managing log files or looking at history, just a means to get your logs out to live somewhere else, where they belong.
+It's a 100% stateless log appliance (unless you persist routes). It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
 
 For now it only captures stdout and stderr, but soon Docker will let us hook into more ... perhaps getting everything from every container's /dev/log. 
 
