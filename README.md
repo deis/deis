@@ -8,7 +8,7 @@ For now it only captures stdout and stderr, but soon Docker will let us hook int
 
 ## Getting logspout
 
-Logspout is a (very small) Docker container, so you can just pull it from the index:
+Logspout is a very small Docker container (14MB virtual, based on busybox), so you can just pull it from the index:
 
 	$ docker pull progrium/logspout
 
