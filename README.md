@@ -212,6 +212,9 @@ Common issues that users have run into when provisioning Deis are detailed below
 #### When running a `make` action - 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'
 Did you remember to add your SSH key to the ssh-agent? `ssh-agent -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
 
+#### When running a `make` action - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
+The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Destroy and relaunch the cluster, ensuring to use a fresh discovery URL.
+
 #### Various NFS issues, specifically an 'access denied' error
 The easiest workaround for this is to use rsync instead of NFS. In the Vagrantfile, swap out the `config.vm.synced_folder` line for the commented version.
 
