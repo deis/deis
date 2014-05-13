@@ -1,6 +1,10 @@
 # logspout
 
-A log router for Docker container log streams that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. Other than the routes you make, it's a stateless log appliance. It's not meant for managing log files or looking at history, just a means to get your logs out to live somewhere else, where they belong.
+A log router for Docker container log streams that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. 
+
+Other than the routes you make, it's a stateless log appliance. It's not meant for managing log files or looking at history, just a means to get your logs out to live somewhere else, where they belong.
+
+For now it only captures stdout and stderr, but soon Docker will let us hook into more ... perhaps getting everything from every container's /dev/log. 
 
 ## Getting logspout
 
@@ -8,9 +12,9 @@ Logspout is a (very small) Docker container, so you can just pull it from the in
 
 	$ docker pull progrium/logspout
 
-### Using logspout
+## Using logspout
 
-#### Route all logs to remote syslog
+#### Route all container output to remote syslog
 
 The simplest way to use logspout is to just take all logs and ship to a remote syslog. Just pass a default syslog target URI as the command. Also, we always mount the Docker Unix socket with `-v` to `/tmp/docker.sock`:
 
@@ -27,9 +31,9 @@ Whether or not you run it with a default routing target, if you publish it's por
 		progrium/logspout
 	$ curl $(docker port `docker ps -lq` 8000)/logs
 
-You should see a nicely colored stream of all your container logs. You can also filter by name, ID, log type, and more. Or you can get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
+You should see a nicely colored stream of all your container logs. You can also filter by container name, log type, and more. You can also get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
 
-See [Streaming Endpoints](#streaming-endpoints) for more details.
+See [Streaming Endpoints](#streaming-endpoints) for all options.
 
 #### Create custom routes via HTTP
 
@@ -41,6 +45,8 @@ Along with streaming endpoints, logspout also exposes a `/routes` resource to cr
 That example creates a new syslog route to [Papertrail](https://papertrailapp.com) of only `stderr` for containers with `db` in their name. 
 
 By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, they will be persisted to disk. 
+
+See [Routes Resource](#routes-resource) for all options.
 
 ## HTTP API
 
@@ -60,7 +66,7 @@ If you include a request `Accept: application/json` header, the output will be J
 Since `/logs` and `/logs/filter:<string>` endpoints can return logs from multiple source, they will by default return color-coded loglines prefixed with the name of the container. You can turn off the color escape codes with query param `colors=off` or the alternative is to stream the data in JSON format, which won't use colors or prefixes.
 
 
-### Routing Resource
+### Routes Resource
 
 Routes let you configure logspout to hand-off logs to another system. Right now the only supported target type is via UDP `syslog`, but hey that's pretty much everything.
 
