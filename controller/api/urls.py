@@ -25,13 +25,13 @@ Clusters
 Applications
 ============
 
-.. http:get:: /api/apps/(string:id)/
+.. http:get:: /api/apps/(string:name)/
 
-  Retrieve a :class:`~api.models.Application` by its `id`.
+  Retrieve a :class:`~api.models.Application` by its `name`.
 
-.. http:delete:: /api/apps/(string:id)/
+.. http:delete:: /api/apps/(string:name)/
 
-  Destroy a :class:`~api.models.App` by its `id`.
+  Destroy a :class:`~api.models.App` by its `name`.
 
 .. http:get:: /api/apps/
 
@@ -45,35 +45,35 @@ Applications
 Application Release Components
 ------------------------------
 
-.. http:get:: /api/apps/(string:id)/config/
+.. http:get:: /api/apps/(string:name)/config/
 
   List all :class:`~api.models.Config`\s.
 
-.. http:post:: /api/apps/(string:id)/config/
+.. http:post:: /api/apps/(string:name)/config/
 
   Create a new :class:`~api.models.Config`.
 
-.. http:get:: /api/apps/(string:id)/builds/(string:uuid)/
+.. http:get:: /api/apps/(string:name)/builds/(string:uuid)/
 
   Retrieve a :class:`~api.models.Build` by its `uuid`.
 
-.. http:get:: /api/apps/(string:id)/builds/
+.. http:get:: /api/apps/(string:name)/builds/
 
   List all :class:`~api.models.Build`\s.
 
-.. http:post:: /api/apps/(string:id)/builds/
+.. http:post:: /api/apps/(string:name)/builds/
 
   Create a new :class:`~api.models.Build`.
 
-.. http:get:: /api/apps/(string:id)/releases/(int:version)/
+.. http:get:: /api/apps/(string:name)/releases/(int:version)/
 
   Retrieve a :class:`~api.models.Release` by its `version`.
 
-.. http:get:: /api/apps/(string:id)/releases/
+.. http:get:: /api/apps/(string:name)/releases/
 
   List all :class:`~api.models.Release`\s.
 
-.. http:post:: /api/apps/(string:id)/releases/rollback/
+.. http:post:: /api/apps/(string:name)/releases/rollback/
 
   Rollback to a previous :class:`~api.models.Release`.
 
@@ -81,15 +81,15 @@ Application Release Components
 Application Infrastructure
 --------------------------
 
-.. http:get:: /api/apps/(string:id)/containers/(string:type)/(int:num)/
+.. http:get:: /api/apps/(string:name)/containers/(string:type)/(int:num)/
 
   List all :class:`~api.models.Container`\s.
 
-.. http:get:: /api/apps/(string:id)/containers/(string:type)/
+.. http:get:: /api/apps/(string:name)/containers/(string:type)/
 
   List all :class:`~api.models.Container`\s.
 
-.. http:get:: /api/apps/(string:id)/containers/
+.. http:get:: /api/apps/(string:name)/containers/
 
   List all :class:`~api.models.Container`\s.
 
@@ -97,22 +97,22 @@ Application Infrastructure
 Application Actions
 -------------------
 
-.. http:post:: /api/apps/(string:id)/scale/
+.. http:post:: /api/apps/(string:name)/scale/
 
   See also
   :meth:`AppViewSet.scale() <api.views.AppViewSet.scale>`
 
-.. http:post:: /api/apps/(string:id)/logs/
+.. http:post:: /api/apps/(string:name)/logs/
 
   See also
   :meth:`AppViewSet.logs() <api.views.AppViewSet.logs>`
 
-.. http:post:: /api/apps/(string:id)/run/
+.. http:post:: /api/apps/(string:name)/run/
 
   See also
   :meth:`AppViewSet.run() <api.views.AppViewSet.run>`
 
-.. http:post:: /api/apps/(string:id)/calculate/
+.. http:post:: /api/apps/(string:name)/calculate/
 
   See also
   :meth:`AppViewSet.calculate() <api.views.AppViewSet.calculate>`
@@ -121,15 +121,15 @@ Application Actions
 Application Sharing
 ===================
 
-.. http:delete:: /api/apps/(string:id)/perms/(string:username)/
+.. http:delete:: /api/apps/(string:name)/perms/(string:username)/
 
   Destroy an app permission by its `username`.
 
-.. http:get:: /api/apps/(string:id)/perms/
+.. http:get:: /api/apps/(string:name)/perms/
 
   List all permissions granted to this app.
 
-.. http:post:: /api/apps/(string:id)/perms/
+.. http:post:: /api/apps/(string:name)/perms/
 
   Create a new app permission.
 
@@ -234,42 +234,47 @@ urlpatterns = patterns(
     url(r'^clusters/?',
         views.ClusterViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
-    url(r'^apps/(?P<id>[-_\w]+)/config/?',
+    url(r'^apps/(?P<name>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
-    url(r'^apps/(?P<id>[-_\w]+)/builds/(?P<uuid>[-_\w]+)/?',
+    url(r'^apps/(?P<name>[-_\w]+)/builds/(?P<uuid>[-_\w]+)/?',
         views.AppBuildViewSet.as_view({'get': 'retrieve'})),
-    url(r'^apps/(?P<id>[-_\w]+)/builds/?',
+    url(r'^apps/(?P<name>[-_\w]+)/builds/?',
         views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^apps/(?P<id>[-_\w]+)/releases/v(?P<version>[0-9]+)/?',
+    url(r'^apps/(?P<name>[-_\w]+)/releases/v(?P<version>[0-9]+)/?',
         views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
-    url(r'^apps/(?P<id>[-_\w]+)/releases/rollback/?',
+    url(r'^apps/(?P<name>[-_\w]+)/releases/rollback/?',
         views.AppReleaseViewSet.as_view({'post': 'rollback'})),
-    url(r'^apps/(?P<id>[-_\w]+)/releases/?',
+    url(r'^apps/(?P<name>[-_\w]+)/releases/?',
         views.AppReleaseViewSet.as_view({'get': 'list'})),
     # application infrastructure
-    url(r'^apps/(?P<id>[-_\w]+)/containers/(?P<type>[-_\w]+)/(?P<num>[-_\w]+)/?',
+    url(r'^apps/(?P<name>[-_\w]+)/containers/(?P<type>[-_\w]+)/(?P<num>[-_\w]+)/?',
         views.AppContainerViewSet.as_view({'get': 'retrieve'})),
-    url(r'^apps/(?P<id>[-_\w]+)/containers/(?P<type>[-_\w.]+)/?',
+    url(r'^apps/(?P<name>[-_\w]+)/containers/(?P<type>[-_\w.]+)/?',
         views.AppContainerViewSet.as_view({'get': 'list'})),
-    url(r'^apps/(?P<id>[-_\w]+)/containers/?',
+    url(r'^apps/(?P<name>[-_\w]+)/containers/?',
         views.AppContainerViewSet.as_view({'get': 'list'})),
     # application actions
-    url(r'^apps/(?P<id>[-_\w]+)/scale/?',
+    url(r'^apps/(?P<name>[-_\w]+)/scale/?',
         views.AppViewSet.as_view({'post': 'scale'})),
-    url(r'^apps/(?P<id>[-_\w]+)/logs/?',
+    url(r'^apps/(?P<name>[-_\w]+)/logs/?',
         views.AppViewSet.as_view({'post': 'logs'})),
-    url(r'^apps/(?P<id>[-_\w]+)/run/?',
+    url(r'^apps/(?P<name>[-_\w]+)/run/?',
         views.AppViewSet.as_view({'post': 'run'})),
-    url(r'^apps/(?P<id>[-_\w]+)/calculate/?',
+    url(r'^apps/(?P<name>[-_\w]+)/calculate/?',
         views.AppViewSet.as_view({'post': 'calculate'})),
     # apps sharing
-    url(r'^apps/(?P<id>[-_\w]+)/perms/(?P<username>[-_\w]+)/?',
+    url(r'^apps/(?P<name>[-_\w]+)/perms/(?P<username>[-_\w]+)/?',
         views.AppPermsViewSet.as_view({'delete': 'destroy'})),
-    url(r'^apps/(?P<id>[-_\w]+)/perms/?',
+    url(r'^apps/(?P<name>[-_\w]+)/perms/?',
         views.AppPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
     # apps base endpoint
-    url(r'^apps/(?P<id>[-_\w]+)/?',
-        views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+    url(r'^apps/(?P<name>[-_\w]+)/?',
+        views.AppViewSet.as_view({
+            'get': 'retrieve',
+            'delete': 'destroy',
+            'patch': 'partial_update'
+        })
+    ),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
     # key

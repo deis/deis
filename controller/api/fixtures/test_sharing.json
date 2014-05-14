@@ -75,7 +75,7 @@
     "created": "2013-11-25T22:09:36.726Z",
     "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
     "owner": 2,
-    "id": "autotest-1-app"
+    "name": "autotest-1-app"
   }
 }
 ]

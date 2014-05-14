@@ -39,21 +39,21 @@ class ReleaseTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # check that updating config rolls a new release
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        url = '/api/apps/{appname}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertIn('NEW_URL1', json.loads(response.data['values']))
         # check to see that an initial release was created
-        url = '/api/apps/{app_id}/releases'.format(**locals())
+        url = '/api/apps/{appname}/releases'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         # account for the config release as well
         self.assertEqual(response.data['count'], 2)
-        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
+        url = '/api/apps/{appname}/releases/v1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
@@ -61,7 +61,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertIn('build', response.data)
         self.assertEquals(release1['version'], 1)
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
+        url = '/api/apps/{appname}/releases/v2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -70,7 +70,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(release1['build'], release2['build'])
         self.assertEquals(release2['version'], 2)
         # check that updating the build rolls a new release
-        url = '/api/apps/{app_id}/builds'.format(**locals())
+        url = '/api/apps/{appname}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
         body = {'image': 'autotest/example'}
         response = self.client.post(
@@ -78,7 +78,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['image'], body['image'])
         # check to see that a new release was created
-        url = '/api/apps/{app_id}/releases/v3'.format(**locals())
+        url = '/api/apps/{appname}/releases/v3'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release3 = response.data
@@ -86,7 +86,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertNotEqual(release2['build'], release3['build'])
         self.assertEquals(release3['version'], 3)
         # check that we can fetch a previous release
-        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
+        url = '/api/apps/{appname}/releases/v2'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release2 = response.data
@@ -94,7 +94,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertNotEqual(release2['build'], release3['build'])
         self.assertEquals(release2['version'], 2)
         # disallow post/put/patch/delete
-        url = '/api/apps/{app_id}/releases'.format(**locals())
+        url = '/api/apps/{appname}/releases'.format(**locals())
         self.assertEqual(self.client.post(url).status_code, 405)
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
@@ -106,19 +106,19 @@ class ReleaseTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # try to rollback with only 1 release extant, expecting 404
-        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        url = "/api/apps/{appname}/releases/rollback/".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 404)
         # update config to roll a new release
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        url = '/api/apps/{appname}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # update the build to roll a new release
-        url = '/api/apps/{app_id}/builds'.format(**locals())
+        url = '/api/apps/{appname}/builds'.format(**locals())
         build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
         body = {'image': 'autotest/example'}
         response = self.client.post(
@@ -126,19 +126,19 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         # rollback and check to see that a 4th release was created
         # with the build and config of release #2
-        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        url = "/api/apps/{appname}/releases/rollback/".format(**locals())
         response = self.client.post(url, content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        url = '/api/apps/{app_id}/releases'.format(**locals())
+        url = '/api/apps/{appname}/releases'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 4)
-        url = '/api/apps/{app_id}/releases/v2'.format(**locals())
+        url = '/api/apps/{appname}/releases/v2'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         release2 = response.data
         self.assertEquals(release2['version'], 2)
-        url = '/api/apps/{app_id}/releases/v4'.format(**locals())
+        url = '/api/apps/{appname}/releases/v4'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         release4 = response.data
@@ -148,20 +148,20 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(release2['config'], release4['config'])
         # rollback explicitly to release #1 and check that a 5th release
         # was created with the build and config of release #1
-        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        url = "/api/apps/{appname}/releases/rollback/".format(**locals())
         body = {'version': 1}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        url = '/api/apps/{app_id}/releases'.format(**locals())
+        url = '/api/apps/{appname}/releases'.format(**locals())
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 5)
-        url = '/api/apps/{app_id}/releases/v1'.format(**locals())
+        url = '/api/apps/{appname}/releases/v1'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release1 = response.data
-        url = '/api/apps/{app_id}/releases/v5'.format(**locals())
+        url = '/api/apps/{appname}/releases/v5'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         release5 = response.data
@@ -170,17 +170,17 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(release1['build'], release5['build'])
         self.assertEqual(release1['config'], release5['config'])
         # check to see that the current config is actually the initial one
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/api/apps/{appname}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['values'], json.dumps({}))
         # rollback to #3 and see that it has the correct config
-        url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
+        url = "/api/apps/{appname}/releases/rollback/".format(**locals())
         body = {'version': 3}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/api/apps/{appname}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         values = json.loads(response.data['values'])

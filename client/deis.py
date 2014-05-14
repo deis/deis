@@ -371,6 +371,7 @@ class DeisClient(object):
         apps:info          view info about an application
         apps:open          open the application in a browser
         apps:logs          view aggregated application logs
+        apps:rename        change the name of an application
         apps:run           run a command in an ephemeral app container
         apps:destroy       destroy an application
 
@@ -422,12 +423,12 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
-            app_id = data['id']
-            print("done, created {}".format(app_id))
+            appname = data['name']
+            print("done, created {}".format(appname))
             # add a git remote
             # TODO: retrieve the hostname from service discovery
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
-            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
+            git_remote = "ssh://git@{hostname}:2222/{appname}.git".format(**locals())
             if args.get('--no-remote'):
                 print('remote available at {}'.format(git_remote))
             else:
@@ -560,6 +561,48 @@ class DeisClient(object):
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             print(response.json())
+        else:
+            raise ResponseError(response)
+
+    def apps_rename(self, args):
+        """
+        Rename the app
+
+        Usage: deis apps:rename <new_name> [--app=<app>]
+        """
+        current_name = args.get('--app')
+        if not current_name:
+            current_name = self._session.app
+        new_name = args['<new_name>']
+        body = {'name': new_name}
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('patch',
+                                      '/api/apps/{}'.format(current_name),
+                                      json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            data = response.json()
+            appname = data['name']
+            print("done, new name is {}".format(appname))
+            # modify the git remote
+            # TODO: retrieve the hostname from service discovery
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            git_remote = "ssh://git@{hostname}:2222/{appname}.git".format(**locals())
+            if args.get('--no-remote'):
+                print('remote available at {}'.format(git_remote))
+            else:
+                try:
+                    subprocess.check_call(
+                        ['git', 'remote', 'set-url', 'deis', git_remote],
+                        stdout=subprocess.PIPE)
+                    print('Git remote deis modified')
+                except subprocess.CalledProcessError:
+                    print('Could not modify Deis remote')
+                    sys.exit(1)
         else:
             raise ResponseError(response)
 
@@ -1410,6 +1453,7 @@ SHORTCUTS = OrderedDict([
     ('open', 'apps:open'),
     ('logs', 'apps:logs'),
     ('register', 'auth:register'),
+    ('rename', 'apps:rename'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
     ('scale', 'ps:scale'),

@@ -67,7 +67,7 @@ class PushSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Push` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='name')
 
     class Meta:
         """Metadata options for a :class:`PushSerializer`."""
@@ -79,7 +79,7 @@ class BuildSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Build` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='name')
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -91,7 +91,7 @@ class ConfigSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Config` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='name')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
 
@@ -105,7 +105,7 @@ class ReleaseSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Release` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
+    app = serializers.SlugRelatedField(slug_field='name')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid')
 
@@ -119,7 +119,6 @@ class AppSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.App` model."""
 
     owner = serializers.Field(source='owner.username')
-    id = serializers.SlugField(default=utils.generate_app_name)
     cluster = serializers.SlugRelatedField(slug_field='id')
 
     class Meta:
@@ -127,14 +126,14 @@ class AppSerializer(serializers.ModelSerializer):
         model = models.App
         read_only_fields = ('created', 'updated')
 
-    def validate_id(self, attrs, source):
+    def validate_name(self, attrs, source):
         """
-        Check that the ID is all lowercase
+        Check that the name is all lowercase
         """
         value = attrs[source]
         match = re.match(r'^[a-z0-9-]+$', value)
         if not match:
-            raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
+            raise serializers.ValidationError("App names can only contain [a-z0-9-]")
         return attrs
 
 
@@ -142,7 +141,7 @@ class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
 
     owner = serializers.Field(source='owner.username')
-    app = OwnerSlugRelatedField(slug_field='id')
+    app = OwnerSlugRelatedField(slug_field='name')
     release = serializers.SlugRelatedField(slug_field='uuid')
 
     class Meta:
