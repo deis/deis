@@ -122,8 +122,8 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example', 'procfile': json.dumps({'web': 'node server.js',
-                                                                     'worker': 'node worker.js'})}
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # scale up
@@ -246,8 +246,8 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example', 'procfile': json.dumps({'web': 'node server.js',
-                                                                     'worker': 'node worker.js'})}
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # scale up
@@ -305,8 +305,8 @@ class ContainerTest(TransactionTestCase):
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example', 'procfile': json.dumps({'web': 'node server.js',
-                                                                     'worker': 'node worker.js'})}
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # scale up
