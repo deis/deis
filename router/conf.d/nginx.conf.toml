@@ -6,7 +6,8 @@ gid = 0
 mode  = "0644"
 keys = [
   "/deis/services",
-  "/deis/router"
+  "/deis/router",
+  "/deis/controller",
 ]
 #check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
 reload_cmd = "/usr/sbin/nginx -s reload"
