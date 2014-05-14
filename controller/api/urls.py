@@ -273,8 +273,7 @@ urlpatterns = patterns(
             'get': 'retrieve',
             'delete': 'destroy',
             'patch': 'partial_update'
-        })
-    ),
+        })),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
     # key

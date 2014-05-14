@@ -10,7 +10,6 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from api import models
-from api import utils
 
 
 class OwnerSlugRelatedField(serializers.SlugRelatedField):
