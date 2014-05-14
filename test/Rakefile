@@ -12,7 +12,7 @@ EXAMPLE_APP = ENV['DEIS_TEST_APP'] || 'example-ruby-sinatra'
 namespace :setup do
   task :all => ['create_ssh_key','clone_example_app']
   task :create_ssh_key do
-    run_command("if [ ! -f #{AUTH_KEY} ]; then ssh-keygen -q -t rsa -f #{AUTH_KEY} -N '' -C deis && ssh-add -K #{AUTH_KEY} ; fi")
+    run_command("if [ ! -f #{AUTH_KEY} ]; then ssh-keygen -q -t rsa -f #{AUTH_KEY} -N '' -C deis && ssh-add #{AUTH_KEY} ; fi")
   end
   task :clone_example_app do
     run_command("if [ ! -d ./#{EXAMPLE_APP} ]; then git clone https://github.com/opdemand/#{EXAMPLE_APP}.git ; fi")
