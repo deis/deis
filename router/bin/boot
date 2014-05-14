@@ -28,6 +28,13 @@ sleep $(($ETCD_TTL+1))
 if ! etcdctl --no-sync -C $ETCD ls /deis/services >/dev/null 2>&1; then
 	etcdctl --no-sync -C $ETCD mkdir /deis/services || true >/dev/null 2>&1
 	etcdctl --no-sync -C $ETCD set $ETCD_PATH/port ${PORT:-80} >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzip on >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipHttpVersion 1.0 >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipCompLevel 2 >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipProxied any >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipVary on >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipDisable "\"msie6\"" >/dev/null
+	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml" >/dev/null
 fi
 
 # wait for confd to run once and install initial templates
