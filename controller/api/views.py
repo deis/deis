@@ -204,7 +204,7 @@ class AppPermsViewSet(viewsets.ViewSet):
     perm = 'use_app'    # short name for permission
 
     def list(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
+        app = get_object_or_404(self.model, name=kwargs['name'])
         perm_name = "api.{}".format(self.perm)
         if request.user != app.owner and not request.user.has_perm(perm_name, app):
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -213,7 +213,7 @@ class AppPermsViewSet(viewsets.ViewSet):
         return Response({'users': usernames})
 
     def create(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
+        app = get_object_or_404(self.model, name=kwargs['name'])
         if request.user != app.owner:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=request.DATA['username'])
@@ -222,7 +222,7 @@ class AppPermsViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
     def destroy(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
+        app = get_object_or_404(self.model, name=kwargs['name'])
         if request.user != app.owner:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=kwargs['username'])
@@ -262,7 +262,7 @@ class AppViewSet(OwnerViewSet):
 
     model = models.App
     serializer_class = serializers.AppSerializer
-    lookup_field = 'id'
+    lookup_field = 'name'
     permission_classes = (permissions.IsAuthenticated, IsAppUser)
 
     def get_queryset(self, **kwargs):
@@ -298,7 +298,7 @@ class AppViewSet(OwnerViewSet):
         try:
             logs = app.logs()
         except EnvironmentError:
-            return Response("No logs for {}".format(app.id),
+            return Response("No logs for {}".format(app.name),
                             status=status.HTTP_404_NOT_FOUND,
                             content_type='text/plain')
         return Response(logs, status=status.HTTP_200_OK,
@@ -323,7 +323,7 @@ class BaseAppViewSet(viewsets.ModelViewSet):
         obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        app = get_object_or_404(models.App, name=self.kwargs['name'])
         return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
@@ -357,7 +357,7 @@ class AppBuildViewSet(BaseAppViewSet):
         return headers
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        app = get_object_or_404(models.App, name=self.kwargs['name'])
         request._data = request.DATA.copy()
         request.DATA['app'] = app
         return super(AppBuildViewSet, self).create(request, *args, **kwargs)
@@ -371,7 +371,7 @@ class AppConfigViewSet(BaseAppViewSet):
 
     def get_object(self, *args, **kwargs):
         """Return the Config associated with the App's latest Release."""
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        app = get_object_or_404(models.App, name=self.kwargs['name'])
         user = self.request.user
         if user == app.owner or user in get_users_with_perms(app):
             return app.release_set.latest().config
@@ -419,7 +419,7 @@ class AppReleaseViewSet(BaseAppViewSet):
         Create a new release as a copy of the state of the compiled slug and
         config vars of a previous release.
         """
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        app = get_object_or_404(models.App, name=self.kwargs['name'])
         release = app.release_set.latest()
         last_version = release.version
         version = int(request.DATA.get('version', last_version - 1))
@@ -441,7 +441,7 @@ class AppContainerViewSet(OwnerViewSet):
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        app = get_object_or_404(models.App, name=self.kwargs['name'])
         qs = self.model.objects.filter(app=app)
         container_type = self.kwargs.get('type')
         if container_type:
@@ -478,7 +478,7 @@ class PushHookViewSet(BaseHookViewSet):
     serializer_class = serializers.PushSerializer
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        app = get_object_or_404(models.App, name=request.DATA['receive_repo'])
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
@@ -497,7 +497,7 @@ class BuildHookViewSet(BaseHookViewSet):
     serializer_class = serializers.BuildSerializer
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        app = get_object_or_404(models.App, name=request.DATA['receive_repo'])
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
@@ -508,7 +508,7 @@ class BuildHookViewSet(BaseHookViewSet):
             super(BuildHookViewSet, self).create(request, *args, **kwargs)
             # return the application databag
             response = {'release': {'version': app.release_set.latest().version},
-                        'domains': ['.'.join([app.id, app.cluster.domain])]}
+                        'domains': ['.'.join([app.name, app.cluster.domain])]}
             return Response(response, status=status.HTTP_200_OK)
         raise PermissionDenied()
 
@@ -526,7 +526,7 @@ class ConfigHookViewSet(BaseHookViewSet):
     serializer_class = serializers.ConfigSerializer
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        app = get_object_or_404(models.App, name=request.DATA['receive_repo'])
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app

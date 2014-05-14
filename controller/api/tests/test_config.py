@@ -39,9 +39,9 @@ class ConfigTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # check to see that an initial/empty config was created
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/api/apps/{appname}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('values', response.data)
@@ -102,8 +102,8 @@ class ConfigTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        url = "/api/apps/{app_id}/config".format(**locals())
+        appname = response.data['name']
+        url = "/api/apps/{appname}/config".format(**locals())
         # set an initial config value
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')

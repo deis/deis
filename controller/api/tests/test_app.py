@@ -39,48 +39,49 @@ class AppTest(TestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']  # noqa
+        appname = response.data['name']  # noqa
         self.assertIn('cluster', response.data)
-        self.assertIn('id', response.data)
+        self.assertIn('name', response.data)
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
-        url = '/api/apps/{app_id}'.format(**locals())
+        url = '/api/apps/{appname}'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        body = {'id': 'new'}
+        body = {'name': 'new'}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 200)
+        url = '/api/apps/new'.format(**locals())
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
-    def test_app_override_id(self):
-        body = {'cluster': 'autotest', 'id': 'myid'}
+    def test_app_override_name(self):
+        body = {'cluster': 'autotest', 'name': 'myname'}
         response = self.client.post('/api/apps', json.dumps(body),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        body = {'cluster': response.data['cluster'], 'id': response.data['id']}
+        body = {'cluster': response.data['cluster'], 'name': response.data['name']}
         response = self.client.post('/api/apps', json.dumps(body),
                                     content_type='application/json')
-        self.assertContains(response, 'App with this Id already exists.', status_code=400)
+        self.assertContains(response, 'App with this Name already exists.', status_code=400)
         return response
 
     def test_app_actions(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest', 'id': 'autotest'}
+        body = {'cluster': 'autotest', 'name': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']  # noqa
+        appname = response.data['name']  # noqa
         # test logs
         if not os.path.exists(settings.DEIS_LOG_DIR):
             os.mkdir(settings.DEIS_LOG_DIR)
-        path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
+        path = os.path.join(settings.DEIS_LOG_DIR, appname + '.log')
         if os.path.exists(path):
             os.remove(path)
-        url = '/api/apps/{app_id}/logs'.format(**locals())
+        url = '/api/apps/{appname}/logs'.format(**locals())
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.data, 'No logs for {}'.format(app_id))
+        self.assertEqual(response.data, 'No logs for {}'.format(appname))
         # write out some fake log data and try again
         with open(path, 'w') as f:
             f.write(FAKE_LOG_DATA)
@@ -88,27 +89,27 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
         # test run
-        url = '/api/apps/{app_id}/run'.format(**locals())
+        url = '/api/apps/{appname}/run'.format(**locals())
         body = {'command': 'ls -al'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0], 0)
 
     def test_app_errors(self):
-        cluster_id, app_id = 'autotest', 'autotest-errors'
+        cluster_id, appname = 'autotest', 'autotest-errors'
         url = '/api/apps'
-        body = {'cluster': cluster_id, 'id': 'camelCase'}
+        body = {'cluster': cluster_id, 'name': 'camelCase'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertContains(response, 'App IDs can only contain [a-z0-9-]', status_code=400)
-        body = {'cluster': cluster_id, 'id': app_id}
+        self.assertContains(response, 'App names can only contain [a-z0-9-]', status_code=400)
+        body = {'cluster': cluster_id, 'name': appname}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']  # noqa
-        url = '/api/apps/{app_id}'.format(**locals())
+        appname = response.data['name']  # noqa
+        url = '/api/apps/{appname}'.format(**locals())
         response = self.client.delete(url)
         self.assertEquals(response.status_code, 204)
         for endpoint in ('containers', 'config', 'releases', 'builds'):
-            url = '/api/apps/{app_id}/{endpoint}'.format(**locals())
+            url = '/api/apps/{appname}/{endpoint}'.format(**locals())
             response = self.client.get(url)
             self.assertEquals(response.status_code, 404)
 

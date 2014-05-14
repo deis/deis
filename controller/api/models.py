@@ -25,14 +25,14 @@ from json_field.fields import JSONField
 
 from api import fields, tasks
 from registry import publish_release
-from utils import dict_diff, fingerprint
+from utils import dict_diff, fingerprint, generate_app_name
 
 
 logger = logging.getLogger(__name__)
 
 
 def log_event(app, msg, level=logging.INFO):
-    msg = "{}: {}".format(app.id, msg)
+    msg = "{}: {}".format(app.name, msg)
     logger.log(level, msg)
 
 
@@ -107,7 +107,7 @@ class App(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64, unique=True)
+    name = models.SlugField(max_length=64, unique=True, default=generate_app_name)
     cluster = models.ForeignKey('Cluster')
     structure = JSONField(default='{}', blank=True)
 
@@ -115,7 +115,7 @@ class App(UuidAuditedModel):
         permissions = (('use_app', 'Can use app'),)
 
     def __str__(self):
-        return self.id
+        return self.name
 
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self, values={})
@@ -177,7 +177,7 @@ class App(UuidAuditedModel):
 
     def logs(self):
         """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        path = os.path.join(settings.DEIS_LOG_DIR, self.name + '.log')
         if not os.path.exists(path):
             raise EnvironmentError('Could not locate logs')
         data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
@@ -224,8 +224,8 @@ class Container(UuidAuditedModel):
 
     def short_name(self):
         if self.type:
-            return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
-        return "{}.{}".format(self.release.app.id, self.num)
+            return "{}.{}.{}".format(self.release.app.name, self.type, self.num)
+        return "{}.{}".format(self.release.app.name, self.num)
     short_name.short_description = 'Name'
 
     def __str__(self):
@@ -236,7 +236,7 @@ class Container(UuidAuditedModel):
         ordering = ['created']
 
     def _get_job_id(self):
-        app = self.app.id
+        app = self.app.name
         release = self.release
         version = "v{}".format(release.version)
         num = self.num
@@ -339,7 +339,7 @@ class Push(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.app.id, self.sha[:7])
+        return "{0}-{1}".format(self.app.name, self.sha[:7])
 
 
 @python_2_unicode_compatible
@@ -358,7 +358,7 @@ class Build(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{0}-{1}".format(self.app.id, self.uuid[:7])
+        return "{0}-{1}".format(self.app.name, self.uuid[:7])
 
 
 @python_2_unicode_compatible
@@ -378,7 +378,7 @@ class Config(UuidAuditedModel):
         unique_together = (('app', 'uuid'),)
 
     def __str__(self):
-        return "{}-{}".format(self.app.id, self.uuid[:7])
+        return "{}-{}".format(self.app.name, self.uuid[:7])
 
 
 @python_2_unicode_compatible
@@ -405,7 +405,7 @@ class Release(UuidAuditedModel):
         unique_together = (('app', 'version'),)
 
     def __str__(self):
-        return "{0}-v{1}".format(self.app.id, self.version)
+        return "{0}-v{1}".format(self.app.name, self.version)
 
     def new(self, user, config=None, build=None, summary=None):
         """
@@ -427,7 +427,7 @@ class Release(UuidAuditedModel):
             owner=user, app=self.app, config=config,
             build=build, version=new_version, image=image, summary=summary)
         # publish release to registry as new docker image
-        repository_path = self.app.id
+        repository_path = self.app.name
         publish_release(repository_path, config.values, tag)
         return release
 

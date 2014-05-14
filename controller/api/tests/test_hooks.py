@@ -36,15 +36,15 @@ class HookTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # prepare a push body
         body = {
             'sha': 'df1e628f2244b73f9cdf944f880a2b3470a122f4',
             'fingerprint': '88:25:ed:67:56:91:3d:c6:1b:7f:42:c6:9b:41:24:80',
             'receive_user': 'autotest',
-            'receive_repo': '{app_id}'.format(**locals()),
+            'receive_repo': '{appname}'.format(**locals()),
             'ssh_connection': '10.0.1.10 50337 172.17.0.143 22',
-            'ssh_original_command': "git-receive-pack '{app_id}.git'".format(**locals()),
+            'ssh_original_command': "git-receive-pack '{appname}.git'".format(**locals()),
         }
         # post a request without the auth header
         url = "/api/hooks/push".format(**locals())
@@ -65,7 +65,7 @@ class HookTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # register an evil user
         username, password = 'eviluser', 'password'
         first_name, last_name = 'Evil', 'User'
@@ -85,9 +85,9 @@ class HookTest(TransactionTestCase):
             'sha': 'df1e628f2244b73f9cdf944f880a2b3470a122f4',
             'fingerprint': '88:25:ed:67:56:91:3d:c6:1b:7f:42:c6:9b:41:24:99',
             'receive_user': 'eviluser',
-            'receive_repo': '{app_id}'.format(**locals()),
+            'receive_repo': '{appname}'.format(**locals()),
             'ssh_connection': '10.0.1.10 50337 172.17.0.143 22',
-            'ssh_original_command': "git-receive-pack '{app_id}.git'".format(**locals()),
+            'ssh_original_command': "git-receive-pack '{appname}.git'".format(**locals()),
         }
         # try to push as "eviluser"
         url = "/api/hooks/push".format(**locals())
@@ -101,12 +101,11 @@ class HookTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        build = {'username': 'autotest', 'app': app_id}
+        appname = response.data['name']
         url = '/api/hooks/builds'.format(**locals())
         body = {'receive_user': 'autotest',
-                'receive_repo': app_id,
-                'image': 'registry.local:5000/{app_id}:v2'.format(**locals())}
+                'receive_repo': appname,
+                'image': 'registry.local:5000/{appname}:v2'.format(**locals())}
         # post the build without a session
         self.assertIsNone(self.client.logout())
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -125,17 +124,17 @@ class HookTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        appname = response.data['name']
+        url = '/api/apps/{appname}/config'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('values', response.data)
         values = response.data['values']
         # prepare the config hook
-        config = {'username': 'autotest', 'app': app_id}
+        config = {'username': 'autotest', 'app': appname}
         url = '/api/hooks/config'.format(**locals())
         body = {'receive_user': 'autotest',
-                'receive_repo': app_id}
+                'receive_repo': appname}
         # post without a session
         self.assertIsNone(self.client.logout())
         response = self.client.post(url, json.dumps(body), content_type='application/json')

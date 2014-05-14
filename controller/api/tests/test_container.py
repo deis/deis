@@ -45,11 +45,11 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # create a container
         c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
+                                     app=App.objects.get(name=appname),
+                                     release=App.objects.get(name=appname).release_set.latest(),
                                      type='web',
                                      num=1)
         self.assertEqual(c.state, 'initialized')
@@ -59,7 +59,7 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(c.state, 'created')
         c.start()
         self.assertEqual(c.state, 'up')
-        c.deploy(App.objects.get(id=app_id).release_set.latest())
+        c.deploy(App.objects.get(name=appname).release_set.latest())
         self.assertEqual(c.state, 'up')
         c.destroy()
         self.assertEqual(c.state, 'destroyed')
@@ -70,11 +70,11 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest2'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # create a container
         c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
+                                     app=App.objects.get(name=appname),
+                                     release=App.objects.get(name=appname).release_set.latest(),
                                      type='web',
                                      num=1)
         self.assertEqual(c.state, 'initialized')
@@ -86,7 +86,7 @@ class ContainerTest(TransactionTestCase):
         self.assertRaises(
             Exception,
             lambda: c.deploy(
-                App.objects.get(id=app_id).release_set.latest()
+                App.objects.get(name=appname).release_set.latest()
             )
         )
         self.assertEqual(c.state, 'down')
@@ -101,10 +101,10 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
+                                     app=App.objects.get(name=appname),
+                                     release=App.objects.get(name=appname).release_set.latest(),
                                      type='web',
                                      num=1)
         self.assertRaises(AttributeError, lambda: setattr(c, 'state', 'up'))
@@ -114,57 +114,57 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # should start with zero
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 4, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 204)
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
-        url = "/api/apps/{app_id}".format(**locals())
+        url = "/api/apps/{appname}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         # test listing/retrieving container info
-        url = "/api/apps/{app_id}/containers/web".format(**locals())
+        url = "/api/apps/{appname}/containers/web".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
         num = response.data['results'][0]['num']
-        url = "/api/apps/{app_id}/containers/web/{num}".format(**locals())
+        url = "/api/apps/{appname}/containers/web/{num}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['num'], num)
         # scale down
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 2, 'worker': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 204)
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(max(c['num'] for c in response.data['results']), 2)
-        url = "/api/apps/{app_id}".format(**locals())
+        url = "/api/apps/{appname}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         # scale down to 0
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 0, 'worker': 0}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 204)
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
-        url = "/api/apps/{app_id}".format(**locals())
+        url = "/api/apps/{appname}".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
@@ -173,39 +173,39 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # should start with zero
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # scale up
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 204)
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['release'], 'v1')
         # post a new build
-        url = "/api/apps/{app_id}/builds".format(**locals())
+        url = "/api/apps/{appname}/builds".format(**locals())
         body = {'image': 'autotest/example'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['image'], body['image'])
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['release'], 'v2')
         # post new config
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/api/apps/{appname}/config".format(**locals())
         body = {'values': json.dumps({'KEY': 'value'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
@@ -216,8 +216,8 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        appname = response.data['name']
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 'not_an_int'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'Invalid scaling format', status_code=400)
@@ -228,14 +228,14 @@ class ContainerTest(TransactionTestCase):
         body = {'cluster': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
+        appname = response.data['name']
         # scale up
-        url = "/api/apps/{app_id}/scale".format(**locals())
+        url = "/api/apps/{appname}/scale".format(**locals())
         body = {'web': 4, 'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 204)
         # should start with zero
-        url = "/api/apps/{app_id}/containers".format(**locals())
+        url = "/api/apps/{appname}/containers".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
