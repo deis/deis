@@ -5,7 +5,7 @@
 # requirements.txt and dev_requirements.txt files.
 #
 # NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
-# ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [pycrypto]
+# ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [args]
 #
 celery==3.1.11
 Django==1.6.4
@@ -17,7 +17,6 @@ django-guardian==1.1.1
 django-json-field==0.5.5
 djangorestframework==2.3.13
 gunicorn==18.0
-paramiko==1.12.1
 psycopg2==2.5.2
 python-etcd==0.3.0
 PyYAML==3.10
