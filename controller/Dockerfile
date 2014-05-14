@@ -12,21 +12,19 @@ RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.p
 RUN apt-get install -yq git
 
 # install requirements before ADD to cache layer and speed build
-RUN pip install celery==3.1.8 \
+RUN pip install celery==3.1.11 \
                 Django==1.6.4 \
                 django-allauth==0.15.0 \
                 git+https://github.com/deis/django-fsm@add-exception-handling \
                 django-guardian==1.1.1 \
                 django-json-field==0.5.5 \
                 django-yamlfield==0.5 \
-                djangorestframework==2.3.12 \
+                djangorestframework==2.3.13 \
                 gunicorn==18.0 \
-                paramiko==1.12.1 \
                 psycopg2==2.5.2 \
-                pycrypto==2.6.1 \
                 python-etcd==0.3.0 \
                 PyYAML==3.10 \
-                redis==2.8.0 \
+                redis==2.9.1 \
                 static==1.0.2 \
                 South==0.8.4
 

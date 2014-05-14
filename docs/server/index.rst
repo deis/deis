@@ -17,7 +17,6 @@ Server Reference
     api.models
     api.routers
     api.serializers
-    api.ssh
     api.tasks
     api.urls
     api.utils
