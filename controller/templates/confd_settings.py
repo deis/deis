@@ -24,3 +24,7 @@ CELERY_RESULT_BACKEND = BROKER_URL
 
 # move log directory out of /app/deis
 DEIS_LOG_DIR = '/var/log/deis'
+
+{{ if .deis_controller_registrationEnabled }}
+REGISTRATION_ENABLED = {{ .deis_controller_registrationEnabled }}
+{{ end }}
