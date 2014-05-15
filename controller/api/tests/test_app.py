@@ -50,7 +50,15 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         body = {'id': 'new'}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
+        app_id = 'new'
+        # verify that a new release was created
+        url = '/api/apps/{app_id}/releases'.format(**locals())
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.data['count'], 2)
+        url = '/api/apps/{app_id}'.format(**locals())
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 

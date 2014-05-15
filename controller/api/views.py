@@ -276,6 +276,13 @@ class AppViewSet(OwnerViewSet):
         if created:
             app.create()
 
+    def partial_update(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=kwargs['id'])
+        release = app.release_set.latest()
+        self.release = release.new(self.request.user)
+        app.deploy(self.release)
+        return super(AppViewSet, self).partial_update(request, *args, **kwargs)
+
     def scale(self, request, **kwargs):
         new_structure = {}
         try:

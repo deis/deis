@@ -73,6 +73,19 @@ Use ``deis run`` to execute commands against the deployed version of your applic
 Applications deployed on Deis `use one-off processes for admin tasks`_ like
 database migrations and other tasks that must run against the live application.
 
+Rename the Application
+----------------------
+
+Sometimes, we just don't like the name that the auto-generation script makes
+for us. We can use ``deis apps:rename`` to rename the application name to
+something more sensible.
+
+.. code-block:: console
+
+    $ deis rename african-swallow
+    Renaming app... done, new name is african-swallow
+    Git remote deis modified
+
 Share the Application
 ---------------------
 Use ``deis sharing:add`` to allow another Deis user to collaborate on your

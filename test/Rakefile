@@ -52,13 +52,18 @@ namespace :tests do
   task :verify_app do
     run_command("curl -s http://testing.#{HOSTNAME} | grep -q 'Powered by Deis'")
   end
+  task :rename_app do
+    Dir.chdir(EXAMPLE_APP) do
+      run_command('deis rename app-renamed')
+    end
+  end
 end
 
 namespace :cleanup do
   task :all => ['destroy_app','destroy_cluster','remove_key','logout']
   task :destroy_app do
     Dir.chdir(EXAMPLE_APP) do
-      run_command('deis apps:destroy --app=testing --confirm=testing')
+      run_command('deis apps:destroy --app=app-renamed --confirm=app-renamed')
     end
   end
   task :destroy_cluster do
