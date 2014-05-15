@@ -1,33 +1,16 @@
 :title: Manage an Application on Deis
 :description: First steps for developers using Deis to deploy and scale applications.
 
+.. _manage-application:
+
 Manage an Application
 =====================
-Deis includes many tools that help you configure, scale, adminster
-and troubleshoot your deployed :ref:`Application`.
-
-Configure the Application
--------------------------
-Use ``deis config`` to set a `DATABASE_URL` that attaches
-the application to an external PostgreSQL database.
-
-.. code-block:: console
-
-    $ deis config:set DATABASE_URL=postgres://user:pass@example.com:5432/db
-    === peachy-waxworks
-    JAVA_OPTS: -Xmx384m -Xss512k -XX:+UseCompressedOops
-    PATH: /app/.jdk/bin:/usr/local/bin:/usr/bin:/bin
-    MAVEN_OPTS: -Xmx384m -Xss512k -XX:+UseCompressedOops
-    DATABASE_URL: postgres://user:pass@example.com:5432/db
-
-Applications deployed on Deis `store config in environment variables`_.
-Backing services like databases, caches and queues are
-`decoupled from the application`_ and attached with environment variables.
+Deis includes many tools for managing deployed :ref:`Applications <application>`.
 
 Scale the Application
 ---------------------
-Use ``deis scale`` to control the number of :ref:`Containers <container>`
-that power your app.
+Applications deployed on Deis `scale out via the process model`_.
+Use ``deis scale`` to control the number of :ref:`Containers <container>` that power your app.
 
 .. code-block:: console
 
@@ -47,16 +30,18 @@ that power your app.
     web.7 up 2013-12-03T00:30:11.010Z (dev-runtime-1)
     web.8 up 2013-12-03T00:30:11.027Z (dev-runtime-1)
 
-Applications deployed on Deis `scale out via the process model`_.
-Web requests are automatically routed to the ``web`` processes
-defined by your application.
-
-You must define process types like ``web`` or ``worker`` in a
+Scaling is managed by process types like ``web`` or ``worker`` defined in a
 `Procfile`_ in the root of your application repository.
+
+.. note::
+
+    Docker applications can use the ``cmd`` process type to scale the default container command.
 
 Administer the Application
 --------------------------
-Use ``deis run`` to execute commands against the deployed version of your application.
+Deis applications `use one-off processes for admin tasks`_ like database migrations and other commands that must run against the live application.
+
+Use ``deis run`` to execute commands on the deployed application.
 
 .. code-block:: console
 
@@ -70,13 +55,9 @@ Use ``deis run`` to execute commands against the deployed version of your applic
     -rw-r--r-- 1 root root   25 Dec  2 23:59 system.properties
     drwxr-xr-x 6 root root 4096 Dec  3 00:00 target
 
-Applications deployed on Deis `use one-off processes for admin tasks`_ like
-database migrations and other tasks that must run against the live application.
-
 Share the Application
 ---------------------
-Use ``deis sharing:add`` to allow another Deis user to collaborate on your
-application.
+Use ``deis sharing:add`` to allow another Deis user to collaborate on your application.
 
 .. code-block:: console
 
@@ -90,22 +71,22 @@ Use ``deis sharing`` to see who an application is currently shared with, and
     Collaborators can do anything with an application that its owner can do,
     except delete the application itself.
 
-When working with an application that has been shared with you, clone
-the original repository and add Deis' git remote entry before attempting to
-``git push`` any changes to Deis.
+When working with an application that has been shared with you, clone the original repository and add Deis' git remote entry before attempting to ``git push`` any changes to Deis.
 
 .. code-block:: console
 
   $ git clone https://github.com/opdemand/example-java-jetty.git
   Cloning into 'example-java-jetty'... done
   $ cd example-java-jetty
-  $ git remote add -f deis git@local.deisapp.com:peachy-waxworks.git
+  $ git remote add -f deis ssh://git@local.deisapp.com:2222/peachy-waxworks.git
   Updating deis
   From deis-controller.local:peachy-waxworks
    * [new branch]      master     -> deis/master
 
 Troubleshoot the Application
 ----------------------------
+Applications deployed on Deis `treat logs as event streams`_. Deis aggregates ``stdout`` and ``stderr`` from every :ref:`Container` making it easy to troubleshoot problems with your application.
+
 Use ``deis logs`` to view the log output from your deployed application.
 
 .. code-block:: console
@@ -120,10 +101,6 @@ Use ``deis logs`` to view the log output from your deployed application.
     Dec  3 00:30:31 ip-10-250-15-201 peachy-waxworks[web.8]: INFO:oejsh.ContextHandler:started o.e.j.s.ServletContextHandler{/,null}
     Dec  3 00:30:31 ip-10-250-15-201 peachy-waxworks[web.7]: INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:10007
     Dec  3 00:30:31 ip-10-250-15-201 peachy-waxworks[web.8]: INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:10008
-
-Applications deployed on Deis `treat logs as event streams`_.
-Deis aggregates ``stdout`` and ``stderr`` from every :ref:`Container`
-making it easy to troubleshoot problems with your application.
 
 .. _`store config in environment variables`: http://12factor.net/config
 .. _`decoupled from the application`: http://12factor.net/backing-services
