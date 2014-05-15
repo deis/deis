@@ -22,4 +22,4 @@ The DNS records for Deis should be configured as such:
 * ``deis.example.org`` should resolve to the IP of the machine that runs ``deis-controller``
 * ``*.deis.example.org`` (a wildcard DNS entry) should point to the load balancer (or the same machine for 1-node Vagrant, or any single instance of ``deis-router`` if one likes to live life on the edge)
 
-These records are necessary for all deployments of Deis (EC2, Rackspace, multi-node Vagrant) except for a local, one-node Vagrant setup, which can use ``local.deisapp.com``.
+These records are necessary for all deployments of Deis (EC2, Rackspace, bare metal, multi-node Vagrant) except for a local, one-node Vagrant setup, which can use ``local.deisapp.com``.
