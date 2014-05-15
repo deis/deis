@@ -10,6 +10,14 @@ ifndef DEIS_NUM_INSTANCES
 	DEIS_NUM_INSTANCES = 1
 endif
 
+ifndef DEIS_NUM_ROUTERS
+	DEIS_NUM_ROUTERS = 1
+endif
+
+ifndef DEIS_FIRST_ROUTER
+	DEIS_FIRST_ROUTER = 1
+endif
+
 # TODO refactor to support non-vagrant installations, since this Makefile
 # is now used by the various contrib/ scripts.
 define ssh_all
@@ -34,8 +42,8 @@ endef
 
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
-ALL_COMPONENTS=builder cache controller database logger registry router
-START_COMPONENTS=registry logger cache database router
+ALL_COMPONENTS=builder cache controller database logger registry
+START_COMPONENTS=registry logger cache database
 
 ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
@@ -67,10 +75,22 @@ pull:
 
 restart: stop start
 
+routers:
+	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
+	@router_num=$(DEIS_FIRST_ROUTER) ; \
+	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
+			cp router/systemd/deis-router.service ./deis-router.$$router_num.service ; \
+			fleetctl --strict-host-key-checking=false submit ./deis-router.$$router_num.service ; \
+			fleetctl --strict-host-key-checking=false start ./deis-router.$$router_num.service ; \
+			rm -f ./deis-router.$$router_num.service ; \
+			i=`expr $$i + 1` ; \
+			router_num=`expr $$router_num + 1` ; \
+	done
+
 run: install start
 
-start: check-fleet
-	@# registry logger cache database (router)
+start: check-fleet routers
+	@# registry logger cache database
 	$(call echo_yellow,"Starting Deis! Deis will be functional once all services are reported as running... ")
 	fleetctl --strict-host-key-checking=false start $(START_UNITS)
 	$(call echo_yellow,"Waiting for deis-registry to start (this can take some time)... ")
