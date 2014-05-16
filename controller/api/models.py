@@ -14,7 +14,7 @@ import subprocess
 from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, connections
 from django.db.models import Max
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
@@ -34,6 +34,20 @@ logger = logging.getLogger(__name__)
 def log_event(app, msg, level=logging.INFO):
     msg = "{}: {}".format(app.id, msg)
     logger.log(level, msg)
+
+
+def close_db_connections(func, *args, **kwargs):
+    """
+    Decorator to close db connections during threaded execution
+
+    Note this is necessary to work around:
+    https://code.djangoproject.com/ticket/22420
+    """
+    def _inner(*args, **kwargs):
+        func(*args, **kwargs)
+        for conn in connections.all():
+            conn.close()
+    return _inner
 
 
 class AuditedModel(models.Model):
@@ -127,16 +141,39 @@ class App(UuidAuditedModel):
             c.destroy()
         return super(App, self).delete(*args, **kwargs)
 
-    def deploy(self, release):
+    def deploy(self, release, initial=False):
         tasks.deploy_release.delay(self, release).get()
+        if initial:
+            # if there is no SHA, assume a docker image is being promoted
+            if not release.build.sha:
+                self.structure = {'cmd': 1}
+            # if a dockerfile exists without a procfile, assume docker workflow
+            elif release.build.dockerfile and not release.build.procfile:
+                self.structure = {'cmd': 1}
+            # if a procfile exists without a web entry, assume docker workflow
+            elif release.build.procfile and not 'web' in release.build.procfile:
+                self.structure = {'cmd': 1}
+            # default to heroku workflow
+            else:
+                self.structure = {'web': 1}
+            self.save()
+            self.scale()
 
     def destroy(self, *args, **kwargs):
         return self.delete(*args, **kwargs)
 
-    def scale(self, **kwargs):
+    def scale(self, **kwargs):  # noqa
         """Scale containers up or down to match requested."""
         requested_containers = self.structure.copy()
         release = self.release_set.latest()
+        # test for available process types
+        available_process_types = release.build.procfile or {}
+        for container_type in requested_containers.keys():
+            if container_type == 'cmd':
+                continue  # allow docker cmd types in case we don't have the image source
+            if not container_type in available_process_types:
+                raise EnvironmentError(
+                    'Container type {} does not exist in application'.format(container_type))
         msg = 'Containers scaled ' + ' '.join(
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
@@ -146,7 +183,7 @@ class App(UuidAuditedModel):
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
             # increment new container nums off the most recent container
             results = self.container_set.filter(type=container_type).aggregate(Max('num'))
-            container_num = results.get('num__max') or 0 + 1
+            container_num = (results.get('num__max') or 0) + 1
             requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
             if diff == 0:
@@ -267,18 +304,21 @@ class Container(UuidAuditedModel):
 
     _command = property(_get_command)
 
+    @close_db_connections
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
         c_type = self.type
         self._scheduler.create(self._job_id, image, self._command.format(**locals()))
 
+    @close_db_connections
     @transition(field=state,
                 source=[CREATED, UP, DOWN],
                 target=UP, crashed=DOWN)
     def start(self):
         self._scheduler.start(self._job_id)
 
+    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=UP,
@@ -297,10 +337,12 @@ class Container(UuidAuditedModel):
         # destroy old container
         self._scheduler.destroy(old_job_id)
 
+    @close_db_connections
     @transition(field=state, source=UP, target=DOWN)
     def stop(self):
         self._scheduler.stop(self._job_id)
 
+    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=DESTROYED)
@@ -351,6 +393,11 @@ class Build(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     image = models.CharField(max_length=256)
+
+    # optional fields populated by builder
+    sha = models.CharField(max_length=40, blank=True)
+    procfile = JSONField(default='{}', blank=True)
+    dockerfile = models.TextField(blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -455,7 +502,10 @@ class Release(UuidAuditedModel):
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
             if self.build != old_build:
-                self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
+                if self.build.sha:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
+                else:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
             # compare this config to the previous config
             old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff

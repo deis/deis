@@ -1,5 +1,5 @@
 :title: Developer Guide
-:description: Step-by-step guide for developers using Deis to deploy and scale applications.
+:description: Step-by-step guide for developers using Deis to deploy and manage applications.
 
 .. _developer:
 
@@ -15,6 +15,7 @@ Developer Guide
     install-client
     register-user
     deploy-application
-    buildpack
-    dockerfile
+    using-buildpacks
+    using-dockerfiles
+    config-application
     manage-application
