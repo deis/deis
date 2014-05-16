@@ -9,6 +9,7 @@ keys = [
   "/deis/cache",
   "/deis/database",
   "/deis/registry",
+  "/deis/router",
 ]
 check_cmd = "test -e {{ .src }}"
 reload_cmd = "/app/bin/reload"
