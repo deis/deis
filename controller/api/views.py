@@ -474,17 +474,7 @@ class DomainViewSet(OwnerViewSet):
 
     def post_save(self, domain, created=False):
         if created:
-            release = domain.app.release_set.latest()
-            self.release = release.new(self.request.user)
-            domain.app.deploy(self.release)
-
-    def destroy(self, request, **kwargs):
-        domain = self.model.objects.get(domain=self.kwargs['id'])
-        domain.delete()
-        release = domain.app.release_set.latest()
-        self.release = release.new(self.request.user)
-        domain.app.deploy(self.release)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            domain.create()
 
     def get_queryset(self, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])

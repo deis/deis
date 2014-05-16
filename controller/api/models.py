@@ -209,7 +209,6 @@ class App(UuidAuditedModel):
             if to_remove:
                 subtasks.append(tasks.stop_containers.s(to_remove))
             group(*subtasks).apply_async().join()
-            _publish_domains(app=str(self), domains=list(self.domain_set.all()))
             log_event(self, msg)
         return changed
 
@@ -542,6 +541,10 @@ class Domain(AuditedModel):
 
     def __str__(self):
         return self.domain
+
+    def create(self):
+        _publish_domains(app=str(self.app), domains=list(self.app.domain_set.all()))
+        msg = 'Domains deployed: ' + ' '.join(str(i) for i in self.app.domain_set.all())
 
 
 @python_2_unicode_compatible
