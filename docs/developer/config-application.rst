@@ -15,11 +15,11 @@ Use ``deis config`` to modify environment variables for a deployed application.
 
     $ deis help config
     Valid commands for config:
-    
+
     config:list        list environment variables for an app
     config:set         set environment variables for an app
     config:unset       unset environment variables for an app
-    
+
     Use `deis help [command]` to learn more
 
 When config is changed, a new release is created and deployed automatically.
@@ -105,4 +105,3 @@ Note all releases (including rollbacks) append to the release ledger.
 
 .. _`stores config in environment variables`: http://12factor.net/config
 .. _`attached resources`: http://12factor.net/backing-services
-
