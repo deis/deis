@@ -567,13 +567,6 @@ class Key(UuidAuditedModel):
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
-def _publish_domains(**kwargs):
-    app = kwargs['app']
-    domains = kwargs['domains']
-    _etcd_client.write(
-        '/deis/domains/{}'.format(app),
-        ' '.join(str(i) for i in domains))
-
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
@@ -608,6 +601,16 @@ def _etcd_purge_user(**kwargs):
     _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
 
 
+def _etcd_publish_domains(**kwargs):
+    app = kwargs['instance'].app
+    app_domains = app.domain_set.all()
+    if app_domains:
+        _etcd_client.write('/deis/domains/{}'.format(app),
+                           ' '.join(str(d.domain) for d in app_domains))
+    else:
+        _etcd_client.delete('/deis/domains/{}'.format(app))
+
+
 # Log significant app-related events
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
@@ -632,3 +635,5 @@ if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
+    post_delete.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')

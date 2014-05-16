@@ -94,6 +94,23 @@ Application Infrastructure
   List all :class:`~api.models.Container`\s.
 
 
+Application Domains
+-------------------
+
+
+.. http:delete:: /api/apps/(string:id)/domains/(string:hostname)
+
+  Destroy a :class:`~api.models.Domain` by its `hostname`
+
+.. http:get:: /api/apps/(string:id)/domains/
+
+  List all :class:`~api.models.Domain`\s.
+
+.. http:post:: /api/apps/(string:id)/domains/
+
+  Create a new :class:`~api.models.Domain`\s.
+
+
 Application Actions
 -------------------
 
@@ -233,12 +250,6 @@ urlpatterns = patterns(
             'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
     url(r'^clusters/?',
         views.ClusterViewSet.as_view({'get': 'list', 'post': 'create'})),
-    # application domains
-    url(r'^domains/(?P<id>[-\._\w]+)/?',
-        views.DomainViewSet.as_view({'delete': 'destroy'})),
-    url(r'^apps/(?P<id>[-_\w]+)/domains/?',
-        views.DomainViewSet.as_view({'post': 'create',
-                                     'get': 'list'})),
     # application release components
     url(r'^apps/(?P<id>[-_\w]+)/config/?',
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
@@ -259,6 +270,11 @@ urlpatterns = patterns(
         views.AppContainerViewSet.as_view({'get': 'list'})),
     url(r'^apps/(?P<id>[-_\w]+)/containers/?',
         views.AppContainerViewSet.as_view({'get': 'list'})),
+    # application domains
+    url(r'^apps/(?P<id>[-_\w]+)/domains/(?P<domain>[-\._\w]+)/?',
+        views.DomainViewSet.as_view({'delete': 'destroy'})),
+    url(r'^apps/(?P<id>[-_\w]+)/domains/?',
+        views.DomainViewSet.as_view({'post': 'create', 'get': 'list'})),
     # application actions
     url(r'^apps/(?P<id>[-_\w]+)/scale/?',
         views.AppViewSet.as_view({'post': 'scale'})),

@@ -44,16 +44,14 @@ class DomainTest(TestCase):
         body = {'domain': 'test-domain.example.com'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         response = self.client.get(url, content_type='application/json')
         result = response.data['results'][0]
         self.assertEqual('test-domain.example.com', result['domain'])
-
-        url = '/api/domains/{hostname}'.format(hostname='test-domain.example.com')
+        url = '/api/apps/{app_id}/domains/{hostname}'.format(hostname='test-domain.example.com',
+                                                             app_id=self.app_id)
         response = self.client.delete(url, content_type='application/json')
         self.assertEqual(response.status_code, 204)
-
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(0, response.data['count'])
@@ -63,7 +61,6 @@ class DomainTest(TestCase):
         body = {'domain': 'test-domain.example.com'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 404)
-
         url = '/api/apps/{app_id}/domains'.format(app_id='this-app-does-not-exist')
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 404)
@@ -82,12 +79,10 @@ class DomainTest(TestCase):
         body = {'domain': 'this_is_an.invalid.domain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': 'this-is-an.invalid.a'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': 'domain'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
