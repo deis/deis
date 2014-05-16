@@ -1068,15 +1068,18 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         domain = args.get('<domain>')
-        if domain is None:
-            print("Faulty input")
-            sys.exit(1)
         body = {'domain': domain}
-        response = self._dispatch(
-            'post', "/api/apps/{app}/domains".format(app=app),
-            json.dumps(body))
+        sys.stdout.write("Adding {domain} to {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("Domain created")
+            print("done")
         else:
             raise ResponseError(response)
 
@@ -1084,19 +1087,23 @@ class DeisClient(object):
         """
         Unbind a domain for an application
 
-        Usage: deis domains:rm <domain> [--app=<app>]
+        Usage: deis domains:remove <domain> [--app=<app>]
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
         domain = args.get('<domain>')
-        if domain is None:
-            print("Faulty input")
-            return
-        response = self._dispatch(
-            'delete', "/api/domains/{domain}".format(app=app, domain=domain))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("Domain removed")
+        sys.stdout.write("Removing {domain} from {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('delete', "/api/domains/{domain}".format(**locals()))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+            print("done")
         else:
             raise ResponseError(response)
 
@@ -1112,7 +1119,13 @@ class DeisClient(object):
         response = self._dispatch(
             'get', "/api/apps/{app}/domains".format(app=app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
+            domains = response.json()['results']
+            print("=== {} Domains".format(app))
+            if len(domains) == 0:
+                print('No domains')
+                return
+            for domain in domains:
+                print(domain['domain'])
         else:
             raise ResponseError(response)
 
