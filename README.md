@@ -37,12 +37,13 @@ If you're on Ubuntu, you need to install the nfs-kernel-server package as it's r
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
 * Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
-* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster: ```$ export DEIS_NUM_INSTANCES=3```
+* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (typically 3 or 5): ```$ export DEIS_NUM_INSTANCES=3```
+* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your hostname for accessing the cluster
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
 For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
 
-Deis clusters of less than 3 nodes are unsupported for anything other than local development. A painless 3+ node development environment is a priority.
+Deis clusters of less than 3 nodes are unsupported for anything other than local development.
 
 ## Boot CoreOS
 
@@ -81,7 +82,7 @@ Use `make run` to start all Deis containers and attach to their log output. This
 $ make run
 ```
 
-Your Vagrant VM is accessible at `local.deisapp.com`. For clusters with more than one node, see our guide to [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/).
+Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.
