@@ -1078,7 +1078,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
             print("done")
         else:
             raise ResponseError(response)
@@ -1098,7 +1098,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('delete', "/api/domains/{domain}".format(**locals()))
+            response = self._dispatch('delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
         finally:
             progress.cancel()
             progress.join()
