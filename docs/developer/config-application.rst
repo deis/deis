@@ -100,7 +100,9 @@ Use ``deis rollback`` to revert to a previous release.
     v2      6 hours 2 minutes ago             gabrtv deployed 7cb3321
     v1      6 hours 3 minutes ago             gabrtv deployed deis/helloworld
 
-Note all releases (including rollbacks) append to the release ledger.
+.. note::
+
+    All releases (including rollbacks) append to the release ledger.
 
 
 .. _`stores config in environment variables`: http://12factor.net/config
