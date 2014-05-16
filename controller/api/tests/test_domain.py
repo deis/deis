@@ -65,14 +65,14 @@ class DomainTest(TestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 404)
 
-    def test_manage_domain_no_perms_on_app(self):
+    def test_manage_domain_perms_on_app(self):
         self.client.logout()
         self.assertTrue(
             self.client.login(username='autotest2', password='password'))
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': 'test-domain2.example.com'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 201)
 
     def test_manage_domain_invalid_domain(self):
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)

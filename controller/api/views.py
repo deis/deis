@@ -466,9 +466,6 @@ class DomainViewSet(OwnerViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        # TODO: allow non-owners to manage domains
-        if request.user != app.owner:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         request._data = request.DATA.copy()
         request.DATA['app'] = app
         return super(DomainViewSet, self).create(request, *args, **kwargs)
