@@ -545,6 +545,7 @@ class Domain(AuditedModel):
     def create(self):
         _publish_domains(app=str(self.app), domains=list(self.app.domain_set.all()))
         msg = 'Domains deployed: ' + ' '.join(str(i) for i in self.app.domain_set.all())
+        log_event(self.app, msg)
 
 
 @python_2_unicode_compatible
