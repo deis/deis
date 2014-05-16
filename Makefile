@@ -52,6 +52,7 @@ define echo_yellow
 	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
 
+# TODO: re-evaluate the start order now that we're on fleet 0.3.2.
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
 COMPONENTS=builder cache controller database logger registry
