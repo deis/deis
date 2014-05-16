@@ -542,11 +542,6 @@ class Domain(AuditedModel):
     def __str__(self):
         return self.domain
 
-    def create(self):
-        _publish_domains(app=str(self.app), domains=list(self.app.domain_set.all()))
-        msg = 'Domains deployed: ' + ' '.join(str(i) for i in self.app.domain_set.all())
-        log_event(self.app, msg)
-
 
 @python_2_unicode_compatible
 class Key(UuidAuditedModel):
@@ -584,6 +579,16 @@ def _log_config_updated(**kwargs):
     log_event(config.app, "Config {} updated".format(config))
 
 
+def _log_domain_added(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} added".format(domain))
+
+
+def _log_domain_removed(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} removed".format(domain))
+
+
 def _etcd_publish_key(**kwargs):
     key = kwargs['instance']
     _etcd_client.write('/deis/builder/users/{}/{}'.format(
@@ -615,6 +620,8 @@ def _etcd_publish_domains(**kwargs):
 post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models')
+post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models')
 
 
 # save FSM transitions as they happen
