@@ -15,7 +15,7 @@ ifndef DEIS_FIRST_ROUTER
 endif
 
 define ssh_all
-	pssh -t 0 -P -l core -H "$(DEIS_HOSTS)" $(1)	
+	@(for host in $(DEIS_HOSTS); do ssh core@$$host $(1); done)
 endef
 
 define check_for_errors
