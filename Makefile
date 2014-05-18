@@ -10,6 +10,14 @@ ifndef DEIS_HOSTS
 	DEIS_HOSTS = 172.17.8.100
 endif
 
+ifndef DEIS_NUM_INSTANCES
+	DEIS_NUM_INSTANCES = 1
+endif
+
+ifndef DEIS_NUM_ROUTERS
+	DEIS_NUM_ROUTERS = 1
+endif
+
 ifndef DEIS_FIRST_ROUTER
 	DEIS_FIRST_ROUTER = 1
 endif
@@ -38,9 +46,6 @@ START_COMPONENTS=registry logger cache database
 
 ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
-
-DEIS_NUM_INSTANCES = `echo $(DEIS_HOSTS) | wc -w`
-DEIS_NUM_ROUTERS = $(DEIS_NUM_INSTANCES)
 
 all: build run
 
