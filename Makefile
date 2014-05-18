@@ -6,6 +6,10 @@ ifndef FLEETCTL_TUNNEL
 	$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
 endif
 
+ifndef DEIS_HOSTS
+	DEIS_HOSTS = 172.17.8.100
+endif
+
 ifndef DEIS_NUM_INSTANCES
 	DEIS_NUM_INSTANCES = 1
 endif
@@ -18,13 +22,8 @@ ifndef DEIS_FIRST_ROUTER
 	DEIS_FIRST_ROUTER = 1
 endif
 
-# TODO refactor to support non-vagrant installations, since this Makefile
-# is now used by the various contrib/ scripts.
 define ssh_all
-	i=1 ; while [ $$i -le $(DEIS_NUM_INSTANCES) ] ; do \
-			vagrant ssh deis-$$i -c $(1) ; \
-			i=`expr $$i + 1` ; \
-	done
+	@(for host in $(DEIS_HOSTS); do ssh core@$$host $(1); done)
 endef
 
 define check_for_errors
@@ -47,6 +46,9 @@ START_COMPONENTS=registry logger cache database
 
 ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
+
+DEIS_NUM_INSTANCES = `echo $(DEIS_HOSTS) | wc -w`
+DEIS_NUM_ROUTERS = $(DEIS_NUM_INSTANCES)
 
 all: build run
 
