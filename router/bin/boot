@@ -26,15 +26,16 @@ sleep $(($ETCD_TTL+1))
 
 # seed initial service configuration if necessary
 if ! etcdctl --no-sync -C $ETCD ls /deis/services >/dev/null 2>&1; then
-	etcdctl --no-sync -C $ETCD mkdir /deis/services || true >/dev/null 2>&1
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/port ${PORT:-80} >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzip on >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipHttpVersion 1.0 >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipCompLevel 2 >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipProxied any >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipVary on >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipDisable "\"msie6\"" >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml" >/dev/null
+  etcdctl --no-sync -C $ETCD mkdir /deis/services || true >/dev/null 2>&1
+  etcdctl --no-sync -C $ETCD mkdir /deis/domains || true >/dev/null 2>&1
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/port ${PORT:-80} >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzip on >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipHttpVersion 1.0 >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipCompLevel 2 >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipProxied any >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipVary on >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipDisable "\"msie6\"" >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml" >/dev/null
 fi
 
 # wait for confd to run once and install initial templates
@@ -64,24 +65,24 @@ echo deis-router running...
 # publish the service to etcd using the injected PORT
 if [[ ! -z $PUBLISH ]]; then
 
-	# configure service discovery
-	PORT=${PORT:-80}
-	PROTO=${PROTO:-tcp}
+  # configure service discovery
+  PORT=${PORT:-80}
+  PROTO=${PROTO:-tcp}
 
     set +e
 
-	# wait for the service to become available on PUBLISH port
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+  # wait for the service to become available on PUBLISH port
+  sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
-	# while the port is listening, publish to etcd
-	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
-	done
+  # while the port is listening, publish to etcd
+  while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+    etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+    etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
+    sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+  done
 
-	# if the loop quits, something went wrong
-	exit 1
+  # if the loop quits, something went wrong
+  exit 1
 
 fi
 
