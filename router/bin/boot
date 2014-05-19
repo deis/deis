@@ -24,19 +24,26 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-# seed initial service configuration if necessary
-if ! etcdctl --no-sync -C $ETCD ls /deis/services >/dev/null 2>&1; then
-  etcdctl --no-sync -C $ETCD mkdir /deis/services || true >/dev/null 2>&1
-  etcdctl --no-sync -C $ETCD mkdir /deis/domains || true >/dev/null 2>&1
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/port ${PORT:-80} >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzip on >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipHttpVersion 1.0 >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipCompLevel 2 >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipProxied any >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipVary on >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipDisable "\"msie6\"" >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml" >/dev/null
-fi
+function etcd_safe_mkdir {
+  etcdctl --no-sync -C $ETCD mkdir $1 || true >/dev/null 2>&1
+}
+
+function etcd_safe_set {
+  if ! etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1 >/dev/null 2>&1; then
+    etcdctl --no-sync -C $ETCD set $ETCD_PATH/$1 $2 >/dev/null
+  fi
+}
+
+etcd_safe_mkdir /deis/services
+etcd_safe_mkdir /deis/domains
+etcd_safe_set port ${PORT:-80}
+etcd_safe_set gzip on
+etcd_safe_set gzipHttpVersion 1.0
+etcd_safe_set gzipCompLevel 2
+etcd_safe_set gzipProxied any
+etcd_safe_set gzipVary on
+etcd_safe_set gzipDisable "\"msie6\""
+etcd_safe_set gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml"
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do
