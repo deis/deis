@@ -47,9 +47,6 @@ START_COMPONENTS=registry logger cache database
 ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
 
-DEIS_NUM_INSTANCES = `echo $(DEIS_HOSTS) | wc -w`
-DEIS_NUM_ROUTERS = $(DEIS_NUM_INSTANCES)
-
 all: build run
 
 build:
