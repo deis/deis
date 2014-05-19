@@ -42,10 +42,11 @@ endef
 
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
-ALL_COMPONENTS=builder cache controller database logger registry
+COMPONENTS=builder cache controller database logger registry
+ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
-ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
+ALL_UNITS = $(foreach C, $(COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
 
 all: build run
@@ -75,21 +76,9 @@ pull:
 
 restart: stop start
 
-routers:
-	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
-	@router_num=$(DEIS_FIRST_ROUTER) ; \
-	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
-			cp router/systemd/deis-router.service ./deis-router.$$router_num.service ; \
-			fleetctl --strict-host-key-checking=false submit ./deis-router.$$router_num.service ; \
-			fleetctl --strict-host-key-checking=false start ./deis-router.$$router_num.service ; \
-			rm -f ./deis-router.$$router_num.service ; \
-			i=`expr $$i + 1` ; \
-			router_num=`expr $$router_num + 1` ; \
-	done
-
 run: install start
 
-start: check-fleet routers
+start: check-fleet start-routers
 	@# registry logger cache database
 	$(call echo_yellow,"Starting Deis! Deis will be functional once all services are reported as running... ")
 	fleetctl --strict-host-key-checking=false start $(START_UNITS)
@@ -113,14 +102,42 @@ start: check-fleet routers
 
 	$(call echo_yellow,"Your Deis cluster is ready to go! Continue following the README to login and use Deis.")
 
+start-routers:
+	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
+	@router_num=$(DEIS_FIRST_ROUTER) ; \
+	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
+			cp router/systemd/deis-router.service ./deis-router.$$router_num.service ; \
+			fleetctl --strict-host-key-checking=false submit ./deis-router.$$router_num.service ; \
+			fleetctl --strict-host-key-checking=false start ./deis-router.$$router_num.service ; \
+			rm -f ./deis-router.$$router_num.service ; \
+			i=`expr $$i + 1` ; \
+			router_num=`expr $$router_num + 1` ; \
+	done
+
 status: check-fleet
 	fleetctl --strict-host-key-checking=false list-units
 
-stop: check-fleet
+stop: check-fleet stop-routers
 	fleetctl --strict-host-key-checking=false stop $(ALL_UNITS)
+
+stop-routers:
+	@router_num=$(DEIS_FIRST_ROUTER) ; \
+	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
+		fleetctl --strict-host-key-checking=false stop deis-router.$$router_num.service ; \
+		i=`expr $$i + 1` ; \
+		router_num=`expr $$router_num + 1` ; \
+	done
 
 tests:
 	cd test && bundle install && bundle exec rake
 
-uninstall: check-fleet stop
+uninstall: check-fleet stop uninstall-routers
 	fleetctl --strict-host-key-checking=false destroy $(ALL_UNITS)
+
+uninstall-routers:
+	@router_num=$(DEIS_FIRST_ROUTER) ; \
+	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
+		fleetctl --strict-host-key-checking=false destroy deis-router.$$router_num.service ; \
+		i=`expr $$i + 1` ; \
+		router_num=`expr $$router_num + 1` ; \
+	done
