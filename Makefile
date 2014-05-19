@@ -54,12 +54,13 @@ endef
 
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
-ALL_COMPONENTS=builder cache controller database logger registry
+COMPONENTS=builder cache controller database logger registry
+ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
-ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
+ALL_UNITS = $(foreach C, $(COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
-ROUTER_UNITS = $(shell seq -f "deis-router.%g" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
+ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 all: build run
 
