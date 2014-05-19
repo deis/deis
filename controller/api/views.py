@@ -299,7 +299,7 @@ class AppViewSet(OwnerViewSet):
             logs = app.logs()
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
-                            status=status.HTTP_404_NOT_FOUND,
+                            status=status.HTTP_204_NO_CONTENT,
                             content_type='text/plain')
         return Response(logs, status=status.HTTP_200_OK,
                         content_type='text/plain')
