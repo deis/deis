@@ -617,11 +617,11 @@ def _etcd_publish_domains(**kwargs):
 
 
 # Log significant app-related events
-post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
-post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
-post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
-post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models')
-post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models')
+post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models.log')
+post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models.log')
+post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models.log')
+post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log')
+post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
 
 
 # save FSM transitions as they happen
