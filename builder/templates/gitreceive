@@ -13,7 +13,7 @@ case "$1" in
     export RECEIVE_FINGERPRINT=$3
     # ssh provides the original requested command in $SSH_ORIGINAL_COMMAND
     SSH_ORIGINAL_COMMAND="$(echo $SSH_ORIGINAL_COMMAND | sed 's/\///g' )" # remove any '/'s
-    export RECEIVE_REPO="$(echo $SSH_ORIGINAL_COMMAND | awk '{print $2}' | perl -pe 's/(?<!\\)'\''//g' | sed 's/\\'\''/'\''/g')"
+    export RECEIVE_REPO="$(echo $SSH_ORIGINAL_COMMAND | awk '{print $2}' | sed -e 's/'\''//g')"
     REPO_PATH="$GITHOME/$RECEIVE_REPO"
     if [ ! -d $REPO_PATH ]; then
       mkdir -p $REPO_PATH
