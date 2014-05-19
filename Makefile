@@ -42,6 +42,12 @@ define check_for_errors
 	fi
 endef
 
+define deis_units
+	$(shell $(FLEETCTL) list-units -no-legend=true | \
+	  awk '($$2 ~ "$(1)" && ($$4 ~ "$(2)"))' | \
+	  sed -n 's/\(deis-.*\.service\).*/\1/p' | tr '\n' ' ')
+endef
+
 define echo_yellow
 	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
@@ -110,21 +116,21 @@ start: check-fleet start-routers
 
 start-routers:
 	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
-	@ $(foreach C, $(ROUTER_UNITS), \
-		cp router/systemd/deis-router.service ./$(C).service ; \
-		fleetctl --strict-host-key-checking=false submit ./$(C).service ; \
-		fleetctl --strict-host-key-checking=false start ./$(C).service ; \
-		rm -f ./$(C).service ; \
+	@ $(foreach U, $(ROUTER_UNITS), \
+		cp router/systemd/deis-router.service ./$(U) ; \
+		$(FLEETCTL) submit ./$(U) ; \
+		$(FLEETCTL) start ./$(U) ; \
+		rm -f ./$(U) ; \
 	)
 
 status: check-fleet
 	$(FLEETCTL) list-units
 
 stop: check-fleet
-	$(FLEETCTL) stop $(ALL_UNITS)
+	$(FLEETCTL) stop $(call deis_units,loaded,.)
 
 tests:
 	cd test && bundle install && bundle exec rake
 
 uninstall: check-fleet stop
-	$(FLEETCTL) destroy $(ALL_UNITS)
+	$(FLEETCTL) destroy $(call deis_units,loaded,.)
