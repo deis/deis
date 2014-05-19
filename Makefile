@@ -2,6 +2,10 @@
 # Deis Makefile
 #
 
+ifndef FLEETCTL
+	FLEETCTL = fleetctl --strict-host-key-checking=false
+endif
+
 ifndef FLEETCTL_TUNNEL
 	$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
 endif
@@ -28,7 +32,7 @@ define ssh_all
 endef
 
 define check_for_errors
-	@if fleetctl --strict-host-key-checking=false list-units | egrep -q "(failed|dead)"; then \
+	@if $(FLEETCTL) list-units | egrep -q "(failed|dead)"; then \
 		echo "\033[0;31mOne or more services failed! Check which services by running 'make status'\033[0m" ; \
 		echo "\033[0;31mYou can get detailed output with 'fleetctl status deis-servicename.service'\033[0m" ; \
 		echo "\033[0;31mThis usually indicates an error with Deis - please open an issue on GitHub or ask for help in IRC\033[0m" ; \
@@ -54,7 +58,7 @@ build:
 	$(call ssh_all,'cd share && for c in $(ALL_COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
 
 check-fleet:
-	@LOCAL_VERSION=`fleetctl -version`; \
+	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
 	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(subst :, -p ,$(FLEETCTL_TUNNEL)) fleetctl -version`; \
 	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
 			echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Uninstall your local version and install the latest build from https://github.com/coreos/fleet/releases"; exit 1; \
@@ -67,7 +71,7 @@ full-clean: clean
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rmi deis-$$c; done')
 
 install: check-fleet
-	fleetctl --strict-host-key-checking=false submit $(START_UNITS)
+	$(FLEETCTL) submit $(START_UNITS)
 
 pull:
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c; done')
@@ -80,8 +84,8 @@ routers:
 	@router_num=$(DEIS_FIRST_ROUTER) ; \
 	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
 			cp router/systemd/deis-router.service ./deis-router.$$router_num.service ; \
-			fleetctl --strict-host-key-checking=false submit ./deis-router.$$router_num.service ; \
-			fleetctl --strict-host-key-checking=false start ./deis-router.$$router_num.service ; \
+			$(FLEETCTL) submit ./deis-router.$$router_num.service ; \
+			$(FLEETCTL) start ./deis-router.$$router_num.service ; \
 			rm -f ./deis-router.$$router_num.service ; \
 			i=`expr $$i + 1` ; \
 			router_num=`expr $$router_num + 1` ; \
@@ -92,35 +96,35 @@ run: install start
 start: check-fleet routers
 	@# registry logger cache database
 	$(call echo_yellow,"Starting Deis! Deis will be functional once all services are reported as running... ")
-	fleetctl --strict-host-key-checking=false start $(START_UNITS)
+	$(FLEETCTL) start $(START_UNITS)
 	$(call echo_yellow,"Waiting for deis-registry to start (this can take some time)... ")
-	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-registry.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "registry" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	@until $(FLEETCTL) list-units | egrep -q "deis-registry.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "registry" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 
 	@# controller
 	$(call echo_yellow,"Done! Waiting for deis-controller...")
-	fleetctl --strict-host-key-checking=false submit controller/systemd/*
-	fleetctl --strict-host-key-checking=false start controller/systemd/*
-	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-controller.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "controller" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(FLEETCTL) submit controller/systemd/*
+	$(FLEETCTL) start controller/systemd/*
+	@until $(FLEETCTL) list-units | egrep -q "deis-controller.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "controller" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 
 	@# builder
 	$(call echo_yellow,"Done! Waiting for deis-builder to start (this can also take some time)... ")
-	fleetctl --strict-host-key-checking=false submit builder/systemd/*
-	fleetctl --strict-host-key-checking=false start builder/systemd/*
-	@until fleetctl --strict-host-key-checking=false list-units | egrep -q "deis-builder.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; fleetctl --strict-host-key-checking=false list-units | grep "builder" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(FLEETCTL) submit builder/systemd/*
+	$(FLEETCTL) start builder/systemd/*
+	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "builder" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
 	$(call check_for_errors)
 
 	$(call echo_yellow,"Your Deis cluster is ready to go! Continue following the README to login and use Deis.")
 
 status: check-fleet
-	fleetctl --strict-host-key-checking=false list-units
+	$(FLEETCTL) list-units
 
 stop: check-fleet
-	fleetctl --strict-host-key-checking=false stop $(ALL_UNITS)
+	$(FLEETCTL) stop $(ALL_UNITS)
 
 tests:
 	cd test && bundle install && bundle exec rake
 
 uninstall: check-fleet stop
-	fleetctl --strict-host-key-checking=false destroy $(ALL_UNITS)
+	$(FLEETCTL) destroy $(ALL_UNITS)
