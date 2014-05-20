@@ -38,9 +38,8 @@ RUN useradd -d $GITHOME $GITUSER
 RUN mkdir -p $GITHOME/.ssh && chown git:git $GITHOME/.ssh
 RUN chown -R $GITUSER:$GITUSER $GITHOME
 
-# let the git user run `sudo /home/git/builder` (not writeable)
-RUN apt-get install -yq sudo
-RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
+# add git user to docker group
+RUN usermod -aG docker git
 
 # install custom confd
 RUN wget -q https://s3-us-west-2.amazonaws.com/deis/confd -O /usr/local/bin/confd
