@@ -534,6 +534,16 @@ class Release(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class Domain(AuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    domain = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.domain
+
+
+@python_2_unicode_compatible
 class Key(UuidAuditedModel):
     """An SSH public key."""
 
@@ -552,7 +562,6 @@ class Key(UuidAuditedModel):
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
-
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
@@ -568,6 +577,16 @@ def _log_release_created(**kwargs):
 def _log_config_updated(**kwargs):
     config = kwargs['instance']
     log_event(config.app, "Config {} updated".format(config))
+
+
+def _log_domain_added(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} added".format(domain))
+
+
+def _log_domain_removed(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} removed".format(domain))
 
 
 def _etcd_publish_key(**kwargs):
@@ -587,10 +606,22 @@ def _etcd_purge_user(**kwargs):
     _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
 
 
+def _etcd_publish_domains(**kwargs):
+    app = kwargs['instance'].app
+    app_domains = app.domain_set.all()
+    if app_domains:
+        _etcd_client.write('/deis/domains/{}'.format(app),
+                           ' '.join(str(d.domain) for d in app_domains))
+    else:
+        _etcd_client.delete('/deis/domains/{}'.format(app))
+
+
 # Log significant app-related events
-post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
-post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
-post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models.log')
+post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models.log')
+post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models.log')
+post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log')
+post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
 
 
 # save FSM transitions as they happen
@@ -611,3 +642,5 @@ if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
+    post_delete.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')

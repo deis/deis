@@ -458,6 +458,29 @@ class KeyViewSet(OwnerViewSet):
     lookup_field = 'id'
 
 
+class DomainViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Domain`."""
+
+    model = models.Domain
+    serializer_class = serializers.DomainSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+        return super(DomainViewSet, self).create(request, *args, **kwargs)
+
+    def get_queryset(self, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        qs = self.model.objects.filter(app=app)
+        return qs
+
+    def get_object(self, *args, **kwargs):
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(domain=self.kwargs['domain'])
+        return obj
+
+
 class BaseHookViewSet(viewsets.ModelViewSet):
 
     permission_classes = (HasBuilderAuth,)

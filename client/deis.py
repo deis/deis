@@ -16,6 +16,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   clusters      manage clusters used to host applications
   ps            manage processes inside an app container
   config        manage environment variables that define app config
+  domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
   releases      manage releases of an application
 
@@ -519,6 +520,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
             print()
             self.ps_list(args)
+            self.domains_list(args)
             print()
         else:
             raise ResponseError(response)
@@ -1041,6 +1043,89 @@ class DeisClient(object):
                 return
             for k, v in values.items():
                 print("{k}: {v}".format(**locals()))
+        else:
+            raise ResponseError(response)
+
+    def domains(self, args):
+        """
+        Valid commands for domains:
+
+        domains:add           bind a domain to an application
+        domains:list          list domains bound to an application
+        domains:remove        unbind a domain from an application
+
+        Use `deis help [command]` to learn more
+        """
+        return self.domains_list(args)
+
+    def domains_add(self, args):
+        """
+        Bind a domain to an application
+
+        Usage: deis domains:add <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        domain = args.get('<domain>')
+        body = {'domain': domain}
+        sys.stdout.write("Adding {domain} to {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print("done")
+        else:
+            raise ResponseError(response)
+
+    def domains_remove(self, args):
+        """
+        Unbind a domain for an application
+
+        Usage: deis domains:remove <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        domain = args.get('<domain>')
+        sys.stdout.write("Removing {domain} from {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+            print("done")
+        else:
+            raise ResponseError(response)
+
+    def domains_list(self, args):
+        """
+        List domains bound to an application
+
+        Usage: deis domains:list [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch(
+            'get', "/api/apps/{app}/domains".format(app=app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            domains = response.json()['results']
+            print("=== {} Domains".format(app))
+            if len(domains) == 0:
+                print('No domains')
+                return
+            for domain in domains:
+                print(domain['domain'])
         else:
             raise ResponseError(response)
 
