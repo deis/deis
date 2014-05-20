@@ -25,7 +25,7 @@ done
 sleep $(($ETCD_TTL+1))
 
 function etcd_safe_mkdir {
-  etcdctl --no-sync -C $ETCD mkdir $1 || true >/dev/null 2>&1
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
 }
 
 function etcd_safe_set {
@@ -34,6 +34,7 @@ function etcd_safe_set {
   fi
 }
 
+etcd_safe_mkdir /deis/controller
 etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
 etcd_safe_set port ${PORT:-80}

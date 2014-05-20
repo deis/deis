@@ -22,10 +22,10 @@ end
 namespace :tests do
   task :all => ['register','login','add_key','create_cluster','create_app','push_app','scale_app','verify_app']
   task :register do
-    run_command("deis register http://#{HOSTNAME}:8000 --username=test --email=test@test.co.nz --password=asdf1234 || true")
+    run_command("deis register http://deis.#{HOSTNAME} --username=test --email=test@test.co.nz --password=asdf1234 || true")
   end
   task :login do
-    run_command("deis login http://#{HOSTNAME}:8000 --username=test --password=asdf1234")
+    run_command("deis login http://deis.#{HOSTNAME} --username=test --password=asdf1234")
   end
   task :add_key do
     run_command("deis keys:add #{AUTH_KEY}.pub")

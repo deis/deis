@@ -78,7 +78,7 @@ You'll need to configure DNS records so you can access applications hosted on De
 ### Use Deis!
 After that, register with Deis!
 ```console
-$ deis register deis.example.org:8000
+$ deis register http://deis.example.org
 username: deis
 password:
 password (confirm):

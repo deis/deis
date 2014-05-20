@@ -85,7 +85,7 @@ version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
 .. code-block:: console
 
-    $ deis register http://local.deisapp.com:8000
+    $ deis register http://deis.local.deisapp.com
     $ deis keys:add
 
 

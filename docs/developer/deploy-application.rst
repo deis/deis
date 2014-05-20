@@ -5,7 +5,7 @@
 
 Deploy an Application
 =====================
-An :ref:`Application` is deployed to Deis using ``git push`` or the ``deis`` client.  
+An :ref:`Application` is deployed to Deis using ``git push`` or the ``deis`` client.
 
 Supported Applications
 ----------------------
@@ -21,7 +21,7 @@ Before deploying an application, users must first authenticate against the Deis 
 
 .. code-block:: console
 
-    $ deis login http://example.com:8000
+    $ deis login http://deis.example.com
     username: deis
     password:
     Logged in as deis

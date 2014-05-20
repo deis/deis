@@ -8,6 +8,7 @@ keys = [
   "/deis/services",
   "/deis/router",
   "/deis/domains",
+  "/deis/controller",
 ]
 #check_cmd  = "/usr/sbin/nginx -t -c {{ .src }}"
 reload_cmd = "/usr/sbin/nginx -s reload"

@@ -129,12 +129,14 @@ class AppSerializer(serializers.ModelSerializer):
 
     def validate_id(self, attrs, source):
         """
-        Check that the ID is all lowercase
+        Check that the ID is all lowercase and not 'deis'
         """
         value = attrs[source]
         match = re.match(r'^[a-z0-9-]+$', value)
         if not match:
             raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
+        if value == 'deis':
+            raise serializers.ValidationError("App IDs cannot be 'deis'")
         return attrs
 
 
