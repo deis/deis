@@ -7,7 +7,7 @@ ifndef FLEETCTL
 endif
 
 ifndef FLEETCTL_TUNNEL
-	$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
+$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
 endif
 
 ifndef DEIS_HOSTS
@@ -26,6 +26,8 @@ ifndef DEIS_FIRST_ROUTER
 	DEIS_FIRST_ROUTER = 1
 endif
 
+DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)
+
 define ssh_all
 	@(for host in $(DEIS_HOSTS); do ssh core@$$host $(1); done)
 endef
@@ -39,17 +41,25 @@ define check_for_errors
 	fi
 endef
 
+define deis_units
+	$(shell $(FLEETCTL) list-units -no-legend=true | \
+	  awk '($$2 ~ "$(1)" && ($$4 ~ "$(2)"))' | \
+	  sed -n 's/\(deis-.*\.service\).*/\1/p' | tr '\n' ' ')
+endef
+
 define echo_yellow
 	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
 
 # due to scheduling problems with fleet 0.2.0, start order of components
 # is fragile. hopefully this can be changed soon...
-ALL_COMPONENTS=builder cache controller database logger registry
+COMPONENTS=builder cache controller database logger registry
+ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
-ALL_UNITS = $(foreach C, $(ALL_COMPONENTS), $(wildcard $(C)/systemd/*))
+ALL_UNITS = $(foreach C, $(COMPONENTS), $(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
+ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 all: build run
 
@@ -78,21 +88,9 @@ pull:
 
 restart: stop start
 
-routers:
-	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
-	@router_num=$(DEIS_FIRST_ROUTER) ; \
-	i=1 ; while [ $$i -le $(DEIS_NUM_ROUTERS) ] ; do \
-			cp router/systemd/deis-router.service ./deis-router.$$router_num.service ; \
-			$(FLEETCTL) submit ./deis-router.$$router_num.service ; \
-			$(FLEETCTL) start ./deis-router.$$router_num.service ; \
-			rm -f ./deis-router.$$router_num.service ; \
-			i=`expr $$i + 1` ; \
-			router_num=`expr $$router_num + 1` ; \
-	done
-
 run: install start
 
-start: check-fleet routers
+start: check-fleet start-routers
 	@# registry logger cache database
 	$(call echo_yellow,"Starting Deis! Deis will be functional once all services are reported as running... ")
 	$(FLEETCTL) start $(START_UNITS)
@@ -116,14 +114,23 @@ start: check-fleet routers
 
 	$(call echo_yellow,"Your Deis cluster is ready to go! Continue following the README to login and use Deis.")
 
+start-routers:
+	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
+	@ $(foreach U, $(ROUTER_UNITS), \
+		cp router/systemd/deis-router.service ./$(U) ; \
+		$(FLEETCTL) submit ./$(U) ; \
+		$(FLEETCTL) start ./$(U) ; \
+		rm -f ./$(U) ; \
+	)
+
 status: check-fleet
 	$(FLEETCTL) list-units
 
 stop: check-fleet
-	$(FLEETCTL) stop $(ALL_UNITS)
+	$(FLEETCTL) stop $(call deis_units,loaded,.)
 
 tests:
 	cd test && bundle install && bundle exec rake
 
 uninstall: check-fleet stop
-	$(FLEETCTL) destroy $(ALL_UNITS)
+	$(FLEETCTL) destroy $(call deis_units,loaded,.)

@@ -31,15 +31,18 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-# seed initial service configuration if necessary
-if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1; then
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/engine postgresql_psycopg2 >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/adminUser ${PG_ADMIN_USER:-postgres} >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/adminPass ${PG_ADMIN_PASS:-changeme123} >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/user ${PG_USER_NAME:-deis} >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/password ${PG_USER_PASS:-changeme123} >/dev/null
-	etcdctl --no-sync -C $ETCD set $ETCD_PATH/name ${PG_USER_DB:-deis} >/dev/null
-fi
+function etcd_safe_set {
+  if ! etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1 >/dev/null 2>&1; then
+    etcdctl --no-sync -C $ETCD set $ETCD_PATH/$1 $2 >/dev/null
+  fi
+}
+
+etcd_safe_set engine postgresql_psycopg2
+etcd_safe_set adminUser ${PG_ADMIN_USER:-postgres}
+etcd_safe_set adminPass ${PG_ADMIN_PASS:-changeme123}
+etcd_safe_set user ${PG_USER_NAME:-deis}
+etcd_safe_set password ${PG_USER_PASS:-changeme123}
+etcd_safe_set name ${PG_USER_DB:-deis}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do

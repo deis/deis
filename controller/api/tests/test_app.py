@@ -79,7 +79,7 @@ class AppTest(TestCase):
             os.remove(path)
         url = '/api/apps/{app_id}/logs'.format(**locals())
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data, 'No logs for {}'.format(app_id))
         # write out some fake log data and try again
         with open(path, 'w') as f:

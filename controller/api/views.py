@@ -299,7 +299,7 @@ class AppViewSet(OwnerViewSet):
             logs = app.logs()
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
-                            status=status.HTTP_404_NOT_FOUND,
+                            status=status.HTTP_204_NO_CONTENT,
                             content_type='text/plain')
         return Response(logs, status=status.HTTP_200_OK,
                         content_type='text/plain')
@@ -456,6 +456,29 @@ class KeyViewSet(OwnerViewSet):
     model = models.Key
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
+
+
+class DomainViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Domain`."""
+
+    model = models.Domain
+    serializer_class = serializers.DomainSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+        return super(DomainViewSet, self).create(request, *args, **kwargs)
+
+    def get_queryset(self, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        qs = self.model.objects.filter(app=app)
+        return qs
+
+    def get_object(self, *args, **kwargs):
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(domain=self.kwargs['domain'])
+        return obj
 
 
 class BaseHookViewSet(viewsets.ModelViewSet):
