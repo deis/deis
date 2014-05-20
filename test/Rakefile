@@ -15,7 +15,7 @@ namespace :setup do
     run_command("if [ ! -f #{AUTH_KEY} ]; then ssh-keygen -q -t rsa -f #{AUTH_KEY} -N '' -C deis && ssh-add #{AUTH_KEY} ; fi")
   end
   task :clone_example_app do
-    run_command("if [ ! -d ./#{EXAMPLE_APP} ]; then git clone https://github.com/opdemand/#{EXAMPLE_APP}.git ; fi")
+    run_command("if [ ! -d ./#{EXAMPLE_APP} ]; then git clone https://github.com/deis/#{EXAMPLE_APP}.git ; fi")
   end
 end
 
