@@ -147,6 +147,11 @@ class Session(requests.Session):
                 else:
                     kwargs['headers'] = {'X-CSRFToken': cookie.value}
                 break
+        url = args[1]
+        if 'headers' in kwargs:
+            kwargs['headers']['Referer'] = url
+        else:
+            kwargs['headers'] = {'Referer': url}
         response = super(Session, self).request(*args, **kwargs)
         self.cookies.save()
         return response
