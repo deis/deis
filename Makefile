@@ -34,7 +34,7 @@ define ssh_all
 endef
 
 define check_for_errors
-	@if $(FLEETCTL) list-units | egrep -q "(failed|dead)"; then \
+	@if $(FLEETCTL) list-units -no-legend | awk '(($$2 == "launched") && ($$5 == "failed"))' | egrep -q "deis-.+service"; then \
 		echo "\033[0;31mOne or more services failed! Check which services by running 'make status'\033[0m" ; \
 		echo "\033[0;31mYou can get detailed output with 'fleetctl status deis-servicename.service'\033[0m" ; \
 		echo "\033[0;31mThis usually indicates an error with Deis - please open an issue on GitHub or ask for help in IRC\033[0m" ; \
@@ -48,6 +48,10 @@ define deis_units
 	  sed -n 's/\(deis-.*\.service\).*/\1/p' | tr '\n' ' ')
 endef
 
+define echo_cyan
+	@echo "\033[0;36m$(subst ",,$(1))\033[0m"
+endef
+
 define echo_yellow
 	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
@@ -59,8 +63,8 @@ COMPONENTS=builder cache controller database logger registry
 ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
-ALL_UNITS = $(foreach C, $(COMPONENTS), $(wildcard $(C)/systemd/*))
-START_UNITS = $(foreach C, $(START_COMPONENTS), $(wildcard $(C)/systemd/*))
+ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*))
+START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*))
 ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 all: build run
@@ -81,8 +85,17 @@ clean: uninstall
 full-clean: clean
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rmi deis-$$c; done')
 
-install: check-fleet
-	$(FLEETCTL) submit $(START_UNITS)
+install: check-fleet install-routers
+	$(FLEETCTL) load $(START_UNITS)
+	$(FLEETCTL) load controller/systemd/*
+	$(FLEETCTL) load builder/systemd/*
+
+install-routers: check-fleet
+	@$(foreach R, $(ROUTER_UNITS), \
+		cp router/systemd/deis-router.service ./$(R) ; \
+		$(FLEETCTL) load ./$(R) ; \
+		rm -f ./$(R) ; \
+	)
 
 pull:
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c; done')
@@ -92,47 +105,66 @@ restart: stop start
 
 run: install start
 
-start: check-fleet start-routers
+start: check-fleet start-warning start-routers
 	@# registry logger cache database
-	$(call echo_yellow,"Starting Deis! Deis will be functional once all services are reported as running... ")
-	$(FLEETCTL) start $(START_UNITS)
-	$(call echo_yellow,"Waiting for deis-registry to start (this can take some time)... ")
-	@until $(FLEETCTL) list-units | egrep -q "deis-registry.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "registry" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(call echo_yellow,"Waiting for deis-registry to start...")
+	$(FLEETCTL) start -no-block $(START_UNITS)
+	@until $(FLEETCTL) list-units | egrep -q "deis-registry.+(running)"; \
+		do sleep 2; \
+			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
+			grep "deis-registry" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
+			sleep 8; \
+		done
 	$(call check_for_errors)
 
 	@# controller
-	$(call echo_yellow,"Done! Waiting for deis-controller...")
-	$(FLEETCTL) submit controller/systemd/*
-	$(FLEETCTL) start controller/systemd/*
-	@until $(FLEETCTL) list-units | egrep -q "deis-controller.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "controller" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(call echo_yellow,"Waiting for deis-controller to start...")
+	$(FLEETCTL) start -no-block controller/systemd/*
+	@until $(FLEETCTL) list-units | egrep -q "deis-controller.+(running)"; \
+		do sleep 2; \
+			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
+			grep "deis-controller" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
+			sleep 8; \
+		done
 	$(call check_for_errors)
 
 	@# builder
-	$(call echo_yellow,"Done! Waiting for deis-builder to start (this can also take some time)... ")
-	$(FLEETCTL) submit builder/systemd/*
-	$(FLEETCTL) start builder/systemd/*
-	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running|failed|dead)"; do printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | grep "builder" | awk '{printf $$3}'; printf "\r" ; sleep 10; done
+	$(call echo_yellow,"Waiting for deis-builder to start...")
+	$(FLEETCTL) start -no-block builder/systemd/*
+	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running)"; \
+		do sleep 2; \
+			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
+			grep "deis-builder" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
+			sleep 8; \
+		done
 	$(call check_for_errors)
 
 	$(call echo_yellow,"Your Deis cluster is ready to go! Continue following the README to login and use Deis.")
 
-start-routers:
-	$(call echo_yellow,"Starting $(DEIS_NUM_ROUTERS) router(s)...")
-	@ $(foreach U, $(ROUTER_UNITS), \
-		cp router/systemd/deis-router.service ./$(U) ; \
-		$(FLEETCTL) submit ./$(U) ; \
-		$(FLEETCTL) start ./$(U) ; \
-		rm -f ./$(U) ; \
-	)
+start-routers: check-fleet start-warning
+	$(call echo_yellow,"Waiting for 1 of $(DEIS_NUM_ROUTERS) deis-routers to start...")
+	$(foreach R,$(ROUTER_UNITS),$(FLEETCTL) start -no-block $(R);)
+	@until $(FLEETCTL) list-units | egrep -q "deis-router.+(running)"; \
+		do sleep 2; \
+			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
+			grep "deis-router" | head -n 1 | \
+			awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
+			sleep 8; \
+		done
+	$(call check_for_errors)
+
+start-warning:
+	$(call echo_cyan,"Deis components may take a long time to start the first time they are initialized.")
 
 status: check-fleet
 	$(FLEETCTL) list-units
 
 stop: check-fleet
-	$(FLEETCTL) stop $(call deis_units,loaded,.)
+	$(FLEETCTL) stop -block-attempts=600 $(strip $(call deis_units,launched,active))
 
 tests:
 	cd test && bundle install && bundle exec rake
 
 uninstall: check-fleet stop
-	$(FLEETCTL) destroy $(call deis_units,loaded,.)
+	$(FLEETCTL) unload $(call deis_units,launched,.)
+	$(FLEETCTL) destroy $(strip $(call deis_units,.,.))
