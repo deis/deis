@@ -10,4 +10,4 @@ with open('../coreos/user-data','r') as f:
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = [ '', lines ]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
 
-print json.dumps(template)
+print json.dumps(template, indent=4, separators=(',', ': '))
