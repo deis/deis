@@ -11,12 +11,14 @@ else
   cpus = 1
 end
 
+COREOS_VERSION = "317.0.0"
+
 Vagrant.configure("2") do |config|
-  config.vm.box = "coreos-310.1.0"
-  config.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/310.1.0/coreos_production_vagrant.box"
+  config.vm.box = "coreos-" + COREOS_VERSION 
+  config.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/" + COREOS_VERSION + "/coreos_production_vagrant.box"
 
   config.vm.provider :vmware_fusion do |vb, override|
-    override.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/310.1.0/coreos_production_vagrant_vmware_fusion.box"
+    override.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/" + COREOS_VERSION + "/coreos_production_vagrant_vmware_fusion.box"
   end
 
   config.vm.provider :virtualbox do |vb, override|
@@ -42,11 +44,18 @@ Vagrant.configure("2") do |config|
       ip = "172.17.8.#{i+99}"
       config.vm.network :private_network, ip: ip
 
-      # Enable NFS for sharing the host machine into the coreos-vagrant VM.
-      config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
-      # FALLBACK use rsync if NFS has issues (mandatory if using Windows, or any Linux with an encrypted filesystem)
-      # config.vm.synced_folder ".", "/home/core/share", type: "rsync"
-      # Note that with rsync, local Deis code changes need to be re-synced to the VM by issuing a `vagrant rsync`
+      if RUBY_PLATFORM.downcase =~ /linux/
+
+        # On Linux, enable NFS for sharing the host machine into the coreos-vagrant VM.
+        config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
+
+      else
+
+        # Use rsync if NFS not available
+        # Note that with rsync, local Deis code changes need to be re-synced to the VM by issuing a `vagrant rsync`
+        config.vm.synced_folder ".", "/home/core/share", type: "rsync"
+
+      end
 
       # user-data bootstrapping
       config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/vagrantfile-user-data"
