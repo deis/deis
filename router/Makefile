@@ -1,28 +1,43 @@
+include ../includes.mk
+
 build:
-	vagrant ssh -c 'cd share/router && sudo docker build -t deis/router .'
+	$(call ssh_all,'cd share/router && sudo docker build -t deis/router .')
 
-install:
-	vagrant ssh -c 'sudo systemctl enable /home/core/share/router/systemd/*'
+install: check-fleet
+	@$(foreach R, $(ROUTER_UNITS), \
+		cp systemd/deis-router.service ./$(R) ; \
+		$(FLEETCTL) load ./$(R) ; \
+		rm -f ./$(R) ; \
+	)
 
-uninstall: stop
-	vagrant ssh -c 'sudo systemctl disable /home/core/share/router/systemd/*'
+uninstall: check-fleet stop
+	@$(foreach R, $(ROUTER_UNITS), \
+		cp systemd/deis-router.service ./$(R) ; \
+		$(FLEETCTL) unload ./$(R) ; \
+		$(FLEETCTL) destroy ./$(R) ; \
+		rm -f ./$(R) ; \
+	)
 
-start:
-	vagrant ssh -c 'sudo systemctl start deis-router.service'
+start: check-fleet
+	@$(foreach R, $(ROUTER_UNITS), \
+		cp systemd/deis-router.service ./$(R) ; \
+		$(FLEETCTL) start -no-block ./$(R) ; \
+		rm -f ./$(R) ; \
+	)
 
-stop:
-	vagrant ssh -c 'sudo systemctl stop deis-router.service'
+stop: check-fleet
+	@$(foreach R, $(ROUTER_UNITS), \
+		cp systemd/deis-router.service ./$(R) ; \
+		$(FLEETCTL) stop -block-attempts=600 ./$(R) ; \
+		rm -f ./$(R) ; \
+	)
 
-restart:
-	vagrant ssh -c 'sudo systemctl restart deis-router.service'
+restart: stop start
 
-logs:
-	vagrant ssh -c 'sudo journalctl -f -u deis-router.service'
-
-run: install restart logs
+run: install start
 
 clean: uninstall
-	vagrant ssh -c 'sudo docker rm -f deis-router'
+	$(call ssh_all,'sudo docker rm -f deis-router')
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/router'
+	$(call ssh_all,'sudo docker rmi deis/router')

@@ -1,28 +1,27 @@
+include ../includes.mk
+
 build:
-	vagrant ssh -c 'cd share/database && sudo docker build -t deis/database .'
+	$(call ssh_all,'cd share/database && sudo docker build -t deis/database .')
 
-install:
-	vagrant ssh -c 'sudo systemctl enable /home/core/share/database/systemd/*'
+install: check-fleet
+	$(FLEETCTL) load systemd/*
 
-uninstall: stop
-	vagrant ssh -c 'sudo systemctl disable /home/core/share/database/systemd/*'
+uninstall: check-fleet stop
+	$(FLEETCTL) unload systemd/*
+	$(FLEETCTL) destroy systemd/*
 
-start:
-	vagrant ssh -c 'sudo systemctl start deis-database.service'
+start: check-fleet
+	$(FLEETCTL) start -no-block systemd/*
 
-stop:
-	vagrant ssh -c 'sudo systemctl stop deis-database.service'
+stop: check-fleet
+	$(FLEETCTL) stop -block-attempts=600 systemd/*
 
-restart:
-	vagrant ssh -c 'sudo systemctl restart deis-database.service'
+restart: stop start
 
-logs:
-	vagrant ssh -c 'sudo journalctl -f -u deis-database.service'
-
-run: install restart logs
+run: install start
 
 clean: uninstall
-	vagrant ssh -c 'sudo docker rm -f deis-database'
+	$(call ssh_all,'sudo docker rm -f deis-database')
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/database'
+	$(call ssh_all,'sudo docker rmi deis/database')

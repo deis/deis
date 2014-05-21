@@ -2,36 +2,7 @@
 # Deis Makefile
 #
 
-ifndef FLEETCTL
-	FLEETCTL = fleetctl --strict-host-key-checking=false
-endif
-
-ifndef FLEETCTL_TUNNEL
-$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
-endif
-
-ifndef DEIS_NUM_INSTANCES
-	DEIS_NUM_INSTANCES = 1
-endif
-
-ifndef DEIS_NUM_ROUTERS
-	DEIS_NUM_ROUTERS = 1
-endif
-
-ifndef DEIS_FIRST_ROUTER
-	DEIS_FIRST_ROUTER = 1
-endif
-
-DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)
-
-# TODO refactor to support non-vagrant installations, since this Makefile
-# is now used by the various contrib/ scripts.
-define ssh_all
-	i=1 ; while [ $$i -le $(DEIS_NUM_INSTANCES) ] ; do \
-			vagrant ssh deis-$$i -c $(1) ; \
-			i=`expr $$i + 1` ; \
-	done
-endef
+include includes.mk
 
 define check_for_errors
 	@if $(FLEETCTL) list-units -no-legend | awk '(($$2 == "launched") && ($$5 == "failed"))' | egrep -q "deis-.+service"; then \
@@ -48,36 +19,18 @@ define deis_units
 	  sed -n 's/\(deis-.*\.service\).*/\1/p' | tr '\n' ' ')
 endef
 
-define echo_cyan
-	@echo "\033[0;36m$(subst ",,$(1))\033[0m"
-endef
-
-define echo_yellow
-	@echo "\033[0;33m$(subst ",,$(1))\033[0m"
-endef
-
-# TODO: re-evaluate the start order now that we're on fleet 0.3.2.
-# due to scheduling problems with fleet 0.2.0, start order of components
-# is fragile. hopefully this can be changed soon...
+# TODO: re-evaluate the fragile start order now that we're on fleet 0.3.2.
 COMPONENTS=builder cache controller database logger registry
 ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
 ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*))
 START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*))
-ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 all: build run
 
 build:
 	$(call ssh_all,'cd share && for c in $(ALL_COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
-
-check-fleet:
-	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
-	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(subst :, -p ,$(FLEETCTL_TUNNEL)) fleetctl -version`; \
-	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
-			echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Uninstall your local version and install the latest build from https://github.com/coreos/fleet/releases"; exit 1; \
-	fi
 
 clean: uninstall
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rm -f deis-$$c; done')

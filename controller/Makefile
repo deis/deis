@@ -1,35 +1,34 @@
+include ../includes.mk
+
 .PHONY: all test logs
 
 all: build run
 
 build:
-	vagrant ssh -c 'cd share/controller && sudo docker build -t deis/controller .'
+	$(call ssh_all,'cd share/controller && sudo docker build -t deis/controller .')
 
-install:
-	vagrant ssh -c 'sudo systemctl enable /home/core/share/controller/systemd/*'
+install: check-fleet
+	$(FLEETCTL) load systemd/*
 
-uninstall: stop
-	vagrant ssh -c 'sudo systemctl disable /home/core/share/controller/systemd/*'
+uninstall: check-fleet stop
+	$(FLEETCTL) unload systemd/*
+	$(FLEETCTL) destroy systemd/*
 
-start:
-	vagrant ssh -c 'sudo systemctl start deis-controller.service'
+start: check-fleet
+	$(FLEETCTL) start -no-block systemd/*
 
-stop:
-	vagrant ssh -c 'sudo systemctl stop deis-controller.service'
+stop: check-fleet
+	$(FLEETCTL) stop -block-attempts=600 systemd/*
 
-restart:
-	vagrant ssh -c 'sudo systemctl restart deis-controller.service'
+restart: stop start
 
-logs:
-	vagrant ssh -c 'sudo journalctl -f -u deis-controller.service'
-
-run: install restart logs
+run: install start
 
 clean: uninstall
-	vagrant ssh -c 'sudo docker rm -f deis-controller'
+	$(call ssh_all,'sudo docker rm -f deis-controller')
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/controller'
+	$(call ssh_all,'sudo docker rmi deis/controller')
 
 test:
 	python manage.py test --noinput api web
