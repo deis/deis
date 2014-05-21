@@ -8,12 +8,12 @@ SELF=`which $0`
 case "$1" in
 
 # called by sshd on each `git push`
-  run) 
+  run)
     export RECEIVE_USER=$2
     export RECEIVE_FINGERPRINT=$3
     # ssh provides the original requested command in $SSH_ORIGINAL_COMMAND
     SSH_ORIGINAL_COMMAND="$(echo $SSH_ORIGINAL_COMMAND | sed 's/\///g' )" # remove any '/'s
-    export RECEIVE_REPO="$(echo $SSH_ORIGINAL_COMMAND | awk '{print $2}' | perl -pe 's/(?<!\\)'\''//g' | sed 's/\\'\''/'\''/g')"
+    export RECEIVE_REPO="$(echo $SSH_ORIGINAL_COMMAND | awk '{print $2}' | sed -e 's/'\''//g')"
     REPO_PATH="$GITHOME/$RECEIVE_REPO"
     if [ ! -d $REPO_PATH ]; then
       mkdir -p $REPO_PATH
@@ -22,43 +22,48 @@ case "$1" in
     fi
     cd $GITHOME
     PRERECEIVE_HOOK="$REPO_PATH/hooks/pre-receive"
-    # inject the hook below
+    # inject a pre-receive hook
     cat > $PRERECEIVE_HOOK <<EOF
 #!/bin/bash
-cat | $SELF hook
+cat | $SELF pre-receive
 EOF
     chmod +x $PRERECEIVE_HOOK
+    POSTRECEIVE_HOOK="$REPO_PATH/hooks/post-receive"
+    # inject a post-receive hook
+    cat > $POSTRECEIVE_HOOK <<EOF
+#!/bin/bash
+cat | $SELF post-receive
+EOF
+    chmod +x $POSTRECEIVE_HOOK
     git-shell -c "$SSH_ORIGINAL_COMMAND"
-    # if we're processing a receive-pack on an existing repo, run a build
-    if [[ $SSH_ORIGINAL_COMMAND == git-receive-pack* ]] && \
-       [[ -e $REPO_PATH/refs/heads/master ]]; then
-      # SECURITY: git user runs the builder as root (for docker access)
-      sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO >&2
-    fi
     ;;
 
-# used internally
-  hook)
+  pre-receive)
     while read oldrev newrev refname
     do
-      # Only run this script for the master branch. You can remove this 
-      # if block if you wish to run it for others as well.
-      if [[ $refname = "refs/heads/master" ]] ; then
- 
-        $GITHOME/receiver "$RECEIVE_REPO" "$newrev" "$RECEIVE_USER" "$RECEIVE_FINGERPRINT"  
- 
-        rc=$?
-        if [[ $rc != 0 ]] ; then
-          echo "      ERROR: failed on rev $newrev - push denied"
-          exit $rc
-        fi
+      $GITHOME/receiver "$RECEIVE_REPO" "$newrev" "$RECEIVE_USER" "$RECEIVE_FINGERPRINT"
+      rc=$?
+      if [[ $rc != 0 ]] ; then
+        echo "      ERROR: failed on rev $newrev - push denied"
+        exit $rc
       fi
     done
-    #exit 1 # for debugging
+    ;;
+
+  post-receive)
+    while read oldrev newrev refname
+    do
+      # builder assumes that we are running this script from $GITHOME
+      cd $GITHOME
+      # if we're processing a receive-pack on an existing repo, run a build
+      if [[ $SSH_ORIGINAL_COMMAND == git-receive-pack* ]]; then
+        # SECURITY: git user runs the builder as root (for docker access)
+        sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $refname >&2
+      fi
+    done
     ;;
 
   *)
     echo "Usage: gitreceive <command> [options]"
     ;;
 esac
-

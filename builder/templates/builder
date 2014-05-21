@@ -17,12 +17,12 @@ import yaml
 
 
 def parse_args():
-    if len(sys.argv) < 2:
-        print('Usage: {} [user] [repo]'.format(sys.argv[0]))
+    if len(sys.argv) < 3:
+        print('Usage: {} [user] [repo] [branch]'.format(sys.argv[0]))
         sys.exit(1)
-    user, repo = sys.argv[1], sys.argv[2]
+    user, repo, branch = sys.argv[1], sys.argv[2], sys.argv[3]
     app = repo.split('.')[0]
-    return user, repo, app
+    return user, repo, branch, app
 
 
 DOCKERFILE_SHIM = """FROM deis/slugrunner
@@ -33,7 +33,7 @@ ENTRYPOINT ["/runner/init"]
 
 
 if __name__ == '__main__':
-    user, repo, app = parse_args()
+    user, repo, branch, app = parse_args()
     # define image names
     _id = uuid.uuid4().hex[:8]
     tmp_image = "{app}:temp_{_id}".format(**locals())
@@ -48,9 +48,9 @@ if __name__ == '__main__':
     try:
         # create temporary directory
         temp_dir = tempfile.mkdtemp(dir=build_dir)
-        # extract git master
+        # extract git branch
         p = subprocess.Popen(
-            'git archive master | tar -x -C {temp_dir}'.format(**locals()),
+            'git archive {branch} | tar -x -C {temp_dir}'.format(**locals()),
             shell=True, cwd=repo_dir)
         rc = p.wait()
         if rc != 0:
@@ -73,7 +73,7 @@ if __name__ == '__main__':
             else:
                 build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
             # run slugbuilder in the background
-            p = subprocess.Popen("git archive master | " + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
+            p = subprocess.Popen("git archive {branch} | ".format(**locals()) + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
             container = p.stdout.read().strip('\n')
             # attach to slugbuilder output
             p = subprocess.Popen('docker attach {container}'.format(**locals()), shell=True, cwd=temp_dir)
@@ -114,8 +114,8 @@ if __name__ == '__main__':
         body['receive_user'] = user
         body['receive_repo'] = app
         body['image'] = target_image
-        # use sha of master
-        with open(os.path.join(repo_dir, 'refs/heads/master')) as f:
+        # use sha of branch
+        with open(os.path.join(repo_dir, branch)) as f:
             body['sha'] = f.read().strip('\n')
         # extract the user-defined Procfile and any default_process_types
         procfile_dict = {}
