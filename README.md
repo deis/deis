@@ -29,21 +29,19 @@ On your workstation:
 * Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * Install the fleetctl client: Install v0.2.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
+* Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
+* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (default: 3): ```$ export DEIS_NUM_INSTANCES=3```
+* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your hostname for accessing the cluster
 
-If you're on Ubuntu, you need to install the nfs-kernel-server package as it's required for sharing folders between your host and your CoreOS VM:
+### On Ubuntu
+  If you're on Ubuntu, you need to install the nfs-kernel-server package as it's required for sharing folders between your host and your CoreOS VM:
 
     sudo apt-get install nfs-kernel-server
 
-## Additional setup for a multi-node cluster
-If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
-* Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
-* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (typically 3 or 5): ```$ export DEIS_NUM_INSTANCES=3```
-* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your hostname for accessing the cluster
+### Note about scheduling
+For scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members. For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
 
-Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
-For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
-
-Deis clusters of less than 3 nodes are unsupported for anything other than local development.
+**Deis clusters of less than 3 nodes are unsupported for anything other than local development.**
 
 ## Boot CoreOS
 

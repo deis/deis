@@ -11,15 +11,15 @@ $(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the clu
 endif
 
 ifndef DEIS_NUM_INSTANCES
-	DEIS_NUM_INSTANCES = 1
+DEIS_NUM_INSTANCES = 3
 endif
 
 ifndef DEIS_NUM_ROUTERS
-	DEIS_NUM_ROUTERS = 1
+DEIS_NUM_ROUTERS = 3
 endif
 
 ifndef DEIS_FIRST_ROUTER
-	DEIS_FIRST_ROUTER = 1
+DEIS_FIRST_ROUTER = 1
 endif
 
 DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)

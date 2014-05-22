@@ -1,15 +1,10 @@
 # -*- mode: ruby -*-
 # # vi: set ft=ruby :
 
-DEIS_NUM_INSTANCES = (ENV['DEIS_NUM_INSTANCES'].to_i > 0 && ENV['DEIS_NUM_INSTANCES'].to_i) || 1
+DEIS_NUM_INSTANCES = (ENV['DEIS_NUM_INSTANCES'].to_i > 3 && ENV['DEIS_NUM_INSTANCES'].to_i) || 3
 
-if DEIS_NUM_INSTANCES == 1
-  mem = 4096
-  cpus = 2
-else
-  mem = 2048
-  cpus = 1
-end
+mem = 2048
+cpus = 1
 
 Vagrant.configure("2") do |config|
   config.vm.box = "coreos-310.1.0"
