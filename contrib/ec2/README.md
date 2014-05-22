@@ -53,6 +53,21 @@ by adding a new entry to [cloudformation.json](cloudformation.json) like so:
 
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
+If you are deploying the cluster into VPC, then you additionally need the parameters `VpcId` and `VpcSubnets`, e.g.
+
+```
+    {
+        "ParameterKey":     "VpcId",
+        "ParameterValue":   "vpc-xxxxxxxx"
+    },
+    {
+        "ParameterKey":     "VpcSubnets",
+        "ParameterValue":   "subnet-xxxxxxxx,subnet-xxxxxxxx"
+    }
+```
+
+Additionally you should replace the `deis.template` file with the file `deis.template.vpc`, e.g. `cp deis.template.vpc deis.template`.
+
 
 ## Run the provision script
 Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
@@ -67,7 +82,7 @@ Please wait for all instances to come up as "running" before continuing.
 ```
 
 ## Initialize the cluster
-Once the cluster is up, get the hostname of any of the machines from EC2, set
+Once the cluster is up, get the hostname (or private IP if you're using VPC) of any of the machines from EC2, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:
 ```console
 $ ssh-add ~/.ssh/deis
