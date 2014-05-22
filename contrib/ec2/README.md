@@ -60,6 +60,15 @@ by adding a new entry to [cloudformation.json](cloudformation.json) like so:
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
+## Choose whether to launch in VPC
+
+To launch you cluster into a VPC, export two additional environment variables:
+
+```
+export VPC_ID=vpc-a26218bf
+export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
+```
+
 ## Run the provision script
 Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
 ```console
