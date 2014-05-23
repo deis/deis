@@ -112,7 +112,7 @@ class FleetClient(object):
         status = None
         for _ in range(60):
             status = subprocess.check_output(
-                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $4}}'".format(**locals()),
+                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $5}}'".format(**locals()),
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
