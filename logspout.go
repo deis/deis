@@ -61,7 +61,8 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 			continue
 		}
 		tag := logline.Name + target.AppendTag
-		remote, _ := syslog.Dial("udp", target.Addr, syslog.LOG_USER|syslog.LOG_INFO, tag)
+		remote, err := syslog.Dial("udp", target.Addr, syslog.LOG_USER|syslog.LOG_INFO, tag)
+		assert(err, "syslog")
 		io.WriteString(remote, logline.Data)
 	}
 }
