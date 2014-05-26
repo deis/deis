@@ -66,7 +66,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.9.0'
+__version__ = 'v0.9.0'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -1558,7 +1558,7 @@ def main():
     call the appropriate method on the client.
     """
     cli = DeisClient()
-    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
+    args = docopt(__doc__, version=__version__,
                   options_first=True)
     cmd = args['<command>']
     cmd, help_flag = parse_args(cmd)

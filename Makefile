@@ -131,7 +131,7 @@ stop: check-fleet
 	$(FLEETCTL) stop $(call deis_units,loaded,.)
 
 tests:
-	cd test && bundle install && bundle exec rake
+	go test -v ./tests/integration
 
 uninstall: check-fleet stop
 	$(FLEETCTL) destroy $(call deis_units,loaded,.)
