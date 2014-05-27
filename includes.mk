@@ -3,7 +3,7 @@ ifndef FLEETCTL
 endif
 
 ifndef FLEETCTL_TUNNEL
-$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
+$(warning You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
 endif
 
 ifndef DEIS_NUM_INSTANCES
