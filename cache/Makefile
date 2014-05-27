@@ -1,28 +1,27 @@
+include ../includes.mk
+
 build:
-	vagrant ssh -c 'cd share/cache && sudo docker build -t deis/cache .'
+	$(call ssh_all,'cd share/cache && sudo docker build -t deis/cache .')
 
-install:
-	vagrant ssh -c 'sudo systemctl enable /home/core/share/cache/systemd/*'
+install: check-fleet
+	$(FLEETCTL) load systemd/*
 
-uninstall: stop
-	vagrant ssh -c 'sudo systemctl disable /home/core/share/cache/systemd/*'
+uninstall: check-fleet stop
+	$(FLEETCTL) unload systemd/*
+	$(FLEETCTL) destroy systemd/*
 
-start:
-	vagrant ssh -c 'sudo systemctl start deis-cache.service'
+start: check-fleet
+	$(FLEETCTL) start -no-block systemd/*
 
-stop:
-	vagrant ssh -c 'sudo systemctl stop deis-cache.service'
+stop: check-fleet
+	$(FLEETCTL) stop -block-attempts=600 systemd/*
 
-restart:
-	vagrant ssh -c 'sudo systemctl restart deis-cache.service'
+restart: stop start
 
-logs:
-	vagrant ssh -c 'sudo journalctl -f -u deis-cache.service'
-
-run: install restart logs
+run: install start
 
 clean: uninstall
-	vagrant ssh -c 'sudo docker rm -f deis-cache'
+	$(call ssh_all,'sudo docker rm -f deis-cache')
 
 full-clean: clean
-	vagrant ssh -c 'sudo docker rmi deis/cache'
+	$(call ssh_all,'sudo docker rmi deis/cache')

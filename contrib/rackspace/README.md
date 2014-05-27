@@ -77,10 +77,18 @@ You'll need to configure DNS records so you can access applications hosted on De
 
 ### Use Deis!
 After that, register with Deis!
-```
+```console
 $ deis register deis.example.org:8000
 username: deis
 password:
 password (confirm):
 email: info@opdemand.com
 ```
+
+## Hack on Deis
+If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
+```console
+$ export DEIS_HOSTS=10.21.12.1 10.21.12.2 10.21.12.3
+```
+
+This variable is used in the `make build` command.
