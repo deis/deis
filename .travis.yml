@@ -9,6 +9,9 @@ python:
 services:
   - postgresql
 
+env:
+  - FLEETCTL_TUNNEL=foo
+
 before_install:
   - sudo apt-get install -qq libpq-dev
 
