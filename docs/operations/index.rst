@@ -17,3 +17,4 @@ Operations Guide
     manage-controller
     configure-load-balancers
     configure-dns
+    upgrading-deis
