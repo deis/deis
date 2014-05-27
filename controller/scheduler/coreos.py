@@ -95,24 +95,24 @@ class FleetClient(object):
 
     def _start_log(self, name, env):
         subprocess.check_call(
-            'fleetctl.sh start {name}-log.service'.format(**locals()),
+            'fleetctl.sh start -no-block {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def _start_container(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh start {name}.service'.format(**locals()),
+            'fleetctl.sh start -no-block {name}.service'.format(**locals()),
             shell=True, env=env)
 
     def _start_announcer(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh start {name}-announce.service'.format(**locals()),
+            'fleetctl.sh start -no-block {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
     def _wait_for_announcer(self, name, env):
         status = None
         for _ in range(60):
             status = subprocess.check_output(
-                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $4}}'".format(**locals()),
+                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $5}}'".format(**locals()),
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
@@ -132,17 +132,17 @@ class FleetClient(object):
 
     def _stop_container(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop {name}.service'.format(**locals()),
+            'fleetctl.sh stop -block-attempts=600 {name}.service'.format(**locals()),
             shell=True, env=env)
 
     def _stop_announcer(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop {name}-announce.service'.format(**locals()),
+            'fleetctl.sh stop -block-attempts=600 {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
     def _stop_log(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop {name}-announce.service'.format(**locals()),
+            'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def destroy(self, name):

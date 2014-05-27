@@ -45,3 +45,4 @@ done
 
 echo_green "Your Deis cluster has successfully deployed to Rackspace."
 echo_green "Please continue to follow the instructions in the README."
+echo_yellow "NOTE: For this release, you must also update CoreOS on these machines. See the README for details."
