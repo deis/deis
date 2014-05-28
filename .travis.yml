@@ -40,6 +40,7 @@ script:
   - make -C controller flake8
   - make -C controller coverage
   - make -C docs
+  - make -C logger test
 
 after_success:
   - cd controller && coveralls
