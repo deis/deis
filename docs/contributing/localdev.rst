@@ -69,7 +69,7 @@ changes.
 
     $ make pull
     vagrant ssh -c 'for c in registry logger database cache controller \
-      builder router; do docker pull deis/$c; done'
+      builder router; do docker pull deis/$c:latest; done'
     Pulling repository deis/registry
     d2c347aa26dd: Pulling dependent layers
     511136ea3c5a: Download complete

@@ -4,7 +4,7 @@ Description=deis-registry
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history deis/registry >/dev/null || docker pull deis/registry"
+ExecStartPre=/bin/sh -c "docker history deis/registry >/dev/null || docker pull deis/registry:latest"
 ExecStartPre=/bin/sh -c "docker inspect deis-registry >/dev/null && docker rm -f deis-registry || true"
 ExecStartPre=/bin/sh -c "docker inspect deis-registry-data >/dev/null 2>&1 || docker run --name deis-registry-data -v /data deis/base /bin/true"
 ExecStart=/usr/bin/docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from deis-registry-data deis/registry
