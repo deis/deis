@@ -42,7 +42,7 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com:8000
+    $ deis register http://deis.example.com
     username: myuser
     password:
     password (confirm):
@@ -50,16 +50,5 @@ Now that the client is installed, create a user account on the Deis :ref:`Contro
     Registered myuser
     Logged in as myuser
 
-.. note::
-
-    As of v0.5.1, the proxy was removed for Deis platform services. It has yet to be added
-    back in. See `issue 535`_ for more details.
-
-    As a workaround, use the following:
-
-    :code:`deis register http://deis.example.com:8000`
-
-
 .. _pip: http://www.pip-installer.org/en/latest/installing.html
 .. _Python: https://www.python.org/
-.. _`issue 535`: https://github.com/deis/deis/issues/535

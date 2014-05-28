@@ -14,7 +14,7 @@ to create a new account.  You will be logged in automatically.
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com:8000
+    $ deis register http://deis.example.com
     username: myuser
     password:
     password (confirm):
@@ -52,7 +52,7 @@ If you already have an account, use ``deis login`` to authenticate against the D
 
 .. code-block:: console
 
-    $ deis login http://example.com:8000
+    $ deis login http://deis.example.com
     username: deis
     password:
     Logged in as deis
@@ -60,5 +60,3 @@ If you already have an account, use ``deis login`` to authenticate against the D
 .. note::
 
     Deis session information is stored in your user's ~/.deis directory.
-    
-.. _`issue 535`: https://github.com/deis/deis/issues/535

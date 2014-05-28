@@ -119,7 +119,7 @@ $ cd client && python setup.py install
 Use the Deis Client to register a new user.
 
 ```console
-$ deis register http://local.deisapp.com:8000
+$ deis register http://deis.local.deisapp.com
 $ deis keys:add
 ```
 
