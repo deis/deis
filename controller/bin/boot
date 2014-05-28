@@ -42,7 +42,7 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do
 done
 
 # wait for confd to populate all values
-while grep -q '<no value>' /templates/confd_settings.py; do
+while grep -q '<no value>' /etc/nginx/nginx.conf; do
        echo "controller: waiting for confd to write all values..."
        confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null
        sleep $(($ETCD_TTL/2))  # sleep for half the TTL
