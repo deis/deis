@@ -24,11 +24,17 @@ github.com/deis/deis Repo
   next milestone
 - Close the current `deis milestone`_
 - Recreate CHANGELOG.md in the root of the project using the `changelog script`_
-    * ``./contrib/util/generate-changelog.sh v0.7.0 v0.8.0 | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
+    * ``./contrib/util/generate-changelog.sh vU.V.W vX.Y.Z | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
+      substituting the previous release for vU.V.W and the current one for vX.Y.Z.
     * proofread the new CHANGELOG.md to ensure it was generated correctly
     * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
+- Grep the codebase for "docker pull" and replace all instances of ":latest"
+  with ":vX.Y.Z"
+- At the Docker Index, create a tagged image build ":vX.Y.Z" for every component
+    * The UI for this is well-hidden: go to https://index.docker.io/builds/ and
+      click "Edit".
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
