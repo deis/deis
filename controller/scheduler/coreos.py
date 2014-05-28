@@ -201,6 +201,7 @@ ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .config.Expo
 ExecStartPost=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
     /bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
 ExecStop=/usr/bin/docker rm -f {name}
+TimeoutStartSec=20m
 """
 
 ANNOUNCE_TEMPLATE = """
