@@ -444,7 +444,7 @@ class Release(UuidAuditedModel):
     config = models.ForeignKey('Config')
     build = models.ForeignKey('Build')
     # NOTE: image contains combined build + config, ready to run
-    image = models.CharField(max_length=256)
+    image = models.CharField(max_length=256, default=settings.DEFAULT_BUILD)
 
     class Meta:
         get_latest_by = 'created'

@@ -60,6 +60,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertIn('config', response.data)
         self.assertIn('build', response.data)
         self.assertEquals(release1['version'], 1)
+        self.assertEquals(release1['image'], 'deis/helloworld')
         # check to see that a new release was created
         url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url)
