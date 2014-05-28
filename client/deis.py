@@ -566,7 +566,7 @@ class DeisClient(object):
         response = self._dispatch('post',
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(response.json())
+            sys.stdout.write(response.json())
         else:
             raise ResponseError(response)
 
