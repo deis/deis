@@ -19,6 +19,7 @@ Necessary DNS records
 ---------------------
 
 Deis requires one wildcard DNS record. Assuming ``myapps.com`` is the top-level domain apps will live under:
+
 * ``*.myapps.com`` should have A-record entries for each of the load balancer IP addresses
 
 Apps can then be accessed via ``appname.myapps.com``, and the Deis controller can be accessed at ``deis.myapps.com``.
