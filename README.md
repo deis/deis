@@ -7,22 +7,15 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
-# New Deis
-
-Deis has undergone several improvements recently. If you are updating
-from Deis version 0.7.0 or earlier, there are several big changes you
-should know about. Read the [MIGRATING.md](MIGRATING.md) document for
-details.
-
-If you need to use Deis with Chef integration, on Ubuntu 12.04 LTS, or
-on DigitalOcean, you should use the
-[v0.7.0 release](https://github.com/deis/deis/tree/v0.7.0) of Deis.
-
 # Deploying Deis
 
 Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
 
 Trying out Deis? Continue following these instructions for a local cluster setup. This is also a great Deis testing/development environment.
+
+# Upgrading Deis
+
+Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/operations/upgrading-deis/) for additional information.
 
 ## Install prerequisites
 On your workstation:
