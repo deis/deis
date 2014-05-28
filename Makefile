@@ -51,8 +51,8 @@ install-routers: check-fleet
 	)
 
 pull:
-	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c; done')
-	$(call ssh_all,'docker pull deis/slugrunner')
+	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c:latest; done')
+	$(call ssh_all,'docker pull deis/slugrunner:latest')
 
 restart: stop start
 
