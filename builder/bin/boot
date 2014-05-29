@@ -24,10 +24,11 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-# seed initial service configuration if necessary
-if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1 ; then
-	etcdctl --no-sync -C $ETCD mkdir $ETCD_PATH/users >/dev/null 2>&1 || true
-fi
+function etcd_safe_mkdir {
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
+}
+
+etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
@@ -72,7 +73,7 @@ echo deis-builder running...
 if [[ ! -z $PUBLISH ]]; then
 
 	# configure service discovery
-	PORT=${PORT:-2222}
+	PORT=${PORT:-2223}
 	PROTO=${PROTO:-tcp}
 
 	set +e

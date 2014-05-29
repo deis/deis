@@ -37,6 +37,7 @@ function etcd_safe_set {
 etcd_safe_mkdir /deis/controller
 etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
+etcd_safe_mkdir /deis/builder
 etcd_safe_set port ${PORT:-80}
 etcd_safe_set gzip on
 etcd_safe_set gzipHttpVersion 1.0
