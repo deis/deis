@@ -23,15 +23,11 @@ On your workstation:
 * Install the fleetctl client: Install v0.3.2 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
-If you're on Ubuntu, you need to install the nfs-kernel-server package as it's required for sharing folders between your host and your CoreOS VM:
-
-    sudo apt-get install nfs-kernel-server
-
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
 * Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
 * Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (typically 3 or 5): ```$ export DEIS_NUM_INSTANCES=3```
-* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your hostname for accessing the cluster
+* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your cluster domain
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
 For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
@@ -80,20 +76,6 @@ Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`l
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.
 
-These systemd services run the various containers which compose Deis, and can be stopped on a machine with `sudo systemctl stop servicename`.
-* deis-builder.service
-* deis-cache.service
-* deis-controller.service
-* deis-database.service
-* deis-discovery.service
-* deis-logger.service
-* deis-registry.service
-* deis-router.service
-
-Logging into one of the CoreOS machines and stopping a container service should cause the same component on another CoreOS
-host to take over as master.
-Similarly, bringing down a VM should enable the services on another VM to take over as master.
-
 ## Install the Deis Client
 If you're using the latest Deis release, use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
 
@@ -139,7 +121,6 @@ The `dev` cluster will be used as the default cluster for future `deis` commands
 ## Clone an example application or use an existing one
 Example applications can be cloned from the Deis GitHub [organization](https://github.com/deis).
 Commonly-used example applications include [Helloworld (Dockerfile)](https://github.com/deis/helloworld), [Go](https://github.com/deis/example-go), and [Ruby](https://github.com/deis/example-ruby-sinatra).
- 
 
 ## Create an Application
 From within the application directory, create an application on the default `dev` cluster:
@@ -169,8 +150,6 @@ Configure your application with environment variables.  Each config change also 
 $ deis config:set DATABASE_URL=postgres://
 ```
 
-Coming soon: Use the integrated ETCD namespace for service discovery between applications on the same cluster.
-
 ## Test
 ### Run tests
 Test your application by running commands inside an ephemeral Docker container.
@@ -197,14 +176,6 @@ $ deis logs
 
 Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
 
-## Known Issues
-
-We have sometimes seen the VM reboot while doing `make build` against a
-Vagrant virtual machine. If you see this issue using a recent version of
-Vagrant and the current master version of Deis, please add to the issue
-report at https://github.com/coreos/coreos-vagrant/issues/68 to help us
-pin it down.
-
 ## Troubleshooting
 
 Common issues that users have run into when provisioning Deis are detailed below.
@@ -214,9 +185,6 @@ Did you remember to add your SSH key to the ssh-agent? `ssh-agent -L` should lis
 
 #### When running a `make` action - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
 The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Destroy and relaunch the cluster, ensuring to use a fresh discovery URL.
-
-#### Various NFS issues, specifically an 'access denied' error
-The easiest workaround for this is to use rsync instead of NFS. In the Vagrantfile, swap out the `config.vm.synced_folder` line for the commented version.
 
 #### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
 This means the controller failed to submit jobs for the app to fleet. `fleetctl status deis-controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
