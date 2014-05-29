@@ -136,10 +136,16 @@ The `dev` cluster will be used as the default cluster for future `deis` commands
 
 # Usage
 
+## Clone an example application or use an existing one
+Example applications can be cloned from the Deis GitHub [organization](https://github.com/deis).
+Commonly-used example applications include [Helloworld (Dockerfile)](https://github.com/deis/helloworld), [Go](https://github.com/deis/example-go), and [Ruby](https://github.com/deis/example-ruby-sinatra).
+ 
+
 ## Create an Application
-Create an application on the default `dev` cluster.
+From within the application directory, create an application on the default `dev` cluster:
 
 ```console
+$ cd example-ruby-sinatra
 $ deis create
 ```
 
