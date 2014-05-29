@@ -53,16 +53,6 @@ For more information, see [optimal etcd cluster size](https://github.com/coreos/
 
 Deis clusters of less than 3 nodes are unsupported.
 
-### Update CoreOS
-Due to image publishing limitations on Rackspace, CoreOS images on Rackspace are frequently out of date.
-Each machine needs to be updated. On each one, run:
-
-```console
-$ sudo systemctl unmask update-engine && sudo systemctl start update-engine && sudo update_engine_client -update && sudo reboot
-```
-
-Once the machine is rebooted, it should have a recent CoreOS version.
-
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:

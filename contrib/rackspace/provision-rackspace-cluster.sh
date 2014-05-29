@@ -39,10 +39,9 @@ fi
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    supernova production boot --image 70210a69-081e-4a5e-b402-3cdbabfdcddd --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
+    supernova production boot --image 24614284-19a9-4348-bee3-a504d7094d1b --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 
 echo_green "Your Deis cluster has successfully deployed to Rackspace."
 echo_green "Please continue to follow the instructions in the README."
-echo_yellow "NOTE: For this release, you must also update CoreOS on these machines. See the README for details."
