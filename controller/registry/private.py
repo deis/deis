@@ -9,23 +9,30 @@ import uuid
 from django.conf import settings
 
 
-def publish_release(repository_path, config, tag):
+def publish_release(repository_path, config, tag, source_tag='latest'):
     """
     Publish a new release as a Docker image
 
     Given a source repository path, a dictionary of environment variables
     and a target tag, create a new lightweight Docker image on the registry.
 
+    source_tag is the name of the previous older tag that this image should
+    be a child of. In most cases, this should be 'latest', but for rollbacks
+    this should be an older tag.
+
     For example, publish_release('gabrtv/myapp', {'ENVVAR': 'values'}, 'v23')
     results in a new Docker image at: <registry_url>/gabrtv/myapp:v23
     which contains the new configuration as ENV entries.
     """
     try:
-        image_id = _get_tag(repository_path, 'latest')
+        image_id = _get_tag(repository_path, source_tag)
     except RuntimeError:
-        # no image exists yet, so let's build one!
-        _put_first_image(repository_path)
-        image_id = _get_tag(repository_path, 'latest')
+        if source_tag == 'latest':
+            # no image exists yet, so let's build one!
+            _put_first_image(repository_path)
+            image_id = _get_tag(repository_path, 'latest')
+        else:
+            raise
     image = _get_image(image_id)
     # construct the new image
     image['parent'] = image['id']

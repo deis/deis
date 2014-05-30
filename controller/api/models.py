@@ -454,7 +454,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None):
+    def new(self, user, config=None, build=None, summary=None, source_version=None):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -465,6 +465,10 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
+        if not source_version:
+            source_version = 'latest'
+        else:
+            source_version = 'v{}'.format(source_version)
         # prepare release tag
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
@@ -475,7 +479,10 @@ class Release(UuidAuditedModel):
             build=build, version=new_version, image=image, summary=summary)
         # publish release to registry as new docker image
         repository_path = self.app.id
-        publish_release(repository_path, config.values, tag)
+        publish_release(repository_path,
+                        config.values,
+                        tag,
+                        source_tag=source_version)
         return release
 
     def previous(self):

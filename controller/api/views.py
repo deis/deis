@@ -424,7 +424,11 @@ class AppReleaseViewSet(BaseAppViewSet):
         summary = "{} rolled back to v{}".format(request.user, version)
         prev = app.release_set.get(version=version)
         new_release = release.new(
-            request.user, build=prev.build, config=prev.config, summary=summary)
+            request.user,
+            build=prev.build,
+            config=prev.config,
+            summary=summary,
+            source_version=version)
         app.deploy(new_release)
         msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
