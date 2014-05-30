@@ -17,12 +17,12 @@ import yaml
 
 
 def parse_args():
-    if len(sys.argv) < 2:
-        print('Usage: {} [user] [repo]'.format(sys.argv[0]))
+    if len(sys.argv) < 3:
+        print('Usage: {} [user] [repo] [branch]'.format(sys.argv[0]))
         sys.exit(1)
-    user, repo = sys.argv[1], sys.argv[2]
+    user, repo, branch = sys.argv[1], sys.argv[2], sys.argv[3]
     app = repo.split('.')[0]
-    return user, repo, app
+    return user, repo, branch, app
 
 
 DOCKERFILE_SHIM = """FROM deis/slugrunner
@@ -33,11 +33,11 @@ ENTRYPOINT ["/runner/init"]
 
 
 if __name__ == '__main__':
-    user, repo, app = parse_args()
+    user, repo, branch, app = parse_args()
     # define image names
     _id = uuid.uuid4().hex[:8]
-    tmp_image = "{user}/{app}:temp_{_id}".format(**locals())
-    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{user}/{app}".format(**locals())
+    tmp_image = "{app}:temp_{_id}".format(**locals())
+    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{app}".format(**locals())
     # create required directories
     repo_dir = os.path.join(os.getcwd(), repo)
     build_dir = os.path.join(repo_dir, 'build')
@@ -48,23 +48,32 @@ if __name__ == '__main__':
     try:
         # create temporary directory
         temp_dir = tempfile.mkdtemp(dir=build_dir)
-        # extract git master
+        # extract git branch
         p = subprocess.Popen(
-            'git archive master | tar -x -C {temp_dir}'.format(**locals()),
+            'git archive {branch} | tar -x -C {temp_dir}'.format(**locals()),
             shell=True, cwd=repo_dir)
         rc = p.wait()
         if rc != 0:
             raise Exception('Could not extract git archive')
-        # check for Procfile
         dockerfile = os.path.join(temp_dir, 'Dockerfile')
         procfile = os.path.join(temp_dir, 'Procfile')
-        if not os.path.exists(dockerfile) and os.path.exists(procfile):
+        # pull config to be used during build
+        body = {}
+        body['receive_user'], body['receive_repo'] = user, app
+        url = "{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/config"
+        headers = {'Content-Type': 'application/json', 'X-Deis-Builder-Auth': '{{ .deis_controller_builderKey }}'}
+        r = requests.post(url, headers=headers, data=json.dumps(body))
+        if r.status_code != 200:
+            raise Exception('Config hook error: {} {}'.format(r.status_code, r.text))
+        config_env = " ".join([ "-e {}='{}'".format(*kv) for kv in json.loads(r.json().get('values', '{}')).items()])
+        # some applications do not have a Procfile, so only check for a Dockerfile
+        if not os.path.exists(dockerfile):
             if os.path.exists('/buildpacks'):
-                build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
+                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
-                build_cmd = "docker run -i -a stdin -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
+                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
             # run slugbuilder in the background
-            p = subprocess.Popen("git archive master | " + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
+            p = subprocess.Popen("git archive {branch} | ".format(**locals()) + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
             container = p.stdout.read().strip('\n')
             # attach to slugbuilder output
             p = subprocess.Popen('docker attach {container}'.format(**locals()), shell=True, cwd=temp_dir)
@@ -105,6 +114,28 @@ if __name__ == '__main__':
         body['receive_user'] = user
         body['receive_repo'] = app
         body['image'] = target_image
+        # use sha of branch
+        with open(os.path.join(repo_dir, branch)) as f:
+            body['sha'] = f.read().strip('\n')
+        # extract the user-defined Procfile and any default_process_types
+        procfile_dict = {}
+        p = subprocess.Popen('tar --to-stdout -xzf {temp_dir}/slug.tgz ./.release'.format(**locals()), shell=True, cwd=temp_dir,
+                            stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
+        rc = p.wait()
+        if rc == 0:
+            stdout = p.stdout.read()
+            default_process_types = yaml.safe_load(stdout).get('default_process_types', {})
+            procfile_dict.update(default_process_types)
+        if os.path.exists(procfile):
+            with open(procfile) as f:
+                raw_procfile = f.read()
+                procfile_dict.update(yaml.safe_load(raw_procfile))
+        if procfile_dict:
+            body['procfile'] = json.dumps(procfile_dict)
+        # extract Dockerfile
+        if os.path.exists(dockerfile):
+            with open(dockerfile) as f:
+                body['dockerfile'] = f.read()
         # trigger build hook
         sys.stdout.write('\n       Launching... ')
         sys.stdout.flush()

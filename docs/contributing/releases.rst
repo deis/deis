@@ -23,12 +23,18 @@ github.com/deis/deis Repo
 - Move any `deis open issues`_ from the current release to the
   next milestone
 - Close the current `deis milestone`_
-- Recreate CHANGELOG.md in the root of the project using `github-changes`_
-    * ``github-changes -o opdemand -r deis -n vX.Y.Z``
+- Recreate CHANGELOG.md in the root of the project using the `changelog script`_
+    * ``./contrib/util/generate-changelog.sh vU.V.W vX.Y.Z | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
+      substituting the previous release for vU.V.W and the current one for vX.Y.Z.
     * proofread the new CHANGELOG.md to ensure it was generated correctly
     * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
+- Grep the codebase for "docker pull" and replace all instances of ":latest"
+  with ":vX.Y.Z"
+- At the Docker Index, create a tagged image build ":vX.Y.Z" for every component
+    * The UI for this is well-hidden: go to https://index.docker.io/builds/ and
+      click "Edit".
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
@@ -83,7 +89,7 @@ Documentation
 
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
 .. _`deis open issues`: https://github.com/deis/deis/issues?state=open
-.. _`github-changes`: https://lalitkapoor.github.io/github-changes/
+.. _`changelog script`: https://github.com/deis/deis/blob/master/contrib/util/generate-changelog.sh
 .. _`release notes`: https://github.com/deis/deis/releases
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/

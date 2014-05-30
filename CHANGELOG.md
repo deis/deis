@@ -1,4 +1,118 @@
-## Change Log
+### v0.8.0 -> v0.9.0
+
+#### Features
+
+- 8428bd5 feat(router): proxy builder through router
+- bddb43e feat(user-data): adds nsenter alias
+- 5ad1fc0 feat(router): route deis.domain to controller
+- 5d60551 feat(vagrant): make rsync as default
+- e86d9d8 feat(builder): build apps from more than master
+- 321b96c feat(controller): allow shared users domain access
+- 65bf80e feat(controller): log domains deployed
+- c1c7ee7 feat(controller): hook up domains to router
+- 23df4ab feat(controller): add Domain model
+- fcadd48 feat(controller): Toggle registration using etcd
+- 730149c feat(builder): update builder to pass SHA/Procfile/Dockerfile (if available)
+- c5aec20 feat(dockerfile): improve dockerfile and procfile workflow
+- f330bfd feat(router): support for multiple routers
+- f845dc8 feat(router): configurable gzip settings
+- e0ba0a9 feat(builder): expose runtime configuration during slugbuilder execution
+- 097827c feat(Vagrantfile): add fallback to rsync
+- 2bce3f4 feat(contrib): add changelog script
+- 4712658 feat(contrib): add CoreOS flair to motd
+- 11b07e2 feat(contrib/coreos/user-data): create Deis motd
+- 4808ea9 feat(client): add --app option to apps:run
+- b2e2b78 feat(client): add auth command
+
+#### Fixes
+
+- 0470a38 fix(controller): add source release version
+- d290bb2 fix(controller): revert "<no value>" polling target to confd_settings.py
+- 733a61c fix(docker): always use ":latest" tag in docker pull
+- b800e9b fix(router): restore check_cmd and grep nginx.conf
+- f349741 fix(controller): change timeout for docker container template
+- 2767c47 fix(travis): add dummy FLEETCTL_TUNNEL envvar
+- c0eae21 fix(Makefile): enable targets to work for non-Vagrant
+- 07d49ef fix(controller): watch fifth column for state
+- 82a0339 fix(controller): use new `fleetctl` semantics
+- 1c67726 fix(data-containers): change test command to "inspect"
+- 52b93ac fix(Makefile): update to work with fleetctl 0.3.2
+- 91e7e21 fix(test): update example-ruby-sinatra location
+- 77c1703 fix(contrib): revert seed hosts for CDN workaround
+- 3e1708c fix(Makefile): Information about missing FLEETCTL_TUNNEL
+- f4a41ad fix(Makefile): include router component in `make build` and friends
+- 1fdbf2c fix(Makefile): use fleetctl to filter actual deis-* units
+- 129ad5d fix(controller): change api logs response to 204 when no logs
+- bdf08ba fix(signals): use different dispatch_uid for log signals
+- 6aad59c fix(*): set etcd keys safely in /bin/boot
+- 968efd0 fix(router): create /deis/domains
+- 6886795 fix(controller): give access to /domains
+- dbfed01 fix(client): handle created response code on domains:add
+- 9a9c40c fix(controller): do not deploy releases on domains
+- 526cd06 fix(client): cleanup domains output
+- ed642ff fix(router): resolve golang template scoping issue
+- 1646f72 fix(controller): add /domains access in confd
+- 133f707 fix(controller): revert e647336741
+- 64c90e7 fix(confd): give controller/router /deis access
+- 1c06b51 fix(controller): cast registrationEnabled to bool
+- 2dee62c fix(scheduler): detect exposed ports from image for PORT envvar
+- 3d5d243 fix(tests): close db connections during threaded execution
+- 5710ccb fix(flake8): resolve code formatting issues
+- f680df6 fix(deploy): rework initial deploy logic based on workflow
+- 877a87b fix(builder): include default_process_types from .release
+- b4ff75e fix(migration): squash migrations, add newline
+- cdbd9b9 fix(scale): move initial scaling logic to model, add tests
+- 553978c fix(controller): only scale web=1 if procfile has web entry
+- 2984581 fix(schema): remove uniqueness constraint on containers
+- c8efffd fix(announcer): detect first exposed port instead of hardcoding to 5000/tcp
+- a056894 fix(test): remove `-K` ssh-add option that isn't available on Linux
+- 1d46330 fix(builder): add scale() back to first build
+- fd88251 fix(flake8): fix spaces and a docstring
+- 95c2c77 fix(app): only set initial structure when build hook is triggered
+- c951ffa fix(Vagrantfile): fix vagrant sync command
+- 96e0428 fix(README): fix typo
+- d3dfa37 fix(contrib): seed hosts for CDN workaround
+- 166282a fix(CHANGELOG): prep for changelog script
+- 90c73d0 fix(test): don't fail if already registered, and pause for builder
+- 48cd94f fix(client): return 1 on two more error cases
+- 45e5e0c fix(contrib): correct coloring
+- 23f0f0c fix(logger): allow digits in app name when parsing log file
+- 33f72a1 fix(controller): restore App.destroy() and call delete()
+- 998498f fix(Makefile): fix 'check-fleet' rule for $FLEETCTL_TUNNEL with port.
+- 6d64cbf fix(readme): unify language with deis.io
+- c510fc5 fix(controller): give processes unique counters
+- 2c699ed fix(controller): remove username length validation
+- 75aeb67 fix(registry): store apps as appname
+- 926c8f4 fix(client): return non-zero on errors
+- a0cf80c fix(docker): use btrfs inside builder
+- 15751ad fix(builder): do not check for a Procfile
+- 4edfb2c fix(pip): update location of pip installer
+
+#### Documentation
+
+- 70fe559 docs(*): document DEIS_NUM_ROUTERS
+- ad8eabd docs(readme): remove cruft and add clarifications
+- ccdfc34 Revert "docs(contrib/rackspace): document manual update for CoreOS"
+- d759e1e docs(README.md): Update Documentation for creating Applicaiton
+- e98d9c2 docs(releases): update for Docker Index tagging capability
+- d459eec docs(configure-dns): fix typo
+- d4aa8c9 docs(UPGRADING.md): add upgrade documentation
+- 20ecc29 docs(contrib/rackspace): document manual update for CoreOS
+- 54888af docs(developer): use note styling
+- dbbb7b4 docs(developer): add domain documentation
+- 87159d5 docs(developer): flesh out developer docs
+- ae0365b docs(*): update docs for local3.deisapp.com, local5.deisapp.com
+- db2d845 docs(bare-metal): filled in bare metal section in provision doc
+- ff3e029 docs(*): add bare-metal guide
+- 9435bfd docs(README): add troubleshooting for 'not reachable' peers
+- f3c60cc docs(contrib): github-changes -> changelog script
+- b70aa56 docs(*): clarify clusters:create options
+- ac15bce docs(README): adds troubleshooting information
+- 28f3727 docs(*): strongly suggest Deis clusters of 3+ nodes
+- 900e583 docs(contributing): add TESTING footer
+- 842838a docs(vagrant): update references to vagrant files
+- 2dd299c docs(README): install nfs on Ubuntu
+- 98b478a docs(contributing): split out DCO
 
 ### v0.8.0 (2014/05/06 18:30 +00:00)
 - [54ff9ca](https://github.com/deis/deis/commit/54ff9caaaaa2be20960afe41c883014a796b81b2) Updated CLI binaries and links in client README. (@mboersma)

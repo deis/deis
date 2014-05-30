@@ -56,10 +56,6 @@ class AuthTest(TestCase):
         self.assertFalse(response.data['is_staff'])
         self.assertTrue(
             self.client.login(username=username, password=password))
-        # test with len(username) < 4
-        submit['username'] = 'new'
-        response = self.client.post(url, json.dumps(submit), content_type='application/json')
-        self.assertEqual(response.status_code, 400)
         # test logout and login
         url = '/api/auth/logout/'
         response = self.client.post(url, content_type='application/json')

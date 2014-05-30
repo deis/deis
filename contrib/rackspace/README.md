@@ -33,6 +33,17 @@ $ supernova production keypair-add --pub-key ~/.ssh/deis.pub deis-key
 ### Customize cloud-config.yml
 Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
 
+### Choose number of instances
+By default, the provision script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
+```console
+$ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
+```
+
+Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
+For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+
+Deis clusters of less than 3 nodes are unsupported.
+
 ### Run the provision script
 Run the [Rackspace provision script](provision-rackspace-cluster.sh) to spawn a new CoreOS cluster.
 You'll need to provide the name of the key pair you just added. Optionally, you can also specify a flavor name.
@@ -43,9 +54,10 @@ Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
 $ ./provision-rackspace-cluster.sh deis-key
 ```
 
-By default, the script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
+### Choose number of routers
+By default, the Makefile will provision 1 router. You can override this by setting `DEIS_NUM_ROUTERS`:
 ```console
-$ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
+$ export DEIS_NUM_ROUTERS=2
 ```
 
 ### Initialize the cluster
@@ -62,10 +74,18 @@ You'll need to configure DNS records so you can access applications hosted on De
 
 ### Use Deis!
 After that, register with Deis!
-```
-$ deis register deis.example.org:8000
+```console
+$ deis register http://deis.example.org
 username: deis
 password:
 password (confirm):
 email: info@opdemand.com
 ```
+
+## Hack on Deis
+If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
+```console
+$ export DEIS_HOSTS=10.21.12.1 10.21.12.2 10.21.12.3
+```
+
+This variable is used in the `make build` command.

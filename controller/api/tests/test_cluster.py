@@ -45,6 +45,12 @@ class ClusterTest(TestCase):
         response = self.client.get('/api/clusters')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
+        # ensure we can delete the cluster with an app
+        # see https://github.com/deis/deis/issues/927
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
         url = '/api/clusters/{cluster_id}'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

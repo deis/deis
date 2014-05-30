@@ -69,7 +69,7 @@ changes.
 
     $ make pull
     vagrant ssh -c 'for c in registry logger database cache controller \
-      builder router; do docker pull deis/$c; done'
+      builder router; do docker pull deis/$c:latest; done'
     Pulling repository deis/registry
     d2c347aa26dd: Pulling dependent layers
     511136ea3c5a: Download complete
@@ -132,22 +132,13 @@ receive full admin permissions.
 
 .. code-block:: console
 
-    $ deis register http://local.deisapp.com:8000
+    $ deis register http://deis.local.deisapp.com
     username: myuser
     password:
     password (confirm):
     email: myuser@example.com
     Registered myuser
     Logged in as myuser
-
-.. note::
-
-    As of v0.5.1, the proxy was removed for Deis platform services. It has yet to be added
-    back in. See `issue 535`_ for more details.
-
-    As a workaround, use the following:
-
-    :code:`deis register http://local.deisapp.com:8000`
 
 Once the user is registered, add your SSH key for ``git push``
 access using:
@@ -252,4 +243,3 @@ ensure the pull request doesn't break any tests or reduce code coverage.
 .. _`VirtualBox`: https://www.virtualbox.org/
 .. _`fork the Deis repository`: https://github.com/deis/deis/fork
 .. _`pull request`: https://github.com/deis/deis/pulls
-.. _`issue 535`: https://github.com/deis/deis/issues/535

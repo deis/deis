@@ -22,7 +22,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import models, serializers
-from .exceptions import UserRegistrationException
 
 from django.conf import settings
 
@@ -147,9 +146,6 @@ class UserRegistrationView(viewsets.GenericViewSet,
         obj.is_active = True
         obj.email = User.objects.normalize_email(obj.email)
         obj.set_password(obj.password)
-        # FIXME: move this business logic to the model
-        if len(obj.username) < 4:
-            raise UserRegistrationException('username must be >= 4 characters in length')
         # Make this first signup an admin / superuser
         if not User.objects.filter(is_superuser=True).exists():
             obj.is_superuser = obj.is_staff = True
@@ -303,7 +299,7 @@ class AppViewSet(OwnerViewSet):
             logs = app.logs()
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
-                            status=status.HTTP_404_NOT_FOUND,
+                            status=status.HTTP_204_NO_CONTENT,
                             content_type='text/plain')
         return Response(logs, status=status.HTTP_200_OK,
                         content_type='text/plain')
@@ -348,7 +344,8 @@ class AppBuildViewSet(BaseAppViewSet):
         if created:
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
-            build.app.deploy(self.release)
+            initial = True if build.app.structure == {} else False
+            build.app.deploy(self.release, initial=initial)
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -427,7 +424,11 @@ class AppReleaseViewSet(BaseAppViewSet):
         summary = "{} rolled back to v{}".format(request.user, version)
         prev = app.release_set.get(version=version)
         new_release = release.new(
-            request.user, build=prev.build, config=prev.config, summary=summary)
+            request.user,
+            build=prev.build,
+            config=prev.config,
+            summary=summary,
+            source_version=version)
         app.deploy(new_release)
         msg = "Rolled back to v{}".format(version)
         return Response(msg, status=status.HTTP_201_CREATED)
@@ -459,6 +460,29 @@ class KeyViewSet(OwnerViewSet):
     model = models.Key
     serializer_class = serializers.KeySerializer
     lookup_field = 'id'
+
+
+class DomainViewSet(OwnerViewSet):
+    """RESTful views for :class:`~api.models.Domain`."""
+
+    model = models.Domain
+    serializer_class = serializers.DomainSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+        return super(DomainViewSet, self).create(request, *args, **kwargs)
+
+    def get_queryset(self, **kwargs):
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        qs = self.model.objects.filter(app=app)
+        return qs
+
+    def get_object(self, *args, **kwargs):
+        qs = self.get_queryset(**kwargs)
+        obj = qs.get(domain=self.kwargs['domain'])
+        return obj
 
 
 class BaseHookViewSet(viewsets.ModelViewSet):
@@ -515,4 +539,23 @@ class BuildHookViewSet(BaseHookViewSet):
         if created:
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
-            build.app.deploy(new_release)
+            initial = True if build.app.structure == {} else False
+            build.app.deploy(new_release, initial=initial)
+
+
+class ConfigHookViewSet(BaseHookViewSet):
+    """API hook to grab latest :class:`~api.models.Config`"""
+
+    model = models.Config
+    serializer_class = serializers.ConfigSerializer
+
+    def create(self, request, *args, **kwargs):
+        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
+        user = get_object_or_404(
+            User, username=request.DATA['receive_user'])
+        # check the user is authorized for this app
+        if user == app.owner or user in get_users_with_perms(app):
+            config = app.release_set.latest().config
+            serializer = self.get_serializer(config)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        raise PermissionDenied()

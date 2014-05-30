@@ -26,13 +26,20 @@ if ! which supernova > /dev/null; then
   exit 1
 fi
 
+if ! supernova production network-list|grep -q deis &>/dev/null; then
+  echo_yellow "Creating deis private network..."
+  supernova production network-create deis 10.21.12.0/24
+fi
+
+NETWORK_ID=`supernova production network-list|grep deis|awk -F"|" '{print $2}'|sed 's/^ *//g'`
+
 if [ -z "$DEIS_NUM_INSTANCES" ]; then
     DEIS_NUM_INSTANCES=3
 fi
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    supernova production boot --image c431c19c-4c09-48ef-a7c1-f4a43f65a1de --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --config-drive true deis-$i ; \
+    supernova production boot --image 24614284-19a9-4348-bee3-a504d7094d1b --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 

@@ -5,6 +5,7 @@ omit =
     *tests*
     api/__init__.py
     api/docker.py
+    scheduler/*
     web/__init__.py
     web/models.py
     web/templatetags/__init__.py

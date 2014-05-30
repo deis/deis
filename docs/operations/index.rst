@@ -15,4 +15,6 @@ Operations Guide
     provision-controller
     register-admin-user
     manage-controller
+    configure-load-balancers
     configure-dns
+    upgrading-deis

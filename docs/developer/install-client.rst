@@ -1,34 +1,39 @@
 :title: Install the Deis Client on your Workstation
 :description: First steps for developers using Deis to deploy and scale applications.
 
+.. _install-client:
+
 Install the Client
 ==================
 The Deis command-line interface (CLI), or client, allows you to interact
 with a Deis :ref:`Controller`. You must install the client to use Deis.
 
+Download Binaries
+-----------------
+You can download a binary executable version of the Deis client for Mac OS X, Windows, or Debian Linux:
+
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.9.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.9.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.9.0.tgz
+
+Extract the ``deis`` binary and place it in your workstation path.
+
 Install with Pip
 ----------------
-Install the latest Deis client using Python's pip_ package manager:
+You can also install the latest Deis client using Python's pip_ package manager:
 
 .. code-block:: console
 
-    $ pip install deis
+    $ sudo pip install deis
     Downloading/unpacking deis
       Downloading deis-0.8.0.tar.gz
       Running setup.py egg_info for package deis
       ...
     Successfully installed deis
     Cleaning up...
+
     $ deis
     Usage: deis <command> [<args>...]
-
-If you don't have Python_ installed, you can download a binary executable
-version of the Deis client for Mac OS X, Windows, or Debian Linux:
-
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.8.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.8.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.8.0.tgz
-
 
 Integrated Help
 ---------------
@@ -70,5 +75,3 @@ To get help on subcommands, use ``deis help [subcommand]``:
 
 .. _pip: http://www.pip-installer.org/en/latest/installing.html
 .. _Python: https://www.python.org/
-
-

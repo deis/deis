@@ -94,6 +94,23 @@ Application Infrastructure
   List all :class:`~api.models.Container`\s.
 
 
+Application Domains
+-------------------
+
+
+.. http:delete:: /api/apps/(string:id)/domains/(string:hostname)
+
+  Destroy a :class:`~api.models.Domain` by its `hostname`
+
+.. http:get:: /api/apps/(string:id)/domains/
+
+  List all :class:`~api.models.Domain`\s.
+
+.. http:post:: /api/apps/(string:id)/domains/
+
+  Create a new :class:`~api.models.Domain`\s.
+
+
 Application Actions
 -------------------
 
@@ -164,6 +181,10 @@ API Hooks
 .. http:post:: /api/hooks/build/
 
   Create a new :class:`~api.models.Build`.
+
+.. http:post:: /api/hooks/config/
+
+  Retrieve latest application :class:`~api.models.Config`.
 
 
 Auth
@@ -249,6 +270,11 @@ urlpatterns = patterns(
         views.AppContainerViewSet.as_view({'get': 'list'})),
     url(r'^apps/(?P<id>[-_\w]+)/containers/?',
         views.AppContainerViewSet.as_view({'get': 'list'})),
+    # application domains
+    url(r'^apps/(?P<id>[-_\w]+)/domains/(?P<domain>[-\._\w]+)/?',
+        views.DomainViewSet.as_view({'delete': 'destroy'})),
+    url(r'^apps/(?P<id>[-_\w]+)/domains/?',
+        views.DomainViewSet.as_view({'post': 'create', 'get': 'list'})),
     # application actions
     url(r'^apps/(?P<id>[-_\w]+)/scale/?',
         views.AppViewSet.as_view({'post': 'scale'})),
@@ -279,6 +305,8 @@ urlpatterns = patterns(
         views.PushHookViewSet.as_view({'post': 'create'})),
     url(r'^hooks/build/?',
         views.BuildHookViewSet.as_view({'post': 'create'})),
+    url(r'^hooks/config/?',
+        views.ConfigHookViewSet.as_view({'post': 'create'})),
     # authn / authz
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),

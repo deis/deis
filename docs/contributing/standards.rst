@@ -229,28 +229,37 @@ Message Footer
 """"""""""""""
 
 All breaking changes need to be mentioned in the footer with the description of the
-change, the justification behind the change and any migration notes required. For example:
+change, the justification behind the change and any migration notes required. Any methods
+that maintainers can use to test these changes should be placed in the footer as well. For
+example:
 
 .. code-block:: console
 
+    TESTING: to test this change, bring up a new cluster and run the following
+    when the controller comes online:
+
+        $ vagrant ssh -c "curl localhost:8000"
+
+    you should see an HTTP response from the controller.
+
     BREAKING CHANGE: the controller no longer listens on port 80. It now listens on
-        port 8000, with the router redirecting requests on port 80 to the controller. To
-        migrate to this change, SSH into your controller and run:
+    port 8000, with the router redirecting requests on port 80 to the controller. To
+    migrate to this change, SSH into your controller and run:
 
         $ docker kill deis-controller
         $ docker rm deis-controller
 
-        and then restart the controller on port 8000:
+    and then restart the controller on port 8000:
 
         $ docker run -d -p 8000:8000 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> \
         -e PORT=8000 -name deis-controller deis/controller
 
-        now you can start the proxy component by running:
+    now you can start the proxy component by running:
 
         $ docker run -d -p 80:80 -e ETCD=<etcd_endpoint> -e HOST=<host_ip> -e PORT=80 \
         -name deis-router deis/router
 
-        The router should then start proxying requests from port 80 to the controller.
+    the router should then start proxying requests from port 80 to the controller.
 
 Referencing Issues
 """"""""""""""""""

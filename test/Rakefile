@@ -12,20 +12,20 @@ EXAMPLE_APP = ENV['DEIS_TEST_APP'] || 'example-ruby-sinatra'
 namespace :setup do
   task :all => ['create_ssh_key','clone_example_app']
   task :create_ssh_key do
-    run_command("if [ ! -f #{AUTH_KEY} ]; then ssh-keygen -q -t rsa -f #{AUTH_KEY} -N '' -C deis && ssh-add -K #{AUTH_KEY} ; fi")
+    run_command("if [ ! -f #{AUTH_KEY} ]; then ssh-keygen -q -t rsa -f #{AUTH_KEY} -N '' -C deis && ssh-add #{AUTH_KEY} ; fi")
   end
   task :clone_example_app do
-    run_command("if [ ! -d ./#{EXAMPLE_APP} ]; then git clone https://github.com/opdemand/#{EXAMPLE_APP}.git ; fi")
+    run_command("if [ ! -d ./#{EXAMPLE_APP} ]; then git clone https://github.com/deis/#{EXAMPLE_APP}.git ; fi")
   end
 end
 
 namespace :tests do
   task :all => ['register','login','add_key','create_cluster','create_app','push_app','scale_app','verify_app']
   task :register do
-    run_command("deis register http://#{HOSTNAME}:8000 --username=test --email=test@test.co.nz --password=asdf1234")
+    run_command("deis register http://deis.#{HOSTNAME} --username=test --email=test@test.co.nz --password=asdf1234 || true")
   end
   task :login do
-    run_command("deis login http://#{HOSTNAME}:8000 --username=test --password=asdf1234")
+    run_command("deis login http://deis.#{HOSTNAME} --username=test --password=asdf1234")
   end
   task :add_key do
     run_command("deis keys:add #{AUTH_KEY}.pub")
@@ -34,13 +34,20 @@ namespace :tests do
     run_command("deis init dev #{HOSTNAME} --hosts=#{HOSTS} --auth=#{SSH_KEY}")
   end
   task :create_app do
-    run_command("cd #{EXAMPLE_APP} && deis apps:create testing")
+    Dir.chdir(EXAMPLE_APP) do
+      sleep 6  # give builder git time to wake up
+      run_command('deis apps:create testing')
+    end
   end
   task :push_app do
-    run_command("cd #{EXAMPLE_APP} && git push deis master")
+    Dir.chdir(EXAMPLE_APP) do
+      run_command('git push deis master')
+    end
   end
   task :scale_app do
-    run_command("cd #{EXAMPLE_APP} && deis scale web=2")
+    Dir.chdir(EXAMPLE_APP) do
+      run_command('deis scale web=2')
+    end
   end
   task :verify_app do
     run_command("curl -s http://testing.#{HOSTNAME} | grep -q 'Powered by Deis'")
@@ -50,7 +57,9 @@ end
 namespace :cleanup do
   task :all => ['destroy_app','destroy_cluster','remove_key','logout']
   task :destroy_app do
-    run_command("cd #{EXAMPLE_APP} && deis apps:destroy --app=testing --confirm=testing")
+    Dir.chdir(EXAMPLE_APP) do
+      run_command('deis apps:destroy --app=testing --confirm=testing')
+    end
   end
   task :destroy_cluster do
     run_command("deis clusters:destroy dev --confirm=dev")

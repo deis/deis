@@ -14,7 +14,8 @@ import subprocess
 from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, connections
+from django.db.models import Max
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
@@ -33,6 +34,20 @@ logger = logging.getLogger(__name__)
 def log_event(app, msg, level=logging.INFO):
     msg = "{}: {}".format(app.id, msg)
     logger.log(level, msg)
+
+
+def close_db_connections(func, *args, **kwargs):
+    """
+    Decorator to close db connections during threaded execution
+
+    Note this is necessary to work around:
+    https://code.djangoproject.com/ticket/22420
+    """
+    def _inner(*args, **kwargs):
+        func(*args, **kwargs)
+        for conn in connections.all():
+            conn.close()
+    return _inner
 
 
 class AuditedModel(models.Model):
@@ -126,21 +141,39 @@ class App(UuidAuditedModel):
             c.destroy()
         return super(App, self).delete(*args, **kwargs)
 
-    def deploy(self, release):
+    def deploy(self, release, initial=False):
         tasks.deploy_release.delay(self, release).get()
-        if self.structure == {}:
-            # scale the web process by 1 initially
-            self.structure = {'web': 1}
+        if initial:
+            # if there is no SHA, assume a docker image is being promoted
+            if not release.build.sha:
+                self.structure = {'cmd': 1}
+            # if a dockerfile exists without a procfile, assume docker workflow
+            elif release.build.dockerfile and not release.build.procfile:
+                self.structure = {'cmd': 1}
+            # if a procfile exists without a web entry, assume docker workflow
+            elif release.build.procfile and not 'web' in release.build.procfile:
+                self.structure = {'cmd': 1}
+            # default to heroku workflow
+            else:
+                self.structure = {'web': 1}
             self.save()
             self.scale()
 
-    def scale(self, **kwargs):
+    def destroy(self, *args, **kwargs):
+        return self.delete(*args, **kwargs)
+
+    def scale(self, **kwargs):  # noqa
         """Scale containers up or down to match requested."""
         requested_containers = self.structure.copy()
         release = self.release_set.latest()
-        # increment new container nums off the most recent container
-        all_containers = self.container_set.all().order_by('-created')
-        container_num = 1 if not all_containers else all_containers[0].num + 1
+        # test for available process types
+        available_process_types = release.build.procfile or {}
+        for container_type in requested_containers.keys():
+            if container_type == 'cmd':
+                continue  # allow docker cmd types in case we don't have the image source
+            if not container_type in available_process_types:
+                raise EnvironmentError(
+                    'Container type {} does not exist in application'.format(container_type))
         msg = 'Containers scaled ' + ' '.join(
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
@@ -148,6 +181,9 @@ class App(UuidAuditedModel):
         to_add, to_remove = [], []
         for container_type in requested_containers.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
+            # increment new container nums off the most recent container
+            results = self.container_set.filter(type=container_type).aggregate(Max('num'))
+            container_num = (results.get('num__max') or 0) + 1
             requested = requested_containers.pop(container_type)
             diff = requested - len(containers)
             if diff == 0:
@@ -268,18 +304,21 @@ class Container(UuidAuditedModel):
 
     _command = property(_get_command)
 
+    @close_db_connections
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
         c_type = self.type
         self._scheduler.create(self._job_id, image, self._command.format(**locals()))
 
+    @close_db_connections
     @transition(field=state,
                 source=[CREATED, UP, DOWN],
                 target=UP, crashed=DOWN)
     def start(self):
         self._scheduler.start(self._job_id)
 
+    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=UP,
@@ -298,10 +337,12 @@ class Container(UuidAuditedModel):
         # destroy old container
         self._scheduler.destroy(old_job_id)
 
+    @close_db_connections
     @transition(field=state, source=UP, target=DOWN)
     def stop(self):
         self._scheduler.stop(self._job_id)
 
+    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=DESTROYED)
@@ -352,6 +393,11 @@ class Build(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     image = models.CharField(max_length=256)
+
+    # optional fields populated by builder
+    sha = models.CharField(max_length=40, blank=True)
+    procfile = JSONField(default='{}', blank=True)
+    dockerfile = models.TextField(blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -408,7 +454,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None):
+    def new(self, user, config=None, build=None, summary=None, source_version=None):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -419,6 +465,10 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
+        if not source_version:
+            source_version = 'latest'
+        else:
+            source_version = 'v{}'.format(source_version)
         # prepare release tag
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
@@ -428,8 +478,11 @@ class Release(UuidAuditedModel):
             owner=user, app=self.app, config=config,
             build=build, version=new_version, image=image, summary=summary)
         # publish release to registry as new docker image
-        repository_path = "{}/{}".format(user.username, self.app.id)
-        publish_release(repository_path, config.values, tag)
+        repository_path = self.app.id
+        publish_release(repository_path,
+                        config.values,
+                        tag,
+                        source_tag=source_version)
         return release
 
     def previous(self):
@@ -456,7 +509,10 @@ class Release(UuidAuditedModel):
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
             if self.build != old_build:
-                self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
+                if self.build.sha:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
+                else:
+                    self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
             # compare this config to the previous config
             old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff
@@ -485,6 +541,16 @@ class Release(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class Domain(AuditedModel):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    domain = models.TextField(blank=False, null=False, unique=True)
+
+    def __str__(self):
+        return self.domain
+
+
+@python_2_unicode_compatible
 class Key(UuidAuditedModel):
     """An SSH public key."""
 
@@ -503,7 +569,6 @@ class Key(UuidAuditedModel):
 # define update/delete callbacks for synchronizing
 # models with the configuration management backend
 
-
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
@@ -519,6 +584,16 @@ def _log_release_created(**kwargs):
 def _log_config_updated(**kwargs):
     config = kwargs['instance']
     log_event(config.app, "Config {} updated".format(config))
+
+
+def _log_domain_added(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} added".format(domain))
+
+
+def _log_domain_removed(**kwargs):
+    domain = kwargs['instance']
+    log_event(domain.app, "Domain {} removed".format(domain))
 
 
 def _etcd_publish_key(**kwargs):
@@ -538,10 +613,22 @@ def _etcd_purge_user(**kwargs):
     _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
 
 
+def _etcd_publish_domains(**kwargs):
+    app = kwargs['instance'].app
+    app_domains = app.domain_set.all()
+    if app_domains:
+        _etcd_client.write('/deis/domains/{}'.format(app),
+                           ' '.join(str(d.domain) for d in app_domains))
+    else:
+        _etcd_client.delete('/deis/domains/{}'.format(app))
+
+
 # Log significant app-related events
-post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models')
-post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models')
-post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models')
+post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models.log')
+post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models.log')
+post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models.log')
+post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log')
+post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
 
 
 # save FSM transitions as they happen
@@ -562,3 +649,5 @@ if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
+    post_delete.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')

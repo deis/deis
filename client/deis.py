@@ -16,6 +16,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   clusters      manage clusters used to host applications
   ps            manage processes inside an app container
   config        manage environment variables that define app config
+  domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
   releases      manage releases of an application
 
@@ -50,7 +51,6 @@ import glob
 import json
 import locale
 import os.path
-import random
 import re
 import subprocess
 import sys
@@ -66,7 +66,7 @@ from docopt import DocoptExit
 import requests
 import yaml
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -268,37 +268,6 @@ def dictify(args):
     return data
 
 
-def get_provider_creds(provider, raise_error=False):
-    """Query environment variables and return a provider's creds if found.
-    """
-    cred_types = {
-        'ec2': [[('AWS_ACCESS_KEY_ID', 'access_key', None),
-                 ('AWS_SECRET_ACCESS_KEY', 'secret_key', None)],
-                [('AWS_ACCESS_KEY', 'access_key', None),
-                 ('AWS_SECRET_KEY', 'secret_key', None)]],
-        'rackspace': [[('RACKSPACE_USERNAME', 'username', None),
-                       ('RACKSPACE_API_KEY', 'api_key', None),
-                       ('CLOUD_ID_TYPE', 'identity_type', 'rackspace')]],
-        'digitalocean': [[('DIGITALOCEAN_CLIENT_ID', 'client_id', None),
-                          ('DIGITALOCEAN_API_KEY', 'api_key', None)]]
-    }
-    missing = None
-    for cred_set in cred_types[provider]:
-        creds = {}
-        for envvar, key, default in cred_set:
-            val = os.environ.get(envvar, default)
-            if not val:
-                missing = envvar
-                break
-            else:
-                creds[key] = val
-        if creds:
-            return creds
-    if raise_error:
-        raise EnvironmentError(
-            "Missing environment variable: {}".format(missing))
-
-
 def readable_datetime(datetime_str):
     """
     Return a human-readable datetime string from an ECMA-262 (JavaScript)
@@ -469,6 +438,7 @@ class DeisClient(object):
                         stdout=subprocess.PIPE)
                     print('Git remote deis added')
                 except subprocess.CalledProcessError:
+                    print('Could not create Deis remote')
                     sys.exit(1)
         else:
             raise ResponseError(response)
@@ -550,6 +520,7 @@ class DeisClient(object):
             print(json.dumps(response.json(), indent=2))
             print()
             self.ps_list(args)
+            self.domains_list(args)
             print()
         else:
             raise ResponseError(response)
@@ -600,19 +571,33 @@ class DeisClient(object):
 
         Usage: deis apps:run <command>...
         """
-        app = self._session.app
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
         body = {'command': ' '.join(sys.argv[2:])}
         response = self._dispatch('post',
                                   "/api/apps/{}/run".format(app),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             rc, output = json.loads(response.content)
-            if rc != 0:
-                print('Warning: non-zero return code {}'.format(rc))
             sys.stdout.write(output)
             sys.stdout.flush()
+            sys.exit(rc)
         else:
             raise ResponseError(response)
+
+    def auth(self, args):
+        """
+        Valid commands for auth:
+
+        auth:register          register a new user
+        auth:cancel            remove the current account
+        auth:login             authenticate against a controller
+        auth:logout            clear the current user session
+
+        Use `deis help [command]` to learn more
+        """
+        return
 
     def auth_register(self, args):
         """
@@ -638,7 +623,7 @@ class DeisClient(object):
             confirm = getpass('password (confirm): ')
             if password != confirm:
                 print('Password mismatch, aborting registration.')
-                return False
+                sys.exit(1)
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
@@ -655,7 +640,7 @@ class DeisClient(object):
                 print('Login failed')
         else:
             print('Registration failed', response.content)
-            return False
+            sys.exit(1)
         return True
 
     def auth_cancel(self, args):
@@ -667,7 +652,7 @@ class DeisClient(object):
         controller = self._settings.get('controller')
         if not controller:
             print('Not logged in to a Deis controller')
-            return False
+            sys.exit(1)
         print('Please log in again in order to cancel this account')
         username = self.auth_login({'<controller>': controller})
         if username:
@@ -712,10 +697,9 @@ class DeisClient(object):
             print("Logged in as {}".format(username))
             return username
         else:
-            print('Login failed')
             self._session.cookies.clear()
             self._session.cookies.save()
-            return False
+            raise ResponseError(response)
 
     def auth_logout(self, args):
         """
@@ -814,6 +798,13 @@ class DeisClient(object):
         resolve to the cluster's router endpoints.
 
         Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
+
+        Parameters:
+
+        <id>             a name for the cluster
+        <domain>         a domain under which app hostnames will live
+        <hosts>          a comma-separated list of cluster members
+        <auth>           a path to an SSH private key used to connect to cluster members
 
         Options:
 
@@ -1055,6 +1046,89 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def domains(self, args):
+        """
+        Valid commands for domains:
+
+        domains:add           bind a domain to an application
+        domains:list          list domains bound to an application
+        domains:remove        unbind a domain from an application
+
+        Use `deis help [command]` to learn more
+        """
+        return self.domains_list(args)
+
+    def domains_add(self, args):
+        """
+        Bind a domain to an application
+
+        Usage: deis domains:add <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        domain = args.get('<domain>')
+        body = {'domain': domain}
+        sys.stdout.write("Adding {domain} to {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            print("done")
+        else:
+            raise ResponseError(response)
+
+    def domains_remove(self, args):
+        """
+        Unbind a domain for an application
+
+        Usage: deis domains:remove <domain> [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        domain = args.get('<domain>')
+        sys.stdout.write("Removing {domain} from {app}... ".format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+            print("done")
+        else:
+            raise ResponseError(response)
+
+    def domains_list(self, args):
+        """
+        List domains bound to an application
+
+        Usage: deis domains:list [--app=<app>]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch(
+            'get', "/api/apps/{app}/domains".format(app=app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            domains = response.json()['results']
+            print("=== {} Domains".format(app))
+            if len(domains) == 0:
+                print('No domains')
+                return
+            for domain in domains:
+                print(domain['domain'])
+        else:
+            raise ResponseError(response)
+
     def ps(self, args):
         """
         Valid commands for processes:
@@ -1176,7 +1250,7 @@ class DeisClient(object):
             match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
             if not match:
                 print("Could not parse SSH public key {0}".format(name))
-                return
+                sys.exit(1)
             key_type, key_str, key_comment = match.groups()
             if key_comment:
                 key_id = key_comment
@@ -1326,151 +1400,6 @@ class DeisClient(object):
             app = app[0] or self._session.app
             url = "/api/apps/{}/perms".format(app)
         return app, url
-
-    def providers(self, args):
-        """
-        Valid commands for providers:
-
-        providers:list        list available providers for the logged in user
-        providers:discover    discover provider credentials using envvars
-        providers:create      create a new provider for use by deis
-        providers:info        print information about a specific provider
-
-        Use `deis help [command]` to learn more
-        """
-        return self.providers_list(args)
-
-    def providers_create(self, args):  # noqa
-        """
-        Create a provider for use by Deis
-
-        This command is only necessary when adding a duplicate set of
-        credentials for a provider. User accounts start with empty providers,
-        EC2, Rackspace, and DigitalOcean by default, which should be updated
-        in place.
-
-        Use `providers:discover` to update the credentials for the default
-        providers created with your account.
-
-        Usage: deis providers:create <id> <type> <creds>
-        """
-        type = args.get('<type>')  # @ReservedAssignment
-        if type in ['ec2', 'rackspace', 'digitalocean']:
-            creds = get_provider_creds(type, raise_error=True)
-        else:
-            creds = json.loads(args.get('<creds>'))
-        id = args.get('<id>')  # @ReservedAssignment
-        if not id:
-            id = type  # @ReservedAssignment
-        body = {'id': id, 'type': type, 'creds': json.dumps(creds)}
-        response = self._dispatch('post', '/api/providers',
-                                  json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print("{0[id]}".format(response.json()))
-        else:
-            raise ResponseError(response)
-
-    def providers_discover(self, args):  # noqa
-        """
-        Discover and update provider credentials
-
-        This command will discover provider credentials using
-        standard environment variables like AWS_ACCESS_KEY and
-        AWS_SECRET_KEY.  It will use those credentials to update
-        the existing provider record, allowing you to use
-        pre-installed node flavors.
-
-        Usage: deis providers:discover
-        """
-        provider_data = [
-            # Provider, human-redable provider name, sample field to display
-            ('ec2', 'EC2', 'access_key'),
-            ('rackspace', 'Rackspace', 'api_key'),
-            ('digitalocean', 'DigitalOcean', 'api_key'),
-        ]
-        for provider, name, field in provider_data:
-            creds = get_provider_creds(provider)
-            if creds:
-                print ("Discovered {} credentials: {}".format(name, creds[field]))
-                inp = raw_input("Import {} credentials? (y/n) : ".format(name))
-                if inp.lower().strip('\n') != 'y':
-                    print('Aborting.')
-                else:
-                    body = {'creds': json.dumps(creds)}
-                    sys.stdout.write("Uploading {} credentials... ".format(name))
-                    sys.stdout.flush()
-                    endpoint = "/api/providers/{}".format(provider)
-                    response = self._dispatch('patch', endpoint, json.dumps(body))
-                    if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                        print('done')
-                    else:
-                        raise ResponseError(response)
-            else:
-                print("No {} credentials discovered.".format(name))
-
-        # Check for locally booted Deis Controller VM
-        if '//deis-controller.local' in self._settings['controller']:
-            print("Discovered locally running Deis Controller VM")
-            # In order for the Controller to be able to boot Vagrant VMs it needs to run commands
-            # on the host machine. It does this via an SSH server. In order to access that server
-            # we need to send the current user's name and host.
-            try:
-                user = subprocess.check_output(
-                    "whoami",
-                    stderr=subprocess.PIPE
-                ).strip()
-            except subprocess.CalledProcessError:
-                print("Error detecting username.")
-                sys.exit(1)
-            creds = {
-                'user': user,
-                'host': '192.168.61.1'
-            }
-            body = {'creds': json.dumps(creds)}
-            sys.stdout.write('Activating Vagrant as a provider... ')
-            sys.stdout.flush()
-            response = self._dispatch('patch', '/api/providers/vagrant',
-                                      json.dumps(body))
-            if response.status_code == requests.codes.ok:  # @UndefinedVariable
-                print('done')
-            else:
-                raise ResponseError(response)
-        else:
-            print("No Vagrant Deis Controller discovered.")
-
-    def providers_info(self, args):
-        """
-        Print information about a specific provider
-
-        Usage: deis providers:info <provider>
-        """
-        provider = args.get('<provider>')
-        response = self._dispatch('get', "/api/providers/{}".format(provider))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
-        else:
-            raise ResponseError(response)
-
-    def providers_list(self, args):
-        """
-        List providers for the logged in user
-
-        Usage: deis providers:list
-        """
-        response = self._dispatch('get', '/api/providers')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            if data['count'] == 0:
-                print('No providers found')
-                return
-            print("=== {owner} Providers".format(**data['results'][0]))
-            for item in data['results']:
-                creds = json.loads(item['creds'])
-                if 'secret_key' in creds:
-                    creds.pop('secret_key')
-                print("{} => {}".format(item['id'], creds))
-        else:
-            raise ResponseError(response)
 
     def releases(self, args):
         """

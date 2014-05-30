@@ -31,6 +31,17 @@ By default, the script will provision 3 servers. You can override this by settin
 $ export DEIS_NUM_INSTANCES=5
 ```
 
+Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
+For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+
+Deis clusters of less than 3 nodes are unsupported.
+
+## Choose number of routers
+By default, the Makefile will provision 1 router. You can override this by setting `DEIS_NUM_ROUTERS`:
+```console
+$ export DEIS_NUM_ROUTERS=2
+```
+
 ## Customize user-data
 Edit [user-data](../coreos/user-data) and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
@@ -77,13 +88,21 @@ you configure your own DNS records using a domain you own. See [Configuring DNS]
 
 ## Use Deis!
 After that, register with Deis!
-```
-$ deis register deis.example.org:8000
+```console
+$ deis register http://deis.example.org
 username: deis
 password:
 password (confirm):
 email: info@opdemand.com
 ```
+
+## Hack on Deis
+If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
+```console
+$ export DEIS_HOSTS=1.2.3.4 1.2.3.5 1.2.3.6
+```
+
+This variable is used in the `make build` command.
 
 [aws-cli]: https://github.com/aws/aws-cli
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template

@@ -33,13 +33,20 @@ provision a multi-node Deis cluster on Rackspace_ cloud.
 Please see `contrib/rackspace`_ for details on using Deis on
 Rackspace cloud.
 
+Bare Metal
+----------
+The `contrib/bare-metal` section of the Deis project includes documentation in
+README.md to help with provisioning a multi-node cluster on your own hardware.
+
+Please see `contrib/bare-metal`_ for details on using Deis on bare metal.
+
 Vagrant
 -------
-The `contrib/vagrant` section of the Deis project includes shell
-scripts, documentation, a Makefile and a Vagrantfile to make it easy to
-provision a multi-node Deis cluster on Vagrant_ virtual machines.
+The root of the Deis project includes documentation in README.md, a
+Makefile and a Vagrantfile to make it easy to provision a single- or
+multi-node Deis cluster on Vagrant_ virtual machines.
 
-Please see `contrib/vagrant`_ for details on using Deis with Vagrant.
+Please see README.md_ for details on using Deis with Vagrant.
 
 
 .. _`CoreOS Documentation`: https://coreos.com/docs/
@@ -47,6 +54,6 @@ Please see `contrib/vagrant`_ for details on using Deis with Vagrant.
 .. _`contrib/ec2`: https://github.com/deis/deis/tree/master/contrib/ec2
 .. _Rackspace: https://github.com/deis/deis/tree/master/contrib/rackspace#readme
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
+.. _`contrib/bare-metal`: https://github.com/deis/deis/tree/master/contrib/bare-metal
 .. _Vagrant: http://www.vagrantup.com/
-.. _`contrib/vagrant`: https://github.com/deis/deis/tree/master/contrib/vagrant
-
+.. _README.md: https://github.com/deis/deis/tree/master/README.md

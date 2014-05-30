@@ -79,7 +79,7 @@ class AppTest(TestCase):
             os.remove(path)
         url = '/api/apps/{app_id}/logs'.format(**locals())
         response = self.client.post(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data, 'No logs for {}'.format(app_id))
         # write out some fake log data and try again
         with open(path, 'w') as f:
@@ -100,6 +100,10 @@ class AppTest(TestCase):
         body = {'cluster': cluster_id, 'id': 'camelCase'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'App IDs can only contain [a-z0-9-]', status_code=400)
+        url = '/api/apps'
+        body = {'cluster': cluster_id, 'id': 'deis'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertContains(response, "App IDs cannot be 'deis'", status_code=400)
         body = {'cluster': cluster_id, 'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)

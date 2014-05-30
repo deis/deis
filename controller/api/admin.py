@@ -14,6 +14,7 @@ from .models import Build
 from .models import Cluster
 from .models import Config
 from .models import Container
+from .models import Domain
 from .models import Key
 from .models import Release
 
@@ -66,6 +67,16 @@ class ContainerAdmin(admin.ModelAdmin):
     list_display = ('short_name', 'owner', 'app', 'state')
     list_filter = ('owner', 'app', 'state')
 admin.site.register(Container, ContainerAdmin)
+
+
+class DomainAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Domain` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('owner', 'app', 'domain')
+    list_filter = ('owner', 'app')
+admin.site.register(Domain, DomainAdmin)
 
 
 class KeyAdmin(admin.ModelAdmin):

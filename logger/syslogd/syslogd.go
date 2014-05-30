@@ -45,7 +45,7 @@ func fileExists(path string) (bool, error) {
 }
 
 func getLogFile(m *syslog.Message) (io.Writer, error) {
-	r := regexp.MustCompile(`^.* ([a-z-]+)\[[a-z0-9\.]+\].*`)
+	r := regexp.MustCompile(`^.* ([-a-z0-9]+)\[[a-z0-9\.]+\].*`)
 	match := r.FindStringSubmatch(m.String())
 	if match == nil {
 		return nil, errors.New("Could not find app name in message")

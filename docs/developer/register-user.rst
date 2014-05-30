@@ -4,17 +4,17 @@
 
 Register a User
 ===============
-To deploy an :ref:`Application`, you must be logged into a Deis :ref:`Controller`.
+To use Deis, you must first register a user on the :ref:`Controller`.
 To ``git push`` you must provide your SSH public key for authentication.
 
-Create a User Account
----------------------
+Register with a Controller
+--------------------------
 Use ``deis register`` with the :ref:`Controller` URL (supplied by your Deis administrator)
 to create a new account.  You will be logged in automatically.
 
 .. code-block:: console
 
-    $ deis register http://deis.example.com:8000
+    $ deis register http://deis.example.com
     username: myuser
     password:
     password (confirm):
@@ -22,18 +22,9 @@ to create a new account.  You will be logged in automatically.
     Registered myuser
     Logged in as myuser
 
-.. note::
-
-    As of v0.5.1, the proxy was removed for Deis platform services. It has yet to be added
-    back in. See `issue 535`_ for more details.
-
-    As a workaround, use the following:
-
-    :code:`deis register http://deis.example.com:8000`
-
 Upload Your SSH Public Key
 --------------------------
-Use the ``deis keys:add`` command to upload your default SSH public key, usually one of:
+If you plan on using ``git push`` to deploy applications to Deis, you must provide your SSH public key.  Use the ``deis keys:add`` command to upload your default SSH public key, usually one of:
 
  * ~/.ssh/id_rsa.pub
  * ~/.ssh/id_dsa.pub
@@ -46,4 +37,26 @@ Use the ``deis keys:add`` command to upload your default SSH public key, usually
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
-.. _`issue 535`: https://github.com/deis/deis/issues/535
+Logout from a Controller
+------------------------
+Logout of an existing controller session using ``deis logout``.
+
+.. code-block:: console
+
+    $ deis logout
+    Logged out as deis
+
+Login to a Controller
+---------------------
+If you already have an account, use ``deis login`` to authenticate against the Deis :ref:`Controller`.
+
+.. code-block:: console
+
+    $ deis login http://deis.example.com
+    username: deis
+    password:
+    Logged in as deis
+
+.. note::
+
+    Deis session information is stored in your user's ~/.deis directory.
