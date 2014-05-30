@@ -1225,8 +1225,9 @@ class DeisClient(object):
         else:
             # check the specified key format
             selected_key = self._parse_key(path)
-            if not selected_key:
-                return
+        if not selected_key:
+            print("usage: deis keys:add [<key>]")
+            return
         # Upload the key to Deis
         body = {
             'id': selected_key.id,
