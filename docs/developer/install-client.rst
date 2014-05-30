@@ -7,14 +7,14 @@ Install the Client
 ==================
 The Deis command-line interface (CLI), or client, allows you to interact
 with a Deis :ref:`Controller`. You must install the client to use Deis.
-    
+
 Download Binaries
 -----------------
 You can download a binary executable version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.8.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.8.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.8.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.9.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win32-0.9.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-deb-wheezy-0.9.0.tgz
 
 Extract the ``deis`` binary and place it in your workstation path.
 
@@ -31,7 +31,7 @@ You can also install the latest Deis client using Python's pip_ package manager:
       ...
     Successfully installed deis
     Cleaning up...
-    
+
     $ deis
     Usage: deis <command> [<args>...]
 
