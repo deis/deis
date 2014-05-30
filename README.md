@@ -27,6 +27,7 @@ On your workstation:
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
 * Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
 * Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (typically 3 or 5): ```$ export DEIS_NUM_INSTANCES=3```
+* If you'd like to spin up more than one router, set `DEIS_NUM_ROUTERS`: ```$ export DEIS_NUM_ROUTERS=2```
 * Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your cluster domain
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
