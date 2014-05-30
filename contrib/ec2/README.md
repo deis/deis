@@ -36,6 +36,12 @@ For more information, see [optimal etcd cluster size](https://github.com/coreos/
 
 Deis clusters of less than 3 nodes are unsupported.
 
+## Choose number of routers
+By default, the Makefile will provision 1 router. You can override this by setting `DEIS_NUM_ROUTERS`:
+```console
+$ export DEIS_NUM_ROUTERS=2
+```
+
 ## Customize user-data
 Edit [user-data](../coreos/user-data) and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
