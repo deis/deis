@@ -90,14 +90,7 @@ class Session(requests.Session):
         if os.path.isfile(cookie_file):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
-
-    def clear(self, domain):
-        """Clear cookies for the specified domain."""
-        try:
-            self.cookies.clear(domain)
             self.cookies.save()
-        except KeyError:
-            pass
 
     def git_root(self):
         """
@@ -629,6 +622,9 @@ class DeisClient(object):
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
+        # Clear any existing cookies
+        self._session.cookies.clear()
+        self._session.cookies.save()
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
@@ -685,8 +681,9 @@ class DeisClient(object):
             password = getpass('password: ')
         url = urlparse.urljoin(controller, '/api/auth/login/')
         payload = {'username': username, 'password': password}
-        # clear any cookies for this controller's domain
-        self._session.clear(urlparse.urlparse(url).netloc)
+        # clear any existing cookies
+        self._session.cookies.clear()
+        self._session.cookies.save()
         # prime cookies for login
         self._session.get(url, headers=headers)
         # post credentials to the login URL
@@ -697,8 +694,6 @@ class DeisClient(object):
             print("Logged in as {}".format(username))
             return username
         else:
-            self._session.cookies.clear()
-            self._session.cookies.save()
             raise ResponseError(response)
 
     def auth_logout(self, args):
