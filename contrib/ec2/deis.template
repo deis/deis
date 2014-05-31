@@ -70,8 +70,7 @@
         "GroupDescription": "Deis SecurityGroup",
         "SecurityGroupIngress": [
           {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "CidrIp": "0.0.0.0/0"}
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"}
         ]
       }
     },
