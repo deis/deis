@@ -16,5 +16,3 @@ ExecStop=/usr/bin/docker rm -f deis-builder
 [Install]
 WantedBy=multi-user.target
 
-[X-Fleet]
-X-ConditionMachineOf=deis-controller.service
