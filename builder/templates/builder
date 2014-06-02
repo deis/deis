@@ -34,14 +34,17 @@ ENTRYPOINT ["/runner/init"]
 
 if __name__ == '__main__':
     user, repo, branch, app = parse_args()
-    # define image names
-    _id = uuid.uuid4().hex[:8]
-    tmp_image = "{app}:temp_{_id}".format(**locals())
-    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{app}".format(**locals())
     # create required directories
     repo_dir = os.path.join(os.getcwd(), repo)
     build_dir = os.path.join(repo_dir, 'build')
     cache_dir = os.path.join(repo_dir, 'cache')
+    # get sha of branch
+    with open(os.path.join(repo_dir, branch)) as f:
+        sha = f.read().strip('\n')
+    short_sha = sha[:8]
+    # define image names
+    tmp_image = "{app}:git-{short_sha}".format(**locals())
+    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{tmp_image}".format(**locals())
     for d in (cache_dir, build_dir):
         if not os.path.exists(d):
             os.mkdir(d)
@@ -111,6 +114,7 @@ if __name__ == '__main__':
             raise Exception('Could not push Docker image')
         # construct json body for posting to the build hook
         body = {}
+        body['sha'] = sha
         body['receive_user'] = user
         body['receive_repo'] = app
         body['image'] = target_image
@@ -162,8 +166,8 @@ if __name__ == '__main__':
         l = locals()
         shutil.rmtree(temp_dir)
         if 'container' in l:
-            subprocess.Popen('docker rm {container}'.format(**l), shell=True,
+            subprocess.Popen('docker rm -f {container}'.format(**l), shell=True,
                              stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-        if 'tmp_image' in l:
-            subprocess.Popen('docker rmi {tmp_image}'.format(**l), shell=True,
+        if 'tmp_image' in l and 'target_image' in l:
+            subprocess.Popen('docker rmi -f {tmp_image} {target_image}'.format(**l), shell=True,
                              stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
