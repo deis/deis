@@ -131,6 +131,14 @@
         }
       }
     },
+    "Ingress2223": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "2223", "ToPort": "2223", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
     "IngressEphemeral": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
