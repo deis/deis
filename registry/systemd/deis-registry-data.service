@@ -1,0 +1,10 @@
+[Unit]
+Description=deis-registry-data
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "docker inspect deis-registry-data >/dev/null 2>&1 || docker run --name deis-registry-data -v /data deis/base /bin/true"
+
+[Install]
+WantedBy=multi-user.target
