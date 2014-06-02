@@ -71,10 +71,10 @@ def run_command(c, command):
         if rc != 0:
             raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
         # run the command
-        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '--rm', image])
-        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
-                             for k, v in release.config.values.items()])
-        command = "docker run {env_args} {docker_args} {command}".format(**locals())
+        docker_args = ' '.join(['--entrypoint=/bin/bash',
+                                '-a', 'stdout', '-a', 'stderr', '--rm', image])
+        escaped_command = command.replace("'", "'\\''")
+        command = r"docker run {docker_args} -c \'{escaped_command}\'".format(**locals())
         return c.run(command)
     finally:
         c.delete()

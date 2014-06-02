@@ -3,8 +3,10 @@ SECRET_KEY = '{{ .deis_controller_secretKey }}'
 BUILDER_KEY = '{{ .deis_controller_builderKey }}'
 
 # use the private registry module
-REGISTRY_MODULE = 'registry.private'
+REGISTRY_MODULE = 'registry.docker'
 REGISTRY_URL = '{{ .deis_registry_protocol }}://{{ .deis_registry_host }}:{{ .deis_registry_port }}'  # noqa
+REGISTRY_HOST = '{{ .deis_registry_host }}'
+REGISTRY_PORT = '{{ .deis_registry_port }}'
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {

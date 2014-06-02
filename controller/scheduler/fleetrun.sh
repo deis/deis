@@ -7,4 +7,4 @@ SSH_OPTIONS="-i $FLEETW_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/d
 [[ $DEBUG ]] && set -x
 
 # run the fleetctl command remotely
-ssh $SSH_OPTIONS core@$FLEETW_HOST $@
+ssh $SSH_OPTIONS core@$FLEETW_HOST "$@"

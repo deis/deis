@@ -462,7 +462,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None, source_version=None):
+    def new(self, user, config=None, build=None, summary=None):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -473,24 +473,19 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
-        if not source_version:
-            source_version = 'latest'
-        else:
-            source_version = 'v{}'.format(source_version)
-        # prepare release tag
+        # construct fully-qualified target image
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
-        image = build.image + ':{tag}'.format(**locals())
+        release_image = self.app.id + ':{tag}'.format(**locals())
+        target_image = '{}:{}/{}'.format(
+            settings.REGISTRY_HOST, settings.REGISTRY_PORT, release_image)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
-            build=build, version=new_version, image=image, summary=summary)
+            build=build, version=new_version, image=target_image, summary=summary)
         # publish release to registry as new docker image
         repository_path = self.app.id
-        publish_release(repository_path,
-                        config.values,
-                        tag,
-                        source_tag=source_version)
+        publish_release(build.image, config.values, target_image)
         return release
 
     def previous(self):
@@ -516,7 +511,9 @@ class Release(UuidAuditedModel):
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
-            if self.build != old_build:
+            if self.version == 1:
+                self.summary += "{} created initial release".format(self.app.owner)
+            elif self.build != old_build:
                 if self.build.sha:
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
                 else:
