@@ -114,6 +114,14 @@
         }
       }
     },
+    "Ingress8000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
     "Ingress5432": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
