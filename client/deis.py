@@ -91,6 +91,11 @@ class Session(requests.Session):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
             self.cookies.save()
+        # local session state
+        self.state_file = os.path.expanduser('~/.deis/apps.yml')
+        if not os.path.isfile(self.state_file):
+            with open(self.state_file, 'w') as f:
+                f.write(yaml.safe_dump({}))
 
     def git_root(self):
         """
@@ -106,15 +111,13 @@ class Session(requests.Session):
             raise EnvironmentError('Current directory is not a git repository')
         return git_root
 
-    def get_app(self):
+    def _get_app_from_git_remote(self, git_root):
         """
-        Return the application name for the current directory
+        Return the application name from a git repository root
 
         The application is determined by parsing `git remote -v` output.
         If no application is found, raise an EnvironmentError.
         """
-        git_root = self.git_root()
-        # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
                                           cwd=git_root)
         m = re.search(r'^deis\W+(?P<url>\S+)\W+\(', remotes, re.MULTILINE)
@@ -127,7 +130,54 @@ class Session(requests.Session):
             raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['app']
 
-    app = property(get_app)
+    def _get_app_from_state(self, current_dir):
+        """
+        Return the application name from the current directory
+
+        Uses the local client's state to map to an application name.
+        """
+        with open(self.state_file) as f:
+            state = yaml.safe_load(f.read())
+        app = state.get(current_dir, None)
+        if app is None:
+            raise EnvironmentError("Could not find app for {current_dir}".format(**locals()))
+        return app
+
+    def _get_app(self):
+        """
+        Return the application for the current directory
+
+        For backwards compatibility, the lookup will use:
+
+         1. Local client state stored in ~/.deis (preferred)
+         2. A git remote for the current directory (for backwards compatibility)
+        """
+        try:
+            return self._get_app_from_state(os.getcwd())
+        except EnvironmentError:
+            return self._get_app_from_git_remote(self.git_root())
+
+    def _set_app(self, app):
+        """
+        Set the application for the current directory
+        """
+        with open(self.state_file, 'r') as f:
+            state = yaml.safe_load(f.read())
+        state[os.getcwd()] = app
+        with open(self.state_file, 'w') as f:
+            f.write(yaml.safe_dump(state))
+
+    def _del_app(self):
+        """
+        Delete the application for the current directory
+        """
+        with open(self.state_file, 'r') as f:
+            state = yaml.safe_load(f.read())
+        state.pop(os.getcwd())
+        with open(self.state_file, 'w') as f:
+            f.write(yaml.safe_dump(state))
+
+    app = property(_get_app, _set_app, _del_app)
 
     def request(self, *args, **kwargs):
         """
@@ -392,13 +442,8 @@ class DeisClient(object):
         --no-remote            do not create a 'deis' git remote
         """
         try:
-            self._session.git_root()  # check for a git repository
-        except EnvironmentError:
-            print('No git repository found, use `git init` to create one')
-            sys.exit(1)
-        try:
-            self._session.get_app()
-            print('Deis remote already exists')
+            self._session.app
+            print('App already exists at {}'.format(os.getcwd()))
             sys.exit(1)
         except EnvironmentError:
             pass
@@ -423,8 +468,13 @@ class DeisClient(object):
             data = response.json()
             app_id = data['id']
             print("done, created {}".format(app_id))
-            # add a git remote
-            # TODO: retrieve the hostname from service discovery
+            # store session in local state
+            self._session.app = app_id
+            # set a git remote if necessary
+            try:
+                self._session.git_root()
+            except EnvironmentError:
+                return
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             if args.get('--no-remote'):
@@ -449,7 +499,11 @@ class DeisClient(object):
         """
         app = args.get('--app')
         if not app:
-            app = self._session.app
+            try:
+                app = self._session.app
+            except EnvironmentError:
+                print('No app exists at {}'.format(os.getcwd()))
+                sys.exit(1)
         confirm = args.get('--confirm')
         if confirm == app:
             pass
@@ -476,15 +530,16 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
-            # If the requested app is in the current dir, delete the git remote
-            try:
-                if app == self._session.app:
+            # If the requested app is in the current dir, delete the git remote and local state
+            if app == self._session.app:
+                del self._session.app
+                try:
                     subprocess.check_call(
                         ['git', 'remote', 'rm', 'deis'],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     print('Git remote deis removed')
-            except (EnvironmentError, subprocess.CalledProcessError):
-                pass  # ignore error
+                except (EnvironmentError, subprocess.CalledProcessError):
+                    pass  # ignore error
         else:
             raise ResponseError(response)
 
@@ -1178,12 +1233,13 @@ class DeisClient(object):
         """
         app = args.get('--app')
         if not app:
-            app = self._session.get_app()
+            app = self._session.app
         body = {}
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        print('Scaling processes... but first, coffee!')
+        sys.stdout.write('Scaling processes... ')
+        sys.stdout.flush()
         try:
             progress = TextProgress()
             progress.start()
@@ -1195,7 +1251,7 @@ class DeisClient(object):
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done in {}s\n'.format(int(time.time() - before)))
+            print('done in {}s'.format(int(time.time() - before)))
             self.ps_list({}, app)
         else:
             raise ResponseError(response)
@@ -1449,7 +1505,7 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 item['created'] = readable_datetime(item['created'])
-                print("v{version:<6} {created:<33} {summary}".format(**item))
+                print("v{version:<6} {created:<24} {summary}".format(**item))
         else:
             raise ResponseError(response)
 
@@ -1470,9 +1526,18 @@ class DeisClient(object):
         else:
             body = {}
         url = "/api/apps/{app}/releases/rollback".format(**locals())
-        response = self._dispatch('post', url, json.dumps(body))
-        if response.status_code == requests.codes.created:
-            print(response.json())
+        sys.stdout.write('Rollback to v{version}... '.format(**locals()))
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', url, json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            new_version = response.json()['version']
+            print("done, v{}".format(new_version))
         else:
             raise ResponseError(response)
 
@@ -1499,6 +1564,7 @@ SHORTCUTS = OrderedDict([
     ('register', 'auth:register'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
+    ('build', 'builds:create'),
     ('scale', 'ps:scale'),
     ('rollback', 'releases:rollback'),
     ('sharing', 'perms:list'),
