@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# Check that the configuration for deis-database is valid.
+#
+
+set -e
+
+# check that "<no value>" isn't in the templated files
+if [[ -f /etc/postgresql/9.3/main/postgresql.conf ]] ; then
+    grep -q -v "<no value>" /etc/postgresql/9.3/main/postgresql.conf
+fi
+if [[ -f /etc/postgresql/9.3/main/pg_hba.conf ]] ; then
+    grep -q -v "<no value>" /etc/postgresql/9.3/main/pg_hba.conf
+fi
+if [[ -f /usr/local/bin/reload ]] ; then
+    grep -q -v "<no value>" /usr/local/bin/reload
+fi

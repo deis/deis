@@ -7,3 +7,5 @@ mode  = "0640"
 keys = [
   "/deis/database",
 ]
+check_cmd = "/app/bin/check"
+reload_cmd = "/usr/local/bin/reload"

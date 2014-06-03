@@ -7,5 +7,5 @@ mode  = "0755"
 keys = [
   "/deis/database",
 ]
-check_cmd = "netstat -lnt | awk '$6 == \"LISTEN\" && $4 ~ \".5432\"' "
+check_cmd = "/app/bin/check"
 reload_cmd = "/usr/local/bin/reload"

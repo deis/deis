@@ -7,3 +7,5 @@ mode  = "0644"
 keys = [
   "/deis/registry",
 ]
+check_cmd = "/app/bin/check"
+reload_cmd = "/app/bin/reload"

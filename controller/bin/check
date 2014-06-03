@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# Check that the configuration for deis-controller is valid.
+#
+
+if [[ -f /templates/confd_settings.py ]] ; then
+    set -e
+
+    # check that "<no value>" isn't in the templated file
+    grep -q -v "<no value>" /templates/confd_settings.py
+
+    THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
+    PARENT_DIR=$(dirname $THIS_DIR)
+
+    # check the Django configuration file compatibility
+    $PARENT_DIR/manage.py check > /dev/null
+
+    # validate the Django models
+    $PARENT_DIR/manage.py validate > /dev/null
+fi

@@ -11,5 +11,5 @@ keys = [
   "/deis/registry",
   "/deis/domains",
 ]
-check_cmd = "test -e {{ .src }}"
+check_cmd = "/app/bin/check"
 reload_cmd = "/app/bin/reload"
