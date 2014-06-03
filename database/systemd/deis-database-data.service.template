@@ -8,3 +8,6 @@ ExecStart=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || docke
 
 [Install]
 WantedBy=multi-user.target
+
+[X-Fleet]
+X-ConditionMachineBootID=CHANGEME
