@@ -4,10 +4,10 @@ Description=deis-database
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history deis/database >/dev/null || docker pull deis/database:latest"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-database >/dev/null && docker rm -f deis-database || true"
 ExecStartPre=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || docker run --name deis-database-data -v /var/lib/postgresql deis/base true"
-ExecStart=/usr/bin/docker run --name deis-database --rm -p 5432:5432 -e PUBLISH=5432 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from deis-database-data deis/database
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker run --name deis-database --rm -p 5432:5432 -e PUBLISH=5432 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from deis-database-data $IMAGE"
 
 [Install]
 WantedBy=multi-user.target

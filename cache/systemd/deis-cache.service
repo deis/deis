@@ -4,9 +4,9 @@ Description=deis-cache
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history deis/cache >/dev/null || docker pull deis/cache:latest"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/cache`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-cache >/dev/null && docker rm -f deis-cache || true"
-ExecStart=/usr/bin/docker run --name deis-cache --rm -p 6379:6379 -e PUBLISH=6379 -e HOST=${COREOS_PRIVATE_IPV4} deis/cache
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/cache` && docker run --name deis-cache --rm -p 6379:6379 -e PUBLISH=6379 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 
 [Install]
 WantedBy=multi-user.target

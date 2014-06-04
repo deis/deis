@@ -4,9 +4,9 @@ Description=deis-router
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history deis/router >/dev/null || docker pull deis/router:latest"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-router >/dev/null && docker rm -f deis-router || true"
-ExecStart=/usr/bin/docker run --name deis-router --rm -p 80:80 -p 2222:2222 -e PUBLISH=80 -e HOST=${COREOS_PRIVATE_IPV4} deis/router
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router` && docker run --name deis-router --rm -p 80:80 -p 2222:2222 -e PUBLISH=80 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 
 [Install]
 WantedBy=multi-user.target

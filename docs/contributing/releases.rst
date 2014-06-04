@@ -30,8 +30,7 @@ github.com/deis/deis Repo
     * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
-- Grep the codebase for "docker pull" and replace all instances of ":latest"
-  with ":vX.Y.Z"
+- Edit contrib/coreos/user-data and update ``DEIS_RELEASE`` to ":vX.Y.Z"
 - At the Docker Index, create a tagged image build ":vX.Y.Z" for every component
     * The UI for this is well-hidden: go to https://index.docker.io/builds/ and
       click "Edit".

@@ -6,9 +6,9 @@ After=deis-logger.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history deis/controller >/dev/null || docker pull deis/controller:latest"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-controller >/dev/null && docker rm -f deis-controller || true"
-ExecStart=/usr/bin/docker run --name deis-controller --rm -p 8000:8000 -e PUBLISH=8000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from=deis-logger deis/controller
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e PUBLISH=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger $IMAGE"
 
 [Install]
 WantedBy=multi-user.target
