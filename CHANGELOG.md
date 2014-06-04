@@ -1,3 +1,14 @@
+### v0.9.0 -> v0.9.1
+
+#### Fixes
+
+- 8d10bf6 fix(router): increase timeouts and survive controller/builder failures
+- deeec04 fix(builder): decouple from controller
+- a930b0d fix(router): Add configuration Ingress8000 in deis template for EC2
+- d57cc14 fix(router): Fixes pushing to every router
+- 7a88613 fix(client): adjust indentation in keys_add function
+- 745b26e fix(registry): fix S3 config options
+
 ### v0.8.0 -> v0.9.0
 
 #### Features

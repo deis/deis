@@ -11,10 +11,7 @@ You can proceed with the next section: :ref:`configure-dns`.
 
 On a multi-node cluster, however, there are probably multiple routers scheduled to the cluster, and
 these can potentially move hosts. Therefore, it is recommended that you configure a load balancer
-to operate in front of the Deis cluster to serve application traffic. A simple configuration is one
-that has all Deis machines listed in its configuration file, but a host is only considered 'healthy'
-when it is responding to ports 80 and 2222. This enables the load balancer to serve trafic to whichever
-hosts happen to be running the deis-router component at any one time.
+to operate in front of the Deis cluster to serve application traffic.
 
 These ports need to be open on the load balancers:
 
@@ -24,3 +21,8 @@ These ports need to be open on the load balancers:
 Optionally, you can also open port 443 and configure SSL termination on the load balancers, but
 requests should still be forwarded to port 80 on the routers. Communication between Deis components
 is currently unencrypted.
+
+A health check should be configured on the load balancer to send an HTTP request to /health-check at
+port 80 on all nodes in the Deis cluster. The health check endpoint returns an HTTP 200. This enables
+the load balancer to serve trafic to whichever hosts happen to be running the deis-router component
+at any moment.
