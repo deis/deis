@@ -59,6 +59,18 @@ Any line of the commit message cannot be longer than 90 characters, with the sub
 limited to 70 characters. This allows the message to be easier to read on github as well
 as in various git tools.
 
+The allowed {types} are as follows:
+
+```
+feat -> feature
+fix -> bug fix
+docs -> documentation
+style -> formatting
+refactor
+test -> adding missing tests
+chore -> maintenance
+```
+
 ### More Details on Commits
 
 For more details see the [commit style guide][style-guide].
