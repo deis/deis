@@ -8,7 +8,7 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "docker history deis/controller >/dev/null || docker pull deis/controller:latest"
 ExecStartPre=/bin/sh -c "docker inspect deis-controller >/dev/null && docker rm -f deis-controller || true"
-ExecStart=/usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from=deis-logger deis/controller
+ExecStart=/usr/bin/docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from=deis-logger deis/controller:latest
 ExecStop=/usr/bin/docker rm -f deis-controller
 
 [Install]
