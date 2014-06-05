@@ -1,0 +1,13 @@
+#cloud-config
+---
+coreos:
+  units:
+  - name: docker-registry.service
+    command: start
+    content: |
+      [Unit]
+      Description=Docker Registry server
+
+      [Service]
+      ExecStartPre=/bin/sh -c "docker history registry:latest >/dev/null || docker pull registry:latest"
+      ExecStart=/usr/bin/docker run --name docker-registry -e STORAGE_PATH=/registry -e SEARCH_BACKEND=sqlalchemy -p 5000:5000 registry:latest

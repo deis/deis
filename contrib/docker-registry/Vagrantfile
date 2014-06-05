@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "coreos-alpha"
+  config.vm.box_url = "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json"
+
+  config.vm.provider :vmware_fusion do |vb, override|
+    override.vm.box_url = "http://alpha.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json"
+  end
+
+  config.vm.provider :virtualbox do |vb, override|
+    # Fix docker not being able to resolve private registry in VirtualBox
+    vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+  end
+
+  config.vm.provider :virtualbox do |v|
+    # On VirtualBox, we don't have guest additions or a functional vboxsf
+    # in CoreOS, so tell Vagrant that so it can be smarter.
+    v.check_guest_additions = false
+  end
+
+  # plugin conflict
+  if Vagrant.has_plugin?("vagrant-vbguest") then
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.define vm_name = 'docker-registry' do |config|
+    config.vm.hostname = 'docker-registry'
+    config.vm.network :private_network, ip: "172.21.12.100"
+
+    # user-data bootstrapping
+    config.vm.provision :file, :source => "user-data", :destination => "/tmp/vagrantfile-user-data"
+    config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
+  end
+
+end
