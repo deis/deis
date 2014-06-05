@@ -18,6 +18,7 @@ before_install:
 install:
   - pip install -r controller/requirements.txt
   - pip install -r controller/dev_requirements.txt coveralls
+  - go get code.google.com/p/go.tools/cmd/cover
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
