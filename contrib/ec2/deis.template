@@ -69,8 +69,10 @@
       "Properties": {
         "GroupDescription": "Deis SecurityGroup",
         "SecurityGroupIngress": [
-          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"}
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"] } },
+          { "IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"] } }
         ]
       }
     },
@@ -164,6 +166,9 @@
         "DesiredCapacity": {"Ref": "ClusterSize"},
         "Tags": [
             {"Key": "Name", "Value": { "Ref" : "AWS::StackName" }, "PropagateAtLaunch": true}
+        ],
+        "LoadBalancerNames": [
+          { "Ref": "DeisWebELB" }
         ]
       }
     },
@@ -180,6 +185,48 @@
             "DeviceName" : "/dev/sda",
             "Ebs" : { "VolumeSize" : "100" }
           }
+        ]
+      }
+    },
+    "DeisWebELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "HealthCheck": {
+          "HealthyThreshold": "4",
+          "Interval": "15",
+          "Target": "HTTP:80/health-check",
+          "Timeout": "5",
+          "UnhealthyThreshold": "2"
+        },
+        "AvailabilityZones": { "Fn::GetAZs": "" },
+        "Listeners": [
+          {
+            "InstancePort": "80",
+            "InstanceProtocol": "HTTP",
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP"
+          },
+          {
+            "InstancePort": "2222",
+            "InstanceProtocol": "HTTP",
+            "LoadBalancerPort": "2222",
+            "Protocol": "HTTP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"]
+          }
+        ]
+      }
+    },
+    "DeisWebELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Deis Web ELB SecurityGroup",
+        "SecurityGroupIngress": [
+          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"}
         ]
       }
     }
