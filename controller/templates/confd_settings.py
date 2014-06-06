@@ -28,3 +28,7 @@ DEIS_LOG_DIR = '/var/log/deis'
 {{ if .deis_controller_registrationEnabled }}
 REGISTRATION_ENABLED = bool({{ .deis_controller_registrationEnabled }})
 {{ end }}
+
+{{ if .deis_controller_webEnabled }}
+WEB_ENABLED = bool({{ .deis_controller_webEnabled }})
+{{ end }}
