@@ -208,9 +208,9 @@
           },
           {
             "InstancePort": "2222",
-            "InstanceProtocol": "HTTP",
+            "InstanceProtocol": "TCP",
             "LoadBalancerPort": "2222",
-            "Protocol": "HTTP"
+            "Protocol": "TCP"
           }
         ],
         "SecurityGroups": [
