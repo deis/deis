@@ -1,0 +1,13 @@
+#!/bin/sh
+mkdir -p /media/doroot/var/lib/coreos
+
+if [ ! -f "/media/doroot/var/lib/coreos/docker.img" ]; then
+  DOFORMAT=1
+fi
+
+truncate -s 10G /media/doroot/var/lib/coreos/docker.img
+LODEV=`losetup -f --show /media/doroot/var/lib/coreos/docker.img`
+
+if [ -n "$DOFORMAT" ]; then
+  mkfs.btrfs -L docker "$LODEV"
+fi

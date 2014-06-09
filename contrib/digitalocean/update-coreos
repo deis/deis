@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -e
+
+COREOS_VERSION=349.0.0
+BASE_URL="http://storage.core-os.net/coreos/amd64-usr/$COREOS_VERSION"
+
+KERNEL="/boot/coreos/vmlinuz"
+INITRD_IMAGE="/boot/coreos/initrd.cpio.gz"
+INITRD_TEMPLATE="/boot/coreos/initrd.template"
+CONFIG_LINK_DIR="/boot/coreos/initrd.template/usr/share/oem"
+
+if [ "$1" = "-d" -o "$1" = "--download" ]; then
+  shift
+  REDOWNLOAD_KERNEL=1
+  REDOWNLOAD_INITRD=1
+fi
+
+mkdir -p "$CONFIG_LINK_DIR"
+
+cp -avx /usr/share/oem/* "$CONFIG_LINK_DIR"
+
+if [ ! -s "$KERNEL" ]; then
+  REDOWNLOAD_KERNEL=1
+fi
+
+if [ "$(find "$INITRD_TEMPLATE" -name "*.squashfs" -type f -size +0 | wc -l)" -eq 0 ]; then
+  REDOWNLOAD_INITRD=1
+fi
+
+if [ -n "$REDOWNLOAD_KERNEL" ]; then
+  curl --retry 10 -f "$BASE_URL/coreos_production_pxe.vmlinuz" > "$KERNEL"
+fi
+
+if [ -n "$REDOWNLOAD_INITRD" ]; then
+  find "$INITRD_TEMPLATE" -name "*.squashfs" -type f -delete
+
+  TMP=`mktemp -d`
+  pushd "$TMP" >/dev/null
+    curl --retry 10 -f "$BASE_URL/coreos_production_pxe_image.cpio.gz" | zcat | cpio -id
+    test ${PIPESTATUS[0]} -eq 0
+    find "$TMP" -name "*.squashfs" -type f -exec 'mv' '{}' "${INITRD_TEMPLATE}/" ';'
+  popd >/dev/null
+  rm -rf "$TMP"
+fi
+
+
+rm -f "$INITRD_IMAGE"
+
+pushd "$INITRD_TEMPLATE" >/dev/null
+  rm -f ./manifest
+  find . -name "*.squashfs" >> ./manifest
+  find ./usr >> ./manifest
+  cat ./manifest | cpio -o -H newc -L | gzip -nc - > "$INITRD_IMAGE"
+popd >/dev/null
