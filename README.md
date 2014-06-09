@@ -78,7 +78,7 @@ Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`l
 Integration tests and corresponding documentation can be found under the `test/` folder.
 
 ## Install the Deis Client
-If you're using the latest Deis release, use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
+If you're using the latest Deis release, use `pip install --upgrade deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
 
 If you're working off master, precompiled binaries are likely out of date. You should either symlink the python file directly or build a local copy of the client:
 
