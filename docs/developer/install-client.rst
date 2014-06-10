@@ -24,9 +24,9 @@ You can also install the latest Deis client using Python's pip_ package manager:
 
 .. code-block:: console
 
-    $ sudo pip install deis
+    $ sudo pip install --upgrade deis
     Downloading/unpacking deis
-      Downloading deis-0.8.0.tar.gz
+      Downloading deis-0.9.0.tar.gz
       Running setup.py egg_info for package deis
       ...
     Successfully installed deis
