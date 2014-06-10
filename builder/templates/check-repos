@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+listcontains() {
+    for word in $1; do
+        [[ $word = $2 ]] && return 0
+    done
+    return 1
+}
+
+cd $(dirname $0) # absolute path
+
+for repo in *.git;
+do
+    reponame="${repo%.*}"
+    if ! listcontains "{{ range $services := .deis_services }}{{ Base $services.Key }} {{ end }}" "$reponame";
+    then
+        rm -rf "$repo"
+    fi
+done
