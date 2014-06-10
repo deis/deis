@@ -29,6 +29,10 @@ Vagrant.configure("2") do |config|
   if Vagrant.has_plugin?("vagrant-vbguest") then
     config.vbguest.auto_update = false
   end
+  #plugin conflict
+  if Vagrant.has_plugin?("vagrant-cachier") then
+    config.cache.disable!
+  end
 
   (1..DEIS_NUM_INSTANCES).each do |i|
     config.vm.define vm_name = "deis-#{i}" do |config|
