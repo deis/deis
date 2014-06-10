@@ -283,6 +283,9 @@ REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
 # check if we can register users with `deis register`
 REGISTRATION_ENABLED = True
 
+# check if we should enable the web UI module
+WEB_ENABLED = False
+
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
