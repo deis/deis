@@ -30,16 +30,6 @@ clean: uninstall
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/controller')
 
-test: test-unit test-functional
-
-test-unit:
-	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -r requirements.txt
-	venv/bin/python manage.py test --noinput api
-
-test-functional:
-	@echo no functional tests
-
 runserver:
 	python manage.py runserver
 
@@ -52,3 +42,13 @@ coverage:
 
 flake8:
 	flake8
+
+test: test-unit test-functional
+
+test-unit:
+	@if [ ! -d venv ]; then virtualenv venv; fi
+	venv/bin/pip install -q -r requirements.txt
+	venv/bin/python manage.py test --noinput api
+
+test-functional:
+	@echo no functional tests
