@@ -25,3 +25,11 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/registry')
+
+test: test-unit test-functional
+
+test-unit:
+	@echo no unit tests
+
+test-functional:
+	@echo no functional tests
