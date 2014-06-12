@@ -20,7 +20,7 @@ Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io
 ## Install prerequisites
 On your workstation:
 * Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install the fleetctl client: Install v0.3.2 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
+* Install the fleetctl client: Install v0.4.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
 ## Additional setup for a multi-node cluster
