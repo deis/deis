@@ -17,7 +17,7 @@ django-guardian==1.1.1
 django-json-field==0.5.5
 djangorestframework==2.3.13
 gunicorn==18.0
-psycopg2==2.5.2
+#psycopg2==2.5.2
 python-etcd==0.3.0
 PyYAML==3.10
 South==0.8.4
