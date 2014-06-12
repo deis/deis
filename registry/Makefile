@@ -44,4 +44,9 @@ test-functional:
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 30m -v ./test/... 
 =======
 	go test -v test/run_test.go
+<<<<<<< HEAD
 >>>>>>> test(utils) : add basic files
+=======
+
+.PHONY:
+>>>>>>> fix(registry/Makefile): restore .PHONY makefile target
