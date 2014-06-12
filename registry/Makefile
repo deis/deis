@@ -40,6 +40,4 @@ test-unit: .PHONY
 		../venv/bin/python -m unittest discover -s test
 
 test-functional:
-	@echo no functional tests
-
-.PHONY:
+	go test -v test/run_test.go
