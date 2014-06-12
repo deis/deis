@@ -31,10 +31,6 @@ RUN pip install celery==3.1.11 \
 # install openssh-client for temporary fleetctl wrapper
 RUN apt-get install -yq openssh-client
 
-# install latest etcdctl including no-sync options
-RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
-RUN chmod +x /usr/local/bin/etcdctl
-
 # clone the project into /app
 ADD . /app
 
