@@ -42,10 +42,6 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 RUN apt-get install -yq sudo
 RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 
-# install custom confd
-RUN wget -q https://s3-us-west-2.amazonaws.com/deis/confd -O /usr/local/bin/confd
-RUN chmod +x /usr/local/bin/confd
-
 # add the current build context to /app
 ADD . /app
 RUN chown -R root:root /app
