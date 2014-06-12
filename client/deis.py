@@ -1596,7 +1596,7 @@ def main():
     call the appropriate method on the client.
     """
     cli = DeisClient()
-    args = docopt(__doc__, version='Deis CLI {}'.format(__version__),
+    args = docopt(__doc__, version=__version__,
                   options_first=True)
     cmd = args['<command>']
     cmd, help_flag = parse_args(cmd)
