@@ -2,7 +2,8 @@ FROM deis/base:latest
 MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
-RUN sed -i 's/main$/main universe/' /etc/apt/sources.list && apt-get update
+RUN sed -i 's/main$/main universe/' /etc/apt/sources.list 
+RUN apt-get update
 RUN apt-get install -y git-core build-essential python-dev \
     libevent-dev python-openssl liblzma-dev wget
 
