@@ -41,3 +41,5 @@ test-unit: .PHONY
 
 test-functional:
 	go test -v test/run_test.go
+
+.PHONY:
