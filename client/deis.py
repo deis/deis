@@ -362,11 +362,14 @@ class DeisClient(object):
         self._session = Session()
         self._settings = Settings()
 
-    def _dispatch(self, method, path, body=None,
-                  headers={'content-type': 'application/json'}, **kwargs):
+    def _dispatch(self, method, path, body=None, **kwargs):
         """
         Dispatch an API request to the active Deis controller
         """
+        headers = {
+            'content-type': 'application/json',
+            'X-Deis-Version': __version__.rsplit('.', 1)[0],
+        }
         func = getattr(self._session, method.lower())
         controller = self._settings['controller']
         if not controller:
@@ -374,6 +377,10 @@ class DeisClient(object):
                 'No active controller. Use `deis login` or `deis register` to get started.')
         url = urlparse.urljoin(controller, path, **kwargs)
         response = func(url, data=body, headers=headers)
+        # check for errors
+        if response.json().get('error') is not None:
+            print(response.json()['error'])
+            sys.exit(1)
         return response
 
     def apps(self, args):
