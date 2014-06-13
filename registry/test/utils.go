@@ -1,9 +1,9 @@
 package verbose
 
 import (
-	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -35,15 +35,14 @@ func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error
 	return
 }
 
-
 func runCommandWithStdoutStderr(cmd *exec.Cmd) (exitCode int, err error) {
 	exitCode = 0
-	var stderrBuffer,stdoutBuffer bytes.Buffer
+	// var stderrBuffer, stdoutBuffer bytes.Buffer
 	stderrPipe, err := cmd.StderrPipe()
 	stdoutpipe, err := cmd.StdoutPipe()
 
 	if err != nil {
-		return "", "", -1, err
+		return -1, err
 	}
 
 	err = cmd.Start()
@@ -56,11 +55,10 @@ func runCommandWithStdoutStderr(cmd *exec.Cmd) (exitCode int, err error) {
 		}
 	}
 
-
 	go io.Copy(os.Stdout, stdoutpipe)
 	go io.Copy(os.Stderr, stderrPipe)
 
-	err = cmd2.Wait()
+	err = cmd.Wait()
 	if err != nil {
 		var exiterr error
 		if exitCode, exiterr = getExitCode(err); exiterr != nil {
@@ -71,7 +69,6 @@ func runCommandWithStdoutStderr(cmd *exec.Cmd) (exitCode int, err error) {
 	}
 	return
 }
-
 
 func runCommand(cmd *exec.Cmd) (exitCode int, err error) {
 	exitCode = 0
