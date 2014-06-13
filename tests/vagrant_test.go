@@ -4,9 +4,11 @@ package tests
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"text/template"
 )
@@ -164,8 +166,11 @@ func runTest(t *testing.T, tt *deisTest, cfg *deisTestConfig) {
 	// anything that was written with t.Log or t.Fatal. Interim output would
 	// be extremely helpful here, as this takes a while.
 	// Execute the command and log the input and output on error.
+	fmt.Printf("%v ... ", strings.TrimSpace(cmdString))
 	cmd := exec.Command("sh", "-c", cmdString)
 	if out, err := cmd.Output(); err != nil {
-		t.Fatalf("%v\nCommand:%v\nOutput:\n%v", err, cmdString, string(out))
+		t.Fatalf("%v\nOutput:\n%v", err, string(out))
+	} else {
+		fmt.Println("ok")
 	}
 }
