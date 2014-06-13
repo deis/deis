@@ -1,14 +1,13 @@
 package verbose
 
 import (
-		"github.com/dotcloud/docker/api/client"
-        "bufio"
-        "fmt"
-        "io"
-        "time"
-        "testing"
-        "strings"
-				"os"
+	"github.com/dotcloud/docker/api/client"
+	"bufio"
+  "fmt"
+  "io"
+  "time"
+  "testing"
+	"strings"
 
 )
 
@@ -20,7 +19,7 @@ const (
         unitTestImageIDShort     = "83599e29c455"
         unitTestNetworkBridge    = "testdockbr0"
         unitTestStoreBase        = "/var/lib/docker/unit-tests"
-        testDaemonAddr           = "192.168.59.103:2375"
+        testDaemonAddr           = "172.17.8.100:4243"
         testDaemonProto          = "tcp"
         testDaemonHttpsProto     = "tcp"
         testDaemonHttpsAddr      = "localhost:4271"
@@ -43,22 +42,21 @@ func closeWrap(args ...io.Closer) error {
 }
 
 
-func getDetails(/*format string,t *testing.T*/) string{
+func getIPAdressTest(t *testing.T) string{
 	stdin, _   := io.Pipe()
 	stdout, stdoutPipe := io.Pipe()
-	fmt.Println("1")
 	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
 	var IPAdress string
 	go func(){
-		err1:= cli.CmdInspect("--format","'{{ .NetworkSettings.IPAddress }}'","deis-etcd")
-		if err1 != nil {
-			t.Fatalf("%s",err1)
+		err:= cli.CmdInspect("--format","{{ .NetworkSettings.IPAddress }}","deis-etcd")
+		if err != nil {
+			t.Fatalf("getIPAdressTest %s",err)
 		}
-		if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
-			t.Fatalf("%s",err)
+		if err = closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("getIPAdressTest %s",err)
 		}
 	}()
-
+	time.Sleep(2000 * time.Millisecond)
 	for{
 		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
 			IPAdress=cmdBytes
@@ -66,79 +64,208 @@ func getDetails(/*format string,t *testing.T*/) string{
 		}else{
 			break
 		}
-		return IPAdress
-		fmt.Println("look1")
+		fmt.Println("get IPAddress")
+	}
+	return IPAdress
+}
+
+
+
+
+func pullEtcdTest(t *testing.T,done chan bool){
+	stdin, _   := io.Pipe()
+	stdout, stdoutPipe := io.Pipe()
+	fmt.Println("1")
+	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+	fmt.Println("2")
+	go func (){
+		err:= cli.CmdPull("phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
+		if err != nil {
+			t.Fatalf("pullEtcdTest %s",err)
+		}
+		if err = closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("pullEtcdTest %s",err)
+		}
+	}( )
+	time.Sleep(3000 * time.Millisecond)
+	for{
+		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+		fmt.Println(cmdBytes)
+		}else{
+			break
+		}
+		fmt.Println("pulling etcd")
+	}
+	done<-true
+
+}
+
+func runEtcdTest(t *testing.T,done chan bool){
+	stdin, _   := io.Pipe()
+	stdout, stdoutPipe := io.Pipe()
+	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+	go func (){
+		fmt.Println("12")
+		err:= cli.CmdRun("--name","deis-etcd","phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
+		if err != nil {
+			t.Fatalf("runEtcdTest %s",err)
+		}
+
+	}( )
+	go func() {
+		fmt.Println("here")
+		time.Sleep(5000 * time.Millisecond)
+		if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("runEtcdTest %s",err)
+		}
+	}()
+	time.Sleep(1000 * time.Millisecond)
+	for{
+		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+		fmt.Println(cmdBytes)
+		}else{
+			break
+		}
+		fmt.Println("Running Etcd ")
+	}
+	done<-true
+}
+
+func buildRegistryTest(t *testing.T){
+	stdin, _   := io.Pipe()
+	stdout, stdoutPipe := io.Pipe()
+	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+	go func ( ){
+		err:= cli.CmdBuild("../")
+		if err != nil {
+			t.Fatalf("buildRegistryTest %s",err)
+		}
+		if err = closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("buildRegistryTest %s",err)
+		}
+	}( )
+	time.Sleep(3000 * time.Millisecond)
+	for{
+		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+		fmt.Println(cmdBytes)
+		}else{
+			break
+		}
+		fmt.Println("building Deis registy Dockerfile")
+	}
+}
+
+func runDeisRegistryDataTest(t *testing.T){
+	stdin, _   := io.Pipe()
+	stdout, stdoutPipe := io.Pipe()
+
+	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+
+	go func ( ){
+		err:= cli.CmdInspect("--format","'{{ .Config.Hostname }}'","deis-registry-data")
+		/*if err != nil {
+			t.Fatalf("runDeisRegistryDataTest %s",err)
+		}*/
+		if err = closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("runDeisRegistryDataTest %s",err)
+		}
+	}( )
+	go func() {
+		//fmt.Println("here1")
+		time.Sleep(2000 * time.Millisecond)
+		if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("runEtcdTest %s",err)
+		}
+	}()
+	var hostname string
+	time.Sleep(1000 * time.Millisecond)
+	for{
+		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+		fmt.Println(cmdBytes)
+		hostname=cmdBytes
+		}else{
+			break
+		}
+		fmt.Println("inspecting deis registry data")
 	}
 
+	if strings.Contains(hostname, "Error") ==true {
+		go func ( ){
+			err:= cli.CmdRun("--name","deis-registry-data","-v","/data","deis/base","/bin/true")
+			if err != nil {
+				t.Fatalf("%s",err)
+			}
+			if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
+				t.Fatalf("%s",err)
+			}
+		}( )
+		for{
+			if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+			fmt.Println(cmdBytes)
+			}else{
+				break
+			}
+			fmt.Println("pulling Deis registry data")
+		}
+	}
+}
+
+
+func runDeisRegistryTest(t *testing.T,IPAddress string){
+	stdin, _   := io.Pipe()
+	stdout, stdoutPipe := io.Pipe()
+	cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+	go func (){
+		//docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 -e HOST=10.0.0.37 --volumes-from deis-registry-data deis/registry
+
+		err:= cli.CmdRun("--name","deis-registry","-p","5000:5000","-e","PUBLISH=5000","-e","HOST="+IPAddress,"--volumes-from","deis-registry-data","deis/registry")
+		if err != nil {
+			t.Fatalf("runDeisRegistryTest %s",err)
+		}
+		if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
+			t.Fatalf("runDeisRegistryTest %s",err)
+		}
+	}( )
+	time.Sleep(3000 * time.Millisecond)
+	for{
+		if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
+			if strings.Contains(cmdBytes, "Booting") ==true {
+				if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
+					t.Fatalf("runDeisRegistryTest %s",err)
+				}
+			}
+		fmt.Println(cmdBytes)
+		}else{
+			break
+		}
+		fmt.Println("pulling Deis Registry")
+	}
 
 }
 
 
 
+
 func TestBuild(t *testing.T) {
-        stdin, _   := io.Pipe()
-        stdout, stdoutPipe := io.Pipe()
-        fmt.Println("1")
-        cli := client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
-        fmt.Println("2")
-				c := make(chan int)
-
-
-				go func (){
-					err1:= cli.CmdRun("--name","deis-etcd","coreos/etcd")
-					if err1 != nil {
-						t.Fatalf("%s",err1)
-					}
-					c<-1
-				}( )
-
-
-				go func (){
-					<-c
-        	err1:= cli.CmdBuild("-t","../")
-        		if err1 != nil {
-							t.Fatalf("%s",err1)
-						}
-						if err := closeWrap(stdout, stdoutPipe,stdin); err != nil {
-							t.Fatalf("%s",err)
-						}
-				}( )
-
-        fmt.Println("3")
-        time.Sleep(3000 * time.Millisecond)
-        var imageId string
-        fmt.Println("4")
-
-				for{
-					if cmdBytes,err:= bufio.NewReader(stdout).ReadString('\n'); err==nil{
-				    imageId=cmdBytes
-		  			fmt.Println(cmdBytes)
-		  		}else{
-		  			break
-		  		}
-		  		fmt.Println("look2")
-				}
-
-
-				words := strings.Fields(imageId)
-				fmt.Println("Stirng ID is "+words[2])
-
-				CmdIp="docker inspect --format '{{ .NetworkSettings.IPAddress }}' deis-etcd"
-				cmd = exec.Command("docker", "-c", cmdIp)
-
-				cmdString1="docker inspect deis-registry-data >/dev/null 2>&1 || docker run --name deis-registry-data -v /data deis/base /bin/true"
-				cmdString2="docker run --name deis-registry -p 5000:5000 -e PUBLISH=5000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from deis-registry-data deis/registry"
-				cmd := exec.Command("sh", "-c", cmdString1)
-				out,err1 := runCommandWithStdoutStderr(cmd)
-				if err1 !=nil {
-					t.fatalf(err1)
-				}
-
-				cmd = exec.Command("sh", "-c", cmdString2)
-				out,err1 = runCommandWithStdoutStderr(cmd)
-				if err1 !=nil {
-					t.fatalf(err1)
-				}
-
-
+	done := make(chan bool, 1)
+	done2 := make(chan bool,1)
+	pullEtcdTest(t,done)
+	fmt.Println("1st")
+	go func() {
+		fmt.Println("2nd")
+		<-done
+		fmt.Println("3rd")
+		runEtcdTest(t,done2)
+		fmt.Println("4th")
+	}()
+	<-done2
+	fmt.Println("5th")
+	buildRegistryTest(t)
+	fmt.Println("6th")
+	runDeisRegistryDataTest(t)
+	fmt.Println("7th")
+	IPAddress:=strings.TrimSuffix(getIPAdressTest(t), "\n")
+	fmt.Println(IPAddress)
+	fmt.Println("8th")
+	runDeisRegistryTest(t,IPAddress)
 }
