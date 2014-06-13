@@ -115,17 +115,19 @@ status: check-fleet
 stop: check-fleet
 	$(FLEETCTL) stop -block-attempts=600 $(strip $(call deis_units,launched,active))
 
-test: .PHONY
+test: test-components test-integration
+
+test-components:
 	@$(foreach C,$(ALL_COMPONENTS), \
 		echo \\nTesting deis/$(C) ; \
 		$(MAKE) -C $(C) test ; \
 	)
 
-tests:
-	cd test && bundle install && bundle exec rake
+test-integration:
+	$(MAKE) -C tests/ test
 
 uninstall: check-fleet stop
-	$(FLEETCTL) unload $(call deis_units,launched,.)
+	$(FLEETCTL) unload -block-attempts=600 $(call deis_units,launched,.)
 	$(FLEETCTL) destroy $(strip $(call deis_units,.,.))
 
 .PHONY:
