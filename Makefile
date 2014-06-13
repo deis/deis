@@ -124,7 +124,11 @@ test-components:
 	)
 
 test-integration:
+<<<<<<< HEAD
 	GOPATH=$(CURDIR)/tests/_vendor:$(GOPATH) $(MAKE) -C tests/ test
+=======
+	$(MAKE) -C tests/ test
+>>>>>>> refactor(tests): rewrite basic vagrant integration test in Go
 
 uninstall: check-fleet stop
 	$(FLEETCTL) unload -block-attempts=600 $(call deis_units,launched,.)

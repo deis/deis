@@ -262,11 +262,11 @@ func createTarFile(path, extractDir string, hdr *tar.Header, reader io.Reader, L
 	ts := []syscall.Timespec{timeToTimespec(hdr.AccessTime), timeToTimespec(hdr.ModTime)}
 	// syscall.UtimesNano doesn't support a NOFOLLOW flag atm, and
 	if hdr.Typeflag != tar.TypeSymlink {
-		if err := system.UtimesNano(path, ts); err != nil && err != system.ErrNotSupportedPlatform {
+		if err := system.UtimesNano(path, ts); err != nil {
 			return err
 		}
 	} else {
-		if err := system.LUtimesNano(path, ts); err != nil && err != system.ErrNotSupportedPlatform {
+		if err := system.LUtimesNano(path, ts); err != nil {
 			return err
 		}
 	}

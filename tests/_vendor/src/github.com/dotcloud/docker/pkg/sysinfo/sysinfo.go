@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/docker/libcontainer/cgroups"
+	"github.com/dotcloud/docker/pkg/libcontainer/cgroups"
 )
 
 type SysInfo struct {
