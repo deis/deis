@@ -1,25 +1,15 @@
 # Deis integration testing
-This directory includes a Rakefile which will run integration tests on an existing Deis cluster.
+
+This directory contains a Go package which will run integration tests on an
+existing Deis cluster.
+
+Repo should be properly checked out into your GOPATH
+go get github.com/deis/deis
 
 To run all tests:
 
 ```console
-$ bundle install
-$ bundle exec rake
-```
-
-The namespaces `setup`, `tests`, and `cleanup` are defined. The default task runs `setup:all`, `tests:all`, `cleanup:all` and then exits.
-
-Namespaces can also be run manually:
-
-```console
-$ bundle exec rake setup:all
-```
-
-...and so can tests:
-
-```console
-$ bundle exec rake tests:create_cluster
+$ go test -v -tags integration -timeout 50m ./...
 ```
 
 The test environment uses several environment variables, which can be set to customize the run:
