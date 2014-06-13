@@ -1,14 +1,14 @@
 :title: Deis Components, Usage and Terminolody
 :description: Deis Components, Usage and Terminology
 
-.. _components:
+.. terms:
 
 
-Components
+Terms
 ==========
 
 .. toctree::
-    :maxdepth: 1
+
 
     controller
 

@@ -65,7 +65,7 @@ The registry component hosts `Docker`_ images on behalf of the platform.
 Image data is typically stored on a storage service like
 `Amazon S3`_ or `OpenStack Storage`_.
 
-.. _logserver:
+.. _logger:
 
 Log Server
 ----------
@@ -73,7 +73,7 @@ The log server component uses `rsyslog`_ to aggregate log data from
 across the platform.
 This data can then be queried by the :ref:`Controller`.
 
-.. _proxy:
+.. _router:
 
 Router
 ------

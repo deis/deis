@@ -1,16 +1,16 @@
-:title: Developer Guide
+:title: Using Deis
 :description: Step-by-step guide for developers using Deis to deploy and manage applications.
 
-.. _developer:
+.. _using_deis:
 
-Developer Guide
+Using Deis
 ===============
 
 :Release: |version|
 :Date: |today|
 
 .. toctree::
-    :maxdepth: 1
+
 
     install-client
     register-user

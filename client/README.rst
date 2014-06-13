@@ -129,11 +129,11 @@ version of the Deis client for Mac OS X, Windows, or Debian Linux:
 
 To learn more, use ``deis help`` or browse `the documentation`_.
 
-.. _`Install the Client`: http://docs.deis.io/en/latest/developer/install-client/
+.. _`Install the Client`: http://docs.deis.io/en/latest/using_deis/install-client/
 .. _`Python`: http://www.python.org/
-.. _`Register a User`: http://docs.deis.io/en/latest/developer/register-user/
-.. _`Deploy an Application`: http://docs.deis.io/en/latest/developer/deploy-application/
-.. _`Manage an Application`: http://docs.deis.io/en/latest/developer/manage-application/
+.. _`Register a User`: http://docs.deis.io/en/latest/using_deis/register-user/
+.. _`Deploy an Application`: http://docs.deis.io/en/latest/using_deis/deploy-application/
+.. _`Manage an Application`: http://docs.deis.io/en/latest/using_deis/manage-application/
 .. _`the documentation`: http://docs.deis.io/
 
 

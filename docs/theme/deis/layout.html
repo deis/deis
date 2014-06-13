@@ -85,7 +85,13 @@
             </div>
 
             <div class="span6 column_calc contents">
-              <div class="doc-content">{% block body %}{% endblock %}</div>
+              <div class="doc-content">
+                {% block body %}
+                {% endblock %}
+                {%- if pagename != 'index' %}
+                {%- include "navigation.html" %}
+                {% endif %}
+              </div>
             </div>
 
 
