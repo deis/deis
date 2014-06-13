@@ -40,13 +40,6 @@ test-unit:
 		../venv/bin/python -m unittest discover -s test
 
 test-functional:
-<<<<<<< HEAD
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 30m -v ./test/... 
-=======
-	go test -v test/run_test.go
-<<<<<<< HEAD
->>>>>>> test(utils) : add basic files
-=======
 
 .PHONY:
->>>>>>> fix(registry/Makefile): restore .PHONY makefile target
