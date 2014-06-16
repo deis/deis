@@ -31,7 +31,7 @@ full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/controller')
 
 test:
-	python manage.py test --noinput api
+	python manage.py test --noinput api web
 
 runserver:
 	python manage.py runserver
@@ -40,7 +40,7 @@ db:
 	python manage.py syncdb --migrate --noinput
 
 coverage:
-	coverage run manage.py test --noinput api
+	coverage run manage.py test --noinput api web
 	coverage html
 
 flake8:
