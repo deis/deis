@@ -197,9 +197,7 @@ Description={name}
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .config.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; /usr/bin/docker run --name {name} -P -e PORT=$port {image} {command}"
-ExecStartPost=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
-    /bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
+ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .config.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port {image} {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
 """
@@ -225,8 +223,8 @@ Description={name} log
 BindsTo={name}.service
 
 [Service]
-ExecStartPre=/bin/sh -c "until /usr/bin/docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
+ExecStartPre=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
+ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
