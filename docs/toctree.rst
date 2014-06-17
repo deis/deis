@@ -7,14 +7,12 @@ Documentation
 This documentation has the following resources:
 
 .. toctree::
-   :titlesonly:
 
    index
-   gettingstarted/index
-   developer/index
-   operations/index
-   components/index
+   understanding_deis/index
+   installing_deis/index
+   using_deis/index
+   managing_deis/index
    contributing/index
-   client/index
-   server/index
+   reference/index
    faq

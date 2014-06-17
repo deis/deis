@@ -1,0 +1,13 @@
+<div class="navigation">
+  <div class="navigation-right">
+    {% if next %}
+    <a href="{{ next.link|e }}">{{ next.title }} &gt; &gt;</a>
+    {% endif %}
+  </div>
+  <div class="navigation-left">
+    {% if prev %}
+    <a href="{{ prev.link|e }}">&lt; &lt; {{ prev.title }}</a>
+    {% endif %}
+  </div>
+  <div class="clearfix"></div>
+</div>

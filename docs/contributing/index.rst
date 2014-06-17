@@ -8,7 +8,7 @@ Contributing
 :Date: |today|
 
 .. toctree::
-    :maxdepth: 1
+
 
     overview
     localdev

@@ -4,7 +4,7 @@
 .. _configure-dns:
 
 Configure DNS
--------------
+=============
 
 For local clusters, we've created the DNS record ``local.deisapp.com`` which resolves to the IP of the first VM, 172.17.8.100.
 You can use ``local.deisapp.com`` to both log into the controller and to access applications that you've deployed (they will be subdomains of ``local.deisapp.com``, like ``happy-unicorn.local.deisapp.com``). Similarly, you can use ``local3.deisapp.com`` or ``local5.deisapp.com`` for 3- and 5-node clusters, respectively. No DNS configuration is necessary for local clusters.

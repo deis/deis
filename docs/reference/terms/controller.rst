@@ -28,5 +28,5 @@ The controller stack includes:
 .. * A lightweight *gitreceive* hook for ``git push`` access control
 .. * Docker and Slugbuilder to process Heroku Buildpacks and Dockerfiles
 
-Follow the :ref:`Operations Guide <operations>` to create your own
+Follow the :ref:`Installing Deis <installing_deis>` guide to create your own
 private Deis controller.

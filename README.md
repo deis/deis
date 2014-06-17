@@ -15,7 +15,7 @@ Trying out Deis? Continue following these instructions for a local cluster setup
 
 # Upgrading Deis
 
-Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/operations/upgrading-deis/) for additional information.
+Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
 
 ## Install prerequisites
 On your workstation:
@@ -72,7 +72,7 @@ Use `make run` to start all Deis containers and attach to their log output. This
 $ make run
 ```
 
-Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/).
+Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.

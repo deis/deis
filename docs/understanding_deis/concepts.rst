@@ -119,8 +119,8 @@ services.
 
 See Also
 --------
-* :ref:`Developer Guide <developer>`
-* :ref:`Operations Guide <operations>`
+* :ref:`Using Deis <using_deis>`
+* :ref:`Managing Deis <managing_deis>`
 * The `Twelve-Factor App`_
 
 

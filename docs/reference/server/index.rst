@@ -8,7 +8,7 @@ Server Reference
 :Date: |today|
 
 .. toctree::
-    :maxdepth: 1
+
 
     rest-api
     api.admin

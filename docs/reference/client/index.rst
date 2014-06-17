@@ -10,7 +10,7 @@ Client Reference
 :Date: |today|
 
 .. toctree::
-    :maxdepth: 1
+
 
     register
     login

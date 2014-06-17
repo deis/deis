@@ -1,15 +1,12 @@
-:title: Getting Started
+:title: Understanding Deis
 :description: Get started with Deis, the open source PaaS.
 
-.. _gettingstarted:
+.. _understanding_deis:
 
-
-Getting Started
-===============
+Understanding Deis
+==================
 
 .. toctree::
-    :maxdepth: 1
 
     concepts
     architecture
-    usage
