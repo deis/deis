@@ -95,6 +95,14 @@ password:
 password (confirm):
 email: info@opdemand.com
 ```
+Or, if you haven't changed your DNS settings on AWS, using xip.io:
+```console
+$ deis register deis.ec2-12-345-678-90.us-west-1.compute.amazonaws.com.xip.io
+username: deis
+password:
+password (confirm):
+email: info@opdemand.com
+```
 
 ## Hack on Deis
 If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
