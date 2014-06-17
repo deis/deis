@@ -1,5 +1,4 @@
-# The `common' part is automatically included (and possibly overriden by all
-# other flavors)
+# All other flavors inherit the `common' config snippet
 common: &common
     # Default log level is info
     loglevel: _env:LOGLEVEL:info
@@ -24,11 +23,11 @@ common: &common
         source_index: _env:MIRROR_SOURCE_INDEX # https://index.docker.io
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
-    # cache:
-    #     host: _env:CACHE_REDIS_HOST:localhost
-    #     port: _env:CACHE_REDIS_PORT:6379
-    #     db: 0
-    #     password: _env:CACHE_REDIS_PASSWORD
+    cache:
+        host: {{ or (.deis_cache_host) "" }}
+        port: {{ or (.deis_cache_port) "" }}
+        password: _env:CACHE_REDIS_PASSWORD
+        db: 1
 
     # Enabling LRU cache for small files
     # This speeds up read/write on small files
@@ -40,95 +39,130 @@ common: &common
     #     password: _env:CACHE_LRU_REDIS_PASSWORD
 
     # Enabling these options makes the Registry send an email on each code Exception
+    {{ if .deis_registry_smtpHost }}
     email_exceptions:
-        smtp_host: _env:SMTP_HOST
-        smtp_port: _env:SMTP_PORT:25
-        smtp_login: _env:SMTP_LOGIN
-        smtp_password: _env:SMTP_PASSWORD
-        smtp_secure: _env:SMTP_SECURE:false
-        from_addr: _env:SMTP_FROM_ADDR:docker-registry@localdomain.local
-        to_addr: _env:SMTP_TO_ADDR:noise+dockerregistry@localdomain.local
+        smtp_host: {{ or (.deis_registry_smtpHost) "" }}
+        smtp_port: {{ or (.deis_registry_smtpPort) "25" }}
+        smtp_login: {{ or (.deis_registry_smtpLogin) "" }}
+        smtp_password: {{ or (.deis_registry_smtpPassword) "" }}
+        smtp_secure: bool({{ or (.deis_registry_smtpSecure) "false" }})
+        from_addr: {{ or (.deis_registry_smtpFrom) "docker-registry@localdomain.local" }}
+        to_addr: {{ or (.deis_registry_smtpTo) "noise+dockerregistry@localdomain.local" }}
+    {{ end }}
 
     # Enable bugsnag (set the API key)
     bugsnag: _env:BUGSNAG
 
-# This is the default configuration when no flavor is specified
-dev:
+local: &local
     <<: *common
     storage: local
     storage_path: /data
 
-{{ if .deis_registry_s3accessKey }}
-# To specify another flavor, set the environment variable SETTINGS_FLAVOR
-# $ export SETTINGS_FLAVOR=prod
-prod:
-    storage: s3
-    storage_path: /data
-    # Amazon S3 Storage Configuration
-    s3_access_key: {{ .deis_registry_s3accessKey }}
-    s3_secret_key: {{ .deis_registry_s3secretKey }}
-    s3_region: {{ .deis_registry_s3region }}
-    s3_bucket: {{ .deis_registry_s3bucket }}
-    boto_bucket: {{ .deis_registry_s3bucket }}
-    s3_encrypt: bool({{ .deis_registry_s3encrypt }})
-    s3_secure: bool({{ .deis_registry_s3secure }})
-    storage_redirect: True
-    # Enabling query cache on Redis
-    cache:
-        host: {{ .deis_cache_host }}
-        port: {{ .deis_cache_port }}
-        db: 1
-    # Enabling these options makes the Registry send an email on each code Exception
-    email_exceptions:
-        smtp_host: {{ .deis_registry_smtpHost }}
-        smtp_port: {{ .deis_registry_smtpPort }}
-        smtp_login: {{ .deis_registry_smtpLogin }}
-        smtp_password: {{ .deis_registry_smtpPassword }}
-        smtp_secure: {{ .deis_registry_smtpSecure }}
-        from_addr: {{ .deis_registry_smtpFrom }}
-        to_addr: {{ .deis_registry_smtpTo }}
-    # Enable bugsnag (set the API key)
-    bugsnag: REPLACEME
-{{ end }}
 
-# This flavor is automatically used by unit tests
-test:
-    storage: local
-    storage_path: /tmp/test
+s3: &s3
+    <<: *common
+    storage: s3
+    s3_region: {{ or (.deis_registry_s3region) "" }}
+    s3_bucket: {{ or (.deis_registry_s3bucket) "" }}
+    boto_bucket: {{ or (.deis_registry_s3bucket) "" }}
+    storage_path: {{ or (.deis_registry_s3path) "/registry" }}
+    s3_encrypt: bool({{ or (.deis_registry_s3encrypt) "true" }})
+    s3_secure: bool({{ or (.deis_registry_s3secure) "true" }})
+    s3_access_key: {{ or (.deis_registry_s3accessKey) "" }}
+    s3_secret_key: {{ or (.deis_registry_s3secretKey) "" }}
+
+# Google Cloud Storage Configuration
+# See:
+# https://developers.google.com/storage/docs/reference/v1/getting-startedv1#keys
+# for details on access and secret keys.
+gcs:
+    <<: *common
+    storage: gcs
+    boto_bucket: _env:GCS_BUCKET
+    storage_path: _env:STORAGE_PATH:/registry
+    gs_secure: _env:GCS_SECURE:true
+    gs_access_key: _env:GCS_KEY
+    gs_secret_key: _env:GCS_SECRET
+    # OAuth 2.0 authentication with the storage.
+    # oauth2 can be set to true or false. If it is set to true, gs_access_key,
+    # gs_secret_key and gs_secure are not needed.
+    # Client ID and Client Secret must be set into OAUTH2_CLIENT_ID and
+    # OAUTH2_CLIENT_SECRET environment variables.
+    # See: https://developers.google.com/accounts/docs/OAuth2.
+    oauth2: _env:GCS_OAUTH2:false
 
 # This flavor is for storing images in Openstack Swift
-{{ if .deis_registry_swiftAuthURL }}
-swift:
+swift: &swift
+    <<: *common
     storage: swift
-    storage_path: "_env:STORAGE_PATH:/registry"
-    swift_authurl: {{ .deis_registry_swiftAuthURL }}
-    swift_container: {{ .deis_registry_swiftContainer }}
-    swift_user: {{ .deis_registry_swiftUser }}
-    swift_password: {{ .deis_registry_swiftPassword }}
-    swift_tenant_name: {{ .deis_registry_swiftTenantName }}
-    swift_region_name: {{ .deis_registry_swiftRegionName }}
-{{ end }}
+    storage_path: _env:STORAGE_PATH:/registry
+    # keystone authorization
+    swift_authurl: {{ or (.deis_registry_swiftAuthURL) "" }}
+    swift_container: {{ or (.deis_registry_swiftContainer) "" }}
+    swift_user: {{ or (.deis_registry_swiftUser) "" }}
+    swift_password: {{ or (.deis_registry_swiftPassword) "" }}
+    swift_tenant_name: {{ or (.deis_registry_swiftTenantName) "" }}
+    swift_region_name: {{ or (.deis_registry_swiftRegionName) "" }}
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
-openstack:
+glance: &glance
+    <<: *common
     storage: glance
-    storage_alternate: local
-    storage_path: /tmp/registry
-    loglevel: debug
+    storage_alternate: _env:GLANCE_STORAGE_ALTERNATE:file
+    storage_path: _env:STORAGE_PATH:/tmp/registry
+
+openstack:
+    <<: *glance
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # and tags in Swift.
-{{ if .deis_registry_swiftAuthURL }}
-openstack-swift:
+glance-swift: &glance-swift
+    <<: *swift
     storage: glance
-    storage_path: /registry
     storage_alternate: swift
-    # keystone authorization
-    swift_authurl: {{ .deis_registry_swiftAuthURL }}
-    swift_container: {{ .deis_registry_swiftContainer }}
-    swift_user: {{ .deis_registry_swiftUser }}
-    swift_password: {{ .deis_registry_swiftPassword }}
-    swift_tenant_name: {{ .deis_registry_swiftTenantName }}
-    swift_region_name: {{ .deis_registry_swiftRegionName }}
-{{ end }}
+
+openstack-swift:
+    <<: *glance-swift
+
+elliptics:
+    <<: *common
+    storage: elliptics
+    elliptics_nodes: _env:ELLIPTICS_NODES
+    elliptics_wait_timeout: _env:ELLIPTICS_WAIT_TIMEOUT:60
+    elliptics_check_timeout: _env:ELLIPTICS_CHECK_TIMEOUT:60
+    elliptics_io_thread_num: _env:ELLIPTICS_IO_THREAD_NUM:2
+    elliptics_net_thread_num: _env:ELLIPTICS_NET_THREAD_NUM:2
+    elliptics_nonblocking_io_thread_num: _env:ELLIPTICS_NONBLOCKING_IO_THREAD_NUM:2
+    elliptics_groups: _env:ELLIPTICS_GROUPS
+    elliptics_verbosity: _env:ELLIPTICS_VERBOSITY:4
+    elliptics_logfile: _env:ELLIPTICS_LOGFILE:/dev/stderr
+    elliptics_addr_family: _env:ELLIPTICS_ADDR_FAMILY:2
+
+
+
+# This is the default configuration when no flavor is specified
+dev: &dev
+    <<: *local
+    loglevel: _env:LOGLEVEL:debug
+    search_backend: _env:SEARCH_BACKEND:sqlalchemy
+
+# This flavor is used by unit tests
+test:
+    <<: *dev
+    index_endpoint: https://indexstaging-docker.dotcloud.com
+    standalone: true
+    storage_path: _env:STORAGE_PATH:./tmp/test
+
+# To specify another flavor, set the environment variable SETTINGS_FLAVOR
+# $ export SETTINGS_FLAVOR=prod
+prod:
+    <<: *s3
+    storage_path: _env:STORAGE_PATH:/prod
+
+# Flavor used by deis
+deis:
+    {{ if .deis_registry_s3accessKey }}<<: *s3
+    {{ else if .deis_registry_swiftAuthURL }} <<: *openstack-swift
+    {{ else }} <<: *local
+    {{ end }}

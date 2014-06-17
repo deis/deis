@@ -29,7 +29,7 @@ RUN pip install /docker-registry/depends/docker-registry-core
 RUN pip install file:///docker-registry#egg=docker-registry[bugsnag]
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config.yml
-ENV SETTINGS_FLAVOR dev
+ENV SETTINGS_FLAVOR deis
 
 # create data volume
 RUN mkdir -p /data/repositories && chown -R registry:registry /data

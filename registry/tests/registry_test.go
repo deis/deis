@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -32,6 +33,13 @@ func runDeisRegistryTest(
 }
 
 func TestRegistry(t *testing.T) {
+	setkeys := []string{
+		"/deis/cache/host",
+		"/deis/cache/port",
+	}
+	setdir := []string{
+		"/deis/cache",
+	}
 	testID := utils.NewUuid()
 	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testID)
 	if err != nil {
@@ -39,6 +47,8 @@ func TestRegistry(t *testing.T) {
 	}
 	etcdPort := utils.GetRandomPort()
 	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
+	etcdutils.Publishvalues(t, handler)
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-registry-%s at port %s\n", testID, servicePort)
 	runDeisRegistryTest(t, testID, etcdPort, servicePort)
