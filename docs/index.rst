@@ -9,7 +9,7 @@ Heroku-inspired workflow.
 
 To get started with Deis, first read :ref:`Understanding Deis <understanding_deis>`.
 
-The full documentation tree can be seen `here </toctree/>`_.
+The full documentation tree can be seen :ref:`here <toctree>`.
 
 .. image:: ../controller/web/static/img/deis-graphic.png
     :alt: Deis cover logo

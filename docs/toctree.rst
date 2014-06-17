@@ -1,6 +1,8 @@
 :title: Documentation
 :description: Deis toctree
 
+.. _toctree:
+
 Documentation
 =============
 
