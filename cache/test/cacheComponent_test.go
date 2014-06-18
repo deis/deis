@@ -9,15 +9,16 @@ import (
 
 func runDeisCacheTest(t *testing.T) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-
 	done := make(chan bool, 1)
-
 	dockercliutils.BuildDockerfile(t, "../", " ")
 	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-etcd")
 	if strings.Contains(IPAddress, "Error") {
 		t.Fatalf("worng IP %s", IPAddress)
 	}
+	// done1 :=make(chan bool, 1)
 
+	dockercliutils.BuildDockerfile(t, "../", " ")
+	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-etcd")
 	fmt.Println(IPAddress + "IPADRESS")
 	done <- true
 	go func() {
@@ -34,6 +35,7 @@ func TestBuild(t *testing.T) {
 
 	fmt.Println("1st")
 	dockercliutils.RunEtcdTest(t, "foobar")
+	//dockercliutils.RunEtcdTest(t)
 	fmt.Println("2nd")
 	runDeisCacheTest(t)
 }
