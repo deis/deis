@@ -53,6 +53,11 @@ Vagrant.configure("2") do |config|
 
       # user-data bootstrapping
       config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/vagrantfile-user-data"
+      # check that the CoreOS user-data file is valid
+      config.vm.provision :shell do |s|
+        s.path = "contrib/util/check-user-data.sh"
+        s.args = ["/tmp/vagrantfile-user-data", "#{DEIS_NUM_INSTANCES}"]
+      end
       config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
     end
   end
