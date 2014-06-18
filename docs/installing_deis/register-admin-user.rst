@@ -5,8 +5,8 @@
 
 Register an Admin User
 ======================
-Once your :ref:`Controller` is running, you must register an admin user.
-using the Deis client. The Deis command-line interface (CLI), or client,
+Once your :ref:`Controller` is running, you must register an admin user 
+using the Deis client. The Deis command-line interface (CLI), or client, 
 allows you to interact with a Deis :ref:`Controller`. You must install
 the client to use Deis.
 
