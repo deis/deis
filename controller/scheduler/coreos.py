@@ -197,7 +197,7 @@ Description={name}
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .config.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port {image} {command}"
+ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port {image} {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
 """

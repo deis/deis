@@ -4,28 +4,28 @@
   "Mappings" : {
       "RegionMap" : {
           "ap-northeast-1" : {
-              "AMI" : "ami-03c08f02"
+              "AMI" : "ami-253b7324"
           },
           "sa-east-1" : {
-              "AMI" : "ami-fb08a4e6"
+              "AMI" : "ami-8fab0492"
           },
           "ap-southeast-2" : {
-              "AMI" : "ami-07b9dc3d"
+              "AMI" : "ami-9f0c68a5"
           },
           "ap-southeast-1" : {
-              "AMI" : "ami-0a732f58"
+              "AMI" : "ami-ac1b44fe"
           },
           "us-east-1" : {
-              "AMI" : "ami-908172f8"
+              "AMI" : "ami-820ff0ea"
           },
           "us-west-2" : {
-              "AMI" : "ami-3d42300d"
+              "AMI" : "ami-7b8ff24b"
           },
           "us-west-1" : {
-              "AMI" : "ami-fa6463bf"
+              "AMI" : "ami-ea5650af"
           },
           "eu-west-1" : {
-              "AMI" : "ami-8f30fff8"
+              "AMI" : "ami-a73bf2d0"
           }
       }
   },
