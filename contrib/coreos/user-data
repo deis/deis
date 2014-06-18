@@ -37,8 +37,10 @@ coreos:
       WantedBy=sockets.target
   - name: etcd.service
     command: start
+    enable: true
   - name: fleet.service
     command: start
+    enable: true
     content: |
       [Unit]
       Description=fleet
