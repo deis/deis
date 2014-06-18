@@ -14,4 +14,14 @@ FAQ
 
     DAY-iss
 
+- Where can we see your roadmap?
+
+    We have milestones_ set up on Github, so you can track our progress there.
+
+- Can we run Deis in Production?
+
+    While we don't recommend it, if you're aware of the risks involved with pre-release software
+    and are willing to accept them, go right ahead!
+
 .. _dais: https://en.wiktionary.org/wiki/dais
+.. _milestones: https://github.com/deis/deis/issues/milestones
