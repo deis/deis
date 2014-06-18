@@ -47,7 +47,7 @@ You can use ``deis domains`` to add or remove custom domains to your application
 
 .. code-block:: console
 
-    $ deis domains:add hello.bacongobbler.com.com
+    $ deis domains:add hello.bacongobbler.com
     Adding hello.bacongobbler.com to finest-woodshed... done
 
 Once that's done, you can go into your DNS registrar and set up a CNAME from the new
