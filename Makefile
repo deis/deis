@@ -19,7 +19,7 @@ define deis_units
 	  sed -n 's/\(deis-.*\.service\).*/\1/p' | tr '\n' ' ')
 endef
 
-# TODO: re-evaluate the fragile start order now that we're on fleet 0.3.2.
+# TODO: re-evaluate the fragile start order
 COMPONENTS=builder cache controller database logger registry
 ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
