@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import re
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
@@ -184,7 +185,9 @@ class DomainSerializer(serializers.ModelSerializer):
         Check that the hostname is valid
         """
         value = attrs[source]
-        match = re.match(r'^(\*\.)?([a-z0-9-]+\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$', value)
+        match = re.match(
+            r'^(\*\.)?(' + settings.APP_URL_REGEX + r'\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$',
+            value)
         if not match:
             raise serializers.ValidationError(
                 "Hostname does not look like a valid hostname. "

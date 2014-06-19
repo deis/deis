@@ -297,6 +297,8 @@ DATABASES = {
     }
 }
 
+APP_URL_REGEX = '[a-z0-9-]+'
+
 # SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
 # see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS
 ALLOWED_HOSTS = ['*']
