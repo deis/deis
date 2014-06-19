@@ -28,6 +28,10 @@ define ssh_all
   for host in $(DEIS_HOSTS); do ssh -o LogLevel=FATAL -o Compression=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no core@$$host -t $(1); done
 endef
 
+define rsync_all
+  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=docs/ --exclude=htmlcov/ --exclude=logs/ --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(shell pwd)/* core@$$host:/home/core/share; done
+endef
+
 define echo_cyan
   @echo "\033[0;36m$(subst ",,$(1))\033[0m"
 endef

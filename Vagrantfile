@@ -46,11 +46,6 @@ Vagrant.configure("2") do |config|
       ip = "172.17.8.#{i+99}"
       config.vm.network :private_network, ip: ip
 
-      # FALLBACK Enable NFS for sharing the host machine into the coreos-vagrant VM.
-      # config.vm.synced_folder ".", "/home/core/share", id: "core", :nfs => true, :mount_options => ['nolock,vers=3,udp']
-      # Note that with rsync, local Deis code changes need to be re-synced to the VM by issuing a `vagrant rsync`
-      config.vm.synced_folder ".", "/home/core/share", type: "rsync"
-
       # user-data bootstrapping
       config.vm.provision :file, :source => "contrib/coreos/user-data", :destination => "/tmp/vagrantfile-user-data"
       # check that the CoreOS user-data file is valid

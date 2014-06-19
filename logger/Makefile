@@ -1,6 +1,7 @@
 include ../includes.mk
 
 build:
+	$(call rsync_all)
 	$(call ssh_all,'cd share/logger && sudo docker build -t deis/logger .')
 
 install: check-fleet

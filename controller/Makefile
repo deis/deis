@@ -5,6 +5,7 @@ include ../includes.mk
 all: build run
 
 build:
+	$(call rsync_all)
 	$(call ssh_all,'cd share/controller && sudo docker build -t deis/controller .')
 
 install: check-fleet

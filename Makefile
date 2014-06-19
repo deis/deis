@@ -29,7 +29,7 @@ START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*))
 
 all: build run
 
-build:
+build: rsync
 	$(call ssh_all,'cd share && for c in $(ALL_COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
 
 clean: uninstall
@@ -55,6 +55,9 @@ pull:
 	$(call ssh_all,'docker pull deis/slugrunner:latest')
 
 restart: stop start
+
+rsync:
+	$(call rsync_all)
 
 run: install start
 
