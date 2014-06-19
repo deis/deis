@@ -101,7 +101,7 @@ sleep 6 && curl -s http://testing.{{.HostName}} | grep -q 'Powered by Deis'
 `},
 	// Scale the app's web containers up to 3.
 	{"{{.ExampleApp}}", `
-deis scale web=3
+deis scale web=3 || deis scale cmd=3
 `},
 	// Test that the app's URL responds with "Powered by Deis".
 	{"{{.ExampleApp}}", `
