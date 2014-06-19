@@ -1,7 +1,8 @@
-package verbose
+package utils
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"io"
 	"os"
 	"os/exec"
@@ -9,6 +10,26 @@ import (
 	"syscall"
 	"testing"
 )
+
+func GetnewUuid() string {
+	u1 := uuid.NewV4()
+	s1 := fmt.Sprintf("%s", u1)
+	return strings.Split(s1, "-")[0]
+}
+
+func Append(slice []string, data string) []string {
+	m := len(slice)
+	n := m + 1
+	if n > cap(slice) { // if necessary, reallocate
+		// allocate double what's needed, for future growth.
+		newSlice := make([]string, (n + 1))
+		copy(newSlice, slice)
+		slice = newSlice
+	}
+	slice = slice[0:n]
+	slice[n-1] = data
+	return slice
+}
 
 func getExitCode(err error) (int, error) {
 	exitCode := 0
