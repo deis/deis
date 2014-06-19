@@ -44,7 +44,6 @@ func deisRegistryServiceTest(t *testing.T, testSessionUid string) {
 }
 
 func TestBuild(t *testing.T) {
-
 	var testSessionUid = utils.GetnewUuid()
 	testSessionUid = "352aea64"
 	dockercliutils.RunEtcdTest(t, testSessionUid)

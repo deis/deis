@@ -52,7 +52,11 @@ func CloseWrap(args ...io.Closer) error {
 
 func GetNewClient() (cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	stdout, stdoutPipe = io.Pipe()
+<<<<<<< HEAD
 	cli = client.NewDockerCli(nil, stdoutPipe, nil, DaemonProto(), DaemonAddr(), nil)
+=======
+	cli = client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+>>>>>>> added commit
 	return
 }
 
