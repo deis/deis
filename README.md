@@ -55,18 +55,18 @@ $ export DOCKER_HOST=tcp://172.17.8.100:4243
 $ export FLEETCTL_TUNNEL=172.17.8.100
 ```
 
-## Build Deis
+## Optional: Build Deis
 
-Use `make pull` to download cached layers from the public Docker Index.  Then use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on each VM (it can take a while).
+If you'd like to build Deis from source instead of using the pre-built public Dockerfiles, use `make build` to build each component from its Dockerfile.  Grab some coffee while it builds the images on each VM (it can take a while).
+If you're not testing code changes for Deis, it's faster just to skip to the next step.
 
 ```console
-$ make pull
 $ make build
 ```
 
 ## Run Deis
 
-Use `make run` to start all Deis containers and attach to their log output. This can take some time - the registry service will pull and prepare a Docker image. Grab some more coffee!
+Use `make run` to start all Deis components. This can take some time - the registry service will pull and prepare a large Docker image. Grab some more coffee!
 
 ```console
 $ make run
