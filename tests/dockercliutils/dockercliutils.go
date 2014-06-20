@@ -52,7 +52,11 @@ func CloseWrap(args ...io.Closer) error {
 
 func GetNewClient() (cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	stdout, stdoutPipe = io.Pipe()
+<<<<<<< HEAD
 	cli = client.NewDockerCli(nil, stdoutPipe, nil, DaemonProto(), DaemonAddr(), nil)
+=======
+	cli = client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+>>>>>>> added commit
 	return
 }
 
@@ -301,6 +305,46 @@ func RunEtcdTest(t *testing.T, uid string) {
 		done2 <- true
 		fmt.Println("inside run etcd")
 		RunContainer(t, cli, "--name", "deis-etcd-"+uid, imageTag)
+	}()
+	go func() {
+		<-done2
+		fmt.Println("closing read/write pipe")
+		time.Sleep(5000 * time.Millisecond)
+		if err := CloseWrap(stdout, stdoutPipe); err != nil {
+			t.Fatalf("runEtcdTest %s", err)
+		}
+	}()
+	time.Sleep(1000 * time.Millisecond)
+	PrintToStdout(t, stdout, stdoutPipe, "pulling etcd")
+
+}
+
+//docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100 -e ETCD_ADDR=172.17.8.100:4001 --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0 -c /usr/local/bin/etcd
+func RunDummyEtcdTest(t *testing.T, uid string) {
+	cli, stdout, stdoutPipe := GetNewClient()
+	done := make(chan bool, 1)
+	done1 := make(chan bool, 1)
+	done2 := make(chan bool, 1)
+	var imageId string
+	var imageTag string
+	go func() {
+		fmt.Println("inside pull etcd")
+		PullImage(t, cli, "phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
+		done <- true
+	}()
+	go func() {
+		<-done
+		fmt.Println("inside getting imageId")
+		imageId = GetImageId(t, "phife.atribecalledchris.com:5000/deis/etcd")
+		imageTag = "deis/etcd:" + uid
+		cli.CmdTag(imageId, imageTag)
+		done1 <- true
+	}()
+	go func() {
+		<-done1
+		done2 <- true
+		fmt.Println("inside run etcd")
+		RunContainer(t, cli, "--name", "deis-etcd-"+uid, "-p", "4001:4001", "-e", "HOST_IP=172.17.8.100", "-e", "ETCD_ADDR=172.17.8.100:4001", "--entrypoint=/bin/bash", imageTag, "-c", "/usr/local/bin/etcd")
 	}()
 	go func() {
 		<-done2

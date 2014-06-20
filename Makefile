@@ -126,6 +126,8 @@ test-components:
 test-integration:
 	GOPATH=$(CURDIR)/tests/_vendor:$(GOPATH) $(MAKE) -C tests/ test
 
+
+
 uninstall: check-fleet stop
 	$(FLEETCTL) unload -block-attempts=600 $(call deis_units,launched,.)
 	$(FLEETCTL) destroy $(strip $(call deis_units,.,.))

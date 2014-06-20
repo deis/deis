@@ -11,6 +11,12 @@ import (
 	"testing"
 )
 
+
+/*func getIpaddr( )string {
+
+}*/
+
+
 func GetnewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
