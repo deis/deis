@@ -44,7 +44,7 @@ func RunMockDatabase(t *testing.T, uid string) {
 		"/deis/database/name"}
 	setdir := []string{}
 	dbhandler := etcdutils.InitetcdValues(setdir, setkeys)
-	etcdutils.PublishControllervalues(t, dbhandler)
+	etcdutils.Publishvalues(t, dbhandler)
 	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-database-"+uid)
 	etcdutils.SetEtcdValues(t, []string{"/deis/database/host", "/deis/database/port", "/deis/database/engine"}, []string{IPAddress, "5432", "postgresql_psycopg2"}, dbhandler.C)
 }

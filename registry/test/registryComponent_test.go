@@ -15,17 +15,18 @@ func runDeisRegistryTest(t *testing.T, testSessionUid string) {
 	done := make(chan bool, 1)
 	dockercliutils.BuildDockerfile(t, "../", "deis/registry:"+testSessionUid)
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-registry-data", "-v", "/data", "deis/base", "/bin/true")
-	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-etcd-"+testSessionUid)
-	if strings.Contains(IPAddress, "Error") {
-		t.Fatalf("worng IP %s", IPAddress)
-	}
+	IPAddress := func() string {
+		if utils.GetHostOs() == "darwin" {
+			return "172.17.8.100"
+		}
+	}()
 	done <- true
 	go func() {
 		<-done
 		fmt.Println("inside run container")
 		dockercliutils.RunContainer(t, cli, "--name", "deis-registry-"+testSessionUid, "-p", "5000:5000", "-e", "PUBLISH=5000", "-e", "HOST="+IPAddress, "--volumes-from", "deis-registry-data", "deis/registry:"+testSessionUid)
 	}()
-	time.Sleep(10000 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 
 }
@@ -44,10 +45,9 @@ func deisRegistryServiceTest(t *testing.T, testSessionUid string) {
 }
 
 func TestBuild(t *testing.T) {
-
 	var testSessionUid = utils.GetnewUuid()
-	testSessionUid = "352aea64"
-	dockercliutils.RunEtcdTest(t, testSessionUid)
+	//testSessionUid = "352aea64"
+	dockercliutils.RunDummyEtcdTest(t, testSessionUid)
 	fmt.Println("2nd")
 	t.Logf("starting registry test: %v", testSessionUid)
 	fmt.Println("starting registry test")
