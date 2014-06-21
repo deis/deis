@@ -9,12 +9,26 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"net"
 )
 
 func GetnewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
+}
+
+
+
+
+func GetHostOs() string {
+	cmd := exec.Command("uname")
+	out, _ := cmd.Output()
+	if strings.Contains(string(out), "Darwin") {
+		return "darwin"
+	} else {
+		return "ubuntu"
+	}
 }
 
 func Append(slice []string, data string) []string {
@@ -30,6 +44,13 @@ func Append(slice []string, data string) []string {
 	slice[n-1] = data
 	return slice
 }
+
+func GetRandomPort() string {
+	l, _ := net.Listen("tcp", "127.0.0.1:0") // listen on localhost
+	port := l.Addr()
+	return strings.Split(port.String(),":")[1]
+}
+
 
 func getExitCode(err error) (int, error) {
 	exitCode := 0

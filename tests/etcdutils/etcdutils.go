@@ -1,8 +1,9 @@
 package etcdutils
 
 import (
-	"github.com/coreos/go-etcd/etcd"
 	"testing"
+
+	"github.com/coreos/go-etcd/etcd"
 	//"fmt"
 	"strings"
 )
@@ -13,14 +14,14 @@ type EtcdHandle struct {
 	C    *etcd.Client
 }
 
-func getetcdClient() *etcd.Client {
-	machines := []string{"http://172.17.8.100:4001"}
+func getetcdClient(port string) *etcd.Client {
+	machines := []string{"http://172.17.8.100:" + port}
 	c := etcd.NewClient(machines)
 	return c
 }
 
-func InitetcdValues(setdir, setkeys []string) *EtcdHandle {
-	cli := getetcdClient()
+func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
+	cli := getetcdClient(port)
 	controllerHandle := new(EtcdHandle)
 	controllerHandle.Dirs = setdir
 	controllerHandle.Keys = setkeys
@@ -37,7 +38,7 @@ func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client)
 	}
 }
 
-func PublishControllervalues(t *testing.T, ecli *EtcdHandle) {
+func Publishvalues(t *testing.T, ecli *EtcdHandle) {
 	for _, dir := range ecli.Dirs {
 		_, err := ecli.C.SetDir(dir, 0)
 		if err != nil {

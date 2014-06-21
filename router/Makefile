@@ -49,4 +49,4 @@ test-unit:
 	@echo no unit tests
 
 test-functional:
-	@echo no functional tests
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 30m -v ./test/... 

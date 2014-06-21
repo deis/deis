@@ -12,13 +12,6 @@ import (
 	"time"
 )
 
-const (
-	unitTestStoreBase    = "/var/lib/docker/unit-tests"
-	testDaemonAddr       = "172.17.8.100:4243"
-	testDaemonProto      = "tcp"
-	testDaemonHttpsProto = "tcp"
-)
-
 func DaemonAddr() string {
 	addr := os.Getenv("TEST_DAEMON_ADDR")
 	if addr == "" {
@@ -51,8 +44,16 @@ func CloseWrap(args ...io.Closer) error {
 }
 
 func GetNewClient() (cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
+	var testDaemonAddr, testDaemonProto string
+	if utils.GetHostOs() == "darwin" {
+		testDaemonAddr = "172.17.8.100:4243"
+		testDaemonProto = "tcp"
+	} else {
+		testDaemonAddr = DaemonAddr()
+		testDaemonProto = DaemonProto()
+	}
 	stdout, stdoutPipe = io.Pipe()
-	cli = client.NewDockerCli(nil, stdoutPipe, nil, DaemonProto(), DaemonAddr(), nil)
+	cli = client.NewDockerCli(nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
 	return
 }
 
@@ -124,8 +125,8 @@ func PullImage(t *testing.T, cli *client.DockerCli, args ...string) {
 func RunContainer(t *testing.T, cli *client.DockerCli, args ...string) {
 	err := cli.CmdRun(args...)
 	if err != nil {
-		if strings.Contains(fmt.Sprintf("%s", err), "read/write on closed pipe") == false {
-			t.Fatalf("running Image failed %s", err)
+		if !((strings.Contains(fmt.Sprintf("%s", err), "read/write on closed pipe")) || (strings.Contains(fmt.Sprintf("%s", err), "Code"))) {
+			t.Fatalf("removeImages %s", err)
 		}
 	}
 }
@@ -316,31 +317,21 @@ func RunEtcdTest(t *testing.T, uid string) {
 }
 
 //docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100 -e ETCD_ADDR=172.17.8.100:4001 --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0 -c /usr/local/bin/etcd
-func RunDummyEtcdTest(t *testing.T, uid string) {
+func RunDummyEtcdTest(t *testing.T, uid string,port string) {
 	cli, stdout, stdoutPipe := GetNewClient()
-	done := make(chan bool, 1)
-	done1 := make(chan bool, 1)
 	done2 := make(chan bool, 1)
 	var imageId string
 	var imageTag string
 	go func() {
 		fmt.Println("inside pull etcd")
 		PullImage(t, cli, "phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
-		done <- true
-	}()
-	go func() {
-		<-done
 		fmt.Println("inside getting imageId")
 		imageId = GetImageId(t, "phife.atribecalledchris.com:5000/deis/etcd")
 		imageTag = "deis/etcd:" + uid
 		cli.CmdTag(imageId, imageTag)
-		done1 <- true
-	}()
-	go func() {
-		<-done1
 		done2 <- true
 		fmt.Println("inside run etcd")
-		RunContainer(t, cli, "--name", "deis-etcd-"+uid, "-p", "4001:4001", "-e", "HOST_IP=172.17.8.100", "-e", "ETCD_ADDR=172.17.8.100:4001", "--entrypoint=/bin/bash", imageTag, "-c", "/usr/local/bin/etcd")
+		RunContainer(t, cli, "--name", "deis-etcd-"+uid, "-p", port+":"+port, "-e", "HOST_IP=172.17.8.100", "-e", "ETCD_ADDR=172.17.8.100:"+port, "--entrypoint=/bin/bash", imageTag, "-c", "/usr/local/bin/etcd")
 	}()
 	go func() {
 		<-done2
