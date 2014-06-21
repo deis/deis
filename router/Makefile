@@ -41,3 +41,11 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/router')
+
+test: test-unit test-functional
+
+test-unit:
+	@echo no unit tests
+
+test-functional:
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 30m -v ./test/... 

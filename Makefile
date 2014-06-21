@@ -62,7 +62,7 @@ start: check-fleet start-warning start-routers
 	@# registry logger cache database
 	$(call echo_yellow,"Waiting for deis-registry to start...")
 	$(FLEETCTL) start -no-block $(START_UNITS)
-	@until $(FLEETCTL) list-units | egrep -q "deis-registry.+(running)"; \
+	@until $(FLEETCTL) list-units | egrep -q "deis-registry.+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
 			grep "deis-registry" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
@@ -73,7 +73,7 @@ start: check-fleet start-warning start-routers
 	@# controller
 	$(call echo_yellow,"Waiting for deis-controller to start...")
 	$(FLEETCTL) start -no-block controller/systemd/*
-	@until $(FLEETCTL) list-units | egrep -q "deis-controller.+(running)"; \
+	@until $(FLEETCTL) list-units | egrep -q "deis-controller.+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
 			grep "deis-controller" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
@@ -84,7 +84,7 @@ start: check-fleet start-warning start-routers
 	@# builder
 	$(call echo_yellow,"Waiting for deis-builder to start...")
 	$(FLEETCTL) start -no-block builder/systemd/*
-	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running)"; \
+	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
 			grep "deis-builder" | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
@@ -115,9 +115,19 @@ status: check-fleet
 stop: check-fleet
 	$(FLEETCTL) stop -block-attempts=600 $(strip $(call deis_units,launched,active))
 
-tests:
-	cd test && bundle install && bundle exec rake
+test: test-components test-integration
+
+test-components:
+	@$(foreach C,$(ALL_COMPONENTS), \
+		echo \\nTesting deis/$(C) ; \
+		$(MAKE) -C $(C) test ; \
+	)
+
+test-integration:
+	GOPATH=$(CURDIR)/tests/_vendor:$(GOPATH) $(MAKE) -C tests/ test
 
 uninstall: check-fleet stop
-	$(FLEETCTL) unload $(call deis_units,launched,.)
+	$(FLEETCTL) unload -block-attempts=600 $(call deis_units,launched,.)
 	$(FLEETCTL) destroy $(strip $(call deis_units,.,.))
+
+.PHONY:
