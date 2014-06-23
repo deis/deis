@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"net"
+	"net/http"
 )
 
 func DaemonAddr() string {
@@ -42,6 +44,33 @@ func CloseWrap(args ...io.Closer) error {
 	}
 	return nil
 }
+
+func DeisServiceTest(t *testing.T, container string,port string,protocol string){
+	IPAddress := GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", container)
+	fmt.Println("Running service test for "+container)
+	if strings.Contains(IPAddress, "Error") {
+		t.Fatalf("wrong IP %s", IPAddress)
+	}
+	if protocol == "http" {
+		url := "http://" + IPAddress +":"+port
+		response, err := http.Get(url)
+		if err != nil {
+			t.Fatalf("Not reachable %s", err)
+		}
+		fmt.Println(response)
+	}
+	if (protocol == "tcp" || protocol == "tcp") {
+		conn, err := net.Dial(protocol, IPAddress+":"+port)
+		if err != nil {
+			t.Fatalf("Not reachable %s", err)
+		}
+		_, err = conn.Write([]byte("HEAD"))
+		if err != nil {
+			t.Fatalf("Not reachable %s", err)
+		}
+	}
+}
+
 
 func GetNewClient() (cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	var testDaemonAddr, testDaemonProto string
@@ -77,6 +106,7 @@ func PrintToStdout(t *testing.T, stdout *io.PipeReader, stdoutPipe *io.PipeWrite
 
 func BuildDockerfile(t *testing.T, path string, tag string) {
 	cli, stdout, stdoutPipe := GetNewClient()
+	fmt.Println("Building docker file :"+tag)
 	go func() {
 		err := cli.CmdBuild("--tag="+tag, path)
 		if err != nil {
@@ -87,35 +117,36 @@ func BuildDockerfile(t *testing.T, path string, tag string) {
 		}
 	}()
 	time.Sleep(1000 * time.Millisecond)
-	PrintToStdout(t, stdout, stdoutPipe, "Building docker file")
+	PrintToStdout(t, stdout, stdoutPipe, "build docker file")
 }
 
 func GetInspectData(t *testing.T, format string, container string) string {
 	var inspectData string
 	cli, stdout, stdoutPipe := GetNewClient()
+	fmt.Println("Getting inspect data :"+format +":"+container)
 	go func() {
 		err := cli.CmdInspect("--format", format, container)
 		if err != nil {
 			fmt.Printf("%s %s", format, err)
 		}
 		if err = CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("getIPAdressTest %s", err)
+			t.Fatalf("inspect data failed %s", err)
 		}
 	}()
 	go func() {
-		fmt.Println("here")
 		time.Sleep(3000 * time.Millisecond)
 		if err := CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("Inspect Element %s", err)
+			t.Fatalf("Inspect data %s", err)
 		}
 	}()
 	time.Sleep(1000 * time.Millisecond)
-	inspectData = PrintToStdout(t, stdout, stdoutPipe, "IPAddress")
+	inspectData = PrintToStdout(t, stdout, stdoutPipe, "get inspect data")
 	return strings.TrimSuffix(inspectData, "\n")
 
 }
 
 func PullImage(t *testing.T, cli *client.DockerCli, args ...string) {
+	fmt.Println("pulling image :"+args[0])
 	err := cli.CmdPull(args...)
 	if err != nil {
 		t.Fatalf("pulling Image Failed %s", err)
@@ -123,10 +154,11 @@ func PullImage(t *testing.T, cli *client.DockerCli, args ...string) {
 }
 
 func RunContainer(t *testing.T, cli *client.DockerCli, args ...string) {
+	fmt.Println("Running docker container :"+args[1])
 	err := cli.CmdRun(args...)
 	if err != nil {
-		if !((strings.Contains(fmt.Sprintf("%s", err), "read/write on closed pipe")) || (strings.Contains(fmt.Sprintf("%s", err), "Code"))) {
-			t.Fatalf("removeImages %s", err)
+		if !((strings.Contains(fmt.Sprintf("%s", err), "read/write on closed pipe")) || (strings.Contains(fmt.Sprintf("%s", err), "Code: -1")) || (strings.Contains(fmt.Sprintf("%s", err), "Code: 2"))) {
+			t.Fatalf("Run Docker container failed %s", err)
 		}
 	}
 }
@@ -135,6 +167,7 @@ func RunDeisDataTest(t *testing.T, args ...string) {
 	done := make(chan bool, 1)
 	cli, stdout, stdoutPipe := GetNewClient()
 	var hostname string
+	fmt.Println(args[2]+" test")
 	hostname = GetInspectData(t, "{{ .Config.Hostname }}", args[1])
 	fmt.Println("data container " + hostname)
 	done <- true
@@ -144,14 +177,13 @@ func RunDeisDataTest(t *testing.T, args ...string) {
 			RunContainer(t, cli, args...)
 		}()
 		go func() {
-			fmt.Println("here")
+			fmt.Println("closing read/write pipe")
 			time.Sleep(3000 * time.Millisecond)
 			if err := CloseWrap(stdout, stdoutPipe); err != nil {
 				t.Fatalf("Inspect Element %s", err)
 			}
 		}()
 		PrintToStdout(t, stdout, stdoutPipe, "running"+args[1])
-		fmt.Println("pulling Deis registry data")
 	}
 }
 
@@ -257,6 +289,7 @@ func ClearTestSession(t *testing.T, uid string) {
 	sliceImageids := getImageIds(t, uid)
 	//fmt.Println(sliceContainerIds)
 	//fmt.Println(sliceImageids)
+	fmt.Println("removing containers and images for the test session "+uid)
 	stop_rmContainers(t, sliceContainerIds)
 	removeImages(t, sliceImageids)
 }
@@ -277,61 +310,21 @@ func GetImageId(t *testing.T, repo string) string {
 	return strings.Fields(imageId)[2]
 }
 
-func RunEtcdTest(t *testing.T, uid string) {
-	cli, stdout, stdoutPipe := GetNewClient()
-	done := make(chan bool, 1)
-	done1 := make(chan bool, 1)
-	done2 := make(chan bool, 1)
-	var imageId string
-	var imageTag string
-	go func() {
-		fmt.Println("inside pull etcd")
-		PullImage(t, cli, "phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
-		done <- true
-	}()
-	go func() {
-		<-done
-		fmt.Println("inside getting imageId")
-		imageId = GetImageId(t, "phife.atribecalledchris.com:5000/deis/etcd")
-		imageTag = "deis/etcd:" + uid
-		cli.CmdTag(imageId, imageTag)
-		done1 <- true
-	}()
-	go func() {
-		<-done1
-		done2 <- true
-		fmt.Println("inside run etcd")
-		RunContainer(t, cli, "--name", "deis-etcd-"+uid, imageTag)
-	}()
-	go func() {
-		<-done2
-		fmt.Println("closing read/write pipe")
-		time.Sleep(5000 * time.Millisecond)
-		if err := CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("runEtcdTest %s", err)
-		}
-	}()
-	time.Sleep(1000 * time.Millisecond)
-	PrintToStdout(t, stdout, stdoutPipe, "pulling etcd")
-
-}
 
 //docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100 -e ETCD_ADDR=172.17.8.100:4001 --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0 -c /usr/local/bin/etcd
-func RunDummyEtcdTest(t *testing.T, uid string,port string) {
+func RunEtcdTest(t *testing.T, uid string,port string) {
 	cli, stdout, stdoutPipe := GetNewClient()
 	done2 := make(chan bool, 1)
 	var imageId string
 	var imageTag string
+	IPAddress :=  utils.GetHostIpAddress()
 	go func() {
-		fmt.Println("inside pull etcd")
-		PullImage(t, cli, "phife.atribecalledchris.com:5000/deis/etcd:0.3.0")
-		fmt.Println("inside getting imageId")
-		imageId = GetImageId(t, "phife.atribecalledchris.com:5000/deis/etcd")
+		PullImage(t, cli, "deisreleases/etcd:test")
+		imageId = GetImageId(t, "deisreleases/etcd")
 		imageTag = "deis/etcd:" + uid
 		cli.CmdTag(imageId, imageTag)
 		done2 <- true
-		fmt.Println("inside run etcd")
-		RunContainer(t, cli, "--name", "deis-etcd-"+uid, "-p", port+":"+port, "-e", "HOST_IP=172.17.8.100", "-e", "ETCD_ADDR=172.17.8.100:"+port, "--entrypoint=/bin/bash", imageTag, "-c", "/usr/local/bin/etcd")
+		RunContainer(t, cli, "--name", "deis-etcd-"+uid, "-p", port+":"+port, "-e", "HOST_IP="+IPAddress, "-e", "ETCD_ADDR="+IPAddress+":"+port, "--entrypoint=/bin/bash", imageTag, "-c", "/usr/local/bin/etcd")
 	}()
 	go func() {
 		<-done2

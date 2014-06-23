@@ -31,6 +31,15 @@ func GetHostOs() string {
 	}
 }
 
+func GetHostIpAddress() string {
+	Ip := os.Getenv("HOST_IPADDR")
+	if Ip == "" {
+		Ip = "172.17.8.100"
+	}
+	return Ip
+}
+
+
 func Append(slice []string, data string) []string {
 	m := len(slice)
 	n := m + 1

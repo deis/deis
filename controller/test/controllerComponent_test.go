@@ -6,47 +6,26 @@ import (
 	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/mockserviceutils"
 	"github.com/deis/deis/tests/utils"
-	"net/http"
-	"strings"
 	"testing"
 	"time"
 )
 
-func runDeisControllerTest(t *testing.T, testSessionUid string) {
+func runDeisControllerTest(t *testing.T, testSessionUid string,port string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
 	dockercliutils.BuildDockerfile(t, "../", "deis/controller:"+testSessionUid)
 	//docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000 -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from=deis-logger deis/controller
-	IPAddress := func() string {
-		var Ip string
-		if utils.GetHostOs() == "darwin" {
-			Ip = "172.17.8.100"
-		}
-		return Ip
-	}()
+	IPAddress :=  utils.GetHostIpAddress()
 	done <- true
 	go func() {
 		<-done
-		fmt.Println("inside run container")
-		dockercliutils.RunContainer(t, cli, "--name", "deis-controller-"+testSessionUid, "-p", "8000:8000", "-e", "PUBLISH=8000", "-e", "HOST="+IPAddress, "deis/controller:"+testSessionUid)
+		dockercliutils.RunContainer(t, cli, "--name", "deis-controller-"+testSessionUid, "-p", "8000:8000", "-e", "PUBLISH=8000", "-e", "HOST="+IPAddress,"-e","ETCD_PORT="+port, "deis/controller:"+testSessionUid)
 	}()
 	time.Sleep(5000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 
 }
 
-func deisControllerServiceTest(t *testing.T, testSessionUid string) {
-	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-controller-"+testSessionUid)
-	if strings.Contains(IPAddress, "Error") {
-		t.Fatalf("worng IP %s", IPAddress)
-	}
-	url := "http://" + IPAddress + ":8000"
-	response, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("Not reachable %s", err)
-	}
-	fmt.Println(response)
-}
 
 func TestBuild(t *testing.T) {
 	setkeys := []string{"/deis/registry/protocol",
@@ -59,17 +38,17 @@ func TestBuild(t *testing.T) {
 		"/deis/database",
 		"/deis/registry",
 		"/deis/domains"}
-	fmt.Println("1st")
 	var testSessionUid = utils.GetnewUuid()
+	fmt.Println("UUID for the session Controller Test :"+testSessionUid)
+	port := utils.GetRandomPort()
 	//testSessionUid := "352aea64"
-	dockercliutils.RunDummyEtcdTest(t, testSessionUid)
-	fmt.Println("2nd")
-	t.Logf("starting controller test: %v", testSessionUid)
-	Controllerhandler := etcdutils.InitetcdValues(setdir, setkeys)
+	dockercliutils.RunEtcdTest(t, testSessionUid,port)
+	fmt.Println("starting controller test:")
+	Controllerhandler := etcdutils.InitetcdValues(setdir, setkeys,port)
 	etcdutils.Publishvalues(t, Controllerhandler)
-	fmt.Println("starting registry test")
-	mockserviceutils.RunMockDatabase(t, testSessionUid)
-	runDeisControllerTest(t, testSessionUid)
-	deisControllerServiceTest(t, testSessionUid)
+	mockserviceutils.RunMockDatabase(t, testSessionUid,port)
+	fmt.Println("starting Controller component test")
+	runDeisControllerTest(t, testSessionUid,port)
+	dockercliutils.DeisServiceTest(t,"deis-controller-"+testSessionUid,"8000","http")
 	dockercliutils.ClearTestSession(t, testSessionUid)
 }
