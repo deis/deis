@@ -3,7 +3,7 @@ MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
 
 # install go runtime
 RUN wget -O /tmp/go1.2.1.linux-amd64.tar.gz -q https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzvf /tmp/go1.2.1.linux-amd64.tar.gz
+RUN tar -C /usr/local -xzf /tmp/go1.2.1.linux-amd64.tar.gz
 
 # prepare go environment
 RUN mkdir -p /go
