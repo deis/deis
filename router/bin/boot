@@ -28,24 +28,22 @@ function etcd_safe_mkdir {
   etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
 }
 
-function etcd_safe_set {
-  if ! etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1 >/dev/null 2>&1; then
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/$1 $2 >/dev/null
-  fi
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
 etcd_safe_mkdir /deis/controller
 etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
 etcd_safe_mkdir /deis/builder
-etcd_safe_set port ${PORT:-80}
-etcd_safe_set gzip on
-etcd_safe_set gzipHttpVersion 1.0
-etcd_safe_set gzipCompLevel 2
-etcd_safe_set gzipProxied any
-etcd_safe_set gzipVary on
-etcd_safe_set gzipDisable "\"msie6\""
-etcd_safe_set gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml"
+etcd_set_default port ${PORT:-80}
+etcd_set_default gzip on
+etcd_set_default gzipHttpVersion 1.0
+etcd_set_default gzipCompLevel 2
+etcd_set_default gzipProxied any
+etcd_set_default gzipVary on
+etcd_set_default gzipDisable "\"msie6\""
+etcd_set_default gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml"
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do
