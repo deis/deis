@@ -14,7 +14,7 @@ If you do not have an existing application, you can clone an example application
 
 .. code-block:: console
 
-    $ git clone https://github.com/opdemand/example-ruby-sinatra.git
+    $ git clone https://github.com/deis/example-ruby-sinatra.git
     $ cd example-ruby-sinatra
 
 Create an Application
