@@ -4,55 +4,35 @@ import (
 	"fmt"
 	"github.com/deis/deis/tests/dockercliutils"
 	"github.com/deis/deis/tests/utils"
-	"net/http"
-	"strings"
 	"testing"
 	"time"
 )
 
-func runDeisRegistryTest(t *testing.T, testSessionUid string) {
+func runDeisRegistryTest(t *testing.T, testSessionUid string,port string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
 	dockercliutils.BuildDockerfile(t, "../", "deis/registry:"+testSessionUid)
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-registry-data", "-v", "/data", "deis/base", "/bin/true")
-	IPAddress := func() string {
-		if utils.GetHostOs() == "darwin" {
-			return "172.17.8.100"
-		}
-	}()
+	IPAddress :=  utils.GetHostIpAddress()
 	done <- true
 	go func() {
 		<-done
-		fmt.Println("inside run container")
-		dockercliutils.RunContainer(t, cli, "--name", "deis-registry-"+testSessionUid, "-p", "5000:5000", "-e", "PUBLISH=5000", "-e", "HOST="+IPAddress, "--volumes-from", "deis-registry-data", "deis/registry:"+testSessionUid)
+		dockercliutils.RunContainer(t, cli, "--name", "deis-registry-"+testSessionUid, "-p", "5000:5000", "-e", "PUBLISH=5000", "-e", "HOST="+IPAddress,"-e","ETCD_PORT="+port,  "--volumes-from", "deis-registry-data", "deis/registry:"+testSessionUid)
 	}()
 	time.Sleep(2000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 
 }
 
-func deisRegistryServiceTest(t *testing.T, testSessionUid string) {
-	IPAddress := dockercliutils.GetInspectData(t, "{{ .NetworkSettings.IPAddress }}", "deis-registry-"+testSessionUid)
-	if strings.Contains(IPAddress, "Error") {
-		t.Fatalf("worng IP %s", IPAddress)
-	}
-	url := "http://" + IPAddress + ":5000"
-	response, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("Not reachable %s", err)
-	}
-	fmt.Println(response)
-}
 
 func TestBuild(t *testing.T) {
 	var testSessionUid = utils.GetnewUuid()
-	//testSessionUid = "352aea64"
-	dockercliutils.RunDummyEtcdTest(t, testSessionUid)
-	fmt.Println("2nd")
-	t.Logf("starting registry test: %v", testSessionUid)
-	fmt.Println("starting registry test")
-	runDeisRegistryTest(t, testSessionUid)
-	deisRegistryServiceTest(t, testSessionUid)
+	fmt.Println("UUID for the session registry Test :"+testSessionUid)
+	port := utils.GetRandomPort()
+	//testSessionUid := "352aea64"
+	dockercliutils.RunEtcdTest(t, testSessionUid,port)
+	fmt.Println("starting registry component test")
+	runDeisRegistryTest(t, testSessionUid,port)
+	dockercliutils.DeisServiceTest(t,"deis-registry-"+testSessionUid,"5000","http")
 	dockercliutils.ClearTestSession(t, testSessionUid)
-
 }

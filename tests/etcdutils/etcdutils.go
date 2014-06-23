@@ -2,9 +2,9 @@ package etcdutils
 
 import (
 	"testing"
-
+	"github.com/deis/deis/tests/utils"
 	"github.com/coreos/go-etcd/etcd"
-	//"fmt"
+	"fmt"
 	"strings"
 )
 
@@ -15,7 +15,8 @@ type EtcdHandle struct {
 }
 
 func getetcdClient(port string) *etcd.Client {
-	machines := []string{"http://172.17.8.100:" + port}
+	IPAddress :=  utils.GetHostIpAddress()
+	machines := []string{"http://"+IPAddress+":"+ port}
 	c := etcd.NewClient(machines)
 	return c
 }
@@ -26,6 +27,7 @@ func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
 	controllerHandle.Dirs = setdir
 	controllerHandle.Keys = setkeys
 	controllerHandle.C = cli
+	fmt.Println("Etcd client initialized")
 	return controllerHandle
 }
 
@@ -39,6 +41,7 @@ func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client)
 }
 
 func Publishvalues(t *testing.T, ecli *EtcdHandle) {
+	fmt.Println("Publishing ETCD Key values")
 	for _, dir := range ecli.Dirs {
 		_, err := ecli.C.SetDir(dir, 0)
 		if err != nil {
@@ -65,20 +68,3 @@ func Publishvalues(t *testing.T, ecli *EtcdHandle) {
 		}
 	}
 }
-
-/*
-func CleanEtcdValues(t *testing.T, ecli EtcdHandle){
-  for _, dir := range  ecli.dirs{
-      _, err :=ecli.c.DeleteDir(dir)
-        if err != nil {
-          t.Fatal(err)
-        }
-    }
-    for _, key := range  ecli.keys{
-        _, err :=ecli.c.Delete(key,true)
-          if err != nil {
-            t.Fatal(err)
-          }
-    }
-}
-*/
