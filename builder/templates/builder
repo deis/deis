@@ -104,8 +104,7 @@ if __name__ == '__main__':
         # push the image, output to /dev/null
         print('-----> Pushing image to private registry')
         sys.stdout.flush(), sys.stderr.flush()
-        p = subprocess.Popen('docker push {target_image}'.format(**locals()), shell=True,
-                              stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+        p = subprocess.Popen('docker push {target_image}'.format(**locals()), shell=True)
         rc = p.wait()
         if rc != 0:
             raise Exception('Could not push Docker image')
