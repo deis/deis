@@ -18,10 +18,6 @@ RUN ./configure --prefix=/var/lib/nginx --sbin-path=/usr/sbin/nginx --conf-path=
 RUN make
 RUN make install
 
-# install latest etcdctl including no-sync options
-RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
-RUN chmod +x /usr/local/bin/etcdctl
-
 ADD . /app
 WORKDIR /app
 EXPOSE 80 2222

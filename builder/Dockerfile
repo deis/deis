@@ -46,10 +46,6 @@ RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 RUN wget -q https://s3-us-west-2.amazonaws.com/deis/confd -O /usr/local/bin/confd
 RUN chmod +x /usr/local/bin/confd
 
-# install latest etcdctl including no-sync options
-RUN wget -q https://s3-us-west-2.amazonaws.com/deis/etcdctl.no-sync -O /usr/local/bin/etcdctl
-RUN chmod +x /usr/local/bin/etcdctl
-
 # add the current build context to /app
 ADD . /app
 RUN chown -R root:root /app
