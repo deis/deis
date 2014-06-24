@@ -1,0 +1,76 @@
+#cloud-config
+
+hostname: HOSTNAME
+
+users:
+  - name: core
+    groups:
+      - sudo
+      - docker
+    ssh-authorized-keys:
+      - SSH_KEY
+
+coreos:
+  units:
+    - name: public.network
+      content: |
+        [Match]
+        Name=ens3
+
+        [Network]
+        Address=PUBLIC_IP
+        Gateway=GATEWAY
+        DNS=8.8.8.8
+        DNS=8.8.4.4
+    - name: private.network
+      content: |
+        [Match]
+        Name=ens4v1
+
+        [Network]
+        Address=PRIVATE_IP
+    - name: media-doroot.mount
+      command: start
+      content: |
+        [Mount]
+        What=/dev/vda
+        Where=/media/doroot
+        Type=ext4
+    - name: format-docker-store.service
+      command: start
+      content: |
+        [Unit]
+        Requires=media-doroot.mount
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/share/oem/bin/create-coreos-docker-store
+    - name: var-lib-docker.mount
+      command: start
+      content: |
+        [Unit]
+        Requires=format-docker-store.service
+        Before=docker.service
+        [Mount]
+        What=/dev/disk/by-label/docker
+        Where=/var/lib/docker
+        Type=btrfs
+    - name: coreos-setup-environment.service
+      command: restart
+      runtime: yes
+      content: |
+        [Unit]
+        Before=docker.service
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/share/oem/bin/coreos-setup-environment /etc/environment
+    - name: coreos-apply-user-data.service
+      command: restart
+      runtime: yes
+      content: |
+        [Unit]
+        After=coreos-setup-environment.service
+        [Service]
+        EnvironmentFile=/etc/environment
+        Type=oneshot
+        ExecStart=/usr/share/oem/bin/coreos-apply-user-data

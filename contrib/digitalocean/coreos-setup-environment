@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+ENV=$1
+
+if [ -z "$ENV" ]; then
+        echo usage: $0 /etc/environment
+        exit 1
+fi
+
+touch $ENV
+if [ $? -ne 0 ]; then
+        echo exiting, unable to modify: $ENV
+        exit 1
+fi
+
+sed -i -e '/^COREOS_PUBLIC_IPV4=/d;/^COREOS_PRIVATE_IPV4=/d' $ENV
+
+COREOS_PUBLIC_IPV4=$(ip -4 -o addr show dev ens3 | awk '{ print $4; }' | cut -d / -f1)
+COREOS_PRIVATE_IPV4=$(ip -4 -o addr show dev ens4v1 | awk '{ print $4; }' | cut -d / -f1)
+echo COREOS_PUBLIC_IPV4=$COREOS_PUBLIC_IPV4 >> $ENV
+echo COREOS_PRIVATE_IPV4=$COREOS_PRIVATE_IPV4 >> $ENV

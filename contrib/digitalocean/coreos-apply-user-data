@@ -1,0 +1,2 @@
+#!/bin/bash
+coreos-cloudinit --from-file=/usr/share/oem/user-data.yml
