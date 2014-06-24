@@ -85,7 +85,7 @@ email: info@opdemand.com
 ## Hack on Deis
 If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
 ```console
-$ export DEIS_HOSTS=10.21.12.1 10.21.12.2 10.21.12.3
+$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
 ```
 
 This variable is used in the `make build` command.
