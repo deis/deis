@@ -99,8 +99,6 @@ done
 echo_green "done"
 
 echo
-echo_green "Congratulations: The Deis controller image $NAME was created with ID $IMAGE_ID."
+echo_green "Congratulations: The Deis image $NAME was created with ID $IMAGE_ID."
 echo
-echo "Spawn controllers with:"
-echo
-echo "  tugboat create deis1 -i $IMAGE_ID -r $REGION -p true -k $SSH_ID -s 65"
+echo_yellow "Launch the cluster with: ./provision-do-cluster.sh $REGION $IMAGE_ID $SSH_ID 65"
