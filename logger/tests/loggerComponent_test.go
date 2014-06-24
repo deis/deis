@@ -8,7 +8,8 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisLoggerTest(t *testing.T, testSessionUID string, port string) {
+func runDeisLoggerTest(
+	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
 	dockercliutils.BuildDockerfile(t, "../", "deis/logger:"+testSessionUID)
@@ -19,9 +20,12 @@ func runDeisLoggerTest(t *testing.T, testSessionUID string, port string) {
 	go func() {
 		<-done
 		dockercliutils.RunContainer(t, cli,
-			"--name", "deis-logger-"+testSessionUID, "-p", "514:514/udp",
-			"-e", "PUBLISH=514", "-e", "HOST="+IPAddress,
-			"-e", "ETCD_PORT="+port, "--volumes-from", "deis-logger-data",
+			"--name", "deis-logger-"+testSessionUID,
+			"-p", servicePort+":514/udp",
+			"-e", "PUBLISH="+servicePort,
+			"-e", "HOST="+IPAddress,
+			"-e", "ETCD_PORT="+etcdPort,
+			"--volumes-from", "deis-logger-data",
 			"deis/logger:"+testSessionUID)
 	}()
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
@@ -29,13 +33,13 @@ func runDeisLoggerTest(t *testing.T, testSessionUID string, port string) {
 
 func TestBuild(t *testing.T) {
 	var testSessionUID = utils.NewUuid()
-	port := utils.GetRandomPort()
+	etcdPort := utils.GetRandomPort()
+	servicePort := utils.GetRandomPort()
 	fmt.Println("UUID for the session logger Test :" + testSessionUID)
-	//testSessionUID := "352aea64"
-	dockercliutils.RunEtcdTest(t, testSessionUID, port)
+	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
 	fmt.Println("starting logger componenet test:")
-	runDeisLoggerTest(t, testSessionUID, port)
+	runDeisLoggerTest(t, testSessionUID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-logger-"+testSessionUID, "514", "udp")
+		t, "deis-logger-"+testSessionUID, servicePort, "udp")
 	dockercliutils.ClearTestSession(t, testSessionUID)
 }

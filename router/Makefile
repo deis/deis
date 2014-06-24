@@ -49,6 +49,6 @@ test-unit:
 	@echo no unit tests
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 7m -v ./tests/...
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
 
 .PHONY: test

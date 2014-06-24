@@ -53,8 +53,11 @@ func CloseWrap(args ...io.Closer) error {
 // specified protocol.
 func DeisServiceTest(
 	t *testing.T, container string, port string, protocol string) {
-	IPAddress := GetInspectData(
-		t, "{{ .NetworkSettings.IPAddress }}", container)
+	IPAddress := os.Getenv("HOST_IPADDR")
+	if IPAddress == "" {
+		IPAddress = GetInspectData(
+			t, "{{ .NetworkSettings.IPAddress }}", container)
+	}
 	fmt.Println("Running service test for " + container)
 	if strings.Contains(IPAddress, "Error") {
 		t.Fatalf("wrong IP %s", IPAddress)
