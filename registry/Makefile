@@ -41,4 +41,6 @@ test-unit:
 		../venv/bin/python -m unittest discover -s test
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 7m -v ./test/... 
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 7m -v ./tests/...
+
+.PHONY: test

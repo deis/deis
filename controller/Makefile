@@ -52,4 +52,6 @@ test-unit:
 	venv/bin/python manage.py test --noinput api
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 7m -v ./test/...
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -timeout 7m -v ./tests/...
+
+.PHONY: test

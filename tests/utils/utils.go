@@ -2,43 +2,41 @@ package utils
 
 import (
 	"fmt"
-	"github.com/satori/go.uuid"
 	"io"
+	"net"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 	"testing"
-	"net"
+
+	"github.com/satori/go.uuid"
 )
 
-func GetnewUuid() string {
+// NewUuid returns a new V4-style unique identifier.
+func NewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
 }
 
-
-
-
+// GetHostOs returns either "darwin" or "ubuntu".
 func GetHostOs() string {
 	cmd := exec.Command("uname")
 	out, _ := cmd.Output()
 	if strings.Contains(string(out), "Darwin") {
 		return "darwin"
-	} else {
-		return "ubuntu"
 	}
+	return "ubuntu"
 }
 
-func GetHostIpAddress() string {
-	Ip := os.Getenv("HOST_IPADDR")
-	if Ip == "" {
-		Ip = "172.17.8.100"
+func GetHostIPAddress() string {
+	IP := os.Getenv("HOST_IPADDR")
+	if IP == "" {
+		IP = "172.17.8.100"
 	}
-	return Ip
+	return IP
 }
-
 
 func Append(slice []string, data string) []string {
 	m := len(slice)
@@ -57,9 +55,8 @@ func Append(slice []string, data string) []string {
 func GetRandomPort() string {
 	l, _ := net.Listen("tcp", "127.0.0.1:0") // listen on localhost
 	port := l.Addr()
-	return strings.Split(port.String(),":")[1]
+	return strings.Split(port.String(), ":")[1]
 }
-
 
 func getExitCode(err error) (int, error) {
 	exitCode := 0

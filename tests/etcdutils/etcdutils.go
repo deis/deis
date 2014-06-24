@@ -1,11 +1,12 @@
 package etcdutils
 
 import (
-	"testing"
-	"github.com/deis/deis/tests/utils"
-	"github.com/coreos/go-etcd/etcd"
 	"fmt"
 	"strings"
+	"testing"
+
+	"github.com/coreos/go-etcd/etcd"
+	"github.com/deis/deis/tests/utils"
 )
 
 type EtcdHandle struct {
@@ -15,8 +16,8 @@ type EtcdHandle struct {
 }
 
 func getetcdClient(port string) *etcd.Client {
-	IPAddress :=  utils.GetHostIpAddress()
-	machines := []string{"http://"+IPAddress+":"+ port}
+	IPAddress := utils.GetHostIPAddress()
+	machines := []string{"http://" + IPAddress + ":" + port}
 	c := etcd.NewClient(machines)
 	return c
 }
