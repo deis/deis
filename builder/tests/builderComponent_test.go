@@ -28,7 +28,7 @@ func runDeisBuilderTest(
 			"deis-builder-"+testSessionUID,
 			"-p", servicePort+":22",
 			"-e", "PUBLISH=22",
-			"-e", "STORAGE_DRIVER=aufs",
+			"-e", "STORAGE_DRIVER=devicemapper",
 			"-e", "HOST="+IPAddress,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "PORT="+servicePort,
