@@ -175,9 +175,16 @@ func RunContainer(t *testing.T, cli *client.DockerCli, args ...string) {
 	fmt.Println("Running docker container :" + args[1])
 	err := cli.CmdRun(args...)
 	if err != nil {
-		if !((strings.Contains(
-			fmt.Sprintf("%s", err), "read/write on closed pipe")) || (strings.Contains(fmt.Sprintf("%s", err), "Code: -1")) || (strings.Contains(fmt.Sprintf("%s", err), "Code: 2"))) {
-			t.Fatalf("Run Docker container failed %s", err)
+		// Ignore certain errors we see in io handling.
+		switch msg := err.Error(); {
+		case strings.Contains(msg, "read/write on closed pipe"):
+			return
+		case strings.Contains(msg, "Code: -1"):
+			return
+		case strings.Contains(msg, "Code: 2"):
+			return
+		default:
+			t.Fatalf("RunContainer failed: %v", err)
 		}
 	}
 }
@@ -334,22 +341,22 @@ func GetImageID(t *testing.T, repo string) string {
 
 // RunEtcdTest starts an etcd docker container for testing.
 func RunEtcdTest(t *testing.T, uid string, port string) {
-	//docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100 -e ETCD_ADDR=172.17.8.100:4001 --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0 -c /usr/local/bin/etcd
+	//docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100
+	// -e ETCD_ADDR=172.17.8.100:4001
+	// --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0
+	// -c /usr/local/bin/etcd
 	cli, stdout, stdoutPipe := GetNewClient()
 	done2 := make(chan bool, 1)
-	var imageID string
-	var imageTag string
 	IPAddress := utils.GetHostIPAddress()
 	go func() {
-		PullImage(t, cli, "deisreleases/etcd:test")
-		imageID = GetImageID(t, "deisreleases/etcd")
-		imageTag = "deis/etcd:" + uid
-		cli.CmdTag(imageID, imageTag)
+		PullImage(t, cli, "deis/test-etcd:latest")
 		done2 <- true
-		RunContainer(t, cli, "--name", "deis-etcd-"+uid,
-			"-p", port+":"+port, "-e", "HOST_IP="+IPAddress,
-			"-e", "ETCD_ADDR="+IPAddress+":"+port, "--entrypoint=/bin/bash",
-			imageTag, "-c", "/usr/local/bin/etcd")
+		RunContainer(t, cli,
+			"--name", "deis-etcd-"+uid,
+			"-p", port+":"+port,
+			"-e", "HOST_IP="+IPAddress,
+			"-e", "ETCD_ADDR="+IPAddress+":"+port,
+			"deis/test-etcd:latest")
 	}()
 	go func() {
 		<-done2

@@ -37,7 +37,7 @@ func TestBuild(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Println("UUID for the session logger Test :" + testSessionUID)
 	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting logger componenet test:")
+	fmt.Println("starting logger component test:")
 	runDeisLoggerTest(t, testSessionUID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
 		t, "deis-logger-"+testSessionUID, servicePort, "udp")
