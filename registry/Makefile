@@ -42,5 +42,3 @@ test-unit:
 
 test-functional:
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
-
-.PHONY: test

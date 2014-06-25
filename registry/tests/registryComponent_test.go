@@ -1,4 +1,4 @@
-package verbose
+package tests
 
 import (
 	"fmt"

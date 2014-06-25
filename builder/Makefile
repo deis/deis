@@ -34,5 +34,3 @@ test-unit:
 
 test-functional:
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 15m ./tests/...
-
-.PHONY: test
