@@ -49,11 +49,12 @@ func TestBuild(t *testing.T) {
 	fmt.Println("UUID for the session Controller Test :" + testSessionUID)
 	etcdPort := utils.GetRandomPort()
 	servicePort := utils.GetRandomPort()
+	dbPort := utils.GetRandomPort()
 	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
 	fmt.Println("starting controller test:")
 	Controllerhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, Controllerhandler)
-	mockserviceutils.RunMockDatabase(t, testSessionUID, etcdPort)
+	mockserviceutils.RunMockDatabase(t, testSessionUID, etcdPort, dbPort)
 	fmt.Println("starting Controller component test")
 	runDeisControllerTest(t, testSessionUID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
