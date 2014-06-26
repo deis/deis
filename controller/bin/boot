@@ -47,18 +47,6 @@ while grep -q '<no value>' /templates/confd_settings.py; do
        sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
-# remove any pre-existing docker.sock
-test -e /var/run/docker.sock && rm -f /var/run/docker.sock
-
-# spawn a docker daemon to run builds
-docker -d --storage-driver=btrfs --bip=172.20.42.1/16 &
-DOCKER_PID=$!
-
-# wait for docker to start
-while [[ ! -e /var/run/docker.sock ]]; do
-  sleep 1
-done
-
 cd /app
 
 # run an idempotent database migration
