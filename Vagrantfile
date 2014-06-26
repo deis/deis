@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
       end
 
       config.vm.provider :vmware_fusion do |vw|
-        vw.vmx["ramsize"] = mem
+        vw.vmx["memsize"] = mem
         vw.vmx["numvcpus"] = cpus
       end
 
