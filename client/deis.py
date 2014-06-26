@@ -1238,7 +1238,7 @@ class DeisClient(object):
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        sys.stdout.write('Scaling processes... ')
+        sys.stdout.write('Scaling processes... but first, coffee!')
         sys.stdout.flush()
         try:
             progress = TextProgress()
