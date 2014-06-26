@@ -9,28 +9,28 @@ import uuid
 from django.conf import settings
 
 
-def publish_release(repository_path, config, tag, source_tag='latest'):
+def publish_release(src_image, src_tag, config, target_image, target_tag):
     """
     Publish a new release as a Docker image
 
-    Given a source repository path, a dictionary of environment variables
-    and a target tag, create a new lightweight Docker image on the registry.
+    Given a source image and dictionary of last-mile configuration,
+    create a target Docker image on the registry.
 
-    source_tag is the name of the previous older tag that this image should
-    be a child of. In most cases, this should be 'latest', but for rollbacks
-    this should be an older tag.
-
-    For example, publish_release('gabrtv/myapp', {'ENVVAR': 'values'}, 'v23')
-    results in a new Docker image at: <registry_url>/gabrtv/myapp:v23
-    which contains the new configuration as ENV entries.
+    For example publish_release('registry.local:5000/gabrtv/myapp',
+                                '<sha>'
+                                {'ENVVAR': 'values'},
+                                'registry.local:5000/gabrtv/myapp',
+                                'v23',)
+    results in a new Docker image at 'registry.local:5000/gabrtv/myapp:v23' which
+    contains the new configuration as ENV entries.
     """
     try:
-        image_id = _get_tag(repository_path, source_tag)
+        image_id = _get_tag(src_image, src_tag)
     except RuntimeError:
-        if source_tag == 'latest':
+        if src_tag == 'latest':
             # no image exists yet, so let's build one!
-            _put_first_image(repository_path)
-            image_id = _get_tag(repository_path, 'latest')
+            _put_first_image(src_image)
+            image_id = _get_tag(src_image, src_tag)
         else:
             raise
     image = _get_image(image_id)
@@ -39,7 +39,7 @@ def publish_release(repository_path, config, tag, source_tag='latest'):
     image['id'] = _new_id()
     image['config']['Env'] = _construct_env(image['config']['Env'], config)
     # update and tag the new image
-    _commit(repository_path, image, _empty_tar_archive(), tag)
+    _commit(target_image, image, _empty_tar_archive(), target_tag)
 
 
 # registry access
@@ -88,7 +88,6 @@ def _get_tag(repository, tag):
     r = _api_call(url)
     if not r.status_code == 200:
         raise RuntimeError("GET Image Error ({}: {})".format(r.status_code, r.text))
-    print r.text
     return r.json()
 
 
