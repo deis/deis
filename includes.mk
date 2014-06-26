@@ -29,7 +29,7 @@ define ssh_all
 endef
 
 define rsync_all
-  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(shell pwd)/* core@$$host:/home/core/share; done
+  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(SELF_DIR)/* core@$$host:/home/core/share; done
 endef
 
 define echo_cyan
@@ -40,6 +40,7 @@ define echo_yellow
   @echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
 
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 check-fleet:
