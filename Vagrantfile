@@ -43,6 +43,11 @@ Vagrant.configure("2") do |config|
         vb.cpus = cpus
       end
 
+      config.vm.provider :vmware_fusion do |vw|
+        vw.vmx["ramsize"] = mem
+        vw.vmx["numvcpus"] = cpus
+      end
+
       ip = "172.17.8.#{i+99}"
       config.vm.network :private_network, ip: ip
 
