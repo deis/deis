@@ -65,6 +65,7 @@ SSHD_PID=$!
 function on_exit() {
 	kill -TERM $DOCKER_PID $SSHD_PID
 	wait $DOCKER_PID $SSHD_PID 2>/dev/null
+	exit 0
 }
 trap on_exit INT TERM EXIT
 

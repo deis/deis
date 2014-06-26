@@ -59,8 +59,9 @@ SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
-	kill -TERM $SERVICE_PID
-	wait $SERVICE_PID 2>/dev/null
+    kill -TERM $SERVICE_PID
+    wait $SERVICE_PID 2>/dev/null
+    exit 0
 }
 trap on_exit INT TERM
 
