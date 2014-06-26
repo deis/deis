@@ -13,10 +13,10 @@ RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.p
 RUN useradd -s /bin/bash registry
 
 # add the docker registry source from github
-RUN git clone https://github.com/dotcloud/docker-registry /docker-registry
+RUN git clone https://github.com/deis/docker-registry /docker-registry
 
 # lock the registry version to a tag
-RUN cd /docker-registry && git checkout 0.6.8
+RUN cd /docker-registry && git checkout repository-import
 
 # install boto configuration
 RUN cp /docker-registry/config/boto.cfg /etc/boto.cfg
