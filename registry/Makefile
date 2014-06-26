@@ -26,3 +26,19 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/registry')
+
+test: test-unit test-functional
+
+test-unit:
+	@if [ ! -d test-unit.tmp ]; then \
+	    git clone -b 0.6.8 https://github.com/dotcloud/docker-registry test-unit.tmp; \
+	fi
+	@if [ ! -d venv ]; then virtualenv venv; fi
+	venv/bin/pip install -q -r test-unit.tmp/requirements.txt
+	venv/bin/pip install -q -r test-unit.tmp/test-requirements.txt
+	cd test-unit.tmp && \
+		DOCKER_REGISTRY_CONFIG=config_test.yml SETTINGS_FLAVOR=test PYTHONPATH=test \
+		../venv/bin/python -m unittest discover -s test
+
+test-functional:
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
