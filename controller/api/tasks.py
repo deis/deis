@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 import requests
 import threading
+from urlparse import urlparse
 
 from celery import task
 from django.conf import settings
@@ -37,9 +38,23 @@ def deploy_release(app, release):
 
 
 @task
-def import_repository(src_index, src_repository, target_repository):
+def import_repository(source, target_repository):
     """Imports an image from a remote into our own private registry"""
 
+    url = urlparse(source)
+    scheme = url.scheme if url.scheme else 'http'
+    # strip the leading slash
+    src_repository = url.path[1:]
+
+    if url.hostname and url.port:
+        src_index = '{}://{}:{}'.format(scheme, url.hostname, url.port)
+    elif url.hostname:
+        src_index = '{}://{}'.format(scheme, url.hostname)
+    else:
+        # assume just the repository name was given, therefore it came from
+        # the public index
+        src_index = settings.PUBLIC_INDEX_URL
+        src_repository = source
     data = {
         'src_index': src_index,
         'src_repository': src_repository,

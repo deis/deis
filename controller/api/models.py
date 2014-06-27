@@ -474,51 +474,31 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
+        # construct fully-qualified build image
+        if build.sha:
+            source_image = '{}:{}'.format(build.image, build.sha)
+        else:
+            source_image = '{}:{}'.format(build.image, 'latest')
         # construct fully-qualified target image
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
+        release_image = '{}:{}'.format(self.app.id, tag)
         target_image = '{}:{}/{}'.format(
             settings.REGISTRY_HOST, settings.REGISTRY_PORT, self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
             build=build, version=new_version, image=target_image, summary=summary)
-        # publish release to registry as new docker image
-        if build.sha:
-            publish_release(build.image,
-                            build.sha,
-                            config.values,
-                            self.app.id,
-                            tag)
-        else:
+        # IOW, this image did not come from the builder
+        if not build.sha:
             # we assume that the image is not present on our registry,
             # so shell out a task to pull in the repository
-            url = urlparse(build.image)
-            repository_name = url.path[1:]
-            if url.hostname and url.port:
-                tasks.import_repository.delay(
-                    '{}://{}:{}'.format(url.scheme, url.hostname, url.port),
-                    repository_name,
-                    self.app.id,
-                ).get()
-            elif url.hostname:
-                tasks.import_repository.delay(
-                    '{}://{}'.format(url.scheme, url.hostname),
-                    repository_name,
-                    self.app.id,
-                ).get()
-            else:
-                # assume only the repository path is given, which means that
-                # it's on the public index
-                tasks.import_repository.delay(settings.PUBLIC_INDEX_URL,
-                                              build.image,
-                                              self.app.id,
-                ).get()
-            publish_release(self.app.id,
-                            'latest',
-                            config.values,
-                            self.app.id,
-                            tag)
+            tasks.import_repository.delay(build.image, self.app.id).get()
+            # update the source image to the repository we just imported
+            source_image = '{}:{}'.format(self.app.id, 'latest')
+        publish_release(source_image,
+                        config.values,
+                        release_image,)
         return release
 
     def previous(self):
