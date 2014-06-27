@@ -60,13 +60,23 @@ by adding a new entry to [cloudformation.json](cloudformation.json) like so:
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
-## Choose whether to launch in VPC
+## Choose whether to launch into a VPC
 
-To launch you cluster into a VPC, export two additional environment variables:
+The provision script supports launching into Amazon VPC. You'll need to have already created and
+configured your VPC with at least one subnet and an internet gateway for the nodes.
+
+To launch your cluster into a VPC, export three additional environment variables: ```VPC_ID```,
+```VPC_SUBNETS```, ```VPC_ZONES```. ```VPC_ZONES``` must list the availability zones of the
+subnets in order.
+
+For example, if your VPC has ID ```vpc-a26218bf``` and consists of the subnets ```subnet-04d7f942```
+(which is in ```us-east-1b```) and ```subnet-2b03ab7f``` (which is in ```us-east-1c```) you would
+export:
 
 ```
 export VPC_ID=vpc-a26218bf
 export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
+export VPC_ZONES=us-east-1b,us-east-1c
 ```
 
 ## Run the provision script
