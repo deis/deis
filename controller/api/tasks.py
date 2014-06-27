@@ -71,7 +71,7 @@ def run_command(c, command):
         if rc != 0:
             raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
         # run the command
-        docker_args = ' '.join(['--entrypoint=/bin/bash',
+        docker_args = ' '.join(['--entrypoint=/bin/sh',
                                 '-a', 'stdout', '-a', 'stderr', '--rm', image])
         escaped_command = command.replace("'", "'\\''")
         command = r"docker run {docker_args} -c \'{escaped_command}\'".format(**locals())
