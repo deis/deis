@@ -7,9 +7,11 @@ functions are decorated to run as asynchronous celery tasks.
 
 from __future__ import unicode_literals
 
+import requests
 import threading
 
 from celery import task
+from django.conf import settings
 
 
 @task
@@ -32,6 +34,21 @@ def deploy_release(app, release):
         threads.append(threading.Thread(target=c.deploy, args=(release,)))
     [t.start() for t in threads]
     [t.join() for t in threads]
+
+
+@task
+def import_repository(src_index, src_repository, target_repository):
+    """Imports an image from a remote into our own private registry"""
+
+    data = {
+        'src_index': src_index,
+        'src_repository': src_repository,
+    }
+    response = requests.post(
+        '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
+                                            target_repository),
+        data=data,
+    )
 
 
 @task

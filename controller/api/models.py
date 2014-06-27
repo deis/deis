@@ -10,6 +10,7 @@ import importlib
 import logging
 import os
 import subprocess
+from urlparse import urlparse
 
 from celery.canvas import group
 from django.conf import settings
@@ -483,14 +484,37 @@ class Release(UuidAuditedModel):
             owner=user, app=self.app, config=config,
             build=build, version=new_version, image=target_image, summary=summary)
         # publish release to registry as new docker image
-        if self.build.sha:
-            publish_release(self.build.image,
-                            self.build.sha,
+        if build.sha:
+            publish_release(build.image,
+                            build.sha,
                             config.values,
                             self.app.id,
                             tag)
         else:
-            publish_release(self.build.image,
+            # we assume that the image is not present on our registry,
+            # so shell out a task to pull in the repository
+            url = urlparse(build.image)
+            repository_name = url.path[1:]
+            if url.hostname and url.port:
+                tasks.import_repository.delay(
+                    '{}://{}:{}'.format(url.scheme, url.hostname, url.port),
+                    repository_name,
+                    self.app.id,
+                ).get()
+            elif url.hostname:
+                tasks.import_repository.delay(
+                    '{}://{}'.format(url.scheme, url.hostname),
+                    repository_name,
+                    self.app.id,
+                ).get()
+            else:
+                # assume only the repository path is given, which means that
+                # it's on the public index
+                tasks.import_repository.delay(settings.PUBLIC_INDEX_URL,
+                                              build.image,
+                                              self.app.id,
+                ).get()
+            publish_release(self.app.id,
                             'latest',
                             config.values,
                             self.app.id,
