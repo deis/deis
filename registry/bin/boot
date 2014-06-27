@@ -46,8 +46,7 @@ test -d /data && chown registry:registry /data
 
 # spawn the service in the background
 cd /docker-registry
-./setup-configs.sh
-sudo -E -u registry ./run.sh &
+sudo -E -u registry docker-registry &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
