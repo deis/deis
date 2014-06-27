@@ -66,6 +66,7 @@ GUNICORN_PID=$!
 function on_exit() {
 	kill -TERM $CELERY_PID $GUNICORN_PID
 	wait $CELERY_PID $GUNICORN_PID 2>/dev/null
+	exit 0
 }
 trap on_exit INT TERM
 
