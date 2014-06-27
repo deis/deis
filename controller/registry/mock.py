@@ -1,5 +1,5 @@
 
-def publish_release(src_image, src_tag, config, target_image, target_tag):
+def publish_release(source, config, target):
     """
     Publish a new release as a Docker image
 

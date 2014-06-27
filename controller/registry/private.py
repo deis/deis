@@ -9,7 +9,7 @@ import uuid
 from django.conf import settings
 
 
-def publish_release(src_image, src_tag, config, target_image, target_tag):
+def publish_release(source, config, target):
     """
     Publish a new release as a Docker image
 
@@ -17,14 +17,16 @@ def publish_release(src_image, src_tag, config, target_image, target_tag):
     create a target Docker image on the registry.
 
     For example publish_release('registry.local:5000/gabrtv/myapp',
-                                '<sha>'
                                 {'ENVVAR': 'values'},
-                                'registry.local:5000/gabrtv/myapp',
-                                'v23',)
+                                'registry.local:5000/gabrtv/myapp',)
     results in a new Docker image at 'registry.local:5000/gabrtv/myapp:v23' which
     contains the new configuration as ENV entries.
     """
     try:
+        src_image = source.rsplit(':', 1)[0]
+        src_tag = source.rsplit(':', 1)[1]
+        target_image = target.rsplit(':', 1)[0]
+        target_tag = target.rsplit(':', 1)[1]
         image_id = _get_tag(src_image, src_tag)
     except RuntimeError:
         if src_tag == 'latest':
