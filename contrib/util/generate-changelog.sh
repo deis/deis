@@ -5,7 +5,7 @@ usage() {
 }
 
 retrieve() {
-    git --no-pager log --oneline --no-merges --grep="$1" $FROM..$TO
+    git --no-pager log --oneline --no-merges --oneline --format=" - %h %s" --grep="$1" $FROM..$TO
 }
 
 subheading() {
