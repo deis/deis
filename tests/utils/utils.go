@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/satori/go.uuid"
 	"io"
 	"net"
 	"os"
@@ -9,8 +11,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
-
-	"github.com/satori/go.uuid"
+	"time"
 )
 
 // NewUuid returns a new V4-style unique identifier.
@@ -18,6 +19,21 @@ func NewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
+}
+
+func GetFileBytes(filename string) []byte {
+	file, _ := os.Open(filename)
+	defer file.Close()
+	stat, _ := file.Stat()
+	bs := make([]byte, stat.Size())
+	_, _ = file.Read(bs)
+	return bs
+}
+
+func GetUserDetails() (string, string) {
+	u1 := uuid.NewV4()
+	s1 := fmt.Sprintf("%s", u1)
+	return strings.Split(s1, "-")[0], strings.Split(s1, "-")[1]
 }
 
 // GetHostOs returns either "darwin" or "ubuntu".
@@ -69,6 +85,37 @@ func getExitCode(err error) (int, error) {
 	return exitCode, fmt.Errorf("failed to get exit code")
 }
 
+func RunCommandWithStdoutStderr(cmd *exec.Cmd) (stdout, stderr bytes.Buffer, err error) {
+	var stdout, stderr bytes.Buffer
+	stderrPipe, err := cmd.StderrPipe()
+	stdoutpipe, err := cmd.StdoutPipe()
+
+	cmd.Env = os.Environ()
+	if err != nil {
+		return
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return
+	}
+
+	go func() {
+		io.Copy(&stdout, stdoutPipe)
+		io.Copy(os.Stdout, stdoutPipe)
+	}()
+	go func() {
+		io.Copy(&stderr, stderrPipe)
+		io.Copy(os.Stderr, stderrPipe)
+	}()
+	time.Sleep(2000 * time.Millisecond)
+	err = cmd.Wait()
+	if err != nil {
+		return
+	}
+	return
+}
+
 func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error) {
 	exitCode = 0
 	out, err := cmd.CombinedOutput()
@@ -81,41 +128,6 @@ func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error
 		}
 	}
 	output = string(out)
-	return
-}
-
-func runCommandWithStdoutStderr(cmd *exec.Cmd) (exitCode int, err error) {
-	exitCode = 0
-	// var stderrBuffer, stdoutBuffer bytes.Buffer
-	stderrPipe, err := cmd.StderrPipe()
-	stdoutpipe, err := cmd.StdoutPipe()
-
-	if err != nil {
-		return -1, err
-	}
-
-	err = cmd.Start()
-	if err != nil {
-		var exiterr error
-		if exitCode, exiterr = getExitCode(err); exiterr != nil {
-			// TODO: Fix this so we check the error's text.
-			// we've failed to retrieve exit code, so we set it to 127
-			exitCode = 127
-		}
-	}
-
-	go io.Copy(os.Stdout, stdoutpipe)
-	go io.Copy(os.Stderr, stderrPipe)
-
-	err = cmd.Wait()
-	if err != nil {
-		var exiterr error
-		if exitCode, exiterr = getExitCode(err); exiterr != nil {
-			// TODO: Fix this so we check the error's text.
-			// we've failed to retrieve exit code, so we set it to 127
-			exitCode = 127
-		}
-	}
 	return
 }
 
