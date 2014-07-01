@@ -1,0 +1,26 @@
+{
+  "commands": {
+    "auth": {
+      "register":"register http://{{.HostName}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}",
+      "login": "auth:login http://{{.HostName}}  --username={{.UserName}} --password={{.Password}}",
+      "logout": "auth:logout",
+      "cancel":"auth:cancel"
+    },
+    "keys": {
+      "add": "keys:add {{.AuthKey}}.pub || true",
+      "list": "keys:list",
+      "remove": "keys:remove {{.AuthKey}}.pub ||true"
+    }
+  },
+  "apps": {
+    "go": ["example-go","helloworld"],
+    "ruby" : ["example-ruby-sinatra"],
+    "dart" : ["example-dart"],
+    "java" : ["example-java-jetty","example-play"],
+    "Javascript" : ["example-nodejs-express"],
+    "python" : ["example-python-django","example-python-flask","example-dockerfile-python"],
+    "scala" : ["example-scala"],
+    "php": ["example-php"],
+    "clojure":["example-clojure-ring"]
+  }
+}
