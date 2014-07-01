@@ -109,7 +109,7 @@ in cluster downtime.
 
 Stop components
 ^^^^^^^^^^^^^^^
-The Makefile has the ability to stop all Deis copmonents. Once this occurs, all apps will
+The Makefile has the ability to stop all Deis components. Once this occurs, all apps will
 be unresponsive.
 
 .. code-block:: console
