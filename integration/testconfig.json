@@ -9,7 +9,7 @@
     "keys": {
       "add": "keys:add {{.AuthKey}}.pub || true",
       "list": "keys:list",
-      "remove": "keys:remove {{.AuthKey}}.pub ||true"
+      "remove": "keys:remove {{.AuthKey}} ||true"
     }
   },
   "apps": {

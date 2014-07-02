@@ -13,18 +13,19 @@ func keysSetup(t *testing.T) *itutils.DeisTestConfig {
 
 func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("keys", "add")
-	itutils.Execute(t, cmd, params, false)
-	itutils.Execute(t, cmd, params, true)
+	itutils.Execute(t, cmd, params, false,"")
+	itutils.Execute(t, cmd, params, true,"Uploading deis to Deis...400 BAD REQUEST")
 }
 
 func keysListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("keys", "list")
-	itutils.Execute(t, cmd, params, false)
+	itutils.Execute(t, cmd, params, false,"")
 }
 
 func keysRemoveTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("keys", "remove")
-	itutils.Execute(t, cmd, params, false)
+	itutils.Execute(t, cmd, params, false,"")
+  itutils.Execute(t, cmd, params, true,"Not found")
 }
 
 func authCancel() {

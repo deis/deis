@@ -1,7 +1,8 @@
 package utils
 
 import (
-	"bufio"
+	_ "bufio"
+	"bytes"
 	"fmt"
 	"github.com/satori/go.uuid"
 	"io"
@@ -85,35 +86,37 @@ func getExitCode(err error) (int, error) {
 	return exitCode, fmt.Errorf("failed to get exit code")
 }
 
-func RunCommandWithStdoutStderr(cmd *exec.Cmd) (stdout, stderr bytes.Buffer, err error) {
+func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, error) {
 	var stdout, stderr bytes.Buffer
 	stderrPipe, err := cmd.StderrPipe()
-	stdoutpipe, err := cmd.StdoutPipe()
+	stdoutPipe, err := cmd.StdoutPipe()
 
 	cmd.Env = os.Environ()
 	if err != nil {
-		return
+		fmt.Println("error at io pipes")
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		return
+		fmt.Println("error at command start")
 	}
 
 	go func() {
 		io.Copy(&stdout, stdoutPipe)
-		io.Copy(os.Stdout, stdoutPipe)
+		fmt.Println(stdout.String())
+		//io.Copy(os.Stdout, stdoutPipe)
 	}()
 	go func() {
 		io.Copy(&stderr, stderrPipe)
-		io.Copy(os.Stderr, stderrPipe)
+		fmt.Println(stderr.String())
+		//io.Copy(os.Stderr, stderrPipe)
 	}()
 	time.Sleep(2000 * time.Millisecond)
 	err = cmd.Wait()
 	if err != nil {
-		return
+		fmt.Println("error at command wait")
 	}
-	return
+	return stdout, stderr, err
 }
 
 func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error) {
