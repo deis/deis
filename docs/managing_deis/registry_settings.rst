@@ -7,6 +7,14 @@ Customizing registry
 =========================
 The following settings are tunable for the :ref:`registry` component.
 
+Dependencies
+------------
+Requires: :ref:`cache <cache_settings>`
+
+Required by: :ref:`builder <builder_settings>`, :ref:`controller <controller_settings>`
+
+Considerations: none
+
 Settings set by registry
 --------------------------
 The following etcd keys are set by the registry component, typically in its /bin/boot script.

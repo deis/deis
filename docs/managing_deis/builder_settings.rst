@@ -7,6 +7,14 @@ Customizing builder
 =========================
 The following settings are tunable for the :ref:`builder` component. Values are stored in etcd.
 
+Dependencies
+------------
+Requires: :ref:`controller <controller_settings>`, :ref:`registry <registry_settings>`
+
+Required by: :ref:`router <router_settings>`
+
+Considerations: must live on the same host as controller (see `#985`_)
+
 Settings set by builder
 -----------------------
 The following etcd keys are set by the builder component, typically in its /bin/boot script.
@@ -54,3 +62,4 @@ Be sure that your custom image functions in the same way as the `stock builder i
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock builder image`: https://github.com/deis/deis/tree/master/builder
+.. _`#985`: https://github.com/deis/deis/issues/985

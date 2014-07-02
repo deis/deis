@@ -7,6 +7,14 @@ Customizing controller
 =========================
 The following settings are tunable for the :ref:`controller` component.
 
+Dependencies
+------------
+Requires: :ref:`controller <controller_settings>`, :ref:`cache <cache_settings>`, :ref:`database <database_settings>`, :ref:`registry <registry_settings>`
+
+Required by: :ref:`router <router_settings>`
+
+Considerations: must live on the same host as both builder and logger (see `#985`_)
+
 Settings set by controller
 --------------------------
 The following etcd keys are set by the controller component, typically in its /bin/boot script.
@@ -40,6 +48,9 @@ setting                                   description
 /deis/database/name                       database name (set by database)
 /deis/database/user                       database user (set by database)
 /deis/database/password                   database password (set by database)
+/deis/registry/host                       host of the registry component (set by registry)
+/deis/registry/port                       port of the registry component (set by registry)
+/deis/registry/protocol                   protocol of the registry component (set by registry)
 ====================================      ======================================================
 
 Using a custom controller image
@@ -62,3 +73,4 @@ Be sure that your custom image functions in the same way as the `stock controlle
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock controller image`: https://github.com/deis/deis/tree/master/controller
+.. _`#985`: https://github.com/deis/deis/issues/985
