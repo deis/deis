@@ -20,7 +20,7 @@ gunicorn==18.0
 psycopg2==2.5.2
 python-etcd==0.3.0
 PyYAML==3.10
-South==0.8.4
+South==1.0
 
 # Deis client requirements
 docopt==0.6.1
