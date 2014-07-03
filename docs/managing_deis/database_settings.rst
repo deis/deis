@@ -7,6 +7,14 @@ Customizing database
 =========================
 The following settings are tunable for the :ref:`database` component.
 
+Dependencies
+------------
+Requires: none
+
+Required by: :ref:`controller <controller_settings>`
+
+Considerations: none
+
 Settings set by database
 ------------------------
 The following etcd keys are set by the database component, typically in its /bin/boot script.

@@ -7,6 +7,14 @@ Customizing router
 =========================
 The following settings are tunable for the :ref:`router` component.
 
+Dependencies
+------------
+Requires: :ref:`builder <builder_settings>`, :ref:`controller <controller_settings>`
+
+Required by: none
+
+Considerations: none
+
 Settings set by router
 --------------------------
 The following etcd keys are set by the router component, typically in its /bin/boot script.

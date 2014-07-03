@@ -7,6 +7,14 @@ Customizing logger
 =========================
 The following settings are tunable for the :ref:`logger` component.
 
+Dependencies
+------------
+Requires: none
+
+Required by: :ref:`controller <controller_settings>`
+
+Considerations: must live on the same host as controller (see `#985`_)
+
 Settings set by logger
 ------------------------
 The following etcd keys are set by the database component, typically in its /bin/boot script.
@@ -42,3 +50,4 @@ Be sure that your custom image functions in the same way as the `stock logger im
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock logger image`: https://github.com/deis/deis/tree/master/logger
+.. _`#985`: https://github.com/deis/deis/issues/985

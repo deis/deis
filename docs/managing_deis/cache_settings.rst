@@ -7,6 +7,14 @@ Customizing cache
 =========================
 The following settings are tunable for the :ref:`cache` component. Values are stored in etcd.
 
+Dependencies
+------------
+Requires: none
+
+Required by: :ref:`controller <controller_settings>`, :ref:`registry <registry_settings>`
+
+Considerations: none
+
 Settings set by cache
 ---------------------
 The following etcd keys are set by the cache component, typically in its /bin/boot script.
