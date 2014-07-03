@@ -259,8 +259,6 @@ BROKER_URL = 'redis://{}:{}/{}'.format(
              os.environ.get('CACHE_PORT', 6379),
              os.environ.get('CACHE_NAME', 0))
 CELERY_RESULT_BACKEND = BROKER_URL
-# 20 minute task timeout
-CELERY_TASK_SOFT_TIME_LIMIT = 1200
 # this number should be equal to N+1, where
 # N is number of nodes in largest formation
 CELERYD_CONCURRENCY = 8
