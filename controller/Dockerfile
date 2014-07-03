@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel A. Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 # install required system packages
 RUN apt-get update && \
