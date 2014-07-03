@@ -2,17 +2,13 @@ FROM deis/base:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install required system packages
+# HACK: install git so we can install bacongobbler's fork of django-fsm
+# install openssh-client for temporary fleetctl wrapper
 RUN apt-get update && \
-    apt-get install -yq python-dev libpq-dev libyaml-dev
+    apt-get install -yq python-dev libpq-dev libyaml-dev git openssh-client
 
 # install recent pip
 RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
-
-# HACK: install git so we can install bacongobbler's fork of django-fsm
-RUN apt-get install -yq git
-
-# install openssh-client for temporary fleetctl wrapper
-RUN apt-get install -yq openssh-client
 
 # add a deis user that has passwordless sudo (for now)
 RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash

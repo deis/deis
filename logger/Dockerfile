@@ -2,8 +2,7 @@ FROM deis/base:latest
 MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
 
 # install go runtime
-RUN wget -O /tmp/go1.2.1.linux-amd64.tar.gz -q https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz
-RUN tar -C /usr/local -xzf /tmp/go1.2.1.linux-amd64.tar.gz
+RUN wget -qO- https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz | tar -C /usr/local -xz
 
 # prepare go environment
 RUN mkdir -p /go
