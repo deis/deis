@@ -89,6 +89,9 @@ coreos:
       ExecStartPre=/usr/bin/rm /home/core/.bashrc
       ExecStart=/usr/bin/ln -s /run/deis/.bashrc /home/core/.bashrc
 write_files:
+  - path: /etc/deis-release
+    content: |
+      DEIS_RELEASE=latest
   - path: /run/deis/motd
     content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
   - path: /run/deis/.bashrc
@@ -98,3 +101,25 @@ write_files:
       function nse() {
         sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
       }
+  - path: /run/deis/bin/get_image
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      # usage: get_image <component_path>
+      IMAGE=`etcdctl get $1/image`
+
+      # if no image was set in etcd, we use the default plus the release string
+      if [ $? -ne 0 ]; then
+        RELEASE=`etcdctl get /deis/release`
+
+        # if no release was set in etcd, use the default provisioned with the server
+        if [ $? -ne 0 ]; then
+          source /etc/deis-release
+          RELEASE=$DEIS_RELEASE
+        fi
+
+        IMAGE=$1:$RELEASE
+      fi
+
+      # remove leading slash
+      echo ${IMAGE#/}
