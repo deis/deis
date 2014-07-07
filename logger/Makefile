@@ -30,7 +30,11 @@ full-clean: clean
 test: test-unit test-functional
 
 test-unit:
-	@echo no unit tests
+	go test -v -cover ./syslog
 
 test-functional:
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
+
+coverage:
+	go test -coverprofile coverage.out ./syslog
+	go tool cover -html=coverage.out

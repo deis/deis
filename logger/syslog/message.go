@@ -36,8 +36,9 @@ func (m *Message) NetSrc() string {
 func (m *Message) String() string {
 	timeLayout := "2006-01-02 15:04:05"
 	return fmt.Sprintf(
-		"%s %s %s %s%s",
-		m.Time.Format(timeLayout), m.Source,
-		m.Hostname, m.Tag, m.Content,
+		"%s %s %s",
+		m.Time.Format(timeLayout),
+		m.Hostname,
+		m.Content,
 	)
 }

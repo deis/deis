@@ -18,6 +18,7 @@ before_install:
 install:
   - pip install -r controller/requirements.txt
   - pip install -r controller/dev_requirements.txt coveralls
+  - go get code.google.com/p/go.tools/cmd/cover
 
 before_script:
   - "psql -c 'create database deis_testing;' -U postgres"
@@ -40,6 +41,7 @@ script:
   - make -C controller flake8
   - make -C controller coverage
   - make -C docs
+  - make -C logger test
 
 after_success:
   - cd controller && coveralls
