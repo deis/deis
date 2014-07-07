@@ -14,10 +14,11 @@ import (
 var Deis = "/usr/local/bin/deis "
 
 type DeisTestConfig struct {
-	AuthKey  string
-	Hosts    string
-	HostName string
-	SshKey   string
+	AuthKey     string
+	Hosts       string
+	HostName    string
+	SshKey      string
+	ClusterName string
 }
 
 type UserDetails struct {
@@ -27,28 +28,43 @@ type UserDetails struct {
 	HostName string
 }
 
+type ClusterDetails struct {
+	ClusterName  string
+	Hosts        string
+	UpdatedHosts string
+	AuthKey      string
+	HostName     string
+}
+
+type AppDetails struct {
+	Cluster    *ClusterDetails
+	ExampleApp string
+}
+
 func SetUser() *UserDetails {
 	var user = new(UserDetails)
 	user.UserName, user.Password = utils.GetUserDetails()
 	user.Email = "test@test.co.nz"
-	user.HostName = "deis.54.193.35.8.xip.io"
+	user.HostName = "deis.local.deisapp.com"
 	return user
 }
 
 func GlobalSetup(t *testing.T) *DeisTestConfig {
 	var envCfg = DeisTestConfig{
 		"~/.ssh/deis",
-		"54.193.35.8",
-		"deis.54.193.35.8.xip.io",
+		"172.17.8.100",
+		"deis.local.deisapp.com",
 		"~/.vagrant.d/insecure_private_key",
+		"dev",
 	}
 	var user = UserDetails{
-		"Test",
+		"test",
 		"asdf1234",
 		"test@test.co.nz",
 		envCfg.HostName,
 	}
-	Execute(t, GetCommand("auth", "register"), user, false, "")
+	_ = user
+	//Execute(t, GetCommand("auth", "register"), user, false, "")
 	return &envCfg
 }
 
@@ -59,7 +75,6 @@ An expect string to check whether the command has failed according to failflag
 If a failflag is true and command failed we check the stdout and stderr for expect string
 
 ***/
-
 
 func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect string) {
 	var cmdBuf bytes.Buffer
@@ -94,8 +109,6 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 		}
 	}
 }
-
-
 
 func GetCommand(cmdtype, cmd string) string {
 	js, _ := gson.NewJson(utils.GetFileBytes("testconfig.json"))

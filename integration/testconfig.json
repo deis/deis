@@ -10,6 +10,18 @@
       "add": "keys:add {{.AuthKey}}.pub || true",
       "list": "keys:list",
       "remove": "keys:remove {{.AuthKey}} ||true"
+    },
+    "clusters": {
+      "create": "clusters:create {{.ClusterName}} http://{{.HostName}} --hosts={{.Hosts}} --auth={{.AuthKey}} || true",
+      "list": "clusters:list",
+      "update": "clusters:update {{.ClusterName}} --domain=http://{{.HostName}} --hosts={{.UpdatedHosts}} --auth={{.AuthKey}} ||true",
+      "info": "clusters:info {{.ClusterName}}",
+      "destroy" : "clusters:destroy {{.ClusterName}} --confirm={{.ClusterName}}"
+    },
+    "git" : {
+      "clone" : "git clone https://github.com/deis/{{.ExampleApp}}.git",
+      "remove" : "git remote remove deis",
+      "push" : "git push deis master"
     }
   },
   "apps": {

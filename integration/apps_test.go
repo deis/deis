@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func keysSetup(t *testing.T) *itutils.DeisTestConfig {
+func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GlobalSetup(t)
 	return cfg
 }
