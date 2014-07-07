@@ -1253,7 +1253,8 @@ class DeisClient(object):
         name = path.split(os.path.sep)[-1]
         with open(path) as f:
             data = f.read()
-            match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+            match = re.match(r'^(ssh-...|ecdsa-[^ ]+) ([^ ]+) ?(.*)',
+                             data)
             if not match:
                 print("Could not parse SSH public key {0}".format(name))
                 sys.exit(1)
