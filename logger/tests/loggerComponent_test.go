@@ -21,6 +21,7 @@ func runDeisLoggerTest(
 		<-done
 		dockercliutils.RunContainer(t, cli,
 			"--name", "deis-logger-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":514/udp",
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+IPAddress,

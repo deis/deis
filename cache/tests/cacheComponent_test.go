@@ -18,8 +18,9 @@ func runDeisCacheTest(t *testing.T, testSessionUID string, etcdPort string, serv
 		<-done
 		//docker run --name deis-cache -p 6379:6379 -e PUBLISH=6379
 		// -e HOST=${COREOS_PRIVATE_IPV4} deis/cache
-		dockercliutils.RunContainer(t, cli, "--name",
-			"deis-cache-"+testSessionUID,
+		dockercliutils.RunContainer(t, cli,
+			"--name", "deis-cache-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":6379",
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+IPAddress,

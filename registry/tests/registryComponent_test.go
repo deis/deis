@@ -22,6 +22,7 @@ func runDeisRegistryTest(
 		<-done
 		dockercliutils.RunContainer(t, cli,
 			"--name", "deis-registry-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":5000",
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+IPAddress,

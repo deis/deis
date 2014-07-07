@@ -21,8 +21,9 @@ func runDeisControllerTest(t *testing.T, testSessionUID string, etcdPort string,
 	done <- true
 	go func() {
 		<-done
-		dockercliutils.RunContainer(t, cli, "--name",
-			"deis-controller-"+testSessionUID,
+		dockercliutils.RunContainer(t, cli,
+			"--name", "deis-controller-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":8000",
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+IPAddress,

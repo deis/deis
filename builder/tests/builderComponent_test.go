@@ -24,8 +24,9 @@ func runDeisBuilderTest(
 	done <- true
 	go func() {
 		<-done
-		dockercliutils.RunContainer(t, cli, "--name",
-			"deis-builder-"+testSessionUID,
+		dockercliutils.RunContainer(t, cli,
+			"--name", "deis-builder-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":22",
 			"-e", "PUBLISH=22",
 			"-e", "STORAGE_DRIVER=devicemapper",

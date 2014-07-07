@@ -22,8 +22,9 @@ func runDeisDatabaseTest(
 		//docker run --name deis-database -p 5432:5432 -e PUBLISH=5432
 		// -e HOST=${COREOS_PRIVATE_IPV4}
 		// --volumes-from deis-database-data deis/database
-		dockercliutils.RunContainer(t, cli, "--name",
-			"deis-database-"+testSessionUID,
+		dockercliutils.RunContainer(t, cli,
+			"--name", "deis-database-"+testSessionUID,
+			"--rm",
 			"-p", servicePort+":5432",
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+IPAddress,

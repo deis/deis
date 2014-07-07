@@ -27,6 +27,7 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 		cli.CmdTag(imageID, imageTag)
 		dockercliutils.RunContainer(t, cli,
 			"--name", "deis-test-database-"+uid,
+			"--rm",
 			"-p", dbPort+":5432",
 			"-e", "PUBLISH="+dbPort,
 			"-e", "HOST="+IPAddress,

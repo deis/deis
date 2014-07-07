@@ -266,24 +266,13 @@ func getImageIds(t *testing.T, uid string) []string {
 	return sliceImageids
 }
 
-func stopRmContainers(t *testing.T, sliceContainerIds []string) {
+func stopContainers(t *testing.T, sliceContainerIds []string) {
 	cli, stdout, stdoutPipe := GetNewClient()
-	done := make(chan bool, 1)
 	go func() {
 		for _, value := range sliceContainerIds {
 			err := cli.CmdStop(value)
 			if err != nil {
-				t.Fatalf("stop Container %s", err)
-			}
-		}
-		done <- true
-	}()
-	go func() {
-		<-done
-		for _, value := range sliceContainerIds {
-			err := cli.CmdRm(value)
-			if err != nil {
-				t.Fatalf("stop Container %s", err)
+				t.Log("stop container failed:", err)
 			}
 		}
 		if err := CloseWrap(stdout, stdoutPipe); err != nil {
@@ -313,13 +302,14 @@ func removeImages(t *testing.T, sliceImageIds []string) {
 
 // ClearTestSession cleans up after a typical test session.
 func ClearTestSession(t *testing.T, uid string) {
+	fmt.Println("clearing test session", uid)
 	sliceContainerIds := getContainerIds(t, uid)
-	sliceImageids := getImageIds(t, uid)
-	//fmt.Println(sliceContainerIds)
-	//fmt.Println(sliceImageids)
-	fmt.Println("removing containers and images for the test session " + uid)
-	stopRmContainers(t, sliceContainerIds)
-	removeImages(t, sliceImageids)
+	// sliceImageids := getImageIds(t, uid)
+	// //fmt.Println(sliceContainerIds)
+	// //fmt.Println(sliceImageids)
+	// fmt.Println("removing containers and images for the test session " + uid)
+	stopContainers(t, sliceContainerIds)
+	// removeImages(t, sliceImageids)
 }
 
 // GetImageID returns the ID of a docker image.
@@ -353,6 +343,7 @@ func RunEtcdTest(t *testing.T, uid string, port string) {
 		done2 <- true
 		RunContainer(t, cli,
 			"--name", "deis-etcd-"+uid,
+			"--rm",
 			"-p", port+":"+port,
 			"-e", "HOST_IP="+IPAddress,
 			"-e", "ETCD_ADDR="+IPAddress+":"+port,

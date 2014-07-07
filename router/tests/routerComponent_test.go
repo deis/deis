@@ -24,6 +24,7 @@ func runDeisRouterTest(
 		<-done
 		dockercliutils.RunContainer(t, cli,
 			"--name", "deis-router-"+testSessionID,
+			"--rm",
 			"-p", servicePort+":80",
 			"-p", "2222:2222",
 			"-e", "PUBLISH="+servicePort,
