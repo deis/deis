@@ -46,9 +46,17 @@ class FleetClient(object):
         """
         return
 
+    # announcer helpers
+
+    def _log_skipped_announcer(self, action, name):
+        """
+        Logs a message stating that this operation doesn't require an announcer
+        """
+        print "-- skipping announcer {} for {}".format(action, name)
+
     # job api
 
-    def create(self, name, image, command='', template=None):
+    def create(self, name, image, command='', template=None, use_announcer=True):
         """
         Create a new job
         """
@@ -57,11 +65,10 @@ class FleetClient(object):
         self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env)
         self._create_log(name, image, command, LOG_TEMPLATE, env)
 
-        # only announce web and cmd processes
-        if command.lower() in ['start web', '']:
+        if use_announcer:
             self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
         else:
-            print "-- skipping announcer for {} - cmd type is {}".format(name,command)
+            self._log_skipped_announcer('create', name)
 
     def _create_container(self, name, image, command, template, env):
         l = locals().copy()
@@ -87,7 +94,7 @@ class FleetClient(object):
         return subprocess.check_call('fleetctl.sh submit {name}-log.service'.format(**locals()),  # noqa
                                      shell=True, env=env)
 
-    def start(self, name):
+    def start(self, name, use_announcer=True):
         """
         Start an idle job
         """
@@ -95,8 +102,12 @@ class FleetClient(object):
         env = self.env.copy()
         self._start_container(name, env)
         self._start_log(name, env)
-        self._start_announcer(name, env)
-        self._wait_for_announcer(name, env)
+
+        if use_announcer:
+            self._start_announcer(name, env)
+            self._wait_for_announcer(name, env)
+        else:
+            self._log_skipped_announcer('start', name)
 
     def _start_log(self, name, env):
         subprocess.check_call(
@@ -125,13 +136,18 @@ class FleetClient(object):
         else:
             raise RuntimeError('Container failed to start')
 
-    def stop(self, name):
+    def stop(self, name, use_announcer=True):
         """
         Stop a running job
         """
         print 'Stopping {name}'.format(**locals())
         env = self.env.copy()
-        self._stop_announcer(name, env)
+
+        if use_announcer:
+            self._stop_announcer(name, env)
+        else:
+            self._log_skipped_announcer('stop', name)
+
         self._stop_container(name, env)
         self._stop_log(name, env)
 
@@ -150,13 +166,18 @@ class FleetClient(object):
             'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
-    def destroy(self, name):
+    def destroy(self, name, use_announcer=True):
         """
         Destroy an existing job
         """
         print 'Destroying {name}'.format(**locals())
         env = self.env.copy()
-        self._destroy_announcer(name, env)
+
+        if use_announcer:
+            self._destroy_announcer(name, env)
+        else:
+            self._log_skipped_announcer('destroy', name)
+
         self._destroy_container(name, env)
         self._destroy_log(name, env)
 
