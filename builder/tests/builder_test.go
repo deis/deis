@@ -14,23 +14,26 @@ func runDeisBuilderTest(
 	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	dockercliutils.BuildDockerfile(t, "../", "deis/builder:"+testSessionUID)
+	err := dockercliutils.BuildImage(t, "../", "deis/builder:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-builder-data",
 		"-v", "/var/lib/docker", "deis/base", "/bin/true")
 	//docker run --name deis-builder -p 2223:22 -e PUBLISH=22
 	// -e HOST=${COREOS_PRIVATE_IPV4} -e PORT=2223
 	// --volumes-from deis-builder-data --privileged deis/builder
-	IPAddress := utils.GetHostIPAddress()
+	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
 		<-done
-		dockercliutils.RunContainer(t, cli,
+		err = dockercliutils.RunContainer(cli,
 			"--name", "deis-builder-"+testSessionUID,
 			"--rm",
 			"-p", servicePort+":22",
 			"-e", "PUBLISH=22",
 			"-e", "STORAGE_DRIVER=devicemapper",
-			"-e", "HOST="+IPAddress,
+			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "PORT="+servicePort,
 			"--volumes-from", "deis-builder-data",
@@ -38,9 +41,12 @@ func runDeisBuilderTest(
 	}()
 	time.Sleep(5000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestBuild(t *testing.T) {
+func TestBuilder(t *testing.T) {
 	setkeys := []string{"/deis/registry/protocol",
 		"deis/registry/host",
 		"/deis/registry/port",

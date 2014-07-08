@@ -12,11 +12,12 @@ import (
 
 // RunMockDatabase starts a mock postgresql database for testing.
 func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
 	var imageID string
 	var imageTag string
-	IPAddress := utils.GetHostIPAddress()
+	ipaddr := utils.GetHostIPAddress()
 	fmt.Println("starting Mock Database")
 	done <- true
 	go func() {
@@ -25,12 +26,12 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 		imageID = dockercliutils.GetImageID(t, "paintedfox/postgresql")
 		imageTag = "deis/test-database:" + uid
 		cli.CmdTag(imageID, imageTag)
-		dockercliutils.RunContainer(t, cli,
+		err = dockercliutils.RunContainer(cli,
 			"--name", "deis-test-database-"+uid,
 			"--rm",
 			"-p", dbPort+":5432",
 			"-e", "PUBLISH="+dbPort,
-			"-e", "HOST="+IPAddress,
+			"-e", "HOST="+ipaddr,
 			"-e", "USER=deis",
 			"-e", "DB=deis",
 			"-e", "PASS=deis",
@@ -49,5 +50,8 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	etcdutils.Publishvalues(t, dbhandler)
 	etcdutils.SetEtcdValues(t,
 		[]string{"/deis/database/host", "/deis/database/port", "/deis/database/engine"},
-		[]string{IPAddress, dbPort, "postgresql_psycopg2"}, dbhandler.C)
+		[]string{ipaddr, dbPort, "postgresql_psycopg2"}, dbhandler.C)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

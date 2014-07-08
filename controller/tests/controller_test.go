@@ -14,28 +14,31 @@ import (
 func runDeisControllerTest(t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	dockercliutils.BuildDockerfile(t, "../", "deis/controller:"+testSessionUID)
-	//docker run --name deis-controller -p 8000:8000 -e PUBLISH=8000
-	// -e HOST=${COREOS_PRIVATE_IPV4} --volumes-from=deis-logger deis/controller
-	IPAddress := utils.GetHostIPAddress()
+	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
 		<-done
-		dockercliutils.RunContainer(t, cli,
+		err = dockercliutils.RunContainer(cli,
 			"--name", "deis-controller-"+testSessionUID,
 			"--rm",
 			"-p", servicePort+":8000",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+IPAddress,
+			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/controller:"+testSessionUID)
 	}()
 	time.Sleep(5000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
-
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestBuild(t *testing.T) {
+func TestController(t *testing.T) {
 	setkeys := []string{"/deis/registry/protocol",
 		"deis/registry/host",
 		"/deis/registry/port",
