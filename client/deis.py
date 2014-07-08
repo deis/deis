@@ -920,9 +920,18 @@ class DeisClient(object):
         body = {}
         for k, arg in (('domain', '--domain'), ('hosts', '--hosts'),
                        ('auth', '--auth'), ('type', '--type')):
-            v = args.get(arg)
-            if v:
-                body.update({k: v})
+            if k == 'auth' :
+                auth_path = os.path.expanduser(args['--auth'])
+                if not os.path.exists(auth_path):
+                    print('Path to authentication credentials does not exist: {}'.format(auth_path))
+                    sys.exit(1)
+                with open(auth_path) as f:
+                    data = f.read()
+                body.update({'auth': base64.b64encode(data)})
+            else :
+                v = args.get(arg)
+                if v:
+                    body.update({k: v})
         response = self._dispatch('patch', '/api/clusters/{}'.format(cluster),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
