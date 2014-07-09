@@ -24,8 +24,10 @@ COMPONENTS=builder cache controller database logger registry
 ALL_COMPONENTS=$(COMPONENTS) router
 START_COMPONENTS=registry logger cache database
 
-ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*))
-START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*))
+ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*.service))
+START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*.service))
+
+DATA_CONTAINER_TEMPLATES=builder/systemd/deis-builder-data.service database/systemd/deis-database-data.service logger/systemd/deis-logger-data.service registry/systemd/deis-registry-data.service
 
 all: build run
 
@@ -40,8 +42,22 @@ full-clean: clean
 
 install: check-fleet install-routers
 	$(FLEETCTL) load $(START_UNITS)
-	$(FLEETCTL) load controller/systemd/*
-	$(FLEETCTL) load builder/systemd/*
+	$(FLEETCTL) load controller/systemd/*.service
+	$(FLEETCTL) load builder/systemd/*.service
+	echo $(shell make install-data-containers)
+
+install-data-containers: check-fleet
+	@$(foreach T, $(DATA_CONTAINER_TEMPLATES), \
+		cp $(T).template . ; \
+		NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
+		mv *.template $$NEW_FILENAME ; \
+		MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full list-machines | awk 'BEGIN { OFS="\t"; srand() } { print rand(), $$1 }' | sort -n | cut -f2- | head -1` ; \
+		sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
+		rm -f $$NEW_FILENAME ; \
+		mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
+		$(FLEETCTL) load $$NEW_FILENAME ; \
+		rm -f $$NEW_FILENAME ; \
+	)
 
 install-routers: check-fleet
 	@$(foreach R, $(ROUTER_UNITS), \
@@ -86,7 +102,7 @@ start: check-fleet start-warning start-routers
 
 	@# builder
 	$(call echo_yellow,"Waiting for deis-builder to start...")
-	$(FLEETCTL) start -no-block builder/systemd/*
+	$(FLEETCTL) start -no-block builder/systemd/*.service
 	@until $(FLEETCTL) list-units | egrep -q "deis-builder.+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
