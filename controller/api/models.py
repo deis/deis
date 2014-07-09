@@ -298,7 +298,7 @@ class Container(UuidAuditedModel):
             if c_type == 'cmd':
                 return ''
             else:
-                return 'start {c_type}'
+                return "start {}".format(c_type)
         else:
             return ''
 
@@ -311,10 +311,9 @@ class Container(UuidAuditedModel):
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
-        c_type = self.type
         self._scheduler.create(name=self._job_id,
                                image=image,
-                               command=self._command.format(**locals()),
+                               command=self._command,
                                use_announcer=self._command_announceable())
 
     @close_db_connections
