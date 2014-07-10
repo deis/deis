@@ -40,23 +40,27 @@ clean: uninstall
 full-clean: clean
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rmi deis-$$c; done')
 
-install: check-fleet install-routers
+install: check-fleet install-routers install-data-containers
 	$(FLEETCTL) load $(START_UNITS)
 	$(FLEETCTL) load controller/systemd/*.service
 	$(FLEETCTL) load builder/systemd/*.service
-	echo $(shell make install-data-containers)
 
 install-data-containers: check-fleet
 	@$(foreach T, $(DATA_CONTAINER_TEMPLATES), \
-		cp $(T).template . ; \
-		NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
-		mv *.template $$NEW_FILENAME ; \
-		MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full list-machines | awk 'BEGIN { OFS="\t"; srand() } { print rand(), $$1 }' | sort -n | cut -f2- | head -1` ; \
-		sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
-		rm -f $$NEW_FILENAME ; \
-		mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
-		$(FLEETCTL) load $$NEW_FILENAME ; \
-		rm -f $$NEW_FILENAME ; \
+		UNIT=`basename $(T)` ; \
+		if [[ `$(FLEETCTL) list-units | grep $$UNIT` ]]; then \
+		  echo $$UNIT already loaded. Skipping... ; \
+		else \
+			cp $(T).template . ; \
+			NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
+			mv *.template $$NEW_FILENAME ; \
+			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full list-machines | awk 'BEGIN { OFS="\t"; srand() } { print rand(), $$1 }' | sort -n | cut -f2- | head -1` ; \
+			sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
+			rm -f $$NEW_FILENAME ; \
+			mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
+			$(FLEETCTL) load $$NEW_FILENAME ; \
+			rm -f $$NEW_FILENAME ; \
+		fi ; \
 	)
 
 install-routers: check-fleet
