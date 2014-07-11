@@ -10,7 +10,6 @@ import importlib
 import logging
 import os
 import subprocess
-from urlparse import urlparse
 
 from celery.canvas import group
 from django.conf import settings
