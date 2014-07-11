@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 
 import requests
 import threading
-from urlparse import urlparse
 
 from celery import task
 from django.conf import settings
@@ -44,7 +43,7 @@ def import_repository(source, target_repository):
     data = {
         'src': source,
     }
-    response = requests.post(
+    requests.post(
         '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
                                             target_repository),
         data=data,
