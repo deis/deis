@@ -427,7 +427,8 @@ class AppReleaseViewSet(BaseAppViewSet):
             request.user,
             build=prev.build,
             config=prev.config,
-            summary=summary)
+            summary=summary,
+            source_version='v{}'.format(version))
         app.deploy(new_release)
         response = {'version': new_release.version}
         return Response(response, status=status.HTTP_201_CREATED)

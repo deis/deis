@@ -462,7 +462,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None):
+    def new(self, user, config=None, build=None, summary=None, source_version='latest'):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -473,11 +473,8 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
-        # construct fully-qualified build image
-        if build.sha:
-            source_image = '{}:{}'.format(build.image, build.sha)
-        else:
-            source_image = '{}:{}'.format(build.image, 'latest')
+        # always create a release off the latest image
+        source_image = '{}:{}'.format(build.image, source_version)
         # construct fully-qualified target image
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
