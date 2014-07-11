@@ -44,7 +44,7 @@ if __name__ == '__main__':
     short_sha = sha[:8]
     # define image names
     tmp_image = "{app}:git-{short_sha}".format(**locals())
-    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{tmp_image}".format(**locals())
+    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{app}".format(**locals())
     for d in (cache_dir, build_dir):
         if not os.path.exists(d):
             os.mkdir(d)
