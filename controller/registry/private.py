@@ -16,15 +16,19 @@ def publish_release(source, config, target):
     Given a source image and dictionary of last-mile configuration,
     create a target Docker image on the registry.
 
-    For example publish_release('registry.local:5000/gabrtv/myapp',
+    For example publish_release('registry.local:5000/gabrtv/myapp:v22',
                                 {'ENVVAR': 'values'},
-                                'registry.local:5000/gabrtv/myapp',)
+                                'registry.local:5000/gabrtv/myapp:v23',)
     results in a new Docker image at 'registry.local:5000/gabrtv/myapp:v23' which
     contains the new configuration as ENV entries.
     """
     try:
-        src_image = source.rsplit(':', 1)[0]
-        src_tag = source.rsplit(':', 1)[1]
+        if source.count(':') == 2:
+            src_image = source.rsplit(':', 1)[0].split('/', 1)[1]
+            src_tag = source.split(':')[2]
+        else:
+            src_image = source
+            src_tag = 'latest'
         target_image = target.rsplit(':', 1)[0]
         target_tag = target.rsplit(':', 1)[1]
         image_id = _get_tag(src_image, src_tag)
