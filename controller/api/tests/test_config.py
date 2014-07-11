@@ -7,11 +7,20 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
+import requests
 
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Config
+
+
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -30,6 +39,7 @@ class ConfigTest(TransactionTestCase):
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config(self):
         """
         Test that config is auto-created for a new app and that
@@ -94,6 +104,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(self.client.delete(url).status_code, 405)
         return config5
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_same_key(self):
         """
         Test that config sets on the same key function properly
@@ -116,6 +127,7 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('PORT', json.loads(response.data['values']))
         self.assertEqual(json.loads(response.data['values'])['PORT'], '5001')
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
         """Test the text representation of a node."""
         config5 = self.test_config()

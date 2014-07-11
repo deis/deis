@@ -38,8 +38,7 @@ def deploy_release(app, release):
 
 @task
 def import_repository(source, target_repository):
-    """Imports an image from a remote into our own private registry"""
-
+    """Imports an image from a remote registry into our own private registry"""
     data = {
         'src': source,
     }

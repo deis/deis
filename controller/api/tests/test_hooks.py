@@ -7,11 +7,20 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
+import requests
 
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from django.conf import settings
+
+
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -95,6 +104,7 @@ class HookTest(TransactionTestCase):
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
         self.assertEqual(response.status_code, 403)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_build_hook(self):
         """Test creating a Build via an API Hook"""
         url = '/api/apps'

@@ -7,11 +7,20 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
+import requests
 
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Release
+
+
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -30,6 +39,7 @@ class ReleaseTest(TransactionTestCase):
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_release(self):
         """
         Test that a release is created when a cluster is created, and
@@ -101,6 +111,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(self.client.delete(url).status_code, 405)
         return release3
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_release_rollback(self):
         url = '/api/apps'
         body = {'cluster': 'autotest'}
@@ -187,12 +198,14 @@ class ReleaseTest(TransactionTestCase):
         self.assertIn('NEW_URL1', values)
         self.assertEqual('http://localhost:8080/', values['NEW_URL1'])
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_release_str(self):
         """Test the text representation of a release."""
         release3 = self.test_release()
         release = Release.objects.get(uuid=release3['uuid'])
         self.assertEqual(str(release), "{}-v3".format(release3['app']))
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_release_summary(self):
         """Test the text summary of a release."""
         release3 = self.test_release()
