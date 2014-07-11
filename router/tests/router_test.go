@@ -14,28 +14,32 @@ func runDeisRouterTest(
 	t *testing.T, testSessionID string, etcdPort string, servicePort string) {
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	dockercliutils.BuildDockerfile(t, "../", "deis/router:"+testSessionID)
-
-	//ocker run --name deis-router -p 80:80 -p 2222:2222 -e PUBLISH=80
-	// -e HOST=${COREOS_PRIVATE_IPV4} deis/router
-	IPAddress := utils.GetHostIPAddress()
+	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testSessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
 		<-done
-		dockercliutils.RunContainer(t, cli,
+		err = dockercliutils.RunContainer(cli,
 			"--name", "deis-router-"+testSessionID,
+			"--rm",
 			"-p", servicePort+":80",
 			"-p", "2222:2222",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+IPAddress,
+			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/router:"+testSessionID)
 	}()
 	time.Sleep(2000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
-func TestBuild(t *testing.T) {
+func TestRouter(t *testing.T) {
 	setkeys := []string{"deis/controller/host",
 		"/deis/controller/port",
 		"/deis/builder/host",

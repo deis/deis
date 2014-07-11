@@ -53,17 +53,17 @@ func CloseWrap(args ...io.Closer) error {
 // specified protocol.
 func DeisServiceTest(
 	t *testing.T, container string, port string, protocol string) {
-	IPAddress := os.Getenv("HOST_IPADDR")
-	if IPAddress == "" {
-		IPAddress = GetInspectData(
-			t, "{{ .NetworkSettings.IPAddress }}", container)
+	ipaddr := os.Getenv("HOST_IPADDR")
+	if ipaddr == "" {
+		ipaddr = GetInspectData(
+			t, "{{ .NetworkSettings.ipaddr }}", container)
 	}
 	fmt.Println("Running service test for " + container)
-	if strings.Contains(IPAddress, "Error") {
-		t.Fatalf("wrong IP %s", IPAddress)
+	if strings.Contains(ipaddr, "Error") {
+		t.Fatalf("wrong IP %s", ipaddr)
 	}
 	if protocol == "http" {
-		url := "http://" + IPAddress + ":" + port
+		url := "http://" + ipaddr + ":" + port
 		response, err := http.Get(url)
 		if err != nil {
 			t.Fatalf("Not reachable %s", err)
@@ -71,7 +71,7 @@ func DeisServiceTest(
 		fmt.Println(response)
 	}
 	if protocol == "tcp" || protocol == "udp" {
-		conn, err := net.Dial(protocol, IPAddress+":"+port)
+		conn, err := net.Dial(protocol, ipaddr+":"+port)
 		if err != nil {
 			t.Fatalf("Not reachable %s", err)
 		}
@@ -103,37 +103,36 @@ func GetNewClient() (
 func PrintToStdout(t *testing.T, stdout *io.PipeReader,
 	stdoutPipe *io.PipeWriter, stoptag string) string {
 	var result string
+	r := bufio.NewReader(stdout)
 	for {
-		if cmdBytes, err := bufio.NewReader(stdout).ReadString('\n'); err == nil {
-			result = cmdBytes
-			fmt.Print(cmdBytes)
-			if strings.Contains(cmdBytes, stoptag) == true {
-				if err := CloseWrap(stdout, stdoutPipe); err != nil {
-					t.Fatalf("Closewraps %s", err)
-				}
-			}
-		} else {
+		cmdBytes, err := r.ReadString('\n')
+		if err != nil {
 			break
+		}
+		result = cmdBytes
+		fmt.Print(cmdBytes)
+		if strings.Contains(cmdBytes, stoptag) == true {
+			if err := CloseWrap(stdout, stdoutPipe); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 	return result
 }
 
-// BuildDockerfile builds and tags a docker image from a Dockerfile.
-func BuildDockerfile(t *testing.T, path string, tag string) {
+// BuildImage builds and tags a docker image from a Dockerfile.
+func BuildImage(t *testing.T, path string, tag string) error {
+	var err error
 	cli, stdout, stdoutPipe := GetNewClient()
-	fmt.Println("Building docker file :" + tag)
+	fmt.Println("Building docker image", tag)
 	go func() {
-		err := cli.CmdBuild("--tag="+tag, path)
-		if err != nil {
-			t.Fatalf(" %s", err)
+		if err = cli.CmdBuild("--tag="+tag, path); err != nil {
+			return
 		}
-		if err = CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("buildDockerfile %s", err)
-		}
+		err =  CloseWrap(stdout, stdoutPipe)
 	}()
-	time.Sleep(1000 * time.Millisecond)
-	PrintToStdout(t, stdout, stdoutPipe, "build docker file")
+ 	PrintToStdout(t, stdout, stdoutPipe, "build docker file")
+	return err
 }
 
 // GetInspectData prints and returns `docker inspect` data for a container.
@@ -171,22 +170,21 @@ func PullImage(t *testing.T, cli *client.DockerCli, args ...string) {
 }
 
 // RunContainer runs a docker image with the given arguments.
-func RunContainer(t *testing.T, cli *client.DockerCli, args ...string) {
-	fmt.Println("Running docker container :" + args[1])
+func RunContainer(cli *client.DockerCli, args ...string) error {
+	fmt.Println("Running docker container", args[1])
 	err := cli.CmdRun(args...)
 	if err != nil {
 		// Ignore certain errors we see in io handling.
 		switch msg := err.Error(); {
 		case strings.Contains(msg, "read/write on closed pipe"):
-			return
+			err = nil
 		case strings.Contains(msg, "Code: -1"):
-			return
+			err = nil
 		case strings.Contains(msg, "Code: 2"):
-			return
-		default:
-			t.Fatalf("RunContainer failed: %v", err)
+			err = nil
 		}
 	}
+	return err
 }
 
 // RunDeisDataTest starts a data container as a prerequisite for a service.
@@ -201,7 +199,9 @@ func RunDeisDataTest(t *testing.T, args ...string) {
 	if strings.Contains(hostname, "Error") {
 		go func() {
 			<-done
-			RunContainer(t, cli, args...)
+			if err := RunContainer(cli, args...); err != nil {
+				t.Fatal(err)
+			}
 		}()
 		go func() {
 			fmt.Println("closing read/write pipe")
@@ -266,24 +266,13 @@ func getImageIds(t *testing.T, uid string) []string {
 	return sliceImageids
 }
 
-func stopRmContainers(t *testing.T, sliceContainerIds []string) {
+func stopContainers(t *testing.T, sliceContainerIds []string) {
 	cli, stdout, stdoutPipe := GetNewClient()
-	done := make(chan bool, 1)
 	go func() {
 		for _, value := range sliceContainerIds {
 			err := cli.CmdStop(value)
 			if err != nil {
-				t.Fatalf("stop Container %s", err)
-			}
-		}
-		done <- true
-	}()
-	go func() {
-		<-done
-		for _, value := range sliceContainerIds {
-			err := cli.CmdRm(value)
-			if err != nil {
-				t.Fatalf("stop Container %s", err)
+				t.Log("stop container failed:", err)
 			}
 		}
 		if err := CloseWrap(stdout, stdoutPipe); err != nil {
@@ -313,13 +302,14 @@ func removeImages(t *testing.T, sliceImageIds []string) {
 
 // ClearTestSession cleans up after a typical test session.
 func ClearTestSession(t *testing.T, uid string) {
+	fmt.Println("clearing test session", uid)
 	sliceContainerIds := getContainerIds(t, uid)
-	sliceImageids := getImageIds(t, uid)
-	//fmt.Println(sliceContainerIds)
-	//fmt.Println(sliceImageids)
-	fmt.Println("removing containers and images for the test session " + uid)
-	stopRmContainers(t, sliceContainerIds)
-	removeImages(t, sliceImageids)
+	// sliceImageids := getImageIds(t, uid)
+	// //fmt.Println(sliceContainerIds)
+	// //fmt.Println(sliceImageids)
+	// fmt.Println("removing containers and images for the test session " + uid)
+	stopContainers(t, sliceContainerIds)
+	// removeImages(t, sliceImageids)
 }
 
 // GetImageID returns the ID of a docker image.
@@ -341,21 +331,23 @@ func GetImageID(t *testing.T, repo string) string {
 
 // RunEtcdTest starts an etcd docker container for testing.
 func RunEtcdTest(t *testing.T, uid string, port string) {
-	//docker run -t -i --name=deis-etcd -p 4001:4001  -e HOST_IP=172.17.8.100
-	// -e ETCD_ADDR=172.17.8.100:4001
-	// --entrypoint=/bin/bash phife.atribecalledchris.com:5000/deis/etcd:0.3.0
-	// -c /usr/local/bin/etcd
+	var err error
 	cli, stdout, stdoutPipe := GetNewClient()
 	done2 := make(chan bool, 1)
-	IPAddress := utils.GetHostIPAddress()
+	ipaddr := utils.GetHostIPAddress()
 	go func() {
-		PullImage(t, cli, "deis/test-etcd:latest")
+		if err = cli.CmdPull("deis/test-etcd:latest"); err != nil {
+			CloseWrap(stdout, stdoutPipe)
+			return
+		}
+		// PullImage(t, cli, "deis/test-etcd:latest")
 		done2 <- true
-		RunContainer(t, cli,
+		err = RunContainer(cli,
 			"--name", "deis-etcd-"+uid,
+			"--rm",
 			"-p", port+":"+port,
-			"-e", "HOST_IP="+IPAddress,
-			"-e", "ETCD_ADDR="+IPAddress+":"+port,
+			"-e", "HOST_IP="+ipaddr,
+			"-e", "ETCD_ADDR="+ipaddr+":"+port,
 			"deis/test-etcd:latest")
 	}()
 	go func() {
@@ -368,4 +360,7 @@ func RunEtcdTest(t *testing.T, uid string, port string) {
 	}()
 	time.Sleep(1000 * time.Millisecond)
 	PrintToStdout(t, stdout, stdoutPipe, "pulling etcd")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
