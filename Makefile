@@ -66,9 +66,7 @@ install-data-containers: check-fleet
 
 install-routers: check-fleet
 	@$(foreach R, $(ROUTER_UNITS), \
-		cp router/systemd/deis-router.service ./$(R) ; \
-		$(FLEETCTL) load ./$(R) ; \
-		rm -f ./$(R) ; \
+		$(FLEETCTL) load router/systemd/$(R) ; \
 	)
 
 pull:

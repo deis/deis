@@ -13,4 +13,4 @@ ExecStopPost=/usr/bin/docker stop deis-router
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-Conflicts=deis-router.*.service
+X-Conflicts=deis-router@*.service
