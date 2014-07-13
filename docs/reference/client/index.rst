@@ -12,23 +12,14 @@ Client Reference
 .. toctree::
 
 
-    register
-    login
-    logout
-
-    create
-    scale
-    info
-    open
-    logs
-    run
-    destroy
-
-    clusters
-    keys
+    auth
 
     apps
+    clusters
     ps
     config
+    domains
     builds
     releases
+
+    keys

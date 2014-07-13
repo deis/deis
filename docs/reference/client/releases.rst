@@ -1,8 +1,11 @@
-:title: Build
-:description: Learn how to manage `git push` builds of an application using the Deis client.
+:title: Releases
+:description: Learn how to releases of an application using the Deis client.
 
+.. _deis_releases:
 
-build
-=====
+release
+=======
 
-.. automethod:: client.deis.DeisClient.builds_list
+.. automethod:: client.deis.DeisClient.releases_list
+.. automethod:: client.deis.DeisClient.releases_info
+.. automethod:: client.deis.DeisClient.releases_rollback

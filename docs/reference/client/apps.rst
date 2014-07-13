@@ -1,6 +1,8 @@
 :title: Applications
 :description: Learn how to manage Deis applications using the Deis client, including how to create, list, open, retrieve logs for, run ephemeral commands on, and destroy applications.
 
+.. _deis_apps:
+
 apps
 ====
 

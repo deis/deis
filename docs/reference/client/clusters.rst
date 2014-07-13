@@ -1,6 +1,8 @@
 :title: Clusters
 :description: Learn how to manage Deis clusters using the Deis client, including how to create, list, update and destroy clusters.
 
+.. _deis_clusters:
+
 clusters
 ========
 

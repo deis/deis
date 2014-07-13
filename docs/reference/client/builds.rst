@@ -1,8 +1,10 @@
-:title: Releases
-:description: Learn how to releases of an application using the Deis client.
+:title: Builds
+:description: Learn how to manage builds of an application using the Deis client.
 
-release
-=======
+.. _deis_builds:
 
-.. automethod:: client.deis.DeisClient.releases_list
-.. automethod:: client.deis.DeisClient.releases_info
+builds
+======
+
+.. automethod:: client.deis.DeisClient.builds_list
+.. automethod:: client.deis.DeisClient.builds_create
