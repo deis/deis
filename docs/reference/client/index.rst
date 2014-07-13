@@ -1,7 +1,7 @@
 :title: client
 :description: Deis Client Reference
 
-.. _client:
+.. _client_ref:
 
 Client Reference
 ================
