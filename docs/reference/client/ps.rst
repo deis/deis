@@ -3,8 +3,8 @@
 
 .. _deis_ps:
 
-processes
-=========
+deis ps
+=======
 
 .. automethod:: client.deis.DeisClient.ps_list
 .. automethod:: client.deis.DeisClient.ps_scale

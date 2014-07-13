@@ -3,8 +3,8 @@
 
 .. _deis_keys:
 
-keys
-====
+deis keys
+=========
 
 .. automethod:: client.deis.DeisClient.keys_list
 .. automethod:: client.deis.DeisClient.keys_add

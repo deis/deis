@@ -3,8 +3,8 @@
 
 .. _deis_builds:
 
-builds
-======
+deis builds
+===========
 
 .. automethod:: client.deis.DeisClient.builds_list
 .. automethod:: client.deis.DeisClient.builds_create

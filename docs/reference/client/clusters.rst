@@ -3,8 +3,8 @@
 
 .. _deis_clusters:
 
-clusters
-========
+deis clusters
+=============
 
 .. automethod:: client.deis.DeisClient.clusters_create
 .. automethod:: client.deis.DeisClient.clusters_list

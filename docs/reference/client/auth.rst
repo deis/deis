@@ -3,8 +3,8 @@
 
 .. _deis_auth:
 
-auth
-====
+deis auth
+=========
 
 .. automethod:: client.deis.DeisClient.auth_register
 .. automethod:: client.deis.DeisClient.auth_cancel

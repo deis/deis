@@ -3,8 +3,8 @@
 
 .. _deis_apps:
 
-apps
-====
+deis apps
+=========
 
 .. automethod:: client.deis.DeisClient.apps_create
 .. automethod:: client.deis.DeisClient.apps_list

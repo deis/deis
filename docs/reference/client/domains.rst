@@ -3,8 +3,8 @@
 
 .. _deis_domains:
 
-domains
-=======
+deis domains
+============
 
 .. automethod:: client.deis.DeisClient.domains_add
 .. automethod:: client.deis.DeisClient.domains_list

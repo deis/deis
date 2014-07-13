@@ -3,8 +3,8 @@
 
 .. _deis_releases:
 
-release
-=======
+deis releases
+=============
 
 .. automethod:: client.deis.DeisClient.releases_list
 .. automethod:: client.deis.DeisClient.releases_info

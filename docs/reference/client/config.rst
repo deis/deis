@@ -3,8 +3,8 @@
 
 .. _deis_config:
 
-config
-======
+deis config
+===========
 
 .. automethod:: client.deis.DeisClient.config_list
 .. automethod:: client.deis.DeisClient.config_set
