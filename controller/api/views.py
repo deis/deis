@@ -182,7 +182,7 @@ class ClusterViewSet(viewsets.ModelViewSet):
 
     model = models.Cluster
     serializer_class = serializers.ClusterSerializer
-    permission_classes = (permissions.IsAuthenticated, IsAdmin)
+    permission_classes = (permissions.IsAuthenticated, IsAdminOrSafeMethod)
     lookup_field = 'id'
 
     def pre_save(self, obj):

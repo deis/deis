@@ -74,3 +74,12 @@ class ClusterTest(TestCase):
                 'hosts': 'host1,host2', 'auth': 'base64string', 'options': options}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 403)
+
+    def test_user_read_access(self):
+        """
+        Test that a user has read-only access to the clusters endpoint
+        """
+        self.client.login(username='autotest2', password='password')
+        url = '/api/clusters'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
