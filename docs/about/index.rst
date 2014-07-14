@@ -1,10 +1,10 @@
-:title: Understanding Deis
+:title: About
 :description: Get started with Deis, the open source PaaS.
 
-.. _understanding_deis:
+.. _about:
 
-Understanding Deis
-==================
+About
+=====
 
 .. toctree::
 

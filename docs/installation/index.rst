@@ -1,10 +1,10 @@
-:title: Installing Deis
+:title: Installation Guide
 :description: Step-by-step guide for operations engineers setting up a private PaaS using Deis.
 
-.. _installing_deis:
+.. _installation_guide:
 
-Installing Deis
-================
+Installation Guide
+==================
 
 :Release: |version|
 :Date: |today|

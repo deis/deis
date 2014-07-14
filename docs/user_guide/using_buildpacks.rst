@@ -1,16 +1,20 @@
 :title: Deploying with Heroku Buildpacks on Deis
 :description: How to deploy applications on Deis using Heroku Buildpacks
 
-.. _using-buildpacks:
+.. _using_buildpacks:
 
 Using Buildpacks
 ================
+
 Deis supports deploying applications via `Heroku Buildpacks`_.
-Buildpacks are useful if you're interested in following Heroku's best practices for building applications or if you are deploying an application that already runs on Heroku.  
+Buildpacks are useful if you're interested in following Heroku's best practices for
+building applications or if you are deploying an application that already runs on Heroku.
 
 Prepare an Application
 ----------------------
-If you do not have an existing application, you can clone an example application that demonstrates the Heroku Buildpack workflow.
+
+If you do not have an existing application, you can clone an example application that
+demonstrates the Heroku Buildpack workflow.
 
 .. code-block:: console
 
@@ -19,6 +23,7 @@ If you do not have an existing application, you can clone an example application
 
 Create an Application
 ---------------------
+
 Use ``deis create`` to create an application on the :ref:`controller`.
 
 .. code-block:: console
@@ -29,6 +34,7 @@ Use ``deis create`` to create an application on the :ref:`controller`.
 
 Push to Deploy
 --------------
+
 Use ``git push deis master`` to deploy your application.
 
 .. code-block:: console
@@ -62,7 +68,7 @@ Use ``git push deis master`` to deploy your application.
     -----> Compiled slug size is 12M
     -----> Building Docker image
     Uploading context 11.81 MB
-    Uploading context 
+    Uploading context
     Step 0 : FROM deis/slugrunner
      ---> 5567a808891d
     Step 1 : RUN mkdir -p /app
@@ -83,7 +89,7 @@ Use ``git push deis master`` to deploy your application.
 
     -----> unisex-huntress deployed to Deis
            http://unisex-huntress.local.deisapp.com
-    
+
            To learn more, use `deis help` or visit http://deis.io
 
     To ssh://git@local.deisapp.com:2222/unisex-huntress.git
@@ -92,10 +98,12 @@ Use ``git push deis master`` to deploy your application.
     $ curl -s http://unisex-huntress.local.deisapp.com
     Powered by Deis!
 
-Because a Heroku-style application is detected, the ``web`` process type is automatically scaled to 1 on first deploy.
+Because a Heroku-style application is detected, the ``web`` process type is automatically
+scaled to 1 on first deploy.
 
 Included Buildpacks
 -------------------
+
 For convenience, a number of buildpacks come bundled with Deis:
 
  * `Java buildpack`_
@@ -115,10 +123,11 @@ are pushing.
 
 Using a Custom Buildpack
 ------------------------
+
 To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
 
 .. code-block:: console
-   
+
     $ deis config:set BUILDPACK_URL=https://github.com/dpiddy/heroku-buildpack-ruby-minimal
     Creating config... done, v2
 

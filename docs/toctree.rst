@@ -11,10 +11,10 @@ This documentation has the following resources:
 .. toctree::
 
    index
-   understanding_deis/index
-   installing_deis/index
-   using_deis/index
-   managing_deis/index
+   about/index
+   installation/index
+   user_guide/index
+   operations_guide/index
    contributing/index
    reference/index
    faq

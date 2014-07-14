@@ -1,16 +1,18 @@
 :title: Manage an Application on Deis
 :description: First steps for developers using Deis to deploy and scale applications.
 
-.. _manage-application:
+.. _manage_application:
 
 Manage an Application
 =====================
+
 Deis includes many tools for managing deployed :ref:`Applications <application>`.
 
 Scale the Application
 ---------------------
-Applications deployed on Deis `scale out via the process model`_.
-Use ``deis scale`` to control the number of :ref:`Containers <container>` that power your app.
+
+Applications deployed on Deis `scale out via the process model`_. Use :code:`deis scale`
+to control the number of :ref:`Containers <container>` that power your app.
 
 .. code-block:: console
 
@@ -30,18 +32,21 @@ Use ``deis scale`` to control the number of :ref:`Containers <container>` that p
     web.7 up 2013-12-03T00:30:11.010Z (dev-runtime-1)
     web.8 up 2013-12-03T00:30:11.027Z (dev-runtime-1)
 
-Scaling is managed by process types like ``web`` or ``worker`` defined in a
-`Procfile`_ in the root of your application repository.
+Scaling is managed by process types like :code:`web` or :code:`worker`, which are defined
+in a `Procfile`_ in the root of your application repository.
 
 .. note::
 
-    Docker applications can use the ``cmd`` process type to scale the default container command.
+    Dockerfile-based applications use the :code:`cmd` process type to scale the default
+    container command.
 
 Administer the Application
 --------------------------
-Deis applications `use one-off processes for admin tasks`_ like database migrations and other commands that must run against the live application.
 
-Use ``deis run`` to execute commands on the deployed application.
+Deis applications `use one-off processes for admin tasks`_ like database migrations and
+other commands that must run against the live application.
+
+Use :code:`deis run` to execute commands on the deployed application.
 
 .. code-block:: console
 
@@ -57,21 +62,24 @@ Use ``deis run`` to execute commands on the deployed application.
 
 Share the Application
 ---------------------
-Use ``deis sharing:add`` to allow another Deis user to collaborate on your application.
+
+Use :code:`deis sharing:add` to allow another Deis user to collaborate on your application.
 
 .. code-block:: console
 
   $ deis sharing:add otheruser
   Adding otheruser to peachy-waxworks collaborators... done
 
-Use ``deis sharing`` to see who an application is currently shared with, and
-``deis sharing:remove`` to remove a collaborator.
+Use :code:`deis sharing` to see who an application is currently shared with, and
+:code:`deis sharing:remove` to remove a collaborator.
 
 .. note::
     Collaborators can do anything with an application that its owner can do,
     except delete the application itself.
 
-When working with an application that has been shared with you, clone the original repository and add Deis' git remote entry before attempting to ``git push`` any changes to Deis.
+When working with an application that has been shared with you, clone the original
+repository and add Deis' git remote entry before attempting to :code:`git push` any
+changes to Deis.
 
 .. code-block:: console
 
@@ -85,9 +93,12 @@ When working with an application that has been shared with you, clone the origin
 
 Troubleshoot the Application
 ----------------------------
-Applications deployed on Deis `treat logs as event streams`_. Deis aggregates ``stdout`` and ``stderr`` from every :ref:`Container` making it easy to troubleshoot problems with your application.
 
-Use ``deis logs`` to view the log output from your deployed application.
+Applications deployed on Deis `treat logs as event streams`_. Deis aggregates standard
+output and standard error from every :ref:`Container`, making it easy to troubleshoot
+problems with your application.
+
+Use :ref:`deis logs <deis_apps>` to view the log output from your deployed application.
 
 .. code-block:: console
 

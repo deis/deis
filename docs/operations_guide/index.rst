@@ -1,9 +1,9 @@
-:title: Managing Deis
+:title: Operations Guide
 :description: Step-by-step guide for operations engineers setting up a private PaaS using Deis.
 
-.. _managing_deis:
+.. _operations_guide:
 
-Managing Deis
+Operations Guide
 ================
 
 :Release: |version|

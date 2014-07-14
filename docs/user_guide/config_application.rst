@@ -1,15 +1,17 @@
 :title: Configure an Application on Deis
 :description: Instructions for developers using Deis to configure applications.
 
-.. _config-application:
+.. _config_application:
 
 Configure an Application
 ========================
+
 A Deis application `stores config in environment variables`_.
 
 Configure the Application
 -------------------------
-Use ``deis config`` to modify environment variables for a deployed application.
+
+Use :ref:`deis_config` to modify environment variables for a deployed application.
 
 .. code-block:: console
 
@@ -26,11 +28,12 @@ When config is changed, a new release is created and deployed automatically.
 
 Attach to Backing Services
 --------------------------
+
 Deis treats backing services like databases, caches and queues as `attached resources`_.
 Attachments are performed using environment variables.
 
-For example, use ``deis config`` to set a `DATABASE_URL` that attaches
-the application to an external PostgreSQL database.
+For example, use :ref:`deis config:set <deis_config>` to set a `DATABASE_URL` that attaches the application
+to an external PostgreSQL database.
 
 .. code-block:: console
 
@@ -38,12 +41,12 @@ the application to an external PostgreSQL database.
     === peachy-waxworks
     DATABASE_URL: postgres://user:pass@example.com:5432/db
 
-Detachments can be performed with ``deis config:unset``.
+Detachments can be performed with :ref:`deis config:unset <deis_config>`.
 
 Add Custom Domains to the Application
 -------------------------------------
 
-You can use ``deis domains`` to add or remove custom domains to your application:
+You can use :ref:`deis_domains` to add or remove custom domains to your application:
 
 .. code-block:: console
 
@@ -71,8 +74,9 @@ appname to the old one:
 
 Track Changes
 -------------
-Each time a build or config change is made to your application, a new :ref:`release` is created.
-Track changes to your application using ``deis releases``.
+
+Each time a build or config change is made to your application, a new :ref:`release` is
+created. Track changes to your application using :ref:`deis_releases`.
 
 .. code-block:: console
 
@@ -85,7 +89,8 @@ Track changes to your application using ``deis releases``.
 
 Rollback the Application
 ------------------------
-Use ``deis rollback`` to revert to a previous release.
+
+Use :ref:`deis rollback <deis_releases>` to revert to a previous release.
 
 .. code-block:: console
 

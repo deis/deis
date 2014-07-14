@@ -1,16 +1,20 @@
 :title: Deploying with Dockerfiles on Deis
 :description: How to deploy applications on Deis using Dockerfiles
 
-.. _using-dockerfiles:
+.. _using_dockerfiles:
 
 Using Dockerfiles
 =================
-Deis supports deploying applications via Dockerfiles.  A `Dockerfile`_ automates the steps for crafting a `Docker Image`_.
-Dockerfiles are incredibly powerful but require some extra work to define your exact application runtime environment.
+
+Deis supports deploying applications via Dockerfiles.  A `Dockerfile`_ automates the steps
+for crafting a `Docker Image`_. Dockerfiles are incredibly powerful but require some extra
+work to define your exact application runtime environment.
 
 Prepare an Application
 ----------------------
-If you do not have an existing application, you can clone an example application that demonstrates the Dockerfile workflow.
+
+If you do not have an existing application, you can clone an example application that
+demonstrates the Dockerfile workflow.
 
 .. code-block:: console
 
@@ -19,6 +23,7 @@ If you do not have an existing application, you can clone an example application
 
 Dockerfile Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
+
 In order to deploy Dockerfile applications, they must conform to the following guidelines:
 
  * The Dockerfile must EXPOSE at least one port
@@ -31,6 +36,7 @@ In order to deploy Dockerfile applications, they must conform to the following g
 
 Create an Application
 ---------------------
+
 Use ``deis create`` to create an application on the :ref:`controller`.
 
 .. code-block:: console
@@ -41,6 +47,7 @@ Use ``deis create`` to create an application on the :ref:`controller`.
 
 Push to Deploy
 --------------
+
 Use ``git push deis master`` to deploy your application.
 
 .. code-block:: console
@@ -53,7 +60,7 @@ Use ``git push deis master`` to deploy your application.
     Total 13 (delta 2), reused 0 (delta 0)
     -----> Building Docker image
     Uploading context 4.096 kB
-    Uploading context 
+    Uploading context
     Step 0 : FROM deis/base:latest
      ---> 60024338bc63
     Step 1 : MAINTAINER OpDemand <info@opdemand.com>
@@ -96,9 +103,9 @@ Use ``git push deis master`` to deploy your application.
     Removing intermediate container 7eb8ec45dcb0
     Successfully built ea1a8cc93ca3
     -----> Pushing image to private registry
-    
+
            Launching... done, v2
-    
+
     -----> folksy-offshoot deployed to Deis
            http://folksy-offshoot.local.deisapp.com
 
@@ -106,7 +113,7 @@ Use ``git push deis master`` to deploy your application.
 
     To ssh://git@local.deisapp.com:2222/folksy-offshoot.git
      * [new branch]      master -> master
-     
+
     $ curl -s http://folksy-offshoot.local.deisapp.com
     Welcome to Deis!
     See the documentation at http://docs.deis.io/ for more information.
@@ -115,6 +122,7 @@ Because a Dockerfile application is detected, the ``cmd`` process type is automa
 
 Define Process Types
 --------------------
+
 Docker containers have a default command usually specified by a `CMD instruction`_.
 Deis uses the ``cmd`` process type to refer to this default command.
 

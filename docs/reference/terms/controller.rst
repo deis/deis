@@ -5,10 +5,11 @@
 
 Controller
 ==========
-The controller is the "brain" of the Deis platform. A controller
-manages :ref:`Clusters <cluster>`, comprised of groups of nodes
-providing proxy and runtime services for the application platform. A
-single controller manages multiple clusters and applications.
+
+The controller is the "brain" of the Deis platform. A controller manages
+:ref:`Clusters <cluster>`, comprised of groups of nodes providing proxy and runtime
+services for the application platform. A single controller manages multiple clusters and
+applications.
 
 The controller is in charge of:
 
@@ -28,5 +29,4 @@ The controller stack includes:
 .. * A lightweight *gitreceive* hook for ``git push`` access control
 .. * Docker and Slugbuilder to process Heroku Buildpacks and Dockerfiles
 
-Follow the :ref:`Installing Deis <installing_deis>` guide to create your own
-private Deis controller.
+Follow the :ref:`installation_guide` to create your own private Deis controller.
