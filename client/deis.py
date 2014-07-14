@@ -395,23 +395,29 @@ class DeisClient(object):
         apps:run           run a command in an ephemeral app container
         apps:destroy       destroy an application
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.apps_list(args)
 
     def apps_create(self, args):
         """
-        Create a new application
+        Creates a new application.
 
-        If no ID is provided, one will be generated automatically.
-        If no cluster is provided, a cluster named "dev" will be used.
+        - if no <id> is provided, one will be generated automatically.
+        - if no <cluster> is provided, a <cluster> named "dev" will be used.
 
-        Usage: deis apps:create [<id> --cluster=<cluster> --no-remote] [options]
+        Usage: deis apps:create [<id>] [options]
 
-        Options
+        Arguments:
+          <id>
+            a uniquely identifiable name for the application. No other app can already
+            exist with this name.
 
-        --cluster=CLUSTER      target cluster to host application [default: dev]
-        --no-remote            do not create a 'deis' git remote
+        Options:
+          --cluster=<cluster>
+            target cluster to host application (default: dev).
+          --no-remote
+            do not create a `deis` git remote.
         """
         body = {}
         app_name = None
@@ -462,9 +468,16 @@ class DeisClient(object):
 
     def apps_destroy(self, args):
         """
-        Destroy an application
+        Destroys an application.
 
-        Usage: deis apps:destroy [--app=<id> --confirm=<confirm>]
+        Usage: deis apps:destroy [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
+          --confirm=<app>
+            skips the prompt for the application name. <app> is the uniquely identifiable
+            name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -509,7 +522,7 @@ class DeisClient(object):
 
     def apps_list(self, args):
         """
-        List applications visible to the current user
+        Lists applications visible to the current user.
 
         Usage: deis apps:list
         """
@@ -524,9 +537,13 @@ class DeisClient(object):
 
     def apps_info(self, args):
         """
-        Print info about the current application
+        Prints info about the current application.
 
-        Usage: deis apps:info [--app=<app>]
+        Usage: deis apps:info [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -544,9 +561,13 @@ class DeisClient(object):
 
     def apps_open(self, args):
         """
-        Open a URL to the application in a browser
+        Opens a URL to the application in the default browser.
 
-        Usage: deis apps:open [--app=<app>]
+        Usage: deis apps:open [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -568,9 +589,13 @@ class DeisClient(object):
 
     def apps_logs(self, args):
         """
-        Retrieve the most recent log events
+        Retrieves the most recent log events.
 
-        Usage: deis apps:logs [--app=<app>]
+        Usage: deis apps:logs [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -584,9 +609,13 @@ class DeisClient(object):
 
     def apps_run(self, args):
         """
-        Run a command inside an ephemeral app container
+        Runs a command inside an ephemeral app container.
 
         Usage: deis apps:run [--app=<app> --] <command>...
+
+        Arguments:
+          <command>
+            the shell command to run inside the container.
         """
         app = args.get('--app')
         if not app:
@@ -612,21 +641,27 @@ class DeisClient(object):
         auth:login             authenticate against a controller
         auth:logout            clear the current user session
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return
 
     def auth_register(self, args):
         """
-        Register a new user with a Deis controller
+        Registers a new user with a Deis controller.
 
         Usage: deis auth:register <controller> [options]
 
-        Options:
+        Arguments:
+          <controller>
+            fully-qualified controller URI, e.g. `http://deis.local.deisapp.com/`
 
-        --username=USERNAME    provide a username for the new account
-        --password=PASSWORD    provide a password for the new account
-        --email=EMAIL          provide an email address
+        Options:
+          --username=<username>
+            provide a username for the new account.
+          --password=<password>
+            provide a password for the new account.
+          --email=<email>
+            provide an email address.
         """
         controller = args['<controller>']
         if not urlparse.urlparse(controller).scheme:
@@ -665,7 +700,7 @@ class DeisClient(object):
 
     def auth_cancel(self, args):
         """
-        Cancel and remove the current account.
+        Cancels and removes the current account.
 
         Usage: deis auth:cancel
         """
@@ -689,9 +724,19 @@ class DeisClient(object):
 
     def auth_login(self, args):
         """
-        Login by authenticating against a controller
+        Logs in by authenticating against a controller.
 
-        Usage: deis auth:login <controller> [--username=<username> --password=<password>]
+        Usage: deis auth:login <controller> [options]
+
+        Arguments:
+          <controller>
+            a fully-qualified controller URI, e.g. `http://deis.local.deisapp.com/`.
+
+        Options:
+          --username=<username>
+            provide a username for the account.
+          --password=<password>
+            provide a password for the account.
         """
         controller = args['<controller>']
         if not urlparse.urlparse(controller).scheme:
@@ -722,7 +767,7 @@ class DeisClient(object):
 
     def auth_logout(self, args):
         """
-        Logout from a controller and clear the user session
+        Logs out from a controller and clears the user session.
 
         Usage: deis auth:logout
         """
@@ -742,7 +787,7 @@ class DeisClient(object):
         builds:list        list build history for an application
         builds:create      coming soon!
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.builds_list(args)
 
@@ -751,7 +796,7 @@ class DeisClient(object):
         Creates a new build of an application. Imports an <image> and deploys it to Deis
         as a new release.
 
-        Usage: deis builds:create <image> [--app=<app>]
+        Usage: deis builds:create <image> [options]
 
         Arguments:
           <image>
@@ -783,9 +828,13 @@ class DeisClient(object):
 
     def builds_list(self, args):
         """
-        List build history for an application
+        Lists build history for an application.
 
-        Usage: deis builds:list [--app=<app>]
+        Usage: deis builds:list [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -809,35 +858,37 @@ class DeisClient(object):
         clusters:info          print a represenation of the cluster
         clusters:destroy       destroy a cluster
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.clusters_list(args)
 
     def clusters_create(self, args):
         """
-        Create a new cluster
-
-        A globally unique cluster ID must be provided.
-
-        A domain field must also be provided to support multiple
-        applications hosted on the cluster.  Note this requires
-        wildcard DNS configuration on the domain.
-
-        For example, a domain of "deisapp.com" requires that \\*.deisapp.com\\
-        resolve to the cluster's router endpoints.
+        Creates a new cluster.
 
         Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
 
-        Parameters:
+        Arguments:
+          <id>
+            a uniquely identifiable name for the cluster, such as 'dev' or 'prod'.
+          <domain>
+            a domain under which app hostnames will live. This must be provided to support
+            multiple applications hosted on the cluster.
 
-        <id>             a name for the cluster
-        <domain>         a domain under which app hostnames will live
-        <hosts>          a comma-separated list of cluster members
-        <auth>           a path to an SSH private key used to connect to cluster members
+            Note: this requires wildcard DNS configuration on the domain. For example, a
+            <domain> of `deisapp.com` requires that `*.deisapp.com` resolves to one of the
+            cluster's router endpoints or the load balancer in front of the routers.
+          --hosts=<hosts>
+            a comma-separated list of the cluster members' private IP addresses.
+          --auth=<auth>
+            a local file path to a SSH private key. This is the key used to provision and
+            connect to the cluster members.
+
+            NOTE: for EC2 and Rackspace, this key is likely `~/.ssh/deis`.
 
         Options:
-
-        --type=TYPE      cluster type [default: coreos]
+          --type=<type>
+            cluster type [default: coreos].
         """
         body = {'id': args['<id>'], 'domain': args['<domain>'],
                 'hosts': args['--hosts'], 'type': args['--type']}
@@ -866,9 +917,13 @@ class DeisClient(object):
 
     def clusters_info(self, args):
         """
-        Print info about a cluster
+        Prints information about a cluster.
 
         Usage: deis clusters:info <id>
+
+        Arguments:
+          <id>
+            the uniquely identifiable name for the cluster.
         """
         cluster = args.get('<id>')
         response = self._dispatch('get', "/api/clusters/{}".format(cluster))
@@ -881,7 +936,7 @@ class DeisClient(object):
 
     def clusters_list(self, args):
         """
-        List available clusters
+        Lists available clusters.
 
         Usage: deis clusters:list
         """
@@ -896,9 +951,18 @@ class DeisClient(object):
 
     def clusters_destroy(self, args):
         """
-        Destroy a cluster
+        Destroys a cluster.
 
-        Usage: deis clusters:destroy <id> [--confirm=<confirm>]
+        Usage: deis clusters:destroy <id> [options]
+
+        Arguments:
+          <id>
+            the uniquely identifiable name for the cluster.
+
+        Options:
+          --confirm=<id>
+            skips the prompt for the cluster name. <id> is the uniquely identifiable name
+            for the cluster.
         """
         cluster = args.get('<id>')
         confirm = args.get('--confirm')
@@ -932,13 +996,24 @@ class DeisClient(object):
 
     def clusters_update(self, args):
         """
-        Update cluster fields
+        Updates cluster fields.
 
-        Usage: deis clusters:update <id> [--domain=<domain> --hosts=<hosts> --auth=<auth>] [options]
+        Usage: deis clusters:update <id> [options]
+
+        Arguments:
+          <id>
+            the uniquely identifiable name for the cluster.
 
         Options:
-
-        --type=TYPE      cluster type [default: coreos]
+          --domain=<domain>
+            a domain under which app hostnames will live. See `deis help clusters:create`
+            for more information.
+          --hosts=<hosts>
+            a comma-separated list of cluster members.
+          --auth=<auth>
+            a local file path to a SSH private key used to connect to cluster members.
+          --type=<type>
+            cluster type (default: coreos).
         """
         cluster = args['<id>']
         body = {}
@@ -972,7 +1047,7 @@ class DeisClient(object):
         config:unset       unset environment variables for an app
         config:pull        extract environment variables to .env
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         sys.argv[1] = 'config:list'
         args = docopt(self.config_list.__doc__)
@@ -980,9 +1055,15 @@ class DeisClient(object):
 
     def config_list(self, args):
         """
-        List environment variables for an application
+        Lists environment variables for an application.
 
-        Usage: deis config:list [--oneline] [--app=<app>]
+        Usage: deis config:list [options]
+
+        Options:
+          --oneline
+            print output on one line.
+          --app=<app>
+            the uniquely identifiable name of the application.
         """
         app = args.get('--app')
         if not app:
@@ -1016,9 +1097,19 @@ class DeisClient(object):
 
     def config_set(self, args):
         """
-        Set environment variables for an application
+        Sets environment variables for an application.
 
-        Usage: deis config:set <var>=<value>... [--app=<app>]
+        Usage: deis config:set <var>=<value>... [options]
+
+        Arguments:
+          <var>
+            the uniquely identifiable name for the environment variable.
+          <value>
+            the value of said environment variable.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1050,9 +1141,17 @@ class DeisClient(object):
 
     def config_unset(self, args):
         """
-        Unset an environment variable for an application
+        Unsets an environment variable for an application.
 
-        Usage: deis config:unset <key>... [--app=<app>]
+        Usage: deis config:unset <key>... [options]
+
+        Arguments:
+          <key>
+            the variable to remove from the application's environment.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1143,15 +1242,23 @@ class DeisClient(object):
         domains:list          list domains bound to an application
         domains:remove        unbind a domain from an application
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.domains_list(args)
 
     def domains_add(self, args):
         """
-        Bind a domain to an application
+        Binds a domain to an application.
 
-        Usage: deis domains:add <domain> [--app=<app>]
+        Usage: deis domains:add <domain> [options]
+
+        Arguments:
+          <domain>
+            the domain name to be bound to the application, such as `domain.deisapp.com`.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1174,9 +1281,17 @@ class DeisClient(object):
 
     def domains_remove(self, args):
         """
-        Unbind a domain for an application
+        Unbinds a domain for an application.
 
-        Usage: deis domains:remove <domain> [--app=<app>]
+        Usage: deis domains:remove <domain> [options]
+
+        Arguments:
+          <domain>
+            the domain name to be removed from the application.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1198,9 +1313,13 @@ class DeisClient(object):
 
     def domains_list(self, args):
         """
-        List domains bound to an application
+        Lists domains bound to an application.
 
-        Usage: deis domains:list [--app=<app>]
+        Usage: deis domains:list [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1225,7 +1344,7 @@ class DeisClient(object):
         ps:list        list application processes
         ps:scale       scale processes (e.g. web=4 worker=2)
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         sys.argv[1] = 'ps:list'
         args = docopt(self.ps_list.__doc__)
@@ -1233,9 +1352,13 @@ class DeisClient(object):
 
     def ps_list(self, args, app=None):
         """
-        List processes servicing an application
+        Lists processes servicing an application.
 
-        Usage: deis ps:list [--app=<app>]
+        Usage: deis ps:list [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         if not app:
             app = args.get('--app')
@@ -1259,17 +1382,26 @@ class DeisClient(object):
 
     def ps_scale(self, args):
         """
-        Scale an application's processes by type
+        Scales an application's processes by type.
 
-        Example: deis ps:scale web=4 worker=2
+        Usage: deis ps:scale <type>=<num>... [options]
 
-        Usage: deis ps:scale <type=num>... [--app=<app>]
+        Arguments:
+          <type>
+            the process name as defined in your Procfile, such as 'web' or 'worker'.
+            Note that Dockerfile apps have a default 'cmd' process type.
+          <num>
+            the number of processes.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
         body = {}
-        for type_num in args.get('<type=num>'):
+        for type_num in args.get('<type>=<num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
         sys.stdout.write('Scaling processes... but first, coffee!\n')
@@ -1298,15 +1430,19 @@ class DeisClient(object):
         keys:add         add an SSH key
         keys:remove      remove an SSH key
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.keys_list(args)
 
     def keys_add(self, args):
         """
-        Add SSH keys for the logged in user
+        Adds SSH keys for the logged in user.
 
         Usage: deis keys:add [<key>]
+
+        Arguments:
+          <key>
+            a local file path to an SSH public key used to push application code.
         """
 
         path = args.get('<key>')
@@ -1376,7 +1512,7 @@ class DeisClient(object):
 
     def keys_list(self, args):
         """
-        List SSH keys for the logged in user
+        Lists SSH keys for the logged in user.
 
         Usage: deis keys:list
         """
@@ -1396,9 +1532,13 @@ class DeisClient(object):
 
     def keys_remove(self, args):
         """
-        Remove an SSH key for the logged in user
+        Removes an SSH key for the logged in user.
 
         Usage: deis keys:remove <key>
+
+        Arguments:
+          <key>
+            the SSH public key to revoke source code push access.
         """
         key = args.get('<key>')
         sys.stdout.write("Removing {} SSH Key... ".format(key))
@@ -1417,7 +1557,7 @@ class DeisClient(object):
         perms:create          create a new permission for a user
         perms:delete          delete a permission for a user
 
-        Use `deis help perms:[command]` to learn more
+        Use `deis help perms:[command]` to learn more.
         """
         # perms:transfer        transfer ownership of an app or cluster
         sys.argv[1] = 'perms:list'
@@ -1426,10 +1566,17 @@ class DeisClient(object):
 
     def perms_list(self, args):
         """
-        List all users with permission to use an app, or list all users
-        with system administrator privileges.
+        Lists all users with permission to use an app, or lists all users with system
+        administrator privileges.
 
         Usage: deis perms:list [--app=<app>|--admin]
+
+        Options:
+          --app=<app>
+            lists all users with permission to <app>. <app> is the uniquely identifiable name
+            for the application.
+          --admin
+            lists all users with system administrator privileges.
         """
         app, url = self._parse_perms_args(args)
         response = self._dispatch('get', url)
@@ -1440,10 +1587,21 @@ class DeisClient(object):
 
     def perms_create(self, args):
         """
-        Give another user permission to use an app, or give another user
+        Gives another user permission to use an app, or gives another user
         system administrator privileges.
 
         Usage: deis perms:create <username> [--app=<app>|--admin]
+
+        Arguments:
+          <username>
+            the name of the new user.
+
+        Options:
+          --app=<app>
+            grants <username> permission to use <app>. <app> is the uniquely identifiable name
+            for the application.
+          --admin
+            grants <username> system administrator privileges.
         """
         app, url = self._parse_perms_args(args)
         username = args.get('<username>')
@@ -1462,10 +1620,21 @@ class DeisClient(object):
 
     def perms_delete(self, args):
         """
-        Revoke another user's permission to use an app, or revoke another
-        user's system administrator privileges.
+        Revokes another user's permission to use an app, or revokes another user's system
+        administrator privileges.
 
         Usage: deis perms:delete <username> [--app=<app>|--admin]
+
+        Arguments:
+          <username>
+            the name of the user.
+
+        Options:
+          --app=<app>
+            revokes <username> permission to use <app>. <app> is the uniquely identifiable name
+            for the application.
+          --admin
+            revokes <username> system administrator privileges.
         """
         app, url = self._parse_perms_args(args)
         username = args.get('<username>')
@@ -1501,15 +1670,23 @@ class DeisClient(object):
         releases:info        print information about a specific release
         releases:rollback    return to a previous release
 
-        Use `deis help [command]` to learn more
+        Use `deis help [command]` to learn more.
         """
         return self.releases_list(args)
 
     def releases_info(self, args):
         """
-        Print info about a particular release
+        Prints info about a particular release.
 
-        Usage: deis releases:info <version> [--app=<app>]
+        Usage: deis releases:info <version> [options]
+
+        Arguments:
+          <version>
+            the release of the application, such as 'v1'.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         version = args.get('<version>')
         if not version.startswith('v'):
@@ -1526,9 +1703,13 @@ class DeisClient(object):
 
     def releases_list(self, args):
         """
-        List release history for an application
+        Lists release history for an application.
 
-        Usage: deis releases:list [--app=<app>]
+        Usage: deis releases:list [options]
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1545,9 +1726,17 @@ class DeisClient(object):
 
     def releases_rollback(self, args):
         """
-        Roll back to a previous application release.
+        Rolls back to a previous application release.
 
-        Usage: deis releases:rollback [--app=<app>] [<version>]
+        Usage: deis releases:rollback [<version>] [options]
+
+        Arguments:
+          <version>
+            the release of the application, such as 'v1'.
+
+        Options:
+          --app=<app>
+            the uniquely identifiable name of the application.
         """
         app = args.get('--app')
         if not app:
@@ -1580,7 +1769,7 @@ class DeisClient(object):
 
     def shortcuts(self, args):
         """
-        Show valid shortcuts for client commands.
+        Shows valid shortcuts for client commands.
 
         Usage: deis shortcuts
         """
@@ -1613,7 +1802,7 @@ SHORTCUTS = OrderedDict([
 
 def parse_args(cmd):
     """
-    Parse command-line args applying shortcuts and looking for help flags
+    Parses command-line args applying shortcuts and looking for help flags.
     """
     if cmd == 'help':
         cmd = sys.argv[-1]
