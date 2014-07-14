@@ -33,7 +33,7 @@ test-unit:
 	go test -v -cover ./syslog
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
 
 coverage:
 	go test -coverprofile coverage.out ./syslog
