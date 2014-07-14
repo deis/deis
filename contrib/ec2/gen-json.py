@@ -2,7 +2,7 @@
 import json
 import os
 
-template = json.load(open("deis.template",'r'))
+template = json.load(open("deis.template.json",'r'))
 
 with open('../coreos/user-data','r') as f:
   lines = f.readlines()
