@@ -42,10 +42,6 @@ By default, the Makefile will provision 1 router. You can override this by setti
 $ export DEIS_NUM_ROUTERS=2
 ```
 
-## Customize user-data
-Edit [user-data](../coreos/user-data) and add a new discovery URL.
-You can get a new one by sending a request to http://discovery.etcd.io/new.
-
 ## Customize cloudformation.json
 By default, this script spins up m3.large instances. You can override this
 by adding a new entry to [cloudformation.json](cloudformation.json) like so:
