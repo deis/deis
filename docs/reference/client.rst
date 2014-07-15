@@ -1,5 +1,5 @@
 :title: Client Reference
-:description: A reference guide to all Deis client commands
+:description: A reference guide to all Deis client commands.
 
 .. _client_ref:
 
