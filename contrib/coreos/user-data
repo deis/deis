@@ -78,7 +78,11 @@ coreos:
       Type=oneshot
       ExecStartPre=/usr/bin/rm /home/core/.bashrc
       ExecStart=/usr/bin/ln -s /run/deis/.bashrc /home/core/.bashrc
+  - name: systemd-sysctl.service
+    command: restart
 write_files:
+  - path: /etc/sysctl.d/shorter-tcpkeepalive.conf
+    content: net.ipv4.tcp_keepalive_time=45
   - path: /etc/deis-release
     content: |
       DEIS_RELEASE=latest
