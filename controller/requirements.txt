@@ -4,7 +4,7 @@
 # ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [args]
 #
 celery==3.1.11
-Django==1.6.4
+Django==1.6.5
 django-allauth==0.15.0
 # HACK: use bacongobbler's feature branch until
 # https://github.com/kmmbvnr/django-fsm/pull/31 is merged
@@ -19,4 +19,4 @@ python-etcd==0.3.0
 PyYAML==3.10
 redis==2.9.1
 static==1.0.2
-South==0.8.4
+South==1.0
