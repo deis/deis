@@ -30,10 +30,9 @@ port 80 on all nodes in the Deis cluster. The health check endpoint returns an H
 the load balancer to serve trafic to whichever hosts happen to be running the deis-router component
 at any moment.
 
-.. note::
+SSH Keepalive Setting
+---------------------
 
-  Elastic load balancers on EC2 appear to have a default timeout of 60 seconds, which will disrupt
-  a ``git push`` when using Deis. Users can request an increased timeout from Amazon. More details
-  are in this AWS `support thread`_.
-
-.. _`support thread`: https://forums.aws.amazon.com/thread.jspa?messageID=423862
+Most Loadbalancers/Firewalls have a minimum timeout of 60 seconds. (eg AWS ELB has it at 60 seconds).
+The Deis-Builder is configured to have a SSH Keepalive every 45 seconds so the connection is kept open
+while the Builder is busy building things which can sometimes take a longer time.
