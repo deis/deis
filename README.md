@@ -87,7 +87,7 @@ $ ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 or
 ```console
-$ cd client && python setup.py install
+$ pip install client/
 ```
 
 ## Register a User
