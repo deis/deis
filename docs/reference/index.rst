@@ -11,6 +11,6 @@ Reference Guide
 
     usage
     terms/index
-    client/index
+    client
     server/index
 
