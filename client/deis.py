@@ -784,7 +784,8 @@ class DeisClient(object):
 
     def builds_create(self, args):
         """
-        Creates a new build of an application.
+        Creates a new build of an application. Imports an <image> and deploys it to Deis
+        as a new release.
 
         Usage: deis builds:create <image> [--app=<app>]
 
