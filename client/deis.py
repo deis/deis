@@ -784,9 +784,18 @@ class DeisClient(object):
 
     def builds_create(self, args):
         """
-        Create a new build of an application
+        Creates a new build of an application.
 
         Usage: deis builds:create <image> [--app=<app>]
+
+        Arguments:
+          <image>
+            A fully-qualified docker image, either from DockerHub (e.g. deis/example-go)
+            or from an in-house registry (e.g. myregistry.example.com:5000/example-go).
+
+        Options:
+          --app=<app>
+            The uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:

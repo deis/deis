@@ -30,9 +30,9 @@ Select a Build Process
 ----------------------
 Deis supports three different ways of building applications:
 
- 1. `Heroku Buildpacks`_
- 2. `Dockerfiles`_
- 3. `Docker Image`_ (coming soon)
+ 1. `Heroku Buildpack`_
+ 2. `Dockerfile`_
+ 3. `Docker Image`_
 
 Buildpacks
 ^^^^^^^^^^
@@ -45,6 +45,14 @@ Dockerfiles
 Dockerfiles are a powerful way to define a portable execution environment built on a base OS of your choosing.
 
 Learn how to use deploy applications on Deis :ref:`using-dockerfiles`.
+
+Docker Image
+^^^^^^^^^^^^
+Deploying a Docker image onto Deis allows you to take a Docker image from either a public
+or a private registry and copy it over bit-for-bit, ensuring that you are running the same
+image in development or in your CI pipeline as you are in production.
+
+Learn how to deploy applications on Deis using :ref:`deis_builds`.
 
 
 .. _`twelve-factor methodology`: http://12factor.net/
