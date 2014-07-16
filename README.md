@@ -28,7 +28,7 @@ the host machine. Please be sure you have sufficient free memory before
 proceeding.
 
 Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known
-release for 14.04) has some issues when running in ram-constrained
+release for 14.04) has some issues when running in RAM-constrained
 environments. Please install the lastest version of VirtualBox from Oracle's
 website.
 
