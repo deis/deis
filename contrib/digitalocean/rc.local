@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -ex
+
+function echo_red {
+  echo -e "\033[0;31m$1\033[0m"
+}
+
+function error_handler () {
+	set +ex
+	echo_red "An error occured while bootstrapping CoreOS."
+	while true; do sleep 1; done
+	exit 1
+}
+trap error_handler ERR
+
+# create coreos cloud-config
+PUBLIC_IP=$(/sbin/ip -4 -o addr show dev eth0 | awk '{ print $4; }')
+PRIVATE_IP=$(/sbin/ip -4 -o addr show dev eth1 | awk '{ print $4; }')
+GATEWAY=$(/sbin/ip route | awk '/default/ { print $3 }')
+SSH_KEY="$(cat /root/.ssh/authorized_keys | head -n1)"
+sed "s,HOSTNAME,$HOSTNAME,;s,PUBLIC_IP,$PUBLIC_IP,;s,PRIVATE_IP,$PRIVATE_IP,;s,GATEWAY,$GATEWAY,;s,SSH_KEY,$SSH_KEY," /usr/share/oem/cloud-config.yml.template > /usr/share/oem/cloud-config.yml
+
+# download coreos, kernel and create initrd
+/usr/sbin/update-coreos
+
+# run CoreOS kernel
+/sbin/kexec --load /boot/coreos/vmlinuz --initrd /boot/coreos/initrd.cpio.gz
+/sbin/kexec --exec
