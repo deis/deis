@@ -3,7 +3,7 @@ package verbose
 import (
 	_ "fmt"
 	"github.com/deis/deis/tests/integration-utils"
-	_ "github.com/deis/deis/tests/utils"
+	"github.com/deis/deis/tests/utils"
 	"testing"
 )
 
