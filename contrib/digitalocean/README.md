@@ -52,9 +52,10 @@ Run the provision script:
 $ ./provision-do-cluster.sh <REGION_ID> <IMAGE_ID> <SSH_ID> <SIZE>
 ```
 
-Not all regions allow private networks. Choose one which does, e.g. NY 2, Amsterdam 2 or
-Singapore 1 at the time of this writing (check the web UI for the current private network
-support). You can enumerate all the regions with:
+Not all regions allow private networks. Choose one which does (at the time of this writing, NY 2,
+Amsterdam 2, Singapore 1 or London 1) - check the web UI for the current private network support.
+
+You can enumerate all the regions with:
 
 ```console
 $ tugboat regions

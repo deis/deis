@@ -30,7 +30,7 @@ if [ -z "$1" ]; then
 fi
 
 SSH_ID="$1"
-REGION="${2:-5}" # Amsterdam 1 by default
+REGION="${2:-4}" # NYC 2 by default
 SIZE="66" # 512 MB
 NAME="deis-controller-image-$(date +%Y%m%d%H%M%S)"
 
