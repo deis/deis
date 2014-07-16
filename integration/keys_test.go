@@ -20,9 +20,9 @@ func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, true, "Uploading deiskey to Deis...400 BAD REQUEST")
 }
 
-func keysListTest(t *testing.T, params *itutils.DeisTestConfig) {
+func keysListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
 	cmd := itutils.GetCommand("keys", "list")
-	itutils.CheckList(t, params, cmd, params.ClusterName, notflag)
+	itutils.CheckList(t, params, cmd, params.AuthKey, notflag)
 }
 
 func keysRemoveTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -35,5 +35,5 @@ func TestKeys(t *testing.T) {
 	keysAddTest(t, params)
 	keysListTest(t, params, false)
 	keysRemoveTest(t, params)
-	keysListTest(t, params, false)
+	keysListTest(t, params, true)
 }

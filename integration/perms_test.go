@@ -3,7 +3,7 @@ package verbose
 import (
 	_ "fmt"
 	"github.com/deis/deis/tests/integration-utils"
-	"github.com/deis/deis/tests/utils"
+	_ "github.com/deis/deis/tests/utils"
 	"testing"
 )
 
@@ -29,7 +29,7 @@ func permsSetup(t *testing.T) *itutils.DeisTestConfig {
 	return cfg
 }
 
-func permsCreateAppTest(t *testing.T, params,user *itutils.DeisTestConfig) {
+func permsCreateAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
 	var cmd string
 	cmd = itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, user, false, "")
@@ -40,10 +40,10 @@ func permsCreateAppTest(t *testing.T, params,user *itutils.DeisTestConfig) {
 	cmd = itutils.GetCommand("perms", "create-app")
 	itutils.Execute(t, cmd, params, false, "")
 	cmd = itutils.GetCommand("perms", "list-app")
-	itutils.CheckList(t,params,cmd,"test1",false)
+	itutils.CheckList(t, params, cmd, "test1", false)
 }
 
-func permsDeleteAppTest(t *testing.T, params,user *itutils.DeisTestConfig) {
+func permsDeleteAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
 	var cmd string
 	cmd = itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, user, false, "")
@@ -54,15 +54,14 @@ func permsDeleteAppTest(t *testing.T, params,user *itutils.DeisTestConfig) {
 	cmd = itutils.GetCommand("perms", "delete-app")
 	itutils.Execute(t, cmd, params, false, "")
 	cmd = itutils.GetCommand("perms", "list-app")
-	itutils.CheckList(t,params,cmd,"test1",true)
+	itutils.CheckList(t, params, cmd, "test1", true)
 }
-
 
 func permsCreateAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("perms", "create-admin")
 	itutils.Execute(t, cmd, params, false, "")
 	cmd = itutils.GetCommand("perms", "list-admin")
-	itutils.CheckList(t,params,cmd,"test1",false)
+	itutils.CheckList(t, params, cmd, "test1", false)
 
 }
 
@@ -70,19 +69,19 @@ func permsDeleteAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("perms", "delete-admin")
 	itutils.Execute(t, cmd, params, false, "")
 	cmd = itutils.GetCommand("perms", "list-admin")
-	itutils.CheckList(t,params,cmd,"test1",true)
+	itutils.CheckList(t, params, cmd, "test1", true)
 }
 
 func TestBuilds(t *testing.T) {
 	params := permsSetup(t)
 	user := itutils.GetGlobalConfig()
-	user.UserName, user.Password = "test1","test1"
+	user.UserName, user.Password = "test1", "test1"
 	user.AppName = params.AppName
 	cmd := itutils.GetCommand("auth", "register")
 	itutils.Execute(t, cmd, user, false, "")
-	permsCreateAppTest(t,params,user)
-	permsDeleteAppTest(t,params,user)
-	permsCreateAdminTest(t,params)
-	permsDeleteAdminTest(t,params)
-
+	permsCreateAppTest(t, params, user)
+	permsDeleteAppTest(t, params, user)
+	permsCreateAdminTest(t, params)
+	permsDeleteAdminTest(t, params)
+	itutils.AppsDestroyTest(t, params)
 }

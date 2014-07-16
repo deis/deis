@@ -51,7 +51,7 @@ func TestReleases(t *testing.T) {
 	releasesInfoTest(t, params)
 	releasesRollbackTest(t, params)
 	params.Version = "4"
-	releasesListTest(t, params, true)
+	releasesListTest(t, params, false)
 	itutils.AppsDestroyTest(t, params)
 
 }

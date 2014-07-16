@@ -39,7 +39,7 @@ func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatalf("Failed:\n%v", err)
 	}
-	itutils.Execute(t, cmd, params, true, "204 NO CONTENT")
+	itutils.Execute(t, cmd, params, true, "Could not find deis remote in `git remote -v`")
 }
 
 func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -82,7 +82,7 @@ func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 }
 
 func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, "http://"+params.AppName+"."+HostName)
+	itutils.Curl(t, "http://"+params.AppName+"."+params.HostName, params.ExampleApp)
 }
 
 func TestApps(t *testing.T) {

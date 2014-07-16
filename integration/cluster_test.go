@@ -28,17 +28,11 @@ func clustersListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool
 func clustersInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "info")
 	itutils.Execute(t, cmd, params, false, "")
-	params.ClusterName = "kin"
-	itutils.Execute(t, cmd, params, true, "Not found")
-	params.ClusterName = "devtest"
 }
 
 func clustersUpdateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "update")
 	itutils.Execute(t, cmd, params, false, "")
-	params.ClusterName = "kin"
-	itutils.Execute(t, cmd, params, true, "Not found")
-	params.ClusterName = "devtest"
 }
 
 func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {

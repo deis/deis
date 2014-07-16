@@ -44,5 +44,6 @@ func TestBuilds(t *testing.T) {
 	psScaleTest(t, params)
 	psListTest(t, params, false)
 	itutils.AppsDestroyTest(t, params)
-	psListTest(t, params, true)
+	cmd := itutils.GetCommand("ps", "list")
+	itutils.Execute(t, cmd, params, true, "404 NOT FOUND")
 }

@@ -2,7 +2,6 @@ package verbose
 
 import (
 	"fmt"
-	"github.com/ThomasRooney/gexpect"
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 	"testing"
