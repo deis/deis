@@ -23,6 +23,15 @@ On your workstation:
 * Install the fleetctl client: Install v0.5.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
+A single-node cluster launched with Vagrant will consume about 5 GB of ram on
+the host machine. Please be sure you have sufficient free memory before
+proceeding.
+
+Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known
+release for 14.04) has some issues when running in ram-constrained
+environments. Please install the lastest version of VirtualBox from Oracle's
+website.
+
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
 * Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
