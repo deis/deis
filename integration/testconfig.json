@@ -1,38 +1,64 @@
 {
   "commands": {
     "auth": {
-      "register":"register http://{{.HostName}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}",
-      "login": "auth:login http://{{.HostName}}  --username={{.UserName}} --password={{.Password}}",
+      "register":"register http://deis.{{.HostName}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}",
+      "login": "auth:login http://deis.{{.HostName}}  --username={{.UserName}} --password={{.Password}}",
       "logout": "auth:logout",
       "cancel":"auth:cancel"
     },
     "keys": {
-      "add": "keys:add {{.AuthKey}}.pub || true",
+      "add": "keys:add ~/.ssh/{{.AuthKey}}.pub || true",
       "list": "keys:list",
       "remove": "keys:remove {{.AuthKey}} ||true"
     },
     "clusters": {
-      "create": "clusters:create {{.ClusterName}} http://{{.HostName}} --hosts={{.Hosts}} --auth={{.AuthKey}} || true",
+      "create": "clusters:create {{.ClusterName}} {{.HostName}} --hosts={{.Hosts}} --auth={{.SshKey}}",
       "list": "clusters:list",
-      "update": "clusters:update {{.ClusterName}} --domain=http://{{.HostName}} --hosts={{.UpdatedHosts}} --auth={{.AuthKey}} ||true",
+      "update": "clusters:update {{.ClusterName}} --domain={{.HostName}} --hosts={{.UpdatedHosts}} --auth=~/.ssh/{{.AuthKey}}",
       "info": "clusters:info {{.ClusterName}}",
       "destroy" : "clusters:destroy {{.ClusterName}} --confirm={{.ClusterName}}"
+    },
+    "apps": {
+      "create": "apps:create {{.AppName}}",
+      "list": "apps:list",
+      "run": "apps:run echo hello",
+      "open":"apps:open --app={{.AppName}}",
+      "logs":"apps:logs --app={{.AppName}}",
+      "info": "apps:info --app={{.AppName}}",
+      "destroy" : "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+    },
+    "ps":{
+      "list" : "ps:list --app={{.AppName}}",
+      "scale" : "ps:scale web={{.ProcessNum}} --app={{.AppName}}"
+    },
+    "builds":{
+      "list" : "builds:list --app={{.AppName}}",
+      "create" : "builds:create {{.ImageId}} --app={{.AppName}}"
+    },
+    "releases":{
+      "list" : "releases:list --app={{.AppName}}",
+      "info" : "releases:info {{.Version}} --app={{.AppName}}",
+      "rollback": "releases:rollback {{.Version}} --app={{.AppName}}"
+    },
+    "perms":{
+      "list-app" : "perms:list --app={{.AppName}}",
+      "list-admin" : "perms:list --admin",
+      "create-app" : "perms:create {{.AppUser}} --app={{.AppName}}",
+      "create-admin": "perms:create {{.AppUser}} --admin",
+      "delete-app" : "perms:delete {{.AppUser}} --app={{.AppName}}",
+      "delete-admin": "perms:delete {{.AppUser}} --admin"
+    },
+    "config":{
+      "list" : "config:list --app={{.AppName}}",
+      "set" : "config:set jaf=1 --app={{.AppName}}",
+      "unset" : "config:unset jaf --app={{.AppName}}"
     },
     "git" : {
       "clone" : "git clone https://github.com/deis/{{.ExampleApp}}.git",
       "remove" : "git remote remove deis",
-      "push" : "git push deis master"
+      "push" : "git push deis master",
+      "add" : "git add .",
+      "commit" : "git commit -m fake"
     }
-  },
-  "apps": {
-    "go": ["example-go","helloworld"],
-    "ruby" : ["example-ruby-sinatra"],
-    "dart" : ["example-dart"],
-    "java" : ["example-java-jetty","example-play"],
-    "Javascript" : ["example-nodejs-express"],
-    "python" : ["example-python-django","example-python-flask","example-dockerfile-python"],
-    "scala" : ["example-scala"],
-    "php": ["example-php"],
-    "clojure":["example-clojure-ring"]
   }
 }

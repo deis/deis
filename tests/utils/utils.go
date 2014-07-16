@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -29,6 +30,31 @@ func GetFileBytes(filename string) []byte {
 	bs := make([]byte, stat.Size())
 	_, _ = file.Read(bs)
 	return bs
+}
+
+func CreateFile(name string) error {
+    fo, err := os.Create(name)
+    if err != nil {
+        return err
+    }
+    defer fo.Close()
+    return nil
+}
+
+func Chdir( app string ) error {
+	var wd, _ = os.Getwd()
+	dir, _ := filepath.Abs(filepath.Join(wd,app))
+	err := os.Chdir(dir)
+	fmt.Println(dir)
+	return err
+}
+
+func Rmdir( app string ) error {
+	var wd, _ = os.Getwd()
+	dir, _ := filepath.Abs(filepath.Join(wd,app))
+	err := os.RemoveAll(dir)
+	fmt.Println(dir)
+	return err
 }
 
 func GetUserDetails() (string, string) {
@@ -104,12 +130,10 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 	go func() {
 		io.Copy(&stdout, stdoutPipe)
 		fmt.Println(stdout.String())
-		//io.Copy(os.Stdout, stdoutPipe)
 	}()
 	go func() {
 		io.Copy(&stderr, stderrPipe)
 		fmt.Println(stderr.String())
-		//io.Copy(os.Stderr, stderrPipe)
 	}()
 	time.Sleep(2000 * time.Millisecond)
 	err = cmd.Wait()
