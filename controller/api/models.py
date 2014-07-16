@@ -618,7 +618,12 @@ def _etcd_purge_key(**kwargs):
 
 def _etcd_purge_user(**kwargs):
     username = kwargs['instance'].username
-    _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+    try:
+        _etcd_client.delete(
+            '/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+    except KeyError:
+        # If _etcd_publish_key() wasn't called, there is no user dir to delete.
+        pass
 
 
 def _etcd_publish_domains(**kwargs):
