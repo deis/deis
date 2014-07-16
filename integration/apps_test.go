@@ -1,36 +1,99 @@
 package verbose
 
 import (
-	"fmt"
 	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 	"testing"
 )
 
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GlobalSetup(t)
+	cfg := itutils.GetGlobalConfig()
+	cfg.ExampleApp = itutils.GetRandomApp()
+	cmd := itutils.GetCommand("auth", "login")
+	itutils.Execute(t, cmd, cfg, false, "")
+	cmd = itutils.GetCommand("git", "clone")
+	itutils.Execute(t, cmd, cfg, false, "")
 	return cfg
 }
 
-func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("keys", "add")
+func appsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := itutils.GetCommand("apps", "create")
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Uploading deis to Deis...400 BAD REQUEST")
+	itutils.Execute(t, cmd, params, true, "Deis remote already exists")
+
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
 }
 
-func keysListTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("keys", "list")
+func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := itutils.GetCommand("apps", "run")
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+	itutils.Execute(t, cmd, params, false, "")
+
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+	itutils.Execute(t, cmd, params, true, "204 NO CONTENT")
+}
+
+func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := itutils.GetCommand("apps", "destroy")
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, cmd, params, true, "400 BAD REQUEST")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+	if err := utils.Rmdir(params.ExampleApp); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+}
+
+func appsListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
+	cmd := itutils.GetCommand("apps", "list")
+	itutils.CheckList(t, params, cmd, params.AppName, notflag)
+}
+
+func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := itutils.GetCommand("apps", "logs")
+	cmd1 := itutils.GetCommand("git", "push")
+	itutils.Execute(t, cmd, params, true, "204 NO CONTENT")
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+	itutils.Execute(t, cmd1, params, false, "")
+	itutils.Execute(t, cmd, params, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatalf("Failed:\n%v", err)
+	}
+}
+
+func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := itutils.GetCommand("apps", "info")
 	itutils.Execute(t, cmd, params, false, "")
 }
 
-func keysRemoveTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("keys", "remove")
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Not found")
+func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Curl(t, "http://"+params.AppName+"."+HostName)
 }
 
-func TestKeys(t *testing.T) {
-	params := keysSetup(t)
-	keysAddTest(t, params)
-	keysListTest(t, params)
-	keysRemoveTest(t, params)
+func TestApps(t *testing.T) {
+	params := appsSetup(t)
+	appsCreateTest(t, params)
+	appsListTest(t, params, false)
+	appsLogsTest(t, params)
+	appsInfoTest(t, params)
+	appsRunTest(t, params)
+	appsOpenTest(t, params)
+	appsDestroyTest(t, params)
+	appsListTest(t, params, true)
+
 }

@@ -6,59 +6,53 @@ import (
 	"testing"
 )
 
-func clustersSetup(t *testing.T) *ClusterDetails {
-	cfg := itutils.GlobalSetup(t)
-	cscfg := itutils.ClusterDetails{
-		cfg.ClusterName,
-		cfg.Hosts,
-		"172.17.8.100",
-		cfg.AuthKey,
-		cfg.HostName,
-	}
-	cmd := itutils.GetCommand("keys", "add")
+func clustersSetup(t *testing.T) *itutils.DeisTestConfig {
+	cfg := itutils.GetGlobalConfig()
+	cfg.ClusterName = "devtest"
+	cmd := itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, cfg, false, "")
-	return &cscfg
+	return cfg
 }
 
-func clustersCreateTest(t *testing.T, params *ClusterDetails) {
+func clustersCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "create")
 	itutils.Execute(t, cmd, params, false, "")
 	itutils.Execute(t, cmd, params, true, "Cluster with this Id already exists")
 }
 
-func clustersListTest(t *testing.T, params *ClusterDetails) {
+func clustersListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
 	cmd := itutils.GetCommand("clusters", "list")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.CheckList(t, params, cmd, params.ClusterName, notflag)
 }
 
-func clustersInfoTest(t *testing.T, params *ClusterDetails) {
+func clustersInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "info")
 	itutils.Execute(t, cmd, params, false, "")
 	params.ClusterName = "kin"
 	itutils.Execute(t, cmd, params, true, "Not found")
-	params.ClusterName = "dev"
+	params.ClusterName = "devtest"
 }
 
-func clustersUpdateTest(t *testing.T, params *ClusterDetails) {
+func clustersUpdateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "update")
 	itutils.Execute(t, cmd, params, false, "")
 	params.ClusterName = "kin"
 	itutils.Execute(t, cmd, params, true, "Not found")
-	params.ClusterName = "dev"
+	params.ClusterName = "devtest"
 }
 
-func clustersDestroyTest(t *testing.T, params *ClusterDetails) {
+func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "destroy")
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Not found")
 }
 
 func TestKeys(t *testing.T) {
 	params := clustersSetup(t)
 	clustersCreateTest(t, params)
-	clustersListTest(t, params)
+	clustersListTest(t, params, false)
 	clustersInfoTest(t, params)
 	clustersUpdateTest(t, params)
-	//clustersDestroyTest(t, params)
+	clustersDestroyTest(t, params)
+	clustersListTest(t, params, true)
 
 }
