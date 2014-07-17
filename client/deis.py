@@ -353,7 +353,7 @@ class DeisClient(object):
         Dispatch an API request to the active Deis controller
         """
         func = getattr(self._session, method.lower())
-        controller = self._settings['controller']
+        controller = 'controller' in self._settings and self._settings['controller']
         if not controller:
             raise EnvironmentError(
                 'No active controller. Use `deis login` or `deis register` to get started.')
