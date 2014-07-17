@@ -10,12 +10,9 @@ import (
 
 func runDeisLoggerTest(
 	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testSessionUID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-logger-data",
 		"-v", "/var/log/deis", "deis/base", "true")
 	ipaddr := utils.GetHostIPAddress()
@@ -39,12 +36,15 @@ func runDeisLoggerTest(
 }
 
 func TestLogger(t *testing.T) {
-	var testSessionUID = utils.NewUuid()
+	testSessionUID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	etcdPort := utils.GetRandomPort()
-	servicePort := utils.GetRandomPort()
-	fmt.Println("UUID for the session logger Test :" + testSessionUID)
 	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
 	fmt.Println("starting logger component test:")
+	servicePort := utils.GetRandomPort()
 	runDeisLoggerTest(t, testSessionUID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
 		t, "deis-logger-"+testSessionUID, servicePort, "udp")

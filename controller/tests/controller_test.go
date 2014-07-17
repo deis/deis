@@ -12,12 +12,9 @@ import (
 )
 
 func runDeisControllerTest(t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testSessionUID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
@@ -39,18 +36,25 @@ func runDeisControllerTest(t *testing.T, testSessionUID string, etcdPort string,
 }
 
 func TestController(t *testing.T) {
-	setkeys := []string{"/deis/registry/protocol",
+	setkeys := []string{
+		"/deis/registry/protocol",
 		"deis/registry/host",
 		"/deis/registry/port",
 		"/deis/cache/host",
-		"/deis/cache/port"}
-	setdir := []string{"/deis/controller",
+		"/deis/cache/port",
+	}
+	setdir := []string{
+		"/deis/controller",
 		"/deis/cache",
 		"/deis/database",
 		"/deis/registry",
-		"/deis/domains"}
-	var testSessionUID = utils.NewUuid()
-	fmt.Println("UUID for the session Controller Test :" + testSessionUID)
+		"/deis/domains",
+	}
+	testSessionUID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	etcdPort := utils.GetRandomPort()
 	servicePort := utils.GetRandomPort()
 	dbPort := utils.GetRandomPort()

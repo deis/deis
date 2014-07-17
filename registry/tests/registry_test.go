@@ -11,12 +11,9 @@ import (
 
 func runDeisRegistryTest(
 	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testSessionUID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-registry-data",
 		"-v", "/data", "deis/base", "/bin/true")
 	ipaddr := utils.GetHostIPAddress()
@@ -41,12 +38,15 @@ func runDeisRegistryTest(
 }
 
 func TestRegistry(t *testing.T) {
-	var testSessionUID = utils.NewUuid()
-	fmt.Println("UUID for the session registry Test :" + testSessionUID)
+	testSessionUID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	etcdPort := utils.GetRandomPort()
-	servicePort := utils.GetRandomPort()
 	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
 	fmt.Println("starting registry component test")
+	servicePort := utils.GetRandomPort()
 	runDeisRegistryTest(t, testSessionUID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
 		t, "deis-registry-"+testSessionUID, servicePort, "http")
