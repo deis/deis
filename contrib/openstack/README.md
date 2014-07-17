@@ -11,7 +11,7 @@ $ sudo pip install https://github.com/openstack/python-novaclient/archive/2.18.1
 ```
 
 ### Configure supernova
-Edit `~novaclient-env.sh` to match the following:
+Edit `novaclient-env.sh` to match the following:
 ```
 export OS_AUTH_URL = {openstack_keystone}
 export OS_USERNAME = {openstack_username}
