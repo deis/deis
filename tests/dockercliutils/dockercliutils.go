@@ -284,24 +284,6 @@ func stopContainers(t *testing.T, sliceContainerIds []string) {
 	PrintToStdout(t, stdout, stdoutPipe, "removing container")
 }
 
-func removeImages(t *testing.T, sliceImageIds []string) {
-	cli, stdout, stdoutPipe := GetNewClient()
-	go func() {
-		for _, value := range sliceImageIds {
-			err := cli.CmdRmi("-f", value)
-			if err != nil {
-				if !((strings.Contains(fmt.Sprintf("%s", err), "No such image")) || (strings.Contains(fmt.Sprintf("%s", err), "one or more"))) {
-					t.Fatalf("removeImages %s", err)
-				}
-			}
-		}
-		if err := CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("remove Images %s", err)
-		}
-	}()
-	PrintToStdout(t, stdout, stdoutPipe, "removing container")
-}
-
 // ClearTestSession cleans up after a typical test session.
 func ClearTestSession(t *testing.T, uid string) {
 	fmt.Println("--- Clear test session", uid)
@@ -342,7 +324,6 @@ func RunEtcdTest(t *testing.T, uid string, port string) {
 				return
 			}
 		}
-		// PullImage(t, cli, "deis/test-etcd:latest")
 		done2 <- true
 		err = RunContainer(cli,
 			"--name", "deis-etcd-"+uid,
