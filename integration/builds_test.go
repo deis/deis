@@ -67,9 +67,14 @@ func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
 
 }
 
+func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Curl(t, params)
+}
+
 func TestBuilds(t *testing.T) {
 	params := buildSetup(t)
 	buildsListTest(t, params)
 	buildsCreateTest(t, params)
+	appsOpenTest(t, params)
 	itutils.AppsDestroyTest(t, params)
 }

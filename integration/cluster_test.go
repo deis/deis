@@ -30,9 +30,11 @@ func clustersInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, false, "")
 }
 
+//Tets #1283
+
 func clustersUpdateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "update")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.CheckList(t, params, cmd, "~/.ssh/"+params.AuthKey, true)
 }
 
 func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
