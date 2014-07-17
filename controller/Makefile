@@ -48,7 +48,7 @@ test: test-unit test-functional
 
 test-unit:
 	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -q -r requirements.txt
+	venv/bin/pip install -q -r requirements.txt -r dev_requirements.txt
 	venv/bin/python manage.py test --noinput api
 
 test-functional:
