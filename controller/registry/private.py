@@ -23,10 +23,16 @@ def publish_release(source, config, target):
     contains the new configuration as ENV entries.
     """
     try:
-        if source.count(':') == 2:
+        if source.count('/') == 2:
+            # image comes from private registry
             src_image = source.rsplit(':', 1)[0].split('/', 1)[1]
             src_tag = source.split(':')[2]
+        elif source.count('/') == 1 and source.count(':') == 1:
+            # image comes from dockerhub, includes tag
+            src_image = source.split(':')[0]
+            src_tag = source.split(':')[1]
         else:
+            # image comes from dockerhub, no tag
             src_image = source
             src_tag = 'latest'
         target_image = target.rsplit(':', 1)[0]
