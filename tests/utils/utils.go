@@ -54,6 +54,7 @@ func Append(slice []string, data string) []string {
 
 func GetRandomPort() string {
 	l, _ := net.Listen("tcp", "127.0.0.1:0") // listen on localhost
+	defer l.Close()
 	port := l.Addr()
 	return strings.Split(port.String(), ":")[1]
 }
