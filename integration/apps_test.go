@@ -8,6 +8,7 @@ import (
 
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
+	cfg.AppName = "appssample"
 	cfg.ExampleApp = itutils.GetRandomApp()
 	cmd := itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, cfg, false, "")
@@ -48,7 +49,6 @@ func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
 		t.Fatalf("Failed:\n%v", err)
 	}
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "400 BAD REQUEST")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatalf("Failed:\n%v", err)
 	}
@@ -82,7 +82,7 @@ func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 }
 
 func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, "http://"+params.AppName+"."+params.HostName, params.ExampleApp)
+	itutils.Curl(t, params)
 }
 
 func TestApps(t *testing.T) {

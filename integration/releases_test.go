@@ -45,11 +45,16 @@ func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, false, "")
 }
 
+func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Curl(t, params)
+}
+
 func TestReleases(t *testing.T) {
 	params := releasesSetup(t)
 	releasesListTest(t, params, false)
 	releasesInfoTest(t, params)
 	releasesRollbackTest(t, params)
+	appsOpenTest(t, params)
 	params.Version = "4"
 	releasesListTest(t, params, false)
 	itutils.AppsDestroyTest(t, params)

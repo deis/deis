@@ -42,6 +42,7 @@ func psScaleTest(t *testing.T, params *itutils.DeisTestConfig) {
 func TestBuilds(t *testing.T) {
 	params := psSetup(t)
 	psScaleTest(t, params)
+	appsOpenTest(t, params)
 	psListTest(t, params, false)
 	itutils.AppsDestroyTest(t, params)
 	cmd := itutils.GetCommand("ps", "list")

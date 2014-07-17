@@ -3,7 +3,7 @@ package verbose
 import (
 	_ "fmt"
 	"github.com/deis/deis/tests/integration-utils"
-	_ "github.com/deis/deis/tests/utils"
+	"github.com/deis/deis/tests/utils"
 	"testing"
 )
 
@@ -38,19 +38,24 @@ func configlistTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) 
 func configSetTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("config", "set")
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "web.1 up (v3)")
+	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "(v3)", false)
 }
 
 func configUnsetTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("config", "unset")
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "web.1 up (v4)")
+	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "(v4)", false)
+}
+
+func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Curl(t, params)
 }
 
 func TestConfig(t *testing.T) {
 	params := configSetup(t)
 	configSetTest(t, params)
 	configlistTest(t, params, false)
+	appsOpenTest(t, params)
 	configUnsetTest(t, params)
 	configlistTest(t, params, true)
 	itutils.AppsDestroyTest(t, params)
