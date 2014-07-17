@@ -9,6 +9,7 @@ THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
 CONTRIB_DIR=$(dirname $THIS_DIR)
 
 source $CONTRIB_DIR/utils.sh
+source $THIS_DIR/novaclient-env.sh
 
 if [ $# != 4 ]; then
   echo_red 'Usage: provision-openstack-cluster.sh <image id> <flavor> <key pair name> <net id>'
