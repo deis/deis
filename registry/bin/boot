@@ -27,15 +27,13 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-function etcd_safe_set {
-  if ! etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1 >/dev/null 2>&1; then
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/$1 $2 >/dev/null
-  fi
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
 # seed initial service configuration if necessary
-etcd_safe_set protocol http
-etcd_safe_set secretKey ${REGISTRY_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
+etcd_set_default protocol http
+etcd_set_default secretKey ${REGISTRY_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do

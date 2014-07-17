@@ -31,18 +31,16 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-function etcd_safe_set {
-  if ! etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1 >/dev/null 2>&1; then
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/$1 $2 >/dev/null
-  fi
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
-etcd_safe_set engine postgresql_psycopg2
-etcd_safe_set adminUser ${PG_ADMIN_USER:-postgres}
-etcd_safe_set adminPass ${PG_ADMIN_PASS:-changeme123}
-etcd_safe_set user ${PG_USER_NAME:-deis}
-etcd_safe_set password ${PG_USER_PASS:-changeme123}
-etcd_safe_set name ${PG_USER_DB:-deis}
+etcd_set_default engine postgresql_psycopg2
+etcd_set_default adminUser ${PG_ADMIN_USER:-postgres}
+etcd_set_default adminPass ${PG_ADMIN_PASS:-changeme123}
+etcd_set_default user ${PG_USER_NAME:-deis}
+etcd_set_default password ${PG_USER_PASS:-changeme123}
+etcd_set_default name ${PG_USER_DB:-deis}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
