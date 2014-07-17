@@ -491,7 +491,7 @@ class Release(UuidAuditedModel):
             # so shell out a task to pull in the repository
             tasks.import_repository.delay(build.image, self.app.id).get()
             # update the source image to the repository we just imported
-            source_image = '{}:{}'.format(self.app.id, 'latest')
+            source_image = self.app.id
         publish_release(source_image,
                         config.values,
                         release_image,)
