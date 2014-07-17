@@ -1,18 +1,22 @@
-# Provision a Deis Cluster on Digital Ocean
+# Provision a Deis Cluster on DigitalOcean
 
-Note that Digital Ocean does not support CoreOS images natively. To work around this, the provision
-scripts for Digital Ocean first create a CoreOS image which will be used for provisioning the cluster.
-
-Digital Ocean support was contributed by [sttts](https://github.com/sttts). The CoreOS bootstrapping
+## Note on Deis support for DigitalOcean
+DigitalOcean support was contributed by [sttts](https://github.com/sttts). The CoreOS bootstrapping
 is heavily based on [Levi Aul's code](https://gist.github.com/tsutsu/490f35f48897df0f5173).
 
-To deploy Deis to Digital Ocean:
+Note that DigitalOcean does not support CoreOS images natively. To work around this, the provision
+scripts for DigitalOcean first create a CoreOS image which will be used for provisioning the cluster.
+
+Until native DigitalOcean support for CoreOS is implemented, this workaround is likely to be more fragile than deploying
+Deis to other cloud platforms which support CoreOS natively.
+
+UPDATE: As of July 15, 2014, native CoreOS support on DigitalOcean is [planned](http://digitalocean.uservoice.com/forums/136585-digital-ocean/suggestions/4250154-suport-coreos-as-a-deployment-platform).
 
 ## Customize cloud-config.yml
 Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
 
 ## Install tugboat and authorize:
-The tugboat gem consumes the Digital Ocean API.
+The tugboat gem consumes the DigitalOcean API.
 ```console
 $ gem install tugboat
 $ tugboat authorize
@@ -20,7 +24,7 @@ $ tugboat authorize
 You can leave all but the client and API keys as the defaults.
 
 ## Upload keys
-Choose an SSH keypair to use for Deis and import it to Digital Ocean:
+Choose an SSH keypair to use for Deis and import it to DigitalOcean:
 ```console
 $ tugboat add-key deis
 ```

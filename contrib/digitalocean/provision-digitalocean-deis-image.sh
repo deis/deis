@@ -8,7 +8,7 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 source $CONTRIB_DIR/utils.sh
 
 if ! which tugboat &>/dev/null; then
-	echo_red 'Digital Ocean command line client tugboat not found.'
+	echo_red 'DigitalOcean command line client tugboat not found.'
 	exit 1
 fi
 
