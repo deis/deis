@@ -15,3 +15,8 @@ fi
 
 # run the fleetctl command remotely
 ssh $SSH_OPTIONS core@$FLEETW_HOST fleetctl $@
+
+# clean up
+if [[ $FLEETW_UNIT ]]; then
+  ssh $SSH_OPTIONS core@$FLEETW_HOST "rm -f /home/core/$FLEETW_UNIT"
+fi
