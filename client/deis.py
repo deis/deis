@@ -407,9 +407,10 @@ class DeisClient(object):
         --no-remote            do not create a 'deis' git remote
         """
         body = {}
+        app_name = None
         if not self._session.is_git_app():
             app_name = self._session.app
-        # prevent app name from being set to None
+        # prevent app name from being reset to None
         if args.get('<id>'):
             app_name = args.get('<id>')
         if app_name:
