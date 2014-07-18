@@ -23,7 +23,7 @@ fi
 # check that the CoreOS user-data file is valid
 $CONTRIB_DIR/util/check-user-data.sh
 
-# launch the Deis cluster on Digital Ocean
+# launch the Deis cluster on DigitalOcean
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     NAME=deis-$i
     echo_yellow "Provisioning ${NAME}..."
@@ -31,5 +31,5 @@ i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     ((i = i + 1)) ; \
 done
 
-echo_green "Your Deis cluster has successfully deployed to Digital Ocean."
+echo_green "Your Deis cluster has successfully deployed to DigitalOcean."
 echo_green "Please continue to follow the instructions in the README."
