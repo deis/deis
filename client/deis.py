@@ -91,17 +91,31 @@ class Session(requests.Session):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
             self.cookies.save()
-        # local session state
-        self.state_file = os.path.expanduser('~/.deis/apps.yml')
-        if not os.path.isfile(self.state_file):
-            with open(self.state_file, 'w') as f:
-                f.write(yaml.safe_dump({}))
+
+    @property
+    def app(self):
+        """Retrieve the application's name."""
+        try:
+            return self._get_name_from_git_remote(self.git_root())
+        except EnvironmentError:
+            return os.path.basename(os.getcwd())
+
+    def is_git_app(self):
+        """Determines if this app is a git repository. This is important in special cases
+        where we need to know whether or not we should use Deis' automatic app name
+        generator, for example.
+        """
+        try:
+            self.git_root()
+            return True
+        except EnvironmentError:
+            return False
 
     def git_root(self):
         """
-        Return the absolute path from the git repository root
+        Returns the absolute path from the git repository root.
 
-        If no git repository exists, raise an EnvironmentError
+        If no git repository exists, raises an EnvironmentError.
         """
         try:
             git_root = subprocess.check_output(
@@ -111,12 +125,12 @@ class Session(requests.Session):
             raise EnvironmentError('Current directory is not a git repository')
         return git_root
 
-    def _get_app_from_git_remote(self, git_root):
+    def _get_name_from_git_remote(self, git_root):
         """
-        Return the application name from a git repository root
+        Retrieves the application name from a git repository root.
 
         The application is determined by parsing `git remote -v` output.
-        If no application is found, raise an EnvironmentError.
+        If no application is found, raises an EnvironmentError.
         """
         remotes = subprocess.check_output(['git', 'remote', '-v'],
                                           cwd=git_root)
@@ -129,55 +143,6 @@ class Session(requests.Session):
         if not m:
             raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['app']
-
-    def _get_app_from_state(self, current_dir):
-        """
-        Return the application name from the current directory
-
-        Uses the local client's state to map to an application name.
-        """
-        with open(self.state_file) as f:
-            state = yaml.safe_load(f.read())
-        app = state.get(current_dir, None)
-        if app is None:
-            raise EnvironmentError("Could not find app for {current_dir}".format(**locals()))
-        return app
-
-    def _get_app(self):
-        """
-        Return the application for the current directory
-
-        For backwards compatibility, the lookup will use:
-
-         1. Local client state stored in ~/.deis (preferred)
-         2. A git remote for the current directory (for backwards compatibility)
-        """
-        try:
-            return self._get_app_from_state(os.getcwd())
-        except EnvironmentError:
-            return self._get_app_from_git_remote(self.git_root())
-
-    def _set_app(self, app):
-        """
-        Set the application for the current directory
-        """
-        with open(self.state_file, 'r') as f:
-            state = yaml.safe_load(f.read())
-        state[os.getcwd()] = app
-        with open(self.state_file, 'w') as f:
-            f.write(yaml.safe_dump(state))
-
-    def _del_app(self):
-        """
-        Delete the application for the current directory
-        """
-        with open(self.state_file, 'r') as f:
-            state = yaml.safe_load(f.read())
-        state.pop(os.getcwd())
-        with open(self.state_file, 'w') as f:
-            f.write(yaml.safe_dump(state))
-
-    app = property(_get_app, _set_app, _del_app)
 
     def request(self, *args, **kwargs):
         """
@@ -441,14 +406,12 @@ class DeisClient(object):
         --cluster=CLUSTER      target cluster to host application [default: dev]
         --no-remote            do not create a 'deis' git remote
         """
-        try:
-            self._session.app
-            print('App already exists at {}'.format(os.getcwd()))
-            sys.exit(1)
-        except EnvironmentError:
-            pass
         body = {}
-        app_name = args.get('<id>')
+        if not self._session.is_git_app():
+            app_name = self._session.app
+        # prevent app name from being set to None
+        if args.get('<id>'):
+            app_name = args.get('<id>')
         if app_name:
             body.update({'id': app_name})
         cluster = args.get('--cluster')
@@ -468,8 +431,6 @@ class DeisClient(object):
             data = response.json()
             app_id = data['id']
             print("done, created {}".format(app_id))
-            # store session in local state
-            self._session.app = app_id
             # set a git remote if necessary
             try:
                 self._session.git_root()
@@ -499,11 +460,7 @@ class DeisClient(object):
         """
         app = args.get('--app')
         if not app:
-            try:
-                app = self._session.app
-            except EnvironmentError:
-                print('No app exists at {}'.format(os.getcwd()))
-                sys.exit(1)
+            app = self._session.app
         confirm = args.get('--confirm')
         if confirm == app:
             pass
@@ -530,16 +487,15 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
-            # If the requested app is in the current dir, delete the git remote and local state
-            if app == self._session.app:
-                del self._session.app
-                try:
+            try:
+                # If the requested app is a heroku app, delete the git remote
+                if self._session.is_git_app():
                     subprocess.check_call(
                         ['git', 'remote', 'rm', 'deis'],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     print('Git remote deis removed')
-                except (EnvironmentError, subprocess.CalledProcessError):
-                    pass  # ignore error
+            except (EnvironmentError, subprocess.CalledProcessError):
+                pass  # ignore error
         else:
             raise ResponseError(response)
 
