@@ -1574,7 +1574,7 @@ SHORTCUTS = OrderedDict([
     ('register', 'auth:register'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
-    ('build', 'builds:create'),
+    ('pull', 'builds:create'),
     ('scale', 'ps:scale'),
     ('rollback', 'releases:rollback'),
     ('sharing', 'perms:list'),
