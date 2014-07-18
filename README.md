@@ -121,8 +121,8 @@ $ deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/
 The parameters to `deis clusters:create` are:
 * cluster name (`dev`) - the name used by Deis to reference the cluster
 * cluster hostname (`local.deisapp.com`) - the hostname under which apps are created, like `balancing-giraffe.local.deisapp.com`
-* cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for EC2 and Rackspace, this is a list of the internal IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
-* auth SSH key (`--auth`) - the SSH private key used to provision servers (for EC2 and Rackspace, this key is likely `~/.ssh/deis`)
+* cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for cloud providers, this is a list of the IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
+* auth SSH key (`--auth`) - the SSH private key used to provision servers (for cloud providers, this key is likely `~/.ssh/deis`)
 
 The `dev` cluster will be used as the default cluster for future `deis` commands.
 
