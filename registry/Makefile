@@ -30,12 +30,16 @@ full-clean: clean
 test: test-unit test-functional
 
 test-unit:
+	# Requires libevent-dev, libffi-dev, libpython-dev, libssl-dev, liblzma-dev on Ubuntu
 	@if [ ! -d test-unit.tmp ]; then \
 	    git clone -b 0.6.8 https://github.com/dotcloud/docker-registry test-unit.tmp; \
 	fi
-	@if [ ! -d venv ]; then virtualenv venv; fi
+	virtualenv venv
 	venv/bin/pip install -q -r test-unit.tmp/requirements.txt
 	venv/bin/pip install -q -r test-unit.tmp/test-requirements.txt
+	@if [ -d /tmp/test ]; then \
+		rm -rf /tmp/test; \
+	fi
 	cd test-unit.tmp && \
 		DOCKER_REGISTRY_CONFIG=config_test.yml SETTINGS_FLAVOR=test PYTHONPATH=test \
 		../venv/bin/python -m unittest discover -s test

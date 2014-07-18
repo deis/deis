@@ -12,17 +12,11 @@ import (
 
 func runDeisBuilderTest(
 	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	err := dockercliutils.BuildImage(t, "../", "deis/builder:"+testSessionUID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-builder-data",
 		"-v", "/var/lib/docker", "deis/base", "/bin/true")
-	//docker run --name deis-builder -p 2223:22 -e PUBLISH=22
-	// -e HOST=${COREOS_PRIVATE_IPV4} -e PORT=2223
-	// --volumes-from deis-builder-data --privileged deis/builder
 	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
@@ -47,24 +41,31 @@ func runDeisBuilderTest(
 }
 
 func TestBuilder(t *testing.T) {
-	setkeys := []string{"/deis/registry/protocol",
+	setkeys := []string{
+		"/deis/registry/protocol",
 		"deis/registry/host",
 		"/deis/registry/port",
 		"/deis/cache/host",
-		"/deis/cache/port"}
-	setdir := []string{"/deis/controller",
+		"/deis/cache/port",
+	}
+	setdir := []string{
+		"/deis/controller",
 		"/deis/cache",
 		"/deis/database",
 		"/deis/registry",
-		"/deis/domains"}
-	var testSessionUID = utils.NewUuid()
-	fmt.Println("UUID for the session Builder Test :" + testSessionUID)
+		"/deis/domains",
+	}
+	testSessionUID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/builder:"+testSessionUID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	etcdPort := utils.GetRandomPort()
-	servicePort := utils.GetRandomPort()
 	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
 	Builderhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, Builderhandler)
 	fmt.Println("starting Builder Component test")
+	servicePort := utils.GetRandomPort()
 	runDeisBuilderTest(t, testSessionUID, etcdPort, servicePort)
 	// TODO: builder needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)

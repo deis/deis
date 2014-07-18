@@ -12,12 +12,9 @@ import (
 
 func runDeisRouterTest(
 	t *testing.T, testSessionID string, etcdPort string, servicePort string) {
+	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	done := make(chan bool, 1)
-	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testSessionID)
-	if err != nil {
-		t.Fatal(err)
-	}
 	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
@@ -40,24 +37,31 @@ func runDeisRouterTest(
 }
 
 func TestRouter(t *testing.T) {
-	setkeys := []string{"deis/controller/host",
+	setkeys := []string{
+		"deis/controller/host",
 		"/deis/controller/port",
 		"/deis/builder/host",
-		"/deis/builder/port"}
-	setdir := []string{"/deis/controller",
+		"/deis/builder/port",
+	}
+	setdir := []string{
+		"/deis/controller",
 		"/deis/router",
 		"/deis/database",
 		"/deis/services",
 		"/deis/builder",
-		"/deis/domains"}
-	var testSessionID = utils.NewUuid()
-	fmt.Println("UUID for the session Router Test :" + testSessionID)
+		"/deis/domains",
+	}
+	testSessionID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testSessionID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	etcdPort := utils.GetRandomPort()
-	servicePort := utils.GetRandomPort()
 	dockercliutils.RunEtcdTest(t, testSessionID, etcdPort)
 	Routerhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, Routerhandler)
 	fmt.Println("starting Router Component test")
+	servicePort := utils.GetRandomPort()
 	runDeisRouterTest(t, testSessionID, etcdPort, servicePort)
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)

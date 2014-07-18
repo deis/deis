@@ -19,7 +19,11 @@ import (
 func DaemonAddr() string {
 	addr := os.Getenv("TEST_DAEMON_ADDR")
 	if addr == "" {
-		addr = "/var/run/docker.sock"
+		if utils.GetHostOs() == "darwin" {
+			addr = "172.17.8.100:4243"
+		} else {
+			addr = "/var/run/docker.sock"
+		}
 	}
 	return addr
 }
@@ -28,7 +32,11 @@ func DaemonAddr() string {
 func DaemonProto() string {
 	proto := os.Getenv("TEST_DAEMON_PROTO")
 	if proto == "" {
-		proto = "unix"
+		if utils.GetHostOs() == "darwin" {
+			proto = "tcp"
+		} else {
+			proto = "unix"
+		}
 	}
 	return proto
 }
@@ -85,14 +93,8 @@ func DeisServiceTest(
 // GetNewClient returns a new docker test client.
 func GetNewClient() (
 	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
-	var testDaemonAddr, testDaemonProto string
-	if utils.GetHostOs() == "darwin" {
-		testDaemonAddr = "172.17.8.100:4243"
-		testDaemonProto = "tcp"
-	} else {
-		testDaemonAddr = DaemonAddr()
-		testDaemonProto = DaemonProto()
-	}
+	testDaemonAddr := DaemonAddr()
+	testDaemonProto := DaemonProto()
 	stdout, stdoutPipe = io.Pipe()
 	cli = client.NewDockerCli(
 		nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
@@ -129,9 +131,9 @@ func BuildImage(t *testing.T, path string, tag string) error {
 		if err = cli.CmdBuild("--tag="+tag, path); err != nil {
 			return
 		}
-		err =  CloseWrap(stdout, stdoutPipe)
+		err = CloseWrap(stdout, stdoutPipe)
 	}()
- 	PrintToStdout(t, stdout, stdoutPipe, "build docker file")
+	PrintToStdout(t, stdout, stdoutPipe, "build docker file")
 	return err
 }
 
@@ -171,7 +173,7 @@ func PullImage(t *testing.T, cli *client.DockerCli, args ...string) {
 
 // RunContainer runs a docker image with the given arguments.
 func RunContainer(cli *client.DockerCli, args ...string) error {
-	fmt.Println("Running docker container", args[1])
+	fmt.Println("--- Run docker container", args[1])
 	err := cli.CmdRun(args...)
 	if err != nil {
 		// Ignore certain errors we see in io handling.
@@ -282,34 +284,11 @@ func stopContainers(t *testing.T, sliceContainerIds []string) {
 	PrintToStdout(t, stdout, stdoutPipe, "removing container")
 }
 
-func removeImages(t *testing.T, sliceImageIds []string) {
-	cli, stdout, stdoutPipe := GetNewClient()
-	go func() {
-		for _, value := range sliceImageIds {
-			err := cli.CmdRmi("-f", value)
-			if err != nil {
-				if !((strings.Contains(fmt.Sprintf("%s", err), "No such image")) || (strings.Contains(fmt.Sprintf("%s", err), "one or more"))) {
-					t.Fatalf("removeImages %s", err)
-				}
-			}
-		}
-		if err := CloseWrap(stdout, stdoutPipe); err != nil {
-			t.Fatalf("remove Images %s", err)
-		}
-	}()
-	PrintToStdout(t, stdout, stdoutPipe, "removing container")
-}
-
 // ClearTestSession cleans up after a typical test session.
 func ClearTestSession(t *testing.T, uid string) {
-	fmt.Println("clearing test session", uid)
+	fmt.Println("--- Clear test session", uid)
 	sliceContainerIds := getContainerIds(t, uid)
-	// sliceImageids := getImageIds(t, uid)
-	// //fmt.Println(sliceContainerIds)
-	// //fmt.Println(sliceImageids)
-	// fmt.Println("removing containers and images for the test session " + uid)
 	stopContainers(t, sliceContainerIds)
-	// removeImages(t, sliceImageids)
 }
 
 // GetImageID returns the ID of a docker image.
@@ -333,14 +312,18 @@ func GetImageID(t *testing.T, repo string) string {
 func RunEtcdTest(t *testing.T, uid string, port string) {
 	var err error
 	cli, stdout, stdoutPipe := GetNewClient()
+	etcdImage := "deis/test-etcd:latest"
 	done2 := make(chan bool, 1)
 	ipaddr := utils.GetHostIPAddress()
 	go func() {
-		if err = cli.CmdPull("deis/test-etcd:latest"); err != nil {
-			CloseWrap(stdout, stdoutPipe)
-			return
+		fmt.Printf("--- Check that %s is present\n", etcdImage)
+		if err = cli.CmdHistory("-q", etcdImage); err != nil {
+			err = nil
+			if err = cli.CmdPull(etcdImage); err != nil {
+				CloseWrap(stdout, stdoutPipe)
+				return
+			}
 		}
-		// PullImage(t, cli, "deis/test-etcd:latest")
 		done2 <- true
 		err = RunContainer(cli,
 			"--name", "deis-etcd-"+uid,
