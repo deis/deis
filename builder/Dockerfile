@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -yq \
     openssh-server git \
     aufs-tools iptables lxc \
     curl \
-    lxc-docker-1.0.0
+    lxc-docker-1.1.1
 
 # configure ssh server
 RUN rm /etc/ssh/ssh_host_*

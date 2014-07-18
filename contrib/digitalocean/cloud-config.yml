@@ -15,7 +15,7 @@ coreos:
     - name: public.network
       content: |
         [Match]
-        Name=ens3
+        Name=eth0
 
         [Network]
         Address=PUBLIC_IP
