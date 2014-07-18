@@ -666,7 +666,7 @@ class DeisClient(object):
                 self._settings.save()
                 print('Account cancelled')
             else:
-                print('Accont not changed')
+                print('Account not changed')
 
     def auth_login(self, args):
         """
