@@ -17,4 +17,5 @@ Installing Deis
     create-cluster
     configure-load-balancers
     configure-dns
+    ssl-endpoints
     upgrading-deis

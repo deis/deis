@@ -4,7 +4,7 @@
 .. _create_cluster:
 
 Create a Cluster
-======================
+================
 
 Applications on Deis are deployed to a :ref:`cluster`. Before you can deploy
 applications, you need to create a cluster.
