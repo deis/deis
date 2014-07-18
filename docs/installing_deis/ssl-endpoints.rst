@@ -64,8 +64,6 @@ the cluster will be encrypted while the internal components of Deis will still c
 HTTP. To enable SSL, you will need to open port 443 on the load balancer and forward it to port 80
 on the routers. See your vendor's specific instructions on installing SSL on your load balancer.
 
-For EC2, see their documentation on `installing an SSL cert for load balancing`_. For
-Rackspace, see their `Product FAQ`_.
+For EC2, see their documentation on `installing an SSL cert for load balancing`_.
 
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
-.. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers

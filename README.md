@@ -9,7 +9,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 # Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
 
 Trying out Deis? Continue following these instructions for a local cluster setup. This is also a great Deis testing/development environment.
 
@@ -81,7 +81,7 @@ Use `make run` to start all Deis components. This can take some time - the regis
 $ make run
 ```
 
-Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.
