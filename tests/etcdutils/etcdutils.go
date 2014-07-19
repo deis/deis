@@ -42,7 +42,7 @@ func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client)
 }
 
 func Publishvalues(t *testing.T, ecli *EtcdHandle) {
-	fmt.Println("Publishing ETCD Key values")
+	fmt.Println("--- Publish etcd keys and values")
 	for _, dir := range ecli.Dirs {
 		_, err := ecli.C.SetDir(dir, 0)
 		if err != nil {
