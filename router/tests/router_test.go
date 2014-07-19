@@ -11,25 +11,20 @@ import (
 )
 
 func runDeisRouterTest(
-	t *testing.T, testSessionID string, etcdPort string, servicePort string) {
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
 	go func() {
-		<-done
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-router-"+testSessionID,
+			"--name", "deis-router-"+testID,
 			"--rm",
 			"-p", servicePort+":80",
 			"-p", "2222:2222",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/router:"+testSessionID)
+			"deis/router:"+testID)
 	}()
-	time.Sleep(2000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
 	if err != nil {
 		t.Fatal(err)
@@ -51,21 +46,21 @@ func TestRouter(t *testing.T) {
 		"/deis/builder",
 		"/deis/domains",
 	}
-	testSessionID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testSessionID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionID, etcdPort)
-	Routerhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
-	etcdutils.Publishvalues(t, Routerhandler)
-	fmt.Println("starting Router Component test")
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
+	etcdutils.Publishvalues(t, handler)
 	servicePort := utils.GetRandomPort()
-	runDeisRouterTest(t, testSessionID, etcdPort, servicePort)
+	fmt.Printf("--- Test deis-router-%s at port %s\n", testID, servicePort)
+	runDeisRouterTest(t, testID, etcdPort, servicePort)
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
 	dockercliutils.DeisServiceTest(
-		t, "deis-router-"+testSessionID, servicePort, "http")
-	dockercliutils.ClearTestSession(t, testSessionID)
+		t, "deis-router-"+testID, servicePort, "http")
+	dockercliutils.ClearTestSession(t, testID)
 }

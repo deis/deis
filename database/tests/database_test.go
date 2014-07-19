@@ -9,28 +9,21 @@ import (
 )
 
 func runDeisDatabaseTest(
-	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-database-data",
 		"-v", "/var/lib/postgresql", "deis/base", "true")
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
+	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	go func() {
-		<-done
-		//docker run --name deis-database -p 5432:5432 -e PUBLISH=5432
-		// -e HOST=${COREOS_PRIVATE_IPV4}
-		// --volumes-from deis-database-data deis/database
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-database-"+testSessionUID,
+			"--name", "deis-database-"+testID,
 			"--rm",
 			"-p", servicePort+":5432",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-database-data",
-			"deis/database:"+testSessionUID)
+			"deis/database:"+testID)
 	}()
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-database running")
 	if err != nil {
@@ -39,17 +32,17 @@ func runDeisDatabaseTest(
 }
 
 func TestDatabase(t *testing.T) {
-	testSessionUID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/database:"+testSessionUID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/database:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting Database component test:")
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
-	runDeisDatabaseTest(t, testSessionUID, etcdPort, servicePort)
+	fmt.Printf("--- Test deis-database-%s at port %s\n", testID, servicePort)
+	runDeisDatabaseTest(t, testID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-database-"+testSessionUID, servicePort, "tcp")
-	dockercliutils.ClearTestSession(t, testSessionUID)
+		t, "deis-database-"+testID, servicePort, "tcp")
+	dockercliutils.ClearTestSession(t, testID)
 }

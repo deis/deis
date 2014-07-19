@@ -8,22 +8,19 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisCacheTest(t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+func runDeisCacheTest(
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
 	go func() {
-		<-done
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-cache-"+testSessionUID,
+			"--name", "deis-cache-"+testID,
 			"--rm",
 			"-p", servicePort+":6379",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/cache:"+testSessionUID)
+			"deis/cache:"+testID)
 	}()
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "started")
 	if err != nil {
@@ -32,17 +29,17 @@ func runDeisCacheTest(t *testing.T, testSessionUID string, etcdPort string, serv
 }
 
 func TestCache(t *testing.T) {
-	testSessionUID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/cache:"+testSessionUID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/cache:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting cache component test:")
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
-	runDeisCacheTest(t, testSessionUID, etcdPort, servicePort)
+	fmt.Printf("--- Test deis-cache-%s at port %s\n", testID, servicePort)
+	runDeisCacheTest(t, testID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-cache-"+testSessionUID, servicePort, "tcp")
-	dockercliutils.ClearTestSession(t, testSessionUID)
+		t, "deis-cache-"+testID, servicePort, "tcp")
+	dockercliutils.ClearTestSession(t, testID)
 }

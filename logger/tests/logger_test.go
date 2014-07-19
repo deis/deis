@@ -9,25 +9,21 @@ import (
 )
 
 func runDeisLoggerTest(
-	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-logger-data",
-		"-v", "/var/log/deis", "deis/base", "true")
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
+		"-v", "/var/log/deis", "deis/base", "/bin/true")
+	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	go func() {
-		<-done
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-logger-"+testSessionUID,
+			"--name", "deis-logger-"+testID,
 			"--rm",
 			"-p", servicePort+":514/udp",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-logger-data",
-			"deis/logger:"+testSessionUID)
+			"deis/logger:"+testID)
 	}()
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
 	if err != nil {
@@ -36,17 +32,17 @@ func runDeisLoggerTest(
 }
 
 func TestLogger(t *testing.T) {
-	testSessionUID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testSessionUID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting logger component test:")
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
-	runDeisLoggerTest(t, testSessionUID, etcdPort, servicePort)
+	fmt.Printf("--- Test deis-logger-%s at port %s\n", testID, servicePort)
+	runDeisLoggerTest(t, testID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-logger-"+testSessionUID, servicePort, "udp")
-	dockercliutils.ClearTestSession(t, testSessionUID)
+		t, "deis-logger-"+testID, servicePort, "udp")
+	dockercliutils.ClearTestSession(t, testID)
 }

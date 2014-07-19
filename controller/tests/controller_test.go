@@ -3,7 +3,6 @@ package tests
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/deis/deis/tests/dockercliutils"
 	"github.com/deis/deis/tests/etcdutils"
@@ -11,24 +10,20 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisControllerTest(t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+func runDeisControllerTest(
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
 	go func() {
-		<-done
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-controller-"+testSessionUID,
+			"--name", "deis-controller-"+testID,
 			"--rm",
 			"-p", servicePort+":8000",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/controller:"+testSessionUID)
+			"deis/controller:"+testID)
 	}()
-	time.Sleep(5000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
 		t.Fatal(err)
@@ -50,22 +45,21 @@ func TestController(t *testing.T) {
 		"/deis/registry",
 		"/deis/domains",
 	}
-	testSessionUID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testSessionUID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	servicePort := utils.GetRandomPort()
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
+	etcdutils.Publishvalues(t, handler)
 	dbPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting controller test:")
-	Controllerhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
-	etcdutils.Publishvalues(t, Controllerhandler)
-	mockserviceutils.RunMockDatabase(t, testSessionUID, etcdPort, dbPort)
-	fmt.Println("starting Controller component test")
-	runDeisControllerTest(t, testSessionUID, etcdPort, servicePort)
+	mockserviceutils.RunMockDatabase(t, testID, etcdPort, dbPort)
+	servicePort := utils.GetRandomPort()
+	fmt.Printf("--- Test deis-controller-%s at port %s\n", testID, servicePort)
+	runDeisControllerTest(t, testID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-controller-"+testSessionUID, servicePort, "http")
-	dockercliutils.ClearTestSession(t, testSessionUID)
+		t, "deis-controller-"+testID, servicePort, "http")
+	dockercliutils.ClearTestSession(t, testID)
 }
