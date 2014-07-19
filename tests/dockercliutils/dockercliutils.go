@@ -314,24 +314,16 @@ func RunEtcdTest(t *testing.T, uid string, port string) {
 	cli, stdout, stdoutPipe := GetNewClient()
 	etcdImage := "deis/test-etcd:latest"
 	done2 := make(chan bool, 1)
-	ipaddr := utils.GetHostIPAddress()
 	go func() {
-		fmt.Printf("--- Check that %s is present\n", etcdImage)
-		if err = cli.CmdHistory("-q", etcdImage); err != nil {
-			err = nil
-			if err = cli.CmdPull(etcdImage); err != nil {
-				CloseWrap(stdout, stdoutPipe)
-				return
-			}
-		}
 		done2 <- true
+		ipaddr := utils.GetHostIPAddress()
 		err = RunContainer(cli,
 			"--name", "deis-etcd-"+uid,
 			"--rm",
 			"-p", port+":"+port,
 			"-e", "HOST_IP="+ipaddr,
 			"-e", "ETCD_ADDR="+ipaddr+":"+port,
-			"deis/test-etcd:latest")
+			etcdImage)
 	}()
 	go func() {
 		<-done2
