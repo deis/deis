@@ -7,5 +7,5 @@ mode  = "0644"
 keys = [
   "/deis/registry",
 ]
-check_cmd = "/app/bin/check"
+check_cmd = "/app/bin/check {{ .src }}"
 reload_cmd = "/app/bin/reload"

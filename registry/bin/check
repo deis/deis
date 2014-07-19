@@ -3,9 +3,6 @@
 # Check that the configuration for deis-registry is valid.
 #
 
-if [[ -f /docker-registry/config/config.yml ]] ; then
-    set -e
-
-    # check that "<no value>" isn't in the templated file
-    grep -q -v "<no value>" /docker-registry/config/config.yml
+if grep -q "<no value>" $1 ; then
+    exit 1
 fi
