@@ -30,9 +30,6 @@ func NewAttachManager(client *docker.Client) *AttachManager {
 	}
 	go func() {
 		events := make(chan *docker.APIEvents)
-		// TODO: resolve this workaround. https://github.com/fsouza/go-dockerclient/issues/101
-		assert(client.AddEventListener(events), "attacher")
-		assert(client.RemoveEventListener(events), "attacher")
 		assert(client.AddEventListener(events), "attacher")
 		for msg := range events {
 			debug("event:", msg.ID[:12], msg.Status)
