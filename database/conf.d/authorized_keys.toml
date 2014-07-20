@@ -1,0 +1,9 @@
+[template]
+src   = "authorized_keys"
+dest  = "/home/postgres/.ssh/authorized_keys"
+uid = 101
+gid = 104
+mode  = "0600"
+keys = [
+  "/deis/database",
+]

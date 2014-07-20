@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# if we're already a slave, exit success
+
+sudo service postgresql stop
+rm -rf /var/lib/postgresql/9.3/main
+
+MASTER_PORT=`etcdctl --no-sync -C $ETCD get /deis/database/{{ .deis_database_master }}/port`
+repmgr -D $PGDATA -d {{ .deis_database_name }} -p $MASTER_PORT -U repmgr -R postgres --verbose standby clone {{ .deis_database_master }}
+
+exit 0

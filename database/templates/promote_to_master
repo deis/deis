@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# if we're already master, exit success
+
+
+sudo -u postgres createuser --login --superuser repmgr
+
+exit 0

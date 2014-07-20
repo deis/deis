@@ -120,15 +120,13 @@ You can ``make status`` to ensure that all services are stopped.
 
 Export data containers
 ^^^^^^^^^^^^^^^^^^^^^^
-Four Deis components, builder, database, logger, and registry, run separate containers to store
+Three Deis components, builder, logger, and registry, run separate containers to store
 their stateful data. We export these as tarballs before upgrading the containers.
 
 .. code-block:: console
 
     dev $ fleetctl ssh deis-builder.service
     coreos $ sudo docker export deis-builder-data > /home/coreos/deis-builder-data-backup.tar
-    dev $ fleetctl ssh deis-database.service
-    coreos $ sudo docker export deis-database-data > /home/coreos/deis-database-data-backup.tar
     dev $ fleetctl ssh deis-logger.service
     coreos $ sudo docker export deis-logger-data > /home/coreos/deis-logger-data-backup.tar
     dev $ fleetctl ssh deis-registry.service
@@ -158,8 +156,6 @@ We need to reimport the saved data containers we exported earlier.
 
     dev $ fleetctl ssh deis-builder.service
     coreos $ cat /home/coreos/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
-    dev $ fleetctl ssh deis-database.service
-    coreos $ cat /home/coreos/deis-database-data-backup.tar | sudo docker import - deis-database-data
     dev $ fleetctl ssh deis-logger.service
     coreos $ cat /home/coreos/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
     dev $ fleetctl ssh deis-registry.service

@@ -5,17 +5,33 @@ build:
 	$(call ssh_all,'cd share/database && sudo docker build -t deis/database .')
 
 install: check-fleet
-	$(FLEETCTL) load systemd/*
+	@$(foreach U, $(DATABASE_UNITS), \
+		cp systemd/deis-database.service ./$(U) ; \
+		$(FLEETCTL) load ./$(U) ; \
+		rm -f ./$(U) ; \
+	)
 
 uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+	@$(foreach U, $(DATABASE_UNITS), \
+		cp systemd/deis-database.service ./$(U) ; \
+		$(FLEETCTL) unload ./$(U) ; \
+		$(FLEETCTL) destroy ./$(U) ; \
+		rm -f ./$(U) ; \
+	)
 
 start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+	@$(foreach U, $(DATABASE_UNITS), \
+		cp systemd/deis-database.service ./$(U) ; \
+		$(FLEETCTL) start -no-block ./$(U) ; \
+		rm -f ./$(U) ; \
+	)
 
 stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+	@$(foreach U, $(DATABASE_UNITS), \
+		cp systemd/deis-database.service ./$(U) ; \
+		$(FLEETCTL) stop -block-attempts=600 ./$(U) ; \
+		rm -f ./$(U) ; \
+	)
 
 restart: stop start
 

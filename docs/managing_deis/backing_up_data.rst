@@ -12,15 +12,13 @@ Deis maintains platform state in two places: data containers and etcd.
 Data containers
 ---------------
 Data containers are simply Docker containers that expose a volume which is shared with another container.
-The components with data containers are builder, database, logger, and registry. Since these are just
+The components with data containers are builder, logger, and registry. Since these are just
 Docker containers, they can be exported with ordinary Docker commands:
 
 .. code-block:: console
 
     dev $ fleetctl ssh deis-builder.service
     coreos $ sudo docker export deis-builder-data > /home/coreos/deis-builder-data-backup.tar
-    dev $ fleetctl ssh deis-database.service
-    coreos $ sudo docker export deis-database-data > /home/coreos/deis-database-data-backup.tar
     dev $ fleetctl ssh deis-logger.service
     coreos $ sudo docker export deis-logger-data > /home/coreos/deis-logger-data-backup.tar
     dev $ fleetctl ssh deis-registry.service
@@ -32,8 +30,6 @@ Importing looks very similar:
 
     dev $ fleetctl ssh deis-builder.service
     coreos $ cat /home/coreos/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
-    dev $ fleetctl ssh deis-database.service
-    coreos $ cat /home/coreos/deis-database-data-backup.tar | sudo docker import - deis-database-data
     dev $ fleetctl ssh deis-logger.service
     coreos $ cat /home/coreos/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
     dev $ fleetctl ssh deis-registry.service

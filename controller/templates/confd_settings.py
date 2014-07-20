@@ -13,8 +13,8 @@ DATABASES = {
         'NAME': '{{ .deis_database_name }}',
         'USER': '{{ .deis_database_user }}',
         'PASSWORD': '{{ .deis_database_password }}',
-        'HOST': '{{ .deis_database_host }}',
-        'PORT': '{{ .deis_database_port }}',
+        'HOST': '{{ .deis_database_master_host }}',
+        'PORT': '{{ .deis_database_master_port }}',
     }
 }
 

@@ -1,0 +1,9 @@
+[template]
+src   = "demote_to_slave"
+dest  = "/bin/boot/demote_to_slave"
+uid = 0
+gid = 0
+mode  = "0755"
+keys = [
+  "/deis/database",
+]

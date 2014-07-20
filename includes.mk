@@ -22,7 +22,13 @@ ifndef DEIS_FIRST_ROUTER
   DEIS_FIRST_ROUTER = 1
 endif
 
-DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)
+ifndef DEIS_NUM_DATABASES
+  DEIS_NUM_DATABASES = 2
+endif
+
+ifndef DEIS_FIRST_DATABASE
+  DEIS_FIRST_DATABASE = 1
+endif
 
 define ssh_all
   for host in $(DEIS_HOSTS); do ssh -o LogLevel=FATAL -o Compression=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no core@$$host -t $(1); done
@@ -40,8 +46,14 @@ define echo_yellow
   @echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
 
+
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+
+DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)
+DEIS_LAST_DATABASE = $(shell echo $(DEIS_FIRST_DATABASE)\+$(DEIS_NUM_DATABASES)\-1 | bc)
+
 ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
+DATABASE_UNITS = $(shell seq -f "deis-database.%g.service" -s " " $(DEIS_FIRST_DATABASE) 1 $(DEIS_LAST_DATABASE))
 
 check-fleet:
   @LOCAL_VERSION=`$(FLEETCTL) -version`; \

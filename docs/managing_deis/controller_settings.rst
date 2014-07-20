@@ -35,15 +35,14 @@ Settings used by controller
 ---------------------------
 The following etcd keys are used by the controller component.
 
-====================================      ======================================================
+====================================      ======================================================================
 setting                                   description
-====================================      ======================================================
+====================================      ======================================================================
 /deis/controller/registrationEnabled      enable registration for new Deis users (default: true)
 /deis/controller/webEnabled               enable controller web UI (default: false)
 /deis/cache/host                          host of the cache component (set by cache)
 /deis/cache/port                          port of the cache component (set by cache)
-/deis/database/host                       host of the database component (set by database)
-/deis/database/port                       port of the database component (set by database)
+/deis/database/master                     host of the database component acting as master (set by database)
 /deis/database/engine                     database engine (set by database)
 /deis/database/name                       database name (set by database)
 /deis/database/user                       database user (set by database)
@@ -51,7 +50,7 @@ setting                                   description
 /deis/registry/host                       host of the registry component (set by registry)
 /deis/registry/port                       port of the registry component (set by registry)
 /deis/registry/protocol                   protocol of the registry component (set by registry)
-====================================      ======================================================
+====================================      ======================================================================
 
 Using a custom controller image
 -------------------------------

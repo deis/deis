@@ -15,17 +15,10 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/database}
 export ETCD_TTL=${ETCD_TTL:-10}
 
-# initialize data volume
-if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
-  mkdir -p /var/lib/postgresql/9.3
-  chown -R postgres:postgres /var/lib/postgresql
-  sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
-fi
-
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null; do
-	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+  echo "waiting for etcd at $ETCD..."
+  sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
@@ -35,6 +28,11 @@ function etcd_set_default {
   etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
+function etcd_safe_mkdir {
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
+}
+
+etcd_safe_mkdir /deis/database
 etcd_set_default engine postgresql_psycopg2
 etcd_set_default adminUser ${PG_ADMIN_USER:-postgres}
 etcd_set_default adminPass ${PG_ADMIN_PASS:-changeme123}
@@ -42,61 +40,45 @@ etcd_set_default user ${PG_USER_NAME:-deis}
 etcd_set_default password ${PG_USER_PASS:-changeme123}
 etcd_set_default name ${PG_USER_DB:-deis}
 
+# Generate a keypair and use it if we need to
+ssh-keygen -q -t rsa -f /tmp/id_rsa -N '' -C postgres
+etcdctl --no-sync -C $ETCD mk $ETCD_PATH/replicationKey < /tmp/id_rsa >/dev/null || true
+etcdctl --no-sync -C $ETCD mk $ETCD_PATH/replicationPubKey < /tmp/id_rsa.pub >/dev/null || true
+rm /tmp/id_rsa
+rm /tmp/id_rsa.pub
+
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "database: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+  echo "database: waiting for confd to write initial templates..."
+  sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
-
-# run the service in the background
-sudo -i -u postgres /usr/lib/postgresql/9.3/bin/postgres \
-                    -c config-file=${PG_CONFIG:-/etc/postgresql/9.3/main/postgresql.conf} \
-                    -c listen-addresses=${PG_LISTEN:-*} &
-
-SERVICE_PID=$!
-
-# smart shutdown on SIGINT and SIGTERM
-function on_exit() {
-    kill -TERM $SERVICE_PID
-    wait $SERVICE_PID 2>/dev/null
-    exit 0
-}
-trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
 
-# wait for the service to become available
-sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\" && \$1 ~ \"tcp.?\"") ]] ; do sleep 1; done
-
-# perform a one-time reload to populate database entries
-/usr/local/bin/reload
-
-echo deis-database running...
-
-# publish the service to etcd using the injected HOST and PORT
 if [[ ! -z $PUBLISH ]]; then
+  set +e
 
-	# configure service discovery
-	PORT=${PORT:-5432}
-	PROTO=${PROTO:-tcp}
+  # configure service discovery
+  PORT=${PORT:-5432}
+  PROTO=${PROTO:-tcp}
 
-	set +e
+  while true ; do
 
-	# wait for the service to become available on PUBLISH port
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+    # now, we try to become master
+    if /app/bin/attempt_master; then
+      /app/bin/promote_to_master
+    else
+      /app/bin/demote_to_slave
+    fi
 
-	# while the port is listening, publish to etcd
-	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
-	done
+    etcdctl --no-sync -C $ETCD set /deis/database/$HOST/host $HOST --ttl $ETCD_TTL >/dev/null
+    etcdctl --no-sync -C $ETCD set /deis/database/$HOST/port $PORT --ttl $ETCD_TTL >/dev/null
 
-	# if the loop quits, something went wrong
-	exit 1
-
+    # try it all again soon
+    sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+  done
 fi
 
-wait
+exit

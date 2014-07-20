@@ -1,0 +1,12 @@
+#!/bin/bash
+# attempt to become the Postgres master
+
+# First, is there currently a master?
+if etcdctl --no-sync -C $ETCD mk /deis/database/master $HOST --ttl $ETCD_TTL >/dev/null; then
+  exit 0
+# Are we the master?
+elif etcdctl --no-sync -C $ETCD set /deis/database/master $HOST --ttl $ETCD_TTL --swap-with-value "$HOST" >/dev/null; then
+  exit 0
+fi
+
+exit 1

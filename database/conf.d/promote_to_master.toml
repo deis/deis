@@ -1,0 +1,9 @@
+[template]
+src   = "promote_to_master"
+dest  = "/bin/boot/promote_to_master"
+uid = 0
+gid = 0
+mode  = "0755"
+keys = [
+  "/deis/database",
+]

@@ -1,0 +1,9 @@
+[template]
+src   = "repmgr.conf"
+dest  = "/etc/postgresql/9.3/main/repmgr.conf"
+uid = 101
+gid = 104
+mode  = "0640"
+keys = [
+  "/deis/database",
+]
