@@ -13,17 +13,27 @@ RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.p
 RUN useradd -s /bin/bash registry
 
 # add the docker registry source from github
-RUN git clone https://github.com/dotcloud/docker-registry /docker-registry
-
-# lock the registry version to a tag
-RUN cd /docker-registry && git checkout 0.6.8
+RUN git clone https://github.com/deis/docker-registry /docker-registry && \
+    cd /docker-registry && \
+    git checkout fc3b691 && \
+    chown -R registry:registry /docker-registry
 
 # install boto configuration
 RUN cp /docker-registry/config/boto.cfg /etc/boto.cfg
-RUN cd /docker-registry && pip install -r requirements.txt
+RUN cd /docker-registry && pip install -r requirements/main.txt
+
+# Install core
+RUN pip install /docker-registry/depends/docker-registry-core
+
+# Install registry
+RUN pip install file:///docker-registry#egg=docker-registry[bugsnag]
+
+ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config_sample.yml
+ENV SETTINGS_FLAVOR dev
 
 # create data volume
 RUN mkdir -p /data/repositories && chown -R registry:registry /data
+ENV STORAGE_PATH /data
 VOLUME /data
 
 # add the current build context to /app

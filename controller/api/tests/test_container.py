@@ -7,6 +7,8 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
+import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
@@ -17,9 +19,15 @@ from django_fsm import TransitionNotAllowed
 from api.models import Container, App
 
 
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
+
+
 @override_settings(CELERY_ALWAYS_EAGER=True)
 class ContainerTest(TransactionTestCase):
-
     """Tests creation of containers on nodes"""
 
     fixtures = ['tests.json']
@@ -174,6 +182,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_container_api_docker(self):
         url = '/api/apps'
         body = {'cluster': 'autotest'}
@@ -233,6 +242,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_container_release(self):
         url = '/api/apps'
         body = {'cluster': 'autotest'}

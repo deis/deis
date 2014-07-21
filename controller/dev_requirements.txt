@@ -26,3 +26,6 @@ pyflakes==0.7.3
 
 # Python expect is used to automate client-driven tests
 pexpect>=3.1
+
+# Used for mocking endpoints
+mock==1.0.1

@@ -7,9 +7,11 @@ functions are decorated to run as asynchronous celery tasks.
 
 from __future__ import unicode_literals
 
+import requests
 import threading
 
 from celery import task
+from django.conf import settings
 
 
 @task
@@ -32,6 +34,19 @@ def deploy_release(app, release):
         threads.append(threading.Thread(target=c.deploy, args=(release,)))
     [t.start() for t in threads]
     [t.join() for t in threads]
+
+
+@task
+def import_repository(source, target_repository):
+    """Imports an image from a remote registry into our own private registry"""
+    data = {
+        'src': source,
+    }
+    requests.post(
+        '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
+                                            target_repository),
+        data=data,
+    )
 
 
 @task
@@ -71,10 +86,10 @@ def run_command(c, command):
         if rc != 0:
             raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
         # run the command
-        docker_args = ' '.join(['-a', 'stdout', '-a', 'stderr', '--rm', image])
-        env_args = ' '.join(["-e '{k}={v}'".format(**locals())
-                             for k, v in release.config.values.items()])
-        command = "docker run {env_args} {docker_args} {command}".format(**locals())
+        docker_args = ' '.join(['--entrypoint=/bin/sh',
+                                '-a', 'stdout', '-a', 'stderr', '--rm', image])
+        escaped_command = command.replace("'", "'\\''")
+        command = r"docker run {docker_args} -c \'{escaped_command}\'".format(**locals())
         return c.run(command)
     finally:
         c.delete()

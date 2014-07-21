@@ -7,11 +7,20 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
+import requests
 
 from django.test import TransactionTestCase
 from django.test.utils import override_settings
 
 from api.models import Build
+
+
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -30,6 +39,7 @@ class BuildTest(TransactionTestCase):
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_build(self):
         """
         Test that a null build is created and that users can post new builds
@@ -71,6 +81,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_build_default_containers(self):
         url = '/api/apps'
         body = {'cluster': 'autotest'}
@@ -152,6 +163,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(container['type'], 'web')
         self.assertEqual(container['num'], 1)
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_build_str(self):
         """Test the text representation of a build."""
         url = '/api/apps'

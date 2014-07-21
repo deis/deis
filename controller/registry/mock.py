@@ -1,5 +1,5 @@
 
-def publish_release(repository_path, config, tag, source_tag='latest'):
+def publish_release(source, config, target):
     """
     Publish a new release as a Docker image
 
