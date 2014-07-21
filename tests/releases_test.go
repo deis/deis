@@ -1,10 +1,13 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
+	"testing"
+
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
-	"testing"
 )
 
 func releasesSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -43,10 +46,6 @@ func releasesInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("releases", "rollback")
 	itutils.Execute(t, cmd, params, false, "")
-}
-
-func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, params)
 }
 
 func TestReleases(t *testing.T) {

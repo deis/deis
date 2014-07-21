@@ -1,10 +1,13 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
+	"testing"
+
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
-	"testing"
 )
 
 func psSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -39,7 +42,7 @@ func psScaleTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, false, "")
 }
 
-func TestBuilds(t *testing.T) {
+func TestPs(t *testing.T) {
 	params := psSetup(t)
 	psScaleTest(t, params)
 	appsOpenTest(t, params)

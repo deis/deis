@@ -1,14 +1,17 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/deis/deis/tests/integration-utils"
-	"github.com/deis/deis/tests/utils"
 	"os/exec"
 	"strings"
 	"testing"
 	"text/template"
+
+	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 func buildSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -65,10 +68,6 @@ func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("builds", "create")
 	itutils.Execute(t, cmd, params, false, "")
 
-}
-
-func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, params)
 }
 
 func TestBuilds(t *testing.T) {

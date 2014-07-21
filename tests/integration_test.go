@@ -1,8 +1,11 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
-	"github.com/deis/deis/tests/integration-utils"
 	"testing"
+
+	"github.com/deis/deis/tests/integration-utils"
 )
 
 //Tests #1136 // Tests #1239

@@ -1,10 +1,13 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
+	"testing"
+
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
-	"testing"
 )
 
 func configSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -45,10 +48,6 @@ func configUnsetTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("config", "unset")
 	itutils.Execute(t, cmd, params, false, "")
 	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "(v4)", false)
-}
-
-func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, params)
 }
 
 func TestConfig(t *testing.T) {

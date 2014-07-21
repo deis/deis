@@ -1,9 +1,12 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
+	"testing"
+
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
-	"testing"
 )
 
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {

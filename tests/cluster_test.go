@@ -1,9 +1,12 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
-	"github.com/deis/deis/tests/integration-utils"
 	"testing"
+
+	"github.com/deis/deis/tests/integration-utils"
 )
 
 func clustersSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -42,7 +45,7 @@ func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, false, "")
 }
 
-func TestKeys(t *testing.T) {
+func TestClusters(t *testing.T) {
 	params := clustersSetup(t)
 	clustersCreateTest(t, params)
 	clustersListTest(t, params, false)

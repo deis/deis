@@ -1,10 +1,13 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
-	"github.com/deis/deis/tests/integration-utils"
-	_ "github.com/deis/deis/tests/utils"
 	"testing"
+
+	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 func permsSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -72,7 +75,7 @@ func permsDeleteAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.CheckList(t, params, cmd, "test1", true)
 }
 
-func TestBuilds(t *testing.T) {
+func TestPerms(t *testing.T) {
 	params := permsSetup(t)
 	user := itutils.GetGlobalConfig()
 	user.UserName, user.Password = "test1", "test1"

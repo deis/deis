@@ -1,9 +1,12 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	_ "fmt"
-	"github.com/deis/deis/tests/integration-utils"
 	"testing"
+
+	"github.com/deis/deis/tests/integration-utils"
 )
 
 func keysSetup(t *testing.T) *itutils.DeisTestConfig {

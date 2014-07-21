@@ -1,10 +1,13 @@
-package verbose
+// +build integration
+
+package tests
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
-	"testing"
 )
 
 func authSetup(t *testing.T) *itutils.DeisTestConfig {
