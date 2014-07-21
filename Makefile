@@ -4,6 +4,8 @@
 
 include includes.mk
 
+SHELL := /bin/bash
+
 define check_for_errors
 	@if $(FLEETCTL) list-units -no-legend | awk '(($$2 == "launched") && ($$5 == "failed"))' | egrep -q "deis-.+service"; then \
 		echo "\033[0;31mOne or more services failed! Check which services by running 'make status'\033[0m" ; \
@@ -49,7 +51,7 @@ install-data-containers: check-fleet
 	@$(foreach T, $(DATA_CONTAINER_TEMPLATES), \
 		UNIT=`basename $(T)` ; \
 		if [[ `$(FLEETCTL) list-units | grep $$UNIT` ]]; then \
-		  echo $$UNIT already loaded. Skipping... ; \
+			echo $$UNIT already loaded. Skipping... ; \
 		else \
 			cp $(T).template . ; \
 			NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
