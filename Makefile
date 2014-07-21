@@ -48,7 +48,8 @@ install: check-fleet install-routers install-data-containers
 install-data-containers: check-fleet
 	@$(foreach T, $(DATA_CONTAINER_TEMPLATES), \
 		UNIT=`basename $(T)` ; \
-		if [[ `$(FLEETCTL) list-units | grep $$UNIT` ]]; then \
+		EXISTS=`$(FLEETCTL) list-units | grep $$UNIT` ; \
+		if [ "$$EXISTS" != "" ]; then \
 		  echo $$UNIT already loaded. Skipping... ; \
 		else \
 			cp $(T).template . ; \
