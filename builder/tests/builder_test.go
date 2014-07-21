@@ -49,6 +49,7 @@ func TestBuilder(t *testing.T) {
 		"/deis/database",
 		"/deis/registry",
 		"/deis/domains",
+		"/deis/services",
 	}
 	testID := utils.NewUuid()
 	err := dockercliutils.BuildImage(t, "../", "deis/builder:"+testID)
