@@ -126,7 +126,8 @@ class FleetClient(object):
 
     def _wait_for_announcer(self, name, env):
         status = None
-        for _ in range(60):
+        # we bump to 20 minutes here to match the timeout on the router and in the app unit files
+        for _ in range(1200):
             status = subprocess.check_output(
                 "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $5}}'".format(**locals()),
                 shell=True, env=env).strip('\n')
