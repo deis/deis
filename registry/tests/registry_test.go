@@ -3,34 +3,28 @@ package tests
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/deis/deis/tests/dockercliutils"
 	"github.com/deis/deis/tests/utils"
 )
 
 func runDeisRegistryTest(
-	t *testing.T, testSessionUID string, etcdPort string, servicePort string) {
+	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
-	done := make(chan bool, 1)
 	dockercliutils.RunDeisDataTest(t, "--name", "deis-registry-data",
 		"-v", "/data", "deis/base", "/bin/true")
-	ipaddr := utils.GetHostIPAddress()
-	done <- true
+	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
 	go func() {
-		<-done
 		err = dockercliutils.RunContainer(cli,
-			"--name", "deis-registry-"+testSessionUID,
+			"--name", "deis-registry-"+testID,
 			"--rm",
 			"-p", servicePort+":5000",
 			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-registry-data",
-			"deis/registry:"+testSessionUID)
+			"deis/registry:"+testID)
 	}()
-	time.Sleep(2000 * time.Millisecond)
 	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
 		t.Fatal(err)
@@ -38,17 +32,17 @@ func runDeisRegistryTest(
 }
 
 func TestRegistry(t *testing.T) {
-	testSessionUID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testSessionUID)
+	testID := utils.NewUuid()
+	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testSessionUID, etcdPort)
-	fmt.Println("starting registry component test")
+	dockercliutils.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
-	runDeisRegistryTest(t, testSessionUID, etcdPort, servicePort)
+	fmt.Printf("--- Test deis-registry-%s at port %s\n", testID, servicePort)
+	runDeisRegistryTest(t, testID, etcdPort, servicePort)
 	dockercliutils.DeisServiceTest(
-		t, "deis-registry-"+testSessionUID, servicePort, "http")
-	dockercliutils.ClearTestSession(t, testSessionUID)
+		t, "deis-registry-"+testID, servicePort, "http")
+	dockercliutils.ClearTestSession(t, testID)
 }

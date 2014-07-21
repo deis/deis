@@ -1,7 +1,6 @@
 package mockserviceutils
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -20,14 +19,6 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	done <- true
 	go func() {
 		<-done
-		fmt.Printf("--- Check that %s is present\n", dbImage)
-		if err = cli.CmdHistory("-q", dbImage); err != nil {
-			err = nil
-			if err = cli.CmdPull(dbImage); err != nil {
-				dockercliutils.CloseWrap(stdout, stdoutPipe)
-				return
-			}
-		}
 		err = dockercliutils.RunContainer(cli,
 			"--name", "deis-test-database-"+uid,
 			"--rm",

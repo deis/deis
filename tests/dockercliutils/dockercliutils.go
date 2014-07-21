@@ -126,7 +126,7 @@ func PrintToStdout(t *testing.T, stdout *io.PipeReader,
 func BuildImage(t *testing.T, path string, tag string) error {
 	var err error
 	cli, stdout, stdoutPipe := GetNewClient()
-	fmt.Println("Building docker image", tag)
+	fmt.Println("--- Build docker image", tag)
 	go func() {
 		if err = cli.CmdBuild("--tag="+tag, path); err != nil {
 			return
@@ -206,7 +206,6 @@ func RunDeisDataTest(t *testing.T, args ...string) {
 			}
 		}()
 		go func() {
-			fmt.Println("closing read/write pipe")
 			time.Sleep(3000 * time.Millisecond)
 			if err := CloseWrap(stdout, stdoutPipe); err != nil {
 				t.Fatalf("Inspect Element %s", err)
@@ -229,15 +228,14 @@ func getContainerIds(t *testing.T, uid string) []string {
 		}
 	}()
 	for {
-		if cmdBytes, err := bufio.NewReader(stdout).ReadString('\n'); err == nil {
-			fmt.Print(cmdBytes)
-			if strings.Contains(cmdBytes, uid) {
-				sliceContainers = utils.Append(sliceContainers, strings.Fields(cmdBytes)[0])
-			}
-		} else {
+		cmdBytes, err := bufio.NewReader(stdout).ReadString('\n')
+		if err != nil {
 			break
 		}
-
+		if strings.Contains(cmdBytes, uid) {
+			sliceContainers = utils.Append(
+				sliceContainers, strings.Fields(cmdBytes)[0])
+		}
 	}
 	return sliceContainers
 }
@@ -272,8 +270,7 @@ func stopContainers(t *testing.T, sliceContainerIds []string) {
 	cli, stdout, stdoutPipe := GetNewClient()
 	go func() {
 		for _, value := range sliceContainerIds {
-			err := cli.CmdStop(value)
-			if err != nil {
+			if err := cli.CmdStop(value); err != nil {
 				t.Log("stop container failed:", err)
 			}
 		}
@@ -314,28 +311,19 @@ func RunEtcdTest(t *testing.T, uid string, port string) {
 	cli, stdout, stdoutPipe := GetNewClient()
 	etcdImage := "deis/test-etcd:latest"
 	done2 := make(chan bool, 1)
-	ipaddr := utils.GetHostIPAddress()
 	go func() {
-		fmt.Printf("--- Check that %s is present\n", etcdImage)
-		if err = cli.CmdHistory("-q", etcdImage); err != nil {
-			err = nil
-			if err = cli.CmdPull(etcdImage); err != nil {
-				CloseWrap(stdout, stdoutPipe)
-				return
-			}
-		}
 		done2 <- true
+		ipaddr := utils.GetHostIPAddress()
 		err = RunContainer(cli,
 			"--name", "deis-etcd-"+uid,
 			"--rm",
 			"-p", port+":"+port,
 			"-e", "HOST_IP="+ipaddr,
 			"-e", "ETCD_ADDR="+ipaddr+":"+port,
-			"deis/test-etcd:latest")
+			etcdImage)
 	}()
 	go func() {
 		<-done2
-		fmt.Println("closing read/write pipe")
 		time.Sleep(5000 * time.Millisecond)
 		if err := CloseWrap(stdout, stdoutPipe); err != nil {
 			t.Fatalf("runEtcdTest %s", err)
