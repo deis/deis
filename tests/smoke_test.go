@@ -20,7 +20,7 @@ type deisTestConfig struct {
 	ExampleApp string
 	Hosts      string
 	HostName   string
-	SshKey     string
+	SSHKey     string
 }
 
 // Test configuration created from environment variables (at compile time).
@@ -42,7 +42,7 @@ type deisTest struct {
 }
 
 // Tests to exercise a basic Deis workflow.
-var vagrantTests = []deisTest{
+var smokeTests = []deisTest{
 	// Generate and activate a new SSH key named "deis".
 	{"", `
 if [ ! -f {{.AuthKey}} ]; then
@@ -73,7 +73,7 @@ deis clusters:destroy dev --confirm=dev || true
 `},
 	// Create a cluster named "dev".
 	{"", `
-deis init dev {{.HostName}} --hosts={{.Hosts}} --auth={{.SshKey}}
+deis init dev {{.HostName}} --hosts={{.Hosts}} --auth={{.SSHKey}}
 `},
 	// Clone the example app git repository locally.
 	{"", `
@@ -112,9 +112,7 @@ sleep 7 && curl -s http://testing.{{.HostName}} | grep -q 'Powered by Deis'
 // Updates a Vagrant instance to run Deis with docker containers using the
 // current codebase, then registers a user, pushes an example app, and looks
 // for "Powered by Deis" in the HTTP response.
-func TestVagrantExampleApp(t *testing.T) {
-	// t.Parallel()
-
+func TestSmokeExampleApp(t *testing.T) {
 	cfg := envCfg
 	if cfg.AuthKey == "" {
 		cfg.AuthKey = "~/.ssh/deis"
@@ -128,11 +126,11 @@ func TestVagrantExampleApp(t *testing.T) {
 	if cfg.HostName == "" {
 		cfg.HostName = "local.deisapp.com"
 	}
-	if cfg.SshKey == "" {
-		cfg.SshKey = "~/.vagrant.d/insecure_private_key"
+	if cfg.SSHKey == "" {
+		cfg.SSHKey = "~/.vagrant.d/insecure_private_key"
 	}
 
-	for _, tt := range vagrantTests {
+	for _, tt := range smokeTests {
 		runTest(t, &tt, &cfg)
 	}
 }
