@@ -25,7 +25,7 @@ func runDeisRegistryTest(
 			"--volumes-from", "deis-registry-data",
 			"deis/registry:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-registry running")
 	if err != nil {
 		t.Fatal(err)
 	}
