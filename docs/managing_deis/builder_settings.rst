@@ -40,6 +40,7 @@ setting                                   description
 /deis/controller/protocol                 protocol of the controller component (set by controller)
 /deis/registry/host                       host of the controller component (set by registry)
 /deis/registry/port                       port of the controller component (set by registry)
+/deis/services/*                          application metadata (set by controller)
 ====================================      ===========================================================
 
 Using a custom builder image
