@@ -28,11 +28,17 @@ function etcd_set_default {
   etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
+function etcd_safe_mkdir {
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
+}
+
 etcd_set_default protocol ${DEIS_PROTOCOL:-http}
 etcd_set_default secretKey ${DEIS_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 etcd_set_default builderKey ${DEIS_BUILDER_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 etcd_set_default registrationEnabled 1
 etcd_set_default webEnabled 0
+# create path for application metadata
+etcd_safe_mkdir /deis/services
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do
