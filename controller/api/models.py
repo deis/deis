@@ -628,7 +628,8 @@ def _etcd_purge_user(**kwargs):
 
 def _etcd_create_app(**kwargs):
     appname = kwargs['instance']
-    _etcd_client.write('/deis/services/{}'.format(appname), None, dir=True)
+    if kwargs['created']:
+        _etcd_client.write('/deis/services/{}'.format(appname), None, dir=True)
 
 
 def _etcd_purge_app(**kwargs):
