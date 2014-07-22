@@ -46,28 +46,21 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
-# wait for confd to populate all values
-while grep -q '<no value>' /templates/confd_settings.py; do
-       echo "controller: waiting for confd to write all values..."
-       confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null
-       sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
-
 cd /app
 
 # run an idempotent database migration
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
-# spawn celery worker in the background
+# spawn celery workers in the background
 sudo -E -u deis celery worker --app=deis --loglevel=INFO --workdir=/app --pidfile=/tmp/celery.pid &
-CELERY_PID=$!
 
-# spawn a gunicorn server in the foreground
+# spawn a gunicorn server in the background
 sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
-GUNICORN_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
+	CELERY_PID=$(cat /tmp/celery.pid)
+	GUNICORN_PID=$(cat /tmp/gunicorn.pid)
 	kill -TERM $CELERY_PID $GUNICORN_PID
 	wait $CELERY_PID $GUNICORN_PID 2>/dev/null
 	exit 0
