@@ -1,6 +1,7 @@
 include ../includes.mk
 
 build:
+	$(call rsync_all)
 	$(call ssh_all,'cd share/cache && sudo docker build -t deis/cache .')
 
 install: check-fleet
@@ -25,3 +26,11 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/cache')
+
+test: test-unit test-functional
+
+test-unit:
+	@echo no unit tests
+
+test-functional:
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...

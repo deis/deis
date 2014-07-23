@@ -298,25 +298,30 @@ class Container(UuidAuditedModel):
             if c_type == 'cmd':
                 return ''
             else:
-                return 'start {c_type}'
+                return "start {}".format(c_type)
         else:
             return ''
 
     _command = property(_get_command)
 
+    def _command_announceable(self):
+        return self._command.lower() in ['start web', '']
+
     @close_db_connections
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
-        c_type = self.type
-        self._scheduler.create(self._job_id, image, self._command.format(**locals()))
+        self._scheduler.create(name=self._job_id,
+                               image=image,
+                               command=self._command,
+                               use_announcer=self._command_announceable())
 
     @close_db_connections
     @transition(field=state,
                 source=[CREATED, UP, DOWN],
                 target=UP, crashed=DOWN)
     def start(self):
-        self._scheduler.start(self._job_id)
+        self._scheduler.start(self._job_id, self._command_announceable())
 
     @close_db_connections
     @transition(field=state,
@@ -332,15 +337,18 @@ class Container(UuidAuditedModel):
         new_job_id = self._job_id
         image = self.release.image
         c_type = self.type
-        self._scheduler.create(new_job_id, image, self._command.format(**locals()))
-        self._scheduler.start(new_job_id)
+        self._scheduler.create(name=new_job_id,
+                               image=image,
+                               command=self._command.format(**locals()),
+                               use_announcer=self._command_announceable())
+        self._scheduler.start(new_job_id, self._command_announceable())
         # destroy old container
-        self._scheduler.destroy(old_job_id)
+        self._scheduler.destroy(old_job_id, self._command_announceable())
 
     @close_db_connections
     @transition(field=state, source=UP, target=DOWN)
     def stop(self):
-        self._scheduler.stop(self._job_id)
+        self._scheduler.stop(self._job_id, self._command_announceable())
 
     @close_db_connections
     @transition(field=state,
@@ -348,7 +356,7 @@ class Container(UuidAuditedModel):
                 target=DESTROYED)
     def destroy(self):
         # TODO: add check for active connections before killing
-        self._scheduler.destroy(self._job_id)
+        self._scheduler.destroy(self._job_id, self._command_announceable())
 
     @transition(field=state,
                 source=[INITIALIZED, CREATED, DESTROYED],
@@ -444,7 +452,7 @@ class Release(UuidAuditedModel):
     config = models.ForeignKey('Config')
     build = models.ForeignKey('Build')
     # NOTE: image contains combined build + config, ready to run
-    image = models.CharField(max_length=256)
+    image = models.CharField(max_length=256, default=settings.DEFAULT_BUILD)
 
     class Meta:
         get_latest_by = 'created'
@@ -454,7 +462,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None, source_version=None):
+    def new(self, user, config=None, build=None, summary=None, source_version='latest'):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -465,24 +473,28 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
-        if not source_version:
-            source_version = 'latest'
-        else:
-            source_version = 'v{}'.format(source_version)
-        # prepare release tag
+        # always create a release off the latest image
+        source_image = '{}:{}'.format(build.image, source_version)
+        # construct fully-qualified target image
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
-        image = build.image + ':{tag}'.format(**locals())
+        release_image = '{}:{}'.format(self.app.id, tag)
+        target_image = '{}:{}/{}'.format(
+            settings.REGISTRY_HOST, settings.REGISTRY_PORT, self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
-            build=build, version=new_version, image=image, summary=summary)
-        # publish release to registry as new docker image
-        repository_path = self.app.id
-        publish_release(repository_path,
+            build=build, version=new_version, image=target_image, summary=summary)
+        # IOW, this image did not come from the builder
+        if not build.sha:
+            # we assume that the image is not present on our registry,
+            # so shell out a task to pull in the repository
+            tasks.import_repository.delay(build.image, self.app.id).get()
+            # update the source image to the repository we just imported
+            source_image = self.app.id
+        publish_release(source_image,
                         config.values,
-                        tag,
-                        source_tag=source_version)
+                        release_image,)
         return release
 
     def previous(self):
@@ -508,7 +520,9 @@ class Release(UuidAuditedModel):
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
             # if the build changed, log it and who pushed it
-            if self.build != old_build:
+            if self.version == 1:
+                self.summary += "{} created initial release".format(self.app.owner)
+            elif self.build != old_build:
                 if self.build.sha:
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
                 else:
@@ -610,7 +624,23 @@ def _etcd_purge_key(**kwargs):
 
 def _etcd_purge_user(**kwargs):
     username = kwargs['instance'].username
-    _etcd_client.delete('/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+    try:
+        _etcd_client.delete(
+            '/deis/builder/users/{}'.format(username), dir=True, recursive=True)
+    except KeyError:
+        # If _etcd_publish_key() wasn't called, there is no user dir to delete.
+        pass
+
+
+def _etcd_create_app(**kwargs):
+    appname = kwargs['instance']
+    if kwargs['created']:
+        _etcd_client.write('/deis/services/{}'.format(appname), None, dir=True)
+
+
+def _etcd_purge_app(**kwargs):
+    appname = kwargs['instance']
+    _etcd_client.delete('/deis/services/{}'.format(appname), dir=True, recursive=True)
 
 
 def _etcd_publish_domains(**kwargs):
@@ -651,3 +681,5 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
     post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
     post_delete.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
+    post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')

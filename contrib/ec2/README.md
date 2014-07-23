@@ -60,6 +60,25 @@ by adding a new entry to [cloudformation.json](cloudformation.json) like so:
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
+## Choose whether to launch into a VPC
+
+The provision script supports launching into Amazon VPC. You'll need to have already created and
+configured your VPC with at least one subnet and an internet gateway for the nodes.
+
+To launch your cluster into a VPC, export three additional environment variables: ```VPC_ID```,
+```VPC_SUBNETS```, ```VPC_ZONES```. ```VPC_ZONES``` must list the availability zones of the
+subnets in order.
+
+For example, if your VPC has ID ```vpc-a26218bf``` and consists of the subnets ```subnet-04d7f942```
+(which is in ```us-east-1b```) and ```subnet-2b03ab7f``` (which is in ```us-east-1c```) you would
+export:
+
+```
+export VPC_ID=vpc-a26218bf
+export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
+export VPC_ZONES=us-east-1b,us-east-1c
+```
+
 ## Run the provision script
 Run the [cloudformation provision script][pro-script] to spawn a new CoreOS cluster:
 ```console
@@ -84,7 +103,7 @@ The script will deploy Deis and make sure the services start properly.
 
 ## Configure DNS
 While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
-you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
+you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
 
 ## Use Deis!
 After that, register with Deis!
@@ -99,7 +118,7 @@ email: info@opdemand.com
 ## Hack on Deis
 If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
 ```console
-$ export DEIS_HOSTS=1.2.3.4 1.2.3.5 1.2.3.6
+$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
 ```
 
 This variable is used in the `make build` command.

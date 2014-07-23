@@ -37,9 +37,12 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
     DEIS_NUM_INSTANCES=3
 fi
 
+# check that the CoreOS user-data file is valid
+$CONTRIB_DIR/util/check-user-data.sh
+
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    supernova production boot --image 24614284-19a9-4348-bee3-a504d7094d1b --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
+    supernova production boot --image afb5ee19-4e6e-42c3-841c-9663e99b83ba --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 

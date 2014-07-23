@@ -16,6 +16,21 @@ if ! which aws > /dev/null; then
   exit 1
 fi
 
+if [ -z "$DEIS_NUM_INSTANCES" ]; then
+    DEIS_NUM_INSTANCES=3
+fi
+
+# make sure we have all VPC info
+if [ -n "$VPC_ID" ]; then
+  if [ -z "$VPC_SUBNETS" ] || [ -z "$VPC_ZONES" ]; then
+    echo_red 'To provision Deis in a VPC, you must also specify VPC_SUBNETS and VPC_ZONES.'
+    exit 1
+  fi
+fi
+
+# check that the CoreOS user-data file is valid
+$CONTRIB_DIR/util/check-user-data.sh
+
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
     --template-body "$(./gen-json.py)" \

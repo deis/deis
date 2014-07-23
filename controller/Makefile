@@ -5,6 +5,7 @@ include ../includes.mk
 all: build run
 
 build:
+	$(call rsync_all)
 	$(call ssh_all,'cd share/controller && sudo docker build -t deis/controller .')
 
 install: check-fleet
@@ -30,9 +31,6 @@ clean: uninstall
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/controller')
 
-test:
-	python manage.py test --noinput api web
-
 runserver:
 	python manage.py runserver
 
@@ -40,8 +38,18 @@ db:
 	python manage.py syncdb --migrate --noinput
 
 coverage:
-	coverage run manage.py test --noinput api web
+	coverage run manage.py test --noinput api
 	coverage html
 
 flake8:
 	flake8
+
+test: test-unit test-functional
+
+test-unit:
+	@if [ ! -d venv ]; then virtualenv venv; fi
+	venv/bin/pip install -q -r requirements.txt -r dev_requirements.txt
+	venv/bin/python manage.py test --noinput api
+
+test-functional:
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...

@@ -58,7 +58,7 @@ setup(name='deis',
       long_description=LONG_DESCRIPTION,
       install_requires=[
           'docopt==0.6.1', 'python-dateutil==2.2',
-          'PyYAML==3.10', 'requests==2.2.1'
+          'PyYAML==3.10', 'requests==2.2.1', 'urllib3==1.8.2'
       ],
       zip_safe=True,
       **KWARGS)

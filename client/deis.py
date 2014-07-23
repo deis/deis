@@ -90,20 +90,32 @@ class Session(requests.Session):
         if os.path.isfile(cookie_file):
             self.cookies.load()
             self.cookies.clear_expired_cookies()
-
-    def clear(self, domain):
-        """Clear cookies for the specified domain."""
-        try:
-            self.cookies.clear(domain)
             self.cookies.save()
-        except KeyError:
-            pass
+
+    @property
+    def app(self):
+        """Retrieve the application's name."""
+        try:
+            return self._get_name_from_git_remote(self.git_root())
+        except EnvironmentError:
+            return os.path.basename(os.getcwd())
+
+    def is_git_app(self):
+        """Determines if this app is a git repository. This is important in special cases
+        where we need to know whether or not we should use Deis' automatic app name
+        generator, for example.
+        """
+        try:
+            self.git_root()
+            return True
+        except EnvironmentError:
+            return False
 
     def git_root(self):
         """
-        Return the absolute path from the git repository root
+        Returns the absolute path from the git repository root.
 
-        If no git repository exists, raise an EnvironmentError
+        If no git repository exists, raises an EnvironmentError.
         """
         try:
             git_root = subprocess.check_output(
@@ -113,15 +125,13 @@ class Session(requests.Session):
             raise EnvironmentError('Current directory is not a git repository')
         return git_root
 
-    def get_app(self):
+    def _get_name_from_git_remote(self, git_root):
         """
-        Return the application name for the current directory
+        Retrieves the application name from a git repository root.
 
         The application is determined by parsing `git remote -v` output.
-        If no application is found, raise an EnvironmentError.
+        If no application is found, raises an EnvironmentError.
         """
-        git_root = self.git_root()
-        # try to match a deis remote
         remotes = subprocess.check_output(['git', 'remote', '-v'],
                                           cwd=git_root)
         m = re.search(r'^deis\W+(?P<url>\S+)\W+\(', remotes, re.MULTILINE)
@@ -133,8 +143,6 @@ class Session(requests.Session):
         if not m:
             raise EnvironmentError("Could not parse: {url}".format(**locals()))
         return m.groupdict()['app']
-
-    app = property(get_app)
 
     def request(self, *args, **kwargs):
         """
@@ -148,6 +156,11 @@ class Session(requests.Session):
                 else:
                     kwargs['headers'] = {'X-CSRFToken': cookie.value}
                 break
+        url = args[1]
+        if 'headers' in kwargs:
+            kwargs['headers']['Referer'] = url
+        else:
+            kwargs['headers'] = {'Referer': url}
         response = super(Session, self).request(*args, **kwargs)
         self.cookies.save()
         return response
@@ -393,19 +406,13 @@ class DeisClient(object):
         --cluster=CLUSTER      target cluster to host application [default: dev]
         --no-remote            do not create a 'deis' git remote
         """
-        try:
-            self._session.git_root()  # check for a git repository
-        except EnvironmentError:
-            print('No git repository found, use `git init` to create one')
-            sys.exit(1)
-        try:
-            self._session.get_app()
-            print('Deis remote already exists')
-            sys.exit(1)
-        except EnvironmentError:
-            pass
         body = {}
-        app_name = args.get('<id>')
+        app_name = None
+        if not self._session.is_git_app():
+            app_name = self._session.app
+        # prevent app name from being reset to None
+        if args.get('<id>'):
+            app_name = args.get('<id>')
         if app_name:
             body.update({'id': app_name})
         cluster = args.get('--cluster')
@@ -425,8 +432,11 @@ class DeisClient(object):
             data = response.json()
             app_id = data['id']
             print("done, created {}".format(app_id))
-            # add a git remote
-            # TODO: retrieve the hostname from service discovery
+            # set a git remote if necessary
+            try:
+                self._session.git_root()
+            except EnvironmentError:
+                return
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             if args.get('--no-remote'):
@@ -478,9 +488,9 @@ class DeisClient(object):
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
             print('done in {}s'.format(int(time.time() - before)))
-            # If the requested app is in the current dir, delete the git remote
             try:
-                if app == self._session.app:
+                # If the requested app is a heroku app, delete the git remote
+                if self._session.is_git_app():
                     subprocess.check_call(
                         ['git', 'remote', 'rm', 'deis'],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -561,7 +571,7 @@ class DeisClient(object):
         response = self._dispatch('post',
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(response.json())
+            sys.stdout.write(response.json())
         else:
             raise ResponseError(response)
 
@@ -629,6 +639,9 @@ class DeisClient(object):
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
+        # Clear any existing cookies
+        self._session.cookies.clear()
+        self._session.cookies.save()
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
@@ -665,7 +678,7 @@ class DeisClient(object):
                 self._settings.save()
                 print('Account cancelled')
             else:
-                print('Accont not changed')
+                print('Account not changed')
 
     def auth_login(self, args):
         """
@@ -685,8 +698,9 @@ class DeisClient(object):
             password = getpass('password: ')
         url = urlparse.urljoin(controller, '/api/auth/login/')
         payload = {'username': username, 'password': password}
-        # clear any cookies for this controller's domain
-        self._session.clear(urlparse.urlparse(url).netloc)
+        # clear any existing cookies
+        self._session.cookies.clear()
+        self._session.cookies.save()
         # prime cookies for login
         self._session.get(url, headers=headers)
         # post credentials to the login URL
@@ -697,8 +711,6 @@ class DeisClient(object):
             print("Logged in as {}".format(username))
             return username
         else:
-            self._session.cookies.clear()
-            self._session.cookies.save()
             raise ResponseError(response)
 
     def auth_logout(self, args):
@@ -729,9 +741,19 @@ class DeisClient(object):
 
     def builds_create(self, args):
         """
-        Create a new build of an application
+        Creates a new build of an application. Imports an <image> and deploys it to Deis
+        as a new release.
 
         Usage: deis builds:create <image> [--app=<app>]
+
+        Arguments:
+          <image>
+            A fully-qualified docker image, either from DockerHub (e.g. deis/example-go)
+            or from an in-house registry (e.g. myregistry.example.com:5000/example-go).
+
+        Options:
+          --app=<app>
+            The uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -1178,12 +1200,13 @@ class DeisClient(object):
         """
         app = args.get('--app')
         if not app:
-            app = self._session.get_app()
+            app = self._session.app
         body = {}
         for type_num in args.get('<type=num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        print('Scaling processes... but first, coffee!')
+        sys.stdout.write('Scaling processes... but first, coffee!\n')
+        sys.stdout.flush()
         try:
             progress = TextProgress()
             progress.start()
@@ -1195,7 +1218,7 @@ class DeisClient(object):
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done in {}s\n'.format(int(time.time() - before)))
+            print('done in {}s'.format(int(time.time() - before)))
             self.ps_list({}, app)
         else:
             raise ResponseError(response)
@@ -1248,7 +1271,8 @@ class DeisClient(object):
         name = path.split(os.path.sep)[-1]
         with open(path) as f:
             data = f.read()
-            match = re.match(r'^(ssh-...) ([^ ]+) ?(.*)', data)
+            match = re.match(r'^(ssh-...|ecdsa-[^ ]+) ([^ ]+) ?(.*)',
+                             data)
             if not match:
                 print("Could not parse SSH public key {0}".format(name))
                 sys.exit(1)
@@ -1448,7 +1472,7 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 item['created'] = readable_datetime(item['created'])
-                print("v{version:<6} {created:<33} {summary}".format(**item))
+                print("v{version:<6} {created:<24} {summary}".format(**item))
         else:
             raise ResponseError(response)
 
@@ -1469,9 +1493,21 @@ class DeisClient(object):
         else:
             body = {}
         url = "/api/apps/{app}/releases/rollback".format(**locals())
-        response = self._dispatch('post', url, json.dumps(body))
-        if response.status_code == requests.codes.created:
-            print(response.json())
+        if version:
+            sys.stdout.write('Rolling back to v{version}... '.format(**locals()))
+        else:
+            sys.stdout.write('Rolling back one release... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', url, json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            new_version = response.json()['version']
+            print("done, v{}".format(new_version))
         else:
             raise ResponseError(response)
 
@@ -1498,6 +1534,7 @@ SHORTCUTS = OrderedDict([
     ('register', 'auth:register'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
+    ('pull', 'builds:create'),
     ('scale', 'ps:scale'),
     ('rollback', 'releases:rollback'),
     ('sharing', 'perms:list'),

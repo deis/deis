@@ -46,9 +46,17 @@ class FleetClient(object):
         """
         return
 
+    # announcer helpers
+
+    def _log_skipped_announcer(self, action, name):
+        """
+        Logs a message stating that this operation doesn't require an announcer
+        """
+        print "-- skipping announcer {} for {}".format(action, name)
+
     # job api
 
-    def create(self, name, image, command='', template=None):
+    def create(self, name, image, command='', template=None, use_announcer=True):
         """
         Create a new job
         """
@@ -56,7 +64,11 @@ class FleetClient(object):
         env = self.env.copy()
         self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env)
         self._create_log(name, image, command, LOG_TEMPLATE, env)
-        self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
+
+        if use_announcer:
+            self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
+        else:
+            self._log_skipped_announcer('create', name)
 
     def _create_container(self, name, image, command, template, env):
         l = locals().copy()
@@ -82,7 +94,7 @@ class FleetClient(object):
         return subprocess.check_call('fleetctl.sh submit {name}-log.service'.format(**locals()),  # noqa
                                      shell=True, env=env)
 
-    def start(self, name):
+    def start(self, name, use_announcer=True):
         """
         Start an idle job
         """
@@ -90,8 +102,12 @@ class FleetClient(object):
         env = self.env.copy()
         self._start_container(name, env)
         self._start_log(name, env)
-        self._start_announcer(name, env)
-        self._wait_for_announcer(name, env)
+
+        if use_announcer:
+            self._start_announcer(name, env)
+            self._wait_for_announcer(name, env)
+        else:
+            self._log_skipped_announcer('start', name)
 
     def _start_log(self, name, env):
         subprocess.check_call(
@@ -110,7 +126,8 @@ class FleetClient(object):
 
     def _wait_for_announcer(self, name, env):
         status = None
-        for _ in range(60):
+        # we bump to 20 minutes here to match the timeout on the router and in the app unit files
+        for _ in range(1200):
             status = subprocess.check_output(
                 "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $5}}'".format(**locals()),
                 shell=True, env=env).strip('\n')
@@ -120,13 +137,18 @@ class FleetClient(object):
         else:
             raise RuntimeError('Container failed to start')
 
-    def stop(self, name):
+    def stop(self, name, use_announcer=True):
         """
         Stop a running job
         """
         print 'Stopping {name}'.format(**locals())
         env = self.env.copy()
-        self._stop_announcer(name, env)
+
+        if use_announcer:
+            self._stop_announcer(name, env)
+        else:
+            self._log_skipped_announcer('stop', name)
+
         self._stop_container(name, env)
         self._stop_log(name, env)
 
@@ -145,13 +167,18 @@ class FleetClient(object):
             'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
-    def destroy(self, name):
+    def destroy(self, name, use_announcer=True):
         """
         Destroy an existing job
         """
         print 'Destroying {name}'.format(**locals())
         env = self.env.copy()
-        self._destroy_announcer(name, env)
+
+        if use_announcer:
+            self._destroy_announcer(name, env)
+        else:
+            self._log_skipped_announcer('destroy', name)
+
         self._destroy_container(name, env)
         self._destroy_log(name, env)
 
@@ -197,13 +224,12 @@ Description={name}
 [Service]
 ExecStartPre=/usr/bin/docker pull {image}
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .config.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; /usr/bin/docker run --name {name} -P -e PORT=$port {image} {command}"
-ExecStartPost=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"; \
-    /bin/sh -c "arping -Idocker0 -c1 `docker inspect -f '{{{{ .NetworkSettings.IPAddress }}}}' {name}`"
+ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port {image} {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
 """
 
+# TODO revisit the "not getting a port" issue after we upgrade to Docker 1.1.0
 ANNOUNCE_TEMPLATE = """
 [Unit]
 Description={name} announce
@@ -211,9 +237,10 @@ BindsTo={name}.service
 
 [Service]
 EnvironmentFile=/etc/environment
-ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
+ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
 ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
+TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
@@ -225,8 +252,9 @@ Description={name} log
 BindsTo={name}.service
 
 [Service]
-ExecStartPre=/bin/sh -c "until /usr/bin/docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "/usr/bin/docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
+ExecStartPre=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
+ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
+TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service

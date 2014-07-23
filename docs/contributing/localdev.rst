@@ -153,7 +153,7 @@ access using:
 
 
 Your local development environment is running! Follow the
-rest of the :ref:`Developer Guide <developer>` to deploy your first application.
+rest of the `_using_deis` guide to deploy your first application.
 
 Test Your Changes
 -----------------

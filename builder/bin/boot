@@ -14,6 +14,7 @@ export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-10}
+export STORAGE_DRIVER=${STORAGE_DRIVER:-btrfs}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null; do
@@ -44,7 +45,7 @@ CONFD_PID=$!
 test -e /var/run/docker.sock && rm -f /var/run/docker.sock
 
 # spawn a docker daemon to run builds
-docker -d --storage-driver=btrfs --bip=172.19.42.1/16 &
+docker -d --storage-driver=$STORAGE_DRIVER --bip=172.19.42.1/16 &
 DOCKER_PID=$!
 
 # wait for docker to start
@@ -64,6 +65,7 @@ SSHD_PID=$!
 function on_exit() {
 	kill -TERM $DOCKER_PID $SSHD_PID
 	wait $DOCKER_PID $SSHD_PID 2>/dev/null
+	exit 0
 }
 trap on_exit INT TERM EXIT
 

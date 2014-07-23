@@ -1,6 +1,7 @@
 include ../includes.mk
 
 build:
+	$(call rsync_all)
 	$(call ssh_all,'cd share/logger && sudo docker build -t deis/logger .')
 
 install: check-fleet
@@ -25,3 +26,15 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'sudo docker rmi deis/logger')
+
+test: test-unit test-functional
+
+test-unit:
+	go test -v -cover ./syslog
+
+test-functional:
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
+
+coverage:
+	go test -coverprofile coverage.out ./syslog
+	go tool cover -html=coverage.out

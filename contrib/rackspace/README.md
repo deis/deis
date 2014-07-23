@@ -1,5 +1,12 @@
 # Provision a Deis Cluster on Rackspace
 
+**WARNING: Unsupported**
+
+The most recent CoreOS image that Rackspace provides is too old. Rackspace regularly lags behind other
+cloud providers in updating its CoreOS images. Until Rackspace updates its images frequently enough
+for us to update CoreOS on Rackspace when we update the other cloud providers, Rackspace will remain
+an unsupported cloud platform for provisioning Deis. The instructions below remain as a reference.
+
 We'll mostly be following the [CoreOS on Rackspace](https://coreos.com/docs/running-coreos/cloud-providers/rackspace/) guide. You'll need to have a sane python environment with pip already installed (`sudo easy_install pip`).
 
 ### Install supernova and its dependencies:
@@ -70,7 +77,7 @@ $ cd ../.. && make run
 The script will deploy Deis and make sure the services start properly.
 
 ### Configure DNS
-You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/) for details.
+You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
 
 ### Use Deis!
 After that, register with Deis!
@@ -85,7 +92,7 @@ email: info@opdemand.com
 ## Hack on Deis
 If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
 ```console
-$ export DEIS_HOSTS=10.21.12.1 10.21.12.2 10.21.12.3
+$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
 ```
 
 This variable is used in the `make build` command.

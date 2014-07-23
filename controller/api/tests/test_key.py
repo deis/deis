@@ -15,12 +15,20 @@ from api.models import Key
 from api.utils import fingerprint
 
 
-PUBKEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfQkkUUoxpvcNMkvv7jqnfodgs37M2eBO" \
-         "APgLK+KNBMaZaaKB4GF1QhTCMfFhoiTW3rqa0J75bHJcdkoobtTHlK8XUrFqsquWyg3XhsT" \
-         "Yr/3RQQXvO86e2sF7SVDJqVtpnbQGc5SgNrHCeHJmf5HTbXSIjCO/AJSvIjnituT/SIAMGe" \
-         "Bw0Nq/iSltwYAek1hiKO7wSmLcIQ8U4A00KEUtalaumf2aHOcfjgPfzlbZGP0S0cuBwSqLr" \
-         "8b5XGPmkASNdUiuJY4MJOce7bFU14B7oMAy2xacODUs1momUeYtGI9T7X2WMowJaO7tP3Gl" \
-         "sgBMP81VfYTfYChAyJpKp2yoP autotest@autotesting comment"
+RSA_PUBKEY = (
+    "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCfQkkUUoxpvcNMkvv7jqnfodgs37M2eBO"
+    "APgLK+KNBMaZaaKB4GF1QhTCMfFhoiTW3rqa0J75bHJcdkoobtTHlK8XUrFqsquWyg3XhsT"
+    "Yr/3RQQXvO86e2sF7SVDJqVtpnbQGc5SgNrHCeHJmf5HTbXSIjCO/AJSvIjnituT/SIAMGe"
+    "Bw0Nq/iSltwYAek1hiKO7wSmLcIQ8U4A00KEUtalaumf2aHOcfjgPfzlbZGP0S0cuBwSqLr"
+    "8b5XGPmkASNdUiuJY4MJOce7bFU14B7oMAy2xacODUs1momUeYtGI9T7X2WMowJaO7tP3Gl"
+    "sgBMP81VfYTfYChAyJpKp2yoP autotest@autotesting comment"
+)
+
+ECDSA_PUBKEY = (
+    "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAAB"
+    "BBCGB0x9lmubbLJTF5NekCI0Cgjyip6jJh/t/qQQi1LAZisbREBJ8Wy+hwSn3tnbf/Imh9X"
+    "+MQnrrza0jaQ3QUAQ= autotest@autotesting comment"
+)
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -34,12 +42,12 @@ class KeyTest(TestCase):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
 
-    def test_key(self):
+    def _check_key(self, pubkey):
         """
         Test that a user can add, remove and manage their SSH public keys
         """
         url = '/api/keys'
-        body = {'id': 'mykey@box.local', 'public': PUBKEY}
+        body = {'id': 'mykey@box.local', 'public': pubkey}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         key_id = response.data['id']
@@ -54,18 +62,30 @@ class KeyTest(TestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
-    def test_key_duplicate(self):
+    def test_rsa_key(self):
+        self._check_key(RSA_PUBKEY)
+
+    def test_ecdsa_key(self):
+        self._check_key(ECDSA_PUBKEY)
+
+    def _check_duplicate_key(self, pubkey):
         """
         Test that a user cannot add a duplicate key
         """
         url = '/api/keys'
-        body = {'id': 'mykey@box.local', 'public': PUBKEY}
+        body = {'id': 'mykey@box.local', 'public': pubkey}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_key_str(self):
+    def test_rsa_duplicate_key(self):
+        self._check_duplicate_key(RSA_PUBKEY)
+
+    def test_ecdsa_duplicate_key(self):
+        self._check_duplicate_key(ECDSA_PUBKEY)
+
+    def test_rsa_key_str(self):
         """Test the text representation of a key"""
         url = '/api/keys'
         body = {'id': 'autotest', 'public':
@@ -81,6 +101,6 @@ class KeyTest(TestCase):
         key = Key.objects.get(uuid=response.data['uuid'])
         self.assertEqual(str(key), 'ssh-rsa AAAAB3NzaC.../HJDw9QckTS0vN autotest@deis.io')
 
-    def test_key_fingerprint(self):
-        fp = fingerprint(PUBKEY)
+    def test_rsa_key_fingerprint(self):
+        fp = fingerprint(RSA_PUBKEY)
         self.assertEquals(fp, '54:6d:da:1f:91:b5:2b:6f:a2:83:90:c4:f9:73:76:f5')

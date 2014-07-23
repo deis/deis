@@ -278,10 +278,15 @@ BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&2
 
 # registry settings
 REGISTRY_MODULE = 'registry.mock'
-REGISTRY_URL = os.environ.get('DEIS_REGISTRY_URL', None)
+REGISTRY_URL = 'http://localhost:5000'
+REGISTRY_HOST = 'localhost'
+REGISTRY_PORT = 5000
 
 # check if we can register users with `deis register`
 REGISTRATION_ENABLED = True
+
+# check if we should enable the web UI module
+WEB_ENABLED = False
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {

@@ -9,19 +9,28 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 # Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
 
 Trying out Deis? Continue following these instructions for a local cluster setup. This is also a great Deis testing/development environment.
 
 # Upgrading Deis
 
-Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/operations/upgrading-deis/) for additional information.
+Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
 
 ## Install prerequisites
 On your workstation:
-* Install [Vagrant](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install the fleetctl client: Install v0.3.2 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
+* Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+* Install the fleetctl client: Install v0.5.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
+
+A single-node cluster launched with Vagrant will consume about 5 GB of ram on
+the host machine. Please be sure you have sufficient free memory before
+proceeding.
+
+Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known
+release for 14.04) has some issues when running in RAM-constrained
+environments. Please install the lastest version of VirtualBox from Oracle's
+website.
 
 ## Additional setup for a multi-node cluster
 If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
@@ -55,30 +64,30 @@ $ export DOCKER_HOST=tcp://172.17.8.100:4243
 $ export FLEETCTL_TUNNEL=172.17.8.100
 ```
 
-## Build Deis
+## Optional: Build Deis
 
-Use `make pull` to download cached layers from the public Docker Index.  Then use `make build` to assemble all of the Deis components from Dockerfiles.  Grab some coffee while it builds the images on each VM (it can take a while).
+If you'd like to build Deis from source instead of using the pre-built public Dockerfiles, use `make build` to build each component from its Dockerfile.  Grab some coffee while it builds the images on each VM (it can take a while).
+If you're not testing code changes for Deis, it's faster just to skip to the next step.
 
 ```console
-$ make pull
 $ make build
 ```
 
 ## Run Deis
 
-Use `make run` to start all Deis containers and attach to their log output. This can take some time - the registry service will pull and prepare a Docker image. Grab some more coffee!
+Use `make run` to start all Deis components. This can take some time - the registry service will pull and prepare a large Docker image. Grab some more coffee!
 
 ```console
 $ make run
 ```
 
-Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/operations/configure-dns/).
+Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Testing the cluster
 Integration tests and corresponding documentation can be found under the `test/` folder.
 
 ## Install the Deis Client
-If you're using the latest Deis release, use `pip install deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
+If you're using the latest Deis release, use `pip install --upgrade deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
 
 If you're working off master, precompiled binaries are likely out of date. You should either symlink the python file directly or build a local copy of the client:
 
@@ -112,8 +121,8 @@ $ deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/
 The parameters to `deis clusters:create` are:
 * cluster name (`dev`) - the name used by Deis to reference the cluster
 * cluster hostname (`local.deisapp.com`) - the hostname under which apps are created, like `balancing-giraffe.local.deisapp.com`
-* cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for EC2 and Rackspace, this is a list of the internal IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
-* auth SSH key (`--auth`) - the SSH private key used to provision servers (for EC2 and Rackspace, this key is likely `~/.ssh/deis`)
+* cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for cloud providers, this is a list of the IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
+* auth SSH key (`--auth`) - the SSH private key used to provision servers (for cloud providers, this key is likely `~/.ssh/deis`)
 
 The `dev` cluster will be used as the default cluster for future `deis` commands.
 

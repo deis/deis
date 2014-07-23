@@ -1,0 +1,234 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Deis on EC2: http://deis.io/",
+  "Mappings" : {
+      "RegionMap" : {
+          "ap-northeast-1" : {
+              "AMI" : "ami-d7dc8cd6"
+          },
+          "sa-east-1" : {
+              "AMI" : "ami-0d329c10"
+          },
+          "ap-southeast-2" : {
+              "AMI" : "ami-4d8fe877"
+          },
+          "ap-southeast-1" : {
+              "AMI" : "ami-5695cc04"
+          },
+          "us-east-1" : {
+              "AMI" : "ami-3c66ab54"
+          },
+          "us-west-2" : {
+              "AMI" : "ami-bbb9c08b"
+          },
+          "us-west-1" : {
+              "AMI" : "ami-7d414238"
+          },
+          "eu-west-1" : {
+              "AMI" : "ami-0573a472"
+          }
+      }
+  },
+  "Parameters": {
+    "InstanceType" : {
+      "Description" : "EC2 instance type (m1.small, etc).",
+      "Type" : "String",
+      "Default" : "m3.large",
+      "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge", "hi1.4xlarge", "hs1.8xlarge"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+    "ClusterSize": {
+      "Default": "3",
+      "MinValue": "3",
+      "MaxValue": "12",
+      "Description": "Number of nodes in cluster (3-12).",
+      "Type": "Number"
+    },
+    "AllowSSHFrom": {
+      "Description": "The net block (CIDR) that SSH is available to.",
+      "Default": "0.0.0.0/0",
+      "Type": "String"
+    },
+    "KeyPair" : {
+      "Description" : "The name of an EC2 Key Pair to allow SSH access to the instance.",
+      "Type" : "String"
+    }
+  },
+  "Resources": {
+    "CoreOSSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "CoreOS SecurityGroup",
+        "SecurityGroupIngress": [
+          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": {"Ref": "AllowSSHFrom"}}
+        ]
+      }
+    },
+    "DeisSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Deis SecurityGroup",
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0" },
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"] } },
+          { "IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"] } }
+        ]
+      }
+    },
+    "Ingress4001": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "4001", "ToPort": "4001", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress7001": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "CoreOSSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "7001", "ToPort": "7001", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "CoreOSSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress514TCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "514", "ToPort": "514", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress514UDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "udp", "FromPort": "514", "ToPort": "514", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress5000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "5000", "ToPort": "5000", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress8000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "8000", "ToPort": "8000", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress5432": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress6379": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "6379", "ToPort": "6379", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "Ingress2223": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "2223", "ToPort": "2223", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "IngressEphemeral": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupName": {"Ref": "DeisSecurityGroup"}, "IpProtocol": "tcp", "FromPort": "49152", "ToPort": "65535", "SourceSecurityGroupId": {
+          "Fn::GetAtt" : [ "DeisSecurityGroup", "GroupId" ]
+        }
+      }
+    },
+    "CoreOSServerAutoScale": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": {"Fn::GetAZs": ""},
+        "LaunchConfigurationName": {"Ref": "CoreOSServerLaunchConfig"},
+        "MinSize": "3",
+        "MaxSize": "12",
+        "DesiredCapacity": {"Ref": "ClusterSize"},
+        "Tags": [
+            {"Key": "Name", "Value": { "Ref" : "AWS::StackName" }, "PropagateAtLaunch": true}
+        ],
+        "LoadBalancerNames": [
+          { "Ref": "DeisWebELB" }
+        ]
+      }
+    },
+    "CoreOSServerLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "InstanceType": {"Ref": "InstanceType"},
+        "KeyName": {"Ref": "KeyPair"},
+        "SecurityGroups": [{"Ref": "CoreOSSecurityGroup"}, {"Ref": "DeisSecurityGroup"}],
+        "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] } },
+        "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : { "VolumeSize" : "100" }
+          }
+        ]
+      }
+    },
+    "DeisWebELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "HealthCheck": {
+          "HealthyThreshold": "4",
+          "Interval": "15",
+          "Target": "HTTP:80/health-check",
+          "Timeout": "5",
+          "UnhealthyThreshold": "2"
+        },
+        "AvailabilityZones": { "Fn::GetAZs": "" },
+        "Listeners": [
+          {
+            "InstancePort": "80",
+            "InstanceProtocol": "HTTP",
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP"
+          },
+          {
+            "InstancePort": "2222",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "2222",
+            "Protocol": "TCP"
+          }
+        ],
+        "SecurityGroups": [
+          {
+            "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"]
+          }
+        ]
+      }
+    },
+    "DeisWebELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Deis Web ELB SecurityGroup",
+        "SecurityGroupIngress": [
+          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"}
+        ]
+      }
+    }
+  }
+}
