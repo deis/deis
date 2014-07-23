@@ -1493,7 +1493,10 @@ class DeisClient(object):
         else:
             body = {}
         url = "/api/apps/{app}/releases/rollback".format(**locals())
-        sys.stdout.write('Rolling back to v{version}... '.format(**locals()))
+        if version:
+            sys.stdout.write('Rolling back to v{version}... '.format(**locals()))
+        else:
+            sys.stdout.write('Rolling back one release... ')
         sys.stdout.flush()
         try:
             progress = TextProgress()
