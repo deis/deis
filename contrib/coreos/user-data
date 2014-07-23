@@ -96,11 +96,11 @@ write_files:
     content: |
       #!/bin/bash
       # usage: get_image <component_path>
-      IMAGE=`etcdctl get $1/image`
+      IMAGE=`etcdctl get $1/image 2>/dev/null`
 
       # if no image was set in etcd, we use the default plus the release string
       if [ $? -ne 0 ]; then
-        RELEASE=`etcdctl get /deis/release`
+        RELEASE=`etcdctl get /deis/release 2>/dev/null`
 
         # if no release was set in etcd, use the default provisioned with the server
         if [ $? -ne 0 ]; then

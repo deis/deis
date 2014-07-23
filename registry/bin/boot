@@ -19,7 +19,7 @@ export ETCD_TTL=${ETCD_TTL:-10}
 export REGISTRY_PORT=${PORT:-5000}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null; do
+until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
