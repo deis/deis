@@ -45,7 +45,7 @@ func buildSetup(t *testing.T) *itutils.DeisTestConfig {
 }
 
 func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
-	Deis := "/usr/local/bin/deis "
+	Deis := "deis "
 	cmd := itutils.GetCommand("builds", "list")
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
