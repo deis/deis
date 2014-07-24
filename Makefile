@@ -55,7 +55,7 @@ install-data-containers: check-fleet
 			cp $(T).template . ; \
 			NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
 			mv *.template $$NEW_FILENAME ; \
-			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full list-machines | awk 'BEGIN { OFS="\t"; srand() } { print rand(), $$1 }' | sort -n | cut -f2- | head -1` ; \
+			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full | awk 'BEGIN { OFS="\t"; srand() } { print rand(), $$1 }' | sort -n | cut -f2- | head -1` ; \
 			sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
 			rm -f $$NEW_FILENAME ; \
 			mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
