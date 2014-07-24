@@ -1,12 +1,5 @@
 # Provision a Deis Cluster on Rackspace
 
-**WARNING: Unsupported**
-
-The most recent CoreOS image that Rackspace provides is too old. Rackspace regularly lags behind other
-cloud providers in updating its CoreOS images. Until Rackspace updates its images frequently enough
-for us to update CoreOS on Rackspace when we update the other cloud providers, Rackspace will remain
-an unsupported cloud platform for provisioning Deis. The instructions below remain as a reference.
-
 We'll mostly be following the [CoreOS on Rackspace](https://coreos.com/docs/running-coreos/cloud-providers/rackspace/) guide. You'll need to have a sane python environment with pip already installed (`sudo easy_install pip`).
 
 ### Install supernova and its dependencies:
