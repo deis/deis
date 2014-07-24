@@ -10,6 +10,11 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 
 source $CONTRIB_DIR/utils.sh
 
+if [ -z "$4" ]; then
+  echo_red 'Usage: provision-do-cluster.sh <REGION_ID> <IMAGE_ID> <SSH_ID> <SIZE>'
+  exit 1
+fi
+
 # check for DO tools in $PATH
 if ! which tugboat > /dev/null; then
   echo_red 'Please install the tugboat gem and ensure it is in your $PATH.'
