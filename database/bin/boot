@@ -23,7 +23,7 @@ if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
 fi
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null; do
+until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
