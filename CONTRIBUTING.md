@@ -52,6 +52,17 @@ To make it more formal, it looks something like this:
     <BLANK LINE>
     {footer}
 
+The {scope} can be anything specifying place of the commit change.
+
+The {subject} needs to use imperative, present tense: “change”, not “changed” nor
+“changes”. The first letter should not be capitalized, and there is no dot (.) at the end.
+
+Just like the {subject}, the message {body} needs to be in the present tense, and includes
+the motivation for the change, as well as a contrast with the previous behavior. The first
+letter in a paragraph must be capitalized.
+
+All breaking changes need to be mentioned in the {footer} with the description of the
+change, the justification behind the change and any migration notes required.
 
 Any line of the commit message cannot be longer than 90 characters, with the subject line
 limited to 70 characters. This allows the message to be easier to read on github as well
