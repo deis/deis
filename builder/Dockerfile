@@ -35,6 +35,11 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 # let the git user run `sudo /home/git/builder` (not writeable)
 RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 
+# HACK: import progrium/cedarish as a tarball
+# see https://github.com/deis/deis/issues/1027
+RUN wget -O /progrium_cedarish.tar --progress=dot:giga \
+        https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014.05.27.tar
+
 # add the current build context to /app
 ADD . /app
 RUN chown -R root:root /app

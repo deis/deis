@@ -53,6 +53,10 @@ while [[ ! -e /var/run/docker.sock ]]; do
   sleep 1
 done
 
+# HACK: load progrium/cedarish tarball for faster boot times
+# see https://github.com/deis/deis/issues/1027
+docker load -i /progrium_cedarish.tar
+
 # pull required images
 docker pull deis/slugbuilder:latest
 docker pull deis/slugrunner:latest
