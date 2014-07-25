@@ -11,10 +11,11 @@ RUN apt-get update && apt-get install -yq \
     curl \
     lxc-docker-1.1.1
 
-# configure ssh server
-RUN rm /etc/ssh/ssh_host_*
-RUN dpkg-reconfigure openssh-server
-RUN mkdir -p /var/run/sshd
+# configure ssh server, turn off dns-lookup
+RUN rm /etc/ssh/ssh_host_* && \
+    dpkg-reconfigure openssh-server && \
+    mkdir -p /var/run/sshd && \
+    echo "UseDNS no" >> /etc/ssh/sshd_config
 
 # install recent pip
 RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -

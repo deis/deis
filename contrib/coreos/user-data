@@ -79,6 +79,14 @@ coreos:
       ExecStartPre=/usr/bin/rm /home/core/.bashrc
       ExecStart=/usr/bin/ln -s /run/deis/.bashrc /home/core/.bashrc
 write_files:
+  - path: /etc/ssh/sshd_config
+    permissions: 0600
+    owner: root:root
+    content: |
+      # Use most defaults for sshd configuration.
+      UsePrivilegeSeparation sandbox
+      Subsystem sftp internal-sftp
+      UseDNS no
   - path: /etc/deis-release
     content: |
       DEIS_RELEASE=latest
