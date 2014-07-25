@@ -371,7 +371,7 @@ class DeisClient(object):
             'X-Deis-Version': __version__.rsplit('.', 1)[0],
         }
         func = getattr(self._session, method.lower())
-        controller = self._settings['controller']
+        controller = self._settings.get('controller')
         if not controller:
             raise EnvironmentError(
                 'No active controller. Use `deis login` or `deis register` to get started.')
