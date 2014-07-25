@@ -970,6 +970,7 @@ class DeisClient(object):
         config:list        list environment variables for an app
         config:set         set environment variables for an app
         config:unset       unset environment variables for an app
+        config:pull        extract environment variables to .env
 
         Use `deis help [command]` to learn more
         """
@@ -1081,6 +1082,56 @@ class DeisClient(object):
                 return
             for k, v in values.items():
                 print("{k}: {v}".format(**locals()))
+        else:
+            raise ResponseError(response)
+
+    def config_pull(self, args):
+        """
+        Extract all environment variables from an application for local use.
+
+        Your environment will be stored locally in a file named .env. This file can be
+        read by foreman to load the local environment for your app.
+
+        Usage: deis config:pull [options]
+
+        Options:
+          -a APP --app=APP  The application that you wish to pull from
+          -i --interactive  Prompts for each value to be overwritten
+          -o --overwrite    Allows you to have the pull overwrite keys in .env
+        """
+        app = args.get('--app')
+        overwrite = args.get('--overwrite')
+        interactive = args.get('--interactive')
+        env_dict = {}
+        if not app:
+            app = self._session.app
+            try:
+                # load env_dict from existing .env, if it exists
+                with open('.env') as f:
+                    for line in f.readlines():
+                        k, v = line.split('=', 1)[0], line.split('=', 1)[1].strip('\n')
+                        env_dict[k] = v
+            except IOError:
+                pass
+        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            config = json.loads(response.json()['values'])
+            for k, v in config.items():
+                if interactive:
+                    confirm = raw_input('overwrite {} with {}? (y/N) '.format(k, v))
+                    if confirm == 'y':
+                        env_dict[k] = v
+                if k in env_dict and not overwrite:
+                    continue
+                env_dict[k] = v
+            # write env_dict to .env
+            try:
+                with open('.env', 'w') as f:
+                    for i in env_dict.keys():
+                        f.write("{}={}\n".format(i, env_dict[i]))
+            except IOError:
+                print('could not write to local env')
+                sys.exit(1)
         else:
             raise ResponseError(response)
 
@@ -1542,17 +1593,17 @@ class DeisClient(object):
 SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),
     ('destroy', 'apps:destroy'),
-    ('init', 'clusters:create'),
     ('info', 'apps:info'),
-    ('run', 'apps:run'),
-    ('open', 'apps:open'),
-    ('logs', 'apps:logs'),
-    ('register', 'auth:register'),
+    ('init', 'clusters:create'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
+    ('logs', 'apps:logs'),
+    ('open', 'apps:open'),
     ('pull', 'builds:create'),
-    ('scale', 'ps:scale'),
+    ('register', 'auth:register'),
     ('rollback', 'releases:rollback'),
+    ('run', 'apps:run'),
+    ('scale', 'ps:scale'),
     ('sharing', 'perms:list'),
     ('sharing:list', 'perms:list'),
     ('sharing:add', 'perms:create'),
