@@ -1,0 +1,99 @@
+{
+	"ImportPath": "github.com/deis/deis/deisctl",
+	"GoVersion": "go1.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/coreos/fleet/client",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/etcd",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/event",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/job",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/machine",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/pkg",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/registry",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/resource",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/schema",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/sign",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/ssh",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/third_party/code.google.com/p/google-api-go-client/googleapi",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/third_party/code.google.com/p/gosshnew/ssh",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/third_party/github.com/coreos/go-semver/semver",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/third_party/github.com/dotcloud/docker/pkg/netlink",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/third_party/github.com/golang/glog",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/coreos/fleet/unit",
+			"Comment": "v0.3.2-266-gd3b58d7",
+			"Rev": "d3b58d79c4e4db79102bb96ddf2fdb902fbcbbb9"
+		},
+		{
+			"ImportPath": "github.com/docopt/docopt-go",
+			"Comment": "0.6.1-rc2-23-ga7ddcdd",
+			"Rev": "a7ddcdd6c75497c4d046d0a299dbdd4c5536b7a8"
+		}
+	]
+}

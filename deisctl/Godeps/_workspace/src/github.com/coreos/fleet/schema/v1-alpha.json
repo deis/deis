@@ -1,0 +1,272 @@
+{
+  "kind": "discovery#restDescription",
+  "discoveryVersion": "v1-alpha",
+  "id": "fleet:v1-alpha",
+  "name": "fleet",
+  "version": "v1-alpha",
+  "title": "Fleet API",
+  "description": "",
+  "documentationLink": "http://github.com/coreos/fleet",
+  "protocol": "rest",
+  "icons": {
+    "x16": "",
+    "x32": ""
+  },
+  "labels": [],
+  "baseUrl": "http://example.com/v1-alpha/",
+  "basePath": "/v1-alpha/",
+  "rootUrl": "http://example.com/",
+  "servicePath": "v1-alpha/",
+  "batchPath": "batch",
+  "parameters": {},
+  "auth": {},
+  "schemas": {
+    "Machine": {
+      "id": "Machine",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "required": true
+        },
+        "primaryIP": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "required": true,
+          "properties": {},
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "MachinePage": {
+      "id": "MachinePage",
+      "type": "object",
+      "properties": {
+        "machines": {
+          "type": "array",
+          "required": true,
+          "items": {
+            "$ref": "Machine"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "Unit": {
+      "id": "Unit",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "fileHash": {
+          "type": "string",
+          "required": true
+        },
+        "fileContents": {
+          "type": "string",
+          "format": "byte"
+        },
+        "desiredState": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "inactive",
+            "loaded",
+            "launched"
+          ]
+        },
+        "currentState": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "inactive",
+            "loaded",
+            "launched"
+          ]
+        },
+        "targetMachineID": {
+          "type": "string"
+        },
+        "systemd": {
+          "$ref": "SystemdState"
+        }
+      }
+    },
+    "DeletableUnit": {
+      "id": "DeletableUnit",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "fileContents": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "SystemdState": {
+      "id": "SystemdState",
+      "type": "object",
+      "properties": {
+        "loadState": {
+          "type": "string"
+        },
+        "activeState": {
+          "type": "string"
+        },
+        "subState": {
+          "type": "string"
+        },
+        "machineID": {
+          "type": "string"
+        }
+      }
+    },
+    "UnitPage": {
+      "id": "UnitPage",
+      "type": "object",
+      "properties": {
+        "units": {
+          "type": "array",
+          "required": true,
+          "items": {
+            "$ref": "Unit"
+          }
+        },
+        "nextPageToken": {
+          "type": "string"
+        }
+      }
+    },
+    "DesiredUnitState": {
+      "id": "DesiredUnitState",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "required": true
+        },
+        "desiredState": {
+          "type": "string",
+          "required": true,
+          "enum": [
+            "inactive",
+            "loaded",
+            "launched"
+          ]
+        },
+        "fileContents": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    }
+  },
+  "resources": {
+    "Machines": {
+      "methods": {
+        "List": {
+          "id": "fleet.Machine.List",
+          "description": "Retrieve a page of Machine objects.",
+          "httpMethod": "GET",
+          "path": "machines",
+          "parameters": {
+            "nextPageToken": {
+              "type": "string",
+              "location": "query"
+            }
+          },
+          "response": {
+            "$ref": "MachinePage"
+          }
+        }
+      }
+    },
+    "Units": {
+      "methods": {
+        "List": {
+          "id": "fleet.Unit.List",
+          "description": "Retrieve a page of Unit objects.",
+          "httpMethod": "GET",
+          "path": "units",
+          "parameters": {
+            "nextPageToken": {
+              "type": "string",
+              "location": "query"
+            }
+          },
+          "response": {
+            "$ref": "UnitPage"
+          }
+        },
+        "Get": {
+          "id": "fleet.Unit.Get",
+          "description": "Retrieve a single Unit object.",
+          "httpMethod": "GET",
+          "path": "units/{name}",
+          "parameters": {
+            "name": {
+              "type": "string",
+              "location": "path",
+              "required": true
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "response": {
+            "$ref": "Unit"
+          }
+        },
+        "Delete": {
+          "id": "fleet.Unit.Delete",
+          "description": "Delete the referenced Unit objects.",
+          "httpMethod": "DELETE",
+          "path": "units/{name}",
+          "parameters": {
+            "name": {
+              "type": "string",
+              "location": "path",
+              "required": true
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "DeletableUnit"
+          }
+        },
+        "Set": {
+          "id": "fleet.Unit.Set",
+          "description": "Set the desired state of a Unit.",
+          "httpMethod": "PUT",
+          "path": "units/{name}",
+          "parameters": {
+            "name": {
+              "type": "string",
+              "location": "path",
+              "required": true
+            }
+          },
+          "parameterOrder": [
+            "name"
+          ],
+          "request": {
+            "$ref": "DesiredUnitState"
+          }
+        }
+      }
+    }
+  }
+}

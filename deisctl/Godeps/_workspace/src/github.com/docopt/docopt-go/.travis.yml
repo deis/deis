@@ -1,0 +1,20 @@
+# Travis CI (http://travis-ci.org/) is a continuous integration
+# service for open source projects. This file configures it
+# to run unit tests for docopt-go.
+
+language: go
+
+go:
+    - 1.1.2
+    - 1.2.1
+    - tip
+
+before_install:
+    - go get -v github.com/golang/lint/golint
+
+install:
+    - go get -d -v ./... && go build -v .
+
+script:
+    - $HOME/gopath/bin/golint .
+    - go test -v .
