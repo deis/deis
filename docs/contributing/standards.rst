@@ -209,7 +209,7 @@ The allowed {types} are as follows:
 - fix -> bug fix
 - docs -> documentation
 - style -> formatting
-- refactor
+- ref -> refactoring code
 - test -> adding missing tests
 - chore -> maintenance
 
