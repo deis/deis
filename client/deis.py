@@ -586,12 +586,12 @@ class DeisClient(object):
         """
         Run a command inside an ephemeral app container
 
-        Usage: deis apps:run <command>...
+        Usage: deis apps:run [--app=<app> --] <command>...
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
-        body = {'command': ' '.join(sys.argv[2:])}
+        body = {'command': ' '.join(args.get('<command>'))}
         response = self._dispatch('post',
                                   "/api/apps/{}/run".format(app),
                                   json.dumps(body))
@@ -1678,11 +1678,10 @@ def main():
         method = getattr(cli, cmd)
     else:
         raise DocoptExit('Found no matching command, try `deis help`')
-    # re-parse docopt with the relevant docstring unless it needs sys.argv
-    if cmd not in ('apps_run',):
-        docstring = trim(getattr(cli, cmd).__doc__)
-        if 'Usage: ' in docstring:
-            args.update(docopt(docstring))
+    # re-parse docopt with the relevant docstring
+    docstring = trim(getattr(cli, cmd).__doc__)
+    if 'Usage: ' in docstring:
+        args.update(docopt(docstring))
     # dispatch the CLI command
     _dispatch_cmd(method, args)
 
