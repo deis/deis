@@ -30,8 +30,7 @@ at any moment.
 
 .. note::
 
-  Elastic load balancers on EC2 appear to have a default timeout of 60 seconds, which will disrupt
-  a ``git push`` when using Deis. Users can request an increased timeout from Amazon. More details
-  are in this AWS `support thread`_.
+  Elastic load balancers on EC2 have a default timeout of 60 seconds, which will disrupt
+  a ``git push`` when using Deis. You should manually `increase this timeout`_ to 1200 seconds.
 
-.. _`support thread`: https://forums.aws.amazon.com/thread.jspa?messageID=423862
+.. _`increase this timeout`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/config-idle-timeout.html
