@@ -43,7 +43,7 @@ from AngularJS. This is an example of a commit:
     this uses tmux to setup a test cluster that you can easily kill and
     start for debugging.
 
-To make it more formal it looks something like this:
+To make it more formal, it looks something like this:
 
 
     {type}({scope}): {subject}
