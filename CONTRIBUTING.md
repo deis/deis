@@ -64,8 +64,8 @@ letter in a paragraph must be capitalized.
 All breaking changes need to be mentioned in the {footer} with the description of the
 change, the justification behind the change and any migration notes required.
 
-Any line of the commit message cannot be longer than 90 characters, with the subject line
-limited to 70 characters. This allows the message to be easier to read on github as well
+Any line of the commit message cannot be longer than 72 characters, with the subject line
+limited to 50 characters. This allows the message to be easier to read on github as well
 as in various git tools.
 
 The allowed {types} are as follows:
