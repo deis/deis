@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-rackspace-cluster.sh <key pair name> [flavor]
+# Usage: ./provision-openstack-cluster.sh <key pair name> [flavor]
 #
 # Supported environment variables:
 #    DEIS_DNS: Comma separated list of names servers for use in the deis private network (default: none)

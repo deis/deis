@@ -1,5 +1,8 @@
 # Provision a Deis Cluster on OpenStack
 
+**NOTE**
+OpenStack support for Deis was contributed by @shakim. OpenStack support is untested by the Deis team, so we rely on the community to improve these scripts and to fix bugs.
+We greatly appreciate the help!
 
 ### Prerequisites:
 Make sure that the following utilities are installed and in your execution path:
@@ -24,7 +27,7 @@ Source your nova credentials:
 ```console
 # source openrc.sh
 ```
- 
+
 ### Set up your keys
 Choose an existing keypair or upload a new public key, if desired.
 
@@ -38,7 +41,7 @@ Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be 
 ### Choose number of instances
 By default, the provision script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
 ```console
-$ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
+$ DEIS_NUM_INSTANCES=5 ./provision-openstack-cluster.sh deis-key
 ```
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
@@ -47,7 +50,7 @@ For more information, see [optimal etcd cluster size](https://github.com/coreos/
 Deis clusters of less than 3 nodes are unsupported.
 
 ### Deis network settings
-The script creates a private network called 'deis' if no such network exist.
+The script creates a private network called 'deis' if no such network exists.
 
 By default, the deis subnet IP range is set to 10.21.12.0/24. To override it and the default DNS settings, set the following variables:
 ```console
@@ -63,8 +66,8 @@ You'll need to provide the name of the CoreOS image name (or ID), and the key pa
 ```console
 $ cd contrib/openstack
 $ ./provision-openstack-cluster.sh
-Usage: provision-rackspace-cluster.sh <coreos image name/id> <key pair name> [flavor]
-$ ./provision-rackspace-cluster.sh coreos deis-key
+Usage: provision-openstack-cluster.sh <coreos image name/id> <key pair name> [flavor]
+$ ./provision-openstack-cluster.sh coreos deis-key
 ```
 
 ### Choose number of routers
