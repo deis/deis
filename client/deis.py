@@ -785,7 +785,7 @@ class DeisClient(object):
         Valid commands for builds:
 
         builds:list        list build history for an application
-        builds:create      coming soon!
+        builds:create      imports an image and deploys as a new release
 
         Use `deis help [command]` to learn more.
         """
