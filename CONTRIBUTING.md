@@ -33,7 +33,7 @@ This is a rough outline of what a contributor's workflow looks like:
 
 Thanks for your contributions!
 
-### Format of the Commit Message
+### Commit Style Guideline
 
 We follow a rough convention for commit messages borrowed from CoreOS, who borrowed theirs
 from AngularJS. This is an example of a commit:
