@@ -41,7 +41,7 @@ define echo_yellow
 endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ROUTER_UNITS = $(shell seq -f "deis-router.%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
+ROUTER_UNITS = $(shell seq -f "deis-router@%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
 check-fleet:
   @LOCAL_VERSION=`$(FLEETCTL) -version`; \
