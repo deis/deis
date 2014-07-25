@@ -56,7 +56,7 @@ deis config
 .. automethod:: client.deis.DeisClient.config_list
 .. automethod:: client.deis.DeisClient.config_set
 .. automethod:: client.deis.DeisClient.config_unset
-.. automethod:: client.deis.DeisClient.config:pull
+.. automethod:: client.deis.DeisClient.config_pull
 
 .. _deis_domains:
 

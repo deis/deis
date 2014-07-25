@@ -1194,9 +1194,12 @@ class DeisClient(object):
         Usage: deis config:pull [options]
 
         Options:
-          -a APP --app=APP  The application that you wish to pull from
-          -i --interactive  Prompts for each value to be overwritten
-          -o --overwrite    Allows you to have the pull overwrite keys in .env
+          -a APP --app=<app>
+            The application that you wish to pull from
+          -i --interactive
+            Prompts for each value to be overwritten
+          -o --overwrite
+            Allows you to have the pull overwrite keys in .env
         """
         app = args.get('--app')
         overwrite = args.get('--overwrite')
