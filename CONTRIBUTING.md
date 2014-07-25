@@ -38,22 +38,20 @@ Thanks for your contributions!
 We follow a rough convention for commit messages borrowed from CoreOS, who borrowed theirs
 from AngularJS. This is an example of a commit:
 
-```
     feat(scripts/test-cluster): add a cluster test command
 
     this uses tmux to setup a test cluster that you can easily kill and
     start for debugging.
-```
 
 To make it more formal it looks something like this:
 
-```
-{type}({scope}): {subject}
-<BLANK LINE>
-{body}
-<BLANK LINE>
-{footer}
-```
+
+    {type}({scope}): {subject}
+    <BLANK LINE>
+    {body}
+    <BLANK LINE>
+    {footer}
+
 
 Any line of the commit message cannot be longer than 90 characters, with the subject line
 limited to 70 characters. This allows the message to be easier to read on github as well
@@ -61,15 +59,13 @@ as in various git tools.
 
 The allowed {types} are as follows:
 
-```
-feat -> feature
-fix -> bug fix
-docs -> documentation
-style -> formatting
-refactor
-test -> adding missing tests
-chore -> maintenance
-```
+    feat -> feature
+    fix -> bug fix
+    docs -> documentation
+    style -> formatting
+    refactor
+    test -> adding missing tests
+    chore -> maintenance
 
 ### More Details on Commits
 
