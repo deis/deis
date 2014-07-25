@@ -194,9 +194,10 @@ Format of the Commit Message
     <BLANK LINE>
     {footer}
 
-Any line of the commit message cannot be longer than 90 characters, with the subject
-line limited to 70 characters. This allows the message to be easier to read on github
-as well as in various git tools.
+Any line of the commit message cannot be longer than 72 characters, with the subject
+line limited to 50 characters. This allows the message to be easier to read on github
+as well as in various git tools. Lines of source code prefixed with four spaces are exempt
+from this rule.
 
 Subject Line
 """"""""""""
@@ -209,7 +210,7 @@ The allowed {types} are as follows:
 - fix -> bug fix
 - docs -> documentation
 - style -> formatting
-- refactor
+- ref -> refactoring code
 - test -> adding missing tests
 - chore -> maintenance
 
@@ -316,6 +317,15 @@ Examples
     character size.
 
     closes #392
+
+Signing your Commits
+""""""""""""""""""""
+
+Unlike docker_ or other parallel projects, we do not require that you need to
+sign your commits. Submitting a PR certifies that you have read and agree to the terms in
+the DCO.
+
+.. _docker: https://docker.com/
 
 Forcing no Build for TravisCI
 """""""""""""""""""""""""""""

@@ -148,7 +148,7 @@ test-components:
 	)
 
 test-integration:
-	$(MAKE) -C tests/ test
+	$(MAKE) -C tests/ test-integration
 
 test-smoke:
 	$(MAKE) -C tests/ test-smoke

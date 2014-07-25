@@ -42,6 +42,7 @@ script:
   - make -C controller coverage
   - make -C docs
   - make -C logger test-unit
+  - make -C tests test-unit
 
 after_success:
   - cd controller && coveralls
