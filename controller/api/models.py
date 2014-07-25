@@ -255,14 +255,12 @@ class Container(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     release = models.ForeignKey('Release')
-    type = models.CharField(max_length=128, blank=True)
+    type = models.CharField(max_length=128, blank=False)
     num = models.PositiveIntegerField()
     state = FSMField(default=INITIALIZED, choices=STATE_CHOICES, protected=True)
 
     def short_name(self):
-        if self.type:
-            return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
-        return "{}.{}".format(self.release.app.id, self.num)
+        return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
     short_name.short_description = 'Name'
 
     def __str__(self):
@@ -277,11 +275,7 @@ class Container(UuidAuditedModel):
         release = self.release
         version = "v{}".format(release.version)
         num = self.num
-        c_type = self.type
-        if not c_type:
-            job_id = "{app}_{version}.{num}".format(**locals())
-        else:
-            job_id = "{app}_{version}.{c_type}.{num}".format(**locals())
+        job_id = "{app}_{version}.{self.type}.{num}".format(**locals())
         return job_id
 
     _job_id = property(_get_job_id)
@@ -292,15 +286,11 @@ class Container(UuidAuditedModel):
     _scheduler = property(_get_scheduler)
 
     def _get_command(self):
-        c_type = self.type
-        if c_type:
-            # handle special case for Dockerfile deployments
-            if c_type == 'cmd':
-                return ''
-            else:
-                return "start {}".format(c_type)
-        else:
+        # handle special case for Dockerfile deployments
+        if self.type == 'cmd':
             return ''
+        else:
+            return 'start {}'.format(self.type)
 
     _command = property(_get_command)
 
