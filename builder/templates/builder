@@ -72,9 +72,9 @@ if __name__ == '__main__':
         # some applications do not have a Procfile, so only check for a Dockerfile
         if not os.path.exists(dockerfile):
             if os.path.exists('/buildpacks'):
-                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
+                build_cmd = "docker run --rm -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
-                build_cmd = "docker run -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
+                build_cmd = "docker run --rm -i -a stdin {config_env} -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
             # run slugbuilder in the background
             p = subprocess.Popen("git archive {branch} | ".format(**locals()) + build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
             container = p.stdout.read().strip('\n')
