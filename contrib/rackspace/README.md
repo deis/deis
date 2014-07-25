@@ -72,6 +72,21 @@ The script will deploy Deis and make sure the services start properly.
 ### Configure DNS
 You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
 
+### Configure Load Balancer
+You'll need to create two load balancers on Rackspace to handle your cluster.
+
+    Load Balancer 1
+    Port 80
+    Protocol HTTP
+    Health Monitoring -
+      Monitor Type HTTP
+      HTTP Path /health-check
+      
+    Load Balancer 2
+    Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
+    Port 2222
+    Protocol TCP (this can probably be anything, but TCP worked for me)
+
 ### Use Deis!
 After that, register with Deis!
 ```console
