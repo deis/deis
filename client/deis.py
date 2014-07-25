@@ -1099,7 +1099,7 @@ class DeisClient(object):
         """
         Sets environment variables for an application.
 
-        Usage: deis config:set <var>=<value>... [options]
+        Usage: deis config:set <var>=<value> [<var>=<value>...] [options]
 
         Arguments:
           <var>
