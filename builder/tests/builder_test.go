@@ -22,7 +22,7 @@ func runDeisBuilderTest(
 			"--rm",
 			"-p", servicePort+":22",
 			"-e", "PUBLISH=22",
-			"-e", "STORAGE_DRIVER=devicemapper",
+			"-e", "STORAGE_DRIVER=aufs",
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "PORT="+servicePort,
