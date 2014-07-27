@@ -415,7 +415,7 @@ class DeisClient(object):
 
         Options:
           --cluster=<cluster>
-            target cluster to host application (default: dev).
+            target cluster to host application [default: dev].
           --no-remote
             do not create a `deis` git remote.
         """
