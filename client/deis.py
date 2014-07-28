@@ -377,10 +377,6 @@ class DeisClient(object):
                 'No active controller. Use `deis login` or `deis register` to get started.')
         url = urlparse.urljoin(controller, path, **kwargs)
         response = func(url, data=body, headers=headers)
-        # check for errors
-        if response.json().get('error') is not None:
-            print(response.json()['error'])
-            sys.exit(1)
         return response
 
     def apps(self, args):
