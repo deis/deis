@@ -22,7 +22,7 @@ endef
 # TODO: re-evaluate the fragile start order
 COMPONENTS=builder cache controller database logger registry
 ALL_COMPONENTS=$(COMPONENTS) router
-START_COMPONENTS=registry logger cache database
+START_COMPONENTS=logger cache database
 
 ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*.service))
 START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*.service))
@@ -42,6 +42,7 @@ full-clean: clean
 
 install: check-fleet install-routers install-data-containers
 	$(FLEETCTL) load $(START_UNITS)
+	$(FLEETCTL) load registry/systemd/*.service
 	$(FLEETCTL) load controller/systemd/*.service
 	$(FLEETCTL) load builder/systemd/*.service
 
@@ -81,9 +82,20 @@ rsync:
 run: install start
 
 start: check-fleet start-warning start-routers
-	@# registry logger cache database
-	$(call echo_yellow,"Waiting for deis-registry to start...")
+	@# logger cache database
+	$(call echo_yellow,"Waiting for deis-cache to start...")
 	$(FLEETCTL) start -no-block $(START_UNITS)
+	@until $(FLEETCTL) list-units | egrep -q "deis-cache\..+(running|failed)"; \
+		do sleep 2; \
+			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
+			grep "deis-cache\." | awk '{printf "%-10s (%s)    \r", $$4, $$5}'; \
+			sleep 8; \
+		done
+	$(call check_for_errors)
+
+	@# registry
+	$(call echo_yellow,"Waiting for deis-registry to start...")
+	$(FLEETCTL) start -no-block registry/systemd/*
 	@until $(FLEETCTL) list-units | egrep -q "deis-registry\..+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) list-units | \
