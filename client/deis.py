@@ -473,7 +473,7 @@ class DeisClient(object):
         Usage: deis apps:destroy [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
           --confirm=<app>
             skips the prompt for the application name. <app> is the uniquely identifiable
@@ -542,7 +542,7 @@ class DeisClient(object):
         Usage: deis apps:info [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -566,7 +566,7 @@ class DeisClient(object):
         Usage: deis apps:open [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -594,7 +594,7 @@ class DeisClient(object):
         Usage: deis apps:logs [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -611,11 +611,15 @@ class DeisClient(object):
         """
         Runs a command inside an ephemeral app container.
 
-        Usage: deis apps:run [--app=<app> --] <command>...
+        Usage: deis apps:run [options] [--] <command>...
 
         Arguments:
           <command>
             the shell command to run inside the container.
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
         """
         app = args.get('--app')
         if not app:
@@ -804,7 +808,7 @@ class DeisClient(object):
             or from an in-house registry (e.g. myregistry.example.com:5000/example-go).
 
         Options:
-          --app=<app>
+          -a --app=<app>
             The uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -833,7 +837,7 @@ class DeisClient(object):
         Usage: deis builds:list [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1062,7 +1066,7 @@ class DeisClient(object):
         Options:
           --oneline
             print output on one line.
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name of the application.
         """
         app = args.get('--app')
@@ -1108,7 +1112,7 @@ class DeisClient(object):
             the value of said environment variable.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1150,7 +1154,7 @@ class DeisClient(object):
             the variable to remove from the application's environment.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1194,7 +1198,7 @@ class DeisClient(object):
         Usage: deis config:pull [options]
 
         Options:
-          -a APP --app=<app>
+          -a --app=<app>
             The application that you wish to pull from
           -i --interactive
             Prompts for each value to be overwritten
@@ -1260,7 +1264,7 @@ class DeisClient(object):
             the domain name to be bound to the application, such as `domain.deisapp.com`.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1293,7 +1297,7 @@ class DeisClient(object):
             the domain name to be removed from the application.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1321,7 +1325,7 @@ class DeisClient(object):
         Usage: deis domains:list [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1360,7 +1364,7 @@ class DeisClient(object):
         Usage: deis ps:list [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         if not app:
@@ -1397,7 +1401,7 @@ class DeisClient(object):
             the number of processes.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1572,10 +1576,10 @@ class DeisClient(object):
         Lists all users with permission to use an app, or lists all users with system
         administrator privileges.
 
-        Usage: deis perms:list [--app=<app>|--admin]
+        Usage: deis perms:list [-a --app=<app>|--admin]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             lists all users with permission to <app>. <app> is the uniquely identifiable name
             for the application.
           --admin
@@ -1593,14 +1597,14 @@ class DeisClient(object):
         Gives another user permission to use an app, or gives another user
         system administrator privileges.
 
-        Usage: deis perms:create <username> [--app=<app>|--admin]
+        Usage: deis perms:create <username> [-a --app=<app>|--admin]
 
         Arguments:
           <username>
             the name of the new user.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             grants <username> permission to use <app>. <app> is the uniquely identifiable name
             for the application.
           --admin
@@ -1626,14 +1630,14 @@ class DeisClient(object):
         Revokes another user's permission to use an app, or revokes another user's system
         administrator privileges.
 
-        Usage: deis perms:delete <username> [--app=<app>|--admin]
+        Usage: deis perms:delete <username> [-a --app=<app>|--admin]
 
         Arguments:
           <username>
             the name of the user.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             revokes <username> permission to use <app>. <app> is the uniquely identifiable name
             for the application.
           --admin
@@ -1688,7 +1692,7 @@ class DeisClient(object):
             the release of the application, such as 'v1'.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         version = args.get('<version>')
@@ -1711,7 +1715,7 @@ class DeisClient(object):
         Usage: deis releases:list [options]
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
@@ -1738,7 +1742,7 @@ class DeisClient(object):
             the release of the application, such as 'v1'.
 
         Options:
-          --app=<app>
+          -a --app=<app>
             the uniquely identifiable name of the application.
         """
         app = args.get('--app')
