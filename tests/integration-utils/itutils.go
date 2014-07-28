@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-var Deis = "/usr/local/bin/deis "
+var Deis = "deis "
 
 type DeisTestConfig struct {
 	AuthKey      string
@@ -80,7 +80,7 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 
 func AuthCancel(t *testing.T, params *DeisTestConfig) {
 	fmt.Println("deis auth:cancel")
-	child, err := gexpect.Spawn("/usr/local/bin/deis auth:cancel")
+	child, err := gexpect.Spawn(Deis + " auth:cancel")
 	if err != nil {
 		t.Fatalf("command not started\n%v", err)
 	}
