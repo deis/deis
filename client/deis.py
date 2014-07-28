@@ -1019,7 +1019,7 @@ class DeisClient(object):
         body = {}
         for k, arg in (('domain', '--domain'), ('hosts', '--hosts'),
                        ('auth', '--auth'), ('type', '--type')):
-            if k == 'auth' :
+            if k == 'auth' and args.get('--auth') is not None:
                 auth_path = os.path.expanduser(args['--auth'])
                 if not os.path.exists(auth_path):
                     print('Path to authentication credentials does not exist: {}'.format(auth_path))
