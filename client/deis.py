@@ -773,7 +773,10 @@ class DeisClient(object):
         """
         controller = self._settings.get('controller')
         if controller:
-            self._dispatch('get', '/api/auth/logout/')
+            try:
+                self._dispatch('get', '/api/auth/logout/')
+            except requests.exceptions.ConnectionError:
+                pass
         self._session.cookies.clear()
         self._session.cookies.save()
         self._settings['controller'] = None
