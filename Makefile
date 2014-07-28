@@ -97,7 +97,7 @@ start: check-fleet start-warning start-routers
 
 	@# registry
 	$(call echo_yellow,"Waiting for deis-registry to start...")
-	$(FLEETCTL) start -no-block registry/systemd/*
+	$(FLEETCTL) start -no-block registry/systemd/*.service
 	@until $(FLEETCTL) $(list-units) | egrep -q "deis-registry\..+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) $(list-units) | \
@@ -108,7 +108,7 @@ start: check-fleet start-warning start-routers
 
 	@# controller
 	$(call echo_yellow,"Waiting for deis-controller to start...")
-	$(FLEETCTL) start -no-block controller/systemd/*
+	$(FLEETCTL) start -no-block controller/systemd/*.service
 	@until $(FLEETCTL) $(list-units) | egrep -q "deis-controller\..+(running|failed)"; \
 		do sleep 2; \
 			printf "\033[0;33mStatus:\033[0m "; $(FLEETCTL) $(list-units) | \
