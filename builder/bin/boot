@@ -58,8 +58,18 @@ done
 docker load -i /progrium_cedarish.tar
 
 # pull required images
-docker pull deis/slugbuilder:latest
-docker pull deis/slugrunner:latest
+
+# Custom slugbuilder?
+etcdctl --no-sync -C $ETCD mk /deis/slugbuilder/image deis/slugbuilder:latest >/dev/null 2>&1 || true
+SLUGBUILDER=`etcdctl --no-sync -C $ETCD get /deis/slugbuilder/image`
+docker pull ${SLUGBUILDER}
+docker tag  ${SLUGBUILDER} deis/slugbuilder:latest
+
+# Custom slugrunner?
+etcdctl --no-sync -C $ETCD mk /deis/slugrunner/image deis/slugrunner:latest >/dev/null 2>&1 || true
+SLUGRUNNER=`etcdctl --no-sync -C $ETCD get /deis/slugrunner/image`
+docker pull ${SLUGRUNNER}
+docker tag  ${SLUGRUNNER} deis/slugrunner:latest
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
