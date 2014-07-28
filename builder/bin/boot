@@ -60,14 +60,14 @@ docker load -i /progrium_cedarish.tar
 # pull required images
 
 # Custom slugbuilder?
-etcdctl mk /deis/slugbuilder deis/slugbuilder:latest >/dev/null 2>&1 || true
-SLUGBUILDER=`etcdctl -C $ETCD get /deis/slugbuilder`
+etcdctl --no-sync -C $ETCD mk /deis/slugbuilder/image deis/slugbuilder:latest >/dev/null 2>&1 || true
+SLUGBUILDER=`etcdctl --no-sync -C $ETCD get /deis/slugbuilder/image`
 docker pull ${SLUGBUILDER}
 docker tag  ${SLUGBUILDER} deis/slugbuilder:latest
 
 # Custom slugrunner?
-etcdctl mk /deis/slugrunner deis/slugrunner:latest >/dev/null 2>&1 || true
-SLUGRUNNER=`etcdctl -C $ETCD get /deis/slugrunner`
+etcdctl --no-sync -C $ETCD mk /deis/slugrunner/image deis/slugrunner:latest >/dev/null 2>&1 || true
+SLUGRUNNER=`etcdctl --no-sync -C $ETCD get /deis/slugrunner/image`
 docker pull ${SLUGRUNNER}
 docker tag  ${SLUGRUNNER} deis/slugrunner:latest
 
