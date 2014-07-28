@@ -29,6 +29,10 @@ function etcd_safe_mkdir {
   etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
 }
 
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+}
+
 etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
@@ -58,8 +62,18 @@ done
 docker load -i /progrium_cedarish.tar
 
 # pull required images
-docker pull deis/slugbuilder:latest
-docker pull deis/slugrunner:latest
+
+# Custom slugbuilder?
+etcd_set_default /deis/slugbuilder deis/slugbuilder:latest
+SLUGBUILDER=`etcdctl -C $ETCD get /deis/slugbuilder`
+docker pull ${SLUGBUILDER}
+docker tag  ${SLUGBUILDER} deis/slugbuilder:latest
+
+# Custom slugrunner?
+etcd_set_default /deis/slugrunner deis/slugrunner:latest
+SLUGRUNNER=`etcdctl -C $ETCD get /deis/slugrunner`
+docker pull ${SLUGRUNNER}
+docker tag  ${SLUGRUNNER} deis/slugrunner:latest
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
