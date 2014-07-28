@@ -19,7 +19,7 @@ type deisTestConfig struct {
 	AuthKey    string
 	ExampleApp string
 	Hosts      string
-	HostName   string
+	Domain     string
 	SSHKey     string
 }
 
@@ -28,7 +28,7 @@ var envCfg = deisTestConfig{
 	os.Getenv("AUTH_KEY"),
 	os.Getenv("DEIS_TEST_APP"),
 	os.Getenv("DEIS_TEST_HOSTS"),
-	os.Getenv("DEIS_TEST_HOSTNAME"),
+	os.Getenv("DEIS_TEST_DOMAIN"),
 	os.Getenv("DEIS_TEST_SSH_KEY"),
 }
 
@@ -47,19 +47,19 @@ var smokeTests = []deisTest{
 	{"", `
 if [ ! -f {{.AuthKey}} ]; then
   ssh-keygen -q -t rsa -f {{.AuthKey}} -N '' -C deis
-  ssh-add {{.AuthKey}}
 fi
+ssh-add {{.AuthKey}}
 `},
 	// Register a "test" Deis user with the CLI, or skip if already registered.
 	{"", `
-deis register http://{{.HostName}}:8000 \
+deis register http://deis.{{.Domain}} \
   --username=test \
   --password=asdf1234 \
   --email=test@test.co.nz || true
 `},
 	// Log in as the "test" user.
 	{"", `
-deis login http://{{.HostName}}:8000 \
+deis login http://deis.{{.Domain}} \
   --username=test \
   --password=asdf1234
 `},
@@ -73,7 +73,7 @@ deis clusters:destroy dev --confirm=dev || true
 `},
 	// Create a cluster named "dev".
 	{"", `
-deis init dev {{.HostName}} --hosts={{.Hosts}} --auth={{.SSHKey}}
+deis init dev {{.Domain}} --hosts={{.Hosts}} --auth={{.SSHKey}}
 `},
 	// Clone the example app git repository locally.
 	{"", `
@@ -97,7 +97,8 @@ git push deis master
 	// TODO: GH issue about this sleep hack
 	// Test that the app's URL responds with "Powered by Deis".
 	{"{{.ExampleApp}}", `
-sleep 6 && curl -s http://testing.{{.HostName}} | grep -q 'Powered by Deis'
+sleep 6 && curl -s http://testing.{{.Domain}} | grep -q 'Powered by Deis' || \
+	(curl -v http://testing.{{.Domain}} ; exit 1)
 `},
 	// Scale the app's web containers up to 3.
 	{"{{.ExampleApp}}", `
@@ -105,7 +106,8 @@ deis scale web=3 || deis scale cmd=3
 `},
 	// Test that the app's URL responds with "Powered by Deis".
 	{"{{.ExampleApp}}", `
-sleep 7 && curl -s http://testing.{{.HostName}} | grep -q 'Powered by Deis'
+sleep 7 && curl -s http://testing.{{.Domain}} | grep -q 'Powered by Deis' || \
+	(curl -v http://testing.{{.Domain}} ; exit 1)
 `},
 }
 
@@ -121,10 +123,10 @@ func TestSmokeExampleApp(t *testing.T) {
 		cfg.ExampleApp = "example-ruby-sinatra"
 	}
 	if cfg.Hosts == "" {
-		cfg.Hosts = "172.17.8.100"
+		cfg.Hosts = "local.deisapp.com"
 	}
-	if cfg.HostName == "" {
-		cfg.HostName = "local.deisapp.com"
+	if cfg.Domain == "" {
+		cfg.Domain = "local.deisapp.com"
 	}
 	if cfg.SSHKey == "" {
 		cfg.SSHKey = "~/.vagrant.d/insecure_private_key"
