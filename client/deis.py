@@ -1017,11 +1017,13 @@ class DeisClient(object):
             a local file path to a SSH private key used to connect to cluster members.
           --type=<type>
             cluster type (default: coreos).
+          --id=<id>
+            the (new) uniquely identifiable name for the cluster.
         """
         cluster = args['<id>']
         body = {}
         for k, arg in (('domain', '--domain'), ('hosts', '--hosts'),
-                       ('auth', '--auth'), ('type', '--type')):
+                       ('auth', '--auth'), ('type', '--type'), ('id', '--id')):
             if k == 'auth' and args.get('--auth') is not None:
                 auth_path = os.path.expanduser(args['--auth'])
                 if not os.path.exists(auth_path):
