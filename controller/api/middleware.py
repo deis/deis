@@ -15,8 +15,8 @@ class VersionMiddleware:
             server_version = __version__.rsplit('.', 1)[0]
             if client_version != server_version:
                 message = {
-                    'error': 'Client and server versions do not match.\n' +
-                    'Client version: {}\n'.format(client_version) +
+                    'error': 'Client and server versions do not match. ' +
+                    'Client version: {} '.format(client_version) +
                     'Server version: {}'.format(server_version)
                 }
                 return HttpResponse(
