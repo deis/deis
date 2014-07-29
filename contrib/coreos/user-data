@@ -8,44 +8,10 @@ coreos:
     addr: $private_ipv4:4001
     peer-addr: $private_ipv4:7001
   units:
-  - name: docker.service
-    content: |
-      [Unit]
-      Description=Docker Application Container Engine
-      Documentation=http://docs.docker.io
-
-      [Service]
-      ExecStartPre=/bin/mount --make-rprivate /
-      # Run docker but don't have docker automatically restart
-      # containers. This is a job for systemd and unit files.
-      ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd://
-
-      [Install]
-      WantedBy=multi-user.target
-  - name: docker-tcp.socket
-    command: start
-    content: |
-      [Unit]
-      Description=Docker Socket for Remote API
-
-      [Socket]
-      ListenStream=4243
-      Service=docker.service
-      BindIPv6Only=both
-
-      [Install]
-      WantedBy=sockets.target
   - name: etcd.service
     command: start
   - name: fleet.service
     command: start
-    content: |
-      [Unit]
-      Description=fleet
-
-      [Service]
-      Environment=FLEET_PUBLIC_IP=$private_ipv4
-      ExecStart=/usr/bin/fleet
   - name: stop-update-engine.service
     command: start
     content: |
@@ -56,7 +22,6 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
-
 write_files:
   - path: /etc/deis-release
     content: |
