@@ -33,7 +33,7 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
 fi
 
 regions_with_private_networking=(4 5 6 7)
-if ! listcontains "$regions_with_private_networking" "$2";
+if ! listcontains "$regions_with_private_networking" "$1";
 then
     echo_red "Invalid region. Please supply a region with private networking support."
     echo_red "Valid regions are:"
