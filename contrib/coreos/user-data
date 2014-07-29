@@ -60,3 +60,21 @@ write_files:
 
       # remove leading slash
       echo ${IMAGE#/}
+  - path: /run/deis/bin/determine_registry
+    permissions: 0755
+    content: |
+      #!/bin/bash
+      # usage: determine_registry <build_image>
+      REGISTRY_HOST=`etcdctl get /deis/registry/host 2>/dev/null`
+      if [ $? -ne 0 ]; then
+        echo "Can't find registry host in /deis/registry/host."
+        exit 1
+      fi
+
+      REGISTRY_PORT=`etcdctl get /deis/registry/port 2>/dev/null`
+      if [ $? -ne 0 ]; then
+        echo "Can't find registry port in /deis/registry/port."
+        exit 1
+      fi
+
+      echo $REGISTRY_HOST:$REGISTRY_PORT/$1
