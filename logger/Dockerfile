@@ -20,6 +20,6 @@ RUN cd /go/src/github.com/deis/deis/logger/syslogd && go install -v .
 RUN mkdir -p /var/log/deis
 
 # prepare execution environment
-WORKDIR /app
-CMD ["/app/bin/boot"]
+WORKDIR /go/src/github.com/deis/deis/logger
+CMD ["/go/bin/syslogd"]
 EXPOSE 514
