@@ -7,7 +7,7 @@ set -e
 
 listcontains() {
   for i in $1; do
-    [[ $i = $2 ]] && echo $i && return 0
+    [[ $i = $2 ]] && return 0
   done
   return 1
 }
