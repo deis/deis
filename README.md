@@ -75,10 +75,10 @@ $ make build
 
 ## Run Deis
 
-Use `make run` to start all Deis components. This can take some time - the registry service will pull and prepare a large Docker image. Grab some more coffee!
+Use `make pull && make run` to start all Deis components. This can take some time - the registry service will pull and prepare a large Docker image. Grab some more coffee!
 
 ```console
-$ make run
+$ make pull && make run
 ```
 
 Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
