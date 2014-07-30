@@ -115,7 +115,7 @@ Use `deis keys:add` to add your SSH public key for `git push` access.
 Initialize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
 
 ```console
-$ deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/.vagrant.d/insecure_private_key
+$ deis clusters:create dev local.deisapp.com --hosts=172.17.8.100 --auth=~/.vagrant.d/insecure_private_key
 ```
 
 The parameters to `deis clusters:create` are:
