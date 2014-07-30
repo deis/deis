@@ -20,4 +20,4 @@ For example, to create a cluster on a local Deis installation:
 
 .. code-block:: console
 
-    $ deis clusters:create dev local.deisapp.com --hosts=local.deisapp.com --auth=~/.vagrant.d/insecure_private_key
+    $ deis clusters:create dev local.deisapp.com --hosts=172.17.8.100 --auth=~/.vagrant.d/insecure_private_key
