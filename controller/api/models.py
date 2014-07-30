@@ -8,8 +8,6 @@ from __future__ import unicode_literals
 import etcd
 import importlib
 import logging
-import os
-import subprocess
 
 from celery.canvas import group
 from django.conf import settings
@@ -214,11 +212,10 @@ class App(UuidAuditedModel):
 
     def logs(self):
         """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
-            raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
-        return data
+        logs = tasks.get_logs.delay(self.id).get()
+        if logs is None:
+            raise EnvironmentError('Could not find logs')
+        return logs
 
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""

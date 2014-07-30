@@ -7,11 +7,15 @@ functions are decorated to run as asynchronous celery tasks.
 
 from __future__ import unicode_literals
 
+import etcd
+import logging
 import requests
 import threading
 
 from celery import task
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 @task
@@ -34,6 +38,20 @@ def deploy_release(app, release):
         threads.append(threading.Thread(target=c.deploy, args=(release,)))
     [t.start() for t in threads]
     [t.join() for t in threads]
+
+
+@task
+def get_logs(app_id):
+    # wire up etcd publishing if we can connect
+    try:
+        _etcd_client = etcd.Client(host=settings.ETCD_HOST, port=int(settings.ETCD_PORT))
+        host = _etcd_client.get('/deis/logs/host').value
+    except etcd.EtcdException:
+        logger.log(logging.WARNING, 'Cannot synchronize with etcd cluster')
+        host = 'localhost'
+    finally:
+        port = 1337
+        return requests.get('http://{}:{}/{}'.format(host, port, app_id)).content
 
 
 @task

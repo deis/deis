@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/deis/deis/logger/syslog"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
 	"path"
@@ -94,11 +96,41 @@ func (h *handler) mainLoop() {
 	h.End()
 }
 
+func webHandler(response http.ResponseWriter, request *http.Request) {
+	appName := request.URL.Path[1:]
+	r := regexp.MustCompile(`^[-a-z0-9]+`)
+	match := r.FindStringSubmatch(appName)
+	if match == nil {
+		fmt.Fprint(response, "Could not find app name in request")
+		return
+	}
+	filePath := path.Join(logRoot, appName+".log")
+	// check if file exists
+	exists, err := fileExists(filePath)
+	if err != nil {
+		fmt.Fprint(response, err)
+		return
+	}
+	if !exists {
+		fmt.Fprint(response, "File not found")
+		return
+	}
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Fprint(response, "Could not read from file")
+		return
+	}
+	fmt.Fprint(response, string(data))
+}
+
 func main() {
 	// Create a server with one handler and run one listen gorutine
 	s := syslog.NewServer()
 	s.AddHandler(newHandler())
 	s.Listen("0.0.0.0:514")
+
+	http.HandleFunc("/", webHandler)
+	http.ListenAndServe(":1337", nil)
 
 	// Wait for terminating signal
 	sc := make(chan os.Signal, 2)

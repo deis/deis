@@ -7,12 +7,26 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
 import os.path
+import requests
 
 from django.test import TestCase
 from django.test.utils import override_settings
 
 from django.conf import settings
+
+
+def mock_requests_get_logs(path, headers=None):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    if path.endswith('1337/autotest') and \
+            os.path.exists(os.path.join(settings.DEIS_LOG_DIR, 'autotest.log')):
+        resp._content = FAKE_LOG_DATA
+    else:
+        resp._content = None
+    return resp
 
 
 @override_settings(CELERY_ALWAYS_EAGER=True)
@@ -65,6 +79,7 @@ class AppTest(TestCase):
         self.assertContains(response, 'App with this Id already exists.', status_code=400)
         return response
 
+    @mock.patch('requests.get', mock_requests_get_logs)
     def test_app_actions(self):
         url = '/api/apps'
         body = {'cluster': 'autotest', 'id': 'autotest'}
