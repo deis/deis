@@ -81,11 +81,11 @@ You'll need to create two load balancers on Rackspace to handle your cluster.
     Health Monitoring -
       Monitor Type HTTP
       HTTP Path /health-check
-      
+
     Load Balancer 2
     Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
     Port 2222
-    Protocol TCP (this can probably be anything, but TCP worked for me)
+    Protocol TCP
 
 ### Use Deis!
 After that, register with Deis!

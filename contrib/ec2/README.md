@@ -101,6 +101,12 @@ $ cd ../.. && make run
 ```
 The script will deploy Deis and make sure the services start properly.
 
+## Configure load balancer
+The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis
+cluster. However, ELBs on EC2 have a default timeout of 60 seconds, which will disrupt a ``git push``
+when using Deis. You should manually [increase this timeout](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/config-idle-timeout.html)
+to 1200 seconds to match the timeout on the router and application unit files.
+
 ## Configure DNS
 While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
 you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
