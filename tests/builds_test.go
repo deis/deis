@@ -58,8 +58,8 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
 		t.Fatalf("Failed:\n%v", err)
 	} else {
-		ImageId := strings.Split(stdout.String(), "\n")[2]
-		params.ImageId = strings.Fields(ImageId)[0]
+		ImageID := strings.Split(stdout.String(), "\n")[2]
+		params.ImageID = strings.Fields(ImageID)[0]
 	}
 
 }

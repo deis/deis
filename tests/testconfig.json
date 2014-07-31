@@ -1,8 +1,8 @@
 {
   "commands": {
     "auth": {
-      "register":"register http://deis.{{.HostName}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}",
-      "login": "auth:login http://deis.{{.HostName}}  --username={{.UserName}} --password={{.Password}}",
+      "register":"register http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}",
+      "login": "auth:login http://deis.{{.Domain}}  --username={{.UserName}} --password={{.Password}}",
       "logout": "auth:logout",
       "cancel":"auth:cancel"
     },
@@ -12,9 +12,9 @@
       "remove": "keys:remove {{.AuthKey}} ||true"
     },
     "clusters": {
-      "create": "clusters:create {{.ClusterName}} {{.HostName}} --hosts={{.Hosts}} --auth={{.SshKey}}",
+      "create": "clusters:create {{.ClusterName}} {{.Domain}} --hosts={{.Hosts}} --auth={{.SSHKey}}",
       "list": "clusters:list",
-      "update": "clusters:update {{.ClusterName}} --domain={{.HostName}} --hosts={{.UpdatedHosts}} --auth=~/.ssh/{{.AuthKey}}",
+      "update": "clusters:update {{.ClusterName}} --domain={{.Domain}} --hosts={{.Hosts}} --auth=~/.ssh/{{.AuthKey}}",
       "info": "clusters:info {{.ClusterName}}",
       "destroy" : "clusters:destroy {{.ClusterName}} --confirm={{.ClusterName}}"
     },
@@ -33,7 +33,7 @@
     },
     "builds":{
       "list" : "builds:list --app={{.AppName}}",
-      "create" : "builds:create {{.ImageId}} --app={{.AppName}}"
+      "create" : "builds:create {{.ImageID}} --app={{.AppName}}"
     },
     "releases":{
       "list" : "releases:list --app={{.AppName}}",

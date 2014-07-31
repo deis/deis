@@ -3,81 +3,98 @@ package itutils
 import (
 	"bytes"
 	"fmt"
-	"github.com/ThomasRooney/gexpect"
-	gson "github.com/bitly/go-simplejson"
-	"github.com/deis/deis/tests/utils"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
 	"text/template"
 	"time"
+
+	"github.com/ThomasRooney/gexpect"
+	gson "github.com/bitly/go-simplejson"
+	"github.com/deis/deis/tests/utils"
 )
 
+// Deis points to the CLI used to run tests.
 var Deis = "deis "
 
+// DeisTestConfig holds paramters needed to run tests.
 type DeisTestConfig struct {
-	AuthKey      string
-	Hosts        string
-	HostName     string
-	SshKey       string
-	ClusterName  string
-	UserName     string
-	Password     string
-	Email        string
-	UpdatedHosts string
-	ExampleApp   string
-	AppName      string
-	ProcessNum   string
-	ImageId      string
-	Version      string
-	AppUser      string
+	AuthKey     string
+	Hosts       string
+	Domain      string
+	SSHKey      string
+	ClusterName string
+	UserName    string
+	Password    string
+	Email       string
+	ExampleApp  string
+	AppName     string
+	ProcessNum  string
+	ImageID     string
+	Version     string
+	AppUser     string
 }
 
+// GetGlobalConfig returns a test configuration object.
 func GetGlobalConfig() *DeisTestConfig {
+	authKey := os.Getenv("AUTH_KEY")
+	if authKey == "" {
+		authKey = "deis"
+	}
+	hosts := os.Getenv("DEIS_TEST_HOSTS")
+	if hosts == "" {
+		hosts = "172.17.8.100"
+	}
+	domain := os.Getenv("DEIS_TEST_DOMAIN")
+	if domain == "" {
+		domain = "local.deisapp.com"
+	}
+	sshKey := os.Getenv("DEIS_TEST_SSH_KEY")
+	if sshKey == "" {
+		sshKey = "~/.vagrant.d/insecure_private_key"
+	}
+	exampleApp := os.Getenv("DEIS_TEST_APP")
+	if exampleApp == "" {
+		exampleApp = "example-go"
+	}
 	var envCfg = DeisTestConfig{
-		"deis",
-		"172.17.8.100",
-		"local.deisapp.com",
-		"~/.vagrant.d/insecure_private_key",
-		"dev",
-		"test",
-		"asdf1234",
-		"test@test.co.nz",
-		"172.17.8.100",
-		"example-go",
-		"sample",
-		"2",
-		"buildtest",
-		"2",
-		"test1",
+		AuthKey:     authKey,
+		Hosts:       hosts,
+		Domain:      domain,
+		SSHKey:      sshKey,
+		ClusterName: "dev",
+		UserName:    "test",
+		Password:    "asdf1234",
+		Email:       "test@test.co.nz",
+		ExampleApp:  exampleApp,
+		AppName:     "sample",
+		ProcessNum:  "2",
+		ImageID:     "buildtest",
+		Version:     "2",
+		AppUser:     "test1",
 	}
 	return &envCfg
 }
 
-//Tests example apps are running or not
-
+// Curl connects to a Deis endpoint to see if the example app is running.
 func Curl(t *testing.T, params *DeisTestConfig) {
-	url := "http://" + params.AppName + "." + params.HostName
+	url := "http://" + params.AppName + "." + params.Domain
 	response, err := http.Get(url)
 	if err != nil {
 		t.Fatalf("not reachable:\n%v", err)
 	}
 	body, err := ioutil.ReadAll(response.Body)
 	fmt.Println(string(body))
-	if params.AppName == "example-python-django" {
-		if !strings.Contains(string(body), "Powered by django") {
-			t.Fatalf("App not started")
-		}
-	} else if !strings.Contains(string(body), "Powered by Deis") {
+	if !strings.Contains(string(body), "Powered by Deis") {
 		t.Fatalf("App not started")
 	}
 }
 
-//gexpect implementation of auth cancel
-
+// AuthCancel tests whether `deis auth:cancel` destroys a user's account.
 func AuthCancel(t *testing.T, params *DeisTestConfig) {
 	fmt.Println("deis auth:cancel")
 	child, err := gexpect.Spawn(Deis + " auth:cancel")
@@ -109,9 +126,8 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 
 }
 
-/*CheckList takes config , command to execute and contain string and notflag .
-*	Executes the command and checks if the contain string should be present or not according to notflag */
-
+// CheckList executes a command and optionally tests whether its output contains
+// a given string.
 func CheckList(t *testing.T, params interface{}, cmd, contain string, notflag bool) {
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
@@ -137,14 +153,12 @@ func CheckList(t *testing.T, params interface{}, cmd, contain string, notflag bo
 	}
 }
 
-/***Execute function takes command string and parameters required to execute the command
-A failflag to check whether the command is expected to fail
-An expect string to check whether the command has failed according to failflag
-
-If a failflag is true and command failed we check the stdout and stderr for expect string
-
-***/
-
+// Execute takes command string and parameters required to execute the command,
+// a failflag to check whether the command is expected to fail, and an expect
+// string to check whether the command has failed according to failflag.
+//
+// If failflag is true and the command failed, check the stdout and stderr for
+// the expect string.
 func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect string) {
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
@@ -184,8 +198,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 	}
 }
 
-//Destroys an app after execution of  each integration test
-
+// AppsDestroyTest destroys a Deis app and checks that it was successful.
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
 	cmd := GetCommand("apps", "destroy")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
@@ -200,29 +213,29 @@ func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
 	}
 }
 
-//Fetch commands from testconfig.json
-
+// GetCommand fetches the given command by type and name from a JSON resource.
 func GetCommand(cmdtype, cmd string) string {
 	js, _ := gson.NewJson(utils.GetFileBytes("testconfig.json"))
 	command, _ := js.Get("commands").Get(cmdtype).Get(cmd).String()
 	return command
 }
 
-//Selects a random app
-
+// GetRandomApp returns a known working example app at random for testing.
 func GetRandomApp() string {
-	s1 := rand.NewSource(int64(time.Now().Unix()))
-	r1 := rand.New(s1)
-	appmap := make(map[int]string)
-	appmap[0] = "example-go"
-	appmap[1] = "example-ruby-sinatra"
-	appmap[2] = "example-java-jetty"
-	appmap[3] = "example-nodejs-express"
-	appmap[4] = "example-python-flask"
-	appmap[5] = "example-dockerfile-python"
-	appmap[6] = "example-scala"
-	appmap[7] = "example-clojure-ring"
-	appmap[8] = "example-python-django"
-	app := appmap[r1.Intn(8)]
-	return app
+	rand.Seed(int64(time.Now().Unix()))
+	apps := []string{
+		"example-clojure-ring",
+		// "example-dart",
+		"example-dockerfile-python",
+		"example-go",
+		"example-java-jetty",
+		"example-nodejs-express",
+		// "example-php",
+		"example-play",
+		"example-python-django",
+		"example-python-flask",
+		"example-ruby-sinatra",
+		"example-scala",
+	}
+	return apps[rand.Intn(len(apps))]
 }
