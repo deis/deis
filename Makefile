@@ -160,7 +160,7 @@ test-components:
 	)
 
 test-integration:
-	$(MAKE) -C tests/ test
+	$(MAKE) -C tests/ test-full
 
 test-smoke:
 	$(MAKE) -C tests/ test-smoke

@@ -1,3 +1,6 @@
+// Package itutils provides utility functions and configuration for integration
+// testing with the Deis open source PaaS.
+
 package itutils
 
 import (

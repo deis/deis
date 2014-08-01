@@ -1,3 +1,5 @@
+// Package utils contains commonly useful functions from Deis testing.
+
 package utils
 
 import (

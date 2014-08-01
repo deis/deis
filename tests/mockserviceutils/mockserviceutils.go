@@ -1,3 +1,5 @@
+// Package mockserviceutils provides mock objects and setup for Deis tests.
+
 package mockserviceutils
 
 import (
