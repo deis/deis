@@ -21,7 +21,8 @@ import (
 // Deis points to the CLI used to run tests.
 var Deis = "deis "
 
-// DeisTestConfig holds paramters needed to run tests.
+// DeisTestConfig allows tests to be repeated against different
+// targets, with different example apps, using specific credentials, and so on.
 type DeisTestConfig struct {
 	AuthKey     string
 	Hosts       string
@@ -39,9 +40,12 @@ type DeisTestConfig struct {
 	AppUser     string
 }
 
+// randomApp is used for the test run if DEIS_TEST_APP isn't set
+var randomApp = GetRandomApp()
+
 // GetGlobalConfig returns a test configuration object.
 func GetGlobalConfig() *DeisTestConfig {
-	authKey := os.Getenv("AUTH_KEY")
+	authKey := os.Getenv("DEIS_TEST_AUTH_KEY")
 	if authKey == "" {
 		authKey = "deis"
 	}
@@ -59,7 +63,7 @@ func GetGlobalConfig() *DeisTestConfig {
 	}
 	exampleApp := os.Getenv("DEIS_TEST_APP")
 	if exampleApp == "" {
-		exampleApp = "example-go"
+		exampleApp = randomApp
 	}
 	var envCfg = DeisTestConfig{
 		AuthKey:     authKey,
@@ -143,9 +147,7 @@ func CheckList(t *testing.T, params interface{}, cmd, contain string, notflag bo
 		cmdl = exec.Command("sh", "-c", Deis+cmdString)
 	}
 	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err == nil {
-		if strings.Contains(stdout.String(), contain) != notflag {
-			fmt.Println("Command Executed perfectly")
-		} else {
+		if strings.Contains(stdout.String(), contain) == notflag {
 			t.Fatal(err)
 		}
 	} else {
@@ -178,13 +180,13 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 	case true:
 		if stdout, stderr, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
-				fmt.Println("Test Failed Expected behavior")
+				fmt.Println("(Error expected...ok)")
 			} else {
 				t.Fatalf("Failed:\n%v", err)
 			}
 		} else {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
-				fmt.Println("expected" + expect)
+				fmt.Println("(Error expected...ok)" + expect)
 			} else {
 				t.Fatalf("Failed:\n%v", err)
 			}

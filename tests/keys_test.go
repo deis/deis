@@ -3,12 +3,13 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
 	"github.com/deis/deis/tests/integration-utils"
 )
 
+// Requires a ~/.ssh/deis-testkey to be set up:
+// $ ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 func keysSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cmd := itutils.GetCommand("auth", "login")
@@ -20,7 +21,7 @@ func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("keys", "add")
 	params.AuthKey = "deiskey"
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Uploading deiskey to Deis...400 BAD REQUEST")
+	itutils.Execute(t, cmd, params, true, "SSH Key with this Public already exists")
 }
 
 func keysListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {

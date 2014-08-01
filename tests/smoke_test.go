@@ -11,26 +11,9 @@ import (
 	"strings"
 	"testing"
 	"text/template"
+
+	"github.com/deis/deis/tests/integration-utils"
 )
-
-// A Deis test configuration allows tests to be repeated against different
-// targets, with different example apps, using specific credentials, and so on.
-type deisTestConfig struct {
-	AuthKey    string
-	ExampleApp string
-	Hosts      string
-	Domain     string
-	SSHKey     string
-}
-
-// Test configuration created from environment variables (at compile time).
-var envCfg = deisTestConfig{
-	os.Getenv("AUTH_KEY"),
-	os.Getenv("DEIS_TEST_APP"),
-	os.Getenv("DEIS_TEST_HOSTS"),
-	os.Getenv("DEIS_TEST_DOMAIN"),
-	os.Getenv("DEIS_TEST_SSH_KEY"),
-}
 
 // A test case is a relative directory plus a command that is expected to
 // return 0 for success.
@@ -111,36 +94,21 @@ sleep 7 && curl -s http://testing.{{.Domain}} | grep -q 'Powered by Deis' || \
 `},
 }
 
-// Updates a Vagrant instance to run Deis with docker containers using the
-// current codebase, then registers a user, pushes an example app, and looks
-// for "Powered by Deis" in the HTTP response.
+// TestSmokeExampleApp updates a Vagrant instance to run Deis with docker
+// containers using the current codebase, then registers a user, pushes an
+// example app, and looks for "Powered by Deis" in the HTTP response.
 func TestSmokeExampleApp(t *testing.T) {
-	cfg := envCfg
-	if cfg.AuthKey == "" {
-		cfg.AuthKey = "~/.ssh/deis"
-	}
-	if cfg.ExampleApp == "" {
-		cfg.ExampleApp = "example-ruby-sinatra"
-	}
-	if cfg.Hosts == "" {
-		cfg.Hosts = "local.deisapp.com"
-	}
-	if cfg.Domain == "" {
-		cfg.Domain = "local.deisapp.com"
-	}
-	if cfg.SSHKey == "" {
-		cfg.SSHKey = "~/.vagrant.d/insecure_private_key"
-	}
+	cfg := itutils.GetGlobalConfig()
 
 	for _, tt := range smokeTests {
-		runTest(t, &tt, &cfg)
+		runTest(t, &tt, cfg)
 	}
 }
 
 var wd, _ = os.Getwd()
 
 // Runs a test case and logs the results.
-func runTest(t *testing.T, tt *deisTest, cfg *deisTestConfig) {
+func runTest(t *testing.T, tt *deisTest, cfg *itutils.DeisTestConfig) {
 	// Fill in the command string template from our test configuration.
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(tt.cmd))
@@ -161,10 +129,6 @@ func runTest(t *testing.T, tt *deisTest, cfg *deisTestConfig) {
 			t.Fatal(err)
 		}
 	}
-	// TODO: Go's testing package doesn't seem to allow for reporting interim
-	// progress--we have to wait until everything completes (or fails) to see
-	// anything that was written with t.Log or t.Fatal. Interim output would
-	// be extremely helpful here, as this takes a while.
 	// Execute the command and log the input and output on error.
 	fmt.Printf("%v ... ", strings.TrimSpace(cmdString))
 	cmd := exec.Command("sh", "-c", cmdString)

@@ -54,7 +54,7 @@
       "unset" : "config:unset jaf --app={{.AppName}}"
     },
     "git" : {
-      "clone" : "git clone https://github.com/deis/{{.ExampleApp}}.git",
+      "clone" : "if [ ! -d {{.ExampleApp}} ] ; then git clone https://github.com/deis/{{.ExampleApp}}.git ; fi",
       "remove" : "git remote remove deis",
       "push" : "git push deis master",
       "add" : "git add .",

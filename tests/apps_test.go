@@ -4,6 +4,7 @@ package tests
 
 import (
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
@@ -12,7 +13,6 @@ import (
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "appssample"
-	cfg.ExampleApp = itutils.GetRandomApp()
 	cmd := itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, cfg, false, "")
 	cmd = itutils.GetCommand("git", "clone")
@@ -26,7 +26,7 @@ func appsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
 		t.Fatalf("Failed:\n%v", err)
 	}
 	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Deis remote already exists")
+	itutils.Execute(t, cmd, params, true, "App with this Id already exists")
 
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatalf("Failed:\n%v", err)
@@ -43,7 +43,7 @@ func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatalf("Failed:\n%v", err)
 	}
-	itutils.Execute(t, cmd, params, true, "Could not find deis remote in `git remote -v`")
+	itutils.Execute(t, cmd, params, true, "Not found")
 }
 
 func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -73,6 +73,9 @@ func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
 		t.Fatalf("Failed:\n%v", err)
 	}
 	itutils.Execute(t, cmd1, params, false, "")
+	// TODO: nginx needs a few seconds to wake up here--fixme!
+	time.Sleep(5000 * time.Millisecond)
+	itutils.Curl(t, params)
 	itutils.Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatalf("Failed:\n%v", err)
