@@ -29,7 +29,7 @@ define ssh_all
 endef
 
 define rsync_all
-  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(SELF_DIR)/* core@$$host:/home/core/share; done
+  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(SELF_DIR)/* --delete core@$$host:/home/core/share; done
 endef
 
 define echo_cyan
