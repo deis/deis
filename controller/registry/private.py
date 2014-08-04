@@ -23,9 +23,11 @@ def publish_release(source, config, target):
     contains the new configuration as ENV entries.
     """
     try:
-        if source.count(':') == 2:
-            src_image = source.rsplit(':', 1)[0].split('/', 1)[1]
-            src_tag = source.split(':')[2]
+        # parse for the tag and the repository
+        if ':' in source:
+            if '/' not in source[source.rfind(':') + 1:]:
+                src_tag = source[source.rfind(':') + 1:]
+                src_image = source[:source.rfind(':')]
         else:
             src_image = source
             src_tag = 'latest'

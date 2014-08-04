@@ -482,6 +482,11 @@ class Release(UuidAuditedModel):
             tasks.import_repository.delay(build.image, self.app.id).get()
             # update the source image to the repository we just imported
             source_image = self.app.id
+            # if the image imported had a tag specified, use that tag as the source
+            if ':' in build.image:
+                if '/' not in build.image[build.image.rfind(':') + 1:]:
+                    source_image += build.image[build.image.rfind(':'):]
+
         publish_release(source_image,
                         config.values,
                         release_image,)
