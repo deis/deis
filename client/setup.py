@@ -36,7 +36,7 @@ setup(name='deis',
       url='https://github.com/deis/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'chef', 'docker', 'heroku',
-          'aws', 'ec2', 'rackspace', 'digitalocean'
+          'aws', 'ec2', 'rackspace', 'digitalocean', 'gce'
       ],
       classifiers=[
           'Development Status :: 4 - Beta',

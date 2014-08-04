@@ -56,3 +56,11 @@ You'll need to create two load balancers on Rackspace, as follows:
       Protocol TCP
 
 .. _`increase this timeout`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/config-idle-timeout.html
+
+Google Compute Engine
+=====================
+
+The provisioning instructions for `Google Compute Engine`_ include steps to create a load balancer.
+It is not possible to change the timeout of the load balancer in Google Compute Engine at the moment.
+
+.. _`Google Compute Engine`: https://github.com/deis/deis/tree/master/contrib/gce#readme
