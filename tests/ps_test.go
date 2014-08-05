@@ -4,6 +4,7 @@ package tests
 
 import (
 	_ "fmt"
+	"strings"
 	"testing"
 
 	"github.com/deis/deis/tests/integration-utils"
@@ -12,7 +13,6 @@ import (
 
 func psSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
-	cfg.ExampleApp = itutils.GetRandomApp()
 	cfg.AppName = "pssample"
 	cmd := itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, cfg, false, "")
@@ -34,11 +34,18 @@ func psSetup(t *testing.T) *itutils.DeisTestConfig {
 
 func psListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
 	cmd := itutils.GetCommand("ps", "list")
-	itutils.CheckList(t, params, cmd, "web.2 up (v2)", notflag)
+	output := "web.2 up (v2)"
+	if strings.Contains(params.ExampleApp, "dockerfile") {
+		output = strings.Replace(output, "web", "cmd", 1)
+	}
+	itutils.CheckList(t, params, cmd, output, notflag)
 }
 
 func psScaleTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("ps", "scale")
+	if strings.Contains(params.ExampleApp, "dockerfile") {
+		cmd = strings.Replace(cmd, "web", "cmd", 1)
+	}
 	itutils.Execute(t, cmd, params, false, "")
 }
 

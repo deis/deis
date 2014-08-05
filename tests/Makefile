@@ -1,6 +1,4 @@
-test:
-	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
-		go test -tags integration -v -run TestSmoke
+test: test-smoke
 
 test-smoke:
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \

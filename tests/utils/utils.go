@@ -1,19 +1,22 @@
+// Package utils contains commonly useful functions from Deis testing.
+
 package utils
 
 import (
 	_ "bufio"
 	"bytes"
 	"fmt"
-	"github.com/satori/go.uuid"
 	"io"
 	"net"
 	"os"
-	"path/filepath"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/satori/go.uuid"
 )
 
 // NewUuid returns a new V4-style unique identifier.
@@ -23,6 +26,7 @@ func NewUuid() string {
 	return strings.Split(s1, "-")[0]
 }
 
+// GetFileBytes returns a byte array of the contents of a file.
 func GetFileBytes(filename string) []byte {
 	file, _ := os.Open(filename)
 	defer file.Close()
@@ -32,31 +36,35 @@ func GetFileBytes(filename string) []byte {
 	return bs
 }
 
-func CreateFile(name string) error {
-    fo, err := os.Create(name)
-    if err != nil {
-        return err
-    }
-    defer fo.Close()
-    return nil
+// CreateFile creates an empty file at the specified path.
+func CreateFile(path string) error {
+	fo, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer fo.Close()
+	return nil
 }
 
-func Chdir( app string ) error {
+// Chdir sets the current working directory to the relative path specified.
+func Chdir(app string) error {
 	var wd, _ = os.Getwd()
-	dir, _ := filepath.Abs(filepath.Join(wd,app))
+	dir, _ := filepath.Abs(filepath.Join(wd, app))
 	err := os.Chdir(dir)
 	fmt.Println(dir)
 	return err
 }
 
-func Rmdir( app string ) error {
+// Rmdir removes a directory and its contents.
+func Rmdir(app string) error {
 	var wd, _ = os.Getwd()
-	dir, _ := filepath.Abs(filepath.Join(wd,app))
+	dir, _ := filepath.Abs(filepath.Join(wd, app))
 	err := os.RemoveAll(dir)
 	fmt.Println(dir)
 	return err
 }
 
+// GetUserDetails returns sections of a UUID.
 func GetUserDetails() (string, string) {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
@@ -73,6 +81,7 @@ func GetHostOs() string {
 	return "ubuntu"
 }
 
+// GetHostIPAddress returns the host IP for accessing etcd and Deis services.
 func GetHostIPAddress() string {
 	IP := os.Getenv("HOST_IPADDR")
 	if IP == "" {
@@ -81,6 +90,7 @@ func GetHostIPAddress() string {
 	return IP
 }
 
+// Append grows a string array by appending a new element.
 func Append(slice []string, data string) []string {
 	m := len(slice)
 	n := m + 1
@@ -95,6 +105,7 @@ func Append(slice []string, data string) []string {
 	return slice
 }
 
+// GetRandomPort returns an unused TCP listen port on the host.
 func GetRandomPort() string {
 	l, _ := net.Listen("tcp", "127.0.0.1:0") // listen on localhost
 	defer l.Close()
@@ -112,6 +123,7 @@ func getExitCode(err error) (int, error) {
 	return exitCode, fmt.Errorf("failed to get exit code")
 }
 
+// RunCommandWithStdoutStderr execs a command and returns its output.
 func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, error) {
 	var stdout, stderr bytes.Buffer
 	stderrPipe, err := cmd.StderrPipe()

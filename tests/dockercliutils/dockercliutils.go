@@ -1,3 +1,5 @@
+// Package dockercliutils provides helper functions for testing with Docker.
+
 package dockercliutils
 
 import (

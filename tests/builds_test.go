@@ -16,7 +16,6 @@ import (
 
 func buildSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
-	cfg.ExampleApp = itutils.GetRandomApp()
 	cfg.AppName = "buildsample"
 	cmd := itutils.GetCommand("auth", "login")
 	itutils.Execute(t, cmd, cfg, false, "")
@@ -58,8 +57,8 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
 		t.Fatalf("Failed:\n%v", err)
 	} else {
-		ImageId := strings.Split(stdout.String(), "\n")[2]
-		params.ImageId = strings.Fields(ImageId)[0]
+		ImageID := strings.Split(stdout.String(), "\n")[2]
+		params.ImageID = strings.Fields(ImageID)[0]
 	}
 
 }
