@@ -40,13 +40,12 @@ RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 RUN wget -O /progrium_cedarish.tar --progress=dot:giga \
         https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014.05.27.tar
 
-# add the current build context to /app
-ADD . /app
-RUN chown -R root:root /app
-
 # define the execution environment
 VOLUME /var/lib/docker
 WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
+
+ADD . /app
+RUN chown -R root:root /app
