@@ -222,9 +222,9 @@ CONTAINER_TEMPLATE = """
 Description={name}
 
 [Service]
-ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/determine_registry {image}`; docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/determine_registry {image}`; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port $IMAGE {command}"
+ExecStart=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port $IMAGE {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
 """
