@@ -14,6 +14,11 @@ from api import models
 from api import utils
 
 
+PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z]+)')
+MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+[BbKkMmGg])$')
+CPUSHARE_MATCH = re.compile(r'^(?P<cpu>[0-9]+)$')
+
+
 class OwnerSlugRelatedField(serializers.SlugRelatedField):
     """Filter queries by owner as well as slug_field."""
 
@@ -100,6 +105,51 @@ class ConfigSerializer(serializers.ModelSerializer):
         """Metadata options for a :class:`ConfigSerializer`."""
         model = models.Config
         read_only_fields = ('uuid', 'created', 'updated')
+
+
+class LimitSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Limit` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+    memory = serializers.ModelField(
+        model_field=models.Limit()._meta.get_field('memory'), required=False)
+    cpu = serializers.ModelField(
+        model_field=models.Limit()._meta.get_field('cpu'), required=False)
+
+    class Meta:
+        """Metadata options for a :class:`LimitSerializer`."""
+        model = models.Limit
+        read_only_fields = ('uuid', 'created', 'updated')
+
+    def validate_memory(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(PROCTYPE_MATCH, k):
+                raise serializers.ValidationError("Process types can only contain [a-z]")
+            if not re.match(MEMLIMIT_MATCH, str(v)):
+                raise serializers.ValidationError(
+                    "Limit format: <number><unit>, where unit = B, K, M or G")
+        return attrs
+
+    def validate_cpu(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(PROCTYPE_MATCH, k):
+                raise serializers.ValidationError("Process types can only contain [a-z]")
+            shares = re.match(CPUSHARE_MATCH, str(v))
+            if not shares:
+                raise serializers.ValidationError("CPU shares must be an integer")
+            for v in shares.groupdict().values():
+                try:
+                    i = int(v)
+                except ValueError:
+                    raise serializers.ValidationError("CPU shares must be an integer")
+                if i > 1024 or i < 0:
+                    raise serializers.ValidationError("CPU shares must be between 0 and 1024")
+        return attrs
 
 
 class ReleaseSerializer(serializers.ModelSerializer):

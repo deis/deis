@@ -26,7 +26,7 @@ class MockSchedulerClient(object):
 
     # job api
 
-    def create(self, name, image, command, use_announcer):
+    def create(self, name, image, command, use_announcer, **kwargs):
         """
         Create a new job
         """
