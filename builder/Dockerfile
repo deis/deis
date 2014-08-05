@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 # install docker-in-docker
 RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
