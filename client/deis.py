@@ -18,6 +18,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   config        manage environment variables that define app config
   domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
+  limit         manage resource limits for your application
   releases      manage releases of an application
 
   keys          manage ssh keys used for `git push` deployments
@@ -1344,6 +1345,151 @@ class DeisClient(object):
                 print(domain['domain'])
         else:
             raise ResponseError(response)
+
+    def limit(self, args):
+        """
+        Valid commands for limit:
+
+        limit:list         list resource limits for an app
+        limit:set          set resource limits for an app
+        limit:unset        unset resource limits for an app
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'limit:list'
+        args = docopt(self.limit_list.__doc__)
+        return self.limit_list(args)
+
+    def limit_list(self, args):
+        """
+        Lists resource limits for an application.
+
+        Usage: deis limit:list [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name of the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}/limit".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def limit_set(self, args):
+        """
+        Sets resource limits for an application
+
+        Usage: deis limit:set [--memory | --cpu] <type>=<limit>... [options]
+
+        Arguments:
+          -m, --memory  limit memory [default: true]
+          -c, --cpu     limit cpu shares
+          <type>
+            the process type as defined in your Procfile, such as 'web' or 'worker'.
+            Note that Dockerfile apps have a default 'cmd' process type.
+          <limit>
+            web=1G worker=256M (with --memory, units in G/M/K/B)
+            cmd=1024 clock=100 (with --cpu, units in cpu shares)
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        body = {}
+        # see if cpu shares are being specified, otherwise default to memory
+        if args.get('--cpu'):
+          target = 'cpu'
+        else:
+          target = 'memory'
+        body[target] = json.dumps(dictify(args['<type>=<limit>']))
+        sys.stdout.write('Applying limits... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/limit".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def limit_unset(self, args):
+        """
+        Unsets resource limits for an application.
+
+        Usage: deis limit:unset [--memory | --cpu] <type>... [options]
+
+        Arguments:
+          -m, --memory  limit memory [default: true]
+          -c, --cpu     limit cpu shares
+          <type>
+            the process type as defined in your Procfile, such as 'web' or 'worker'.
+            Note that Dockerfile apps have a default 'cmd' process type.
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        values = {}
+        for k in args.get('<type>'):
+            values[k] = None
+        body = {}
+        # see if cpu shares are being specified, otherwise default to memory
+        if args.get('--cpu'):
+          target = 'cpu'
+        else:
+          target = 'memory'
+        body[target] = json.dumps(values)
+        sys.stdout.write('Applying limits... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/limit".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def _print_limits(self, app, limit):
+        print("=== {} Limits".format(app))
+
+        def write(d):
+          items = d.items()
+          if len(items) == 0:
+            print('Unlimited')
+            return
+          keys = sorted(d)
+          width = max(map(len, keys)) + 5
+          for k in keys:
+              v = d[k]
+              print(("{k:<" + str(width) + "} {v}").format(**locals()))
+
+        print("\n--- Memory")
+        write(json.loads(limit.get('memory', '{}')))
+        print("\n--- CPU")
+        write(json.loads(limit.get('cpu', '{}')))
 
     def ps(self, args):
         """
