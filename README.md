@@ -23,7 +23,7 @@ On your workstation:
 * Install the fleetctl client: Install v0.5.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
-A single-node cluster launched with Vagrant will consume about 5 GB of ram on
+A single-node cluster launched with Vagrant will consume about 5 GB of RAM on
 the host machine. Please be sure you have sufficient free memory before
 proceeding.
 
