@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 RUN apt-get update && \
     apt-get install -yq patch libpcre3 libpcre3-dev libssl-dev libgeoip-dev

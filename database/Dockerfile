@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 # install 9.3 from postgresql.org repository
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
