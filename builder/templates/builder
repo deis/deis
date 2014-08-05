@@ -45,6 +45,7 @@ if __name__ == '__main__':
     # define image names
     tmp_image = "{app}:git-{short_sha}".format(**locals())
     target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{app}".format(**locals())
+    image_reference = "{app}".format(**locals())
     for d in (cache_dir, build_dir):
         if not os.path.exists(d):
             os.mkdir(d)
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         body['sha'] = sha
         body['receive_user'] = user
         body['receive_repo'] = app
-        body['image'] = target_image
+        body['image'] = image_reference
         # use sha of branch
         with open(os.path.join(repo_dir, branch)) as f:
             body['sha'] = f.read().strip('\n')

@@ -469,8 +469,7 @@ class Release(UuidAuditedModel):
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
         release_image = '{}:{}'.format(self.app.id, tag)
-        target_image = '{}:{}/{}'.format(
-            settings.REGISTRY_HOST, settings.REGISTRY_PORT, self.app.id)
+        target_image = '{}'.format(self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
