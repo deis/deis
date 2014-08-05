@@ -26,10 +26,9 @@ def publish_release(source, config, target):
     """
     try:
         repo, tag = utils.parse_repository_tag(source)
-
         src_image = repo
         src_tag = tag if tag is not None else 'latest'
-        
+ 
         nameparts = repo.rsplit('/', 1)
         if len(nameparts) == 2:
             if '/' in nameparts[0]:
