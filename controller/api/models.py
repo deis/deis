@@ -139,6 +139,10 @@ class App(UuidAuditedModel):
     def delete(self, *args, **kwargs):
         for c in self.container_set.all():
             c.destroy()
+        # delete application logs stored by deis/logger
+        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        if os.path.exists(path):
+            os.remove(path)
         return super(App, self).delete(*args, **kwargs)
 
     def deploy(self, release, initial=False):
