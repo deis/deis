@@ -79,12 +79,14 @@ def stop_containers(containers):
 def run_command(c, command):
     release = c.release
     version = release.version
-    image = release.image
+    image = '{}:{}/{}'.format(settings.REGISTRY_HOST,
+                              settings.REGISTRY_PORT,
+                              release.image)
     try:
         # pull the image first
         rc, pull_output = c.run("docker pull {image}".format(**locals()))
         if rc != 0:
-            raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
+            raise EnvironmentError('Could not pull image: {image}'.format(**locals()))
         # run the command
         docker_args = ' '.join(['--entrypoint=/bin/sh',
                                 '-a', 'stdout', '-a', 'stderr', '--rm', image])
