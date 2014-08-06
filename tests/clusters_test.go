@@ -3,7 +3,6 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
 	"github.com/deis/deis/tests/integration-utils"
@@ -33,11 +32,11 @@ func clustersInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, cmd, params, false, "")
 }
 
-//Tets #1283
-
 func clustersUpdateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	cmd := itutils.GetCommand("clusters", "update")
-	itutils.CheckList(t, params, cmd, "~/.ssh/"+params.AuthKey, true)
+	// Regression test for https://github.com/deis/deis/pull/1283
+	// Check that we didn't store the path of the key in the cluster.
+	itutils.CheckList(t, params, cmd, "~/.ssh/", true)
 }
 
 func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {

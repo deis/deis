@@ -133,9 +133,10 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 
 }
 
-// CheckList executes a command and optionally tests whether its output contains
-// a given string.
-func CheckList(t *testing.T, params interface{}, cmd, contain string, notflag bool) {
+// CheckList executes a command and optionally tests whether its output does
+// or does not contain a given string.
+func CheckList(
+	t *testing.T, params interface{}, cmd, contain string, notflag bool) {
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
 	if err := tmpl.Execute(&cmdBuf, params); err != nil {
@@ -149,12 +150,16 @@ func CheckList(t *testing.T, params interface{}, cmd, contain string, notflag bo
 	} else {
 		cmdl = exec.Command("sh", "-c", Deis+cmdString)
 	}
-	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err == nil {
-		if strings.Contains(stdout.String(), contain) == notflag {
-			t.Fatal(err)
-		}
-	} else {
+	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if strings.Contains(stdout.String(), contain) == notflag {
+		if notflag {
+			t.Fatalf(
+				"Didn't expect '%s' in command output:\n%s", contain, stdout)
+		}
+		t.Fatalf("Expected '%s' in command output:\n%s", contain, stdout)
 	}
 }
 
