@@ -1396,6 +1396,7 @@ class DeisClient(object):
             Note that Dockerfile apps have a default 'cmd' process type.
           <limit>
             The limit to apply to the process type. By default, this is set to --memory.
+            You can only set one type of limit per call.
 
             With --memory, units are represented in Bytes (B), Kilobytes (K), Megabytes
             (M), or Gigabytes (G). For example, `deis limit:set cmd=1G` will restrict all
