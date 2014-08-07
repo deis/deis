@@ -1381,7 +1381,12 @@ class DeisClient(object):
 
     def limit_set(self, args):
         """
-        Sets resource limits for an application
+        Sets resource limits for an application.
+
+        A resource limit is a finite resource within a container which we can apply
+        restrictions to either through the scheduler or through the Docker API. This limit
+        is applied to each individual container, so setting a memory limit of 1G for an
+        application means that each container gets 1G of memory.
 
         Usage: deis limit:set [--memory | --cpu] <type>=<limit>... [options]
 
