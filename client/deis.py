@@ -1373,7 +1373,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}/limit".format(app))
+        response = self._dispatch('get', "/api/apps/{}/limits".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._print_limits(app, response.json())
         else:
@@ -1426,7 +1426,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/limit".format(app), json.dumps(body))
+            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1472,7 +1472,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/limit".format(app), json.dumps(body))
+            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()

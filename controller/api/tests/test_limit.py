@@ -50,7 +50,7 @@ class LimitTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = '/api/apps/{app_id}/limit'.format(**locals())
+        url = '/api/apps/{app_id}/limits'.format(**locals())
         # check default limit
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -114,7 +114,7 @@ class LimitTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = '/api/apps/{app_id}/limit'.format(**locals())
+        url = '/api/apps/{app_id}/limits'.format(**locals())
         # check default limit
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
