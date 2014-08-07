@@ -5,7 +5,7 @@ After=deis-builder-data.service
 
 [Service]
 EnvironmentFile=/etc/environment
-TimeoutStartSec=20m
+TimeoutStartSec=30m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-builder >/dev/null 2>&1 && docker rm -f deis-builder || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:22 -e HTTP_PROXY=$HTTP_PROXY -e http_proxy=$http_proxy -e HTTPS_PROXY=$HTTPS_PROXY -e https_proxy=$https_proxy -e ALL_PROXY=$ALL_PROXY -e all_proxy=$all_proxy -e NO_PROXY=$NO_PROXY -e no_proxy=$no_proxy -e PUBLISH=22 -e HOST=$COREOS_PRIVATE_IPV4 -e PORT=2223 --volumes-from deis-builder-data --privileged $IMAGE"
