@@ -1448,8 +1448,6 @@ class DeisClient(object):
         Usage: deis limits:unset [--memory | --cpu] <type>... [options]
 
         Arguments:
-          -m, --memory  limit memory [default: true]
-          -c, --cpu     limit cpu shares
           <type>
             the process type as defined in your Procfile, such as 'web' or 'worker'.
             Note that Dockerfile apps have a default 'cmd' process type.
@@ -1457,6 +1455,10 @@ class DeisClient(object):
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -c --cpu
+            limits cpu shares.
+          -m --memory
+            limits memory. [default: true]
         """
         app = args.get('--app')
         if not app:
