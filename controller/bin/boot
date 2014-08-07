@@ -48,6 +48,9 @@ done
 
 cd /app
 
+# give the deis user permissions to write to the volume mount
+chown -R deis:deis /var/log/deis
+
 # run an idempotent database migration
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
