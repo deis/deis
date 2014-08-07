@@ -1,7 +1,4 @@
-// Package itutils provides utility functions and configuration for integration
-// testing with the Deis open source PaaS.
-
-package itutils
+package utils
 
 import (
 	"bytes"
@@ -18,7 +15,6 @@ import (
 
 	"github.com/ThomasRooney/gexpect"
 	gson "github.com/bitly/go-simplejson"
-	"github.com/deis/deis/tests/utils"
 )
 
 // Deis points to the CLI used to run tests.
@@ -150,7 +146,7 @@ func CheckList(
 	} else {
 		cmdl = exec.Command("sh", "-c", Deis+cmdString)
 	}
-	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
+	stdout, _, err := RunCommandWithStdoutStderr(cmdl)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,7 +182,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 
 	switch failFlag {
 	case true:
-		if stdout, stderr, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
+		if stdout, stderr, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
 				fmt.Println("(Error expected...ok)")
 			} else {
@@ -200,7 +196,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 			}
 		}
 	case false:
-		if _, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
+		if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 			t.Fatal(err)
 		} else {
 			fmt.Println("ok")
@@ -211,21 +207,21 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 // AppsDestroyTest destroys a Deis app and checks that it was successful.
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
 	cmd := GetCommand("apps", "destroy")
-	if err := utils.Chdir(params.ExampleApp); err != nil {
+	if err := Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
 	Execute(t, cmd, params, false, "")
-	if err := utils.Chdir(".."); err != nil {
+	if err := Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
-	if err := utils.Rmdir(params.ExampleApp); err != nil {
+	if err := Rmdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
 }
 
 // GetCommand fetches the given command by type and name from a JSON resource.
 func GetCommand(cmdtype, cmd string) string {
-	js, _ := gson.NewJson(utils.GetFileBytes("testconfig.json"))
+	js, _ := gson.NewJson(GetFileBytes("testconfig.json"))
 	command, _ := js.Get("commands").Get(cmdtype).Get(cmd).String()
 	return command
 }

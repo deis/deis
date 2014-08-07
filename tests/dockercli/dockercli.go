@@ -1,6 +1,6 @@
-// Package dockercliutils provides helper functions for testing with Docker.
+// Package dockercli provides helper functions for testing with Docker.
 
-package dockercliutils
+package dockercli
 
 import (
 	"bufio"

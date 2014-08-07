@@ -5,7 +5,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 var (
@@ -17,21 +17,21 @@ var (
 )
 
 func TestGlobal(t *testing.T) {
-	params := itutils.GetGlobalConfig()
+	params := utils.GetGlobalConfig()
 	cookieTest(t, params)
-	itutils.Execute(t, authRegisterCmd, params, false, "")
-	itutils.Execute(t, keysAddCmd, params, false, "")
-	itutils.Execute(t, clustersCreateCmd, params, false, "")
+	utils.Execute(t, authRegisterCmd, params, false, "")
+	utils.Execute(t, keysAddCmd, params, false, "")
+	utils.Execute(t, clustersCreateCmd, params, false, "")
 }
 
-func cookieTest(t *testing.T, params *itutils.DeisTestConfig) {
+func cookieTest(t *testing.T, params *utils.DeisTestConfig) {
 	// Regression test for https://github.com/deis/deis/pull/1136
 	// Ensure that cookies are cleared on auth:register and auth:cancel
-	itutils.Execute(t, authRegisterCmd, params, false, "")
+	utils.Execute(t, authRegisterCmd, params, false, "")
 	cmd := "cat ~/.deis/cookies.txt"
-	itutils.CheckList(t, cmd, params, "csrftoken", false)
-	itutils.CheckList(t, cmd, params, "sessionid", false)
-	itutils.AuthCancel(t, params)
-	itutils.CheckList(t, cmd, params, "csrftoken", true)
-	itutils.CheckList(t, cmd, params, "sessionid", true)
+	utils.CheckList(t, cmd, params, "csrftoken", false)
+	utils.CheckList(t, cmd, params, "sessionid", false)
+	utils.AuthCancel(t, params)
+	utils.CheckList(t, cmd, params, "csrftoken", true)
+	utils.CheckList(t, cmd, params, "sessionid", true)
 }

@@ -5,7 +5,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 var (
@@ -24,23 +24,23 @@ func TestKeys(t *testing.T) {
 
 // Requires a ~/.ssh/deis-testkey to be set up:
 // $ ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
-func keysSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
-	itutils.Execute(t, authLoginCmd, cfg, false, "")
+func keysSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
+	utils.Execute(t, authLoginCmd, cfg, false, "")
 	return cfg
 }
 
-func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
+func keysAddTest(t *testing.T, params *utils.DeisTestConfig) {
 	params.AuthKey = "deiskey"
-	itutils.Execute(t, keysAddCmd, params, false, "")
-	itutils.Execute(t, keysAddCmd, params, true,
+	utils.Execute(t, keysAddCmd, params, false, "")
+	utils.Execute(t, keysAddCmd, params, true,
 		"SSH Key with this Public already exists")
 }
 
-func keysListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, keysListCmd, params, params.AuthKey, notflag)
+func keysListTest(t *testing.T, params *utils.DeisTestConfig, notflag bool) {
+	utils.CheckList(t, keysListCmd, params, params.AuthKey, notflag)
 }
 
-func keysRemoveTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, keysRemoveCmd, params, false, "")
+func keysRemoveTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, keysRemoveCmd, params, false, "")
 }

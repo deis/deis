@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
@@ -13,11 +13,11 @@ import (
 func runDeisBuilderTest(
 	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	dockercliutils.RunDeisDataTest(t, "--name", "deis-builder-data",
+	dockercli.RunDeisDataTest(t, "--name", "deis-builder-data",
 		"-v", "/var/lib/docker", "deis/base", "true")
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-builder-"+testID,
 			"--rm",
 			"-p", servicePort+":22",
@@ -29,7 +29,7 @@ func runDeisBuilderTest(
 			"--volumes-from", "deis-builder-data",
 			"--privileged", "deis/builder:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,12 +52,12 @@ func TestBuilder(t *testing.T) {
 		"/deis/services",
 	}
 	testID := utils.NewID()
-	err := dockercliutils.BuildImage(t, "../", "deis/builder:"+testID)
+	err := dockercli.BuildImage(t, "../", "deis/builder:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	dockercli.RunEtcdTest(t, testID, etcdPort)
 	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, handler)
 	servicePort := utils.GetRandomPort()
@@ -65,7 +65,7 @@ func TestBuilder(t *testing.T) {
 	runDeisBuilderTest(t, testID, etcdPort, servicePort)
 	// TODO: builder needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
-	dockercliutils.DeisServiceTest(
+	dockercli.DeisServiceTest(
 		t, "deis-builder-"+testID, servicePort, "tcp")
-	dockercliutils.ClearTestSession(t, testID)
+	dockercli.ClearTestSession(t, testID)
 }

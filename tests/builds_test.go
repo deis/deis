@@ -9,7 +9,6 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -23,32 +22,32 @@ func TestBuilds(t *testing.T) {
 	buildsListTest(t, params)
 	buildsCreateTest(t, params)
 	appsOpenTest(t, params)
-	itutils.AppsDestroyTest(t, params)
+	utils.AppsDestroyTest(t, params)
 }
 
-func buildSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
+func buildSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
 	cfg.AppName = "buildsample"
-	itutils.Execute(t, authLoginCmd, cfg, false, "")
-	itutils.Execute(t, gitCloneCmd, cfg, false, "")
+	utils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, gitCloneCmd, cfg, false, "")
 	if err := utils.Chdir(cfg.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, appsCreateCmd, cfg, false, "")
-	itutils.Execute(t, gitPushCmd, cfg, false, "")
+	utils.Execute(t, appsCreateCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.CreateFile(cfg.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, gitAddCmd, cfg, false, "")
-	itutils.Execute(t, gitCommitCmd, cfg, false, "")
-	itutils.Execute(t, gitPushCmd, cfg, false, "")
+	utils.Execute(t, gitAddCmd, cfg, false, "")
+	utils.Execute(t, gitCommitCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
 	return cfg
 }
 
-func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
+func buildsListTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := buildsListCmd
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
@@ -56,7 +55,7 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	cmdString := cmdBuf.String()
-	cmdl := exec.Command("sh", "-c", itutils.Deis+cmdString)
+	cmdl := exec.Command("sh", "-c", utils.Deis+cmdString)
 	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
 	if err != nil {
 		t.Fatal(err)
@@ -65,6 +64,6 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	params.ImageID = strings.Fields(ImageID)[0]
 }
 
-func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, buildsCreateCmd, params, false, "")
+func buildsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, buildsCreateCmd, params, false, "")
 }

@@ -5,7 +5,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 var (
@@ -26,34 +26,34 @@ func TestClusters(t *testing.T) {
 	clustersListTest(t, params, true)
 }
 
-func clustersSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
+func clustersSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
 	cfg.ClusterName = "devtest"
-	itutils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, authLoginCmd, cfg, false, "")
 	return cfg
 }
 
-func clustersCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
+func clustersCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := clustersCreateCmd
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Cluster with this Id already exists")
+	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, true, "Cluster with this Id already exists")
 }
 
-func clustersDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, clustersDestroyCmd, params, false, "")
+func clustersDestroyTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, clustersDestroyCmd, params, false, "")
 }
 
-func clustersInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, clustersInfoCmd, params, false, "")
+func clustersInfoTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, clustersInfoCmd, params, false, "")
 }
 
 func clustersListTest(
-	t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, clustersListCmd, params, params.ClusterName, notflag)
+	t *testing.T, params *utils.DeisTestConfig, notflag bool) {
+	utils.CheckList(t, clustersListCmd, params, params.ClusterName, notflag)
 }
 
-func clustersUpdateTest(t *testing.T, params *itutils.DeisTestConfig) {
+func clustersUpdateTest(t *testing.T, params *utils.DeisTestConfig) {
 	// Regression test for https://github.com/deis/deis/pull/1283
 	// Check that we didn't store the path of the key in the cluster.
-	itutils.CheckList(t, clustersUpdateCmd, params, "~/.ssh/", true)
+	utils.CheckList(t, clustersUpdateCmd, params, "~/.ssh/", true)
 }

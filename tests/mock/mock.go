@@ -1,12 +1,12 @@
-// Package mockserviceutils provides mock objects and setup for Deis tests.
+// Package mock provides mock objects and setup for Deis tests.
 
-package mockserviceutils
+package mock
 
 import (
 	"testing"
 	"time"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
@@ -14,14 +14,14 @@ import (
 // RunMockDatabase starts a mock postgresql database for testing.
 func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	done := make(chan bool, 1)
 	dbImage := "paintedfox/postgresql:latest"
 	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
 		<-done
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-test-database-"+uid,
 			"--rm",
 			"-p", dbPort+":5432",
@@ -33,7 +33,7 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 			dbImage)
 	}()
 	time.Sleep(1000 * time.Millisecond)
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Starting")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Starting")
 	setkeys := []string{
 		"/deis/database/user",
 		"/deis/database/password",

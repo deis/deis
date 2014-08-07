@@ -5,7 +5,6 @@ package tests
 import (
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -23,29 +22,29 @@ func TestAuth(t *testing.T) {
 	authCancel(t, params)
 }
 
-func authSetup(t *testing.T) *itutils.DeisTestConfig {
-	user := itutils.GetGlobalConfig()
+func authSetup(t *testing.T) *utils.DeisTestConfig {
+	user := utils.GetGlobalConfig()
 	user.UserName, user.Password = utils.NewID(), utils.NewID()
 	return user
 }
 
-func authCancel(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.AuthCancel(t, params)
+func authCancel(t *testing.T, params *utils.DeisTestConfig) {
+	utils.AuthCancel(t, params)
 }
 
-func authLoginTest(t *testing.T, params *itutils.DeisTestConfig) {
+func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := authLoginCmd
-	itutils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, false, "")
 	params = authSetup(t)
-	itutils.Execute(t, cmd, params, true, "200 OK")
+	utils.Execute(t, cmd, params, true, "200 OK")
 }
 
-func authLogoutTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, authLogoutCmd, params, false, "")
+func authLogoutTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, authLogoutCmd, params, false, "")
 }
 
-func authRegisterTest(t *testing.T, params *itutils.DeisTestConfig) {
+func authRegisterTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := authRegisterCmd
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Registration failed")
+	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, true, "Registration failed")
 }

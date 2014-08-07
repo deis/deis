@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
-	"github.com/deis/deis/tests/mockserviceutils"
+	"github.com/deis/deis/tests/mock"
 	"github.com/deis/deis/tests/utils"
 )
 
 func runDeisControllerTest(
 	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-controller-"+testID,
 			"--rm",
 			"-p", servicePort+":8000",
@@ -24,7 +24,7 @@ func runDeisControllerTest(
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/controller:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,20 +46,20 @@ func TestController(t *testing.T) {
 		"/deis/domains",
 	}
 	testID := utils.NewID()
-	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testID)
+	err := dockercli.BuildImage(t, "../", "deis/controller:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	dockercli.RunEtcdTest(t, testID, etcdPort)
 	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, handler)
 	dbPort := utils.GetRandomPort()
-	mockserviceutils.RunMockDatabase(t, testID, etcdPort, dbPort)
+	mock.RunMockDatabase(t, testID, etcdPort, dbPort)
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-controller-%s at port %s\n", testID, servicePort)
 	runDeisControllerTest(t, testID, etcdPort, servicePort)
-	dockercliutils.DeisServiceTest(
+	dockercli.DeisServiceTest(
 		t, "deis-controller-"+testID, servicePort, "http")
-	dockercliutils.ClearTestSession(t, testID)
+	dockercli.ClearTestSession(t, testID)
 }

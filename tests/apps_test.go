@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -33,30 +32,30 @@ func TestApps(t *testing.T) {
 	appsListTest(t, params, true)
 }
 
-func appsSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
+func appsSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
 	cfg.AppName = "appssample"
-	itutils.Execute(t, authLoginCmd, cfg, false, "")
-	itutils.Execute(t, gitCloneCmd, cfg, false, "")
+	utils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, gitCloneCmd, cfg, false, "")
 	return cfg
 }
 
-func appsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
+func appsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	wd, _ := os.Getwd()
 	defer os.Chdir(wd)
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
 	cmd := appsCreateCmd
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "App with this Id already exists")
+	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, true, "App with this Id already exists")
 }
 
-func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
+func appsDestroyTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, appsDestroyCmd, params, false, "")
+	utils.Execute(t, appsDestroyCmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
@@ -65,42 +64,42 @@ func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
 	}
 }
 
-func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, appsInfoCmd, params, false, "")
+func appsInfoTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, appsInfoCmd, params, false, "")
 }
 
-func appsListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, appsListCmd, params, params.AppName, notflag)
+func appsListTest(t *testing.T, params *utils.DeisTestConfig, notflag bool) {
+	utils.CheckList(t, appsListCmd, params, params.AppName, notflag)
 }
 
-func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
+func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := appsLogsCmd
-	itutils.Execute(t, cmd, params, true, "204 NO CONTENT")
+	utils.Execute(t, cmd, params, true, "204 NO CONTENT")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, gitPushCmd, params, false, "")
+	utils.Execute(t, gitPushCmd, params, false, "")
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
-	itutils.Curl(t, params)
-	itutils.Execute(t, cmd, params, false, "")
+	utils.Curl(t, params)
+	utils.Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Curl(t, params)
+func appsOpenTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Curl(t, params)
 }
 
-func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
+func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := appsRunCmd
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd, params, true, "Not found")
+	utils.Execute(t, cmd, params, true, "Not found")
 }

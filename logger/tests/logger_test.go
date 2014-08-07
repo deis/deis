@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/utils"
 )
 
 func runDeisLoggerTest(
 	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	dockercliutils.RunDeisDataTest(t, "--name", "deis-logger-data",
+	dockercli.RunDeisDataTest(t, "--name", "deis-logger-data",
 		"-v", "/var/log/deis", "deis/base", "/bin/true")
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-logger-"+testID,
 			"--rm",
 			"-p", servicePort+":514/udp",
@@ -25,7 +25,7 @@ func runDeisLoggerTest(
 			"--volumes-from", "deis-logger-data",
 			"deis/logger:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,16 +33,16 @@ func runDeisLoggerTest(
 
 func TestLogger(t *testing.T) {
 	testID := utils.NewID()
-	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testID)
+	err := dockercli.BuildImage(t, "../", "deis/logger:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	dockercli.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-logger-%s at port %s\n", testID, servicePort)
 	runDeisLoggerTest(t, testID, etcdPort, servicePort)
-	dockercliutils.DeisServiceTest(
+	dockercli.DeisServiceTest(
 		t, "deis-logger-"+testID, servicePort, "udp")
-	dockercliutils.ClearTestSession(t, testID)
+	dockercli.ClearTestSession(t, testID)
 }
