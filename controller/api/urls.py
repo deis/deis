@@ -65,6 +65,14 @@ Application Release Components
 
   Create a new :class:`~api.models.Build`.
 
+.. http:get:: /api/apps/(string:id)/limits/
+
+  Retrieve the latest :class:`~api.models.Limit`.
+
+.. http:post:: /api/apps/(string:id)/limits/
+
+  Create a new :class:`~api.models.Limit`.
+
 .. http:get:: /api/apps/(string:id)/releases/(int:version)/
 
   Retrieve a :class:`~api.models.Release` by its `version`.
