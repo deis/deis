@@ -1419,10 +1419,7 @@ class DeisClient(object):
             app = self._session.app
         body = {}
         # see if cpu shares are being specified, otherwise default to memory
-        if args.get('--cpu'):
-          target = 'cpu'
-        else:
-          target = 'memory'
+        target = 'cpu' if args.get('--cpu') else 'memory'
         body[target] = json.dumps(dictify(args['<type>=<limit>']))
         sys.stdout.write('Applying limits... ')
         sys.stdout.flush()
@@ -1468,10 +1465,7 @@ class DeisClient(object):
             values[k] = None
         body = {}
         # see if cpu shares are being specified, otherwise default to memory
-        if args.get('--cpu'):
-          target = 'cpu'
-        else:
-          target = 'memory'
+        target = 'cpu' if args.get('--cpu') else 'memory'
         body[target] = json.dumps(values)
         sys.stdout.write('Applying limits... ')
         sys.stdout.flush()
@@ -1493,15 +1487,15 @@ class DeisClient(object):
         print("=== {} Limits".format(app))
 
         def write(d):
-          items = d.items()
-          if len(items) == 0:
-            print('Unlimited')
-            return
-          keys = sorted(d)
-          width = max(map(len, keys)) + 5
-          for k in keys:
-              v = d[k]
-              print(("{k:<" + str(width) + "} {v}").format(**locals()))
+            items = d.items()
+            if len(items) == 0:
+                print('Unlimited')
+                return
+            keys = sorted(d)
+            width = max(map(len, keys)) + 5
+            for k in keys:
+                v = d[k]
+                print(("{k:<" + str(width) + "} {v}").format(**locals()))
 
         print("\n--- Memory")
         write(json.loads(limit.get('memory', '{}')))
