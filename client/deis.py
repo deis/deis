@@ -18,7 +18,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   config        manage environment variables that define app config
   domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
-  limit         manage resource limits for your application
+  limits        manage resource limits for your application
   releases      manage releases of an application
 
   keys          manage ssh keys used for `git push` deployments
@@ -1346,25 +1346,25 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def limit(self, args):
+    def limits(self, args):
         """
-        Valid commands for limit:
+        Valid commands for limits:
 
-        limit:list         list resource limits for an app
-        limit:set          set resource limits for an app
-        limit:unset        unset resource limits for an app
+        limits:list        list resource limits for an app
+        limits:set         set resource limits for an app
+        limits:unset       unset resource limits for an app
 
         Use `deis help [command]` to learn more.
         """
-        sys.argv[1] = 'limit:list'
-        args = docopt(self.limit_list.__doc__)
-        return self.limit_list(args)
+        sys.argv[1] = 'limits:list'
+        args = docopt(self.limits_list.__doc__)
+        return self.limits_list(args)
 
-    def limit_list(self, args):
+    def limits_list(self, args):
         """
         Lists resource limits for an application.
 
-        Usage: deis limit:list [options]
+        Usage: deis limits:list [options]
 
         Options:
           -a --app=<app>
@@ -1379,7 +1379,7 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def limit_set(self, args):
+    def limits_set(self, args):
         """
         Sets resource limits for an application.
 
@@ -1388,7 +1388,7 @@ class DeisClient(object):
         is applied to each individual container, so setting a memory limit of 1G for an
         application means that each container gets 1G of memory.
 
-        Usage: deis limit:set [options] <type>=<limit>...
+        Usage: deis limits:set [options] <type>=<limit>...
 
         Arguments:
           <type>
@@ -1440,11 +1440,11 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def limit_unset(self, args):
+    def limits_unset(self, args):
         """
         Unsets resource limits for an application.
 
-        Usage: deis limit:unset [--memory | --cpu] <type>... [options]
+        Usage: deis limits:unset [--memory | --cpu] <type>... [options]
 
         Arguments:
           -m, --memory  limit memory [default: true]
