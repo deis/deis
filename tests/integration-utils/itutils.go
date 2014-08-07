@@ -190,18 +190,18 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
 				fmt.Println("(Error expected...ok)")
 			} else {
-				t.Fatalf("Failed:\n%v", err)
+				t.Fatal(err)
 			}
 		} else {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
 				fmt.Println("(Error expected...ok)" + expect)
 			} else {
-				t.Fatalf("Failed:\n%v", err)
+				t.Fatal(err)
 			}
 		}
 	case false:
 		if _, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
-			t.Fatalf("Failed:\n%v", err)
+			t.Fatal(err)
 		} else {
 			fmt.Println("ok")
 		}
@@ -212,14 +212,14 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
 	cmd := GetCommand("apps", "destroy")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	if err := utils.Rmdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 }
 

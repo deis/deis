@@ -10,81 +10,83 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
+var (
+	appsCreateCmd  = "apps:create {{.AppName}}"
+	appsListCmd    = "apps:list"
+	appsRunCmd     = "apps:run echo hello"
+	appsOpenCmd    = "apps:open --app={{.AppName}}"
+	appsLogsCmd    = "apps:logs --app={{.AppName}}"
+	appsInfoCmd    = "apps:info --app={{.AppName}}"
+	appsDestroyCmd = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+)
+
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "appssample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
+	itutils.Execute(t, authLoginCmd, cfg, false, "")
+	itutils.Execute(t, gitCloneCmd, cfg, false, "")
 	return cfg
 }
 
 func appsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("apps", "create")
+	cmd := appsCreateCmd
 	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	itutils.Execute(t, cmd, params, false, "")
 	itutils.Execute(t, cmd, params, true, "App with this Id already exists")
-
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 }
 
 func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("apps", "run")
+	cmd := appsRunCmd
 	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	itutils.Execute(t, cmd, params, false, "")
-
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	itutils.Execute(t, cmd, params, true, "Not found")
 }
 
 func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("apps", "destroy")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, appsDestroyCmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	if err := utils.Rmdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 }
 
 func appsListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	cmd := itutils.GetCommand("apps", "list")
-	itutils.CheckList(t, params, cmd, params.AppName, notflag)
+	itutils.CheckList(t, params, appsListCmd, params.AppName, notflag)
 }
 
 func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("apps", "logs")
-	cmd1 := itutils.GetCommand("git", "push")
+	cmd := appsLogsCmd
 	itutils.Execute(t, cmd, params, true, "204 NO CONTENT")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd1, params, false, "")
+	itutils.Execute(t, gitPushCmd, params, false, "")
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
 	itutils.Curl(t, params)
 	itutils.Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 }
 
 func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("apps", "info")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, appsInfoCmd, params, false, "")
 }
 
 func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {

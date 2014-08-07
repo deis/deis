@@ -8,11 +8,18 @@ import (
 	"github.com/deis/deis/tests/integration-utils"
 )
 
-//Tests #1136 // Tests #1239
+var (
+	gitCloneCmd  = "if [ ! -d {{.ExampleApp}} ] ; then git clone https://github.com/deis/{{.ExampleApp}}.git ; fi"
+	gitRemoveCmd = "git remote remove deis"
+	gitPushCmd   = "git push deis master"
+	gitAddCmd    = "git add ."
+	gitCommitCmd = "git commit -m fake"
+)
+
 func cookieTest(t *testing.T, params *itutils.DeisTestConfig) {
-	var cmd string
-	cmd = itutils.GetCommand("auth", "register")
-	itutils.Execute(t, cmd, params, false, "")
+	// Regression test for https://github.com/deis/deis/pull/1136
+	// Ensure that cookies are cleared on auth:register and auth:cancel
+	itutils.Execute(t, authRegisterCmd, params, false, "")
 	itutils.CheckList(t, params, "cat ~/.deis/cookies.txt", "csrftoken", false)
 	itutils.CheckList(t, params, "cat ~/.deis/cookies.txt", "sessionid", false)
 	itutils.AuthCancel(t, params)
@@ -22,12 +29,8 @@ func cookieTest(t *testing.T, params *itutils.DeisTestConfig) {
 
 func TestGlobal(t *testing.T) {
 	params := itutils.GetGlobalConfig()
-	var cmd string
 	cookieTest(t, params)
-	cmd = itutils.GetCommand("auth", "register")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("keys", "add")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("clusters", "create")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, authRegisterCmd, params, false, "")
+	itutils.Execute(t, keysAddCmd, params, false, "")
+	itutils.Execute(t, clustersCreateCmd, params, false, "")
 }

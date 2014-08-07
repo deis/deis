@@ -3,48 +3,46 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
+var (
+	releasesListCmd     = "releases:list --app={{.AppName}}"
+	releasesInfoCmd     = "releases:info {{.Version}} --app={{.AppName}}"
+	releasesRollbackCmd = "releases:rollback {{.Version}} --app={{.AppName}}"
+)
+
 func releasesSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "releasessample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
+	itutils.Execute(t, authLoginCmd, cfg, false, "")
+	itutils.Execute(t, gitCloneCmd, cfg, false, "")
 	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
+	itutils.Execute(t, appsCreateCmd, cfg, false, "")
+	itutils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-	cmd = itutils.GetCommand("config", "set")
-	itutils.Execute(t, cmd, cfg, false, "")
+	itutils.Execute(t, configSetCmd, cfg, false, "")
 	return cfg
 }
 
-func releasesListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	cmd := itutils.GetCommand("releases", "list")
-	itutils.CheckList(t, params, cmd, params.Version, notflag)
+func releasesListTest(
+	t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
+	itutils.CheckList(t, params, releasesListCmd, params.Version, notflag)
 }
 
 func releasesInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("releases", "info")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, releasesInfoCmd, params, false, "")
 }
 
 func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("releases", "rollback")
-	itutils.Execute(t, cmd, params, false, "")
+	itutils.Execute(t, releasesRollbackCmd, params, false, "")
 }
 
 func TestReleases(t *testing.T) {

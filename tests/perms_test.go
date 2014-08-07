@@ -3,75 +3,61 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
 	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
+var (
+	permsListAppCmd     = "perms:list --app={{.AppName}}"
+	permsListAdminCmd   = "perms:list --admin"
+	permsCreateAppCmd   = "perms:create {{.AppUser}} --app={{.AppName}}"
+	permsCreateAdminCmd = "perms:create {{.AppUser}} --admin"
+	permsDeleteAppCmd   = "perms:delete {{.AppUser}} --app={{.AppName}}"
+	permsDeleteAdminCmd = "perms:delete {{.AppUser}} --admin"
+)
+
 func permsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "permssample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
+	itutils.Execute(t, authLoginCmd, cfg, false, "")
+	itutils.Execute(t, gitCloneCmd, cfg, false, "")
 	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
+	itutils.Execute(t, appsCreateCmd, cfg, false, "")
+	itutils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	return cfg
 }
 
 func permsCreateAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
-	var cmd string
-	cmd = itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, user, false, "")
-	cmd = itutils.GetCommand("perms", "create-app")
-	itutils.Execute(t, cmd, user, true, "403 FORBIDDEN")
-	cmd = itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "create-app")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "list-app")
-	itutils.CheckList(t, params, cmd, "test1", false)
+	itutils.Execute(t, authLoginCmd, user, false, "")
+	itutils.Execute(t, permsCreateAppCmd, user, true, "403 FORBIDDEN")
+	itutils.Execute(t, authLoginCmd, params, false, "")
+	itutils.Execute(t, permsCreateAppCmd, params, false, "")
+	itutils.CheckList(t, params, permsListAppCmd, "test1", false)
 }
 
 func permsDeleteAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
-	var cmd string
-	cmd = itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, user, false, "")
-	cmd = itutils.GetCommand("perms", "delete-app")
-	itutils.Execute(t, cmd, user, true, "403 FORBIDDEN")
-	cmd = itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "delete-app")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "list-app")
-	itutils.CheckList(t, params, cmd, "test1", true)
+	itutils.Execute(t, authLoginCmd, user, false, "")
+	itutils.Execute(t, permsDeleteAppCmd, user, true, "403 FORBIDDEN")
+	itutils.Execute(t, authLoginCmd, params, false, "")
+	itutils.Execute(t, permsDeleteAppCmd, params, false, "")
+	itutils.CheckList(t, params, permsListAppCmd, "test1", true)
 }
 
 func permsCreateAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("perms", "create-admin")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "list-admin")
-	itutils.CheckList(t, params, cmd, "test1", false)
-
+	itutils.Execute(t, permsCreateAdminCmd, params, false, "")
+	itutils.CheckList(t, params, permsListAdminCmd, "test1", false)
 }
 
 func permsDeleteAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("perms", "delete-admin")
-	itutils.Execute(t, cmd, params, false, "")
-	cmd = itutils.GetCommand("perms", "list-admin")
-	itutils.CheckList(t, params, cmd, "test1", true)
+	itutils.Execute(t, permsDeleteAdminCmd, params, false, "")
+	itutils.CheckList(t, params, permsListAdminCmd, "test1", true)
 }
 
 func TestPerms(t *testing.T) {
@@ -79,8 +65,7 @@ func TestPerms(t *testing.T) {
 	user := itutils.GetGlobalConfig()
 	user.UserName, user.Password = "test1", "test1"
 	user.AppName = params.AppName
-	cmd := itutils.GetCommand("auth", "register")
-	itutils.Execute(t, cmd, user, false, "")
+	itutils.Execute(t, authRegisterCmd, user, false, "")
 	permsCreateAppTest(t, params, user)
 	permsDeleteAppTest(t, params, user)
 	permsCreateAdminTest(t, params)

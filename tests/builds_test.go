@@ -14,38 +14,36 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
+var (
+	buildsListCmd   = "builds:list --app={{.AppName}}"
+	buildsCreateCmd = "builds:create {{.ImageID}} --app={{.AppName}}"
+)
+
 func buildSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "buildsample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
-	cmd2 := itutils.GetCommand("git", "add")
-	cmd3 := itutils.GetCommand("git", "commit")
+	itutils.Execute(t, authLoginCmd, cfg, false, "")
+	itutils.Execute(t, gitCloneCmd, cfg, false, "")
 	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
+	itutils.Execute(t, appsCreateCmd, cfg, false, "")
+	itutils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.CreateFile(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd2, cfg, false, "")
-	itutils.Execute(t, cmd3, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
+	itutils.Execute(t, gitAddCmd, cfg, false, "")
+	itutils.Execute(t, gitCommitCmd, cfg, false, "")
+	itutils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	return cfg
 }
 
 func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	Deis := "deis "
-	cmd := itutils.GetCommand("builds", "list")
+	cmd := buildsListCmd
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
 	if err := tmpl.Execute(&cmdBuf, params); err != nil {
@@ -55,18 +53,15 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 	fmt.Println(cmdString)
 	cmdl := exec.Command("sh", "-c", Deis+cmdString)
 	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	} else {
 		ImageID := strings.Split(stdout.String(), "\n")[2]
 		params.ImageID = strings.Fields(ImageID)[0]
 	}
-
 }
 
 func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("builds", "create")
-	itutils.Execute(t, cmd, params, false, "")
-
+	itutils.Execute(t, buildsCreateCmd, params, false, "")
 }
 
 func TestBuilds(t *testing.T) {
