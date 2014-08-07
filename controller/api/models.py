@@ -134,8 +134,7 @@ class App(UuidAuditedModel):
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self, values={})
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
-        Release.objects.create(version=1, owner=self.owner, app=self,
-                               config=config, build=build)
+        Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
     def delete(self, *args, **kwargs):
         for c in self.container_set.all():
