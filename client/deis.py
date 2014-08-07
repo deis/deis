@@ -1388,21 +1388,30 @@ class DeisClient(object):
         is applied to each individual container, so setting a memory limit of 1G for an
         application means that each container gets 1G of memory.
 
-        Usage: deis limit:set [--memory | --cpu] <type>=<limit>... [options]
+        Usage: deis limit:set [options] <type>=<limit>...
 
         Arguments:
-          -m, --memory  limit memory [default: true]
-          -c, --cpu     limit cpu shares
           <type>
             the process type as defined in your Procfile, such as 'web' or 'worker'.
             Note that Dockerfile apps have a default 'cmd' process type.
           <limit>
-            web=1G worker=256M (with --memory, units in G/M/K/B)
-            cmd=1024 clock=100 (with --cpu, units in cpu shares)
+            The limit to apply to the process type. By default, this is set to --memory.
+
+            With --memory, units are represented in Bytes (B), Kilobytes (K), Megabytes
+            (M), or Gigabytes (G). For example, `deis limit:set cmd=1G` will restrict all
+            "cmd" processes to a maximum of 1 Gigabyte of memory each.
+
+            With --cpu, units are represented in the number of cpu shares. For example,
+            `deis limit:set --cpu cmd=1024` will restrict all "cmd" processes to a
+            maximum of 1024 cpu shares.
 
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -c --cpu
+            limits cpu shares.
+          -m --memory
+            limits memory. [default: true]
         """
         app = args.get('--app')
         if not app:
