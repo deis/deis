@@ -16,6 +16,15 @@ var (
 	psScaleCmd = "ps:scale web={{.ProcessNum}} --app={{.AppName}}"
 )
 
+func TestPs(t *testing.T) {
+	params := psSetup(t)
+	psScaleTest(t, params)
+	appsOpenTest(t, params)
+	psListTest(t, params, false)
+	itutils.AppsDestroyTest(t, params)
+	itutils.Execute(t, psScaleCmd, params, true, "404 NOT FOUND")
+}
+
 func psSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "pssample"
@@ -37,7 +46,7 @@ func psListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
 	if strings.Contains(params.ExampleApp, "dockerfile") {
 		output = strings.Replace(output, "web", "cmd", 1)
 	}
-	itutils.CheckList(t, params, psListCmd, output, notflag)
+	itutils.CheckList(t, psListCmd, params, output, notflag)
 }
 
 func psScaleTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -60,13 +69,4 @@ func psScaleTest(t *testing.T, params *itutils.DeisTestConfig) {
 	if strings.Contains(string(out), ".service") {
 		t.Fatalf("systemd files left on filesystem: \n%s", out)
 	}
-}
-
-func TestPs(t *testing.T) {
-	params := psSetup(t)
-	psScaleTest(t, params)
-	appsOpenTest(t, params)
-	psListTest(t, params, false)
-	itutils.AppsDestroyTest(t, params)
-	itutils.Execute(t, psScaleCmd, params, true, "404 NOT FOUND")
 }

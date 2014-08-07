@@ -14,6 +14,14 @@ var (
 	keysRemoveCmd = "keys:remove {{.AuthKey}} || true"
 )
 
+func TestKeys(t *testing.T) {
+	params := keysSetup(t)
+	keysAddTest(t, params)
+	keysListTest(t, params, false)
+	keysRemoveTest(t, params)
+	keysListTest(t, params, true)
+}
+
 // Requires a ~/.ssh/deis-testkey to be set up:
 // $ ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 func keysSetup(t *testing.T) *itutils.DeisTestConfig {
@@ -30,17 +38,9 @@ func keysAddTest(t *testing.T, params *itutils.DeisTestConfig) {
 }
 
 func keysListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, params, keysListCmd, params.AuthKey, notflag)
+	itutils.CheckList(t, keysListCmd, params, params.AuthKey, notflag)
 }
 
 func keysRemoveTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, keysRemoveCmd, params, false, "")
-}
-
-func TestKeys(t *testing.T) {
-	params := keysSetup(t)
-	keysAddTest(t, params)
-	keysListTest(t, params, false)
-	keysRemoveTest(t, params)
-	keysListTest(t, params, true)
 }

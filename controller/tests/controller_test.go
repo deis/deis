@@ -45,7 +45,7 @@ func TestController(t *testing.T) {
 		"/deis/registry",
 		"/deis/domains",
 	}
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/controller:"+testID)
 	if err != nil {
 		t.Fatal(err)

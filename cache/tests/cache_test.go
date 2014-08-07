@@ -29,7 +29,7 @@ func runDeisCacheTest(
 }
 
 func TestCache(t *testing.T) {
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/cache:"+testID)
 	if err != nil {
 		t.Fatal(err)

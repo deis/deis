@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -20,6 +21,18 @@ var (
 	appsDestroyCmd = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 )
 
+func TestApps(t *testing.T) {
+	params := appsSetup(t)
+	appsCreateTest(t, params)
+	appsListTest(t, params, false)
+	appsLogsTest(t, params)
+	appsInfoTest(t, params)
+	appsRunTest(t, params)
+	appsOpenTest(t, params)
+	appsDestroyTest(t, params)
+	appsListTest(t, params, true)
+}
+
 func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "appssample"
@@ -29,27 +42,14 @@ func appsSetup(t *testing.T) *itutils.DeisTestConfig {
 }
 
 func appsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := appsCreateCmd
+	wd, _ := os.Getwd()
+	defer os.Chdir(wd)
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
+	cmd := appsCreateCmd
 	itutils.Execute(t, cmd, params, false, "")
 	itutils.Execute(t, cmd, params, true, "App with this Id already exists")
-	if err := utils.Chdir(".."); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := appsRunCmd
-	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatal(err)
-	}
-	itutils.Execute(t, cmd, params, false, "")
-	if err := utils.Chdir(".."); err != nil {
-		t.Fatal(err)
-	}
-	itutils.Execute(t, cmd, params, true, "Not found")
 }
 
 func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -65,8 +65,12 @@ func appsDestroyTest(t *testing.T, params *itutils.DeisTestConfig) {
 	}
 }
 
+func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Execute(t, appsInfoCmd, params, false, "")
+}
+
 func appsListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, params, appsListCmd, params.AppName, notflag)
+	itutils.CheckList(t, appsListCmd, params, params.AppName, notflag)
 }
 
 func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
@@ -85,23 +89,18 @@ func appsLogsTest(t *testing.T, params *itutils.DeisTestConfig) {
 	}
 }
 
-func appsInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, appsInfoCmd, params, false, "")
-}
-
 func appsOpenTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Curl(t, params)
 }
 
-func TestApps(t *testing.T) {
-	params := appsSetup(t)
-	appsCreateTest(t, params)
-	appsListTest(t, params, false)
-	appsLogsTest(t, params)
-	appsInfoTest(t, params)
-	appsRunTest(t, params)
-	appsOpenTest(t, params)
-	appsDestroyTest(t, params)
-	appsListTest(t, params, true)
-
+func appsRunTest(t *testing.T, params *itutils.DeisTestConfig) {
+	cmd := appsRunCmd
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	itutils.Execute(t, cmd, params, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
+	itutils.Execute(t, cmd, params, true, "Not found")
 }

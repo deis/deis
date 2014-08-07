@@ -4,7 +4,6 @@ package tests
 
 import (
 	"bytes"
-	"fmt"
 	"os/exec"
 	"strings"
 	"testing"
@@ -18,6 +17,14 @@ var (
 	buildsListCmd   = "builds:list --app={{.AppName}}"
 	buildsCreateCmd = "builds:create {{.ImageID}} --app={{.AppName}}"
 )
+
+func TestBuilds(t *testing.T) {
+	params := buildSetup(t)
+	buildsListTest(t, params)
+	buildsCreateTest(t, params)
+	appsOpenTest(t, params)
+	itutils.AppsDestroyTest(t, params)
+}
 
 func buildSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
@@ -42,7 +49,6 @@ func buildSetup(t *testing.T) *itutils.DeisTestConfig {
 }
 
 func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
-	Deis := "deis "
 	cmd := buildsListCmd
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
@@ -50,24 +56,15 @@ func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	cmdString := cmdBuf.String()
-	fmt.Println(cmdString)
-	cmdl := exec.Command("sh", "-c", Deis+cmdString)
-	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
+	cmdl := exec.Command("sh", "-c", itutils.Deis+cmdString)
+	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
+	if err != nil {
 		t.Fatal(err)
-	} else {
-		ImageID := strings.Split(stdout.String(), "\n")[2]
-		params.ImageID = strings.Fields(ImageID)[0]
 	}
+	ImageID := strings.Split(stdout.String(), "\n")[2]
+	params.ImageID = strings.Fields(ImageID)[0]
 }
 
 func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, buildsCreateCmd, params, false, "")
-}
-
-func TestBuilds(t *testing.T) {
-	params := buildSetup(t)
-	buildsListTest(t, params)
-	buildsCreateTest(t, params)
-	appsOpenTest(t, params)
-	itutils.AppsDestroyTest(t, params)
 }

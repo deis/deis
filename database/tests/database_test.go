@@ -32,7 +32,7 @@ func runDeisDatabaseTest(
 }
 
 func TestDatabase(t *testing.T) {
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/database:"+testID)
 	if err != nil {
 		t.Fatal(err)

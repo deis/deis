@@ -40,7 +40,7 @@ func TestRegistry(t *testing.T) {
 	setdir := []string{
 		"/deis/cache",
 	}
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/registry:"+testID)
 	if err != nil {
 		t.Fatal(err)

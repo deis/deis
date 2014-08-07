@@ -15,6 +15,18 @@ var (
 	releasesRollbackCmd = "releases:rollback {{.Version}} --app={{.AppName}}"
 )
 
+func TestReleases(t *testing.T) {
+	params := releasesSetup(t)
+	releasesListTest(t, params, false)
+	releasesInfoTest(t, params)
+	releasesRollbackTest(t, params)
+	appsOpenTest(t, params)
+	params.Version = "4"
+	releasesListTest(t, params, false)
+	itutils.AppsDestroyTest(t, params)
+
+}
+
 func releasesSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "releasessample"
@@ -32,27 +44,15 @@ func releasesSetup(t *testing.T) *itutils.DeisTestConfig {
 	return cfg
 }
 
-func releasesListTest(
-	t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	itutils.CheckList(t, params, releasesListCmd, params.Version, notflag)
-}
-
 func releasesInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
 	itutils.Execute(t, releasesInfoCmd, params, false, "")
 }
 
-func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, releasesRollbackCmd, params, false, "")
+func releasesListTest(
+	t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
+	itutils.CheckList(t, releasesListCmd, params, params.Version, notflag)
 }
 
-func TestReleases(t *testing.T) {
-	params := releasesSetup(t)
-	releasesListTest(t, params, false)
-	releasesInfoTest(t, params)
-	releasesRollbackTest(t, params)
-	appsOpenTest(t, params)
-	params.Version = "4"
-	releasesListTest(t, params, false)
-	itutils.AppsDestroyTest(t, params)
-
+func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Execute(t, releasesRollbackCmd, params, false, "")
 }

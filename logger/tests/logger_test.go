@@ -32,7 +32,7 @@ func runDeisLoggerTest(
 }
 
 func TestLogger(t *testing.T) {
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/logger:"+testID)
 	if err != nil {
 		t.Fatal(err)

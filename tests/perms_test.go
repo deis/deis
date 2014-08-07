@@ -18,6 +18,19 @@ var (
 	permsDeleteAdminCmd = "perms:delete {{.AppUser}} --admin"
 )
 
+func TestPerms(t *testing.T) {
+	params := permsSetup(t)
+	user := itutils.GetGlobalConfig()
+	user.UserName, user.Password = "test1", "test1"
+	user.AppName = params.AppName
+	itutils.Execute(t, authRegisterCmd, user, false, "")
+	permsCreateAppTest(t, params, user)
+	permsDeleteAppTest(t, params, user)
+	permsCreateAdminTest(t, params)
+	permsDeleteAdminTest(t, params)
+	itutils.AppsDestroyTest(t, params)
+}
+
 func permsSetup(t *testing.T) *itutils.DeisTestConfig {
 	cfg := itutils.GetGlobalConfig()
 	cfg.AppName = "permssample"
@@ -34,12 +47,22 @@ func permsSetup(t *testing.T) *itutils.DeisTestConfig {
 	return cfg
 }
 
+func permsCreateAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Execute(t, permsCreateAdminCmd, params, false, "")
+	itutils.CheckList(t, permsListAdminCmd, params, "test1", false)
+}
+
 func permsCreateAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
 	itutils.Execute(t, authLoginCmd, user, false, "")
 	itutils.Execute(t, permsCreateAppCmd, user, true, "403 FORBIDDEN")
 	itutils.Execute(t, authLoginCmd, params, false, "")
 	itutils.Execute(t, permsCreateAppCmd, params, false, "")
-	itutils.CheckList(t, params, permsListAppCmd, "test1", false)
+	itutils.CheckList(t, permsListAppCmd, params, "test1", false)
+}
+
+func permsDeleteAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
+	itutils.Execute(t, permsDeleteAdminCmd, params, false, "")
+	itutils.CheckList(t, permsListAdminCmd, params, "test1", true)
 }
 
 func permsDeleteAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
@@ -47,28 +70,5 @@ func permsDeleteAppTest(t *testing.T, params, user *itutils.DeisTestConfig) {
 	itutils.Execute(t, permsDeleteAppCmd, user, true, "403 FORBIDDEN")
 	itutils.Execute(t, authLoginCmd, params, false, "")
 	itutils.Execute(t, permsDeleteAppCmd, params, false, "")
-	itutils.CheckList(t, params, permsListAppCmd, "test1", true)
-}
-
-func permsCreateAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, permsCreateAdminCmd, params, false, "")
-	itutils.CheckList(t, params, permsListAdminCmd, "test1", false)
-}
-
-func permsDeleteAdminTest(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.Execute(t, permsDeleteAdminCmd, params, false, "")
-	itutils.CheckList(t, params, permsListAdminCmd, "test1", true)
-}
-
-func TestPerms(t *testing.T) {
-	params := permsSetup(t)
-	user := itutils.GetGlobalConfig()
-	user.UserName, user.Password = "test1", "test1"
-	user.AppName = params.AppName
-	itutils.Execute(t, authRegisterCmd, user, false, "")
-	permsCreateAppTest(t, params, user)
-	permsDeleteAppTest(t, params, user)
-	permsCreateAdminTest(t, params)
-	permsDeleteAdminTest(t, params)
-	itutils.AppsDestroyTest(t, params)
+	itutils.CheckList(t, permsListAppCmd, params, "test1", true)
 }

@@ -46,7 +46,7 @@ func TestRouter(t *testing.T) {
 		"/deis/builder",
 		"/deis/domains",
 	}
-	testID := utils.NewUuid()
+	testID := utils.NewID()
 	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testID)
 	if err != nil {
 		t.Fatal(err)
