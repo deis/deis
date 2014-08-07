@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/ThomasRooney/gexpect"
-	gson "github.com/bitly/go-simplejson"
 )
 
 // Deis points to the CLI used to run tests.
@@ -206,7 +205,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 
 // AppsDestroyTest destroys a Deis app and checks that it was successful.
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
-	cmd := GetCommand("apps", "destroy")
+	cmd := "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 	if err := Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
@@ -217,13 +216,6 @@ func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
 	if err := Rmdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-}
-
-// GetCommand fetches the given command by type and name from a JSON resource.
-func GetCommand(cmdtype, cmd string) string {
-	js, _ := gson.NewJson(GetFileBytes("testconfig.json"))
-	command, _ := js.Get("commands").Get(cmdtype).Get(cmd).String()
-	return command
 }
 
 // GetRandomApp returns a known working example app at random for testing.
