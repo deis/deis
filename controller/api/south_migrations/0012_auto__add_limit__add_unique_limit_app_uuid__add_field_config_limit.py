@@ -23,10 +23,11 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'Limit', fields ['app', 'uuid']
         db.create_unique(u'api_limit', ['app_id', 'uuid'])
 
-        # Adding field 'Release.limit'
-        db.add_column(u'api_release', 'limit',
+        # Adding field 'Config.limit'
+        db.add_column(u'api_config', 'limit',
                       self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.Limit'], null=True),
                       keep_default=False)
+
 
     def backwards(self, orm):
         # Removing unique constraint on 'Limit', fields ['app', 'uuid']
@@ -35,8 +36,8 @@ class Migration(SchemaMigration):
         # Deleting model 'Limit'
         db.delete_table(u'api_limit')
 
-        # Deleting field 'Release.limit'
-        db.delete_column(u'api_release', 'limit_id')
+        # Deleting field 'Config.limit'
+        db.delete_column(u'api_config', 'limit_id')
 
 
     models = {
@@ -79,6 +80,7 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'app', u'uuid'),)", 'object_name': 'Config'},
             'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'limit': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Limit']", 'null': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
@@ -145,7 +147,6 @@ class Migration(SchemaMigration):
             'config': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Config']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'image': ('django.db.models.fields.CharField', [], {'default': "u'deis/helloworld'", 'max_length': '256'}),
-            'limit': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.Limit']", 'null': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'summary': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),

@@ -134,9 +134,8 @@ class App(UuidAuditedModel):
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self, values={})
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
-        limit = Limit.objects.create(owner=self.owner, app=self, memory={}, cpu={})
         Release.objects.create(version=1, owner=self.owner, app=self,
-                               config=config, build=build, limit=limit)
+                               config=config, build=build)
 
     def delete(self, *args, **kwargs):
         for c in self.container_set.all():
@@ -303,8 +302,10 @@ class Container(UuidAuditedModel):
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
-        kwargs = {'memory': self.release.limit.memory,
-                  'cpu': self.release.limit.cpu}
+        kwargs = {}
+        if self.release.config.limit is not None:
+            kwargs = {'memory': self.release.config.limit.memory,
+                      'cpu': self.release.config.limit.cpu}
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
@@ -332,8 +333,10 @@ class Container(UuidAuditedModel):
         new_job_id = self._job_id
         image = self.release.image
         c_type = self.type
-        kwargs = {'memory': self.release.limit.memory,
-                  'cpu': self.release.limit.cpu}
+        kwargs = {}
+        if self.release.config.limit is not None:
+            kwargs = {'memory': self.release.config.limit.memory,
+                      'cpu': self.release.config.limit.cpu}
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
@@ -424,6 +427,7 @@ class Config(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     values = JSONField(default='{}', blank=True)
+    limit = models.ForeignKey('Limit', null=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -470,7 +474,6 @@ class Release(UuidAuditedModel):
 
     config = models.ForeignKey('Config')
     build = models.ForeignKey('Build')
-    limit = models.ForeignKey('Limit', null=True)
     # NOTE: image contains combined build + config, ready to run
     image = models.CharField(max_length=256, default=settings.DEFAULT_BUILD)
 
@@ -482,8 +485,7 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, limit=None,
-            summary=None, source_version='latest'):
+    def new(self, user, config=None, build=None, summary=None, source_version='latest'):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
@@ -494,8 +496,6 @@ class Release(UuidAuditedModel):
             config = self.config
         if not build:
             build = self.build
-        if not limit:
-            limit = self.limit
         # always create a release off the latest image
         source_image = '{}:{}'.format(build.image, source_version)
         # construct fully-qualified target image
@@ -505,8 +505,8 @@ class Release(UuidAuditedModel):
         target_image = '{}'.format(self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
-            owner=user, app=self.app, config=config, build=build, limit=limit,
-            version=new_version, image=target_image, summary=summary)
+            owner=user, app=self.app, config=config,
+            build=build, version=new_version, image=target_image, summary=summary)
         # IOW, this image did not come from the builder
         if not build.sha:
             # we assume that the image is not present on our registry,
@@ -547,7 +547,7 @@ class Release(UuidAuditedModel):
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
             old_config = prev_release.config if prev_release else None
-            old_limit = prev_release.limit if prev_release else None
+            old_limit = prev_release.config.limit if prev_release else None
             # if the build changed, log it and who pushed it
             if self.version == 1:
                 self.summary += "{} created initial release".format(self.app.owner)
@@ -574,7 +574,7 @@ class Release(UuidAuditedModel):
                         self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
             # if the limit changes, log the dict diff
-            elif self.limit != old_limit:
+            elif self.config.limit != old_limit:
                 changes = []
                 old_mem = old_limit.memory if old_limit else {}
                 diff = dict_diff(self.limit.memory, old_mem)

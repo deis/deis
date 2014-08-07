@@ -404,19 +404,21 @@ class AppLimitViewSet(BaseAppViewSet):
 
     model = models.Limit
     serializer_class = serializers.LimitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
 
     def get_object(self, *args, **kwargs):
         """Return the Limit associated with the App's latest Release."""
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        user = self.request.user
-        if user == app.owner or user in get_users_with_perms(app):
-            return app.release_set.latest().limit
-        raise PermissionDenied()
+        return app.release_set.latest().config.limit
 
     def post_save(self, limit, created=False):
         if created:
             release = limit.app.release_set.latest()
-            self.release = release.new(self.request.user, limit=limit)
+            config = models.Config.objects.create(owner=release.config.owner,
+                                                  app=release.config.app,
+                                                  values=release.config.values,
+                                                  limit=limit)
+            self.release = release.new(self.request.user, config=config)
             limit.app.deploy(self.release)
 
     def get_success_headers(self, data):
@@ -426,9 +428,6 @@ class AppLimitViewSet(BaseAppViewSet):
 
     def create(self, request, *args, **kwargs):
         request.DATA['app'] = self.kwargs['id']
-        serializer = self.get_serializer(data=request.DATA, files=request.FILES)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # special logic to merge values and remove based on null values
         obj = self.get_object()
@@ -475,7 +474,6 @@ class AppReleaseViewSet(BaseAppViewSet):
             request.user,
             build=prev.build,
             config=prev.config,
-            limit=prev.limit,
             summary=summary,
             source_version='v{}'.format(version))
         app.deploy(new_release)
