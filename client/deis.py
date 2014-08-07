@@ -1445,7 +1445,7 @@ class DeisClient(object):
         """
         Unsets resource limits for an application.
 
-        Usage: deis limits:unset [--memory | --cpu] <type>... [options]
+        Usage: deis limits:unset [options] [--memory | --cpu] <type>...
 
         Arguments:
           <type>
