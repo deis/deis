@@ -32,7 +32,7 @@ func cmdScale(c deisctl.Client, targets []string) error {
 
 func cmdStart(c deisctl.Client, targets []string) error {
 	for _, target := range targets {
-		err := c.Start(target)
+		err := c.Start(target, false)
 		if err != nil {
 			return err
 		}
@@ -61,6 +61,28 @@ func cmdStatus(c deisctl.Client, targets []string) error {
 }
 
 func cmdInstall(c deisctl.Client) error {
+	// data containers
+	dataContainers := []string{
+		"database-data",
+		"registry-data",
+		"logger-data",
+		"builder-data",
+	}
+	fmt.Println("Scheduling data containers...")
+	for _, dataContainer := range dataContainers {
+		c.Create(dataContainer, true)
+		// if err != nil {
+		// 	return err
+		// }
+	}
+	fmt.Println("Activating data containers...")
+	for _, dataContainer := range dataContainers {
+		c.Start(dataContainer, true)
+		// if err != nil {
+		// 	return err
+		// }
+	}
+	// start service containers
 	targets := []string{
 		"database=1",
 		"cache=1",

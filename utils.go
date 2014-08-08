@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+  "math/rand"
+	"time"
 )
 
 func nextUnitNum(units []string) (num int, err error) {
@@ -40,7 +42,8 @@ func countUnits(units []string) (count []int, err error) {
 	for _, unit := range units {
 		_, n, err := splitJobName(unit)
 		if err != nil {
-			return count, err
+			// FIXME: assume data container for now
+			continue
 		}
 		count = append(count, n)
 	}
@@ -78,4 +81,12 @@ func splitComponentTarget(target string) (c string, num int, err error) {
 		return
 	}
 	return
+}
+
+// randomValue returns a random string from a slice of string
+func randomValue(src []string) string {
+	s := rand.NewSource(int64(time.Now().Unix()))
+	r := rand.New(s)
+	idx := r.Intn(len(src))
+	return src[idx]
 }

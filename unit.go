@@ -27,11 +27,29 @@ func NewUnit(component string) (u *unit.Unit, err error) {
 	return
 }
 
+// NewDataUnit takes a component type and returns a Fleet unit
+// that is hard-scheduled to a machine ID
+func NewDataUnit(component string, machineID string) (u *unit.Unit, err error) {
+	template, err := readTemplate(component)
+	if err != nil {
+		return
+	}
+	// TODO: replace template CHANGEME with machineID
+	u, err = unit.NewUnit(string(template))
+	if err != nil {
+		return
+	}
+	return
+}
+
 // formatUnitName returns a properly formatted systemd service name
 // using the given component type and number
 func formatUnitName(component string, num int) (unitName string, err error) {
-	unitName = "deis-" + component + "." + strconv.Itoa(num) + ".service"
-	return
+	if num == 0 {
+		return "deis-" + component + ".service", nil
+	} else {
+		return "deis-" + component + "." + strconv.Itoa(num) + ".service", nil
+	}
 }
 
 // readTemplate returns the contents of a systemd template for the given component
@@ -39,7 +57,7 @@ func readTemplate(component string) (out []byte, err error) {
 	templateName := "deis-" + component + ".service"
 	var templateFile string
 	for _, rootPath := range rootPaths {
-		filename := path.Join(rootPath, component, templateName)
+		filename := path.Join(rootPath, templateName)
 		if _, err := os.Stat(filename); err == nil {
 			templateFile = filename
 			break
