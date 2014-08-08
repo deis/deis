@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"github.com/coreos/go-omaha/omaha"
 	update "github.com/coreos/updatectl/client/update/v1"
-	"github.com/deis/deisctl/lock"
-	"github.com/deis/deisctl/systemd"
 	"github.com/deis/deisctl/utils"
 	"io"
 	"log"
@@ -67,11 +65,11 @@ var (
 		Run:         instanceListAppVersions,
 	}
 
-	cmdInstanceFake = &Command{
-		Name:        "instance fake",
+	cmdInstanceDeis = &Command{
+		Name:        "instance deis",
 		Usage:       "[OPTION]...",
-		Description: "Simulate multiple fake instances.",
-		Run:         instanceFake,
+		Description: "Simulate single deis to update instances.",
+		Run:         instanceDeis,
 	}
 )
 
@@ -87,18 +85,18 @@ func init() {
 	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
 
 	cmdInstanceFake.Flags.BoolVar(&instanceFlags.verbose, "verbose", false, "Print out the request bodies")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.clientsPerApp, "clients-per-app", 20, "Number of fake fents per appid.")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 1, "Minimum time between update checks.")
+	cmdInstanceFake.Flags.IntVar(&instanceFlags.clientsPerApp, "clients-per-app", 1, "Number of fake fents per appid.")
+	cmdInstanceFake.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 5, "Minimum time between update checks.")
 	cmdInstanceFake.Flags.IntVar(&instanceFlags.maxSleep, "max-sleep", 10, "Maximum time between update checks.")
 	cmdInstanceFake.Flags.IntVar(&instanceFlags.errorRate, "errorrate", 1, "Chance of error (0-100)%.")
 	cmdInstanceFake.Flags.StringVar(&instanceFlags.OEM, "oem", "fakeclient", "oem to report")
 	// simulate reboot lock.
 	cmdInstanceFake.Flags.IntVar(&instanceFlags.pingOnly, "ping-only", 0, "halt update and just send ping requests this many times.")
-	cmdInstanceFake.Flags.Var(&instanceFlags.appId, "app-id", "Application ID to update.")
+	cmdInstanceFake.Flags.Var(&instanceFlags.appId, os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
 	instanceFlags.appId.required = true
-	cmdInstanceFake.Flags.Var(&instanceFlags.groupId, "group-id", "Group ID to update.")
+	cmdInstanceFake.Flags.Var(&instanceFlags.groupId, os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
 	instanceFlags.groupId.required = true
-	cmdInstanceFake.Flags.StringVar(&instanceFlags.version, "version", "0.0.0", "Version to report.")
+	cmdInstanceFake.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
 }
 
 func instanceListUpdates(args []string, service *update.Service, out *tabwriter.Writer) int {
@@ -181,8 +179,6 @@ type Client struct {
 	config         *serverConfig
 	errorRate      int
 	pingsRemaining int
-	conn           *systemd.SystemdUnitManager
-	lock           *lock.Lock
 }
 
 func (c *Client) Log(format string, v ...interface{}) {
@@ -198,14 +194,7 @@ func (c *Client) updateservice() {
 	fmt.Println("starting systemd units")
 	files, _ := utils.ListFiles(downloadDir + "*.service")
 	fmt.Println(files)
-	c.conn.Enable(files)
-	for _, file := range files {
-		fmt.Println(file)
-		_, file = filepath.Split(file)
-		fmt.Println(file)
-		c.conn.Start(file)
-	}
-	//c.conn.Start("deis-cache.service")
+
 }
 
 func (c *Client) downloadFromUrl(url, fileName string) (err error) {
@@ -298,20 +287,6 @@ func (c *Client) MakeRequest(otype, result string, updateCheck, isPing bool) (*o
 	return oresp, nil
 }
 
-func (c *Client) RequestLock() {
-	elc, err := lock.NewEtcdLockClient(nil)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error initializing etcd client:", err)
-	}
-
-	var mID string
-	mID = lock.GetMachineID("/")
-	if mID == "" {
-		fmt.Fprintln(os.Stderr, "Cannot read machine-id")
-	}
-	c.lock = lock.New(mID, elc)
-}
-
 func (c *Client) SetVersion(resp *omaha.Response) {
 	// A field can potentially be nil.
 	defer func() {
@@ -363,23 +338,7 @@ func (c *Client) Loop(n, m int) {
 		if uc.Status != "ok" {
 			c.Log("update check status: %s\n", uc.Status)
 		} else {
-			c.RequestLock()
-			err = c.lock.Lock()
-			if err != nil && err != lock.ErrExist {
-				interval = expBackoff(interval)
-				fmt.Printf("Retrying in %v. Error locking: %v\n", interval, err)
-				time.Sleep(interval)
-				continue
-			}
 			c.SetVersion(resp)
-			err = c.lock.Unlock()
-			if err == lock.ErrNotExist {
-				fmt.Println("no lock found")
-			} else if err == nil {
-				fmt.Println("Unlocked existing lock for this machine")
-			} else {
-				fmt.Fprintln(os.Stderr, "Error unlocking:", err)
-			}
 		}
 	}
 }
@@ -393,7 +352,7 @@ func randSleep(n, m int) {
 	time.Sleep(time.Duration(r) * time.Second)
 }
 
-func instanceFake(args []string, service *update.Service, out *tabwriter.Writer) int {
+func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer) int {
 	if instanceFlags.appId.Get() == nil || instanceFlags.groupId.Get() == nil {
 		return ERROR_USAGE
 	}
@@ -402,21 +361,17 @@ func instanceFake(args []string, service *update.Service, out *tabwriter.Writer)
 		server: globalFlags.Server,
 	}
 
-	for i := 0; i < instanceFlags.clientsPerApp; i++ {
-		c := &Client{
-			Id:             fmt.Sprintf("{fake-client-%03d}", i),
-			SessionId:      uuid.New(),
-			Version:        instanceFlags.version,
-			AppId:          instanceFlags.appId.String(),
-			Track:          instanceFlags.groupId.String(),
-			config:         conf,
-			errorRate:      instanceFlags.errorRate,
-			pingsRemaining: instanceFlags.pingOnly,
-		}
-		c.conn, _ = systemd.NewSystemdUnitManager()
-		c.lock = nil
-		go c.Loop(instanceFlags.minSleep, instanceFlags.maxSleep)
+	c := &Client{
+		Id:             fmt.Sprintf("{update-client-"+utils.NewID(), i),
+		SessionId:      uuid.New(),
+		Version:        instanceFlags.version,
+		AppId:          instanceFlags.appId.String(),
+		Track:          instanceFlags.groupId.String(),
+		config:         conf,
+		errorRate:      instanceFlags.errorRate,
+		pingsRemaining: instanceFlags.pingOnly,
 	}
+	go c.Loop(instanceFlags.minSleep, instanceFlags.maxSleep)
 
 	// run forever
 	wait := make(chan bool)
