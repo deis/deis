@@ -63,7 +63,6 @@ class FleetClient(object):
         print 'Creating {name}'.format(**locals())
         env = self.env.copy()
         self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env)
-        self._create_log(name, image, command, LOG_TEMPLATE, env)
 
         if use_announcer:
             self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
@@ -86,14 +85,6 @@ class FleetClient(object):
         return subprocess.check_call('fleetctl.sh submit {name}-announce.service'.format(**l),  # noqa
                                      shell=True, env=env)
 
-    def _create_log(self, name, image, command, template, env):
-        l = locals().copy()
-        l.update(re.match(MATCH, name).groupdict())
-        env.update({'FLEETW_UNIT': name + '-log' + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
-        return subprocess.check_call('fleetctl.sh submit {name}-log.service'.format(**locals()),  # noqa
-                                     shell=True, env=env)
-
     def start(self, name, use_announcer=True):
         """
         Start an idle job
@@ -101,18 +92,12 @@ class FleetClient(object):
         print 'Starting {name}'.format(**locals())
         env = self.env.copy()
         self._start_container(name, env)
-        self._start_log(name, env)
 
         if use_announcer:
             self._start_announcer(name, env)
             self._wait_for_announcer(name, env)
         else:
             self._log_skipped_announcer('start', name)
-
-    def _start_log(self, name, env):
-        subprocess.check_call(
-            'fleetctl.sh start -no-block {name}-log.service'.format(**locals()),
-            shell=True, env=env)
 
     def _start_container(self, name, env):
         return subprocess.check_call(
@@ -150,7 +135,6 @@ class FleetClient(object):
             self._log_skipped_announcer('stop', name)
 
         self._stop_container(name, env)
-        self._stop_log(name, env)
 
     def _stop_container(self, name, env):
         return subprocess.check_call(
@@ -160,11 +144,6 @@ class FleetClient(object):
     def _stop_announcer(self, name, env):
         return subprocess.check_call(
             'fleetctl.sh stop -block-attempts=600 {name}-announce.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _stop_log(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def destroy(self, name, use_announcer=True):
@@ -180,7 +159,6 @@ class FleetClient(object):
             self._log_skipped_announcer('destroy', name)
 
         self._destroy_container(name, env)
-        self._destroy_log(name, env)
 
     def _destroy_container(self, name, env):
         return subprocess.check_call(
@@ -190,11 +168,6 @@ class FleetClient(object):
     def _destroy_announcer(self, name, env):
         return subprocess.check_call(
             'fleetctl.sh destroy {name}-announce.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _destroy_log(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh destroy {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def run(self, name, image, command):
@@ -240,20 +213,6 @@ EnvironmentFile=/etc/environment
 ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
 ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
-TimeoutStartSec=20m
-
-[X-Fleet]
-X-ConditionMachineOf={name}.service
-"""
-
-LOG_TEMPLATE = """
-[Unit]
-Description={name} log
-BindsTo={name}.service
-
-[Service]
-ExecStartPre=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"
 TimeoutStartSec=20m
 
 [X-Fleet]

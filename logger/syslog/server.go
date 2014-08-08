@@ -3,14 +3,15 @@
 package syslog
 
 import (
-	"bytes"
 	"log"
+	"log/syslog"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/jeromer/syslogparser/rfc3164"
 )
 
 type Server struct {
@@ -102,7 +103,7 @@ func (s *Server) receiver(c net.PacketConn) {
 	//q := (chan<- Message)(s.q)
 	buf := make([]byte, 1024)
 	for {
-		n, addr, err := c.ReadFrom(buf)
+		n, _, err := c.ReadFrom(buf)
 		if err != nil {
 			if !s.shutdown {
 				s.l.Fatalln("Read error:", err)
@@ -111,61 +112,20 @@ func (s *Server) receiver(c net.PacketConn) {
 		}
 		pkt := buf[:n]
 
-		m := new(Message)
-		m.Source = addr
-		m.Time = time.Now()
-
-		// Parse priority (if exists)
-		prio := 13 // default priority
-		hasPrio := false
-		if pkt[0] == '<' {
-			n = 1 + bytes.IndexByte(pkt[1:], '>')
-			if n > 1 && n < 5 {
-				p, err := strconv.Atoi(string(pkt[1:n]))
-				if err == nil && p >= 0 {
-					hasPrio = true
-					prio = p
-					pkt = pkt[n+1:]
-				}
-			}
-		}
-		m.Severity = Severity(prio & 0x07)
-		m.Facility = Facility(prio >> 3)
-
-		// Parse header (if exists)
-		if hasPrio && len(pkt) >= 16 && pkt[15] == ' ' {
-			// Get timestamp
-			layout := "Jan _2 15:04:05"
-			ts, err := time.Parse(layout, string(pkt[:15]))
-			if err == nil && !ts.IsZero() {
-				// Get hostname
-				n = 16 + bytes.IndexByte(pkt[16:], ' ')
-				if n != 15 {
-					m.Timestamp = ts
-					m.Hostname = string(pkt[16:n])
-					pkt = pkt[n+1:]
-				}
-			}
-			// TODO: check for version an new format of header as
-			// described in RFC 5424.
+		p := rfc3164.NewParser(pkt)
+		if err := p.Parse(); err != nil {
+			panic(err)
 		}
 
-		// Parse msg part
-		msg := string(bytes.TrimRightFunc(pkt, isNulCrLf))
-		n = strings.IndexFunc(msg, isNotAlnum)
-		if n != -1 {
-			m.Tag = msg[:n]
-			m.Content = msg[n:]
-		} else {
-			m.Content = msg
-		}
-		msg = strings.TrimFunc(msg, unicode.IsSpace)
-		n = strings.IndexFunc(msg, unicode.IsSpace)
-		if n != -1 {
-			m.Tag1 = msg[:n]
-			m.Content1 = strings.TrimLeftFunc(msg[n+1:], unicode.IsSpace)
-		} else {
-			m.Content1 = msg
+		log := p.Dump()
+
+		m := &Message{
+			Time:      time.Now(),
+			Priority:  log["priority"].(syslog.Priority),
+			Timestamp: log["timestamp"].(time.Time),
+			Hostname:  log["hostname"].(string),
+			Tag:       log["tag"].(string),
+			Content:   log["content"].(string),
 		}
 
 		s.passToHandlers(m)

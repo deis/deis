@@ -29,7 +29,7 @@ func TestSetLogger(t *testing.T) {
 
 func TestHandle(t *testing.T) {
 	fh := NewFileHandler("/tmp/test", 1, func(m *Message) bool { return true }, true)
-	handle := fh.Handle(&Message{time.Now(), nil, 0, 0, time.Now(), "localhost", "test", "message", "", ""})
+	handle := fh.Handle(&Message{time.Now(), 0, time.Now(), "localhost", "test", "message"})
 	if handle == nil {
 		t.Errorf("expected a handle, got nil")
 	}

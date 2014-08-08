@@ -45,10 +45,10 @@ func fileExists(path string) (bool, error) {
 }
 
 func getLogFile(m *syslog.Message) (io.Writer, error) {
-	r := regexp.MustCompile(`^.* ([-a-z0-9]+)\[[a-z0-9\.]+\].*`)
+	r := regexp.MustCompile(`^.* ([-a-z0-9]+)(_v[0-9]+\.[a-z0-9\.]+)?\[[a-z0-9\.]+\].*`)
 	match := r.FindStringSubmatch(m.String())
 	if match == nil {
-		return nil, errors.New("Could not find app name in message")
+		return nil, errors.New("Could not find app name in message: " + m.String())
 	}
 	appName := match[1]
 	filePath := path.Join(logRoot, appName+".log")
@@ -84,10 +84,9 @@ func (h *handler) mainLoop() {
 		if m == nil {
 			break
 		}
-		fmt.Println(m)
 		err := writeToDisk(m)
 		if err != nil {
-			panic(err)
+			fmt.Fprint(os.Stderr, err.Error())
 		}
 	}
 	fmt.Println("Exit handler")

@@ -1,6 +1,13 @@
 FROM deis/base:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
+# install go dependencies
+RUN apt-get update && apt-get install -yq \
+    git \
+    bzr \
+    mercurial \
+    --no-install-recommends
+
 # install go runtime
 RUN wget -qO- https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz | tar -C /usr/local -xz
 
@@ -8,6 +15,9 @@ RUN wget -qO- https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz |
 RUN mkdir -p /go
 ENV GOPATH /go
 ENV PATH /usr/local/bin:/usr/bin:/bin:/sbin:/usr/local/go/bin
+
+# install dependencies
+RUN go get github.com/jeromer/syslogparser
 
 # add the current build context to /app
 ADD . /app
