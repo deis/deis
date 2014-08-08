@@ -18,7 +18,7 @@ Prerequisites
 We strongly recommend using `Vagrant`_ with `VirtualBox`_ so you can
 develop inside a set of isolated virtual machines. You will need:
 
- * Vagrant 1.5.1+
+ * Vagrant 1.6+
  * VirtualBox 4.2+
 
 Fork the Repository
@@ -53,12 +53,10 @@ prompted for an administrative password.
     deis: Running: inline script
     $
 
-Set environment variables to have the `docker` and `fleetctl` clients on
-your workstation connect to the VM:
+Set ``FLEETCTL_TUNNEL`` so the ``fleetctl`` client on your workstation can connect to the VM:
 
 .. code-block:: console
 
-    export DOCKER_HOST=tcp://172.17.8.100:4243
     export FLEETCTL_TUNNEL=172.17.8.100
 
 Next, run ``make pull && make build`` to SSH into the VM, pull Deis'
