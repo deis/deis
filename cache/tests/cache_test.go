@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/utils"
 )
 
 func runDeisCacheTest(
 	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-cache-"+testID,
 			"--rm",
 			"-p", servicePort+":6379",
@@ -22,24 +22,24 @@ func runDeisCacheTest(
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/cache:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "started")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "started")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestCache(t *testing.T) {
-	testID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/cache:"+testID)
+	testID := utils.NewID()
+	err := dockercli.BuildImage(t, "../", "deis/cache:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	dockercli.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-cache-%s at port %s\n", testID, servicePort)
 	runDeisCacheTest(t, testID, etcdPort, servicePort)
-	dockercliutils.DeisServiceTest(
+	dockercli.DeisServiceTest(
 		t, "deis-cache-"+testID, servicePort, "tcp")
-	dockercliutils.ClearTestSession(t, testID)
+	dockercli.ClearTestSession(t, testID)
 }

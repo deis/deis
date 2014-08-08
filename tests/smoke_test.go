@@ -12,7 +12,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/deis/deis/tests/integration-utils"
+	"github.com/deis/deis/tests/utils"
 )
 
 // A test case is a relative directory plus a command that is expected to
@@ -98,7 +98,7 @@ sleep 7 && curl -s http://testing.{{.Domain}} | grep -q 'Powered by Deis' || \
 // containers using the current codebase, then registers a user, pushes an
 // example app, and looks for "Powered by Deis" in the HTTP response.
 func TestSmokeExampleApp(t *testing.T) {
-	cfg := itutils.GetGlobalConfig()
+	cfg := utils.GetGlobalConfig()
 
 	for _, tt := range smokeTests {
 		runTest(t, &tt, cfg)
@@ -108,7 +108,7 @@ func TestSmokeExampleApp(t *testing.T) {
 var wd, _ = os.Getwd()
 
 // Runs a test case and logs the results.
-func runTest(t *testing.T, tt *deisTest, cfg *itutils.DeisTestConfig) {
+func runTest(t *testing.T, tt *deisTest, cfg *utils.DeisTestConfig) {
 	// Fill in the command string template from our test configuration.
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(tt.cmd))

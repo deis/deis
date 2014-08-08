@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deis/deis/tests/dockercliutils"
+	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
@@ -13,9 +13,9 @@ import (
 func runDeisRouterTest(
 	t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercliutils.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
-		err = dockercliutils.RunContainer(cli,
+		err = dockercli.RunContainer(cli,
 			"--name", "deis-router-"+testID,
 			"--rm",
 			"-p", servicePort+":80",
@@ -25,7 +25,7 @@ func runDeisRouterTest(
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/router:"+testID)
 	}()
-	dockercliutils.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,13 +46,13 @@ func TestRouter(t *testing.T) {
 		"/deis/builder",
 		"/deis/domains",
 	}
-	testID := utils.NewUuid()
-	err := dockercliutils.BuildImage(t, "../", "deis/router:"+testID)
+	testID := utils.NewID()
+	err := dockercli.BuildImage(t, "../", "deis/router:"+testID)
 	if err != nil {
 		t.Fatal(err)
 	}
 	etcdPort := utils.GetRandomPort()
-	dockercliutils.RunEtcdTest(t, testID, etcdPort)
+	dockercli.RunEtcdTest(t, testID, etcdPort)
 	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
 	etcdutils.Publishvalues(t, handler)
 	servicePort := utils.GetRandomPort()
@@ -60,7 +60,7 @@ func TestRouter(t *testing.T) {
 	runDeisRouterTest(t, testID, etcdPort, servicePort)
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
-	dockercliutils.DeisServiceTest(
+	dockercli.DeisServiceTest(
 		t, "deis-router-"+testID, servicePort, "http")
-	dockercliutils.ClearTestSession(t, testID)
+	dockercli.ClearTestSession(t, testID)
 }

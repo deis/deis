@@ -3,49 +3,16 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
-func releasesSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
-	cfg.AppName = "releasessample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
-	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	}
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
-	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	}
-	cmd = itutils.GetCommand("config", "set")
-	itutils.Execute(t, cmd, cfg, false, "")
-	return cfg
-}
-
-func releasesListTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	cmd := itutils.GetCommand("releases", "list")
-	itutils.CheckList(t, params, cmd, params.Version, notflag)
-}
-
-func releasesInfoTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("releases", "info")
-	itutils.Execute(t, cmd, params, false, "")
-}
-
-func releasesRollbackTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("releases", "rollback")
-	itutils.Execute(t, cmd, params, false, "")
-}
+var (
+	releasesListCmd     = "releases:list --app={{.AppName}}"
+	releasesInfoCmd     = "releases:info {{.Version}} --app={{.AppName}}"
+	releasesRollbackCmd = "releases:rollback {{.Version}} --app={{.AppName}}"
+)
 
 func TestReleases(t *testing.T) {
 	params := releasesSetup(t)
@@ -55,6 +22,36 @@ func TestReleases(t *testing.T) {
 	appsOpenTest(t, params)
 	params.Version = "4"
 	releasesListTest(t, params, false)
-	itutils.AppsDestroyTest(t, params)
+	utils.AppsDestroyTest(t, params)
 
+}
+
+func releasesSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
+	cfg.AppName = "releasessample"
+	utils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, gitCloneCmd, cfg, false, "")
+	if err := utils.Chdir(cfg.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, appsCreateCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, configSetCmd, cfg, false, "")
+	return cfg
+}
+
+func releasesInfoTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, releasesInfoCmd, params, false, "")
+}
+
+func releasesListTest(
+	t *testing.T, params *utils.DeisTestConfig, notflag bool) {
+	utils.CheckList(t, releasesListCmd, params, params.Version, notflag)
+}
+
+func releasesRollbackTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, releasesRollbackCmd, params, false, "")
 }

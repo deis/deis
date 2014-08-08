@@ -1,7 +1,4 @@
-// Package itutils provides utility functions and configuration for integration
-// testing with the Deis open source PaaS.
-
-package itutils
+package utils
 
 import (
 	"bytes"
@@ -17,8 +14,6 @@ import (
 	"time"
 
 	"github.com/ThomasRooney/gexpect"
-	gson "github.com/bitly/go-simplejson"
-	"github.com/deis/deis/tests/utils"
 )
 
 // Deis points to the CLI used to run tests.
@@ -136,7 +131,7 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 // CheckList executes a command and optionally tests whether its output does
 // or does not contain a given string.
 func CheckList(
-	t *testing.T, params interface{}, cmd, contain string, notflag bool) {
+	t *testing.T, cmd string, params interface{}, contain string, notflag bool) {
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
 	if err := tmpl.Execute(&cmdBuf, params); err != nil {
@@ -150,7 +145,7 @@ func CheckList(
 	} else {
 		cmdl = exec.Command("sh", "-c", Deis+cmdString)
 	}
-	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
+	stdout, _, err := RunCommandWithStdoutStderr(cmdl)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -186,22 +181,22 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 
 	switch failFlag {
 	case true:
-		if stdout, stderr, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
+		if stdout, stderr, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
 				fmt.Println("(Error expected...ok)")
 			} else {
-				t.Fatalf("Failed:\n%v", err)
+				t.Fatal(err)
 			}
 		} else {
 			if strings.Contains(stdout.String(), expect) || strings.Contains(stderr.String(), expect) {
 				fmt.Println("(Error expected...ok)" + expect)
 			} else {
-				t.Fatalf("Failed:\n%v", err)
+				t.Fatal(err)
 			}
 		}
 	case false:
-		if _, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
-			t.Fatalf("Failed:\n%v", err)
+		if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
+			t.Fatal(err)
 		} else {
 			fmt.Println("ok")
 		}
@@ -210,24 +205,17 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 
 // AppsDestroyTest destroys a Deis app and checks that it was successful.
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
-	cmd := GetCommand("apps", "destroy")
-	if err := utils.Chdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+	cmd := "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+	if err := Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
 	}
 	Execute(t, cmd, params, false, "")
-	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+	if err := Chdir(".."); err != nil {
+		t.Fatal(err)
 	}
-	if err := utils.Rmdir(params.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+	if err := Rmdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
 	}
-}
-
-// GetCommand fetches the given command by type and name from a JSON resource.
-func GetCommand(cmdtype, cmd string) string {
-	js, _ := gson.NewJson(utils.GetFileBytes("testconfig.json"))
-	command, _ := js.Get("commands").Get(cmdtype).Get(cmd).String()
-	return command
 }
 
 // GetRandomApp returns a known working example app at random for testing.
