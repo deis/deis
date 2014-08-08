@@ -20,7 +20,7 @@ Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io
 ## Install prerequisites
 On your workstation:
 * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install the fleetctl client: Install v0.5.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases).
+* Install the fleetctl client: Install v0.6.2 from the [fleet GitHub page](https://github.com/coreos/fleet/releases/tag/v0.6.2).
 * Install the Docker client if you want to run Docker commands locally (optional)
 
 A single-node cluster launched with Vagrant will consume about 5 GB of RAM on
