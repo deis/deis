@@ -154,6 +154,7 @@ func findCommand(search string, args []string, commands []*Command) (cmd *Comman
 	if len(args) < 1 {
 		return
 	}
+	//fmt.Println(args)
 	if search == "" {
 		search = args[0]
 	} else {
@@ -169,6 +170,7 @@ func findCommand(search string, args []string, commands []*Command) (cmd *Comman
 			}
 			if len(cmd.Subcommands) != 0 {
 				subArgs := cmd.Flags.Args()
+				fmt.Println(subArgs)
 				var subCmd *Command
 				subCmd, name = findCommand(search, subArgs, cmd.Subcommands)
 				if subCmd != nil {
@@ -182,20 +184,9 @@ func findCommand(search string, args []string, commands []*Command) (cmd *Comman
 }
 
 func Update(Args []string) {
-	globalFlagSet.Parse(Args[2:])
+	globalFlagSet.Parse(Args)
 	var args = globalFlagSet.Args()
-	/*
-		if globalFlags.Version {
-			printVersion(out)
-			os.Exit(OK)
-		}
 
-		if globalFlags.Help {
-			printGlobalUsage()
-			os.Exit(OK)
-		}*/
-
-	// no command specified - trigger help
 	if len(args) < 1 {
 		args = append(args, "help")
 	}
@@ -207,15 +198,17 @@ func Update(Args []string) {
 		fmt.Printf("Run '%v help' for usage.\n", cliName)
 		os.Exit(ERROR_NO_COMMAND)
 	}
-
+	fmt.Println(cmd)
 	if cmd.Run == nil {
 		//	printCommandUsage(cmd)
 		os.Exit(ERROR_USAGE)
 	} else {
+		fmt.Println("inside run")
 		exit := handle(cmd.Run)(&cmd.Flags)
 		if exit == ERROR_USAGE {
 			//	printCommandUsage(cmd)
 		}
+		fmt.Println("exiting")
 		os.Exit(exit)
 	}
 }

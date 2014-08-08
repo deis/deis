@@ -44,24 +44,8 @@ var (
 		Usage:   "[OPTION]...",
 		Summary: "Operations to view instances.",
 		Subcommands: []*Command{
-			cmdInstanceListUpdates,
-			cmdInstanceListAppVersions,
 			cmdInstanceDeis,
 		},
-	}
-
-	cmdInstanceListUpdates = &Command{
-		Name:        "instance list-updates",
-		Usage:       "[OPTION]...",
-		Description: "Generates a list of instance updates.",
-		Run:         instanceListUpdates,
-	}
-
-	cmdInstanceListAppVersions = &Command{
-		Name:        "instance list-app-versions",
-		Usage:       "[OPTION]...",
-		Description: "Generates a list of apps/versions with instance count.",
-		Run:         instanceListAppVersions,
 	}
 
 	cmdInstanceDeis = &Command{
@@ -73,16 +57,6 @@ var (
 )
 
 func init() {
-	cmdInstanceListUpdates.Flags.StringVar(&instanceFlags.groupId, "group-id", "Group id", "Group id")
-	cmdInstanceListUpdates.Flags.StringVar(&instanceFlags.appId, "app-id", "App id", "App id")
-	cmdInstanceListUpdates.Flags.Int64Var(&instanceFlags.start, "start", 0, "Start date filter")
-	cmdInstanceListUpdates.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
-
-	cmdInstanceListAppVersions.Flags.StringVar(&instanceFlags.groupId, "group-id", "Group id", "Group id")
-	cmdInstanceListAppVersions.Flags.StringVar(&instanceFlags.appId, "app-id", "App id", "App id")
-	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.start, "start", 0, "Start date filter")
-	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
-
 	cmdInstanceDeis.Flags.BoolVar(&instanceFlags.verbose, "verbose", false, "Print out the request bodies")
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.clientsPerApp, "clients-per-app", 1, "Number of fake fents per appid.")
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 5, "Minimum time between update checks.")
@@ -96,63 +70,6 @@ func init() {
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.groupId, "group-id", os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
 	//instanceFlags.groupId.required = true
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
-}
-
-func instanceListUpdates(args []string, service *update.Service, out *tabwriter.Writer) int {
-	call := service.Clientupdate.List()
-	call.DateStart(instanceFlags.start)
-	call.DateEnd(instanceFlags.end)
-	if instanceFlags.groupId != "" {
-		call.GroupId(instanceFlags.groupId)
-	}
-	if instanceFlags.groupId != "" {
-		call.AppId(instanceFlags.appId)
-	}
-	list, err := call.Do()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintln(out, "AppID\tClientID\tVersion\tLastSeen\tGroup\tStatus\tOEM")
-	for _, cl := range list.Items {
-		fmt.Fprintf(out, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", cl.AppId,
-			cl.ClientId, cl.Version, cl.LastSeen, cl.GroupId,
-			cl.Status, cl.Oem)
-	}
-	out.Flush()
-	return OK
-}
-
-func instanceListAppVersions(args []string, service *update.Service, out *tabwriter.Writer) int {
-	call := service.Appversion.List()
-
-	if instanceFlags.groupId != "" {
-		call.GroupId(instanceFlags.groupId)
-	}
-	if instanceFlags.appId != "" {
-		call.AppId(instanceFlags.appId)
-	}
-	if instanceFlags.start != 0 {
-		call.DateStart(instanceFlags.start)
-	}
-
-	if instanceFlags.end != 0 {
-		call.DateEnd(instanceFlags.end)
-	}
-
-	list, err := call.Do()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Fprintln(out, "AppID\tGroupID\tVersion\tClients")
-	for _, cl := range list.Items {
-		fmt.Fprintf(out, "%s\t%s\t%s\t%d\n", cl.AppId, cl.GroupId, cl.Version, cl.Count)
-	}
-	out.Flush()
-	return OK
 }
 
 //+ downloadDir + "deis.tar.gz"
