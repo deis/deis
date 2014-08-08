@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/deis/deis/deisctl"
+	"github.com/deis/deisctl"
 	docopt "github.com/docopt/docopt-go"
 )
 
