@@ -2,7 +2,7 @@
 
 set -e
 
-COREOS_VERSION=386.1.0
+COREOS_VERSION=402.2.0
 BASE_URL="http://storage.core-os.net/coreos/amd64-usr/$COREOS_VERSION"
 
 KERNEL="/boot/coreos/vmlinuz"

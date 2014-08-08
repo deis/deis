@@ -4,28 +4,28 @@
   "Mappings" : {
       "RegionMap" : {
           "ap-northeast-1" : {
-              "AMI" : "ami-fbf3a1fa"
+              "AMI" : "ami-47cb9246"
           },
           "sa-east-1" : {
-              "AMI" : "ami-edab02f0"
+              "AMI" : "ami-e1f65efc"
           },
           "ap-southeast-2" : {
-              "AMI" : "ami-35d1b60f"
+              "AMI" : "ami-3ba8ce01"
           },
           "ap-southeast-1" : {
-              "AMI" : "ami-2a075f78"
+              "AMI" : "ami-88e4bcda"
           },
           "us-east-1" : {
-              "AMI" : "ami-88e52ce0"
+              "AMI" : "ami-b85786d0"
           },
           "us-west-2" : {
-              "AMI" : "ami-8b532bbb"
+              "AMI" : "ami-451f6575"
           },
           "us-west-1" : {
-              "AMI" : "ami-13eeed56"
+              "AMI" : "ami-45151800"
           },
           "eu-west-1" : {
-              "AMI" : "ami-7de4350a"
+              "AMI" : "ami-72865b05"
           }
       }
   },
@@ -182,7 +182,7 @@
         "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] } },
         "BlockDeviceMappings" : [
           {
-            "DeviceName" : "/dev/xvda",
+            "DeviceName" : "/dev/sda",
             "Ebs" : { "VolumeSize" : "100" }
           }
         ]
