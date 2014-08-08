@@ -25,8 +25,8 @@ const (
 
 var (
 	instanceFlags struct {
-		groupId       StringFlag
-		appId         StringFlag
+		groupId       string
+		appId         string
 		start         int64
 		end           int64
 		verbose       bool
@@ -73,13 +73,13 @@ var (
 )
 
 func init() {
-	cmdInstanceListUpdates.Flags.Var(&instanceFlags.groupId, "group-id", "Group id")
-	cmdInstanceListUpdates.Flags.Var(&instanceFlags.appId, "app-id", "App id")
+	cmdInstanceListUpdates.Flags.StringVar(&instanceFlags.groupId, "group-id", "Group id", "Group id")
+	cmdInstanceListUpdates.Flags.StringVar(&instanceFlags.appId, "app-id", "App id", "App id")
 	cmdInstanceListUpdates.Flags.Int64Var(&instanceFlags.start, "start", 0, "Start date filter")
 	cmdInstanceListUpdates.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
 
-	cmdInstanceListAppVersions.Flags.Var(&instanceFlags.groupId, "group-id", "Group id")
-	cmdInstanceListAppVersions.Flags.Var(&instanceFlags.appId, "app-id", "App id")
+	cmdInstanceListAppVersions.Flags.StringVar(&instanceFlags.groupId, "group-id", "Group id", "Group id")
+	cmdInstanceListAppVersions.Flags.StringVar(&instanceFlags.appId, "app-id", "App id", "App id")
 	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.start, "start", 0, "Start date filter")
 	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
 
@@ -88,13 +88,13 @@ func init() {
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 5, "Minimum time between update checks.")
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.maxSleep, "max-sleep", 10, "Maximum time between update checks.")
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.errorRate, "errorrate", 1, "Chance of error (0-100)%.")
-	cmdInstanceDeis.Flags.StringVar(&instanceFlags.OEM, "oem", "fakeclient", "oem to report")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.OEM, "oem", "deisclient", "oem to report")
 	// simulate reboot lock.
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.pingOnly, "ping-only", 0, "halt update and just send ping requests this many times.")
-	cmdInstanceDeis.Flags.Var(&instanceFlags.appId, os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
-	instanceFlags.appId.required = true
-	cmdInstanceDeis.Flags.Var(&instanceFlags.groupId, os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
-	instanceFlags.groupId.required = true
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.appId, "app-id", os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
+	//instanceFlags.appId.required = true
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.groupId, "group-id", os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
+	//instanceFlags.groupId.required = true
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
 }
 
@@ -102,11 +102,11 @@ func instanceListUpdates(args []string, service *update.Service, out *tabwriter.
 	call := service.Clientupdate.List()
 	call.DateStart(instanceFlags.start)
 	call.DateEnd(instanceFlags.end)
-	if instanceFlags.groupId.Get() != nil {
-		call.GroupId(instanceFlags.groupId.String())
+	if instanceFlags.groupId != "" {
+		call.GroupId(instanceFlags.groupId)
 	}
-	if instanceFlags.groupId.Get() != nil {
-		call.AppId(instanceFlags.appId.String())
+	if instanceFlags.groupId != "" {
+		call.AppId(instanceFlags.appId)
 	}
 	list, err := call.Do()
 
@@ -127,11 +127,11 @@ func instanceListUpdates(args []string, service *update.Service, out *tabwriter.
 func instanceListAppVersions(args []string, service *update.Service, out *tabwriter.Writer) int {
 	call := service.Appversion.List()
 
-	if instanceFlags.groupId.Get() != nil {
-		call.GroupId(instanceFlags.groupId.String())
+	if instanceFlags.groupId != "" {
+		call.GroupId(instanceFlags.groupId)
 	}
-	if instanceFlags.appId.Get() != nil {
-		call.AppId(instanceFlags.appId.String())
+	if instanceFlags.appId != "" {
+		call.AppId(instanceFlags.appId)
 	}
 	if instanceFlags.start != 0 {
 		call.DateStart(instanceFlags.start)
@@ -156,14 +156,6 @@ func instanceListAppVersions(args []string, service *update.Service, out *tabwri
 }
 
 //+ downloadDir + "deis.tar.gz"
-
-func expBackoff(interval time.Duration) time.Duration {
-	interval = interval * 2
-	if interval > maxInterval {
-		interval = maxInterval
-	}
-	return interval
-}
 
 type serverConfig struct {
 	server string
@@ -325,7 +317,6 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 
 // Sleep between n and m seconds
 func (c *Client) Loop(n, m int) {
-	interval := initialInterval
 	for {
 		randSleep(n, m)
 		resp, err := c.MakeRequest("3", "2", true, false)
@@ -352,7 +343,7 @@ func randSleep(n, m int) {
 }
 
 func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer) int {
-	if instanceFlags.appId.Get() == nil || instanceFlags.groupId.Get() == nil {
+	if instanceFlags.appId == "" || instanceFlags.groupId == "" {
 		return ERROR_USAGE
 	}
 
@@ -361,11 +352,11 @@ func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer)
 	}
 
 	c := &Client{
-		Id:             fmt.Sprintf("{update-client-"+utils.NewUuid(), i),
+		Id:             fmt.Sprintf("{update-client-" + utils.NewUuid()),
 		SessionId:      uuid.New(),
 		Version:        instanceFlags.version,
-		AppId:          instanceFlags.appId.String(),
-		Track:          instanceFlags.groupId.String(),
+		AppId:          instanceFlags.appId,
+		Track:          instanceFlags.groupId,
 		config:         conf,
 		errorRate:      instanceFlags.errorRate,
 		pingsRemaining: instanceFlags.pingOnly,
