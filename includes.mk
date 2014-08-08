@@ -46,6 +46,6 @@ ROUTER_UNITS = $(shell seq -f "deis-router@%g.service" -s " " $(DEIS_FIRST_ROUTE
 check-fleet:
 	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
 	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(subst :, -p ,$(FLEETCTL_TUNNEL)) fleetctl -version`; \
-	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
+	if [[ "$$REMOTE_VERSION" =~  "$$LOCAL_VERSION" ]]; then \
 		echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Install the appropriate version from https://github.com/coreos/fleet/releases"; exit 1; \
 	fi
