@@ -47,7 +47,7 @@ var (
 		Subcommands: []*Command{
 			cmdInstanceListUpdates,
 			cmdInstanceListAppVersions,
-			cmdInstanceFake,
+			cmdInstanceDeis,
 		},
 	}
 
@@ -84,19 +84,19 @@ func init() {
 	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.start, "start", 0, "Start date filter")
 	cmdInstanceListAppVersions.Flags.Int64Var(&instanceFlags.end, "end", 0, "End date filter")
 
-	cmdInstanceFake.Flags.BoolVar(&instanceFlags.verbose, "verbose", false, "Print out the request bodies")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.clientsPerApp, "clients-per-app", 1, "Number of fake fents per appid.")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 5, "Minimum time between update checks.")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.maxSleep, "max-sleep", 10, "Maximum time between update checks.")
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.errorRate, "errorrate", 1, "Chance of error (0-100)%.")
-	cmdInstanceFake.Flags.StringVar(&instanceFlags.OEM, "oem", "fakeclient", "oem to report")
+	cmdInstanceDeis.Flags.BoolVar(&instanceFlags.verbose, "verbose", false, "Print out the request bodies")
+	cmdInstanceDeis.Flags.IntVar(&instanceFlags.clientsPerApp, "clients-per-app", 1, "Number of fake fents per appid.")
+	cmdInstanceDeis.Flags.IntVar(&instanceFlags.minSleep, "min-sleep", 5, "Minimum time between update checks.")
+	cmdInstanceDeis.Flags.IntVar(&instanceFlags.maxSleep, "max-sleep", 10, "Maximum time between update checks.")
+	cmdInstanceDeis.Flags.IntVar(&instanceFlags.errorRate, "errorrate", 1, "Chance of error (0-100)%.")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.OEM, "oem", "fakeclient", "oem to report")
 	// simulate reboot lock.
-	cmdInstanceFake.Flags.IntVar(&instanceFlags.pingOnly, "ping-only", 0, "halt update and just send ping requests this many times.")
-	cmdInstanceFake.Flags.Var(&instanceFlags.appId, os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
+	cmdInstanceDeis.Flags.IntVar(&instanceFlags.pingOnly, "ping-only", 0, "halt update and just send ping requests this many times.")
+	cmdInstanceDeis.Flags.Var(&instanceFlags.appId, os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
 	instanceFlags.appId.required = true
-	cmdInstanceFake.Flags.Var(&instanceFlags.groupId, os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
+	cmdInstanceDeis.Flags.Var(&instanceFlags.groupId, os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
 	instanceFlags.groupId.required = true
-	cmdInstanceFake.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
 }
 
 func instanceListUpdates(args []string, service *update.Service, out *tabwriter.Writer) int {
