@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/fleet/client"
 	"github.com/coreos/fleet/job"
 )
 
@@ -38,12 +37,12 @@ func testUnitStateActive(j *job.Job) bool {
 // than zero. Returned is an error channel used to communicate when
 // timeouts occur. The returned error channel will be closed after all
 // polling operation is complete.
-func waitForJobStates(cAPI client.API, jobs []string, test testJob, maxAttempts int, out io.Writer) chan error {
+func waitForJobStates(jobs []string, test testJob, maxAttempts int, out io.Writer) chan error {
 	errchan := make(chan error)
 	var wg sync.WaitGroup
 	for _, name := range jobs {
 		wg.Add(1)
-		go checkJobState(cAPI, name, test, maxAttempts, out, &wg, errchan)
+		go checkJobState(name, test, maxAttempts, out, &wg, errchan)
 	}
 	go func() {
 		wg.Wait()
@@ -52,19 +51,19 @@ func waitForJobStates(cAPI client.API, jobs []string, test testJob, maxAttempts 
 	return errchan
 }
 
-func checkJobState(cAPI client.API, jobName string, test testJob, maxAttempts int, out io.Writer, wg *sync.WaitGroup, errchan chan error) {
+func checkJobState(jobName string, test testJob, maxAttempts int, out io.Writer, wg *sync.WaitGroup, errchan chan error) {
 	defer wg.Done()
 	sleep := 100 * time.Millisecond
 	if maxAttempts < 1 {
 		for {
-			if assertJobState(cAPI, jobName, test, out) {
+			if assertJobState(jobName, test, out) {
 				return
 			}
 			time.Sleep(sleep)
 		}
 	} else {
 		for attempt := 0; attempt < maxAttempts; attempt++ {
-			if assertJobState(cAPI, jobName, test, out) {
+			if assertJobState(jobName, test, out) {
 				return
 			}
 			time.Sleep(sleep)
@@ -73,7 +72,7 @@ func checkJobState(cAPI client.API, jobName string, test testJob, maxAttempts in
 	}
 }
 
-func assertJobState(cAPI client.API, name string, test testJob, out io.Writer) (ret bool) {
+func assertJobState(name string, test testJob, out io.Writer) (ret bool) {
 	j, err := cAPI.Job(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error retrieving Job(%s) from Registry: %v", name, err)
@@ -94,21 +93,12 @@ func assertJobState(cAPI client.API, name string, test testJob, out io.Writer) (
 		msg = fmt.Sprintf("\033[0;33m%v:\033[0m %v", name, *(j.State))
 	}
 
-	tgt, err := cAPI.JobTarget(name)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error retrieving target information for Job(%s) from Registry: %v", name, err)
-		return
-	}
-	if tgt == "" {
-		return
-	}
-
 	machines, err := cAPI.Machines()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed retrieving list of Machines from Registry: %v", err)
 	}
 	for _, ms := range machines {
-		if ms.ID != tgt {
+		if ms.ID != j.TargetMachineID {
 			continue
 		}
 		msg = fmt.Sprintf("%s on %s", msg, machineFullLegend(ms, false))

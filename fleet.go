@@ -6,8 +6,10 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/coreos/fleet/client"
+	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/registry"
 	"github.com/coreos/fleet/ssh"
 )
@@ -24,6 +26,12 @@ var Flags = struct {
 	StrictHostKeyChecking bool
 	Tunnel                string
 }{}
+
+// global API client used by commands
+var	cAPI client.API
+// used to cache MachineStates
+var machineStates map[string]*machine.MachineState
+var requestTimeout time.Duration = time.Duration(10) * time.Second
 
 func getTunnelFlag() string {
 	tun := Flags.Tunnel
@@ -67,9 +75,8 @@ func getRegistryClient() (client.API, error) {
 			InsecureSkipVerify: true,
 		},
 	}
-	return client.NewRegistryClient(&trans, Flags.Endpoint, Flags.EtcdKeyPrefix)
+	return client.NewRegistryClient(&trans, Flags.Endpoint, Flags.EtcdKeyPrefix, requestTimeout)
 }
-
 
 // randomMachineID return a random machineID from the Fleet cluster
 func randomMachineID(c *FleetClient) (machineID string, err error) {

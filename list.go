@@ -30,6 +30,9 @@ var (
 			}
 			return "-"
 		},
+		"dstate": func(j *job.Job, full bool) string {
+			return string(j.TargetState)
+		},
 		"load": func(j *job.Job, full bool) string {
 			us := j.UnitState
 			if us == nil {
@@ -60,16 +63,34 @@ var (
 		},
 		"machine": func(j *job.Job, full bool) string {
 			us := j.UnitState
-			if us == nil || us.MachineState == nil {
+			if us == nil || us.MachineID == "" {
 				return "-"
 			}
-			return machineFullLegend(*us.MachineState, full)
+			ms := cachedMachineState(us.MachineID)
+			if ms == nil {
+				ms = &machine.MachineState{ID: us.MachineID}
+			}
+			return machineFullLegend(*ms, full)
+		},
+		"tmachine": func(j *job.Job, full bool) string {
+			if j.TargetMachineID == "" {
+				return "-"
+			}
+			ms := cachedMachineState(j.TargetMachineID)
+			if ms == nil {
+				ms = &machine.MachineState{ID: j.TargetMachineID}
+			}
+			return machineFullLegend(*ms, full)
 		},
 		"hash": func(j *job.Job, full bool) string {
-			if !full {
-				return j.UnitHash.Short()
+			us := j.UnitState
+			if us == nil || us.UnitHash == "" {
+				return "-"
 			}
-			return j.UnitHash.String()
+			if !full {
+				return us.UnitHash[:7]
+			}
+			return us.UnitHash
 		},
 	}
 )

@@ -34,6 +34,8 @@ func NewClient() (*FleetClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	// set global client
+	cAPI = client
 	return &FleetClient{Fleet: client}, nil
 }
 
@@ -63,7 +65,7 @@ func (c *FleetClient) Create(component string, data bool) (err error) {
 	if err != nil {
 		return err
 	}
-	errchan := waitForJobStates(c.Fleet, []string{unitName}, testJobStateLoaded, 0, os.Stdout)
+	errchan := waitForJobStates([]string{unitName}, testJobStateLoaded, 0, os.Stdout)
 	for err := range errchan {
 		return fmt.Errorf("error waiting for job %s: %v", unitName, err)
 	}
@@ -169,7 +171,7 @@ func (c *FleetClient) Start(target string, data bool) (err error) {
 		}
 	}
 	if data == false {
-		errchan := waitForJobStates(c.Fleet, units, testUnitStateActive, 0, os.Stdout)
+		errchan := waitForJobStates(units, testUnitStateActive, 0, os.Stdout)
 		for err := range errchan {
 			return fmt.Errorf("error waiting for active: %v", err)
 		}
@@ -190,7 +192,7 @@ func (c *FleetClient) Stop(target string) (err error) {
 			return err
 		}
 	}
-	errchan := waitForJobStates(c.Fleet, units, testJobStateInactive, 0, os.Stdout)
+	errchan := waitForJobStates(units, testJobStateInactive, 0, os.Stdout)
 	for err := range errchan {
 		return fmt.Errorf("error waiting for inactive: %v", err)
 	}

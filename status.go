@@ -22,5 +22,5 @@ func printUnitStatus(cAPI client.API, jobName string) int {
 		return 1
 	}
 	cmd := fmt.Sprintf("systemctl status -l %s", jobName)
-	return runCommand(cmd, j.UnitState.MachineState)
+	return runCommand(cmd, j.UnitState.MachineID)
 }
