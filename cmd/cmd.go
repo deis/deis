@@ -57,7 +57,34 @@ func Status(c client.Client, targets []string) error {
 	return nil
 }
 
-func Install(c client.Client) error {
+func Install(c client.Client, targets []string) error {
+	// if targets, install all services
+	if len(targets) == 0 {
+		err := installDataContainers(c)
+		if err != nil {
+			return err
+		}
+		err = installDefaultServices(c)
+		if err != nil {
+			return err
+		}
+	} else {
+		// otherwise create and start the specific targets
+		for _, target := range targets {
+			err := c.Create(target, false)
+			if err != nil {
+				return err
+			}
+			err = c.Start(target, false)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func installDataContainers(c client.Client) error {
 	// data containers
 	dataContainers := []string{
 		"database-data",
@@ -79,6 +106,10 @@ func Install(c client.Client) error {
 		// 	return err
 		// }
 	}
+	return nil
+}
+
+func installDefaultServices(c client.Client) error {
 	// start service containers
 	targets := []string{
 		"database=1",
@@ -108,10 +139,30 @@ func Install(c client.Client) error {
 		return err
 	}
 	fmt.Println("Done.")
-	return err
+	return nil
 }
 
-func Uninstall(c client.Client) error {
+func Uninstall(c client.Client, targets []string) error {
+	// if targets, uninstall all services
+	if len(targets) == 0 {
+		err := uninstallAllServices(c)
+		if err != nil {
+			return err
+		}
+
+	} else {
+		// uninstall the specific target
+		for _, target := range targets {
+			err := c.Destroy(target)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func uninstallAllServices(c client.Client) error {
 	targets := []string{
 		"database=0",
 		"cache=0",

@@ -83,9 +83,9 @@ Options:
 	case "status":
 		err = cmd.Status(c, targets)
 	case "install":
-		err = cmd.Install(c)
+		err = cmd.Install(c, targets)
 	case "uninstall":
-		err = cmd.Uninstall(c)
+		err = cmd.Uninstall(c, targets)
 	case "update":
 		updatectl.Update(os.Args)
 	default:
