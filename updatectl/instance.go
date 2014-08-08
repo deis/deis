@@ -13,7 +13,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
 	"text/tabwriter"
 	"time"
 )
@@ -362,7 +361,7 @@ func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer)
 	}
 
 	c := &Client{
-		Id:             fmt.Sprintf("{update-client-"+utils.NewID(), i),
+		Id:             fmt.Sprintf("{update-client-"+utils.NewUuid(), i),
 		SessionId:      uuid.New(),
 		Version:        instanceFlags.version,
 		AppId:          instanceFlags.appId.String(),
