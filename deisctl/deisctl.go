@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/deis/deisctl"
+	"github.com/deis/deisctl/updatectl"
 	docopt "github.com/docopt/docopt-go"
 )
 
@@ -194,6 +195,8 @@ Options:
 		err = cmdInstall(c)
 	case "uninstall":
 		err = cmdUninstall(c)
+	case "update":
+		updatectl.Update(os.Args)
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)
