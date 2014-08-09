@@ -3,13 +3,24 @@ package client
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/coreos/fleet/job"
 )
 
 // Start launches target units and blocks until active
 func (c *FleetClient) Start(target string, data bool) (err error) {
-	units, err := c.getUnits(target)
+
+	// see if we were provided a specific target
+	r := regexp.MustCompile(`([a-z-]+)\.([\d]+)`)
+	match := r.FindStringSubmatch(target)
+	var component string
+	if len(match) == 3 {
+		component = match[1]
+	} else {
+		component = target
+	}
+	units, err := c.getUnits(component)
 	if err != nil {
 		return
 	}

@@ -3,6 +3,8 @@ package client
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/unit"
@@ -42,15 +44,34 @@ func (c *FleetClient) Create(component string, data bool) (err error) {
 }
 
 // Create normal service unit
-func (c *FleetClient) createServiceUnit(component string) (unitName string, unitPtr *unit.Unit, err error) {
-	num, err := c.nextUnit(component)
-	if err != nil {
-		return
+func (c *FleetClient) createServiceUnit(target string) (unitName string, unitPtr *unit.Unit, err error) {
+
+	// see if we were provided a specific target
+	r := regexp.MustCompile(`([a-z-]+)\.([\d]+)`)
+	match := r.FindStringSubmatch(target)
+	var (
+		num int
+		component string
+	)
+	if len(match) == 3 {
+		component = match[1]
+		num, err = strconv.Atoi(match[2])
+		if err != nil {
+			return "", nil, err
+		}
+		unitName, err = formatUnitName(component, num)
+	} else {
+		component = target
+		num, err := c.nextUnit(component)
+		if err != nil {
+			return "", nil, err
+		}
+		unitName, err = formatUnitName(component, num)
+		if err != nil {
+			return "", nil, err
+		}
 	}
-	unitName, err = formatUnitName(component, num)
-	if err != nil {
-		return
-	}
+
 	unitPtr, err = NewUnit(component)
 	if err != nil {
 		return
