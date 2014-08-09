@@ -7,7 +7,6 @@ import (
 
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
-	"github.com/deis/deisctl/updatectl"
 	docopt "github.com/docopt/docopt-go"
 )
 
@@ -87,7 +86,7 @@ Options:
 	case "uninstall":
 		err = cmd.Uninstall(c, targets)
 	case "update":
-		updatectl.Update(os.Args)
+		cmd.Update(os.Args)
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)

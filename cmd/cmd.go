@@ -2,15 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/deis/deis/tests/dockercli"
+	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/updatectl"
 	"regexp"
 	"strconv"
-
-	"github.com/deis/deisctl/client"
+	"strings"
 )
 
 func List(c client.Client) error {
 	err := c.List()
 	return err
+}
+
+func PullImage(service string) error {
+	Dockercli, _, _ := dockercli.GetNewClient()
+	fmt.Println("pulling image :" + strings.Split(service, ".")[0])
+	err := cli.CmdPull(strings.Split(service, ".")[0])
+	if err != nil {
+		return err
+	}
 }
 
 func Scale(c client.Client, targets []string) error {
@@ -82,6 +93,31 @@ func Install(c client.Client, targets []string) error {
 		}
 	}
 	return nil
+}
+
+func Update(args []string) {
+
+	if len(args) != 4 {
+		fmt.Println("unsufficient args")
+		fmt.Println("usage:  updatectl update instance deis")
+		return
+	}
+	if args[2] != "instance" && args[3] != "deis" {
+		fmt.Println("wrong args ")
+		fmt.Println("usage:  updatectl update instance deis")
+		return
+	}
+	Args := []string{
+		"instance",
+		"deis",
+		"--clients-per-app=1",
+		"--min-sleep=5",
+		"--max-sleep=10",
+		"--app-id=329cd607-06fe-4bde-8ecd-613b58c6945f",
+		"--group-id=bee2027e-29a4-4135-bffb-b2864234dd15",
+		"--version=1.1.0",
+	}
+	updatectl.Update(Args)
 }
 
 func installDataContainers(c client.Client) error {

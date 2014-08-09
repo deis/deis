@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/coreos/go-omaha/omaha"
 	update "github.com/coreos/updatectl/client/update/v1"
+	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/cmd"
 	"github.com/deis/deisctl/utils"
 	"io"
 	"log"
@@ -102,7 +104,37 @@ func (c *Client) updateservice() {
 	fmt.Println("starting systemd units")
 	files, _ := utils.ListFiles(downloadDir + "*.service")
 	fmt.Println(files)
+	deis, err := client.NewClient()
+	localServices := deis.GetLocaljobs()
+	Services := utils.GetServices()
+	if len(localService) == 0 {
+		fmt.Println("no local services")
+		return
+	}
+	for _, service := range localServices {
+		cmd.Unisntall(deis, strings.Split(strings.Split(service, "-")[1], ".")[0])
+		cmd.Install(deis, strings.Split(strings.Split(service, "-")[1], ".")[0])
+	}
+	var count int
+	for _, service := range Services {
+		count = 0
+		for _, lserv := range localServices {
+			if strings.Contains(lserv, strings.Split(strings.Split(service, "-")[1], ".")[0]) {
+				count = count + 1
+			}
+		}
+		if count == 0 {
+			go func() {
+				cmd.PullImage(service)
+			}()
+		}
+	}
 
+	// pre-install hook (download all new docker images)
+	// use systemd to list local deis-* units, ignore -data units
+	// cmd.Unistall([]string{"router.3"})
+	// cmd.Install([]string{"router.3"})
+	// post-install hook (make sure upgrade was successful)
 }
 
 func (c *Client) downloadFromUrl(url, fileName string) (err error) {

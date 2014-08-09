@@ -87,26 +87,7 @@ func init() {
 	globalFlagSet.StringVar(&globalFlags.Key, "key", os.Getenv("UPDATECTL_KEY"), "API Key")
 
 	commands = []*Command{
-		/*// admin.go
-		cmdAdminUser,
-		// app.go
-		cmdApp,
-		// channel.go
-		cmdChannel,
-		// database.go
-		cmdDatabase,
-		// group.go
-		cmdGroup,
-		// help.go
-		cmdHelp,
-		// instance.go*/
 		cmdInstance,
-		// pkg.go
-		/*cmdPackage,
-		// watch.go
-		cmdWatch,
-		// upstream.go
-		cmdUpstream,*/
 	}
 }
 
@@ -154,7 +135,6 @@ func findCommand(search string, args []string, commands []*Command) (cmd *Comman
 	if len(args) < 1 {
 		return
 	}
-	//fmt.Println(args)
 	if search == "" {
 		search = args[0]
 	} else {
@@ -170,7 +150,6 @@ func findCommand(search string, args []string, commands []*Command) (cmd *Comman
 			}
 			if len(cmd.Subcommands) != 0 {
 				subArgs := cmd.Flags.Args()
-				fmt.Println(subArgs)
 				var subCmd *Command
 				subCmd, name = findCommand(search, subArgs, cmd.Subcommands)
 				if subCmd != nil {
@@ -198,17 +177,14 @@ func Update(Args []string) {
 		fmt.Printf("Run '%v help' for usage.\n", cliName)
 		os.Exit(ERROR_NO_COMMAND)
 	}
-	fmt.Println(cmd)
 	if cmd.Run == nil {
 		//	printCommandUsage(cmd)
 		os.Exit(ERROR_USAGE)
 	} else {
-		fmt.Println("inside run")
 		exit := handle(cmd.Run)(&cmd.Flags)
 		if exit == ERROR_USAGE {
 			//	printCommandUsage(cmd)
 		}
-		fmt.Println("exiting")
 		os.Exit(exit)
 	}
 }

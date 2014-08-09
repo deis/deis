@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -24,6 +25,32 @@ func NewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
+}
+
+func GetServices() []string {
+	service := []string{
+		"deis-builder.service",
+		"deis-builder-data.service",
+		"deis-cache.service",
+		"deis-controller.service",
+		"deis-database.service",
+		"deis-database-data.service",
+		"deis-logger.service",
+		"deis-logger-data.service",
+		"deis-registry.service",
+		"deis-registry-data.service",
+		"deis-router.service",
+	}
+	return service
+}
+
+func GetMachineID(root string) string {
+	fullPath := filepath.Join(root, "/etc/machine-id")
+	id, err := ioutil.ReadFile(fullPath)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(id))
 }
 
 // GetFileBytes returns a byte array of the contents of a file.
