@@ -114,8 +114,8 @@ func (c *FleetClient) List() (err error) {
 	}
 	for _, j := range jj {
 		if strings.HasPrefix(j.Name, "deis-") {
-			j.
-				sortable = append(sortable, j.Name)
+			jobs[j.Name] = j
+			sortable = append(sortable, j.Name)
 		}
 	}
 	sortable.Sort()
@@ -124,16 +124,13 @@ func (c *FleetClient) List() (err error) {
 }
 
 func (c *FleetClient) GetLocaljobs() sort.StringSlice {
-	cols := strings.Split(defaultListUnitFields, ",")
-	var jobs map[string]job.Job
 	var sortable sort.StringSlice
-	jobs = make(map[string]job.Job, 0)
 	jj, err := c.Fleet.Jobs()
 	if err != nil {
-		return err
+		return sortable
 	}
 	for _, j := range jj {
-		if strings.HasPrefix(j.Name, "deis-") && j.UnitState.MachineID == utils.GetMachineID() {
+		if strings.HasPrefix(j.Name, "deis-") && j.UnitState.MachineID == utils.GetMachineID("/") {
 			sortable = append(sortable, j.Name)
 		}
 	}

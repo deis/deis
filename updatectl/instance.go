@@ -15,6 +15,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -104,16 +105,16 @@ func (c *Client) updateservice() {
 	fmt.Println("starting systemd units")
 	files, _ := utils.ListFiles(downloadDir + "*.service")
 	fmt.Println(files)
-	deis, err := client.NewClient()
+	deis, _ := client.NewClient()
 	localServices := deis.GetLocaljobs()
 	Services := utils.GetServices()
-	if len(localService) == 0 {
+	if localServices.Len() == 0 {
 		fmt.Println("no local services")
 		return
 	}
 	for _, service := range localServices {
-		cmd.Unisntall(deis, strings.Split(strings.Split(service, "-")[1], ".")[0])
-		cmd.Install(deis, strings.Split(strings.Split(service, "-")[1], ".")[0])
+		cmd.Uninstall(deis, []string{strings.Split(strings.Split(service, "-")[1], ".")[0]})
+		cmd.Install(deis, []string{strings.Split(strings.Split(service, "-")[1], ".")[0]})
 	}
 	var count int
 	for _, service := range Services {
@@ -125,7 +126,7 @@ func (c *Client) updateservice() {
 		}
 		if count == 0 {
 			go func() {
-				cmd.PullImage(service)
+				_ = cmd.PullImage(service)
 			}()
 		}
 	}

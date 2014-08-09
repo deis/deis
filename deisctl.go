@@ -7,12 +7,38 @@ import (
 
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
+	"github.com/deis/deisctl/updatectl"
 	docopt "github.com/docopt/docopt-go"
 )
 
 func exit(err error, code int) {
 	fmt.Printf("Error: %v\n", err)
 	os.Exit(code)
+}
+
+func Update(args []string) {
+
+	if len(args) != 4 {
+		fmt.Println("unsufficient args")
+		fmt.Println("usage:  updatectl update instance deis")
+		return
+	}
+	if args[2] != "instance" && args[3] != "deis" {
+		fmt.Println("wrong args ")
+		fmt.Println("usage:  updatectl update instance deis")
+		return
+	}
+	Args := []string{
+		"instance",
+		"deis",
+		"--clients-per-app=1",
+		"--min-sleep=5",
+		"--max-sleep=10",
+		"--app-id=329cd607-06fe-4bde-8ecd-613b58c6945f",
+		"--group-id=bee2027e-29a4-4135-bffb-b2864234dd15",
+		"--version=1.1.0",
+	}
+	updatectl.Update(Args)
 }
 
 func setGlobalFlags(args map[string]interface{}) {
@@ -86,7 +112,7 @@ Options:
 	case "uninstall":
 		err = cmd.Uninstall(c, targets)
 	case "update":
-		cmd.Update(os.Args)
+		Update(os.Args)
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)
