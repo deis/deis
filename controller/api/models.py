@@ -301,10 +301,15 @@ class Container(UuidAuditedModel):
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
+        kwargs = {}
+        if self.release.config.limit is not None:
+            kwargs = {'memory': self.release.config.limit.memory,
+                      'cpu': self.release.config.limit.cpu}
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
-                               use_announcer=self._command_announceable())
+                               use_announcer=self._command_announceable(),
+                               **kwargs)
 
     @close_db_connections
     @transition(field=state,
@@ -327,10 +332,15 @@ class Container(UuidAuditedModel):
         new_job_id = self._job_id
         image = self.release.image
         c_type = self.type
+        kwargs = {}
+        if self.release.config.limit is not None:
+            kwargs = {'memory': self.release.config.limit.memory,
+                      'cpu': self.release.config.limit.cpu}
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
-                               use_announcer=self._command_announceable())
+                               use_announcer=self._command_announceable(),
+                               **kwargs)
         self._scheduler.start(new_job_id, self._command_announceable())
         # destroy old container
         self._scheduler.destroy(old_job_id, self._command_announceable())
@@ -416,6 +426,28 @@ class Config(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     values = JSONField(default='{}', blank=True)
+    limit = models.ForeignKey('Limit', null=True)
+
+    class Meta:
+        get_latest_by = 'created'
+        ordering = ['-created']
+        unique_together = (('app', 'uuid'),)
+
+    def __str__(self):
+        return "{}-{}".format(self.app.id, self.uuid[:7])
+
+
+@python_2_unicode_compatible
+class Limit(UuidAuditedModel):
+    """
+    Set of resource limits applied by the scheduler
+    during runtime execution of the Application.
+    """
+
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App')
+    memory = JSONField(default='{}', blank=True)
+    cpu = JSONField(default='{}', blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -507,12 +539,14 @@ class Release(UuidAuditedModel):
             prev_release = None
         return prev_release
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # noqa
         if not self.summary:
             self.summary = ''
             prev_release = self.previous()
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
+            old_config = prev_release.config if prev_release else None
+            old_limit = prev_release.config.limit if prev_release else None
             # if the build changed, log it and who pushed it
             if self.version == 1:
                 self.summary += "{} created initial release".format(self.app.owner)
@@ -521,10 +555,8 @@ class Release(UuidAuditedModel):
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
                 else:
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
-            # compare this config to the previous config
-            old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff
-            if self.config != old_config:
+            elif self.config != old_config:
                 dict1 = self.config.values
                 dict2 = old_config.values if old_config else {}
                 diff = dict_diff(dict1, dict2)
@@ -540,11 +572,25 @@ class Release(UuidAuditedModel):
                     if self.summary:
                         self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
-                if not self.summary:
-                    if self.version == 1:
-                        self.summary = "{} created the initial release".format(self.owner)
-                    else:
-                        self.summary = "{} changed nothing".format(self.owner)
+            # if the limit changes, log the dict diff
+            elif self.config.limit != old_limit:
+                changes = []
+                old_mem = old_limit.memory if old_limit else {}
+                diff = dict_diff(self.limit.memory, old_mem)
+                if diff.get('added') or diff.get('changed') or diff.get('deleted'):
+                    changes.append('memory')
+                old_cpu = old_limit.cpu if old_limit else {}
+                diff = dict_diff(self.limit.cpu, old_cpu)
+                if diff.get('added') or diff.get('changed') or diff.get('deleted'):
+                    changes.append('cpu')
+                if changes:
+                    changes = 'changed limits for '+', '.join(changes)
+                    self.summary += "{} {}".format(self.config.owner, changes)
+            if not self.summary:
+                if self.version == 1:
+                    self.summary = "{} created the initial release".format(self.owner)
+                else:
+                    self.summary = "{} changed nothing".format(self.owner)
         super(Release, self).save(*args, **kwargs)
 
 

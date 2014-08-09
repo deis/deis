@@ -76,6 +76,15 @@ deis keys
 .. automethod:: client.deis.DeisClient.keys_add
 .. automethod:: client.deis.DeisClient.keys_remove
 
+.. _deis_limits:
+
+deis limits
+-----------
+
+.. automethod:: client.deis.DeisClient.limits_list
+.. automethod:: client.deis.DeisClient.limits_set
+.. automethod:: client.deis.DeisClient.limits_unset
+
 .. _deis_perms:
 
 deis perms

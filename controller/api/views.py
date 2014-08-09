@@ -399,6 +399,53 @@ class AppConfigViewSet(BaseAppViewSet):
         return super(AppConfigViewSet, self).create(request, *args, **kwargs)
 
 
+class AppLimitViewSet(BaseAppViewSet):
+    """RESTful views for :class:`~api.models.Limit`."""
+
+    model = models.Limit
+    serializer_class = serializers.LimitSerializer
+    permission_classes = (permissions.IsAuthenticated, IsAppUser)
+
+    def get_object(self, *args, **kwargs):
+        """Return the Limit associated with the App's latest Release."""
+        app = get_object_or_404(models.App, id=self.kwargs['id'])
+        return app.release_set.latest().config.limit
+
+    def post_save(self, limit, created=False):
+        if created:
+            release = limit.app.release_set.latest()
+            config = models.Config.objects.create(owner=release.config.owner,
+                                                  app=release.config.app,
+                                                  values=release.config.values,
+                                                  limit=limit)
+            self.release = release.new(self.request.user, config=config)
+            limit.app.deploy(self.release)
+
+    def get_success_headers(self, data):
+        headers = super(AppLimitViewSet, self).get_success_headers(data)
+        headers.update({'X-Deis-Release': self.release.version})
+        return headers
+
+    def create(self, request, *args, **kwargs):
+        request.DATA['app'] = self.kwargs['id']
+
+        # special logic to merge values and remove based on null values
+        obj = self.get_object()
+        # handle null limit for backwards-compat
+        if obj:
+            for target in ('memory', 'cpu'):
+
+                values = getattr(obj, target).copy()
+                # merge values
+                provided = json.loads(request.DATA.get(target, '{}'))
+                values.update(provided)
+                # remove keys if we provided a null value
+                [values.pop(k) for k, v in provided.items() if v is None]
+                request.DATA[target] = json.dumps(values)
+
+        return super(AppLimitViewSet, self).create(request, *args, **kwargs)
+
+
 class AppReleaseViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Release`."""
 

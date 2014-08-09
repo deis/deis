@@ -18,6 +18,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   config        manage environment variables that define app config
   domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
+  limits        manage resource limits for your application
   releases      manage releases of an application
 
   keys          manage ssh keys used for `git push` deployments
@@ -1344,6 +1345,162 @@ class DeisClient(object):
                 print(domain['domain'])
         else:
             raise ResponseError(response)
+
+    def limits(self, args):
+        """
+        Valid commands for limits:
+
+        limits:list        list resource limits for an app
+        limits:set         set resource limits for an app
+        limits:unset       unset resource limits for an app
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'limits:list'
+        args = docopt(self.limits_list.__doc__)
+        return self.limits_list(args)
+
+    def limits_list(self, args):
+        """
+        Lists resource limits for an application.
+
+        Usage: deis limits:list [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name of the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}/limits".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def limits_set(self, args):
+        """
+        Sets resource limits for an application.
+
+        A resource limit is a finite resource within a container which we can apply
+        restrictions to either through the scheduler or through the Docker API. This limit
+        is applied to each individual container, so setting a memory limit of 1G for an
+        application means that each container gets 1G of memory.
+
+        Usage: deis limits:set [options] <type>=<limit>...
+
+        Arguments:
+          <type>
+            the process type as defined in your Procfile, such as 'web' or 'worker'.
+            Note that Dockerfile apps have a default 'cmd' process type.
+          <limit>
+            The limit to apply to the process type. By default, this is set to --memory.
+            You can only set one type of limit per call.
+
+            With --memory, units are represented in Bytes (B), Kilobytes (K), Megabytes
+            (M), or Gigabytes (G). For example, `deis limit:set cmd=1G` will restrict all
+            "cmd" processes to a maximum of 1 Gigabyte of memory each.
+
+            With --cpu, units are represented in the number of cpu shares. For example,
+            `deis limit:set --cpu cmd=1024` will restrict all "cmd" processes to a
+            maximum of 1024 cpu shares.
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+          -c --cpu
+            limits cpu shares.
+          -m --memory
+            limits memory. [default: true]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        body = {}
+        # see if cpu shares are being specified, otherwise default to memory
+        target = 'cpu' if args.get('--cpu') else 'memory'
+        body[target] = json.dumps(dictify(args['<type>=<limit>']))
+        sys.stdout.write('Applying limits... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def limits_unset(self, args):
+        """
+        Unsets resource limits for an application.
+
+        Usage: deis limits:unset [options] [--memory | --cpu] <type>...
+
+        Arguments:
+          <type>
+            the process type as defined in your Procfile, such as 'web' or 'worker'.
+            Note that Dockerfile apps have a default 'cmd' process type.
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+          -c --cpu
+            limits cpu shares.
+          -m --memory
+            limits memory. [default: true]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        values = {}
+        for k in args.get('<type>'):
+            values[k] = None
+        body = {}
+        # see if cpu shares are being specified, otherwise default to memory
+        target = 'cpu' if args.get('--cpu') else 'memory'
+        body[target] = json.dumps(values)
+        sys.stdout.write('Applying limits... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+            self._print_limits(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def _print_limits(self, app, limit):
+        print("=== {} Limits".format(app))
+
+        def write(d):
+            items = d.items()
+            if len(items) == 0:
+                print('Unlimited')
+                return
+            keys = sorted(d)
+            width = max(map(len, keys)) + 5
+            for k in keys:
+                v = d[k]
+                print(("{k:<" + str(width) + "} {v}").format(**locals()))
+
+        print("\n--- Memory")
+        write(json.loads(limit.get('memory', '{}')))
+        print("\n--- CPU")
+        write(json.loads(limit.get('cpu', '{}')))
 
     def ps(self, args):
         """
