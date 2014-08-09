@@ -69,6 +69,14 @@ func GetMachineID(root string) string {
 	return strings.TrimSpace(string(id))
 }
 
+func GetVersion() string {
+	id, err := ioutil.ReadFile("/home/core/deis/systemd/version")
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(id))
+}
+
 // GetFileBytes returns a byte array of the contents of a file.
 func GetFileBytes(filename string) []byte {
 	file, _ := os.Open(filename)
@@ -104,6 +112,7 @@ func Chdir(app string) error {
 }
 
 func Extract(file, dir string) {
+	var wd, _ = os.Getwd()
 	Chdir(dir)
 	cmdl := exec.Command("tar", "-xvf", file)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
@@ -111,7 +120,7 @@ func Extract(file, dir string) {
 	} else {
 		fmt.Println("ok")
 	}
-	Chdir("/home/core/")
+	Chdir(wd)
 }
 
 // Rmdir removes a directory and its contents.

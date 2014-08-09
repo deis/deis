@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strconv"
-
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
 	"github.com/deis/deisctl/updatectl"
 	docopt "github.com/docopt/docopt-go"
+	"os"
+	"strconv"
 )
 
 func exit(err error, code int) {
@@ -20,12 +19,12 @@ func Update(args []string) {
 
 	if len(args) != 4 {
 		fmt.Println("unsufficient args")
-		fmt.Println("usage:  updatectl update instance deis")
+		fmt.Println("usage:  deisctl update instance deis")
 		return
 	}
 	if args[2] != "instance" && args[3] != "deis" {
 		fmt.Println("wrong args ")
-		fmt.Println("usage:  updatectl update instance deis")
+		fmt.Println("usage:  deisctl update instance deis")
 		return
 	}
 	Args := []string{
@@ -34,8 +33,8 @@ func Update(args []string) {
 		"--clients-per-app=1",
 		"--min-sleep=5",
 		"--max-sleep=10",
-		"--app-id=329cd607-06fe-4bde-8ecd-613b58c6945f",
-		"--group-id=bee2027e-29a4-4135-bffb-b2864234dd15",
+		"--app-id=" + os.Getenv("DEIS_APP_ID"),
+		"--group-id=" + os.Getenv("DEIS_GROUP_ID"),
 		"--version=1.1.0",
 	}
 	updatectl.Update(Args)
