@@ -292,6 +292,15 @@ func randSleep(n, m int) {
 	time.Sleep(time.Duration(r) * time.Second)
 }
 
+// getClientID returns the CoreOS Machine ID or an unknown UUID string
+func getClientID() string {
+	machineID := utils.GetMachineID("/")
+	if machineID == "" {
+		return fmt.Sprintf("{unknown-" + utils.NewUuid() + "}")
+	}
+	return machineID
+
+}
 func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer) int {
 	if instanceFlags.appId == "" || instanceFlags.groupId == "" {
 		return ERROR_USAGE
@@ -302,7 +311,7 @@ func instanceDeis(args []string, service *update.Service, out *tabwriter.Writer)
 	}
 
 	c := &Client{
-		Id:             fmt.Sprintf("{update-client-" + utils.NewUuid()),
+		Id:             getClientID(),
 		SessionId:      uuid.New(),
 		Version:        instanceFlags.version,
 		AppId:          instanceFlags.appId,
