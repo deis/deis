@@ -6,6 +6,8 @@ import (
 	_ "bufio"
 	"bytes"
 	"fmt"
+	"github.com/docker/docker/api/client"
+	"github.com/satori/go.uuid"
 	"io"
 	"io/ioutil"
 	"net"
@@ -16,8 +18,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 // NewUuid returns a new V4-style unique identifier.
@@ -25,6 +25,22 @@ func NewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
+}
+
+func GetNewClient() (
+	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
+	testDaemonAddr := "/var/run/docker.sock"
+	testDaemonProto := "unix"
+	stdout, stdoutPipe = io.Pipe()
+	cli = client.NewDockerCli(
+		nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+	return
+}
+
+func PullImage(cli *client.DockerCli, args ...string) error {
+	fmt.Println("pulling image :" + args[0])
+	err := cli.CmdPull(args...)
+	return err
 }
 
 func GetServices() []string {

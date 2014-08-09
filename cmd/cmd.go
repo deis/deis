@@ -2,9 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deisctl/client"
-	"github.com/deis/deisctl/updatectl"
+	"github.com/deis/deisctl/utils"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,9 +15,9 @@ func List(c client.Client) error {
 }
 
 func PullImage(service string) error {
-	Dockercli, _, _ := dockercli.GetNewClient()
+	dockercli, _, _ := utils.GetNewClient()
 	fmt.Println("pulling image :" + strings.Split(service, ".")[0])
-	err := cli.CmdPull(strings.Split(service, ".")[0])
+	err := utils.CmdPull(dockercli, strings.Split(service, ".")[0])
 	if err != nil {
 		return err
 	}
