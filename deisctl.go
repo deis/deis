@@ -33,9 +33,6 @@ func Update(args []string) {
 		"--clients-per-app=1",
 		"--min-sleep=5",
 		"--max-sleep=10",
-		"--app-id=" + os.Getenv("DEIS_APP_ID"),
-		"--group-id=" + os.Getenv("DEIS_GROUP_ID"),
-		"--version=1.1.0",
 	}
 	updatectl.Update(Args)
 }

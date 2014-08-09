@@ -113,14 +113,14 @@ func Chdir(app string) error {
 
 func Extract(file, dir string) {
 	var wd, _ = os.Getwd()
-	Chdir(dir)
+	_ = os.Chdir(dir)
 	cmdl := exec.Command("tar", "-xvf", file)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 		fmt.Printf("Failed:\n%v", err)
 	} else {
 		fmt.Println("ok")
 	}
-	Chdir(wd)
+	_ = os.Chdir(wd)
 }
 
 // Rmdir removes a directory and its contents.

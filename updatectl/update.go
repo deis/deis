@@ -73,7 +73,7 @@ func init() {
 	out = new(tabwriter.Writer)
 	out.Init(os.Stdout, 0, 8, 1, '\t', 0)
 	server := "http://localhost:8000" // default server
-	if serverEnv := os.Getenv("UPDATECTL_SERVER"); serverEnv != "" {
+	if serverEnv := os.Getenv("DEISCTL_SERVER"); serverEnv != "" {
 		server = serverEnv
 	}
 
@@ -83,8 +83,8 @@ func init() {
 	globalFlagSet.BoolVar(&globalFlags.Version, "version", false, "Print version information and exit.")
 	globalFlagSet.BoolVar(&globalFlags.Help, "help", false, "Print usage information and exit.")
 	globalFlagSet.BoolVar(&globalFlags.SkipSSLVerify, "skip-ssl-verify", false, "Don't check SSL certificates.")
-	globalFlagSet.StringVar(&globalFlags.User, "user", os.Getenv("UPDATECTL_USER"), "API Username")
-	globalFlagSet.StringVar(&globalFlags.Key, "key", os.Getenv("UPDATECTL_KEY"), "API Key")
+	globalFlagSet.StringVar(&globalFlags.User, "user", os.Getenv("DEISCTL_USER"), "API Username")
+	globalFlagSet.StringVar(&globalFlags.Key, "key", os.Getenv("DEISCTL_KEY"), "API Key")
 
 	commands = []*Command{
 		cmdInstance,
@@ -178,12 +178,11 @@ func Update(Args []string) {
 		os.Exit(ERROR_NO_COMMAND)
 	}
 	if cmd.Run == nil {
-		//	printCommandUsage(cmd)
 		os.Exit(ERROR_USAGE)
 	} else {
 		exit := handle(cmd.Run)(&cmd.Flags)
 		if exit == ERROR_USAGE {
-			//	printCommandUsage(cmd)
+			fmt.Println("Please check the arguments")
 		}
 		os.Exit(exit)
 	}
