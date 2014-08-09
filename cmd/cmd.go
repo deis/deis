@@ -29,7 +29,7 @@ func Scale(c client.Client, targets []string) error {
 
 func Start(c client.Client, targets []string) error {
 	for _, target := range targets {
-		err := c.Start(target, false)
+		err := c.Start(target)
 		if err != nil {
 			return err
 		}
@@ -71,11 +71,11 @@ func Install(c client.Client, targets []string) error {
 	} else {
 		// otherwise create and start the specific targets
 		for _, target := range targets {
-			err := c.Create(target, false)
+			err := c.Create(target)
 			if err != nil {
 				return err
 			}
-			err = c.Start(target, false)
+			err = c.Start(target)
 			if err != nil {
 				return err
 			}
@@ -94,14 +94,14 @@ func installDataContainers(c client.Client) error {
 	}
 	fmt.Println("Scheduling data containers...")
 	for _, dataContainer := range dataContainers {
-		c.Create(dataContainer, true)
+		c.Create(dataContainer)
 		// if err != nil {
 		// 	return err
 		// }
 	}
 	fmt.Println("Activating data containers...")
 	for _, dataContainer := range dataContainers {
-		c.Start(dataContainer, true)
+		c.Start(dataContainer)
 		// if err != nil {
 		// 	return err
 		// }

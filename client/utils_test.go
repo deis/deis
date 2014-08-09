@@ -60,3 +60,30 @@ func TestSplitJobName(t *testing.T) {
 		t.Fatalf("Invalid values: %v %v", c, num)
 	}
 }
+
+func TestSplitTarget(t *testing.T) {
+	c, num, err := splitTarget("router")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != "router" && num != 0 {
+		t.Fatalf("Invalid split on \"%v\": %v %v", "router", c, num)
+	}
+
+	c, num, err = splitTarget("router.3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != "router" || num != 3 {
+		t.Fatalf("Invalid split on \"%v\": %v %v", "router.3", c, num)
+	}
+
+	c, num, err = splitTarget("database-data")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c != "database-data" || num != 0 {
+		t.Fatalf("Invalid split on \"%v\": %v %v", "database-data", c, num)
+	}
+
+}

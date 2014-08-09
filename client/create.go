@@ -3,8 +3,7 @@ package client
 import (
 	"fmt"
 	"os"
-	"regexp"
-	"strconv"
+	"strings"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/unit"
@@ -12,17 +11,13 @@ import (
 
 // Create schedules a new unit for the given component
 // and blocks until the unit is loaded
-func (c *FleetClient) Create(component string, data bool) (err error) {
+func (c *FleetClient) Create(target string) (err error) {
 	var (
 		unitName string
 		unitPtr  *unit.Unit
 	)
 	// create unit
-	if data == true {
-		unitName, unitPtr, err = c.createDataUnit(component)
-	} else {
-		unitName, unitPtr, err = c.createServiceUnit(component)
-	}
+	unitName, unitPtr, err = c.createUnit(target)
 	if err != nil {
 		return err
 	}
@@ -43,35 +38,36 @@ func (c *FleetClient) Create(component string, data bool) (err error) {
 	return nil
 }
 
-// Create normal service unit
-func (c *FleetClient) createServiceUnit(target string) (unitName string, unitPtr *unit.Unit, err error) {
-
-	// see if we were provided a specific target
-	r := regexp.MustCompile(`([a-z-]+)\.([\d]+)`)
-	match := r.FindStringSubmatch(target)
-	var (
-		num int
-		component string
-	)
-	if len(match) == 3 {
-		component = match[1]
-		num, err = strconv.Atoi(match[2])
-		if err != nil {
-			return "", nil, err
-		}
-		unitName, err = formatUnitName(component, num)
+func (c *FleetClient) createUnit(target string) (unitName string, unitPtr *unit.Unit, err error) {
+	component, num, err := splitTarget(target)
+	if err != nil {
+		return
+	}
+	if strings.HasSuffix(component, "-data") {
+		unitName, unitPtr, err = c.createDataUnit(component)
 	} else {
-		component = target
-		num, err := c.nextUnit(component)
-		if err != nil {
-			return "", nil, err
-		}
-		unitName, err = formatUnitName(component, num)
+		unitName, unitPtr, err = c.createServiceUnit(component, num)
+	}
+	if err != nil {
+		return unitName, unitPtr, err
+	}
+	return
+}
+
+// Create normal service unit
+func (c *FleetClient) createServiceUnit(component string, num int) (unitName string, unitPtr *unit.Unit, err error) {
+	// if number wasn't provided get next unit number
+	if num == 0 {
+		num, err = c.nextUnit(component)
 		if err != nil {
 			return "", nil, err
 		}
 	}
-
+	// build a fleet unit
+	unitName, err = formatUnitName(component, num)
+	if err != nil {
+		return "", nil, err
+	}
 	unitPtr, err = NewUnit(component)
 	if err != nil {
 		return

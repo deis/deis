@@ -11,7 +11,7 @@ func (c *FleetClient) Scale(component string, num int) (err error) {
 			break
 		}
 		if len(components) < num {
-			err := c.Create(component, false)
+			err := c.Create(component)
 			if err != nil {
 				return err
 			}

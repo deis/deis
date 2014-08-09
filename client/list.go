@@ -18,7 +18,7 @@ func init() {
 }
 
 const (
-	defaultListUnitFields = "unit,state,load,active,sub,desc,machine"
+	defaultListUnitFields = "unit,state,load,active,sub,machine"
 )
 
 type jobToField func(j *job.Job, full bool) string

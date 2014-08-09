@@ -24,6 +24,8 @@ func (c *FleetClient) getUnits(target string) (units []string, err error) {
 	var r *regexp.Regexp
 	if strings.HasSuffix(target, "-data") {
 		r = regexp.MustCompile(`deis\-(` + target + `)\.service`)
+	} else if strings.Contains(target, ".") {
+		r = regexp.MustCompile(`deis\-(` + target + `)\.service`)
 	} else {
 		r = regexp.MustCompile(`deis\-(` + target + `)\.([\d]+)\.service`)
 	}

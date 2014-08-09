@@ -65,22 +65,27 @@ func splitJobName(component string) (c string, num int, err error) {
 	return
 }
 
-func splitComponentTarget(target string) (c string, num int, err error) {
-	r := regexp.MustCompile(`([a-z-]+)\.?([\d]+)?`)
+func splitTarget(target string) (component string, num int, err error) {
+	// see if we were provided a specific target
+	r := regexp.MustCompile(`^([a-z]+)(\-data|\.\d+)?$`)
 	match := r.FindStringSubmatch(target)
-	if len(match) == 0 {
-		err = fmt.Errorf("Could not parse: %v", target)
+	// check for failed match
+	if len(match) != 3 {
+		err = fmt.Errorf("Could not parse target: %v", target)
 		return
 	}
 	if match[2] == "" {
-		return match[1], 0, nil
+		component = match[1]
+		return component, 0, nil
+	} else if match[2] == "-data" {
+		component = match[1] + "-data"
+		return component, 0, nil
 	}
-	c = match[1]
-	num, err = strconv.Atoi(match[2])
+	num, err = strconv.Atoi(match[2][1:])
 	if err != nil {
-		return
+		return "", 0, err
 	}
-	return
+	return match[1], num, err
 }
 
 // randomValue returns a random string from a slice of string
