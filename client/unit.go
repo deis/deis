@@ -13,7 +13,7 @@ import (
 )
 
 // path hierarchy for finding systemd service templates
-var rootPaths = []string{"/home/core/deis/systemd", "units", "../units"}
+var rootPaths = []string{"/var/lib/deis/units", "units", "../units"}
 
 // getUnits returns a list of units filtered by target
 func (c *FleetClient) getUnits(target string) (units []string, err error) {
