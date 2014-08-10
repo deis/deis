@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
+	"github.com/deis/deisctl/constants"
 	"github.com/deis/deisctl/updatectl"
+	"github.com/deis/deisctl/utils"
 	docopt "github.com/docopt/docopt-go"
 	"os"
 	"strconv"
@@ -34,7 +36,13 @@ func Update(args []string) {
 		"--min-sleep=5",
 		"--max-sleep=10",
 	}
+	if err := utils.Execute(constant.HooksDir + "pre-update.sh"); err != nil {
+		fmt.Println("pre-updatehook failed")
+	}
 	updatectl.Update(Args)
+	if err := utils.Execute(constant.HooksDir + "post-update.sh"); err != nil {
+		fmt.Println("post-updatehook failed")
+	}
 }
 
 func setGlobalFlags(args map[string]interface{}) {

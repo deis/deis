@@ -9,6 +9,7 @@ import (
 	update "github.com/coreos/updatectl/client/update/v1"
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
+	"github.com/deis/deisctl/constants"
 	"github.com/deis/deisctl/utils"
 	"io"
 	"log"
@@ -18,12 +19,6 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
-)
-
-const (
-	initialInterval = time.Second * 10
-	maxInterval     = time.Minute * 7
-	downloadDir     = "/home/core/deis/systemd/"
 )
 
 var (
@@ -103,7 +98,7 @@ func (c *Client) getCodebaseUrl(uc *omaha.UpdateCheck) string {
 
 func (c *Client) updateservice() {
 	fmt.Println("starting systemd units")
-	files, _ := utils.ListFiles(downloadDir + "*.service")
+	files, _ := utils.ListFiles(constant.UnitsDir + "*.service")
 	fmt.Println(files)
 	deis, _ := client.NewClient()
 	localServices := deis.GetLocaljobs()
@@ -125,9 +120,9 @@ func (c *Client) updateservice() {
 			}
 		}
 		if count == 0 {
-			go func() {
-				_ = cmd.PullImage(service)
-			}()
+			if err := cmd.PullImage(service); err != nil {
+				fmt.Println("pulling Image failed for " + service)
+			}
 		}
 	}
 
@@ -143,7 +138,7 @@ func (c *Client) downloadFromUrl(url, fileName string) (err error) {
 	fmt.Printf("Downloading %s to %s", url, fileName)
 
 	// TODO: check file existence first with io.IsExist
-	output, err := os.Create(downloadDir + fileName)
+	output, err := os.Create(constant.UnitsDir + fileName)
 	if err != nil {
 		fmt.Println("Error while creating", fileName, "-", err)
 		return
@@ -239,13 +234,15 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 	url := c.getCodebaseUrl(uc)
 	c.MakeRequest("13", "1", false, false)
 	c.downloadFromUrl(url, "deis.tar.gz")
-	utils.Extract(downloadDir+"deis.tar.gz", downloadDir)
+	utils.Extract(constant.UnitsDir+"deis.tar.gz", constant.UnitsDir)
 	c.MakeRequest("14", "1", false, false)
 	c.updateservice()
+	fmt.Println("Installation done")
+	c.MakeRequest("2", "1", false, false)
 	fmt.Println("updated done")
 	c.MakeRequest("3", "1", false, false)
 	// installed
-	fmt.Println("updated done")
+
 	// simulate reboot lock for a while
 	for c.pingsRemaining > 0 {
 		c.MakeRequest("", "", false, true)

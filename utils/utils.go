@@ -6,6 +6,7 @@ import (
 	_ "bufio"
 	"bytes"
 	"fmt"
+	"github.com/deis/deisctl/constants"
 	"github.com/docker/docker/api/client"
 	"github.com/satori/go.uuid"
 	"io"
@@ -38,7 +39,7 @@ func GetNewClient() (
 }
 
 func PullImage(cli *client.DockerCli, args ...string) error {
-	fmt.Println("pulling image :" + args[0])
+	fmt.Println("pulling image : " + args[0])
 	err := cli.CmdPull(args...)
 	return err
 }
@@ -61,7 +62,7 @@ func GetServices() []string {
 }
 
 func GetMachineID(root string) string {
-	fullPath := filepath.Join(root, "/etc/machine-id")
+	fullPath := filepath.Join(root, constant.MachineId)
 	id, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return ""
@@ -70,7 +71,7 @@ func GetMachineID(root string) string {
 }
 
 func GetVersion() string {
-	id, err := ioutil.ReadFile("/home/core/deis/systemd/version")
+	id, err := ioutil.ReadFile(constant.Version)
 	if err != nil {
 		return ""
 	}
@@ -192,6 +193,7 @@ func getExitCode(err error) (int, error) {
 }
 
 // RunCommandWithStdoutStderr execs a command and returns its output.
+
 func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, error) {
 	var stdout, stderr bytes.Buffer
 	stderrPipe, err := cmd.StderrPipe()
@@ -221,6 +223,15 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 		fmt.Println("error at command wait")
 	}
 	return stdout, stderr, err
+}
+
+func Execute(script string) error {
+	cmdl := exec.Command("sh", "-c", script)
+	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
+		fmt.Println("(Error )")
+		return err
+	}
+	return nil
 }
 
 func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error) {
