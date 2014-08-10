@@ -120,11 +120,6 @@ func (c *Client) updateservice() {
 				count = count + 1
 			}
 		}
-		if count == 0 {
-			if err := cmd.PullImage(service); err != nil {
-				fmt.Println("pulling Image failed for " + service)
-			}
-		}
 	}
 
 	// pre-install hook (download all new docker images)
