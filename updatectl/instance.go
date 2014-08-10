@@ -2,15 +2,8 @@ package updatectl
 
 import (
 	"bytes"
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/xml"
 	"fmt"
-	"github.com/coreos/go-omaha/omaha"
-	update "github.com/coreos/updatectl/client/update/v1"
-	"github.com/deis/deisctl/client"
-	"github.com/deis/deisctl/cmd"
-	"github.com/deis/deisctl/constants"
-	"github.com/deis/deisctl/utils"
 	"io"
 	"log"
 	"math/rand"
@@ -19,6 +12,14 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"code.google.com/p/go-uuid/uuid"
+	"github.com/coreos/go-omaha/omaha"
+	update "github.com/coreos/updatectl/client/update/v1"
+	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/cmd"
+	"github.com/deis/deisctl/constant"
+	"github.com/deis/deisctl/utils"
 )
 
 var (

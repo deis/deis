@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
-	"github.com/deis/deisctl/constants"
+	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/updatectl"
 	"github.com/deis/deisctl/utils"
 	docopt "github.com/docopt/docopt-go"
-	"os"
-	"strconv"
 )
 
 func exit(err error, code int) {
@@ -36,11 +37,11 @@ func Update(args []string) {
 		"--min-sleep=5",
 		"--max-sleep=10",
 	}
-	if err := utils.Execute(constant.HooksDir + "pre-update.sh"); err != nil {
+	if err := utils.Execute(constant.HooksDir + "pre-update"); err != nil {
 		fmt.Println("pre-updatehook failed")
 	}
 	updatectl.Update(Args)
-	if err := utils.Execute(constant.HooksDir + "post-update.sh"); err != nil {
+	if err := utils.Execute(constant.HooksDir + "post-update"); err != nil {
 		fmt.Println("post-updatehook failed")
 	}
 }

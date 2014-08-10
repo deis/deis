@@ -11,10 +11,10 @@ func (c *FleetClient) Destroy(target string) (err error) {
 		return
 	}
 	if num == 0 {
-			num, err = c.lastUnit(component)
-			if err != nil {
-				return err
-			}
+		num, err = c.lastUnit(component)
+		if err != nil {
+			return err
+		}
 	}
 	unitName, err := formatUnitName(component, num)
 	if err != nil {

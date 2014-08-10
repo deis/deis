@@ -6,9 +6,6 @@ import (
 	_ "bufio"
 	"bytes"
 	"fmt"
-	"github.com/deis/deisctl/constants"
-	"github.com/docker/docker/api/client"
-	"github.com/satori/go.uuid"
 	"io"
 	"io/ioutil"
 	"net"
@@ -19,6 +16,10 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/deis/deisctl/constant"
+	"github.com/docker/docker/api/client"
+	uuid "github.com/satori/go.uuid"
 )
 
 // NewUuid returns a new V4-style unique identifier.
