@@ -133,7 +133,11 @@ func installDefaultServices(c client.Client) error {
 	fmt.Println("Scheduling units...")
 	err := Scale(c, targets)
 	fmt.Println("Activating units...")
-	err = Start(c, []string{"registry", "logger", "cache", "database"})
+	err = Start(c, []string{"logger", "cache", "database"})
+	if err != nil {
+		return err
+	}
+	err = Start(c, []string{"registry"})
 	if err != nil {
 		return err
 	}
