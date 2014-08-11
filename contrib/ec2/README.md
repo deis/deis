@@ -47,25 +47,37 @@ Edit [user-data](../coreos/user-data) and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
 
 ## Customize cloudformation.json
-By default, this script spins up m3.large instances. You can override this
-by adding a new entry to [cloudformation.json](cloudformation.json) like so:
+Any of the parameter defaults defined in deis.template.json can be overridden
+by setting the value in [cloudformation.json](cloudformation.json) like so:
 
 ```
     {
         "ParameterKey":     "InstanceType",
         "ParameterValue":   "m3.xlarge"
+    },
+    {
+        "ParameterKey":     "KeyPair",
+        "ParameterValue":   "jsmith"
+    },
+    {
+        "ParameterKey":     "EC2VirtualizationType",
+        "ParameterValue":   "PV"
+    },
+    {
+        "ParameterKey":     "AssociatePublicIP",
+        "ParameterValue":   "false"
     }
 ```
 
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
-## Choose whether to launch into a VPC
+## Launch into an existing VPC
+By default, the provided CloudFormation script will create a new VPC for Deis. However, the script
+supports provisioning into an existing VPC instead. You'll need to have a VPC configured with an
+internet gateway and a sane routing table (the default VPC in a region should be ready to go).
 
-The provision script supports launching into Amazon VPC. You'll need to have already created and
-configured your VPC with at least one subnet and an internet gateway for the nodes.
-
-To launch your cluster into a VPC, export three additional environment variables: ```VPC_ID```,
+To launch your cluster into an existing VPC, export three additional environment variables: ```VPC_ID```,
 ```VPC_SUBNETS```, ```VPC_ZONES```. ```VPC_ZONES``` must list the availability zones of the
 subnets in order.
 
