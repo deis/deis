@@ -1568,6 +1568,8 @@ class DeisClient(object):
         body = {}
         for type_num in args.get('<type>=<num>'):
             typ, count = type_num.split('=')
+            if int(count) < 0:
+                raise DocoptExit('number must be greater than 0')
             body.update({typ: int(count)})
         sys.stdout.write('Scaling processes... but first, coffee!\n')
         sys.stdout.flush()
