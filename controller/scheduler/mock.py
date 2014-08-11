@@ -20,25 +20,25 @@ class MockSchedulerClient(object):
 
     # container api
 
-    def create(self, name, image, command, use_announcer, **kwargs):
+    def create(self, name, image, command, **kwargs):
         """
         Create a new container
         """
         return
 
-    def start(self, name, use_announcer):
+    def start(self, name):
         """
         Start a container
         """
         return
 
-    def stop(self, name, use_announcer):
+    def stop(self, name):
         """
         Stop a container
         """
         return
 
-    def destroy(self, name, use_announcer):
+    def destroy(self, name):
         """
         Destroy a container
         """
