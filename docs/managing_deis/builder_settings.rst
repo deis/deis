@@ -41,6 +41,8 @@ setting                                   description
 /deis/registry/host                       host of the controller component (set by registry)
 /deis/registry/port                       port of the controller component (set by registry)
 /deis/services/*                          application metadata (set by controller)
+/deis/slugbuilder/image                   slugbuilder image to use (default: deis/slugbuilder:latest)
+/deis/slugrunner/image                    slugrunner image to use (default: deis/slugrunner:latest)
 ====================================      ===========================================================
 
 Using a custom builder image
