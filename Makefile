@@ -22,14 +22,17 @@ define deis_units
 endef
 
 # TODO: re-evaluate the fragile start order
-COMPONENTS=builder cache controller database logger registry
+ifndef COMPONENTS
+	COMPONENTS=builder cache controller database logger registry
+endif
 ALL_COMPONENTS=$(COMPONENTS) router
-START_COMPONENTS=logger cache database
+START_COMPONENTS=$(filter $(COMPONENTS), logger cache database)
+DATA_COMPONENTS=$(filter $(COMPONENTS), builder database logger registry)
 
 ALL_UNITS = $(foreach C,$(COMPONENTS),$(wildcard $(C)/systemd/*.service))
 START_UNITS = $(foreach C,$(START_COMPONENTS),$(wildcard $(C)/systemd/*.service))
 
-DATA_CONTAINER_TEMPLATES=builder/systemd/deis-builder-data.service database/systemd/deis-database-data.service logger/systemd/deis-logger-data.service registry/systemd/deis-registry-data.service
+DATA_CONTAINER_TEMPLATES = $(foreach C,$(DATA_COMPONENTS), $(C)/systemd/deis-$(C)-data.service)
 
 all: build run
 
