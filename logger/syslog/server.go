@@ -1,5 +1,5 @@
-// Syslog server library. It is based on RFC 3164 so it doesn't parse properly
-// packets with new header format (described in RFC 5424).
+// Package syslog implements a syslog server library. It is based on RFC 3164,
+// as such it does not properly parse packets with an RFC 5424 header format.
 package syslog
 
 import (
@@ -13,6 +13,7 @@ import (
 	"unicode"
 )
 
+// Struct Server is the wrapper for a syslog server.
 type Server struct {
 	conns    []net.PacketConn
 	handlers []Handler
@@ -20,7 +21,7 @@ type Server struct {
 	l        FatalLogger
 }
 
-//  NewServer creates idle server
+//  NewServer creates an idle server
 func NewServer() *Server {
 	return &Server{l: log.New(os.Stderr, "", log.LstdFlags)}
 }
