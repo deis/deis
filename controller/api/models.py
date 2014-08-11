@@ -556,7 +556,7 @@ class Release(UuidAuditedModel):
                 else:
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
             # if the config data changed, log the dict diff
-            elif self.config != old_config:
+            if self.config != old_config:
                 dict1 = self.config.values
                 dict2 = old_config.values if old_config else {}
                 diff = dict_diff(dict1, dict2)
@@ -573,14 +573,14 @@ class Release(UuidAuditedModel):
                         self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
             # if the limit changes, log the dict diff
-            elif self.config.limit != old_limit:
+            if self.config.limit != old_limit:
                 changes = []
                 old_mem = old_limit.memory if old_limit else {}
-                diff = dict_diff(self.limit.memory, old_mem)
+                diff = dict_diff(self.config.limit.memory, old_mem)
                 if diff.get('added') or diff.get('changed') or diff.get('deleted'):
                     changes.append('memory')
                 old_cpu = old_limit.cpu if old_limit else {}
-                diff = dict_diff(self.limit.cpu, old_cpu)
+                diff = dict_diff(self.config.limit.cpu, old_cpu)
                 if diff.get('added') or diff.get('changed') or diff.get('deleted'):
                     changes.append('cpu')
                 if changes:
