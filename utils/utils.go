@@ -65,7 +65,7 @@ func GetServices() []string {
 func GetClientID() string {
 	machineID := GetMachineID("/")
 	if machineID == "" {
-		return fmt.Sprintf("{unknown-" + utils.NewUuid() + "}")
+		return fmt.Sprintf("{unknown-" + NewUuid() + "}")
 	}
 	return machineID
 }
