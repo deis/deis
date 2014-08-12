@@ -68,7 +68,7 @@ func init() {
 	//instanceFlags.appId.required = true
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.groupId, "group-id", os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
 	//instanceFlags.groupId.required = true
-	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", os.Getenv("DEISCTL_APP_VERSION"), "Version to report.")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", utils.GetVersion(), "Version to report.")
 }
 
 //+ downloadDir + "deis.tar.gz"
@@ -94,33 +94,38 @@ func (c *Client) Log(format string, v ...interface{}) {
 }
 
 func (c *Client) getCodebaseUrl(uc *omaha.UpdateCheck) string {
-	return uc.Urls.Urls[0].CodeBase
+	return uc.Urls.Urls[0].CodeBase + uc.Manifest.Packages.Packages[0].Name
 }
 
 func (c *Client) updateservice() {
 	fmt.Println("starting systemd units")
-	files, _ := utils.ListFiles(constant.UnitsDir + "*.service")
-	fmt.Println(files)
+	// files, _ := utils.ListFiles(constant.UnitsDir + "*.service")
 	deis, _ := client.NewClient()
 	localServices := deis.GetLocaljobs()
-	Services := utils.GetServices()
+	fmt.Printf("local services: %v\n", localServices)
+	// Services := utils.GetServices()
 	if localServices.Len() == 0 {
 		fmt.Println("no local services")
 		return
 	}
 	for _, service := range localServices {
-		cmd.Uninstall(deis, []string{strings.Split(strings.Split(service, "-")[1], ".")[0]})
-		cmd.Install(deis, []string{strings.Split(strings.Split(service, "-")[1], ".")[0]})
-	}
-	var count int
-	for _, service := range Services {
-		count = 0
-		for _, lserv := range localServices {
-			if strings.Contains(lserv, strings.Split(strings.Split(service, "-")[1], ".")[0]) {
-				count = count + 1
-			}
+		if strings.HasSuffix(service,"-data.service") {
+			continue
 		}
+		localService := strings.Split(strings.Split(service, "-")[1], ".service")[0]
+		cmd.Uninstall(deis, []string{localService})
+		time.Sleep(1 * time.Second)
+		cmd.Install(deis, []string{localService})
 	}
+	// var count int
+	// for _, service := range Services {
+	// 	count = 0
+	// 	for _, lserv := range localServices {
+	// 		if strings.Contains(lserv, strings.Split(strings.Split(service, "-")[1], ".")[0]) {
+	// 			count = count + 1
+	// 		}
+	// 	}
+	// }
 
 	// pre-install hook (download all new docker images)
 	// use systemd to list local deis-* units, ignore -data units
@@ -130,7 +135,6 @@ func (c *Client) updateservice() {
 }
 
 func (c *Client) downloadFromUrl(url, fileName string) (err error) {
-	url = url + "deis.tar.gz"
 	fmt.Printf("Downloading %s to %s", url, fileName)
 
 	// TODO: check file existence first with io.IsExist

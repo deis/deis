@@ -74,7 +74,7 @@ func GetMachineID(root string) string {
 func GetVersion() string {
 	id, err := ioutil.ReadFile(constant.Version)
 	if err != nil {
-		return ""
+		return os.Getenv("DEISCTL_APP_VERSION")
 	}
 	return strings.TrimSpace(string(id))
 }
