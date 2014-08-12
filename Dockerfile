@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -yq git mercurial
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/go/bin
 ENV GOPATH /go
 ADD . /go/src/github.com/deis/deisctl
+ADD systemd /tmp/package/etc/systemd/system
 ADD units /tmp/package/var/lib/deis/units
 ADD hooks /tmp/package/var/lib/deis/hooks
 ADD deis-version /tmp/package/etc/deis-version

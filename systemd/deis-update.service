@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-update service
+Requires=fleet.service
+After=fleet.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Environment="DEISCTL_SERVER=https://opdemand.update.core-os.net" "DEISCTL_APP_ID=0ccac0df-ca24-4f2b-bb7b-4a265bd0eb33" "DEISCTL_GROUP_ID=ad50b2ce-a425-4f94-802f-dbcb51281ef6"
+ExecStart=/opt/bin/deisctl update instance deis
+
+[Install]
+WantedBy=multi-user.target
