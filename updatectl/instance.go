@@ -18,7 +18,7 @@ import (
 	update "github.com/coreos/updatectl/client/update/v1"
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
-	"github.com/deis/deisctl/constant"
+	_ "github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/utils"
 )
 
@@ -134,13 +134,13 @@ func (c *Client) updateservice() {
 	// post-install hook (make sure upgrade was successful)
 }
 
-func (c *Client) downloadFromUrl(url, fileName string) (err error) {
-	fmt.Printf("Downloading %s to %s", url, fileName)
+func (c *Client) downloadFromUrl(url, filePath string) (err error) {
+	fmt.Printf("Downloading %s to %s", url, filePath)
 
 	// TODO: check file existence first with io.IsExist
-	output, err := os.Create(constant.UnitsDir + fileName)
+	output, err := os.Create(filePath)
 	if err != nil {
-		fmt.Println("Error while creating", fileName, "-", err)
+		fmt.Println("Error while creating", filePath, "-", err)
 		return
 	}
 	defer output.Close()
@@ -233,8 +233,8 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 	uc := resp.Apps[0].UpdateCheck
 	url := c.getCodebaseUrl(uc)
 	c.MakeRequest("13", "1", false, false)
-	c.downloadFromUrl(url, "deis.tar.gz")
-	utils.Extract(constant.UnitsDir+"deis.tar.gz", constant.UnitsDir)
+	c.downloadFromUrl(url, "/tmp/deis.tar.gz")
+	utils.Extract("/tmp/deis.tar.gz", "/")
 	c.MakeRequest("14", "1", false, false)
 	c.updateservice()
 	fmt.Println("Installation done")

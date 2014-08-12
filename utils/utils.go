@@ -74,7 +74,7 @@ func GetMachineID(root string) string {
 func GetVersion() string {
 	id, err := ioutil.ReadFile(constant.Version)
 	if err != nil {
-		return os.Getenv("DEISCTL_APP_VERSION")
+		return "0.0.0"
 	}
 	return strings.TrimSpace(string(id))
 }
@@ -116,7 +116,7 @@ func Chdir(app string) error {
 func Extract(file, dir string) {
 	var wd, _ = os.Getwd()
 	_ = os.Chdir(dir)
-	cmdl := exec.Command("tar", "-xvf", file)
+	cmdl := exec.Command("tar", "-C", "/", "-xvf", file)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 		fmt.Printf("Failed:\n%v", err)
 	} else {
