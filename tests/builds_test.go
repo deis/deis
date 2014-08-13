@@ -4,10 +4,12 @@ package tests
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
 	"text/template"
+	"time"
 
 	"github.com/deis/deis/tests/utils"
 )
@@ -20,7 +22,11 @@ var (
 func TestBuilds(t *testing.T) {
 	params := buildSetup(t)
 	buildsListTest(t, params)
+	appsOpenTest(t, params)
+	utils.AppsDestroyTest(t, params)
 	buildsCreateTest(t, params)
+	// TODO: router needs a few seconds to wake up here--fixme!
+	time.Sleep(5000 * time.Millisecond)
 	appsOpenTest(t, params)
 	utils.AppsDestroyTest(t, params)
 }
@@ -64,6 +70,21 @@ func buildsListTest(t *testing.T, params *utils.DeisTestConfig) {
 	params.ImageID = strings.Fields(ImageID)[0]
 }
 
+// buildsCreateTest uses the `deis builds:create` (or `deis pull`) command
+// to promote a build from an existing docker image.
 func buildsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
+	params.AppName = "deispullsample"
+	params.ImageID = "deis/example-dockerfile-python:latest"
+	params.ExampleApp = "example-deis-pull"
+	if err := os.Mkdir(params.ExampleApp, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, appsCreateCmd, params, false, "")
 	utils.Execute(t, buildsCreateCmd, params, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
 }
