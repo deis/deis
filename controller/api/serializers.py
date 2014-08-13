@@ -172,6 +172,7 @@ class AppSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
     cluster = serializers.SlugRelatedField(slug_field='id')
+    url = serializers.Field(source='url')
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""
