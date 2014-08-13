@@ -16,6 +16,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coreos/go-etcd/etcd"
 	"github.com/deis/deisctl/constant"
 	"github.com/docker/docker/api/client"
 	uuid "github.com/satori/go.uuid"
@@ -26,6 +27,22 @@ func NewUuid() string {
 	u1 := uuid.NewV4()
 	s1 := fmt.Sprintf("%s", u1)
 	return strings.Split(s1, "-")[0]
+}
+
+func getetcdClient() *etcd.Client {
+
+	machines := []string{"http://127.0.0.1:4001/"}
+	c := etcd.NewClient(machines)
+	return c
+}
+
+func GetKey(dir, key, perm string) string {
+	c := getetcdClient()
+	result, err := c.Get(dir+key, false, false)
+	if err != nil || result.Node.Value == "" {
+		return os.Getenv(perm)
+	}
+	return result.Node.Value
 }
 
 func GetNewClient() (
@@ -112,34 +129,16 @@ func CreateFile(path string) error {
 	return nil
 }
 
-// Chdir sets the current working directory to the relative path specified.
-func Chdir(app string) error {
-	var wd, _ = os.Getwd()
-	dir, _ := filepath.Abs(filepath.Join(wd, app))
-	err := os.Chdir(dir)
-	fmt.Println(dir)
-	return err
-}
-
-func Extract(file, dir string) {
+func Extract(file, dir string) (err error) {
 	var wd, _ = os.Getwd()
 	_ = os.Chdir(dir)
 	cmdl := exec.Command("tar", "-C", "/", "-xvf", file)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 		fmt.Printf("Failed:\n%v", err)
-	} else {
-		fmt.Println("ok")
+		return err
 	}
 	_ = os.Chdir(wd)
-}
-
-// Rmdir removes a directory and its contents.
-func Rmdir(app string) error {
-	var wd, _ = os.Getwd()
-	dir, _ := filepath.Abs(filepath.Join(wd, app))
-	err := os.RemoveAll(dir)
-	fmt.Println(dir)
-	return err
+	return nil
 }
 
 // GetUserDetails returns sections of a UUID.
@@ -166,6 +165,14 @@ func GetHostIPAddress() string {
 		IP = "172.17.8.100"
 	}
 	return IP
+}
+
+func PutVersion(version string) error {
+	err := ioutil.WriteFile(constant.Version, []byte(version), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Append grows a string array by appending a new element.

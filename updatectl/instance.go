@@ -18,7 +18,7 @@ import (
 	update "github.com/coreos/updatectl/client/update/v1"
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
-	_ "github.com/deis/deisctl/constant"
+	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/utils"
 )
 
@@ -64,9 +64,9 @@ func init() {
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.OEM, "oem", "deisclient", "oem to report")
 	// simulate reboot lock.
 	cmdInstanceDeis.Flags.IntVar(&instanceFlags.pingOnly, "ping-only", 0, "halt update and just send ping requests this many times.")
-	cmdInstanceDeis.Flags.StringVar(&instanceFlags.appId, "app-id", os.Getenv("DEISCTL_APP_ID"), "Application ID to update.")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.appId, "app-id", utils.GetKey(constant.UpdatekeyDir, "app-id", "DEISCTL_APP_ID"), "Application ID to update.")
 	//instanceFlags.appId.required = true
-	cmdInstanceDeis.Flags.StringVar(&instanceFlags.groupId, "group-id", os.Getenv("DEISCTL_GROUP_ID"), "Group ID to update.")
+	cmdInstanceDeis.Flags.StringVar(&instanceFlags.groupId, "group-id", utils.GetKey(constant.UpdatekeyDir, "group-id", "DEISCTL_GROUP_ID"), "Group ID to update.")
 	//instanceFlags.groupId.required = true
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", utils.GetVersion(), "Version to report.")
 }
@@ -93,40 +93,60 @@ func (c *Client) Log(format string, v ...interface{}) {
 	fmt.Printf(format, v...)
 }
 
+func (c *Client) failed(tag string, err error) {
+	c.Log("%s %v\n", tag, err)
+	c.MakeRequest("3", "0", false, false)
+}
+
 func (c *Client) getCodebaseUrl(uc *omaha.UpdateCheck) string {
 	return uc.Urls.Urls[0].CodeBase + uc.Manifest.Packages.Packages[0].Name
 }
 
-func (c *Client) updateservice() {
+func (c *Client) updateservice() (err error) {
 	fmt.Println("starting systemd units")
 	// files, _ := utils.ListFiles(constant.UnitsDir + "*.service")
 	deis, _ := client.NewClient()
 	localServices := deis.GetLocaljobs()
 	fmt.Printf("local services: %v\n", localServices)
-	// Services := utils.GetServices()
+	Services := utils.GetServices()
 	if localServices.Len() == 0 {
 		fmt.Println("no local services")
 		return
 	}
 	for _, service := range localServices {
-		if strings.HasSuffix(service,"-data.service") {
+		if strings.HasSuffix(service, "-data.service") {
 			continue
 		}
 		localService := strings.Split(strings.Split(service, "-")[1], ".service")[0]
-		cmd.Uninstall(deis, []string{localService})
+		err := cmd.Uninstall(deis, []string{localService})
+		if err != nil {
+			return err
+		}
 		time.Sleep(1 * time.Second)
-		cmd.Install(deis, []string{localService})
+		err = cmd.Install(deis, []string{localService})
+		if err != nil {
+			return err
+		}
 	}
-	// var count int
-	// for _, service := range Services {
-	// 	count = 0
-	// 	for _, lserv := range localServices {
-	// 		if strings.Contains(lserv, strings.Split(strings.Split(service, "-")[1], ".")[0]) {
-	// 			count = count + 1
-	// 		}
-	// 	}
-	// }
-
+	var count int
+	for _, service := range Services {
+		count = 0
+		if strings.HasSuffix(service, "-data.service") {
+			continue
+		}
+		for _, lserv := range localServices {
+			if strings.Contains(lserv, strings.Split(strings.Split(service, "-")[1], ".")[0]) {
+				count = count + 1
+			}
+		}
+		if count == 0 {
+			if err = cmd.PullImage(service); err != nil {
+				fmt.Println("failed pulling image", service)
+				return err
+			}
+		}
+	}
+	return nil
 	// pre-install hook (download all new docker images)
 	// use systemd to list local deis-* units, ignore -data units
 	// cmd.Unistall([]string{"router.3"})
@@ -137,7 +157,6 @@ func (c *Client) updateservice() {
 func (c *Client) downloadFromUrl(url, filePath string) (err error) {
 	fmt.Printf("Downloading %s to %s", url, filePath)
 
-	// TODO: check file existence first with io.IsExist
 	output, err := os.Create(filePath)
 	if err != nil {
 		fmt.Println("Error while creating", filePath, "-", err)
@@ -231,15 +250,15 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 		}
 	}()
 	uc := resp.Apps[0].UpdateCheck
-	url := c.getCodebaseUrl(uc)
-	c.MakeRequest("13", "1", false, false)
-	c.downloadFromUrl(url, "/tmp/deis.tar.gz")
-	utils.Extract("/tmp/deis.tar.gz", "/")
-	c.MakeRequest("14", "1", false, false)
-	c.updateservice()
-	fmt.Println("Installation done")
+
+	err := c.updateservice()
+	if err != nil {
+		c.failed("update failed", err)
+		return
+	}
+	c.Log("Installation done ")
 	c.MakeRequest("2", "1", false, false)
-	fmt.Println("updated done")
+	c.Log("Update done ")
 	c.MakeRequest("3", "1", false, false)
 	// installed
 
@@ -253,8 +272,9 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 	c.Log("updated from %s to %s\n", c.Version, uc.Manifest.Version)
 
 	c.Version = uc.Manifest.Version
+	utils.PutVersion(c.Version)
 
-	_, err := c.MakeRequest("3", "2", false, false) // Send complete with new version.
+	_, err = c.MakeRequest("3", "2", false, false) // Send complete with new version.
 	if err != nil {
 		log.Println(err)
 	}
@@ -275,6 +295,23 @@ func (c *Client) Loop(n, m int) {
 		if uc.Status != "ok" {
 			c.Log("update check status: %s\n", uc.Status)
 		} else {
+			url := c.getCodebaseUrl(uc)
+			if !strings.Contains(url, "deis") {
+				c.failed("Wrong Url", err)
+				continue
+			}
+			c.MakeRequest("13", "1", false, false)
+			err = c.downloadFromUrl(url, "/tmp/deis.tar.gz")
+			if err != nil {
+				c.failed("Download failed", err)
+				continue
+			}
+			err = utils.Extract("/tmp/deis.tar.gz", "/")
+			if err != nil {
+				c.failed("Extract failed", err)
+				continue
+			}
+			c.MakeRequest("14", "1", false, false)
 			c.SetVersion(resp)
 		}
 	}
