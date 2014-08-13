@@ -36,10 +36,8 @@ RUN mkdir -p /data/repositories && chown -R registry:registry /data
 ENV STORAGE_PATH /data
 VOLUME /data
 
-# add the current build context to /app
-ADD . /app
-
 # define the execution environment
 WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5000
+ADD . /app

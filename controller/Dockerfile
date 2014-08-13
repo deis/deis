@@ -34,7 +34,6 @@ WORKDIR /app
 ADD requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
-# clone the project into /app
 ADD . /app
 
 # Create static resources

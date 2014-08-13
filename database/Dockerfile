@@ -6,11 +6,9 @@ RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc
 RUN wget --quiet --no-check-certificate -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN apt-get update && apt-get install -yq postgresql-9.3 && /etc/init.d/postgresql stop
 
-# add the current build context to /app
-ADD . /app
-
 # define the execution environment
 VOLUME ["/var/lib/postgresql"]
 WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5432
+ADD . /app
