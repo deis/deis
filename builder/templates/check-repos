@@ -12,7 +12,7 @@ cd $(dirname $0) # absolute path
 for repo in *.git;
 do
     reponame="${repo%.*}"
-    if ! listcontains "{{ range $services := .deis_services }}{{ Base $services.Key }} {{ end }}" "$reponame";
+    if ! listcontains "{{ range $services := .deis_services }}{{ Base $services.Key }} {{ end }}" "$reponame" || `ps axf | grep $repo | wc -l` -eq 0;
     then
         rm -rf "$repo"
     fi
