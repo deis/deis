@@ -21,9 +21,13 @@ Dockerfile Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
 In order to deploy Dockerfile applications, they must conform to the following guidelines:
 
- * The Dockerfile must EXPOSE at least one port
+ * The Dockerfile must EXPOSE only one port
  * The first exposed port must be an HTTP service that can be connected to an HTTP router
  * A default CMD must be specified for running the container
+
+.. note::
+
+    Dockerfiles which expose more than one port will hit `issue 1156`_.
 
 .. attention::
 
@@ -127,4 +131,5 @@ Deis also supports scaling other process types as defined in a `Procfile`_.  To 
 .. _`Dockerfile`: http://docs.docker.io/en/latest/use/builder/
 .. _`Docker Image`: http://docs.docker.io/introduction/understanding-docker/
 .. _`CMD instruction`: http://docs.docker.io/reference/builder/#cmd
+.. _`issue 1156`: https://github.com/deis/deis/issues/1156
 .. _`Procfile`: https://devcenter.heroku.com/articles/procfile
