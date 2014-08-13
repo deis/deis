@@ -4,6 +4,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 [![Build Status](https://travis-ci.org/deis/deis.png?branch=master)](https://travis-ci.org/deis/deis)
 [![Coverage Status](https://coveralls.io/repos/deis/deis/badge.png?branch=master)](https://coveralls.io/r/deis/deis?branch=master)
+[![Current Release](http://img.shields.io/badge/release-v0.10.0-blue.svg)](https://github.com/deis/deis/releases/tag/v0.10.0)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
@@ -16,6 +17,11 @@ Trying out Deis? Continue following these instructions for a local cluster setup
 # Upgrading Deis
 
 Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
+
+Deis is pre-release software. The current release is [v0.10.0](https://github.com/deis/deis/tree/v0.10.0).
+Until there is a stable release, we recommend you check out the latest
+["master" branch](https://github.com/deis/deis) code and refer
+to the [latest documentation](http://docs.deis.io/en/latest/).
 
 ## Install prerequisites
 On your workstation:
