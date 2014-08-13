@@ -14,7 +14,7 @@ The parameters to `deis clusters:create` are:
 * cluster name - the name used by Deis to reference the cluster
 * cluster hostname - the hostname for the cluster -- applications are accessible under this domain
 * cluster members (`--hosts`) - a comma-separated list of IP addresses of cluster members -- not necessarily all members, but at least one
-* auth SSH key (`--auth`) - the SSH private key used to provision servers (for cloud providers, this key is likely `~/.ssh/deis`)
+* auth SSH key (`--auth`) - the SSH private key used to provision servers -- cannot have a password (for cloud providers, this key is likely `~/.ssh/deis`)
 
 For example, to create a cluster on a local Deis installation:
 

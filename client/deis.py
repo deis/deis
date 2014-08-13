@@ -885,8 +885,8 @@ class DeisClient(object):
           --hosts=<hosts>
             a comma-separated list of the cluster members' private IP addresses.
           --auth=<auth>
-            a local file path to a SSH private key. This is the key used to provision and
-            connect to the cluster members.
+            a local file path to an SSH private key. This is the key used to provision and
+            connect to the cluster members. This key must not have a password.
 
             NOTE: for EC2 and Rackspace, this key is likely `~/.ssh/deis`.
 
@@ -1013,9 +1013,10 @@ class DeisClient(object):
             a domain under which app hostnames will live. See `deis help clusters:create`
             for more information.
           --hosts=<hosts>
-            a comma-separated list of cluster members.
+            a comma-separated list of the cluster members' private IP addresses.
           --auth=<auth>
-            a local file path to a SSH private key used to connect to cluster members.
+            a local file path to an SSH private key. This is the key used to provision and
+            connect to the cluster members. This key must not have a password.
           --type=<type>
             cluster type (default: coreos).
           --id=<id>
