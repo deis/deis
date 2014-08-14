@@ -27,7 +27,7 @@ South==1.0
 docopt==0.6.2
 python-dateutil==2.2
 #PyYAML==3.11
-requests==2.2.1
+requests==2.3.0
 urllib3==1.8.2
 
 # Deis documentation requirements
