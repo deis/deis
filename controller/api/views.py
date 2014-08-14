@@ -8,6 +8,7 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.http import Http404
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -324,14 +325,17 @@ class BaseAppViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
+        try:
+            self.check_object_permissions(self.request, app)
+        except PermissionDenied:
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
         return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
         obj = self.get_queryset().latest('created')
-        user = self.request.user
-        if user == obj.app.owner or user in get_users_with_perms(obj.app):
-            return obj
-        raise PermissionDenied()
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class AppBuildViewSet(BaseAppViewSet):
@@ -368,10 +372,12 @@ class AppConfigViewSet(BaseAppViewSet):
     def get_object(self, *args, **kwargs):
         """Return the Config associated with the App's latest Release."""
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        user = self.request.user
-        if user == app.owner or user in get_users_with_perms(app):
+        try:
+            self.check_object_permissions(self.request, app)
             return app.release_set.latest().config
-        raise PermissionDenied()
+        except (PermissionDenied, models.Release.DoesNotExist):
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
 
     def post_save(self, config, created=False):
         if created:
@@ -409,7 +415,12 @@ class AppLimitViewSet(BaseAppViewSet):
     def get_object(self, *args, **kwargs):
         """Return the Limit associated with the App's latest Release."""
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        return app.release_set.latest().config.limit
+        try:
+            self.check_object_permissions(self.request, app)
+            return app.release_set.latest().config.limit
+        except (PermissionDenied, models.Release.DoesNotExist):
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
 
     def post_save(self, limit, created=False):
         if created:
@@ -481,15 +492,14 @@ class AppReleaseViewSet(BaseAppViewSet):
         return Response(response, status=status.HTTP_201_CREATED)
 
 
-class AppContainerViewSet(OwnerViewSet):
+class AppContainerViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Container`."""
 
     model = models.Container
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
-        qs = self.model.objects.filter(app=app)
+        qs = super(AppContainerViewSet, self).get_queryset(**kwargs)
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)
