@@ -22,7 +22,7 @@ Deis requires one wildcard DNS record. Assuming ``myapps.com`` is the top-level 
 
 * ``*.myapps.com`` should have A-record entries for each of the load balancer IP addresses
 
-Apps can then be accessed via ``appname.myapps.com``, and the Deis controller can be accessed at ``deis.myapps.com``.
+Apps can then be accessed by browsers at ``appname.myapps.com``, and the controller will be available to the Deis client at ``deis.myapps.com``.
 
 This record is necessary for all deployments of Deis (EC2, Rackspace, DigitalOcean, bare metal, etc.). Local clusters can use the domain ``local.deisapp.com``, ``local3.deisapp.com``, or ``local5.deiaspp.com``.
 
