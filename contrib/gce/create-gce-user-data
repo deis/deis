@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+"""
+Create CoreOS user-data by merging contric/coreos/user-data and gce-user-data
+
+Usage: create-gce-user-data.py <discovery_url>
+
+Arguments:
+  <discovery_url>
+    This is the CoreOS etcd discovery URL. You should generate a new URL at
+    https://discovery.etcd.io/new and pass it as the argument.
+"""
+
+import sys
+import os
+import re
+import yaml
+import collections
+
+# TODO: Learn how to use docopt and import it for argument handling and validtion
+
+def combine_dicts(orig_dict, new_dict):
+    for key, val in new_dict.iteritems():
+        if isinstance(val, collections.Mapping):
+            tmp = combine_dicts(orig_dict.get(key, { }), val)
+            orig_dict[key] = tmp
+        elif isinstance(val, list):
+            orig_dict[key] = (orig_dict[key] + val)
+        else:
+            orig_dict[key] = new_dict[key]
+    return orig_dict
+
+try:
+  url = sys.argv[1]
+except (NameError, IndexError):
+  exit('It doesn\'t appear that you specified a discovery URL as the first parameter.')
+
+
+url_pattern = 'https\:[\/]{2}discovery\.etcd\.io\/[0-9a-f]{32}'
+
+m = re.match(url_pattern, url)
+
+if url and m:
+  current_dir = os.path.dirname(__file__)
+  gce_user_data = file(os.path.abspath(os.path.join(current_dir, 'gce-user-data')), 'w')
+  gce_template = file(os.path.join(current_dir, "gce-user-data-template"), 'r')
+  coreos_template = file(os.path.join(current_dir, "../coreos/user-data"), 'r')
+
+  configuration_coreos_template = yaml.safe_load(coreos_template)
+  configuration_gce_template = yaml.safe_load(gce_template)
+
+  configuration = combine_dicts(configuration_coreos_template, configuration_gce_template)
+  
+  configuration['coreos']['etcd']['discovery_url'] = url
+
+  with gce_user_data as outfile:
+    try:
+      outfile.write("#cloud-config\n\n" + yaml.safe_dump(configuration, default_flow_style=False,  default_style='|'))
+    except (IOError, ValueError):
+      exit('There was an issue writing to file ' + gce_user_data.name)
+    else:
+      exit('Wrote file ' + gce_user_data.name + ' with discovery URL ' + url)
+else:
+  print 'Discovery URL doesn\'t appear to be valid.'

@@ -10,7 +10,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 # Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md), [Google Compute Engine](contrib/gce/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
 
 Trying out Deis? Continue following these instructions for a local cluster setup. This is also a great Deis testing/development environment.
 

@@ -59,3 +59,6 @@ Vagrantfile.local
 
 # EC2 CloudFormation Setup
 contrib/ec2/cloudformation.json
+
+# GCE generated user-data
+contrib/gce/gce-user-data
