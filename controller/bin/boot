@@ -60,7 +60,7 @@ sudo -E -u deis ./manage.py syncdb --migrate --noinput
 sudo -E -u deis celery worker --app=deis --loglevel=$CELERY_LOG_LEVEL --workdir=/app --pidfile=/tmp/celery.pid &
 
 # spawn a gunicorn server in the background
-sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
+sudo -E -u deis gunicorn deis.wsgi -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
