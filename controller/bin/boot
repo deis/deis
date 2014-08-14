@@ -15,6 +15,8 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-10}
 
+export CELERY_LOG_LEVEL=${CELERY_LOG_LEVEL:-INFO}
+
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
@@ -55,7 +57,7 @@ chown -R deis:deis /var/log/deis
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
 # spawn celery workers in the background
-sudo -E -u deis celery worker --app=deis --loglevel=INFO --workdir=/app --pidfile=/tmp/celery.pid &
+sudo -E -u deis celery worker --app=deis --loglevel=$CELERY_LOG_LEVEL --workdir=/app --pidfile=/tmp/celery.pid &
 
 # spawn a gunicorn server in the background
 sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
