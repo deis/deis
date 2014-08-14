@@ -100,6 +100,72 @@ Retire the old cluster
 ^^^^^^^^^^^^^^^^^^^^^^
 Once all applications have been validated, the old cluster can be retired.
 
+Deploying a new Cluster with External Components
+------------------------------------------------
+
+If you're upgrading from a cluster where you have outsourced your components outside of
+Deis (such as migrating deis-database onto Amazon Relational Database Services), you have
+the benefit of preserving existing data, but you still need to update DNS records and the
+like.
+
+Provision Servers
+^^^^^^^^^^^^^^^^^
+
+Provision the CoreOS cluster as you normally would with any release of Deis. However, do
+not install any components onto this cluster. We need to point etcd to the components
+which are running outside of the cluster.
+
+Export Etcd Keys
+^^^^^^^^^^^^^^^^
+
+To migrate over, start by pointing the new cluster at the old cluster's endpoints:
+
+.. code-block:: console
+
+    $ etcdctl set /deis/database/host pqsl.example.org
+    $ etcdctl set /deis/database/port 1234
+    ...
+
+Next, you'll also want to migrate over the application directories:
+
+    $ etcdctl mkdir /deis/services/appname
+
+Start new Components
+^^^^^^^^^^^^^^^^^^^^
+
+The Makefile takes care of this logic for us:
+
+.. code-block:: console
+
+    dev $ make run
+
+Re-deploy Apps to the new Cluster
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+With this process, re-deploying apps couldn't be easier. Just scale the processes down to
+0 for each application, then scale back up.
+
+.. code-block:: console
+
+    $ deis scale --app example web=0
+    $ deis scale --app example web=3
+
+.. note::
+
+    Support for ``deis ps:restart`` is being tracked in `#467`_.
+
+Test applications
+^^^^^^^^^^^^^^^^^
+
+Test to make sure applications work as expected on the new Deis cluster.
+
+Update DNS records
+^^^^^^^^^^^^^^^^^^
+
+Once you've finished migrating over to the new cluster, just update your wildcard DNS to
+point at your new load balancer. The application names are all the same, so no CNAME
+modification needs to occur.
+
 In-place upgrade
 ----------------
 
@@ -178,3 +244,4 @@ Test
 Ensure all applications function as expected.
 
 .. _`#710`: https://github.com/deis/deis/issues/710
+.. _`#467`: https://github.com/deis/deis/issues/467
