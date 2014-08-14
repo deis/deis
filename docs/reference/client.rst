@@ -94,6 +94,13 @@ deis perms
 .. automethod:: client.deis.DeisClient.perms_create
 .. automethod:: client.deis.DeisClient.perms_delete
 
+.. _deis_pull:
+
+deis pull
+---------
+
+See `deis_builds`_.
+
 .. _deis_ps:
 
 deis ps
