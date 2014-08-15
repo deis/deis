@@ -154,6 +154,11 @@ class TestAppPerms(TestCase):
             self.client.login(username='autotest-2', password='password'))
         response = self.client.get('/api/apps')
         self.assertEqual(len(response.data['results']), 0)
+        # check that user 2 can't see any of the app's builds, configs,
+        # containers, limits, or releases
+        for model in ['builds', 'config', 'containers', 'limits', 'releases']:
+            response = self.client.get("/api/apps/{}/{}/".format(app_id, model))
+            self.assertEqual(response.data['detail'], 'Not found')
         # TODO: test that git pushing to the app fails
         # give user 2 permission to user 1's app
         self.assertTrue(
@@ -168,6 +173,12 @@ class TestAppPerms(TestCase):
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
+        # check that user 2 sees (empty) results now for builds, containers,
+        # and releases. (config and limit will still give 404s since we didn't
+        # push a build here.)
+        for model in ['builds', 'containers', 'releases']:
+            response = self.client.get("/api/apps/{}/{}/".format(app_id, model))
+            self.assertEqual(len(response.data['results']), 0)
         # TODO:  check that user 2 can git push the app
 
     def test_create_errors(self):
