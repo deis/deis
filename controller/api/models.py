@@ -131,6 +131,10 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    @property
+    def url(self):
+        return self.id + '.' + self.cluster.domain
+
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self, values={})
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)

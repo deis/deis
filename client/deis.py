@@ -572,15 +572,10 @@ class DeisClient(object):
         # TODO: replace with a single API call to apps endpoint
         response = self._dispatch('get', "/api/apps/{}".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            cluster = response.json()['cluster']
-        else:
-            raise ResponseError(response)
-        response = self._dispatch('get', "/api/clusters/{}".format(cluster))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            domain = response.json()['domain']
+            url = response.json()['url']
             # use the OS's default handler to open this URL
-            webbrowser.open('http://{}.{}/'.format(app, domain))
-            return domain
+            webbrowser.open('http://{}.{}/'.format(app, url))
+            return url
         else:
             raise ResponseError(response)
 
