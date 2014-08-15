@@ -207,7 +207,7 @@ class AppPermsViewSet(viewsets.ViewSet):
     def list(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
         perm_name = "api.{}".format(self.perm)
-        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+        if request.user != app.owner and not request.user.has_perm(perm_name, app) and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
@@ -215,7 +215,7 @@ class AppPermsViewSet(viewsets.ViewSet):
 
     def create(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner:
+        if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
@@ -224,7 +224,7 @@ class AppPermsViewSet(viewsets.ViewSet):
 
     def destroy(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner:
+        if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=kwargs['username'])
         if user.has_perm(self.perm, app):
