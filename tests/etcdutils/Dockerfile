@@ -3,7 +3,7 @@ MAINTAINER Matt Boersma <matt@opdemand.com>
 
 # Install prerequisites: wget, git, and go.
 RUN apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -qy wget git-core
-RUN wget -qO- https://storage.googleapis.com/golang/go1.3.linux-amd64.tar.gz | tar -C /usr/local -xz
+RUN wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 ENV PATH /usr/local/go/bin:$PATH
 
 # Build etcd v0.4.5. Keep this in sync with Deis' version.

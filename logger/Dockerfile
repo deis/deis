@@ -2,7 +2,7 @@ FROM deis/base:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install go runtime
-RUN wget -qO- https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz | tar -C /usr/local -xz
+RUN wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 
 # prepare go environment
 RUN mkdir -p /go
