@@ -601,7 +601,8 @@ class DeisClient(object):
 
     def apps_run(self, args):
         """
-        Runs a command inside an ephemeral app container.
+        Runs a command inside an ephemeral app container. Default environment is
+        /bin/bash.
 
         Usage: deis apps:run [options] [--] <command>...
 
