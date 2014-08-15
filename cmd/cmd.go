@@ -15,9 +15,9 @@ func List(c client.Client) error {
 }
 
 func PullImage(service string) error {
-	dockercli, _, _ := utils.GetNewClient()
+	//dockercli, _, _ := utils.GetNewClient()
 	fmt.Println("pulling image :" + strings.Replace(strings.Split(service, ".")[0], "-", "/", 1) + ":latest")
-	err := utils.PullImage(dockercli, strings.Replace(strings.Split(service, ".")[0], "-", "/", 1)+":latest")
+	err := utils.PullImage(strings.Replace(strings.Split(service, ".")[0], "-", "/", 1) + ":latest")
 	if err != nil {
 		return err
 	}

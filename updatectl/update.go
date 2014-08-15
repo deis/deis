@@ -3,8 +3,8 @@ package updatectl
 import (
 	"flag"
 	"fmt"
-	"github.com/coreos/updatectl/auth"
-	"github.com/coreos/updatectl/client/update/v1"
+	"github.com/coreos/updateservicectl/auth"
+	"github.com/coreos/updateservicectl/client/update/v1"
 	"log"
 	"net/http"
 	"os"

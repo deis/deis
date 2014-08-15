@@ -15,10 +15,11 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/coreos/go-omaha/omaha"
-	update "github.com/coreos/updatectl/client/update/v1"
+	update "github.com/coreos/updateservicectl/client/update/v1"
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
 	"github.com/deis/deisctl/constant"
+	"github.com/deis/deisctl/lock"
 	"github.com/deis/deisctl/utils"
 )
 
@@ -71,6 +72,14 @@ func init() {
 	cmdInstanceDeis.Flags.StringVar(&instanceFlags.version, "version", utils.GetVersion(), "Version to report.")
 }
 
+func expBackoff(interval time.Duration) time.Duration {
+	interval = interval * 2
+	if interval > constant.MaxInterval {
+		interval = constant.MaxInterval
+	}
+	return interval
+}
+
 //+ downloadDir + "deis.tar.gz"
 
 type serverConfig struct {
@@ -86,6 +95,7 @@ type Client struct {
 	config         *serverConfig
 	errorRate      int
 	pingsRemaining int
+	lock           *lock.Lock
 }
 
 func (c *Client) Log(format string, v ...interface{}) {
@@ -102,6 +112,19 @@ func (c *Client) getCodebaseUrl(uc *omaha.UpdateCheck) string {
 	return uc.Urls.Urls[0].CodeBase + uc.Manifest.Packages.Packages[0].Name
 }
 
+func (c *Client) RequestLock() {
+	elc, err := lock.NewEtcdLockClient(nil)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error initializing etcd client:", err)
+	}
+	var mID string
+	mID = utils.GetMachineID("/")
+	if mID == "" {
+		fmt.Fprintln(os.Stderr, "Cannot read machine-id")
+	}
+	c.lock = lock.New(mID, elc)
+}
+
 func (c *Client) updateservice() (err error) {
 	fmt.Println("starting systemd units")
 	// files, _ := utils.ListFiles(constant.UnitsDir + "*.service")
@@ -111,7 +134,6 @@ func (c *Client) updateservice() (err error) {
 	Services := utils.GetServices()
 	if localServices.Len() == 0 {
 		fmt.Println("no local services")
-		return
 	}
 	for _, service := range localServices {
 		if strings.HasSuffix(service, "-data.service") {
@@ -122,8 +144,10 @@ func (c *Client) updateservice() (err error) {
 		if err != nil {
 			return err
 		}
-		time.Sleep(1 * time.Second)
-		err = cmd.Install(deis, []string{localService})
+
+		err = utils.Timeout("Install unit"+service, 300*time.Second, func() {
+			cmd.Install(deis, []string{localService})
+		})
 		if err != nil {
 			return err
 		}
@@ -284,6 +308,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 
 // Sleep between n and m seconds
 func (c *Client) Loop(n, m int) {
+	interval := constant.InitialInterval
 	for {
 		randSleep(n, m)
 		resp, err := c.MakeRequest("3", "2", true, false)
@@ -312,7 +337,27 @@ func (c *Client) Loop(n, m int) {
 				continue
 			}
 			c.MakeRequest("14", "1", false, false)
+			c.RequestLock()
+			for {
+				err = c.lock.Lock()
+				if err != nil && err != lock.ErrExist {
+					interval = expBackoff(interval)
+					fmt.Printf("Retrying in %v. Error locking: %v\n", interval, err)
+					time.Sleep(interval)
+					continue
+				} else {
+					break
+				}
+			}
 			c.SetVersion(resp)
+			err = c.lock.Unlock()
+			if err == lock.ErrNotExist {
+				fmt.Println("no lock found")
+			} else if err == nil {
+				fmt.Println("Unlocked existing lock for this machine")
+			} else {
+				fmt.Fprintln(os.Stderr, "Error unlocking:", err)
+			}
 		}
 	}
 }

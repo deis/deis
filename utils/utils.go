@@ -5,6 +5,7 @@ package utils
 import (
 	_ "bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,7 +19,7 @@ import (
 
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/deis/deisctl/constant"
-	"github.com/docker/docker/api/client"
+	_ "github.com/docker/docker/api/client"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -45,20 +46,23 @@ func GetKey(dir, key, perm string) string {
 	return result.Node.Value
 }
 
-func GetNewClient() (
-	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
-	testDaemonAddr := "/var/run/docker.sock"
-	testDaemonProto := "unix"
-	stdout, stdoutPipe = io.Pipe()
-	cli = client.NewDockerCli(
-		nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
-	return
-}
+// func GetNewClient() (
+// 	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
+// 	testDaemonAddr := "/var/run/docker.sock"
+// 	testDaemonProto := "unix"
+// 	stdout, stdoutPipe = io.Pipe()
+// 	cli = client.NewDockerCli(
+// 		nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
+// 	return
+// }
 
-func PullImage(cli *client.DockerCli, args ...string) error {
-	fmt.Println("pulling image : " + args[0])
-	err := cli.CmdPull(args...)
-	return err
+func PullImage(args string) error {
+	cmdl := exec.Command("docker", "pull", args)
+	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
+		fmt.Println("(Error )")
+		return err
+	}
+	return nil
 }
 
 func GetServices() []string {
@@ -246,6 +250,23 @@ func Execute(script string) error {
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
 		fmt.Println("(Error )")
 		return err
+	}
+	return nil
+}
+
+func Timeout(msg string, seconds time.Duration, f func()) error {
+	c := make(chan bool)
+	// Make sure we are not too long
+	go func() {
+		time.Sleep(seconds)
+		c <- true
+	}()
+	go func() {
+		f()
+		c <- false
+	}()
+	if <-c && msg != "" {
+		return errors.New(msg + "timed out")
 	}
 	return nil
 }
