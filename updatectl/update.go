@@ -73,7 +73,7 @@ func init() {
 	out = new(tabwriter.Writer)
 	out.Init(os.Stdout, 0, 8, 1, '\t', 0)
 	server := "http://localhost:8000" // default server
-	if serverEnv := os.Getenv("DEISCTL_SERVER"); serverEnv != "" {
+	if serverEnv := utils.GetKey(constant.UpdatekeyDir, "server", "DEISCTL_SERVER"); serverEnv != "" {
 		server = serverEnv
 	}
 
