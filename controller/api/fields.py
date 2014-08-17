@@ -8,6 +8,22 @@ from uuid import uuid4
 from django import forms
 from django.db import models
 
+import json_field
+
+
+class JSONField(json_field.JSONField):
+
+    """
+    A subclass of json_field.JSONField that fixes empty JSON object
+    encoding behavior.
+    """
+
+    def get_db_prep_value(self, value, *args, **kwargs):
+        # if it's one of these values, it's already encoded
+        if value in ['{}', '[]']:
+            return value
+        return super(JSONField, self).get_db_prep_value(value, *args, **kwargs)
+
 
 class UuidField(models.CharField):
     """A univerally unique ID field."""
