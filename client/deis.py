@@ -164,6 +164,8 @@ class Session(requests.Session):
             kwargs['headers'] = {'Referer': url}
         response = super(Session, self).request(*args, **kwargs)
         self.cookies.save()
+        # set ~/.deis/cookies.txt readable only by its owner
+        os.chmod(self.cookies.filename, 0600)
         return response
 
 
@@ -176,8 +178,9 @@ class Settings(dict):
 
     def __init__(self):
         path = os.path.expanduser('~/.deis')
-        if not os.path.exists(path):
-            os.mkdir(path)
+        # Create the $HOME/.deis dir if it doesn't exist
+        if not os.path.isdir(path):
+            os.mkdir(path, 0700)
         self._path = os.path.join(path, 'client.yaml')
         if not os.path.exists(self._path):
             with open(self._path, 'w') as f:
