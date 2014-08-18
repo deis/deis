@@ -72,6 +72,9 @@ by setting the value in [cloudformation.json](cloudformation.json) like so:
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
+NOTE: The smallest recommended instance size is `large`. Having not enough CPU or RAM will result
+in numerous issues when using the cluster.
+
 ## Launch into an existing VPC
 By default, the provided CloudFormation script will create a new VPC for Deis. However, the script
 supports provisioning into an existing VPC instead. You'll need to have a VPC configured with an
