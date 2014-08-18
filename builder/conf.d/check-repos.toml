@@ -8,3 +8,4 @@ keys = [
   "/deis/services",
 ]
 reload_cmd = "/home/git/check-repos"
+check_cmd = "/app/bin/check {{ .src }}"
