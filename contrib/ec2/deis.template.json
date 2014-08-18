@@ -35,7 +35,6 @@
         "m3.large",
         "m3.xlarge",
         "m3.2xlarge",
-        "m1.small",
         "m1.medium",
         "m1.large",
         "m1.xlarge",
@@ -63,9 +62,6 @@
         "r3.2xlarge",
         "r3.4xlarge",
         "r3.8xlarge",
-        "t1.micro",
-        "t2.micro",
-        "t2.small",
         "t2.medium"
       ],
       "ConstraintDescription" : "must be a valid EC2 instance type."
