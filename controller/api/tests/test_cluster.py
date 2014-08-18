@@ -30,7 +30,10 @@ class ClusterTest(TestCase):
         url = '/api/clusters'
         options = {'key': 'val'}
         body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': options}
+                'hosts': 'host1;host2', 'auth': 'base64string', 'options': options}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        body['hosts'] = 'host1,host2'
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         cluster_id = response.data['id']  # noqa
@@ -54,7 +57,15 @@ class ClusterTest(TestCase):
         url = '/api/clusters/{cluster_id}'.format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        new_hosts, new_options = 'host2,host3', {'key': 'val2'}
+        # regression test for https://github.com/deis/deis/issues/1552
+        body = {'hosts': 'host2 host3'}
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        body = {'hosts': 'host2;host3'}
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        # update cluster hosts
+        new_hosts, new_options = 'host2.domain,host3.sub.domain,127.0.0.1', {'key': 'val2'}
         body = {'hosts': new_hosts, 'options': new_options}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)

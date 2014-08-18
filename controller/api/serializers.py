@@ -68,6 +68,11 @@ class ClusterSerializer(serializers.ModelSerializer):
         model = models.Cluster
         read_only_fields = ('created', 'updated')
 
+    def validate_hosts(self, attrs, source):
+        value = attrs[source]
+        models.validate_comma_separated(value)
+        return attrs
+
 
 class PushSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Push` model."""

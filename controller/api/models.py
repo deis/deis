@@ -9,11 +9,13 @@ import etcd
 import importlib
 import logging
 import os
+import re
 import subprocess
 
 from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models, connections
 from django.db.models import Max
 from django.db.models.signals import post_delete
@@ -48,6 +50,15 @@ def close_db_connections(func, *args, **kwargs):
         for conn in connections.all():
             conn.close()
     return _inner
+
+
+def validate_comma_separated(value):
+    """Error if the value doesn't look like a list of hostnames or IP addresses
+    separated by commas.
+    """
+    if not re.search(r'^[a-zA-Z0-9-,\.]+$', value):
+        raise ValidationError(
+            "{} should be a comma-separated list".format(value))
 
 
 class AuditedModel(models.Model):
@@ -86,7 +97,7 @@ class Cluster(UuidAuditedModel):
     type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
 
     domain = models.CharField(max_length=128)
-    hosts = models.CharField(max_length=256)
+    hosts = models.CharField(max_length=256, validators=[validate_comma_separated])
     auth = models.TextField()
     options = JSONField(default={}, blank=True)
 
