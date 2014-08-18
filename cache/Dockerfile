@@ -10,3 +10,4 @@ WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 6379
 ADD . /app
+ADD redis.conf /etc/redis/redis.conf
