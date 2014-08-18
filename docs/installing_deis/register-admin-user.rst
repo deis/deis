@@ -10,8 +10,8 @@ using the Deis client. The Deis command-line interface (CLI), or client,
 allows you to interact with a Deis :ref:`Controller`. You must install
 the client to use Deis.
 
-Install with Pip
-----------------
+Install the Deis Client
+-----------------------
 Install the latest Deis client using Python's pip_ package manager:
 
 .. code-block:: console
