@@ -100,26 +100,14 @@ class ConfigSerializer(serializers.ModelSerializer):
     app = serializers.SlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
+    memory = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('memory'), required=False)
+    cpu = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('cpu'), required=False)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
         model = models.Config
-        read_only_fields = ('uuid', 'created', 'updated')
-
-
-class LimitSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Limit` model."""
-
-    owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
-    memory = serializers.ModelField(
-        model_field=models.Limit()._meta.get_field('memory'), required=False)
-    cpu = serializers.ModelField(
-        model_field=models.Limit()._meta.get_field('cpu'), required=False)
-
-    class Meta:
-        """Metadata options for a :class:`LimitSerializer`."""
-        model = models.Limit
         read_only_fields = ('uuid', 'created', 'updated')
 
     def validate_memory(self, attrs, source):

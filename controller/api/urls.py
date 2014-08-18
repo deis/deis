@@ -266,8 +266,6 @@ urlpatterns = patterns(
         views.AppBuildViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>{})/builds/?'.format(settings.APP_URL_REGEX),
         views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^apps/(?P<id>{})/limits/?'.format(settings.APP_URL_REGEX),
-        views.AppLimitViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>{})/releases/v(?P<version>[0-9]+)/?'.format(settings.APP_URL_REGEX),
         views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>{})/releases/rollback/?'.format(settings.APP_URL_REGEX),

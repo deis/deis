@@ -1373,7 +1373,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}/limits".format(app))
+        response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._print_limits(app, response.json())
         else:
@@ -1426,7 +1426,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1472,7 +1472,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/limits".format(app), json.dumps(body))
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1483,7 +1483,7 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
-    def _print_limits(self, app, limit):
+    def _print_limits(self, app, config):
         print("=== {} Limits".format(app))
 
         def write(d):
@@ -1498,9 +1498,9 @@ class DeisClient(object):
                 print(("{k:<" + str(width) + "} {v}").format(**locals()))
 
         print("\n--- Memory")
-        write(json.loads(limit.get('memory', '{}')))
+        write(json.loads(config.get('memory', '{}')))
         print("\n--- CPU")
-        write(json.loads(limit.get('cpu', '{}')))
+        write(json.loads(config.get('cpu', '{}')))
 
     def ps(self, args):
         """
