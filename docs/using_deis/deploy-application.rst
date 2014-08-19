@@ -30,9 +30,9 @@ Select a Build Process
 ----------------------
 Deis supports three different ways of building applications:
 
- 1. `Heroku Buildpack`_
- 2. `Dockerfile`_
- 3. `Docker Image`_
+ 1. `Heroku Buildpacks`_
+ 2. `Dockerfiles`_
+ 3. `Docker Images`_
 
 Buildpacks
 ^^^^^^^^^^
@@ -56,4 +56,4 @@ image in development or in your CI pipeline as you are in production.
 .. _`twelve-factor methodology`: http://12factor.net/
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
 .. _`Dockerfiles`: http://docs.docker.io/en/latest/use/builder/
-.. _`Docker Image`: http://docs.docker.io/introduction/understanding-docker/
+.. _`Docker Images`: http://docs.docker.io/introduction/understanding-docker/
