@@ -29,12 +29,6 @@ if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1 ; then
 	etcdctl --no-sync -C $ETCD mkdir $ETCD_PATH >/dev/null 2>&1 || true
 fi
 
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml; do
-	echo "cache: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
-
 # spawn the service in the background
 cd /var/lib/redis
 sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf &
@@ -47,10 +41,6 @@ function on_exit() {
 	exit 0
 }
 trap on_exit INT TERM
-
-# spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
-CONFD_PID=$!
 
 echo deis-cache running...
 
