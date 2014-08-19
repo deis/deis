@@ -84,6 +84,10 @@ class Session(requests.Session):
         cookie_file = os.path.expanduser('~/.deis/cookies.txt')
         cookie_dir = os.path.dirname(cookie_file)
         self.cookies = MozillaCookieJar(cookie_file)
+        self.proxies = {
+            "http": os.getenv("http_proxy"),
+            "https": os.getenv("https_proxy")
+        }
         # Create the $HOME/.deis dir if it doesn't exist
         if not os.path.isdir(cookie_dir):
             os.mkdir(cookie_dir, 0700)
