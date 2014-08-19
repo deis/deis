@@ -9,22 +9,19 @@ PyInstaller==2.1
 
 # Deis documentation requirements
 Sphinx>=1.2.2
-smartypants>=1.8.3
-sphinxcontrib-httpdomain>=1.2.1
+smartypants>=1.8.6
+sphinxcontrib-httpdomain>=1.3.0
 
 # Run "make coverage" for the % of code exercised during tests
 coverage>=3.7.1
 
 # Generates template documentation in the Django admin
-docutils>=0.11
+docutils>=0.12
 
 # Run "make flake8" to check python syntax and style
 flake8==2.1.0
 pep8==1.4.6
 pyflakes==0.7.3
-
-# Python expect is used to automate client-driven tests
-pexpect>=3.1
 
 # Used for mocking endpoints
 mock==1.0.1
