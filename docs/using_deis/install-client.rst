@@ -34,17 +34,15 @@ You can also install the latest Deis client using Python's pip_ package manager:
 
     $ deis
     Usage: deis <command> [<args>...]
-    
+
 Proxy Support
 -------------
-
-Set your http and/or https environment variables to enable proxy support
+Set the ```http_proxy``` or ```https_proxy``` environment variable to enable proxy support:
 
 .. code-block:: console
 
     $ export http_proxy="http://proxyip:port"
     $ export https_proxy="http://proxyip:port"
-    
 
 Integrated Help
 ---------------
