@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/utils"
@@ -38,8 +39,12 @@ func TestCache(t *testing.T) {
 	dockercli.RunEtcdTest(t, testID, etcdPort)
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-cache-%s at port %s\n", testID, servicePort)
+
 	runDeisCacheTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-cache-"+testID, servicePort, "tcp")
+
+	fmt.Println("--- Waiting for runit to settle")
+	time.Sleep(15 * time.Second)
+
+	dockercli.DeisServiceTest(t, "deis-cache-"+testID, servicePort, "tcp")
 	dockercli.ClearTestSession(t, testID)
 }

@@ -1,4 +1,4 @@
-FROM deis/base:latest
+FROM deis/init:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 RUN apt-get update && \
@@ -18,5 +18,6 @@ RUN make && make install
 
 WORKDIR /app
 EXPOSE 80 2222
-CMD ["/app/bin/boot"]
+CMD ["/sbin/my_init"]
 ADD . /app
+ADD bin/boot /etc/service/nginx/run

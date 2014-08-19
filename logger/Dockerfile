@@ -1,4 +1,4 @@
-FROM deis/base:latest
+FROM deis/init:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install go runtime
@@ -14,11 +14,12 @@ RUN mkdir -p /var/log/deis
 
 # prepare execution environment
 WORKDIR /app
-CMD ["/app/bin/boot"]
+CMD ["/sbin/my_init"]
 EXPOSE 514
 
 ADD . /app
 ADD . /go/src/github.com/deis/deis/logger
+ADD bin/boot /etc/service/deis-logger/run
 
 # compile the binary
 RUN cd /go/src/github.com/deis/deis/logger/syslogd && go install -v .

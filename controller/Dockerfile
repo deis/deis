@@ -1,4 +1,4 @@
-FROM deis/base:latest
+FROM deis/init:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install required system packages
@@ -24,7 +24,7 @@ RUN mkdir -p /templates && chown -R deis:deis /templates
 RUN mkdir -p /var/log/deis && chown -R deis:deis /var/log/deis
 
 # define execution environment
-CMD ["/app/bin/boot"]
+CMD ["/sbin/my_init"]
 EXPOSE 8000
 
 # define work environment
@@ -35,6 +35,7 @@ ADD requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 
 ADD . /app
+ADD bin/boot /etc/service/deis-controller/run
 
 # Create static resources
 RUN /app/manage.py collectstatic --settings=deis.settings --noinput

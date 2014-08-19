@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
@@ -52,7 +53,10 @@ func TestRegistry(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-registry-%s at port %s\n", testID, servicePort)
 	runDeisRegistryTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-registry-"+testID, servicePort, "http")
+
+	fmt.Println("--- Waiting for runit to settle")
+	time.Sleep(90 * time.Second)
+
+	dockercli.DeisServiceTest(t, "deis-registry-"+testID, servicePort, "http")
 	dockercli.ClearTestSession(t, testID)
 }

@@ -28,6 +28,9 @@ until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
+# Fix permissions that change after upgrading from deis/base to deis/init
+chown -R postgres:postgres /var/lib/postgresql/9.3/main
+
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
@@ -49,7 +52,7 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 done
 
 # run the service in the background
-sudo -i -u postgres /usr/lib/postgresql/9.3/bin/postgres \
+setuser postgres /usr/lib/postgresql/9.3/bin/postgres \
                     -c config-file=${PG_CONFIG:-/etc/postgresql/9.3/main/postgresql.conf} \
                     -c listen-addresses=${PG_LISTEN:-*} &
 

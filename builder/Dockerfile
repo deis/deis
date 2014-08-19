@@ -1,4 +1,4 @@
-FROM deis/base:latest
+FROM deis/init:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install docker-in-docker
@@ -43,9 +43,10 @@ RUN wget -O /progrium_cedarish.tar --progress=dot:giga \
 # define the execution environment
 VOLUME /var/lib/docker
 WORKDIR /app
-ENTRYPOINT ["/app/bin/entry"]
+ENTRYPOINT ["/sbin/my_init"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
 
 ADD . /app
+ADD bin/entry /etc/service/deis-builder/run
 RUN chown -R root:root /app

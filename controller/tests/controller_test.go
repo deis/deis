@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
@@ -59,7 +60,10 @@ func TestController(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-controller-%s at port %s\n", testID, servicePort)
 	runDeisControllerTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-controller-"+testID, servicePort, "http")
+
+	fmt.Println("--- Waiting for runit to settle...")
+	time.Sleep(90 * time.Second)
+
+	dockercli.DeisServiceTest(t, "deis-controller-"+testID, servicePort, "http")
 	dockercli.ClearTestSession(t, testID)
 }
