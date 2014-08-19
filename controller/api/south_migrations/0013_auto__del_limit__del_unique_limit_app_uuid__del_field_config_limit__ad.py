@@ -19,12 +19,12 @@ class Migration(SchemaMigration):
 
         # Adding field 'Config.memory'
         db.add_column(u'api_config', 'memory',
-                      self.gf('json_field.fields.JSONField')(default=u'{}', blank=True),
+                      self.gf('json_field.fields.JSONField')(default={}, blank=True),
                       keep_default=False)
 
         # Adding field 'Config.cpu'
         db.add_column(u'api_config', 'cpu',
-                      self.gf('json_field.fields.JSONField')(default=u'{}', blank=True),
+                      self.gf('json_field.fields.JSONField')(default={}, blank=True),
                       keep_default=False)
 
 
@@ -63,7 +63,7 @@ class Migration(SchemaMigration):
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '64'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'structure': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'structure': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
@@ -74,7 +74,7 @@ class Migration(SchemaMigration):
             'dockerfile': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'image': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'procfile': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'procfile': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'sha': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
@@ -86,7 +86,7 @@ class Migration(SchemaMigration):
             'domain': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'hosts': ('django.db.models.fields.CharField', [], {'max_length': '256'}),
             'id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '128'}),
-            'options': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'options': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'type': ('django.db.models.fields.CharField', [], {'default': "u'coreos'", 'max_length': '16'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
@@ -95,13 +95,13 @@ class Migration(SchemaMigration):
         u'api.config': {
             'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'app', u'uuid'),)", 'object_name': 'Config'},
             'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']"}),
-            'cpu': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'cpu': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'memory': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'}),
+            'memory': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'}),
-            'values': ('json_field.fields.JSONField', [], {'default': "u'{}'", 'blank': 'True'})
+            'values': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'})
         },
         u'api.container': {
             'Meta': {'ordering': "[u'created']", 'object_name': 'Container'},

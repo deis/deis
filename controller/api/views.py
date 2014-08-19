@@ -396,7 +396,12 @@ class AppConfigViewSet(BaseAppViewSet):
         obj = self.get_object()
         request.DATA['app'] = obj.app
         for attr in ['cpu', 'memory', 'values']:
-            data = getattr(obj, attr).copy()
+            # Guard against migrations from older apps without fixes to
+            # JSONField encoding.
+            try:
+                data = getattr(obj, attr).copy()
+            except AttributeError:
+                data = {}
             if attr in request.DATA:
                 # merge config values
                 provided = json.loads(request.DATA[attr])
