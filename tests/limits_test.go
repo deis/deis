@@ -26,6 +26,9 @@ var (
 
 func limitsSetTest(t *testing.T, cfg *utils.DeisTestConfig, ver int) {
 	cpuCmd, memCmd := limitsSetCPUCmd, limitsSetMemCmd
+	// regression test for https://github.com/deis/deis/issues/1563
+	// previously the client would throw a stack trace with empty limits
+	utils.Execute(t, limitsListCmd, cfg, false, "Unlimited")
 	if strings.Contains(cfg.ExampleApp, "dockerfile") {
 		cpuCmd = strings.Replace(cpuCmd, "web", "cmd", 1)
 		memCmd = strings.Replace(memCmd, "web", "cmd", 1)
@@ -35,11 +38,13 @@ func limitsSetTest(t *testing.T, cfg *utils.DeisTestConfig, ver int) {
 	if _, err := regexp.MatchString(output1, out); err != nil {
 		t.Fatal(err)
 	}
+	utils.Execute(t, limitsListCmd, cfg, false, "512")
 	utils.Execute(t, memCmd, cfg, false, "256M")
 	out = dockerInspect(t, cfg, ver+1)
 	if _, err := regexp.MatchString(output2, out); err != nil {
 		t.Fatal(err)
 	}
+	utils.Execute(t, limitsListCmd, cfg, false, "256M")
 }
 
 func limitsUnsetTest(t *testing.T, cfg *utils.DeisTestConfig, ver int) {
@@ -53,11 +58,13 @@ func limitsUnsetTest(t *testing.T, cfg *utils.DeisTestConfig, ver int) {
 	if _, err := regexp.MatchString(output3, out); err != nil {
 		t.Fatal(err)
 	}
+	utils.Execute(t, limitsListCmd, cfg, false, "Unlimited")
 	utils.Execute(t, memCmd, cfg, false, "Unlimited")
 	out = dockerInspect(t, cfg, ver+1)
 	if _, err := regexp.MatchString(output4, out); err != nil {
 		t.Fatal(err)
 	}
+	utils.Execute(t, limitsListCmd, cfg, false, "Unlimited")
 }
 
 // dockerInspect creates an SSH session to the Deis controller

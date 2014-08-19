@@ -55,7 +55,9 @@ class LimitTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('memory', response.data)
-        self.assertEqual(json.loads(response.data['memory']), json.dumps({}))
+        self.assertEqual(json.loads(response.data['memory']), {})
+        # regression test for https://github.com/deis/deis/issues/1563
+        self.assertNotIn('"', response.data['memory'])
         # set an initial limit
         mem = {'web': '1G'}
         body = {'memory': json.dumps(mem)}
@@ -119,7 +121,9 @@ class LimitTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('cpu', response.data)
-        self.assertEqual(json.loads(response.data['memory']), json.dumps({}))
+        self.assertEqual(json.loads(response.data['cpu']), {})
+        # regression test for https://github.com/deis/deis/issues/1563
+        self.assertNotIn('"', response.data['cpu'])
         # set an initial limit
         body = {'cpu': json.dumps({'web': '1024'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')

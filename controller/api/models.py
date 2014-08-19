@@ -21,7 +21,6 @@ from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
 from django_fsm.signals import post_transition
-from json_field.fields import JSONField
 
 from api import fields, tasks
 from registry import publish_release
@@ -88,7 +87,7 @@ class Cluster(UuidAuditedModel):
     domain = models.CharField(max_length=128)
     hosts = models.CharField(max_length=256)
     auth = models.TextField()
-    options = JSONField(default='{}', blank=True)
+    options = fields.JSONField(default='{}', blank=True)
 
     def __str__(self):
         return self.id
@@ -123,7 +122,7 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     cluster = models.ForeignKey('Cluster')
-    structure = JSONField(default='{}', blank=True)
+    structure = fields.JSONField(default='{}', blank=True)
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)
@@ -412,7 +411,7 @@ class Build(UuidAuditedModel):
 
     # optional fields populated by builder
     sha = models.CharField(max_length=40, blank=True)
-    procfile = JSONField(default='{}', blank=True)
+    procfile = fields.JSONField(default='{}', blank=True)
     dockerfile = models.TextField(blank=True)
 
     class Meta:
@@ -433,7 +432,7 @@ class Config(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
-    values = JSONField(default='{}', blank=True)
+    values = fields.JSONField(default='{}', blank=True)
     limit = models.ForeignKey('Limit', null=True)
 
     class Meta:
@@ -454,8 +453,8 @@ class Limit(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
-    memory = JSONField(default='{}', blank=True)
-    cpu = JSONField(default='{}', blank=True)
+    memory = fields.JSONField(default='{}', blank=True)
+    cpu = fields.JSONField(default='{}', blank=True)
 
     class Meta:
         get_latest_by = 'created'
