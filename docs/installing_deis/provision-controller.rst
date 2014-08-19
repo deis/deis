@@ -37,7 +37,7 @@ Please see `contrib/rackspace`_ for details on using Deis on
 Rackspace cloud.
 
 DigitalOcean
----------
+------------
 
 The `contrib/digitalocean` section of the Deis project includes shell
 scripts and documentation to make it easy to provision a multi-node
@@ -46,7 +46,7 @@ Deis cluster on DigitalOcean_.
 Please see `contrib/digitalocean`_ for details on using Deis on DigitalOcean.
 
 Google Compute Engine
-----------
+---------------------
 
 The `contrib/gce`_ folder of the Deis project includes a Python script and
 documentation to help get up and running with a multi-node Deis cluster on
