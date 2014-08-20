@@ -48,4 +48,5 @@ CMD ["/app/bin/boot"]
 EXPOSE 22
 
 ADD . /app
+ADD sshd_config /etc/ssh/sshd_config
 RUN chown -R root:root /app
