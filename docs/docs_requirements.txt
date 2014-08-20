@@ -17,7 +17,7 @@ django-guardian==1.1.1
 django-json-field==0.5.5
 djangorestframework==2.3.14
 docker-py==0.4.0
-gunicorn==18.0
+gunicorn==19.1.0
 psycopg2==2.5.2
 python-etcd==0.3.0
 PyYAML==3.11
