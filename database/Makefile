@@ -5,17 +5,17 @@ build:
 	$(call ssh_all,'cd share/database && sudo docker build -t deis/database .')
 
 install: check-fleet
-	$(FLEETCTL) load systemd/*
+	$(FLEETCTL) load systemd/*.service
 
 uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+	$(FLEETCTL) unload systemd/*.service
+	$(FLEETCTL) destroy systemd/*.service
 
 start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+	$(FLEETCTL) start -no-block systemd/*.service
 
 stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+	$(FLEETCTL) stop -block-attempts=600 systemd/*.service
 
 restart: stop start
 
