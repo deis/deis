@@ -161,6 +161,8 @@ if __name__ == '__main__':
         else:
             print('       No domains found for this application')
         print('\n       To learn more, use `deis help` or visit http://deis.io\n')
+        p = subprocess.Popen("git gc", shell=True, cwd=repo_dir)
+        p.wait()
     except Exception as e:
         print(e.message)
         sys.exit(1)
