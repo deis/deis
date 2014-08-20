@@ -21,6 +21,7 @@ from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
 from django_fsm.signals import post_transition
+from json_field.fields import JSONField
 
 from api import fields, tasks
 from registry import publish_release
@@ -87,7 +88,7 @@ class Cluster(UuidAuditedModel):
     domain = models.CharField(max_length=128)
     hosts = models.CharField(max_length=256)
     auth = models.TextField()
-    options = fields.JSONField(default='{}', blank=True)
+    options = JSONField(default={}, blank=True)
 
     def __str__(self):
         return self.id
@@ -122,7 +123,7 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     cluster = models.ForeignKey('Cluster')
-    structure = fields.JSONField(default='{}', blank=True)
+    structure = JSONField(default={}, blank=True)
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)
@@ -135,7 +136,7 @@ class App(UuidAuditedModel):
         return self.id + '.' + self.cluster.domain
 
     def create(self, *args, **kwargs):
-        config = Config.objects.create(owner=self.owner, app=self, values={})
+        config = Config.objects.create(owner=self.owner, app=self)
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
@@ -308,10 +309,8 @@ class Container(UuidAuditedModel):
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
-        kwargs = {}
-        if self.release.config.limit is not None:
-            kwargs = {'memory': self.release.config.limit.memory,
-                      'cpu': self.release.config.limit.cpu}
+        kwargs = {'memory': self.release.config.memory,
+                  'cpu': self.release.config.cpu}
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
@@ -339,10 +338,8 @@ class Container(UuidAuditedModel):
         new_job_id = self._job_id
         image = self.release.image
         c_type = self.type
-        kwargs = {}
-        if self.release.config.limit is not None:
-            kwargs = {'memory': self.release.config.limit.memory,
-                      'cpu': self.release.config.limit.cpu}
+        kwargs = {'memory': self.release.config.memory,
+                  'cpu': self.release.config.cpu}
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
@@ -411,7 +408,7 @@ class Build(UuidAuditedModel):
 
     # optional fields populated by builder
     sha = models.CharField(max_length=40, blank=True)
-    procfile = fields.JSONField(default='{}', blank=True)
+    procfile = JSONField(default={}, blank=True)
     dockerfile = models.TextField(blank=True)
 
     class Meta:
@@ -432,29 +429,9 @@ class Config(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
-    values = fields.JSONField(default='{}', blank=True)
-    limit = models.ForeignKey('Limit', null=True)
-
-    class Meta:
-        get_latest_by = 'created'
-        ordering = ['-created']
-        unique_together = (('app', 'uuid'),)
-
-    def __str__(self):
-        return "{}-{}".format(self.app.id, self.uuid[:7])
-
-
-@python_2_unicode_compatible
-class Limit(UuidAuditedModel):
-    """
-    Set of resource limits applied by the scheduler
-    during runtime execution of the Application.
-    """
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    app = models.ForeignKey('App')
-    memory = fields.JSONField(default='{}', blank=True)
-    cpu = fields.JSONField(default='{}', blank=True)
+    values = JSONField(default={}, blank=True)
+    memory = JSONField(default={}, blank=True)
+    cpu = JSONField(default={}, blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -553,7 +530,6 @@ class Release(UuidAuditedModel):
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
             old_config = prev_release.config if prev_release else None
-            old_limit = prev_release.config.limit if prev_release else None
             # if the build changed, log it and who pushed it
             if self.version == 1:
                 self.summary += "{} created initial release".format(self.app.owner)
@@ -579,15 +555,14 @@ class Release(UuidAuditedModel):
                     if self.summary:
                         self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
-            # if the limit changes, log the dict diff
-            if self.config.limit != old_limit:
+                # if the limits changed (memory or cpu), log the dict diff
                 changes = []
-                old_mem = old_limit.memory if old_limit else {}
-                diff = dict_diff(self.config.limit.memory, old_mem)
+                old_mem = old_config.memory if old_config else {}
+                diff = dict_diff(self.config.memory, old_mem)
                 if diff.get('added') or diff.get('changed') or diff.get('deleted'):
                     changes.append('memory')
-                old_cpu = old_limit.cpu if old_limit else {}
-                diff = dict_diff(self.config.limit.cpu, old_cpu)
+                old_cpu = old_config.cpu if old_config else {}
+                diff = dict_diff(self.config.cpu, old_cpu)
                 if diff.get('added') or diff.get('changed') or diff.get('deleted'):
                     changes.append('cpu')
                 if changes:
