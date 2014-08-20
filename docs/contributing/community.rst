@@ -24,6 +24,16 @@ Deis uses the timeless, highly efficient, and totally unfair system known as
 "Benevolent Dictator for Life" (`BDFL`_). `Gabriel Monroy`_, the creator of
 Deis, is our BDFL and has final say over all decisions related to Deis.
 
+Open Source Bounties
+--------------------
+
+Deis is a bounty-friendly project.  We believe open source bounty sites can
+be constructive tools in the development of open source software.
+Community members are encouraged to a) offer bounties and b) receive
+bounties for open source contributions that benefit everyone.
+The Deis maintainers, however, will not accept bounties on this project
+but are more than happy to help community members attempting bounties.
+
 
 .. _`on Github`: https://github.com/deis/deis
 .. _`OpDemand`: http://www.opdemand.com/
