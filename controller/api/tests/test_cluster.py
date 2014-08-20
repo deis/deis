@@ -85,3 +85,22 @@ class ClusterTest(TestCase):
                 'hosts': 'host1,host2', 'auth': 'base64string', 'options': options}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 403)
+
+    def test_cluster_errors(self):
+        """
+        Tests bad inputs to clusters:create and clusters:update.
+        """
+        url = '/api/clusters'
+        options = {'key': 'val'}
+        body = {'id': 'autotest', 'domain': 'http://bad.domain', 'type': 'mock',
+                'hosts': 'host1,host2', 'auth': 'base64string', 'options': options}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        body['domain'] = 'autotest.local'
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        cluster_id = response.data['id']  # noqa
+        url = '/api/clusters/{cluster_id}'.format(**locals())
+        body = {'domain': 'http://bad.domain'}
+        response = self.client.patch(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
