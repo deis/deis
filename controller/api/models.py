@@ -52,6 +52,16 @@ def close_db_connections(func, *args, **kwargs):
     return _inner
 
 
+def validate_app_structure(value):
+    """Error if the dict values aren't ints >= 0."""
+    try:
+        for k, v in value.iteritems():
+            if int(v) < 0:
+                raise ValueError("Must be greater than or equal to zero")
+    except ValueError, err:
+        raise ValidationError(err)
+
+
 def validate_comma_separated(value):
     """Error if the value doesn't look like a list of hostnames or IP addresses
     separated by commas.
@@ -61,14 +71,10 @@ def validate_comma_separated(value):
             "{} should be a comma-separated list".format(value))
 
 
-def validate_app_structure(value):
-    """Error if the dict values aren't ints >= 0."""
-    try:
-        for k, v in value.iteritems():
-            if int(v) < 0:
-                raise ValueError("Must be greater than or equal to zero")
-    except ValueError, err:
-        raise ValidationError(err)
+def validate_domain(value):
+    """Error if the domain contains unexpected characters."""
+    if not re.search(r'^[a-zA-Z0-9-\.]+$', value):
+        raise ValidationError('"{}" contains unexpected characters'.format(value))
 
 
 class AuditedModel(models.Model):
@@ -106,7 +112,7 @@ class Cluster(UuidAuditedModel):
     id = models.CharField(max_length=128, unique=True)
     type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
 
-    domain = models.CharField(max_length=128)
+    domain = models.CharField(max_length=128, validators=[validate_domain])
     hosts = models.CharField(max_length=256, validators=[validate_comma_separated])
     auth = models.TextField()
     options = JSONField(default={}, blank=True)
