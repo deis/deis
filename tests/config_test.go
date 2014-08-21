@@ -21,6 +21,12 @@ func TestConfig(t *testing.T) {
 	appsOpenTest(t, params)
 	configUnsetTest(t, params)
 	configListTest(t, params, true)
+	limitsSetTest(t, params, 4)
+	appsOpenTest(t, params)
+	limitsUnsetTest(t, params, 6)
+	appsOpenTest(t, params)
+	tagsTest(t, params, 8)
+	appsOpenTest(t, params)
 	utils.AppsDestroyTest(t, params)
 }
 
