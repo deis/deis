@@ -38,10 +38,14 @@ func runDeisBuilderTest(
 func TestBuilder(t *testing.T) {
 	setkeys := []string{
 		"/deis/registry/protocol",
-		"deis/registry/host",
+		"/deis/registry/host",
 		"/deis/registry/port",
 		"/deis/cache/host",
 		"/deis/cache/port",
+		"/deis/controller/protocol",
+		"/deis/controller/host",
+		"/deis/controller/port",
+		"/deis/controller/builderKey",
 	}
 	setdir := []string{
 		"/deis/controller",
