@@ -8,6 +8,7 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
@@ -282,14 +283,15 @@ class AppViewSet(OwnerViewSet):
         try:
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
-        except ValueError:
+        except (TypeError, ValueError):
             return Response('Invalid scaling format',
                             status=status.HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
+            models.validate_app_structure(new_structure)
             app.structure = new_structure
             app.scale()
-        except EnvironmentError as e:
+        except (EnvironmentError, ValidationError) as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT,
                         content_type='application/json')

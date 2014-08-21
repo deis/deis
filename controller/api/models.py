@@ -61,6 +61,16 @@ def validate_comma_separated(value):
             "{} should be a comma-separated list".format(value))
 
 
+def validate_app_structure(value):
+    """Error if the dict values aren't ints >= 0."""
+    try:
+        for k, v in value.iteritems():
+            if int(v) < 0:
+                raise ValueError("Must be greater than or equal to zero")
+    except ValueError, err:
+        raise ValidationError(err)
+
+
 class AuditedModel(models.Model):
     """Add created and updated fields to a model."""
 
@@ -134,7 +144,7 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     cluster = models.ForeignKey('Cluster')
-    structure = JSONField(default={}, blank=True)
+    structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)

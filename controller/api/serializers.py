@@ -184,6 +184,14 @@ class AppSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("App IDs cannot be 'deis'")
         return attrs
 
+    def validate_structure(self, attrs, source):
+        """
+        Check that the structure JSON dict has non-negative ints as its values.
+        """
+        value = attrs[source]
+        models.validate_app_structure(value)
+        return attrs
+
 
 class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
