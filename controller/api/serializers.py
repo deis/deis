@@ -17,6 +17,8 @@ from api import utils
 PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z]+)')
 MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+[BbKkMmGg])$')
 CPUSHARE_MATCH = re.compile(r'^(?P<cpu>[0-9]+)$')
+TAGKEY_MATCH = re.compile(r'^[a-z]+$')
+TAGVAL_MATCH = re.compile(r'^\w+$')
 
 
 class OwnerSlugRelatedField(serializers.SlugRelatedField):
@@ -114,6 +116,8 @@ class ConfigSerializer(serializers.ModelSerializer):
         model_field=models.Config()._meta.get_field('memory'), required=False)
     cpu = serializers.ModelField(
         model_field=models.Config()._meta.get_field('cpu'), required=False)
+    tags = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('tags'), required=False)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
@@ -147,6 +151,16 @@ class ConfigSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError("CPU shares must be an integer")
                 if i > 1024 or i < 0:
                     raise serializers.ValidationError("CPU shares must be between 0 and 1024")
+        return attrs
+
+    def validate_tags(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(TAGKEY_MATCH, k):
+                raise serializers.ValidationError("Tag keys can only contain [a-z]")
+            if not re.match(TAGVAL_MATCH, str(v)):
+                raise serializers.ValidationError("Invalid tag value")
         return attrs
 
 

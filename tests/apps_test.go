@@ -28,9 +28,6 @@ func TestApps(t *testing.T) {
 	appsInfoTest(t, params)
 	appsRunTest(t, params)
 	appsOpenTest(t, params)
-	limitsSetTest(t, params, 3)
-	appsOpenTest(t, params)
-	limitsUnsetTest(t, params, 5)
 	appsDestroyTest(t, params)
 	appsListTest(t, params, true)
 }

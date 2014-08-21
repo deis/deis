@@ -19,6 +19,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   domains       manage and assign domain names to your applications
   builds        manage builds created using `git push`
   limits        manage resource limits for your application
+  tags          manage tags for application containers
   releases      manage releases of an application
 
   keys          manage ssh keys used for `git push` deployments
@@ -1590,6 +1591,127 @@ class DeisClient(object):
             self.ps_list({}, app)
         else:
             raise ResponseError(response)
+
+    def tags(self, args):
+        """
+        Valid commands for tags:
+
+        tags:list        list tags for an app
+        tags:set         set tags for an app
+        tags:unset       unset tags for an app
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'tags:list'
+        args = docopt(self.tags_list.__doc__)
+        return self.tags_list(args)
+
+    def tags_list(self, args):
+        """
+        Lists tags for an application.
+
+        Usage: deis tags:list [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name of the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            self._print_tags(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def tags_set(self, args):
+        """
+        Sets tags for an application.
+
+        A tag is a key/value pair used to tag an application's containers.
+        This is often used to restrict workloads to specific hosts.
+
+        Usage: deis tags:set [options] <key>=<value>...
+
+        Arguments:
+          <key> the tag key, for example: "environ" or "rack"
+          <value> the tag value, for example: "prod" or "1"
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        body = {}
+        body['tags'] = json.dumps(dictify(args['<key>=<value>']))
+        sys.stdout.write('Applying tags... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+
+            self._print_tags(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def tags_unset(self, args):
+        """
+        Unsets tags for an application.
+
+        Usage: deis tags:unset [options] <key>...
+
+        Arguments:
+          <key> the tag key to unset, for example: "environ" or "rack"
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        values = {}
+        for k in args.get('<key>'):
+            values[k] = None
+        body = {}
+        body['tags'] = json.dumps(values)
+        sys.stdout.write('Applying tags... ')
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}\n".format(version))
+            self._print_tags(app, response.json())
+        else:
+            raise ResponseError(response)
+
+    def _print_tags(self, app, config):
+        items = json.loads(config['tags'])
+        print("=== {} Tags".format(app))
+        if len(items) == 0:
+            print('No tags defined')
+            return
+        keys = sorted(items)
+        width = max(map(len, keys)) + 5
+        for k in keys:
+            v = items[k]
+            print(("{k:<" + str(width) + "} {v}").format(**locals()))
 
     def keys(self, args):
         """

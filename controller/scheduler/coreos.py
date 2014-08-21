@@ -86,7 +86,14 @@ class FleetClient(object):
         else:
           l.update({'cpu': ''})
         env.update({'FLEETW_UNIT': name + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
+        # construct unit from template
+        unit = template.format(**l)
+        # prepare tags only if one was provided
+        tags = kwargs.get('tags', {})
+        if tags:
+            tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
+            unit = unit + '\n[X-Fleet]\nX-ConditionMachineMetadata={}\n'.format(tagset)
+        env.update({'FLEETW_UNIT_DATA': base64.b64encode(unit)})
         return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
                                      shell=True, env=env)
 
