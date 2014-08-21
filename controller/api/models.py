@@ -337,7 +337,8 @@ class Container(UuidAuditedModel):
     def create(self):
         image = self.release.image
         kwargs = {'memory': self.release.config.memory,
-                  'cpu': self.release.config.cpu}
+                  'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags}
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
@@ -366,7 +367,8 @@ class Container(UuidAuditedModel):
         image = self.release.image
         c_type = self.type
         kwargs = {'memory': self.release.config.memory,
-                  'cpu': self.release.config.cpu}
+                  'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags}
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
@@ -459,6 +461,7 @@ class Config(UuidAuditedModel):
     values = JSONField(default={}, blank=True)
     memory = JSONField(default={}, blank=True)
     cpu = JSONField(default={}, blank=True)
+    tags = JSONField(default={}, blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -594,6 +597,22 @@ class Release(UuidAuditedModel):
                     changes.append('cpu')
                 if changes:
                     changes = 'changed limits for '+', '.join(changes)
+                    self.summary += "{} {}".format(self.config.owner, changes)
+                # if the tags changed, log the dict diff
+                changes = []
+                old_tags = old_config.tags if old_config else {}
+                diff = dict_diff(self.config.tags, old_tags)
+                # try to be as succinct as possible
+                added = ', '.join(k for k in diff.get('added', {}))
+                added = 'added tag ' + added if added else ''
+                changed = ', '.join(k for k in diff.get('changed', {}))
+                changed = 'changed tag ' + changed if changed else ''
+                deleted = ', '.join(k for k in diff.get('deleted', {}))
+                deleted = 'deleted tag ' + deleted if deleted else ''
+                changes = ', '.join(i for i in (added, changed, deleted) if i)
+                if changes:
+                    if self.summary:
+                        self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
             if not self.summary:
                 if self.version == 1:

@@ -397,7 +397,7 @@ class AppConfigViewSet(BaseAppViewSet):
         # assume an existing config object exists
         obj = self.get_object()
         request.DATA['app'] = obj.app
-        for attr in ['cpu', 'memory', 'values']:
+        for attr in ['cpu', 'memory', 'tags', 'values']:
             # Guard against migrations from older apps without fixes to
             # JSONField encoding.
             try:

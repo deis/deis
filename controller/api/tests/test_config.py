@@ -279,3 +279,73 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
         return limit4
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_tags(self):
+        """
+        Test that tags can be set on an application
+        """
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = '/api/apps/{app_id}/config'.format(**locals())
+        # check default
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('tags', response.data)
+        self.assertEqual(json.loads(response.data['tags']), {})
+        # set some tags
+        body = {'tags': json.dumps({'environ': 'dev'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('x-deis-release', response._headers)
+        tags1 = response.data
+        # check tags again
+        response = self.client.get(url, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('tags', response.data)
+        tags = json.loads(response.data['tags'])
+        self.assertIn('environ', tags)
+        self.assertEqual(tags['environ'], 'dev')
+        # set an additional value
+        body = {'tags': json.dumps({'rack': '1'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        tags2 = response.data
+        self.assertNotEqual(tags1['uuid'], tags2['uuid'])
+        tags = json.loads(response.data['tags'])
+        self.assertIn('rack', tags)
+        self.assertEqual(tags['rack'], '1')
+        self.assertIn('environ', tags)
+        self.assertEqual(tags['environ'], 'dev')
+        # read the limit again
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        tags3 = response.data
+        self.assertEqual(tags2, tags3)
+        tags = json.loads(response.data['tags'])
+        self.assertIn('rack', tags)
+        self.assertEqual(tags['rack'], '1')
+        self.assertIn('environ', tags)
+        self.assertEqual(tags['environ'], 'dev')
+        # unset a value
+        body = {'tags': json.dumps({'rack': None})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        tags4 = response.data
+        self.assertNotEqual(tags3['uuid'], tags4['uuid'])
+        self.assertNotIn('rack', json.dumps(response.data['tags']))
+        # set invalid values
+        body = {'tags': json.dumps({'valid': 'in\nvalid'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        body = {'tags': json.dumps({'in.valid': 'valid'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        # disallow put/patch/delete
+        self.assertEqual(self.client.put(url).status_code, 405)
+        self.assertEqual(self.client.patch(url).status_code, 405)
+        self.assertEqual(self.client.delete(url).status_code, 405)
+        return tags4
