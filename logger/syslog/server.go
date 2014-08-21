@@ -13,7 +13,7 @@ import (
 	"unicode"
 )
 
-// Struct Server is the wrapper for a syslog server.
+// Server is the wrapper for a syslog server.
 type Server struct {
 	conns    []net.PacketConn
 	handlers []Handler
@@ -21,7 +21,7 @@ type Server struct {
 	l        FatalLogger
 }
 
-//  NewServer creates an idle server
+// NewServer creates an idle server.
 func NewServer() *Server {
 	return &Server{l: log.New(os.Stderr, "", log.LstdFlags)}
 }

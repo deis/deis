@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-// Struct Message defines an RFC 3164 syslog message.
+// Message defines an RFC 3164 syslog message.
 type Message struct {
-	Time   time.Time    // time the message was logged
-	Source net.Addr     // source address of the log message
+	Time      time.Time // time the message was logged
+	Source    net.Addr  // source address of the log message
 	Facility            // facility tag (see type Facility)
 	Severity            // severity tag (see type Severity)
 	Timestamp time.Time // optional

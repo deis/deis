@@ -11,7 +11,9 @@ ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
 if not os.path.exists(ROOT_DIR):
     os.mkdir(ROOT_DIR)
 
-MATCH = re.compile('(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+MATCH = re.compile(
+    '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+
 
 class FleetClient(object):
 
@@ -76,15 +78,15 @@ class FleetClient(object):
         # prepare memory limit for the container type
         mem = kwargs.get('memory', {}).get(l['c_type'], None)
         if mem:
-          l.update({'memory': '-m {}'.format(mem.lower())})
+            l.update({'memory': '-m {}'.format(mem.lower())})
         else:
-          l.update({'memory': ''})
+            l.update({'memory': ''})
         # prepare memory limit for the container type
         cpu = kwargs.get('cpu', {}).get(l['c_type'], None)
         if cpu:
-          l.update({'cpu': '-c {}'.format(cpu)})
+            l.update({'cpu': '-c {}'.format(cpu)})
         else:
-          l.update({'cpu': ''})
+            l.update({'cpu': ''})
         env.update({'FLEETW_UNIT': name + '.service'})
         # construct unit from template
         unit = template.format(**l)
@@ -148,7 +150,7 @@ class FleetClient(object):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
             status = subprocess.check_output(
-                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),
+                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
@@ -246,7 +248,7 @@ ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {
 ExecStart=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
-"""
+"""  # noqa
 
 # TODO revisit the "not getting a port" issue after we upgrade to Docker 1.1.0
 ANNOUNCE_TEMPLATE = """
@@ -263,7 +265,7 @@ TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
+"""  # noqa
 
 LOG_TEMPLATE = """
 [Unit]
@@ -277,4 +279,4 @@ TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
+"""  # noqa

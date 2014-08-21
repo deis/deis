@@ -186,7 +186,7 @@ class App(UuidAuditedModel):
             elif release.build.dockerfile and not release.build.procfile:
                 self.structure = {'cmd': 1}
             # if a procfile exists without a web entry, assume docker workflow
-            elif release.build.procfile and not 'web' in release.build.procfile:
+            elif release.build.procfile and 'web' not in release.build.procfile:
                 self.structure = {'cmd': 1}
             # default to heroku workflow
             else:
@@ -206,7 +206,7 @@ class App(UuidAuditedModel):
         for container_type in requested_containers.keys():
             if container_type == 'cmd':
                 continue  # allow docker cmd types in case we don't have the image source
-            if not container_type in available_process_types:
+            if container_type not in available_process_types:
                 raise EnvironmentError(
                     'Container type {} does not exist in application'.format(container_type))
         msg = 'Containers scaled ' + ' '.join(
