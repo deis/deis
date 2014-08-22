@@ -52,7 +52,7 @@ def main():
         print "Discovery URL invalid."
         return 1
 
-    gce_user_data = get_file("gce_user_data", "w", True)
+    gce_user_data = get_file("gce-user-data", "w", True)
     gce_template = get_file("gce-user-data-template")
     coreos_template = get_file("../coreos/user-data")
 
