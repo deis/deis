@@ -41,14 +41,16 @@ coverage:
 	coverage run manage.py test --noinput api
 	coverage html
 
-flake8:
-	flake8
-
 test: test-unit test-functional
 
-test-unit:
+setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
 	venv/bin/pip install -q -r requirements.txt -r dev_requirements.txt
+
+test-style: setup-venv
+	venv/bin/flake8
+
+test-unit: setup-venv test-style
 	venv/bin/python manage.py test --noinput api
 
 test-functional:

@@ -28,7 +28,7 @@ else:
 
 
 setup(name='deis',
-      version='0.10.0',
+      version='0.11.0',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',
@@ -36,7 +36,7 @@ setup(name='deis',
       url='https://github.com/deis/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'chef', 'docker', 'heroku',
-          'aws', 'ec2', 'rackspace', 'digitalocean'
+          'aws', 'ec2', 'rackspace', 'digitalocean', 'gce'
       ],
       classifiers=[
           'Development Status :: 4 - Beta',
@@ -57,8 +57,8 @@ setup(name='deis',
       ],
       long_description=LONG_DESCRIPTION,
       install_requires=[
-          'docopt==0.6.1', 'python-dateutil==2.2',
-          'PyYAML==3.10', 'requests==2.2.1', 'urllib3==1.8.2'
+          'docopt==0.6.2', 'python-dateutil==2.2',
+          'PyYAML==3.11', 'requests==2.3.0'
       ],
       zip_safe=True,
       **KWARGS)

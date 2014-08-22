@@ -1,12 +1,5 @@
 # Provision a Deis Cluster on Rackspace
 
-**WARNING: Unsupported**
-
-The most recent CoreOS image that Rackspace provides is too old. Rackspace regularly lags behind other
-cloud providers in updating its CoreOS images. Until Rackspace updates its images frequently enough
-for us to update CoreOS on Rackspace when we update the other cloud providers, Rackspace will remain
-an unsupported cloud platform for provisioning Deis. The instructions below remain as a reference.
-
 We'll mostly be following the [CoreOS on Rackspace](https://coreos.com/docs/running-coreos/cloud-providers/rackspace/) guide. You'll need to have a sane python environment with pip already installed (`sudo easy_install pip`).
 
 ### Install supernova and its dependencies:
@@ -67,6 +60,16 @@ By default, the Makefile will provision 1 router. You can override this by setti
 $ export DEIS_NUM_ROUTERS=2
 ```
 
+### Update CoreOS
+Due to image publishing limitations on Rackspace, CoreOS images on Rackspace are frequently out of date.
+Each machine needs to be updated. On each one, run:
+
+```console
+$ sudo systemctl unmask update-engine && sudo systemctl start update-engine && sudo update_engine_client -update && sudo reboot
+```
+
+Once the machine is rebooted, it should have a recent CoreOS version.
+
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 FLEETCTL_TUNNEL, and issue a `make run` from the project root:
@@ -78,6 +81,21 @@ The script will deploy Deis and make sure the services start properly.
 
 ### Configure DNS
 You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
+
+### Configure Load Balancer
+You'll need to create two load balancers on Rackspace to handle your cluster.
+
+    Load Balancer 1
+    Port 80
+    Protocol HTTP
+    Health Monitoring -
+      Monitor Type HTTP
+      HTTP Path /health-check
+
+    Load Balancer 2
+    Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
+    Port 2222
+    Protocol TCP
 
 ### Use Deis!
 After that, register with Deis!

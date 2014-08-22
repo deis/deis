@@ -1,12 +1,10 @@
-test:
-	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
-		go test -tags integration -v -run TestSmoke
+test: test-smoke
 
-test-smoke:
+test-smoke: test-style
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -short -v -run TestSmoke
 
-test-full:
+test-full: test-style
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -v -run TestGlobal
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
@@ -27,6 +25,18 @@ test-full:
 		go test -tags integration -v -run TestPs
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -v -run TestReleases
+
+setup-root-gotools:
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/vet
+	sudo rm -rf /tmp/tmpGOPATH
+
+setup-gotools:
+	go get -v github.com/golang/lint/golint
+
+test-style:
+	go vet -x ./...
+	-golint *.go dockercli etcdutils mock utils
 
 nuke_from_orbit:
 	-docker kill `docker ps -q`

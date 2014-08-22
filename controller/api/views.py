@@ -8,6 +8,8 @@ import json
 
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.http import Http404
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
 from guardian.shortcuts import get_objects_for_user
@@ -281,14 +283,15 @@ class AppViewSet(OwnerViewSet):
         try:
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
-        except ValueError:
+        except (TypeError, ValueError):
             return Response('Invalid scaling format',
                             status=status.HTTP_400_BAD_REQUEST)
         app = self.get_object()
         try:
+            models.validate_app_structure(new_structure)
             app.structure = new_structure
             app.scale()
-        except EnvironmentError as e:
+        except (EnvironmentError, ValidationError) as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT,
                         content_type='application/json')
@@ -324,14 +327,17 @@ class BaseAppViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
+        try:
+            self.check_object_permissions(self.request, app)
+        except PermissionDenied:
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
         return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
         obj = self.get_queryset().latest('created')
-        user = self.request.user
-        if user == obj.app.owner or user in get_users_with_perms(obj.app):
-            return obj
-        raise PermissionDenied()
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 
 class AppBuildViewSet(BaseAppViewSet):
@@ -368,10 +374,12 @@ class AppConfigViewSet(BaseAppViewSet):
     def get_object(self, *args, **kwargs):
         """Return the Config associated with the App's latest Release."""
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        user = self.request.user
-        if user == app.owner or user in get_users_with_perms(app):
+        try:
+            self.check_object_permissions(self.request, app)
             return app.release_set.latest().config
-        raise PermissionDenied()
+        except (PermissionDenied, models.Release.DoesNotExist):
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
 
     def post_save(self, config, created=False):
         if created:
@@ -389,13 +397,20 @@ class AppConfigViewSet(BaseAppViewSet):
         # assume an existing config object exists
         obj = self.get_object()
         request.DATA['app'] = obj.app
-        # merge config values
-        values = obj.values.copy()
-        provided = json.loads(request.DATA['values'])
-        values.update(provided)
-        # remove config keys if we provided a null value
-        [values.pop(k) for k, v in provided.items() if v is None]
-        request.DATA['values'] = values
+        for attr in ['cpu', 'memory', 'tags', 'values']:
+            # Guard against migrations from older apps without fixes to
+            # JSONField encoding.
+            try:
+                data = getattr(obj, attr).copy()
+            except AttributeError:
+                data = {}
+            if attr in request.DATA:
+                # merge config values
+                provided = json.loads(request.DATA[attr])
+                data.update(provided)
+                # remove config keys if we provided a null value
+                [data.pop(k) for k, v in provided.items() if v is None]
+            request.DATA[attr] = data
         return super(AppConfigViewSet, self).create(request, *args, **kwargs)
 
 
@@ -434,15 +449,14 @@ class AppReleaseViewSet(BaseAppViewSet):
         return Response(response, status=status.HTTP_201_CREATED)
 
 
-class AppContainerViewSet(OwnerViewSet):
+class AppContainerViewSet(BaseAppViewSet):
     """RESTful views for :class:`~api.models.Container`."""
 
     model = models.Container
     serializer_class = serializers.ContainerSerializer
 
     def get_queryset(self, **kwargs):
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
-        qs = self.model.objects.filter(app=app)
+        qs = super(AppContainerViewSet, self).get_queryset(**kwargs)
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)

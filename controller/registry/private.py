@@ -6,6 +6,8 @@ import tarfile
 import urlparse
 import uuid
 
+from docker.utils import utils
+
 from django.conf import settings
 
 
@@ -23,12 +25,20 @@ def publish_release(source, config, target):
     contains the new configuration as ENV entries.
     """
     try:
-        if source.count(':') == 2:
-            src_image = source.rsplit(':', 1)[0].split('/', 1)[1]
-            src_tag = source.split(':')[2]
-        else:
-            src_image = source
-            src_tag = 'latest'
+        repo, tag = utils.parse_repository_tag(source)
+        src_image = repo
+        src_tag = tag if tag is not None else 'latest'
+
+        nameparts = repo.rsplit('/', 1)
+        if len(nameparts) == 2:
+            if '/' in nameparts[0]:
+                # strip the hostname and just use the app name
+                src_image = '{}/{}'.format(nameparts[0].rsplit('/', 1)[1],
+                                           nameparts[1])
+            elif '.' in nameparts[0]:
+                # we got a name like registry.local:5000/registry
+                src_image = nameparts[1]
+
         target_image = target.rsplit(':', 1)[0]
         target_tag = target.rsplit(':', 1)[1]
         image_id = _get_tag(src_image, src_tag)

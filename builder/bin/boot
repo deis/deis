@@ -17,7 +17,7 @@ export ETCD_TTL=${ETCD_TTL:-10}
 export STORAGE_DRIVER=${STORAGE_DRIVER:-btrfs}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null; do
+until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -53,9 +53,26 @@ while [[ ! -e /var/run/docker.sock ]]; do
   sleep 1
 done
 
+# HACK: load progrium/cedarish tarball for faster boot times
+# see https://github.com/deis/deis/issues/1027
+if ! docker history progrium/cedarish >/dev/null 2>/dev/null ; then
+	echo "Loading cedarish..."
+	docker load -i /progrium_cedarish.tar
+else
+	echo "Cedarish already loaded"
+fi
+
 # pull required images
-docker pull deis/slugbuilder:latest
-docker pull deis/slugrunner:latest
+
+# Custom slugbuilder?
+SLUGBUILDER=`etcdctl --no-sync -C $ETCD get /deis/slugbuilder/image 2>/dev/null || etcdctl --no-sync -C $ETCD mk /deis/slugbuilder/image deis/slugbuilder:latest 2>/dev/null`
+docker pull ${SLUGBUILDER}
+docker tag  ${SLUGBUILDER} deis/slugbuilder:latest
+
+# Custom slugrunner?
+SLUGRUNNER=`etcdctl --no-sync -C $ETCD get /deis/slugrunner/image 2>/dev/null || etcdctl --no-sync -C $ETCD mk /deis/slugrunner/image deis/slugrunner:latest 2>/dev/null`
+docker pull ${SLUGRUNNER}
+docker tag  ${SLUGRUNNER} deis/slugrunner:latest
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &

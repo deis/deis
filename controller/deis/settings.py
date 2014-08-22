@@ -108,6 +108,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'api.middleware.VersionMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -295,6 +296,8 @@ DATABASES = {
         'NAME': os.environ.get('DATABASE_NAME', 'deis'),
     }
 }
+
+APP_URL_REGEX = '[a-z0-9-]+'
 
 # SECURITY: change this to allowed fqdn's to prevent host poisioning attacks
 # see https://docs.djangoproject.com/en/1.5/ref/settings/#std:setting-ALLOWED_HOSTS

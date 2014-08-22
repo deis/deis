@@ -3,46 +3,16 @@
 package tests
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
-func authSetup(t *testing.T) *itutils.DeisTestConfig {
-	user := itutils.GetGlobalConfig()
-	user.UserName, user.Password = utils.GetUserDetails()
-	fmt.Println("username :" + user.UserName)
-	fmt.Println("password :" + user.Password)
-	return user
-}
-
-func authRegisterTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("auth", "register")
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.Execute(t, cmd, params, true, "Registration failed")
-}
-
-func authLoginTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, params, false, "")
-	params = authSetup(t)
-	itutils.Execute(t, cmd, params, true, "200 OK")
-}
-
-func authLogoutTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("auth", "logout")
-	itutils.Execute(t, cmd, params, false, "")
-}
-
-func authCancel(t *testing.T, params *itutils.DeisTestConfig) {
-	itutils.AuthCancel(t, params)
-}
-
-func teardown(t *testing.T, params *itutils.DeisTestConfig) {
-	authLogoutTest(t, params)
-}
+var (
+	authLoginCmd    = "auth:login http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}}"
+	authLogoutCmd   = "auth:logout"
+	authRegisterCmd = "auth:register http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}"
+)
 
 func TestAuth(t *testing.T) {
 	params := authSetup(t)
@@ -50,4 +20,31 @@ func TestAuth(t *testing.T) {
 	authLogoutTest(t, params)
 	authLoginTest(t, params)
 	authCancel(t, params)
+}
+
+func authSetup(t *testing.T) *utils.DeisTestConfig {
+	user := utils.GetGlobalConfig()
+	user.UserName, user.Password = utils.NewID(), utils.NewID()
+	return user
+}
+
+func authCancel(t *testing.T, params *utils.DeisTestConfig) {
+	utils.AuthCancel(t, params)
+}
+
+func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
+	cmd := authLoginCmd
+	utils.Execute(t, cmd, params, false, "")
+	params = authSetup(t)
+	utils.Execute(t, cmd, params, true, "200 OK")
+}
+
+func authLogoutTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, authLogoutCmd, params, false, "")
+}
+
+func authRegisterTest(t *testing.T, params *utils.DeisTestConfig) {
+	cmd := authRegisterCmd
+	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, true, "Registration failed")
 }

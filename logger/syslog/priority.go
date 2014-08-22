@@ -1,32 +1,34 @@
 package syslog
 
+// Facility represents a message source as defined by RFC 3164.
 type Facility byte
 
+// The following is a list of Facilities as defined by RFC 3164.
 const (
-	Kern Facility = iota
-	User
-	Mail
-	Daemon
-	Auth
-	Syslog
-	Lpr
-	News
-	Uucp
-	Cron
-	Authpriv
-	System0
-	System1
-	System2
-	System3
-	System4
-	Local0
-	Local1
-	Local2
-	Local3
-	Local4
-	Local5
-	Local6
-	Local7
+	Kern     Facility = iota // kernel messages
+	User                     // user-level messages
+	Mail                     // mail system
+	Daemon                   // system daemons
+	Auth                     // security/authorization messages
+	Syslog                   // messages internal to syslogd
+	Lpr                      // line printer subsystem
+	News                     // newtork news subsystem
+	Uucp                     // UUCP subsystem
+	Cron                     // cron messages
+	Authpriv                 // security/authorization messages
+	System0                  // historically FTP daemon
+	System1                  // historically NTP subsystem
+	System2                  // historically log audit
+	System3                  // historically log alert
+	System4                  // historically clock daemon, some operating systems use this for cron
+	Local0                   // local use 0
+	Local1                   // local use 1
+	Local2                   // local use 2
+	Local3                   // local use 3
+	Local4                   // local use 4
+	Local5                   // local use 5
+	Local6                   // local use 6
+	Local7                   // local use 7
 )
 
 var facToStr = [...]string{
@@ -56,6 +58,8 @@ var facToStr = [...]string{
 	"local7",
 }
 
+// String returns a string representation of the Facility. This satisfies the
+// fmt.Stringer interface.
 func (f Facility) String() string {
 	if f > Local7 {
 		return "unknown"
@@ -63,16 +67,25 @@ func (f Facility) String() string {
 	return facToStr[f]
 }
 
+// Severity represents a level of messsage importance.
 type Severity byte
 
 const (
+	// Emerg - system is unusable
 	Emerg Severity = iota
+	// Alert - immediate action required
 	Alert
+	// Crit - critical conditions
 	Crit
+	// Err - error conditions
 	Err
+	// Warning - warning conditions
 	Warning
+	// Notice - normal but significant condition
 	Notice
+	// Info - information message
 	Info
+	// Debug - debug-level message
 	Debug
 )
 
@@ -87,6 +100,8 @@ var sevToStr = [...]string{
 	"debug",
 }
 
+// String returns a string representation of the Severity. This satisfies the
+// fmt.Stringer interface.
 func (s Severity) String() string {
 	if s > Debug {
 		return "unknown"

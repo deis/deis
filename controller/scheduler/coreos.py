@@ -11,7 +11,9 @@ ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
 if not os.path.exists(ROOT_DIR):
     os.mkdir(ROOT_DIR)
 
-MATCH = re.compile('(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+MATCH = re.compile(
+    '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+
 
 class FleetClient(object):
 
@@ -56,13 +58,13 @@ class FleetClient(object):
 
     # job api
 
-    def create(self, name, image, command='', template=None, use_announcer=True):
+    def create(self, name, image, command='', template=None, use_announcer=True, **kwargs):
         """
         Create a new job
         """
         print 'Creating {name}'.format(**locals())
         env = self.env.copy()
-        self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env)
+        self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env, **kwargs)
         self._create_log(name, image, command, LOG_TEMPLATE, env)
 
         if use_announcer:
@@ -70,11 +72,30 @@ class FleetClient(object):
         else:
             self._log_skipped_announcer('create', name)
 
-    def _create_container(self, name, image, command, template, env):
+    def _create_container(self, name, image, command, template, env, **kwargs):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
+        # prepare memory limit for the container type
+        mem = kwargs.get('memory', {}).get(l['c_type'], None)
+        if mem:
+            l.update({'memory': '-m {}'.format(mem.lower())})
+        else:
+            l.update({'memory': ''})
+        # prepare memory limit for the container type
+        cpu = kwargs.get('cpu', {}).get(l['c_type'], None)
+        if cpu:
+            l.update({'cpu': '-c {}'.format(cpu)})
+        else:
+            l.update({'cpu': ''})
         env.update({'FLEETW_UNIT': name + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
+        # construct unit from template
+        unit = template.format(**l)
+        # prepare tags only if one was provided
+        tags = kwargs.get('tags', {})
+        if tags:
+            tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
+            unit = unit + '\n[X-Fleet]\nX-ConditionMachineMetadata={}\n'.format(tagset)
+        env.update({'FLEETW_UNIT_DATA': base64.b64encode(unit)})
         return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
                                      shell=True, env=env)
 
@@ -129,7 +150,7 @@ class FleetClient(object):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
             status = subprocess.check_output(
-                "fleetctl.sh list-units | grep {name}-announce.service | awk '{{print $5}}'".format(**locals()),
+                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
@@ -222,12 +243,12 @@ CONTAINER_TEMPLATE = """
 Description={name}
 
 [Service]
-ExecStartPre=/usr/bin/docker pull {image}
+ExecStartPre=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' {image} | cut -d/ -f1) ; docker run --name {name} -P -e PORT=$port {image} {command}"
+ExecStart=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"
 ExecStop=/usr/bin/docker rm -f {name}
 TimeoutStartSec=20m
-"""
+"""  # noqa
 
 # TODO revisit the "not getting a port" issue after we upgrade to Docker 1.1.0
 ANNOUNCE_TEMPLATE = """
@@ -237,14 +258,14 @@ BindsTo={name}.service
 
 [Service]
 EnvironmentFile=/etc/environment
-ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .HostConfig.PortBindings }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
+ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
+ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
 ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
+"""  # noqa
 
 LOG_TEMPLATE = """
 [Unit]
@@ -253,9 +274,9 @@ BindsTo={name}.service
 
 [Service]
 ExecStartPre=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host | cut -d ':' -f1) --port $(etcdctl get /deis/logs/port | cut -d ':' -f2)"
+ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"
 TimeoutStartSec=20m
 
 [X-Fleet]
 X-ConditionMachineOf={name}.service
-"""
+"""  # noqa

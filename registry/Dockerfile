@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list
@@ -15,7 +15,7 @@ RUN useradd -s /bin/bash registry
 # add the docker registry source from github
 RUN git clone https://github.com/deis/docker-registry /docker-registry && \
     cd /docker-registry && \
-    git checkout 3a192af && \
+    git checkout 3cf76a4 && \
     chown -R registry:registry /docker-registry
 
 # install boto configuration
@@ -29,17 +29,15 @@ RUN pip install /docker-registry/depends/docker-registry-core
 RUN pip install file:///docker-registry#egg=docker-registry[bugsnag]
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config.yml
-ENV SETTINGS_FLAVOR dev
+ENV SETTINGS_FLAVOR deis
 
 # create data volume
 RUN mkdir -p /data/repositories && chown -R registry:registry /data
 ENV STORAGE_PATH /data
 VOLUME /data
 
-# add the current build context to /app
-ADD . /app
-
 # define the execution environment
 WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5000
+ADD . /app

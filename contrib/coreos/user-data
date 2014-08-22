@@ -7,45 +7,15 @@ coreos:
     # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
     addr: $private_ipv4:4001
     peer-addr: $private_ipv4:7001
+  fleet:
+    # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
+    # will all publish the same private IP. This is harmless for cloud providers.
+    public_ip: $private_ipv4
   units:
-  - name: docker.service
-    content: |
-      [Unit]
-      Description=Docker Application Container Engine
-      Documentation=http://docs.docker.io
-
-      [Service]
-      ExecStartPre=/bin/mount --make-rprivate /
-      # Run docker but don't have docker automatically restart
-      # containers. This is a job for systemd and unit files.
-      ExecStart=/usr/bin/docker -d -s=btrfs -r=false -H fd://
-
-      [Install]
-      WantedBy=multi-user.target
-  - name: docker-tcp.socket
-    command: start
-    content: |
-      [Unit]
-      Description=Docker Socket for Remote API
-
-      [Socket]
-      ListenStream=4243
-      Service=docker.service
-      BindIPv6Only=both
-
-      [Install]
-      WantedBy=sockets.target
   - name: etcd.service
     command: start
   - name: fleet.service
     command: start
-    content: |
-      [Unit]
-      Description=fleet
-
-      [Service]
-      Environment=FLEET_PUBLIC_IP=$private_ipv4
-      ExecStart=/usr/bin/fleet
   - name: stop-update-engine.service
     command: start
     content: |
@@ -56,51 +26,28 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
-  - name: write-deis-motd.service
-    command: start
-    content: |
-      [Unit]
-      Description=write the Deis motd
-      ConditionFileNotEmpty=/run/deis/motd
-
-      [Service]
-      Type=oneshot
-      ExecStartPre=/usr/bin/rm /etc/motd
-      ExecStart=/usr/bin/ln -s /run/deis/motd /etc/motd
-  - name: link-deis-bashrc.service
-    command: start
-    content: |
-      [Unit]
-      Description=remove .bashrc file for CoreOS user
-      ConditionFileNotEmpty=/run/deis/.bashrc
-
-      [Service]
-      Type=oneshot
-      ExecStartPre=/usr/bin/rm /home/core/.bashrc
-      ExecStart=/usr/bin/ln -s /run/deis/.bashrc /home/core/.bashrc
 write_files:
   - path: /etc/deis-release
     content: |
-      DEIS_RELEASE=v0.10.0
-  - path: /run/deis/motd
+      DEIS_RELEASE=v0.11.0
+  - path: /etc/motd
     content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
-  - path: /run/deis/.bashrc
-    owner: core
+  - path: /etc/profile.d/nse-function.sh
+    permissions: '0755'
     content: |
-      source /usr/share/skel/.bashrc
       function nse() {
         sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
       }
   - path: /run/deis/bin/get_image
-    permissions: 0755
+    permissions: '0755'
     content: |
       #!/bin/bash
       # usage: get_image <component_path>
-      IMAGE=`etcdctl get $1/image`
+      IMAGE=`etcdctl get $1/image 2>/dev/null`
 
       # if no image was set in etcd, we use the default plus the release string
       if [ $? -ne 0 ]; then
-        RELEASE=`etcdctl get /deis/release`
+        RELEASE=`etcdctl get /deis/release 2>/dev/null`
 
         # if no release was set in etcd, use the default provisioned with the server
         if [ $? -ne 0 ]; then

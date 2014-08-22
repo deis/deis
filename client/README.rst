@@ -28,8 +28,8 @@ lightweight and flexible.
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
 anything using Docker images or Heroku Buildpacks. Deis is designed to work
-with any cloud provider. Currently Amazon EC2 and DigitalOcean
-are supported.
+with any cloud provider. Currently Amazon EC2, Rackspace, DigitalOcean, and
+Google Compute Engine are supported.
 
 
 Why Deis?
@@ -78,9 +78,9 @@ Get Started
 If you don't have `Python`_ installed, you can download a binary executable
 version of the Deis client for Mac OS X, Windows, or Linux amd64:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.10.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.10.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.10.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.11.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.11.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.11.0.tgz
 
 2. `Register a User`_:
 

@@ -1,2 +1,2 @@
-// Package github.com/deis/deis/tests runs Deis integration tests.
+// Package tests contains integration tests for the Deis open source PaaS.
 package tests

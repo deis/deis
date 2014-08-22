@@ -42,6 +42,8 @@ class AppTest(TestCase):
         app_id = response.data['id']  # noqa
         self.assertIn('cluster', response.data)
         self.assertIn('id', response.data)
+        self.assertIn('url', response.data)
+        self.assertEqual(response.data['url'], '{app_id}.autotest.local'.format(**locals()))
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)

@@ -11,6 +11,7 @@ import requests
 import threading
 
 from celery import task
+from docker.utils import utils
 from django.conf import settings
 
 
@@ -78,18 +79,27 @@ def stop_containers(containers):
 @task
 def run_command(c, command):
     release = c.release
-    version = release.version
-    image = release.image
+    image = release.image + ':v' + str(release.version)
+    # check for backwards compatibility
+    if not _has_hostname(image):
+        image = '{}:{}/{}'.format(settings.REGISTRY_HOST,
+                                  settings.REGISTRY_PORT,
+                                  release.image)
     try:
         # pull the image first
         rc, pull_output = c.run("docker pull {image}".format(**locals()))
         if rc != 0:
-            raise EnvironmentError('Could not pull image: {pull_image}'.format(**locals()))
+            raise EnvironmentError('Could not pull image: {image}'.format(**locals()))
         # run the command
-        docker_args = ' '.join(['--entrypoint=/bin/sh',
+        docker_args = ' '.join(['--entrypoint=/bin/bash',
                                 '-a', 'stdout', '-a', 'stderr', '--rm', image])
         escaped_command = command.replace("'", "'\\''")
         command = r"docker run {docker_args} -c \'{escaped_command}\'".format(**locals())
         return c.run(command)
     finally:
         c.delete()
+
+
+def _has_hostname(image):
+    repo, tag = utils.parse_repository_tag(image)
+    return True if '/' in repo and '.' in repo.split('/')[0] else False

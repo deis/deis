@@ -60,7 +60,7 @@ setup.cfg file in the project root.
 -----------------
 
 Once your code passes the style checker, run the test suite and
-ensure that everything passes and that code coverage has not declined.
+ensure that everything passes.
 
 .. code-block:: console
 
@@ -77,17 +77,9 @@ ensure that everything passes and that code coverage has not declined.
     coverage html
 
 If a test fails, fixing it is obviously the first priority. And if you
-have introduced new code, it must be accompanied by unit tests.
-
-In the example above, all tests passed and ``coverage`` created a report
-of what code was exercised while the tests were running. Open the file
-``htmlcov/index.html`` under the project's root and ensure that the
-overall coverage percentage has not receded as a result of your
-changes. Current test coverage can be found here:
-
-.. image:: https://coveralls.io/repos/deis/deis/badge.png?branch=master
-    :target: https://coveralls.io/r/deis/deis?branch=master
-    :alt: Coverage Status
+have introduced new code, it must be accompanied by unit tests. A report
+of what lines of code were exercised by the tests will be
+in htmlcov/index.html.
 
 
 .. _pull_request:
@@ -194,8 +186,8 @@ Format of the Commit Message
     <BLANK LINE>
     {footer}
 
-Any line of the commit message cannot be longer than 90 characters, with the subject
-line limited to 70 characters. This allows the message to be easier to read on github
+Any line of the commit message cannot be longer than 72 characters, with the subject
+line limited to 50 characters. This allows the message to be easier to read on github
 as well as in various git tools.
 
 Subject Line
@@ -209,7 +201,7 @@ The allowed {types} are as follows:
 - fix -> bug fix
 - docs -> documentation
 - style -> formatting
-- refactor
+- ref -> refactoring code
 - test -> adding missing tests
 - chore -> maintenance
 

@@ -6,11 +6,19 @@ from __future__ import unicode_literals
 
 import re
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from api import models
 from api import utils
+
+
+PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z]+)')
+MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+[BbKkMmGg])$')
+CPUSHARE_MATCH = re.compile(r'^(?P<cpu>[0-9]+)$')
+TAGKEY_MATCH = re.compile(r'^[a-z]+$')
+TAGVAL_MATCH = re.compile(r'^\w+$')
 
 
 class OwnerSlugRelatedField(serializers.SlugRelatedField):
@@ -62,6 +70,16 @@ class ClusterSerializer(serializers.ModelSerializer):
         model = models.Cluster
         read_only_fields = ('created', 'updated')
 
+    def validate_domain(self, attrs, source):
+        value = attrs[source]
+        models.validate_domain(value)
+        return attrs
+
+    def validate_hosts(self, attrs, source):
+        value = attrs[source]
+        models.validate_comma_separated(value)
+        return attrs
+
 
 class PushSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Push` model."""
@@ -94,11 +112,56 @@ class ConfigSerializer(serializers.ModelSerializer):
     app = serializers.SlugRelatedField(slug_field='id')
     values = serializers.ModelField(
         model_field=models.Config()._meta.get_field('values'), required=False)
+    memory = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('memory'), required=False)
+    cpu = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('cpu'), required=False)
+    tags = serializers.ModelField(
+        model_field=models.Config()._meta.get_field('tags'), required=False)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
         model = models.Config
         read_only_fields = ('uuid', 'created', 'updated')
+
+    def validate_memory(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(PROCTYPE_MATCH, k):
+                raise serializers.ValidationError("Process types can only contain [a-z]")
+            if not re.match(MEMLIMIT_MATCH, str(v)):
+                raise serializers.ValidationError(
+                    "Limit format: <number><unit>, where unit = B, K, M or G")
+        return attrs
+
+    def validate_cpu(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(PROCTYPE_MATCH, k):
+                raise serializers.ValidationError("Process types can only contain [a-z]")
+            shares = re.match(CPUSHARE_MATCH, str(v))
+            if not shares:
+                raise serializers.ValidationError("CPU shares must be an integer")
+            for v in shares.groupdict().values():
+                try:
+                    i = int(v)
+                except ValueError:
+                    raise serializers.ValidationError("CPU shares must be an integer")
+                if i > 1024 or i < 0:
+                    raise serializers.ValidationError("CPU shares must be between 0 and 1024")
+        return attrs
+
+    def validate_tags(self, attrs, source):
+        for k, v in attrs.get(source, {}).items():
+            if v is None:  # use NoneType to unset a value
+                continue
+            if not re.match(TAGKEY_MATCH, k):
+                raise serializers.ValidationError("Tag keys can only contain [a-z]")
+            if not re.match(TAGVAL_MATCH, str(v)):
+                raise serializers.ValidationError("Invalid tag value")
+        return attrs
 
 
 class ReleaseSerializer(serializers.ModelSerializer):
@@ -121,6 +184,7 @@ class AppSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     id = serializers.SlugField(default=utils.generate_app_name)
     cluster = serializers.SlugRelatedField(slug_field='id')
+    url = serializers.Field(source='url')
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""
@@ -137,6 +201,14 @@ class AppSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
         if value == 'deis':
             raise serializers.ValidationError("App IDs cannot be 'deis'")
+        return attrs
+
+    def validate_structure(self, attrs, source):
+        """
+        Check that the structure JSON dict has non-negative ints as its values.
+        """
+        value = attrs[source]
+        models.validate_app_structure(value)
         return attrs
 
 
@@ -184,7 +256,9 @@ class DomainSerializer(serializers.ModelSerializer):
         Check that the hostname is valid
         """
         value = attrs[source]
-        match = re.match(r'^(\*\.)?([a-z0-9-]+\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$', value)
+        match = re.match(
+            r'^(\*\.)?(' + settings.APP_URL_REGEX + r'\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$',
+            value)
         if not match:
             raise serializers.ValidationError(
                 "Hostname does not look like a valid hostname. "

@@ -4,76 +4,87 @@ package tests
 
 import (
 	"bytes"
-	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
 	"text/template"
+	"time"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
-func buildSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
-	cfg.ExampleApp = itutils.GetRandomApp()
-	cfg.AppName = "buildsample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
-	cmd2 := itutils.GetCommand("git", "add")
-	cmd3 := itutils.GetCommand("git", "commit")
-	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	}
+var (
+	buildsListCmd   = "builds:list --app={{.AppName}}"
+	buildsCreateCmd = "builds:create {{.ImageID}} --app={{.AppName}}"
+)
 
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
-	if err := utils.CreateFile(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+func TestBuilds(t *testing.T) {
+	params := buildSetup(t)
+	buildsListTest(t, params)
+	appsOpenTest(t, params)
+	utils.AppsDestroyTest(t, params)
+	buildsCreateTest(t, params)
+	// TODO: router needs a few seconds to wake up here--fixme!
+	time.Sleep(5000 * time.Millisecond)
+	appsOpenTest(t, params)
+	utils.AppsDestroyTest(t, params)
+}
+
+func buildSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
+	cfg.AppName = "buildsample"
+	utils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, gitCloneCmd, cfg, false, "")
+	if err := utils.Chdir(cfg.ExampleApp); err != nil {
+		t.Fatal(err)
 	}
-	itutils.Execute(t, cmd2, cfg, false, "")
-	itutils.Execute(t, cmd3, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
+	utils.Execute(t, appsCreateCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
+	if err := utils.CreateFile(cfg.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, gitAddCmd, cfg, false, "")
+	utils.Execute(t, gitCommitCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
+		t.Fatal(err)
 	}
 	return cfg
 }
 
-func buildsListTest(t *testing.T, params *itutils.DeisTestConfig) {
-	Deis := "/usr/local/bin/deis "
-	cmd := itutils.GetCommand("builds", "list")
+func buildsListTest(t *testing.T, params *utils.DeisTestConfig) {
+	cmd := buildsListCmd
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
 	if err := tmpl.Execute(&cmdBuf, params); err != nil {
 		t.Fatal(err)
 	}
 	cmdString := cmdBuf.String()
-	fmt.Println(cmdString)
-	cmdl := exec.Command("sh", "-c", Deis+cmdString)
-	if stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	} else {
-		ImageId := strings.Split(stdout.String(), "\n")[2]
-		params.ImageId = strings.Fields(ImageId)[0]
+	cmdl := exec.Command("sh", "-c", utils.Deis+cmdString)
+	stdout, _, err := utils.RunCommandWithStdoutStderr(cmdl)
+	if err != nil {
+		t.Fatal(err)
 	}
-
+	ImageID := strings.Split(stdout.String(), "\n")[2]
+	params.ImageID = strings.Fields(ImageID)[0]
 }
 
-func buildsCreateTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("builds", "create")
-	itutils.Execute(t, cmd, params, false, "")
-
-}
-
-func TestBuilds(t *testing.T) {
-	params := buildSetup(t)
-	buildsListTest(t, params)
-	buildsCreateTest(t, params)
-	appsOpenTest(t, params)
-	itutils.AppsDestroyTest(t, params)
+// buildsCreateTest uses the `deis builds:create` (or `deis pull`) command
+// to promote a build from an existing docker image.
+func buildsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
+	params.AppName = "deispullsample"
+	params.ImageID = "deis/example-dockerfile-python:latest"
+	params.ExampleApp = "example-deis-pull"
+	if err := os.Mkdir(params.ExampleApp, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, appsCreateCmd, params, false, "")
+	utils.Execute(t, buildsCreateCmd, params, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
 }

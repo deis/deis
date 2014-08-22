@@ -9,11 +9,13 @@ import etcd
 import importlib
 import logging
 import os
+import re
 import subprocess
 
 from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models, connections
 from django.db.models import Max
 from django.db.models.signals import post_delete
@@ -48,6 +50,31 @@ def close_db_connections(func, *args, **kwargs):
         for conn in connections.all():
             conn.close()
     return _inner
+
+
+def validate_app_structure(value):
+    """Error if the dict values aren't ints >= 0."""
+    try:
+        for k, v in value.iteritems():
+            if int(v) < 0:
+                raise ValueError("Must be greater than or equal to zero")
+    except ValueError, err:
+        raise ValidationError(err)
+
+
+def validate_comma_separated(value):
+    """Error if the value doesn't look like a list of hostnames or IP addresses
+    separated by commas.
+    """
+    if not re.search(r'^[a-zA-Z0-9-,\.]+$', value):
+        raise ValidationError(
+            "{} should be a comma-separated list".format(value))
+
+
+def validate_domain(value):
+    """Error if the domain contains unexpected characters."""
+    if not re.search(r'^[a-zA-Z0-9-\.]+$', value):
+        raise ValidationError('"{}" contains unexpected characters'.format(value))
 
 
 class AuditedModel(models.Model):
@@ -85,10 +112,10 @@ class Cluster(UuidAuditedModel):
     id = models.CharField(max_length=128, unique=True)
     type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
 
-    domain = models.CharField(max_length=128)
-    hosts = models.CharField(max_length=256)
+    domain = models.CharField(max_length=128, validators=[validate_domain])
+    hosts = models.CharField(max_length=256, validators=[validate_comma_separated])
     auth = models.TextField()
-    options = JSONField(default='{}', blank=True)
+    options = JSONField(default={}, blank=True)
 
     def __str__(self):
         return self.id
@@ -123,7 +150,7 @@ class App(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
     cluster = models.ForeignKey('Cluster')
-    structure = JSONField(default='{}', blank=True)
+    structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)
@@ -131,14 +158,22 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    @property
+    def url(self):
+        return self.id + '.' + self.cluster.domain
+
     def create(self, *args, **kwargs):
-        config = Config.objects.create(owner=self.owner, app=self, values={})
+        config = Config.objects.create(owner=self.owner, app=self)
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
     def delete(self, *args, **kwargs):
         for c in self.container_set.all():
             c.destroy()
+        # delete application logs stored by deis/logger
+        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
+        if os.path.exists(path):
+            os.remove(path)
         return super(App, self).delete(*args, **kwargs)
 
     def deploy(self, release, initial=False):
@@ -151,7 +186,7 @@ class App(UuidAuditedModel):
             elif release.build.dockerfile and not release.build.procfile:
                 self.structure = {'cmd': 1}
             # if a procfile exists without a web entry, assume docker workflow
-            elif release.build.procfile and not 'web' in release.build.procfile:
+            elif release.build.procfile and 'web' not in release.build.procfile:
                 self.structure = {'cmd': 1}
             # default to heroku workflow
             else:
@@ -171,7 +206,7 @@ class App(UuidAuditedModel):
         for container_type in requested_containers.keys():
             if container_type == 'cmd':
                 continue  # allow docker cmd types in case we don't have the image source
-            if not container_type in available_process_types:
+            if container_type not in available_process_types:
                 raise EnvironmentError(
                     'Container type {} does not exist in application'.format(container_type))
         msg = 'Containers scaled ' + ' '.join(
@@ -255,14 +290,12 @@ class Container(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     release = models.ForeignKey('Release')
-    type = models.CharField(max_length=128, blank=True)
+    type = models.CharField(max_length=128, blank=False)
     num = models.PositiveIntegerField()
     state = FSMField(default=INITIALIZED, choices=STATE_CHOICES, protected=True)
 
     def short_name(self):
-        if self.type:
-            return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
-        return "{}.{}".format(self.release.app.id, self.num)
+        return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
     short_name.short_description = 'Name'
 
     def __str__(self):
@@ -277,11 +310,7 @@ class Container(UuidAuditedModel):
         release = self.release
         version = "v{}".format(release.version)
         num = self.num
-        c_type = self.type
-        if not c_type:
-            job_id = "{app}_{version}.{num}".format(**locals())
-        else:
-            job_id = "{app}_{version}.{c_type}.{num}".format(**locals())
+        job_id = "{app}_{version}.{self.type}.{num}".format(**locals())
         return job_id
 
     _job_id = property(_get_job_id)
@@ -292,15 +321,11 @@ class Container(UuidAuditedModel):
     _scheduler = property(_get_scheduler)
 
     def _get_command(self):
-        c_type = self.type
-        if c_type:
-            # handle special case for Dockerfile deployments
-            if c_type == 'cmd':
-                return ''
-            else:
-                return "start {}".format(c_type)
-        else:
+        # handle special case for Dockerfile deployments
+        if self.type == 'cmd':
             return ''
+        else:
+            return 'start {}'.format(self.type)
 
     _command = property(_get_command)
 
@@ -311,10 +336,14 @@ class Container(UuidAuditedModel):
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
+        kwargs = {'memory': self.release.config.memory,
+                  'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags}
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
-                               use_announcer=self._command_announceable())
+                               use_announcer=self._command_announceable(),
+                               **kwargs)
 
     @close_db_connections
     @transition(field=state,
@@ -337,10 +366,14 @@ class Container(UuidAuditedModel):
         new_job_id = self._job_id
         image = self.release.image
         c_type = self.type
+        kwargs = {'memory': self.release.config.memory,
+                  'cpu': self.release.config.cpu,
+                  'tags': self.release.config.tags}
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
-                               use_announcer=self._command_announceable())
+                               use_announcer=self._command_announceable(),
+                               **kwargs)
         self._scheduler.start(new_job_id, self._command_announceable())
         # destroy old container
         self._scheduler.destroy(old_job_id, self._command_announceable())
@@ -404,7 +437,7 @@ class Build(UuidAuditedModel):
 
     # optional fields populated by builder
     sha = models.CharField(max_length=40, blank=True)
-    procfile = JSONField(default='{}', blank=True)
+    procfile = JSONField(default={}, blank=True)
     dockerfile = models.TextField(blank=True)
 
     class Meta:
@@ -425,7 +458,10 @@ class Config(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
-    values = JSONField(default='{}', blank=True)
+    values = JSONField(default={}, blank=True)
+    memory = JSONField(default={}, blank=True)
+    cpu = JSONField(default={}, blank=True)
+    tags = JSONField(default={}, blank=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -479,8 +515,7 @@ class Release(UuidAuditedModel):
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
         release_image = '{}:{}'.format(self.app.id, tag)
-        target_image = '{}:{}/{}'.format(
-            settings.REGISTRY_HOST, settings.REGISTRY_PORT, self.app.id)
+        target_image = '{}'.format(self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
@@ -492,6 +527,11 @@ class Release(UuidAuditedModel):
             tasks.import_repository.delay(build.image, self.app.id).get()
             # update the source image to the repository we just imported
             source_image = self.app.id
+            # if the image imported had a tag specified, use that tag as the source
+            if ':' in build.image:
+                if '/' not in build.image[build.image.rfind(':') + 1:]:
+                    source_image += build.image[build.image.rfind(':'):]
+
         publish_release(source_image,
                         config.values,
                         release_image,)
@@ -513,12 +553,13 @@ class Release(UuidAuditedModel):
             prev_release = None
         return prev_release
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):  # noqa
         if not self.summary:
             self.summary = ''
             prev_release = self.previous()
             # compare this build to the previous build
             old_build = prev_release.build if prev_release else None
+            old_config = prev_release.config if prev_release else None
             # if the build changed, log it and who pushed it
             if self.version == 1:
                 self.summary += "{} created initial release".format(self.app.owner)
@@ -527,8 +568,6 @@ class Release(UuidAuditedModel):
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.sha[:7])
                 else:
                     self.summary += "{} deployed {}".format(self.build.owner, self.build.image)
-            # compare this config to the previous config
-            old_config = prev_release.config if prev_release else None
             # if the config data changed, log the dict diff
             if self.config != old_config:
                 dict1 = self.config.values
@@ -546,11 +585,40 @@ class Release(UuidAuditedModel):
                     if self.summary:
                         self.summary += ' and '
                     self.summary += "{} {}".format(self.config.owner, changes)
-                if not self.summary:
-                    if self.version == 1:
-                        self.summary = "{} created the initial release".format(self.owner)
-                    else:
-                        self.summary = "{} changed nothing".format(self.owner)
+                # if the limits changed (memory or cpu), log the dict diff
+                changes = []
+                old_mem = old_config.memory if old_config else {}
+                diff = dict_diff(self.config.memory, old_mem)
+                if diff.get('added') or diff.get('changed') or diff.get('deleted'):
+                    changes.append('memory')
+                old_cpu = old_config.cpu if old_config else {}
+                diff = dict_diff(self.config.cpu, old_cpu)
+                if diff.get('added') or diff.get('changed') or diff.get('deleted'):
+                    changes.append('cpu')
+                if changes:
+                    changes = 'changed limits for '+', '.join(changes)
+                    self.summary += "{} {}".format(self.config.owner, changes)
+                # if the tags changed, log the dict diff
+                changes = []
+                old_tags = old_config.tags if old_config else {}
+                diff = dict_diff(self.config.tags, old_tags)
+                # try to be as succinct as possible
+                added = ', '.join(k for k in diff.get('added', {}))
+                added = 'added tag ' + added if added else ''
+                changed = ', '.join(k for k in diff.get('changed', {}))
+                changed = 'changed tag ' + changed if changed else ''
+                deleted = ', '.join(k for k in diff.get('deleted', {}))
+                deleted = 'deleted tag ' + deleted if deleted else ''
+                changes = ', '.join(i for i in (added, changed, deleted) if i)
+                if changes:
+                    if self.summary:
+                        self.summary += ' and '
+                    self.summary += "{} {}".format(self.config.owner, changes)
+            if not self.summary:
+                if self.version == 1:
+                    self.summary = "{} created the initial release".format(self.owner)
+                else:
+                    self.summary = "{} changed nothing".format(self.owner)
         super(Release, self).save(*args, **kwargs)
 
 

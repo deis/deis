@@ -116,7 +116,7 @@ class HookTest(TransactionTestCase):
         url = '/api/hooks/builds'.format(**locals())
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
-                'image': 'registry.local:5000/{app_id}:v2'.format(**locals())}
+                'image': '{app_id}:v2'.format(**locals())}
         # post the build without a session
         self.assertIsNone(self.client.logout())
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -142,7 +142,7 @@ class HookTest(TransactionTestCase):
         SHA = 'ecdff91c57a0b9ab82e89634df87e293d259a3aa'
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
-                'image': 'registry.local:5000/{app_id}:v2'.format(**locals()),
+                'image': '{app_id}:v2'.format(**locals()),
                 'sha': SHA,
                 'procfile': PROCFILE}
         # post the build without a session
@@ -191,7 +191,7 @@ class HookTest(TransactionTestCase):
         """
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
-                'image': 'registry.local:5000/{app_id}:v2'.format(**locals()),
+                'image': '{app_id}:v2'.format(**locals()),
                 'sha': SHA,
                 'dockerfile': DOCKERFILE}
         # post the build without a session

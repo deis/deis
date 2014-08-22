@@ -6,11 +6,12 @@ import (
 	"time"
 )
 
+// Message defines an RFC 3164 syslog message.
 type Message struct {
-	Time   time.Time
-	Source net.Addr
-	Facility
-	Severity
+	Time      time.Time // time the message was logged
+	Source    net.Addr  // source address of the log message
+	Facility            // facility tag (see type Facility)
+	Severity            // severity tag (see type Severity)
 	Timestamp time.Time // optional
 	Hostname  string    // optional
 	Tag       string    // message tag as defined in RFC 3164
@@ -33,6 +34,8 @@ func (m *Message) NetSrc() string {
 	return m.Source.String()
 }
 
+// String returns the Message in a string format. This satisfies the fmt.Stringer
+// interface.
 func (m *Message) String() string {
 	timeLayout := "2006-01-02 15:04:05"
 	return fmt.Sprintf(

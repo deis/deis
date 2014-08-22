@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-// FileHandler implements Handler interface in the way to save messages into a
+// FileHandler implements Handler interface to save messages into a
 // text file. It properly handles logrotate HUP signal (closes a file and tries
 // to open/create new one).
 type FileHandler struct {
@@ -89,6 +89,7 @@ func (h *FileHandler) checkErr(err error) bool {
 	return true
 }
 
+// Handle queues and dispatches a message. See BaseHandler.Handle
 func (h *FileHandler) Handle(m *Message) *Message {
 	return h.bh.Handle(m)
 }

@@ -36,7 +36,7 @@ $ tugboat keys
 
 ## Create a Deis image:
 ```console
-$ ./provision-digitalocean-deis-image.sh <SSH KEY ID>
+$ ./provision-digitalocean-deis-image.sh <SSH KEY ID> [REGION_ID]
 ```
 
 ## Choose number of instances

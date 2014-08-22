@@ -1,5 +1,5 @@
 FROM deis/base:latest
-MAINTAINER Gabriel Monroy <gabriel@opdemand.com>
+MAINTAINER OpDemand <info@opdemand.com>
 
 # install docker-in-docker
 RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -yq \
     openssh-server git \
     aufs-tools iptables lxc \
     curl \
-    lxc-docker-1.1.1
+    lxc-docker-1.1.2
 
 # configure ssh server
 RUN rm /etc/ssh/ssh_host_*
@@ -35,9 +35,10 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 # let the git user run `sudo /home/git/builder` (not writeable)
 RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 
-# add the current build context to /app
-ADD . /app
-RUN chown -R root:root /app
+# HACK: import progrium/cedarish as a tarball
+# see https://github.com/deis/deis/issues/1027
+RUN wget -O /progrium_cedarish.tar --progress=dot:giga \
+        https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014.08.14.tar
 
 # define the execution environment
 VOLUME /var/lib/docker
@@ -45,3 +46,7 @@ WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
+
+ADD . /app
+ADD sshd_config /etc/ssh/sshd_config
+RUN chown -R root:root /app

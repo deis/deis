@@ -1,9 +1,0 @@
-[template]
-src   = "redis.conf"
-dest  = "/etc/redis/redis.conf"
-uid = 0
-gid = 0
-mode  = "0644"
-keys = [
-  "/deis/cache",
-]

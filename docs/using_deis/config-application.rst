@@ -19,6 +19,7 @@ Use ``deis config`` to modify environment variables for a deployed application.
     config:list        list environment variables for an app
     config:set         set environment variables for an app
     config:unset       unset environment variables for an app
+    config:pull        extract environment variables to .env
 
     Use `deis help [command]` to learn more
 

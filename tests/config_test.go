@@ -3,59 +3,60 @@
 package tests
 
 import (
-	_ "fmt"
 	"testing"
 
-	"github.com/deis/deis/tests/integration-utils"
 	"github.com/deis/deis/tests/utils"
 )
 
-func configSetup(t *testing.T) *itutils.DeisTestConfig {
-	cfg := itutils.GetGlobalConfig()
-	cfg.ExampleApp = itutils.GetRandomApp()
-	cfg.AppName = "configsample"
-	cmd := itutils.GetCommand("auth", "login")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("git", "clone")
-	itutils.Execute(t, cmd, cfg, false, "")
-	cmd = itutils.GetCommand("apps", "create")
-	cmd1 := itutils.GetCommand("git", "push")
-	if err := utils.Chdir(cfg.ExampleApp); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	}
-
-	itutils.Execute(t, cmd, cfg, false, "")
-	itutils.Execute(t, cmd1, cfg, false, "")
-	if err := utils.Chdir(".."); err != nil {
-		t.Fatalf("Failed:\n%v", err)
-	}
-	return cfg
-}
-
-func configlistTest(t *testing.T, params *itutils.DeisTestConfig, notflag bool) {
-	cmd := itutils.GetCommand("config", "list")
-	itutils.CheckList(t, params, cmd, "jaf", notflag)
-
-}
-
-func configSetTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("config", "set")
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "(v3)", false)
-}
-
-func configUnsetTest(t *testing.T, params *itutils.DeisTestConfig) {
-	cmd := itutils.GetCommand("config", "unset")
-	itutils.Execute(t, cmd, params, false, "")
-	itutils.CheckList(t, params, itutils.GetCommand("apps", "info"), "(v4)", false)
-}
+var (
+	configListCmd  = "config:list --app={{.AppName}}"
+	configSetCmd   = "config:set jaf=1 --app={{.AppName}}"
+	configUnsetCmd = "config:unset jaf --app={{.AppName}}"
+)
 
 func TestConfig(t *testing.T) {
 	params := configSetup(t)
 	configSetTest(t, params)
-	configlistTest(t, params, false)
+	configListTest(t, params, false)
 	appsOpenTest(t, params)
 	configUnsetTest(t, params)
-	configlistTest(t, params, true)
-	itutils.AppsDestroyTest(t, params)
+	configListTest(t, params, true)
+	limitsSetTest(t, params, 4)
+	appsOpenTest(t, params)
+	limitsUnsetTest(t, params, 6)
+	appsOpenTest(t, params)
+	tagsTest(t, params, 8)
+	appsOpenTest(t, params)
+	utils.AppsDestroyTest(t, params)
+}
+
+func configSetup(t *testing.T) *utils.DeisTestConfig {
+	cfg := utils.GetGlobalConfig()
+	cfg.AppName = "configsample"
+	utils.Execute(t, authLoginCmd, cfg, false, "")
+	utils.Execute(t, gitCloneCmd, cfg, false, "")
+	if err := utils.Chdir(cfg.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, appsCreateCmd, cfg, false, "")
+	utils.Execute(t, gitPushCmd, cfg, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
+	return cfg
+}
+
+func configListTest(
+	t *testing.T, params *utils.DeisTestConfig, notflag bool) {
+	utils.CheckList(t, configListCmd, params, "jaf", notflag)
+}
+
+func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, configSetCmd, params, false, "")
+	utils.CheckList(t, appsInfoCmd, params, "(v3)", false)
+}
+
+func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, configUnsetCmd, params, false, "")
+	utils.CheckList(t, appsInfoCmd, params, "(v4)", false)
 }
