@@ -32,15 +32,12 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
     DEIS_NUM_INSTANCES=3
 fi
 
-regions_with_private_networking="4 5 6 7"
-if ! listcontains "$regions_with_private_networking" "$1";
+regions_without_private_networking="1 2 3"
+if listcontains "$regions_without_private_networking" "$1";
 then
     echo_red "Invalid region. Please supply a region with private networking support."
     echo_red "Valid regions are:"
-    echo_red "4: New York 2"
-    echo_red "5: Amsterdam 2"
-    echo_red "6: Singapore 1"
-    echo_red "7: London 1"
+    tugboat regions | grep -v "id: [$regions_without_private_networking])"
     exit 1
 fi
 
