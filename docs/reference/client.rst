@@ -117,3 +117,12 @@ deis releases
 .. automethod:: client.deis.DeisClient.releases_list
 .. automethod:: client.deis.DeisClient.releases_info
 .. automethod:: client.deis.DeisClient.releases_rollback
+
+.. _deis_tags:
+
+deis tags
+---------
+
+.. automethod:: client.deis.DeisClient.tags_list
+.. automethod:: client.deis.DeisClient.tags_set
+.. automethod:: client.deis.DeisClient.tags_unset
