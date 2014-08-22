@@ -29,7 +29,19 @@ full-clean: clean
 
 test: test-unit test-functional
 
-test-unit:
+setup-root-gotools:
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/vet
+	sudo rm -rf /tmp/tmpGOPATH
+
+setup-gotools:
+	go get -v github.com/golang/lint/golint
+
+test-style:
+	go vet -x ./...
+	-golint .
+
+test-unit: test-style
 	go test -v -cover ./syslog
 
 test-functional:

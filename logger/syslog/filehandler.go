@@ -89,7 +89,7 @@ func (h *FileHandler) checkErr(err error) bool {
 	return true
 }
 
-// See BaseHandler.Handle
+// Handle queues and dispatches a message. See BaseHandler.Handle
 func (h *FileHandler) Handle(m *Message) *Message {
 	return h.bh.Handle(m)
 }

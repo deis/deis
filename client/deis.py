@@ -318,7 +318,7 @@ def readable_datetime(datetime_str):
         else:
             return "{}{}ago".format(hour_str, min_str)
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days= -1)
+    yesterday = now + relativedelta.relativedelta(days=-1)
     if delta.days <= 2 and dt.day == yesterday.day:
         return dt.strftime("Yesterday at %X")
     # otherwise return locale-specific date/time format
@@ -1033,12 +1033,13 @@ class DeisClient(object):
             if k == 'auth' and args.get('--auth') is not None:
                 auth_path = os.path.expanduser(args['--auth'])
                 if not os.path.exists(auth_path):
-                    print('Path to authentication credentials does not exist: {}'.format(auth_path))
+                    print(
+                        "Path to authentication credentials does not exist: {}".format(auth_path))
                     sys.exit(1)
                 with open(auth_path) as f:
                     data = f.read()
                 body.update({'auth': base64.b64encode(data)})
-            else :
+            else:
                 v = args.get(arg)
                 if v:
                     body.update({k: v})
@@ -1176,7 +1177,8 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch(
+                'post', "/api/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1230,10 +1232,8 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = json.loads(response.json()['values'])
             for k, v in config.items():
-                if interactive:
-                    confirm = raw_input('overwrite {} with {}? (y/N) '.format(k, v))
-                    if confirm == 'y':
-                        env_dict[k] = v
+                if interactive and raw_input("overwrite {} with {}? (y/N) ".format(k, v)) == 'y':
+                    env_dict[k] = v
                 if k in env_dict and not overwrite:
                     continue
                 env_dict[k] = v
@@ -1284,7 +1284,8 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
+            response = self._dispatch(
+                'post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1316,7 +1317,8 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
+            response = self._dispatch(
+                'delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
         finally:
             progress.cancel()
             progress.join()

@@ -11,6 +11,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
+// EtcdHandle is used to set keys and values in a test etcd instance.
 type EtcdHandle struct {
 	Dirs []string
 	Keys []string
@@ -24,6 +25,7 @@ func getetcdClient(port string) *etcd.Client {
 	return c
 }
 
+// InitetcdValues configures a test etcd instance.
 func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
 	cli := getetcdClient(port)
 	controllerHandle := new(EtcdHandle)
@@ -34,6 +36,7 @@ func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
 	return controllerHandle
 }
 
+// SetEtcdValues sets an array of values into a test etcd instance.
 func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	for i, key := range keys {
 		_, err := c.Set(key, values[i], 0)
@@ -43,6 +46,7 @@ func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client)
 	}
 }
 
+// Publishvalues sets canonical etcd values into a test etcd instance.
 func Publishvalues(t *testing.T, ecli *EtcdHandle) {
 	fmt.Println("--- Publish etcd keys and values")
 	for _, dir := range ecli.Dirs {
