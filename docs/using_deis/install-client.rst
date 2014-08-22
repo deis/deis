@@ -12,9 +12,9 @@ Download Binaries
 -----------------
 You can download a binary executable version of the Deis client for Mac OS X, Windows, or Linux amd64:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.10.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.10.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.10.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.11.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.11.0.zip
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.11.0.tgz
 
 Extract the ``deis`` binary and place it in your workstation path.
 
@@ -26,7 +26,7 @@ You can also install the latest Deis client using Python's pip_ package manager:
 
     $ sudo pip install --upgrade deis
     Downloading/unpacking deis
-      Downloading deis-0.10.0.tar.gz
+      Downloading deis-0.11.0.tar.gz
       Running setup.py egg_info for package deis
       ...
     Successfully installed deis
