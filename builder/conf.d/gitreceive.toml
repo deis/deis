@@ -4,3 +4,4 @@ dest  = "/usr/local/bin/gitreceive"
 uid = 0
 gid = 0
 mode  = "0755"
+check_cmd = "/app/bin/check {{ .src }}"
