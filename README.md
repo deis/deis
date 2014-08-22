@@ -95,7 +95,7 @@ If you're using the latest Deis release, use `pip install --upgrade deis` to ins
 If you're working off master, precompiled binaries are likely out of date. You should either symlink the python file directly or build a local copy of the client:
 
 ```console
-$ ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
+$ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 or
 ```console

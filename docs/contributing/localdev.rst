@@ -134,7 +134,7 @@ your local workstation.
 
     $ cd $DEIS_DIR/client
     $ make install
-    $ ln -fs $DEIS_DIR/client/deis.py /usr/local/bin/deis
+    $ sudo ln -fs $DEIS_DIR/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
 

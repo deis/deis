@@ -71,16 +71,25 @@ Get Started
 
 1. `Install the Client`_:
 
+Your Deis client should match your server's version. For development, an
+easy way to ensure this is to run `client/deis.py` in the code repository
+you used to provision the server. You can make a symlink or shell alias for
+`deis` to that file:
+
 .. code-block:: console
 
-    $ sudo pip install deis
+    $ pip install docopt==0.6.2 python-dateutil==2.2 PyYAML==3.11 requests==2.3.0
+    $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
+    $ deis
+    Usage: deis <command> [<args>...]
 
-If you don't have `Python`_ installed, you can download a binary executable
-version of the Deis client for Mac OS X, Windows, or Linux amd64:
+If you don't have Python_ installed, you can download a binary executable
+version of the Deis client for Mac OS X, Linux amd64, or Windows:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.11.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.11.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.11.0.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-dev.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-dev.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-dev.zip
+
 
 2. `Register a User`_:
 
