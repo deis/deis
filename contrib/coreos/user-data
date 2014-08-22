@@ -26,6 +26,20 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
+  - name: deis-publisher.service
+    command: start
+    content: |
+      [Unit]
+      Description=deis-publisher
+      Requires=docker.socket
+      After=docker.socket
+
+      [Service]
+      EnvironmentFile=/etc/environment
+      ExecStart=/usr/bin/docker run -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=${COREOS_PRIVATE_IPV4} -e HOST=${COREOS_PRIVATE_IPV4} bacongobbler/publisher
+
+      [Install]
+      WantedBy=multi-user.target
 write_files:
   - path: /etc/deis-release
     content: |

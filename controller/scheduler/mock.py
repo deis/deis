@@ -26,25 +26,25 @@ class MockSchedulerClient(object):
 
     # job api
 
-    def create(self, name, image, command, use_announcer, **kwargs):
+    def create(self, name, image, command, **kwargs):
         """
         Create a new job
         """
         return {'state': 'inactive'}
 
-    def start(self, name, use_announcer):
+    def start(self, name):
         """
         Start an idle job
         """
         return {'state': 'active'}
 
-    def stop(self, name, use_announcer):
+    def stop(self, name):
         """
         Stop a running job
         """
         return {'state': 'inactive'}
 
-    def destroy(self, name, use_announcer):
+    def destroy(self, name):
         """
         Destroy an existing job
         """

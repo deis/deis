@@ -329,9 +329,6 @@ class Container(UuidAuditedModel):
 
     _command = property(_get_command)
 
-    def _command_announceable(self):
-        return self._command.lower() in ['start web', '']
-
     @close_db_connections
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
@@ -342,7 +339,6 @@ class Container(UuidAuditedModel):
         self._scheduler.create(name=self._job_id,
                                image=image,
                                command=self._command,
-                               use_announcer=self._command_announceable(),
                                **kwargs)
 
     @close_db_connections
@@ -350,7 +346,7 @@ class Container(UuidAuditedModel):
                 source=[CREATED, UP, DOWN],
                 target=UP, crashed=DOWN)
     def start(self):
-        self._scheduler.start(self._job_id, self._command_announceable())
+        self._scheduler.start(self._job_id)
 
     @close_db_connections
     @transition(field=state,
@@ -372,16 +368,15 @@ class Container(UuidAuditedModel):
         self._scheduler.create(name=new_job_id,
                                image=image,
                                command=self._command.format(**locals()),
-                               use_announcer=self._command_announceable(),
                                **kwargs)
-        self._scheduler.start(new_job_id, self._command_announceable())
+        self._scheduler.start(new_job_id)
         # destroy old container
-        self._scheduler.destroy(old_job_id, self._command_announceable())
+        self._scheduler.destroy(old_job_id)
 
     @close_db_connections
     @transition(field=state, source=UP, target=DOWN)
     def stop(self):
-        self._scheduler.stop(self._job_id, self._command_announceable())
+        self._scheduler.stop(self._job_id)
 
     @close_db_connections
     @transition(field=state,
@@ -389,7 +384,7 @@ class Container(UuidAuditedModel):
                 target=DESTROYED)
     def destroy(self):
         # TODO: add check for active connections before killing
-        self._scheduler.destroy(self._job_id, self._command_announceable())
+        self._scheduler.destroy(self._job_id)
 
     @transition(field=state,
                 source=[INITIALIZED, CREATED, DESTROYED],
