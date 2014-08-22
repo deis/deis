@@ -8,32 +8,28 @@ Install the Client
 The Deis command-line interface (CLI), or client, allows you to interact
 with a Deis :ref:`Controller`. You must install the client to use Deis.
 
-Download Binaries
------------------
-You can download a binary executable version of the Deis client for Mac OS X, Windows, or Linux amd64:
-
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-0.11.0.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-0.11.0.zip
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-0.11.0.tgz
-
-Extract the ``deis`` binary and place it in your workstation path.
-
-Install with Pip
-----------------
-You can also install the latest Deis client using Python's pip_ package manager:
+Install the Deis Client
+-----------------------
+Your Deis client should match your server's version. For development, an
+easy way to ensure this is to run `client/deis.py` in the code repository
+you used to provision the server. You can make a symlink or shell alias for
+`deis` to that file:
 
 .. code-block:: console
 
-    $ sudo pip install --upgrade deis
-    Downloading/unpacking deis
-      Downloading deis-0.11.0.tar.gz
-      Running setup.py egg_info for package deis
-      ...
-    Successfully installed deis
-    Cleaning up...
-
+    $ pip install docopt==0.6.2 python-dateutil==2.2 PyYAML==3.11 requests==2.3.0
+    $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
+
+If you don't have Python_ installed, you can download a binary executable
+version of the Deis client for Mac OS X, Linux amd64, or Windows:
+
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-osx-dev.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-ubuntu-dev.tgz
+    - https://s3-us-west-2.amazonaws.com/opdemand/deis-win64-dev.zip
+
+Extract the ``deis`` binary and place it in your workstation path.
 
 Proxy Support
 -------------
