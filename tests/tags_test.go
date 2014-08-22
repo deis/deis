@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/utils"
 )
@@ -65,4 +66,6 @@ func configFleetMetadata(t *testing.T, cfg *utils.DeisTestConfig) {
 	if err != nil {
 		t.Fatal(out, err)
 	}
+	// take a nap while fleet restarts
+	time.Sleep(5000 * time.Millisecond)
 }
