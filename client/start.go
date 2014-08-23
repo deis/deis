@@ -1,11 +1,6 @@
 package client
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/coreos/fleet/job"
-)
+import "github.com/coreos/fleet/job"
 
 // Start launches target units and blocks until active
 func (c *FleetClient) Start(target string) (err error) {
@@ -20,9 +15,10 @@ func (c *FleetClient) Start(target string) (err error) {
 			return err
 		}
 	}
-	errchan := waitForJobStates(units, testUnitStateActive, 0, os.Stdout)
-	for err := range errchan {
-		return fmt.Errorf("error waiting for active: %v", err)
+	check := newStateCheck(testUnitStateActive)
+	err = waitForJobStates(units, check)
+	if err != nil {
+		return err
 	}
 	return nil
 }

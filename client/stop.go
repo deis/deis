@@ -1,11 +1,6 @@
 package client
 
-import (
-	"fmt"
-	"os"
-
-	"github.com/coreos/fleet/job"
-)
+import "github.com/coreos/fleet/job"
 
 // Stop sets target units to inactive and blocks until complete
 func (c *FleetClient) Stop(target string) (err error) {
@@ -20,9 +15,10 @@ func (c *FleetClient) Stop(target string) (err error) {
 			return err
 		}
 	}
-	errchan := waitForJobStates(units, testJobStateInactive, 0, os.Stdout)
-	for err := range errchan {
-		return fmt.Errorf("error waiting for inactive: %v", err)
+	check := newStateCheck(testJobStateInactive)
+	err = waitForJobStates(units, check)
+	if err != nil {
+		return err
 	}
 	return nil
 }

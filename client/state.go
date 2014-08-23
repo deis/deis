@@ -2,8 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"sync"
 	"time"
 
@@ -13,99 +11,139 @@ import (
 type testJob func(j *job.Job) bool
 
 func testJobStateLoaded(j *job.Job) bool {
-	return j == nil || j.State == nil || *(j.State) != job.JobStateLoaded
+	if j == nil || j.State == nil {
+		return false
+	}
+	return *(j.State) == job.JobStateLoaded
 }
 
 func testJobStateLaunched(j *job.Job) bool {
-	return j == nil || j.State == nil || *(j.State) != job.JobStateLaunched
+	if j == nil || j.State == nil {
+		return false
+	}
+	return *(j.State) == job.JobStateLaunched
 }
 
 func testJobStateInactive(j *job.Job) bool {
-	return j == nil || j.State == nil || *(j.State) != job.JobStateInactive
+	if j == nil || j.State == nil {
+		return false
+	}
+	return *(j.State) == job.JobStateInactive
 }
 
 func testUnitStateActive(j *job.Job) bool {
-	return j == nil || j.UnitState == nil || j.UnitState.ActiveState != "active"
+	if j == nil || j.UnitState == nil {
+		return false
+	}
+	return j.UnitState.ActiveState == "active"
 
 }
 
-// TODO: refactor to separate presentation to io.Writer from status polling
+// stateCheck defines how to monitor a job state
+type stateCheck struct {
+	test      testJob
+	statechan chan *jobState
+	errchan   chan error
+}
+
+// newStateCheck returns a StateCheck struct with new channels for monitoring
+func newStateCheck(test testJob) *stateCheck {
+	statechan := make(chan *jobState)
+	errchan := make(chan error)
+	return &stateCheck{test, statechan, errchan}
+}
 
 // waitForJobStates polls each of the indicated jobs until each of their
-// states is equal to that which the caller indicates, or until the
-// polling operation times out. waitForJobStates will retry forever, or
-// up to maxAttempts times before timing out if maxAttempts is greater
-// than zero. Returned is an error channel used to communicate when
-// timeouts occur. The returned error channel will be closed after all
-// polling operation is complete.
-func waitForJobStates(jobs []string, test testJob, maxAttempts int, out io.Writer) chan error {
-	errchan := make(chan error)
+// states is equal to that which the caller indicates via stateCheck test
+func waitForJobStates(jobs []string, check *stateCheck) error {
 	var wg sync.WaitGroup
+
+	// check each job with the stateCheck
 	for _, name := range jobs {
 		wg.Add(1)
-		go checkJobState(name, test, maxAttempts, out, &wg, errchan)
+		go checkJobState(name, check, &wg)
 	}
+
+	// wait for all jobs to complete
 	go func() {
 		wg.Wait()
-		close(errchan)
+		close(check.errchan)
 	}()
-	return errchan
+
+	// print output while jobs are transitioning
+	defer fmt.Printf("\n")
+	for {
+		select {
+		// read from state channel
+		case state := <-check.statechan:
+			// return on closed channel
+			if state == nil {
+				return nil
+			}
+			// otherwise print output
+			if state.sub == "" || state.sub == "dead" {
+				fmt.Printf("\033[0;33m%v:\033[0m %v, %v                              \r",
+					state.name, state.loaded, state.active)
+			} else {
+				fmt.Printf("\033[0;33m%v:\033[0m %v, %v (%v)                        \r",
+					state.name, state.loaded, state.active, state.sub)
+			}
+		// read from error channel
+		case err := <-check.errchan:
+			return err
+		}
+		time.Sleep(200 * time.Millisecond)
+	}
 }
 
-func checkJobState(jobName string, test testJob, maxAttempts int, out io.Writer, wg *sync.WaitGroup, errchan chan error) {
+func checkJobState(jobName string, check *stateCheck, wg *sync.WaitGroup) {
 	defer wg.Done()
 	sleep := 100 * time.Millisecond
-	if maxAttempts < 1 {
-		for {
-			if assertJobState(jobName, test, out) {
-				return
-			}
-			time.Sleep(sleep)
+	for {
+		if assertJobState(jobName, check) {
+			return
 		}
-	} else {
-		for attempt := 0; attempt < maxAttempts; attempt++ {
-			if assertJobState(jobName, test, out) {
-				return
-			}
-			time.Sleep(sleep)
-		}
-		errchan <- fmt.Errorf("timed out waiting for job %s to report state", jobName)
+		time.Sleep(sleep)
 	}
 }
 
-func assertJobState(name string, test testJob, out io.Writer) (ret bool) {
+type jobState struct {
+	name   string
+	loaded string
+	active string
+	sub    string
+}
+
+func newJobState(name string, j *job.Job) *jobState {
+	var (
+		loaded string
+		active string
+		sub    string
+	)
+	if j.State != nil {
+		loaded = fmt.Sprintf("%v", *(j.State))
+	}
+	if j.UnitState != nil {
+		active = j.UnitState.ActiveState
+		sub = j.UnitState.SubState
+	}
+	return &jobState{name, loaded, active, sub}
+}
+
+func assertJobState(name string, check *stateCheck) bool {
 	j, err := cAPI.Job(name)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error retrieving Job(%s) from Registry: %v", name, err)
-		return
-	}
-	if test(j) {
-		if j.State != nil && j.UnitState != nil && j.UnitState.ActiveState != "" && j.UnitState.SubState != "" {
-			fmt.Fprintf(out, "\033[0;33m%v:\033[0m %v, %v (%v)           \r", j.Name, *(j.State), j.UnitState.ActiveState, j.UnitState.SubState)
-		}
-		return
-	}
-	ret = true
-
-	var msg string
-	if j.State != nil && j.UnitState != nil && j.UnitState.ActiveState != "" && j.UnitState.SubState != "" {
-		msg = fmt.Sprintf("\033[0;33m%v:\033[0m %v, %v (%v)", name, *(j.State), j.UnitState.ActiveState, j.UnitState.SubState)
-	} else {
-		msg = fmt.Sprintf("\033[0;33m%v:\033[0m %v", name, *(j.State))
+		check.errchan <- fmt.Errorf("Error retrieving Job(%s) from Registry: %v", name, err)
+		return false
 	}
 
-	machines, err := cAPI.Machines()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed retrieving list of Machines from Registry: %v", err)
-	}
-	for _, ms := range machines {
-		if ms.ID != j.TargetMachineID {
-			continue
-		}
-		msg = fmt.Sprintf("%s on %s", msg, machineFullLegend(ms, false))
-		break
-	}
+	// send current state to the output channel
+	check.statechan <- newJobState(name, j)
 
-	fmt.Fprintln(out, msg)
-	return
+	// if test function
+	if check.test(j) {
+		close(check.statechan)
+		return true
+	}
+	return false
 }

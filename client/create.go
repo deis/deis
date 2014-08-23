@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/coreos/fleet/job"
@@ -31,9 +30,10 @@ func (c *FleetClient) Create(target string) (err error) {
 	if err != nil {
 		return err
 	}
-	errchan := waitForJobStates([]string{unitName}, testJobStateLoaded, 0, os.Stdout)
-	for err := range errchan {
-		return fmt.Errorf("error waiting for job %s: %v", unitName, err)
+	check := newStateCheck(testJobStateLoaded)
+	err = waitForJobStates([]string{unitName}, check)
+	if err != nil {
+		return err
 	}
 	return nil
 }
