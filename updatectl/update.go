@@ -3,12 +3,15 @@ package updatectl
 import (
 	"flag"
 	"fmt"
-	"github.com/coreos/updateservicectl/auth"
-	"github.com/coreos/updateservicectl/client/update/v1"
 	"log"
 	"net/http"
 	"os"
 	"text/tabwriter"
+
+	"github.com/coreos/updateservicectl/auth"
+	update "github.com/coreos/updateservicectl/client/update/v1"
+	"github.com/deis/deisctl/constant"
+	"github.com/deis/deisctl/utils"
 )
 
 const (
