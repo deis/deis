@@ -1,7 +1,7 @@
 [Unit]
 Description=deis-controller
-Requires=deis-logger.1.service
-After=deis-logger.1.service
+Requires=deis-logger@1.service
+After=deis-logger@1.service
 
 [Service]
 EnvironmentFile=/etc/environment
@@ -15,4 +15,4 @@ ExecStopPost=/usr/bin/docker stop deis-controller
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=deis-logger.1.service
+X-ConditionMachineOf=deis-logger@1.service

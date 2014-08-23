@@ -7,7 +7,7 @@ func TestFormatUnitName(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if unitName != "deis-router.1.service" {
+	if unitName != "deis-router@1.service" {
 		t.Fatalf("invalid unit name: %v", unitName)
 	}
 

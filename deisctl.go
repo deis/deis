@@ -74,7 +74,7 @@ Example Commands:
   deisctl uninstall
   deisctl list
   deisctl scale router=2
-  deisctl start router.2
+  deisctl start router@2
   deisctl stop router builder
   deisctl status controller
 

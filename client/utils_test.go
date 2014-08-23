@@ -12,7 +12,7 @@ func TestNextComponent(t *testing.T) {
 		t.Fatal("Invalid component number")
 	}
 	// test next component
-	num, err = nextUnitNum([]string{"deis-router.1.service"})
+	num, err = nextUnitNum([]string{"deis-router@1.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestNextComponent(t *testing.T) {
 		t.Fatal("Invalid component number")
 	}
 	// test last component
-	num, err = nextUnitNum([]string{"deis-router.1.service", "deis-router.2.service"})
+	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,21 +28,21 @@ func TestNextComponent(t *testing.T) {
 		t.Fatal("Invalid component number")
 	}
 	// test middle component
-	num, err = nextUnitNum([]string{"deis-router.3.service"})
+	num, err = nextUnitNum([]string{"deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if num != 1 {
 		t.Fatal("Invalid component number")
 	}
-	num, err = nextUnitNum([]string{"deis-router.1.service", "deis-router.3.service"})
+	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if num != 2 {
 		t.Fatalf("Invalid component number: %v", num)
 	}
-	num, err = nextUnitNum([]string{"deis-router.1.service", "deis-router.2.service", "deis-router.3.service"})
+	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestNextComponent(t *testing.T) {
 }
 
 func TestSplitJobName(t *testing.T) {
-	c, num, err := splitJobName("deis-router.1.service")
+	c, num, err := splitJobName("deis-router@1.service")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,12 +70,12 @@ func TestSplitTarget(t *testing.T) {
 		t.Fatalf("Invalid split on \"%v\": %v %v", "router", c, num)
 	}
 
-	c, num, err = splitTarget("router.3")
+	c, num, err = splitTarget("router@3")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if c != "router" || num != 3 {
-		t.Fatalf("Invalid split on \"%v\": %v %v", "router.3", c, num)
+		t.Fatalf("Invalid split on \"%v\": %v %v", "router@3", c, num)
 	}
 
 	c, num, err = splitTarget("database-data")

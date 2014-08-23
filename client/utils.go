@@ -51,7 +51,7 @@ func countUnits(units []string) (count []int, err error) {
 }
 
 func splitJobName(component string) (c string, num int, err error) {
-	r := regexp.MustCompile(`deis\-([a-z-]+)\.([\d]+)\.service`)
+	r := regexp.MustCompile(`deis\-([a-z-]+)\@([\d]+)\.service`)
 	match := r.FindStringSubmatch(component)
 	if len(match) == 0 {
 		c, err = "", fmt.Errorf("Could not parse component: %v", component)
@@ -67,7 +67,7 @@ func splitJobName(component string) (c string, num int, err error) {
 
 func splitTarget(target string) (component string, num int, err error) {
 	// see if we were provided a specific target
-	r := regexp.MustCompile(`^([a-z]+)(\-data|\.\d+)?$`)
+	r := regexp.MustCompile(`^([a-z]+)(\-data|@\d+)?$`)
 	match := r.FindStringSubmatch(target)
 	// check for failed match
 	if len(match) != 3 {

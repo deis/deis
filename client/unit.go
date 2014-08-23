@@ -27,7 +27,7 @@ func (c *FleetClient) getUnits(target string) (units []string, err error) {
 	} else if strings.Contains(target, ".") {
 		r = regexp.MustCompile(`deis\-(` + target + `)\.service`)
 	} else {
-		r = regexp.MustCompile(`deis\-(` + target + `)\.([\d]+)\.service`)
+		r = regexp.MustCompile(`deis\-(` + target + `)@([\d]+)\.service`)
 	}
 	for _, j := range jobs {
 		match := r.MatchString(j.Name)
@@ -100,7 +100,7 @@ func formatUnitName(component string, num int) (unitName string, err error) {
 	if num == 0 {
 		return "deis-" + component + ".service", nil
 	} else {
-		return "deis-" + component + "." + strconv.Itoa(num) + ".service", nil
+		return "deis-" + component + "@" + strconv.Itoa(num) + ".service", nil
 	}
 }
 
