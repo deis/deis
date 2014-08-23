@@ -81,9 +81,9 @@ func waitForJobStates(jobs []string, check *stateCheck) error {
 				return nil
 			}
 			// otherwise print output
-			if state.sub == "" || state.sub == "dead" {
-				fmt.Printf("\033[0;33m%v:\033[0m %v, %v                              \r",
-					state.name, state.loaded, state.active)
+			if state.loaded == "inactive" {
+				fmt.Printf("\033[0;33m%v:\033[0m %v                                 \r",
+					state.name, state.loaded)
 			} else {
 				fmt.Printf("\033[0;33m%v:\033[0m %v, %v (%v)                        \r",
 					state.name, state.loaded, state.active, state.sub)
