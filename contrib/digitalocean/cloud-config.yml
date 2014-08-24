@@ -25,7 +25,7 @@ coreos:
     - name: private.network
       content: |
         [Match]
-        Name=ens4v1
+        Name=eth1
 
         [Network]
         Address=PRIVATE_IP
