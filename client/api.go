@@ -9,4 +9,5 @@ type Client interface {
 	Scale(string, int) error
 	List() error
 	Status(string) error
+	Journal(string) error
 }

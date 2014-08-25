@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/deis/deisctl/client"
-	"github.com/deis/deisctl/utils"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/utils"
 )
 
 func List(c client.Client) error {
@@ -61,6 +62,16 @@ func Stop(c client.Client, targets []string) error {
 func Status(c client.Client, targets []string) error {
 	for _, target := range targets {
 		err := c.Status(target)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Journal(c client.Client, targets []string) error {
+	for _, target := range targets {
+		err := c.Journal(target)
 		if err != nil {
 			return err
 		}

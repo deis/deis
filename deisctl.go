@@ -77,6 +77,7 @@ Example Commands:
   deisctl start router@2
   deisctl stop router builder
   deisctl status controller
+  deisctl journal controller
 
 Options:
   --debug                     print debug information to stderr
@@ -112,6 +113,8 @@ Options:
 		err = cmd.Stop(c, targets)
 	case "status":
 		err = cmd.Status(c, targets)
+	case "journal":
+		err = cmd.Journal(c, targets)
 	case "install":
 		err = cmd.Install(c, targets)
 	case "uninstall":
