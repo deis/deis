@@ -92,7 +92,7 @@ Options:
   --etcd-keyfile=<path>       etcd key file authentication [default: ]
   --etcd-certfile=<path>      etcd cert file authentication [default: ]
   --etcd-cafile=<path>        etcd CA file authentication [default: ]
-  --known-hosts-file=<path>   file used to store remote machine fingerprints [default: ~/.fleetctl/known_hosts]
+  --known-hosts-file=<path>   file used to store remote machine fingerprints [default: ~/.ssh/known_hosts]
   --strict-host-key-checking  verify SSH host keys [default: true]
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
   --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
