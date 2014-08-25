@@ -77,6 +77,7 @@ class AppTest(TestCase):
         if not os.path.exists(settings.DEIS_LOG_DIR):
             os.mkdir(settings.DEIS_LOG_DIR)
         path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
+        # HACK: remove app lifecycle logs
         if os.path.exists(path):
             os.remove(path)
         url = '/api/apps/{app_id}/logs'.format(**locals())
@@ -84,7 +85,7 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data, 'No logs for {}'.format(app_id))
         # write out some fake log data and try again
-        with open(path, 'w') as f:
+        with open(path, 'a') as f:
             f.write(FAKE_LOG_DATA)
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
@@ -95,6 +96,23 @@ class AppTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0], 0)
+        # delete file for future runs
+        os.remove(path)
+
+    def test_app_release_notes_in_logs(self):
+        """Verifies that an app's release summary is dumped into the logs."""
+        url = '/api/apps'
+        body = {'cluster': 'autotest', 'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']  # noqa
+        path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
+        url = '/api/apps/{app_id}/logs'.format(**locals())
+        response = self.client.post(url)
+        self.assertIn('autotest created initial release', response.data)
+        self.assertEqual(response.status_code, 200)
+        # delete file for future runs
+        os.remove(path)
 
     def test_app_errors(self):
         cluster_id, app_id = 'autotest', 'autotest-errors'
