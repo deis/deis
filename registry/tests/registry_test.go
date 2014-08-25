@@ -24,7 +24,8 @@ func runDeisRegistryTest(
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-registry-data",
-			"deis/registry:"+testID)
+			"deis/registry:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
@@ -52,7 +53,6 @@ func TestRegistry(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-registry-%s at port %s\n", testID, servicePort)
 	runDeisRegistryTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-registry-"+testID, servicePort, "http")
+	dockercli.DeisServiceTest(t, "deis-registry-"+testID, servicePort, "http")
 	dockercli.ClearTestSession(t, testID)
 }

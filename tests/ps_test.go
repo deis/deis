@@ -60,7 +60,8 @@ func psScaleTest(t *testing.T, params *utils.DeisTestConfig) {
 		"-o", "StrictHostKeyChecking=no",
 		"-o", "UserKnownHostsFile=/dev/null",
 		"-o", "PasswordAuthentication=no",
-		"core@deis."+params.Domain, "ls")
+		"core@deis."+params.Domain, "ls",
+	)
 	out, err := sshCmd.Output()
 	if err != nil {
 		t.Fatal(err)

@@ -130,8 +130,7 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 
 // CheckList executes a command and optionally tests whether its output does
 // or does not contain a given string.
-func CheckList(
-	t *testing.T, cmd string, params interface{}, contain string, notflag bool) {
+func CheckList(t *testing.T, cmd string, params interface{}, contain string, notflag bool) {
 	var cmdBuf bytes.Buffer
 	tmpl := template.Must(template.New("cmd").Parse(cmd))
 	if err := tmpl.Execute(&cmdBuf, params); err != nil {

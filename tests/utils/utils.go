@@ -176,8 +176,7 @@ func runCommand(cmd *exec.Cmd) (exitCode int, err error) {
 	return
 }
 
-func runCommandWithOutput(
-	cmd *exec.Cmd) (output string, exitCode int, err error) {
+func runCommandWithOutput(cmd *exec.Cmd) (output string, exitCode int, err error) {
 	exitCode = 0
 	out, err := cmd.CombinedOutput()
 	if err != nil {

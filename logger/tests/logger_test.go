@@ -8,8 +8,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisLoggerTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func runDeisLoggerTest(t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	dockercli.RunDeisDataTest(t, "--name", "deis-logger-data",
 		"-v", "/var/log/deis", "deis/base", "/bin/true")
@@ -23,7 +22,8 @@ func runDeisLoggerTest(
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-logger-data",
-			"deis/logger:"+testID)
+			"deis/logger:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
 	if err != nil {
@@ -42,7 +42,6 @@ func TestLogger(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-logger-%s at port %s\n", testID, servicePort)
 	runDeisLoggerTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-logger-"+testID, servicePort, "udp")
+	dockercli.DeisServiceTest(t, "deis-logger-"+testID, servicePort, "udp")
 	dockercli.ClearTestSession(t, testID)
 }

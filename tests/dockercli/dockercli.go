@@ -61,8 +61,7 @@ func CloseWrap(args ...io.Closer) error {
 
 // DeisServiceTest tries to connect to a container and port using the
 // specified protocol.
-func DeisServiceTest(
-	t *testing.T, container string, port string, protocol string) {
+func DeisServiceTest(t *testing.T, container string, port string, protocol string) {
 	ipaddr := os.Getenv("HOST_IPADDR")
 	if ipaddr == "" {
 		ipaddr = GetInspectData(
@@ -93,8 +92,7 @@ func DeisServiceTest(
 }
 
 // GetNewClient returns a new docker test client.
-func GetNewClient() (
-	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
+func GetNewClient() (cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	testDaemonAddr := DaemonAddr()
 	testDaemonProto := DaemonProto()
 	stdout, stdoutPipe = io.Pipe()
@@ -104,8 +102,7 @@ func GetNewClient() (
 }
 
 // PrintToStdout prints a string to stdout.
-func PrintToStdout(t *testing.T, stdout *io.PipeReader,
-	stdoutPipe *io.PipeWriter, stoptag string) string {
+func PrintToStdout(t *testing.T, stdout *io.PipeReader, stdoutPipe *io.PipeWriter, stoptag string) string {
 	var result string
 	r := bufio.NewReader(stdout)
 	for {

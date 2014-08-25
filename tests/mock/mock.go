@@ -44,7 +44,8 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	etcdutils.Publishvalues(t, dbhandler)
 	etcdutils.SetEtcdValues(t,
 		[]string{"/deis/database/host", "/deis/database/port", "/deis/database/engine"},
-		[]string{ipaddr, dbPort, "postgresql_psycopg2"}, dbhandler.C)
+		[]string{ipaddr, dbPort, "postgresql_psycopg2"}, dbhandler.C,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,8 +10,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisControllerTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func runDeisControllerTest(t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
@@ -22,7 +21,8 @@ func runDeisControllerTest(
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/controller:"+testID)
+			"deis/controller:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
@@ -59,7 +59,6 @@ func TestController(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-controller-%s at port %s\n", testID, servicePort)
 	runDeisControllerTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-controller-"+testID, servicePort, "http")
+	dockercli.DeisServiceTest(t, "deis-controller-"+testID, servicePort, "http")
 	dockercli.ClearTestSession(t, testID)
 }

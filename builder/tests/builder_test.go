@@ -10,8 +10,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisBuilderTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func runDeisBuilderTest(t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	dockercli.RunDeisDataTest(t, "--name", "deis-builder-data",
 		"-v", "/var/lib/docker", "deis/base", "true")
@@ -27,7 +26,8 @@ func runDeisBuilderTest(
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "PORT="+servicePort,
 			"--volumes-from", "deis-builder-data",
-			"--privileged", "deis/builder:"+testID)
+			"--privileged", "deis/builder:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
 	if err != nil {
@@ -69,7 +69,6 @@ func TestBuilder(t *testing.T) {
 	runDeisBuilderTest(t, testID, etcdPort, servicePort)
 	// TODO: builder needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
-	dockercli.DeisServiceTest(
-		t, "deis-builder-"+testID, servicePort, "tcp")
+	dockercli.DeisServiceTest(t, "deis-builder-"+testID, servicePort, "tcp")
 	dockercli.ClearTestSession(t, testID)
 }

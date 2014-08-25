@@ -23,7 +23,8 @@ func runDeisRouterTest(
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/router:"+testID)
+			"deis/router:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
 	if err != nil {
@@ -60,7 +61,6 @@ func TestRouter(t *testing.T) {
 	runDeisRouterTest(t, testID, etcdPort, servicePort)
 	// TODO: nginx needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
-	dockercli.DeisServiceTest(
-		t, "deis-router-"+testID, servicePort, "http")
+	dockercli.DeisServiceTest(t, "deis-router-"+testID, servicePort, "http")
 	dockercli.ClearTestSession(t, testID)
 }

@@ -8,8 +8,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisCacheTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func runDeisCacheTest(t *testing.T, testID string, etcdPort string, servicePort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	go func() {
@@ -20,7 +19,8 @@ func runDeisCacheTest(
 			"-e", "PUBLISH="+servicePort,
 			"-e", "HOST="+utils.GetHostIPAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/cache:"+testID)
+			"deis/cache:"+testID,
+		)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "started")
 	if err != nil {
@@ -39,7 +39,6 @@ func TestCache(t *testing.T) {
 	servicePort := utils.GetRandomPort()
 	fmt.Printf("--- Test deis-cache-%s at port %s\n", testID, servicePort)
 	runDeisCacheTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-cache-"+testID, servicePort, "tcp")
+	dockercli.DeisServiceTest(t, "deis-cache-"+testID, servicePort, "tcp")
 	dockercli.ClearTestSession(t, testID)
 }
