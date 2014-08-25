@@ -78,7 +78,7 @@ Done.
 ```
 
 Note that the default install command activates 1 of each component.
-You can install a single component with `deisctl install router`, for example.
+You can scale components with `deisctl scale router=3`, for example.
 
 You can also use the `deisctl uninstall` command to destroy platform units:
 
@@ -93,7 +93,7 @@ Destroyed Unit deis-builder@1.service
 Destroyed Unit deis-router@1.service
 ```
 
-You can also use `deisctl uninstall router` to uninstall a specific component.
+To uninstall a specific component, use `deisctl uninstall router`.
 
 Note that uninstalling platform units will _not_ remove the data units or underlying
 data containers.  Data must be destroyed manually.
@@ -111,7 +111,7 @@ The `deisctl` tool provides a number of other commands, including:
  * `deisctl uninstall <component>` - uninstall a single platform component
  * `deisctl scale <component>=<num>` - scale a component to the target number of units
 
-### Examples
+## Usage Examples
 
 ```console
 $ deisctl list
@@ -173,13 +173,15 @@ deis-controller@1.service: launched
 ```
 
 ```console
-$ deisctl scale router=2
+$ deisctl scale router=3
 deis-router@1.service: loaded
 deis-router@2.service: loaded
+deis-router@3.service: loaded
 
 $ deisctl start router
 deis-router@1.service: launched
 deis-router@2.service: launched
+deis-router@3.service: launched
 ```
 
 ## License
