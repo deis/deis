@@ -63,7 +63,7 @@ func setGlobalFlags(args map[string]interface{}) {
 	if tunnel != "" {
 		client.Flags.Tunnel = tunnel
 	} else {
-		client.Flags.Tunnel = os.Getenv("FLEETCTL_TUNNEL")
+		client.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
 	}
 }
 
