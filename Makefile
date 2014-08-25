@@ -1,7 +1,13 @@
 COMPONENTS=builder cache controller database logger registry router
 
 build:
-	go build .
+	godep go build ./...
+
+install:
+	godep go install -v ./...
+
+test:
+	godep go test -v ./...
 
 package:
 	rm -f package

@@ -1,0 +1,1604 @@
+{
+ "kind": "discovery#restDescription",
+ "etag": "\"MKGA2miAJpVGF7yQTQhsoDXpye8/_1k2Dg7emB5iDaE4KRLYY51YUvU\"",
+ "discoveryVersion": "v1",
+ "id": "update:v1",
+ "name": "update",
+ "version": "v1",
+ "description": "Update Management API",
+ "icons": {
+  "x16": "http://www.google.com/images/icons/product/search-16.gif",
+  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+ },
+ "protocol": "rest",
+ "baseUrl": "http://internal/_ah/api/update/v1/",
+ "basePath": "/_ah/api/update/v1/",
+ "rootUrl": "http://internal/_ah/api/",
+ "servicePath": "update/v1/",
+ "batchPath": "batch",
+ "parameters": {
+  "alt": {
+   "type": "string",
+   "description": "Data format for the response.",
+   "default": "json",
+   "enum": [
+    "json"
+   ],
+   "enumDescriptions": [
+    "Responses with Content-Type of application/json"
+   ],
+   "location": "query"
+  },
+  "fields": {
+   "type": "string",
+   "description": "Selector specifying which fields to include in a partial response.",
+   "location": "query"
+  },
+  "key": {
+   "type": "string",
+   "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+   "location": "query"
+  },
+  "oauth_token": {
+   "type": "string",
+   "description": "OAuth 2.0 token for the current user.",
+   "location": "query"
+  },
+  "prettyPrint": {
+   "type": "boolean",
+   "description": "Returns response with indentations and line breaks.",
+   "default": "true",
+   "location": "query"
+  },
+  "quotaUser": {
+   "type": "string",
+   "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+   "location": "query"
+  },
+  "userIp": {
+   "type": "string",
+   "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+   "location": "query"
+  }
+ },
+ "schemas": {
+  "AdminListUsersResp": {
+   "id": "AdminListUsersResp",
+   "type": "object",
+   "properties": {
+    "users": {
+     "type": "array",
+     "items": {
+      "$ref": "AdminUser"
+     }
+    }
+   }
+  },
+  "AdminUser": {
+   "id": "AdminUser",
+   "type": "object",
+   "properties": {
+    "token": {
+     "type": "string"
+    },
+    "user": {
+     "type": "string"
+    }
+   }
+  },
+  "AdminUserReq": {
+   "id": "AdminUserReq",
+   "type": "object",
+   "properties": {
+    "userName": {
+     "type": "string"
+    }
+   }
+  },
+  "App": {
+   "id": "App",
+   "type": "object",
+   "properties": {
+    "description": {
+     "type": "string"
+    },
+    "id": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    }
+   }
+  },
+  "AppChannel": {
+   "id": "AppChannel",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    },
+    "publish": {
+     "type": "boolean"
+    },
+    "upstream": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "AppInsertReq": {
+   "id": "AppInsertReq",
+   "type": "object",
+   "properties": {
+    "description": {
+     "type": "string"
+    },
+    "id": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    }
+   }
+  },
+  "AppListResp": {
+   "id": "AppListResp",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "App"
+     }
+    }
+   }
+  },
+  "AppUpdateReq": {
+   "id": "AppUpdateReq",
+   "type": "object",
+   "properties": {
+    "description": {
+     "type": "string"
+    },
+    "id": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    }
+   }
+  },
+  "AppVersionItem": {
+   "id": "AppVersionItem",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "count": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "groupId": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "AppVersionList": {
+   "id": "AppVersionList",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "AppVersionItem"
+     }
+    }
+   }
+  },
+  "ChannelListResp": {
+   "id": "ChannelListResp",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "AppChannel"
+     }
+    }
+   }
+  },
+  "ChannelRequest": {
+   "id": "ChannelRequest",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    },
+    "publish": {
+     "type": "boolean"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "ClientCountResp": {
+   "id": "ClientCountResp",
+   "type": "object",
+   "properties": {
+    "count": {
+     "type": "integer",
+     "format": "int32"
+    }
+   }
+  },
+  "ClientHistoryItem": {
+   "id": "ClientHistoryItem",
+   "type": "object",
+   "properties": {
+    "dateTime": {
+     "type": "string",
+     "format": "int64"
+    },
+    "errorCode": {
+     "type": "string"
+    },
+    "eventResult": {
+     "type": "string"
+    },
+    "eventType": {
+     "type": "string"
+    },
+    "groupId": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "ClientHistoryResp": {
+   "id": "ClientHistoryResp",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "ClientHistoryItem"
+     }
+    }
+   }
+  },
+  "ClientUpdate": {
+   "id": "ClientUpdate",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "clientId": {
+     "type": "string"
+    },
+    "errorCode": {
+     "type": "string"
+    },
+    "eventResult": {
+     "type": "string"
+    },
+    "eventType": {
+     "type": "string"
+    },
+    "groupId": {
+     "type": "string"
+    },
+    "lastSeen": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "oem": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "ClientUpdateList": {
+   "id": "ClientUpdateList",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "ClientUpdate"
+     }
+    }
+   }
+  },
+  "GenerateUuidResp": {
+   "id": "GenerateUuidResp",
+   "type": "object",
+   "properties": {
+    "uuid": {
+     "type": "string"
+    }
+   }
+  },
+  "Group": {
+   "id": "Group",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "channelId": {
+     "type": "string"
+    },
+    "id": {
+     "type": "string"
+    },
+    "label": {
+     "type": "string"
+    },
+    "updateCount": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "updateInterval": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "updatePooling": {
+     "type": "boolean"
+    },
+    "updatesPaused": {
+     "type": "boolean"
+    }
+   }
+  },
+  "GroupList": {
+   "id": "GroupList",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Group"
+     }
+    }
+   }
+  },
+  "GroupRequestsItem": {
+   "id": "GroupRequestsItem",
+   "type": "object",
+   "properties": {
+    "result": {
+     "type": "string"
+    },
+    "type": {
+     "type": "string"
+    },
+    "values": {
+     "type": "array",
+     "items": {
+      "$ref": "GroupRequestsValues"
+     }
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "GroupRequestsRollup": {
+   "id": "GroupRequestsRollup",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "GroupRequestsItem"
+     }
+    }
+   }
+  },
+  "GroupRequestsValues": {
+   "id": "GroupRequestsValues",
+   "type": "object",
+   "properties": {
+    "count": {
+     "type": "string",
+     "format": "int64"
+    },
+    "timestamp": {
+     "type": "string",
+     "format": "int64"
+    }
+   }
+  },
+  "Package": {
+   "id": "Package",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "dateCreated": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "metadataSignatureRsa": {
+     "type": "string"
+    },
+    "metadataSize": {
+     "type": "string"
+    },
+    "releaseNotes": {
+     "type": "string"
+    },
+    "required": {
+     "type": "boolean"
+    },
+    "sha1Sum": {
+     "type": "string"
+    },
+    "sha256Sum": {
+     "type": "string"
+    },
+    "size": {
+     "type": "string"
+    },
+    "url": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    }
+   }
+  },
+  "PackageList": {
+   "id": "PackageList",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Package"
+     }
+    },
+    "total": {
+     "type": "integer",
+     "format": "int32"
+    }
+   }
+  },
+  "PublicPackageItem": {
+   "id": "PublicPackageItem",
+   "type": "object",
+   "properties": {
+    "AppId": {
+     "type": "string"
+    },
+    "packages": {
+     "type": "array",
+     "items": {
+      "$ref": "Package"
+     }
+    }
+   }
+  },
+  "PublicPackageList": {
+   "id": "PublicPackageList",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "PublicPackageItem"
+     }
+    }
+   }
+  },
+  "Upstream": {
+   "id": "Upstream",
+   "type": "object",
+   "properties": {
+    "id": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "label": {
+     "type": "string"
+    },
+    "url": {
+     "type": "string"
+    }
+   }
+  },
+  "UpstreamListResp": {
+   "id": "UpstreamListResp",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Upstream"
+     }
+    }
+   }
+  },
+  "UpstreamSyncResp": {
+   "id": "UpstreamSyncResp",
+   "type": "object",
+   "properties": {
+    "detail": {
+     "type": "string"
+    },
+    "status": {
+     "type": "string"
+    }
+   }
+  }
+ },
+ "resources": {
+  "admin": {
+   "methods": {
+    "createUser": {
+     "id": "update.admin.createUser",
+     "path": "admin/user",
+     "httpMethod": "POST",
+     "description": "Create a new user.",
+     "request": {
+      "$ref": "AdminUserReq",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "AdminUser"
+     }
+    },
+    "deleteUser": {
+     "id": "update.admin.deleteUser",
+     "path": "admin/user/{userName}",
+     "httpMethod": "DELETE",
+     "description": "Delete a user.",
+     "parameters": {
+      "userName": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "userName"
+     ],
+     "response": {
+      "$ref": "AdminUser"
+     }
+    },
+    "genToken": {
+     "id": "update.admin.genToken",
+     "path": "admin/user/{userName}/token/new",
+     "httpMethod": "PUT",
+     "description": "Generate a new token.",
+     "parameters": {
+      "userName": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "userName"
+     ],
+     "request": {
+      "$ref": "AdminUserReq",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "AdminUser"
+     }
+    },
+    "getUser": {
+     "id": "update.admin.getUser",
+     "path": "admin/user/{userName}",
+     "httpMethod": "GET",
+     "description": "Get a user.",
+     "parameters": {
+      "userName": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "userName"
+     ],
+     "response": {
+      "$ref": "AdminUser"
+     }
+    },
+    "listUsers": {
+     "id": "update.admin.listUsers",
+     "path": "admin/user",
+     "httpMethod": "GET",
+     "description": "List Users.",
+     "response": {
+      "$ref": "AdminListUsersResp"
+     }
+    }
+   }
+  },
+  "app": {
+   "methods": {
+    "delete": {
+     "id": "update.app.delete",
+     "path": "apps/{id}",
+     "httpMethod": "DELETE",
+     "description": "Delete an application.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "App"
+     }
+    },
+    "get": {
+     "id": "update.app.get",
+     "path": "apps/{id}",
+     "httpMethod": "GET",
+     "description": "Get an application.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "App"
+     }
+    },
+    "insert": {
+     "id": "update.app.insert",
+     "path": "apps",
+     "httpMethod": "POST",
+     "description": "Insert an application.",
+     "request": {
+      "$ref": "AppInsertReq",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "App"
+     }
+    },
+    "list": {
+     "id": "update.app.list",
+     "path": "apps",
+     "httpMethod": "GET",
+     "description": "List all application.",
+     "response": {
+      "$ref": "AppListResp"
+     }
+    },
+    "patch": {
+     "id": "update.app.patch",
+     "path": "apps/{id}",
+     "httpMethod": "PATCH",
+     "description": "Update an application. This method supports patch semantics.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "request": {
+      "$ref": "AppUpdateReq"
+     },
+     "response": {
+      "$ref": "App"
+     }
+    },
+    "update": {
+     "id": "update.app.update",
+     "path": "apps/{id}",
+     "httpMethod": "PATCH",
+     "description": "Update an application.",
+     "parameters": {
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "request": {
+      "$ref": "AppUpdateReq",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "App"
+     }
+    }
+   },
+   "resources": {
+    "package": {
+     "methods": {
+      "delete": {
+       "id": "update.app.package.delete",
+       "path": "apps/{appId}/packages/{version}",
+       "httpMethod": "DELETE",
+       "description": "Delete an package.",
+       "parameters": {
+        "appId": {
+         "type": "string",
+         "required": true,
+         "location": "path"
+        },
+        "metadataSignatureRsa": {
+         "type": "string",
+         "location": "query"
+        },
+        "metadataSize": {
+         "type": "string",
+         "location": "query"
+        },
+        "releaseNotes": {
+         "type": "string",
+         "location": "query"
+        },
+        "required": {
+         "type": "boolean",
+         "location": "query"
+        },
+        "sha1Sum": {
+         "type": "string",
+         "location": "query"
+        },
+        "sha256Sum": {
+         "type": "string",
+         "location": "query"
+        },
+        "size": {
+         "type": "string",
+         "location": "query"
+        },
+        "url": {
+         "type": "string",
+         "location": "query"
+        },
+        "version": {
+         "type": "string",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "appId",
+        "version"
+       ],
+       "response": {
+        "$ref": "Package"
+       }
+      },
+      "insert": {
+       "id": "update.app.package.insert",
+       "path": "apps/{appId}/packages/{version}",
+       "httpMethod": "POST",
+       "description": "Insert a new package version.",
+       "parameters": {
+        "appId": {
+         "type": "string",
+         "required": true,
+         "location": "path"
+        },
+        "version": {
+         "type": "string",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "appId",
+        "version"
+       ],
+       "request": {
+        "$ref": "Package",
+        "parameterName": "resource"
+       },
+       "response": {
+        "$ref": "Package"
+       }
+      },
+      "list": {
+       "id": "update.app.package.list",
+       "path": "apps/{appId}/packages",
+       "httpMethod": "GET",
+       "description": "List all of the package versions.",
+       "parameters": {
+        "appId": {
+         "type": "string",
+         "required": true,
+         "location": "path"
+        },
+        "limit": {
+         "type": "integer",
+         "format": "int32",
+         "location": "query"
+        },
+        "skip": {
+         "type": "integer",
+         "format": "int32",
+         "location": "query"
+        },
+        "version": {
+         "type": "string",
+         "location": "query"
+        }
+       },
+       "parameterOrder": [
+        "appId"
+       ],
+       "response": {
+        "$ref": "PackageList"
+       }
+      },
+      "publicList": {
+       "id": "update.app.package.publicList",
+       "path": "public/packages",
+       "httpMethod": "GET",
+       "description": "List all of the publicly available published packages.",
+       "response": {
+        "$ref": "PublicPackageList"
+       }
+      }
+     }
+    }
+   }
+  },
+  "appversion": {
+   "methods": {
+    "list": {
+     "id": "update.appversion.list",
+     "path": "appversions",
+     "httpMethod": "GET",
+     "description": "List Client updates grouped by app/version.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "location": "query"
+      },
+      "dateEnd": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "dateStart": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "eventResult": {
+       "type": "string",
+       "location": "query"
+      },
+      "eventType": {
+       "type": "string",
+       "location": "query"
+      },
+      "groupId": {
+       "type": "string",
+       "location": "query"
+      },
+      "oem": {
+       "type": "string",
+       "location": "query"
+      },
+      "version": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "response": {
+      "$ref": "AppVersionList"
+     }
+    }
+   }
+  },
+  "channel": {
+   "methods": {
+    "delete": {
+     "id": "update.channel.delete",
+     "path": "apps/{appId}/channels/{label}",
+     "httpMethod": "DELETE",
+     "description": "Delete a channel.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "label": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "publish": {
+       "type": "boolean",
+       "location": "query"
+      },
+      "version": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "label"
+     ],
+     "response": {
+      "$ref": "ChannelRequest"
+     }
+    },
+    "insert": {
+     "id": "update.channel.insert",
+     "path": "apps/{appId}/channels",
+     "httpMethod": "POST",
+     "description": "Insert a channel.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId"
+     ],
+     "request": {
+      "$ref": "ChannelRequest",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "AppChannel"
+     }
+    },
+    "list": {
+     "id": "update.channel.list",
+     "path": "apps/{appId}/channels",
+     "httpMethod": "GET",
+     "description": "List channels.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId"
+     ],
+     "response": {
+      "$ref": "ChannelListResp"
+     }
+    },
+    "publicList": {
+     "id": "update.channel.publicList",
+     "path": "public/channels",
+     "httpMethod": "GET",
+     "description": "List all publicly available published channels.",
+     "response": {
+      "$ref": "ChannelListResp"
+     }
+    },
+    "update": {
+     "id": "update.channel.update",
+     "path": "apps/{appId}/channels/{label}",
+     "httpMethod": "PATCH",
+     "description": "Update a channel.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "label": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "label"
+     ],
+     "request": {
+      "$ref": "ChannelRequest",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "AppChannel"
+     }
+    }
+   }
+  },
+  "client": {
+   "methods": {
+    "history": {
+     "id": "update.client.history",
+     "path": "client/history",
+     "httpMethod": "GET",
+     "description": "Get the update history of a single client.",
+     "parameters": {
+      "clientId": {
+       "type": "string",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "clientId"
+     ],
+     "response": {
+      "$ref": "ClientHistoryResp"
+     }
+    }
+   }
+  },
+  "clientupdate": {
+   "methods": {
+    "count": {
+     "id": "update.clientupdate.count",
+     "path": "clientupdatecount",
+     "httpMethod": "GET",
+     "description": "Get client count for criteria.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "location": "query"
+      },
+      "dateEnd": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "dateStart": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "eventResult": {
+       "type": "string",
+       "location": "query"
+      },
+      "eventType": {
+       "type": "string",
+       "location": "query"
+      },
+      "groupId": {
+       "type": "string",
+       "location": "query"
+      },
+      "oem": {
+       "type": "string",
+       "location": "query"
+      },
+      "version": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "response": {
+      "$ref": "ClientCountResp"
+     }
+    },
+    "list": {
+     "id": "update.clientupdate.list",
+     "path": "clientupdates",
+     "httpMethod": "GET",
+     "description": "List all client updates.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "location": "query"
+      },
+      "clientId": {
+       "type": "string",
+       "location": "query"
+      },
+      "dateEnd": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "dateStart": {
+       "type": "string",
+       "format": "int64",
+       "location": "query"
+      },
+      "eventResult": {
+       "type": "string",
+       "location": "query"
+      },
+      "eventType": {
+       "type": "string",
+       "location": "query"
+      },
+      "groupId": {
+       "type": "string",
+       "location": "query"
+      },
+      "limit": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "oem": {
+       "type": "string",
+       "location": "query"
+      },
+      "skip": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "version": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "response": {
+      "$ref": "ClientUpdateList"
+     }
+    }
+   }
+  },
+  "group": {
+   "methods": {
+    "delete": {
+     "id": "update.group.delete",
+     "path": "apps/{appId}/groups/{id}",
+     "httpMethod": "DELETE",
+     "description": "Delete a group.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "channelId": {
+       "type": "string",
+       "location": "query"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "label": {
+       "type": "string",
+       "location": "query"
+      },
+      "updateCount": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "updateInterval": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "updatePooling": {
+       "type": "boolean",
+       "location": "query"
+      },
+      "updatesPaused": {
+       "type": "boolean",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "id"
+     ],
+     "response": {
+      "$ref": "Group"
+     }
+    },
+    "get": {
+     "id": "update.group.get",
+     "path": "apps/{appId}/groups/{id}",
+     "httpMethod": "GET",
+     "description": "Get a group.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "channelId": {
+       "type": "string",
+       "location": "query"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "label": {
+       "type": "string",
+       "location": "query"
+      },
+      "updateCount": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "updateInterval": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "updatePooling": {
+       "type": "boolean",
+       "location": "query"
+      },
+      "updatesPaused": {
+       "type": "boolean",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "id"
+     ],
+     "response": {
+      "$ref": "Group"
+     }
+    },
+    "insert": {
+     "id": "update.group.insert",
+     "path": "apps/{appId}/groups",
+     "httpMethod": "POST",
+     "description": "Create a new group.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId"
+     ],
+     "request": {
+      "$ref": "Group",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "Group"
+     }
+    },
+    "list": {
+     "id": "update.group.list",
+     "path": "apps/{appId}/groups",
+     "httpMethod": "GET",
+     "description": "List all of the groups.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "limit": {
+       "type": "integer",
+       "default": "10",
+       "format": "int32",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "appId"
+     ],
+     "response": {
+      "$ref": "GroupList"
+     }
+    },
+    "patch": {
+     "id": "update.group.patch",
+     "path": "apps/{appId}/groups/{id}",
+     "httpMethod": "PATCH",
+     "description": "Patch a group. This method supports patch semantics.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "id"
+     ],
+     "request": {
+      "$ref": "Group"
+     },
+     "response": {
+      "$ref": "Group"
+     }
+    },
+    "update": {
+     "id": "update.group.update",
+     "path": "apps/{appId}/groups/{id}",
+     "httpMethod": "PATCH",
+     "description": "Patch a group.",
+     "parameters": {
+      "appId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      },
+      "id": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "appId",
+      "id"
+     ],
+     "request": {
+      "$ref": "Group",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "Group"
+     }
+    }
+   },
+   "resources": {
+    "requests": {
+     "resources": {
+      "events": {
+       "methods": {
+        "rollup": {
+         "id": "update.group.requests.events.rollup",
+         "path": "apps/{appId}/groups/{groupId}/requests/events/{dateStart}/{dateEnd}",
+         "httpMethod": "GET",
+         "description": "Rollup all client requests by event for this group.",
+         "parameters": {
+          "appId": {
+           "type": "string",
+           "required": true,
+           "location": "path"
+          },
+          "dateEnd": {
+           "type": "string",
+           "required": true,
+           "format": "int64",
+           "location": "path"
+          },
+          "dateStart": {
+           "type": "string",
+           "required": true,
+           "format": "int64",
+           "location": "path"
+          },
+          "groupId": {
+           "type": "string",
+           "required": true,
+           "location": "path"
+          },
+          "resolution": {
+           "type": "string",
+           "format": "int64",
+           "location": "query"
+          },
+          "versions": {
+           "type": "string",
+           "location": "query"
+          }
+         },
+         "parameterOrder": [
+          "appId",
+          "groupId",
+          "dateStart",
+          "dateEnd"
+         ],
+         "response": {
+          "$ref": "GroupRequestsRollup"
+         }
+        }
+       }
+      },
+      "versions": {
+       "methods": {
+        "rollup": {
+         "id": "update.group.requests.versions.rollup",
+         "path": "apps/{appId}/groups/{groupId}/requests/versions/{dateStart}/{dateEnd}",
+         "httpMethod": "GET",
+         "description": "Rollup all clients requests by version for this group.",
+         "parameters": {
+          "appId": {
+           "type": "string",
+           "required": true,
+           "location": "path"
+          },
+          "dateEnd": {
+           "type": "string",
+           "required": true,
+           "format": "int64",
+           "location": "path"
+          },
+          "dateStart": {
+           "type": "string",
+           "required": true,
+           "format": "int64",
+           "location": "path"
+          },
+          "groupId": {
+           "type": "string",
+           "required": true,
+           "location": "path"
+          },
+          "resolution": {
+           "type": "string",
+           "format": "int64",
+           "location": "query"
+          },
+          "versions": {
+           "type": "string",
+           "location": "query"
+          }
+         },
+         "parameterOrder": [
+          "appId",
+          "groupId",
+          "dateStart",
+          "dateEnd"
+         ],
+         "response": {
+          "$ref": "GroupRequestsRollup"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "upstream": {
+   "methods": {
+    "delete": {
+     "id": "update.upstream.delete",
+     "path": "upstream/{id}",
+     "httpMethod": "DELETE",
+     "description": "Delete an upstream.",
+     "parameters": {
+      "id": {
+       "type": "integer",
+       "required": true,
+       "format": "int32",
+       "location": "path"
+      },
+      "label": {
+       "type": "string",
+       "location": "query"
+      },
+      "url": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "response": {
+      "$ref": "Upstream"
+     }
+    },
+    "insert": {
+     "id": "update.upstream.insert",
+     "path": "upstream",
+     "httpMethod": "POST",
+     "description": "Insert an upstream.",
+     "request": {
+      "$ref": "Upstream",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "Upstream"
+     }
+    },
+    "list": {
+     "id": "update.upstream.list",
+     "path": "upstream",
+     "httpMethod": "GET",
+     "description": "List all upstreams.",
+     "response": {
+      "$ref": "UpstreamListResp"
+     }
+    },
+    "sync": {
+     "id": "update.upstream.sync",
+     "path": "upstream/sync",
+     "httpMethod": "POST",
+     "description": "Synchronize all upstreams.",
+     "response": {
+      "$ref": "UpstreamSyncResp"
+     }
+    },
+    "update": {
+     "id": "update.upstream.update",
+     "path": "upstream/{id}",
+     "httpMethod": "PUT",
+     "description": "Update an upstream.",
+     "parameters": {
+      "id": {
+       "type": "integer",
+       "required": true,
+       "format": "int32",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "id"
+     ],
+     "request": {
+      "$ref": "Upstream",
+      "parameterName": "resource"
+     },
+     "response": {
+      "$ref": "Upstream"
+     }
+    }
+   }
+  },
+  "util": {
+   "methods": {
+    "uuid": {
+     "id": "update.util.uuid",
+     "path": "util/uuid",
+     "httpMethod": "GET",
+     "description": "Generate a new UUID.",
+     "response": {
+      "$ref": "GenerateUuidResp"
+     }
+    }
+   }
+  }
+ }
+}
