@@ -157,13 +157,13 @@ We need to reimport the saved data containers we exported earlier.
 .. code-block:: console
 
     dev $ fleetctl ssh deis-builder.service
-    coreos $ cat /home/coreos/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
+    coreos $ docker tag $(cat /home/coreos/deis-builder-data-backup.tar | docker import - deis-builder-data) deis-builder-data
     dev $ fleetctl ssh deis-database.service
-    coreos $ cat /home/coreos/deis-database-data-backup.tar | sudo docker import - deis-database-data
+    coreos $ docker tag $(cat /home/coreos/deis-database-data-backup.tar | docker import - deis-database-data) deis-database-data
     dev $ fleetctl ssh deis-logger.service
-    coreos $ cat /home/coreos/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
+    coreos $ docker tag $(cat /home/coreos/deis-logger-data-backup.tar | docker import - deis-logger-data) deis-logger-data
     dev $ fleetctl ssh deis-registry.service
-    coreos $ cat /home/coreos/deis-registry-data-backup.tar | sudo docker import - deis-registry-data
+    coreos $ docker tag $(cat /home/coreos/deis-registry-data-backup.tar | docker import - deis-registry-data) deis-registry-data
 
 Start the cluster
 ^^^^^^^^^^^^^^^^^
