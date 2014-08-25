@@ -13,7 +13,7 @@ import (
 )
 
 // path hierarchy for finding systemd service templates
-var rootPaths = []string{"/var/lib/deis/units", "units", "../units"}
+var rootPaths = []string{"/var/lib/deis/units", "units"}
 
 // getUnits returns a list of units filtered by target
 func (c *FleetClient) getUnits(target string) (units []string, err error) {
@@ -99,22 +99,33 @@ func NewDataUnit(component string, machineID string) (uf *unit.UnitFile, err err
 func formatUnitName(component string, num int) (unitName string, err error) {
 	if num == 0 {
 		return "deis-" + component + ".service", nil
-	} else {
-		return "deis-" + component + "@" + strconv.Itoa(num) + ".service", nil
 	}
+	return "deis-" + component + "@" + strconv.Itoa(num) + ".service", nil
 }
 
 // readTemplate returns the contents of a systemd template for the given component
 func readTemplate(component string) (out []byte, err error) {
 	templateName := "deis-" + component + ".service"
 	var templateFile string
-	for _, rootPath := range rootPaths {
-		filename := path.Join(rootPath, templateName)
+
+	// first look for unit files in GOPATH
+	if os.Getenv("GOPATH") != "" {
+		filename := path.Join(os.Getenv("GOPATH"),
+			path.Join("src", "github.com", "deis", "deisctl", "units", templateName))
 		if _, err := os.Stat(filename); err == nil {
 			templateFile = filename
-			break
+		}
+	} else {
+		// otherwise look in rootPaths hierarchy
+		for _, rootPath := range rootPaths {
+			filename := path.Join(rootPath, templateName)
+			if _, err := os.Stat(filename); err == nil {
+				templateFile = filename
+				break
+			}
 		}
 	}
+
 	if templateFile == "" {
 		return nil, fmt.Errorf("Could not find unit template for %v", component)
 	}

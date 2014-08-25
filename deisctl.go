@@ -77,8 +77,7 @@ Example Commands:
 
   deisctl install
   deisctl uninstall
-  deisctl list-units
-  deisctl list-unit-files
+  deisctl list
   deisctl scale router=2
   deisctl start router@2
   deisctl stop router builder
