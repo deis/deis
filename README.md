@@ -11,6 +11,8 @@ In order to build and install `deisctl` you will need the following:
  * Godeps (install with `go get github.com/tools/godep`)
 
 ```console
+$ go get -v github.com/deis/deisctl
+$ cd $GOPATH/src/github.com/deis/deisctl
 $ make install
 
 $ deisctl
@@ -20,9 +22,8 @@ Usage:
 
 ## Remote Configuration
 
-While `deisctl` can be run locally on a CoreOS host, it is most useful as a tool
-for remote administration of a Deis platform.  For remote connectivity to work,
-you must configure an SSH tunnel to one of your CoreOS hosts.
+While `deisctl` can be used locally on a CoreOS host, it is extremely useful as a tool
+for remote administration.  This requires an SSH tunnel to one of your CoreOS hosts.
 
 Test password-less SSH connectivity to a CoreOS host:
 
