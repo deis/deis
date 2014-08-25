@@ -30,8 +30,7 @@ func (c *FleetClient) Create(target string) (err error) {
 	if err != nil {
 		return err
 	}
-	check := newStateCheck(testJobStateLoaded)
-	err = waitForJobStates([]string{unitName}, check)
+	err = waitForJobStates([]string{unitName}, jobStateLoaded)
 	if err != nil {
 		return err
 	}

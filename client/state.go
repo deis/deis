@@ -10,28 +10,28 @@ import (
 
 type testJob func(j *job.Job) bool
 
-func testJobStateLoaded(j *job.Job) bool {
+func jobStateLoaded(j *job.Job) bool {
 	if j == nil || j.State == nil {
 		return false
 	}
 	return *(j.State) == job.JobStateLoaded
 }
 
-func testJobStateLaunched(j *job.Job) bool {
+func jobStateLaunched(j *job.Job) bool {
 	if j == nil || j.State == nil {
 		return false
 	}
 	return *(j.State) == job.JobStateLaunched
 }
 
-func testJobStateInactive(j *job.Job) bool {
+func jobStateInactive(j *job.Job) bool {
 	if j == nil || j.State == nil {
 		return false
 	}
 	return *(j.State) == job.JobStateInactive
 }
 
-func testUnitStateActive(j *job.Job) bool {
+func unitStateActive(j *job.Job) bool {
 	if j == nil || j.UnitState == nil {
 		return false
 	}
@@ -41,33 +41,33 @@ func testUnitStateActive(j *job.Job) bool {
 
 // stateCheck defines how to monitor a job state
 type stateCheck struct {
-	test      testJob
-	statechan chan *jobState
-	errchan   chan error
+	test  testJob
+	state chan *jobState
 }
 
 // newStateCheck returns a StateCheck struct with new channels for monitoring
 func newStateCheck(test testJob) *stateCheck {
-	statechan := make(chan *jobState)
-	errchan := make(chan error)
-	return &stateCheck{test, statechan, errchan}
+	state := make(chan *jobState)
+	return &stateCheck{test, state}
 }
 
 // waitForJobStates polls each of the indicated jobs until each of their
 // states is equal to that which the caller indicates via stateCheck test
-func waitForJobStates(jobs []string, check *stateCheck) error {
+func waitForJobStates(jobs []string, test testJob) error {
 	var wg sync.WaitGroup
+	errchan := make(chan error)
+	check := newStateCheck(test)
 
 	// check each job with the stateCheck
 	for _, name := range jobs {
 		wg.Add(1)
-		go checkJobState(name, check, &wg)
+		go checkJobState(name, check, &wg, errchan)
 	}
 
 	// wait for all jobs to complete
 	go func() {
 		wg.Wait()
-		close(check.errchan)
+		close(errchan)
 	}()
 
 	// print output while jobs are transitioning
@@ -75,7 +75,7 @@ func waitForJobStates(jobs []string, check *stateCheck) error {
 	for {
 		select {
 		// read from state channel
-		case state := <-check.statechan:
+		case state := <-check.state:
 			// return on closed channel
 			if state == nil {
 				return nil
@@ -89,18 +89,18 @@ func waitForJobStates(jobs []string, check *stateCheck) error {
 					state.name, state.loaded, state.active, state.sub)
 			}
 		// read from error channel
-		case err := <-check.errchan:
+		case err := <-errchan:
 			return err
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
 }
 
-func checkJobState(jobName string, check *stateCheck, wg *sync.WaitGroup) {
+func checkJobState(jobName string, check *stateCheck, wg *sync.WaitGroup, errchan chan error) {
 	defer wg.Done()
 	sleep := 100 * time.Millisecond
 	for {
-		if assertJobState(jobName, check) {
+		if assertJobState(jobName, check, errchan) {
 			return
 		}
 		time.Sleep(sleep)
@@ -130,19 +130,19 @@ func newJobState(name string, j *job.Job) *jobState {
 	return &jobState{name, loaded, active, sub}
 }
 
-func assertJobState(name string, check *stateCheck) bool {
+func assertJobState(name string, check *stateCheck, errchan chan error) bool {
 	j, err := cAPI.Job(name)
 	if err != nil {
-		check.errchan <- fmt.Errorf("Error retrieving Job(%s) from Registry: %v", name, err)
+		errchan <- fmt.Errorf("Error retrieving Job(%s) from Registry: %v", name, err)
 		return false
 	}
 
 	// send current state to the output channel
-	check.statechan <- newJobState(name, j)
+	check.state <- newJobState(name, j)
 
-	// if test function
+	// if state matches, close the channel and return
 	if check.test(j) {
-		close(check.statechan)
+		close(check.state)
 		return true
 	}
 	return false

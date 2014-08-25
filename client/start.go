@@ -15,8 +15,7 @@ func (c *FleetClient) Start(target string) (err error) {
 			return err
 		}
 	}
-	check := newStateCheck(testUnitStateActive)
-	err = waitForJobStates(units, check)
+	err = waitForJobStates(units, unitStateActive)
 	if err != nil {
 		return err
 	}
