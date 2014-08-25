@@ -17,7 +17,7 @@ var rootPaths = []string{"/var/lib/deis/units", "units", "../units"}
 
 // getUnits returns a list of units filtered by target
 func (c *FleetClient) getUnits(target string) (units []string, err error) {
-	jobs, err := c.Fleet.Jobs()
+	allUnits, err := c.Fleet.Units()
 	if err != nil {
 		return
 	}
@@ -29,10 +29,10 @@ func (c *FleetClient) getUnits(target string) (units []string, err error) {
 	} else {
 		r = regexp.MustCompile(`deis\-(` + target + `)@([\d]+)\.service`)
 	}
-	for _, j := range jobs {
-		match := r.MatchString(j.Name)
+	for _, u := range allUnits {
+		match := r.MatchString(u.Name)
 		if match {
-			units = append(units, j.Name)
+			units = append(units, u.Name)
 		}
 	}
 	return
@@ -66,12 +66,12 @@ func (c *FleetClient) lastUnit(component string) (num int, err error) {
 
 // NewUnit takes a component type and returns a Fleet unit
 // that includes the relevant systemd service template
-func NewUnit(component string) (u *unit.Unit, err error) {
+func NewUnit(component string) (uf *unit.UnitFile, err error) {
 	template, err := readTemplate(component)
 	if err != nil {
 		return
 	}
-	u, err = unit.NewUnit(string(template))
+	uf, err = unit.NewUnitFile(string(template))
 	if err != nil {
 		return
 	}
@@ -80,14 +80,14 @@ func NewUnit(component string) (u *unit.Unit, err error) {
 
 // NewDataUnit takes a component type and returns a Fleet unit
 // that is hard-scheduled to a machine ID
-func NewDataUnit(component string, machineID string) (u *unit.Unit, err error) {
+func NewDataUnit(component string, machineID string) (uf *unit.UnitFile, err error) {
 	template, err := readTemplate(component)
 	if err != nil {
 		return
 	}
 	// replace CHANGEME with random machineID
 	replaced := strings.Replace(string(template), "CHANGEME", machineID, 1)
-	u, err = unit.NewUnit(replaced)
+	uf, err = unit.NewUnitFile(replaced)
 	if err != nil {
 		return
 	}

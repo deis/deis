@@ -8,16 +8,17 @@ func (c *FleetClient) Stop(target string) (err error) {
 	if err != nil {
 		return
 	}
-	newState := job.JobStateInactive
-	for _, unitName := range units {
-		err = c.Fleet.SetJobTargetState(unitName, newState)
+	desiredState := string(job.JobStateLoaded)
+	for _, name := range units {
+		err = c.Fleet.SetUnitTargetState(name, desiredState)
 		if err != nil {
 			return err
 		}
-	}
-	err = waitForJobStates(units, jobStateInactive)
-	if err != nil {
-		return err
+		outchan, errchan := waitForUnitStates(units, desiredState)
+		err = printUnitState(name, outchan, errchan)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

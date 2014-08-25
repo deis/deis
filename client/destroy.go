@@ -20,11 +20,11 @@ func (c *FleetClient) Destroy(target string) (err error) {
 	if err != nil {
 		return err
 	}
-	_, err = c.Fleet.Job(unitName)
+	_, err = c.Fleet.Unit(unitName)
 	if err != nil {
 		return
 	}
-	if err = c.Fleet.DestroyJob(unitName); err != nil {
+	if err = c.Fleet.DestroyUnit(unitName); err != nil {
 		return fmt.Errorf("failed destroying job %s: %v", unitName, err)
 	}
 	fmt.Printf("Destroyed Unit %s\n", unitName)

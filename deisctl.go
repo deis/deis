@@ -48,15 +48,20 @@ func Update(args []string) {
 
 func setGlobalFlags(args map[string]interface{}) {
 	client.Flags.Debug = args["--debug"].(bool)
-	verbosity, _ := strconv.Atoi(args["--verbosity"].(string))
-	client.Flags.Verbosity = verbosity
+	client.Flags.Version = args["--version"].(bool)
 	client.Flags.Endpoint = args["--endpoint"].(string)
 	client.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
+	client.Flags.EtcdKeyFile = args["--etcd-keyfile"].(string)
+	client.Flags.EtcdCertFile = args["--etcd-certfile"].(string)
+	client.Flags.EtcdCAFile = args["--etcd-cafile"].(string)
+	//client.Flags.UseAPI = args["--experimental-api"].(bool)
 	client.Flags.KnownHostsFile = args["--known-hosts-file"].(string)
 	client.Flags.StrictHostKeyChecking = args["--strict-host-key-checking"].(bool)
-	tunnel := args["--tunnel"]
-	if tunnel != nil {
-		client.Flags.Tunnel = tunnel.(string)
+	timeout, _ := strconv.ParseFloat(args["--request-timeout"].(string), 64)
+	client.Flags.RequestTimeout = timeout
+	tunnel := args["--tunnel"].(string)
+	if tunnel != "" {
+		client.Flags.Tunnel = tunnel
 	} else {
 		client.Flags.Tunnel = os.Getenv("FLEETCTL_TUNNEL")
 	}
@@ -72,7 +77,8 @@ Example Commands:
 
   deisctl install
   deisctl uninstall
-  deisctl list
+  deisctl list-units
+  deisctl list-unit-files
   deisctl scale router=2
   deisctl start router@2
   deisctl stop router builder
@@ -81,12 +87,16 @@ Example Commands:
 
 Options:
   --debug                     print debug information to stderr
+  --version                   print version and exit
   --endpoint=<url>            etcd endpoint for fleet [default: http://127.0.0.1:4001]
   --etcd-key-prefix=<path>    keyspace for fleet data in etcd [default: /_coreos.com/fleet/]
+  --etcd-keyfile=<path>       etcd key file authentication [default: ]
+  --etcd-certfile=<path>      etcd cert file authentication [default: ]
+  --etcd-cafile=<path>        etcd CA file authentication [default: ]
   --known-hosts-file=<path>   file used to store remote machine fingerprints [default: ~/.fleetctl/known_hosts]
   --strict-host-key-checking  verify SSH host keys [default: true]
-  --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd
-  --verbosity=<level>         log at a specified level of verbosity to stderr [default: 0]
+  --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
+  --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, "", true)
@@ -104,7 +114,11 @@ Options:
 	// dispatch the command
 	switch command {
 	case "list":
-		err = cmd.List(c)
+		err = cmd.ListUnits(c)
+	case "list-units":
+		err = cmd.ListUnits(c)
+	case "list-unit-files":
+		err = cmd.ListUnitFiles(c)
 	case "scale":
 		err = cmd.Scale(c, targets)
 	case "start":

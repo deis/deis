@@ -10,8 +10,13 @@ import (
 	"github.com/deis/deisctl/utils"
 )
 
-func List(c client.Client) error {
-	err := c.List()
+func ListUnits(c client.Client) error {
+	err := c.ListUnits()
+	return err
+}
+
+func ListUnitFiles(c client.Client) error {
+	err := c.ListUnitFiles()
 	return err
 }
 

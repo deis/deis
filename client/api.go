@@ -7,7 +7,8 @@ type Client interface {
 	Start(string) error
 	Stop(string) error
 	Scale(string, int) error
-	List() error
+	ListUnits() error
+	ListUnitFiles() error
 	Status(string) error
 	Journal(string) error
 }
