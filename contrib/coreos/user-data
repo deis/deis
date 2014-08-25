@@ -32,7 +32,37 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
+  - name: clean-docker-cruft.service
+    command: start
+    content: |
+      [Unit]
+      Description=Clean orphaned containers and images
+
+      [Service]
+      Type=simple
+      ExecStart=/run/deis/cleanup-docker
+  - name: clean-docker-cruft.timer
+    command: start
+    content: |
+      [Unit]
+      Description=Cleans docker container cruft weekly
+
+      [Timer]
+      # Time to wait after booting before we run first time
+      OnBootSec=10min
+      # Time between running each consecutive time
+      OnCalendar=weekly
+
+      [Install]
+      WantedBy=multi-user.target
 write_files:
+  - path: /run/deis/cleanup-docker
+    permissions: '0755'
+    content: |
+      #!/bin/sh
+      
+      docker ps -a --no-trunc | grep 'Exit' | awk '{print $1}' | xargs -L 1 -r docker rm
+      docker images -a --no-trunc | grep none | awk '{print $3}' | xargs -L 1 -r docker rmi
   - path: /etc/deis-release
     content: |
       DEIS_RELEASE=latest
