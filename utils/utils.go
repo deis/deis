@@ -65,23 +65,6 @@ func PullImage(args string) error {
 	return nil
 }
 
-func GetServices() []string {
-	service := []string{
-		"deis-builder.service",
-		"deis-builder-data.service",
-		"deis-cache.service",
-		"deis-controller.service",
-		"deis-database.service",
-		"deis-database-data.service",
-		"deis-logger.service",
-		"deis-logger-data.service",
-		"deis-registry.service",
-		"deis-registry-data.service",
-		"deis-router.service",
-	}
-	return service
-}
-
 // getClientID returns the CoreOS Machine ID or an unknown UUID string
 func GetClientID() string {
 	machineID := GetMachineID("/")

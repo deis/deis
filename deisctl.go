@@ -7,43 +7,13 @@ import (
 
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/cmd"
-	"github.com/deis/deisctl/constant"
-	"github.com/deis/deisctl/updatectl"
-	"github.com/deis/deisctl/utils"
+
 	docopt "github.com/docopt/docopt-go"
 )
 
 func exit(err error, code int) {
 	fmt.Printf("Error: %v\n", err)
 	os.Exit(code)
-}
-
-func Update(args []string) {
-
-	if len(args) != 4 {
-		fmt.Println("unsufficient args")
-		fmt.Println("usage:  deisctl update instance deis")
-		return
-	}
-	if args[2] != "instance" && args[3] != "deis" {
-		fmt.Println("wrong args ")
-		fmt.Println("usage:  deisctl update instance deis")
-		return
-	}
-	Args := []string{
-		"instance",
-		"deis",
-		"--clients-per-app=1",
-		"--min-sleep=5",
-		"--max-sleep=10",
-	}
-	if err := utils.Execute(constant.HooksDir + "pre-update"); err != nil {
-		fmt.Println("pre-updatehook failed")
-	}
-	updatectl.Update(Args)
-	if err := utils.Execute(constant.HooksDir + "post-update"); err != nil {
-		fmt.Println("post-updatehook failed")
-	}
 }
 
 func setGlobalFlags(args map[string]interface{}) {
@@ -133,7 +103,7 @@ Options:
 	case "uninstall":
 		err = cmd.Uninstall(c, targets)
 	case "update":
-		Update(os.Args)
+		err = cmd.Update()
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)

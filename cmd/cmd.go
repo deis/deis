@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/constant"
+	"github.com/deis/deisctl/update"
 	"github.com/deis/deisctl/utils"
 )
 
@@ -18,16 +19,6 @@ func ListUnits(c client.Client) error {
 func ListUnitFiles(c client.Client) error {
 	err := c.ListUnitFiles()
 	return err
-}
-
-func PullImage(service string) error {
-	//dockercli, _, _ := utils.GetNewClient()
-	fmt.Println("pulling image :" + strings.Replace(strings.Split(service, ".")[0], "-", "/", 1) + ":latest")
-	err := utils.PullImage(strings.Replace(strings.Split(service, ".")[0], "-", "/", 1) + ":latest")
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func Scale(c client.Client, targets []string) error {
@@ -220,4 +211,20 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 		return
 	}
 	return
+}
+
+func Update() error {
+	if err := utils.Execute(constant.HooksDir + "pre-update"); err != nil {
+		fmt.Println("pre-updatehook failed")
+		return err
+	}
+	if err := update.Update(); err != nil {
+		fmt.Println("update engine failed")
+		return err
+	}
+	if err := utils.Execute(constant.HooksDir + "post-update"); err != nil {
+		fmt.Println("post-updatehook failed")
+		return err
+	}
+	return nil
 }
