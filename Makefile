@@ -40,7 +40,7 @@ clean: uninstall
 full-clean: clean
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rmi deis-$$c; done')
 
-install: check-fleet install-routers install-data-containers
+install: check-fleet install-routers install-stores install-data-containers
 	$(FLEETCTL) load $(START_UNITS)
 	$(FLEETCTL) load registry/systemd/*.service
 	$(FLEETCTL) load controller/systemd/*.service
@@ -70,6 +70,14 @@ install-routers: check-fleet
 		$(FLEETCTL) load router/systemd/$(R) ; \
 	)
 
+install-stores: check-fleet
+	@$(foreach S, $(STORE_DATA_UNITS), \
+		$(FLEETCTL) load store/systemd/$(S) ; \
+	)
+	@$(foreach S, $(STORE_UNITS), \
+		$(FLEETCTL) load store/systemd/$(S) ; \
+	)
+
 pull:
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker pull deis/$$c:latest; done')
 	$(call ssh_all,'docker pull deis/slugrunner:latest')
@@ -81,7 +89,7 @@ rsync:
 
 run: install start
 
-start: check-fleet start-warning start-routers
+start: check-fleet start-warning start-routers start-stores
 	@# logger cache database
 	$(call echo_yellow,"Waiting for deis-cache to start...")
 	$(FLEETCTL) start -no-block $(START_UNITS)
@@ -139,6 +147,9 @@ start-routers: check-fleet start-warning
 			sleep 8; \
 		done
 	$(call check_for_errors)
+
+start-stores: check-fleet
+	$(foreach S,$(STORE_UNITS),$(FLEETCTL) start -no-block $(S);)
 
 start-warning:
 	$(call echo_cyan,"Deis components may take a long time to start the first time they are initialized.")

@@ -1,0 +1,87 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# fail hard and fast even on pipelines
+set -eo pipefail
+
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
+
+# configure etcd
+export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD="$HOST:$ETCD_PORT"
+export ETCD_PATH=${ETCD_PATH:-/deis/store/hosts/$HOST}
+export ETCD_TTL=${ETCD_TTL:-10}
+export NUM_STORES=${NUM_STORES:-3}
+
+# wait for etcd to be available
+until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+  echo "waiting for etcd at $ETCD..."
+  sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
+
+# wait until etcd has discarded potentially stale values
+sleep $(($ETCD_TTL+1))
+
+# smart shutdown on SIGINT and SIGTERM
+function on_exit() {
+  stop ceph-all
+  exit 0
+}
+trap on_exit INT TERM
+
+HOSTNAME=`hostname`
+
+# we do this here instead of in the Dockerfile so we're operating on the volume shared from deis-store-data
+mkdir -p /data/ceph
+chown -R ceph /data/ceph
+
+# generate SSH key if one isn't already in etcd
+if [ ! -f /data/ceph/.ssh/id_rsa ] ; then
+  sudo -u ceph mkdir /data/ceph/.ssh
+  if ! etcdctl --no-sync -C $ETCD get /deis/store/pubKeys/$HOST >/dev/null 2>&1 ; then
+    [[ $DEBUG ]] && echo 'Creating a new SSH key for ceph'
+    # generate a new key
+    sudo -u ceph ssh-keygen -q -t rsa -f /data/ceph/.ssh/id_rsa -N '' -C $HOSTNAME
+    etcdctl --no-sync -C $ETCD set /deis/store/pubKeys/$HOST < /data/ceph/.ssh/id_rsa.pub >/dev/null
+    etcdctl --no-sync -C $ETCD set /deis/store/keys/$HOST < /data/ceph/.ssh/id_rsa >/dev/null
+  else
+    etcdctl --no-sync -C $ETCD get /deis/store/keys/$HOST > /data/ceph/.ssh/id_rsa >/dev/null
+    etcdctl --no-sync -C $ETCD get /deis/store/pubKeys/$HOST > /data/ceph/.ssh/id_rsa.pub >/dev/null
+    chmod 0700 /data/ceph/.ssh
+    chmod 0600 /data/ceph/.ssh/id_rsa
+    chmod 0644 /data/ceph/.ssh/id_rsa.pub
+  fi
+fi
+
+# sudo -u ceph eval `ssh-agent -s`
+# sudo -u ceph ssh-add /data/ceph/.ssh/id_rsa
+
+# publish our hostname to etcd
+if ! etcdctl --no-sync -C $ETCD get /deis/store/hosts/$HOST >/dev/null 2>&1 ; then
+  [[ $DEBUG ]] && echo "Setting hostname for $HOSTNAME"
+  etcdctl --no-sync -C $ETCD set /deis/store/hosts/$HOST $HOSTNAME >/dev/null
+fi
+
+# TODO read other hostnames from etcd and populate /etc/hosts
+
+# wait for confd to run once and install initial templates
+until confd -onetime -node $ETCD -config-file /app/confd.toml; do
+  echo "builder: waiting for confd to write initial templates..."
+  sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
+
+# spawn confd in the background to update services based on etcd changes
+confd -node $ETCD -config-file /app/confd.toml &
+CONFD_PID=$!
+
+echo deis-store running...
+
+# let's deploy!
+/app/bin/deploy
+
+while true ; do /bin/true ; done
+
+wait

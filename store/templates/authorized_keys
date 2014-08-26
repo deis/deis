@@ -1,0 +1,3 @@
+{{ range $key := .deis_store_pubKeys }}
+{{ $key.Value }}
+{{ end }}
