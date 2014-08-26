@@ -2,11 +2,13 @@ package client
 
 import (
 	"fmt"
+
+	"github.com/coreos/fleet/job"
 )
 
 // Destroy units for a given target
-func (c *FleetClient) Destroy(target string) (err error) {
-	component, num, err := splitTarget(target)
+func (c *FleetClient) Destroy(targets string) (err error) {
+	component, num, err := splitTarget(targets)
 	if err != nil {
 		return
 	}
@@ -16,17 +18,23 @@ func (c *FleetClient) Destroy(target string) (err error) {
 			return err
 		}
 	}
-	unitName, err := formatUnitName(component, num)
+	name, err := formatUnitName(component, num)
 	if err != nil {
 		return err
 	}
-	_, err = c.Fleet.Unit(unitName)
+
+	desiredState := string(job.JobStateInactive)
+	err = c.Fleet.SetUnitTargetState(name, desiredState)
 	if err != nil {
-		return
+		return err
 	}
-	if err = c.Fleet.DestroyUnit(unitName); err != nil {
-		return fmt.Errorf("failed destroying job %s: %v", unitName, err)
+	outchan, errchan := waitForUnitStates([]string{name}, desiredState)
+	err = printUnitState(name, outchan, errchan)
+	if err != nil {
+		return err
 	}
-	fmt.Printf("Destroyed Unit %s\n", unitName)
+	if err = c.Fleet.DestroyUnit(name); err != nil {
+		return fmt.Errorf("failed destroying job %s: %v", name, err)
+	}
 	return
 }

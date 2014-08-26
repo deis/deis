@@ -119,19 +119,19 @@ func installDataContainers(c client.Client) error {
 		"logger-data",
 		"builder-data",
 	}
-	fmt.Println("Scheduling data containers...")
+	fmt.Println("\nScheduling data containers...")
 	for _, dataContainer := range dataContainers {
-		c.Create(dataContainer)
-		// if err != nil {
-		// 	return err
-		// }
+		err := c.Create(dataContainer)
+		if err != nil {
+			return err
+		}
 	}
-	fmt.Println("Activating data containers...")
+	fmt.Println("\nLaunching data containers...")
 	for _, dataContainer := range dataContainers {
-		c.Start(dataContainer)
-		// if err != nil {
-		// 	return err
-		// }
+		err := c.Start(dataContainer)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -146,9 +146,9 @@ func installDefaultServices(c client.Client) error {
 		"controller=1",
 		"builder=1",
 		"router=1"}
-	fmt.Println("Scheduling units...")
+	fmt.Println("\nScheduling service containers...")
 	err := Scale(c, targets)
-	fmt.Println("Activating units...")
+	fmt.Println("\nLaunching service containers...")
 	err = Start(c, []string{"logger", "cache", "database"})
 	if err != nil {
 		return err
@@ -174,13 +174,12 @@ func installDefaultServices(c client.Client) error {
 }
 
 func Uninstall(c client.Client, targets []string) error {
-	// if targets, uninstall all services
+	// if no targets, uninstall all services
 	if len(targets) == 0 {
 		err := uninstallAllServices(c)
 		if err != nil {
 			return err
 		}
-
 	} else {
 		// uninstall the specific target
 		for _, target := range targets {
@@ -202,7 +201,9 @@ func uninstallAllServices(c client.Client) error {
 		"controller=0",
 		"builder=0",
 		"router=0"}
+	fmt.Println("\nDestroying service containers...")
 	err := Scale(c, targets)
+	fmt.Println("Done.")
 	return err
 }
 

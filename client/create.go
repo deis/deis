@@ -17,7 +17,7 @@ func (c *FleetClient) Create(target string) (err error) {
 		unitFile *unit.UnitFile
 	)
 	// create unit
-	unitName, unitFile, err = c.createUnit(target)
+	unitName, unitFile, err = c.createUnitFile(target)
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,10 @@ func (c *FleetClient) Create(target string) (err error) {
 	}
 	// schedule unit
 	if err := c.Fleet.CreateUnit(u); err != nil {
-		return fmt.Errorf("failed creating job %s: %v", unitName, err)
+		// ignore units that already exist
+		if err.Error() != "job already exists" {
+			return fmt.Errorf("failed creating job %s: %v", unitName, err)
+		}
 	}
 	desiredState := string(job.JobStateLoaded)
 	err = c.Fleet.SetUnitTargetState(unitName, desiredState)
@@ -43,7 +46,7 @@ func (c *FleetClient) Create(target string) (err error) {
 	return nil
 }
 
-func (c *FleetClient) createUnit(target string) (unitName string, uf *unit.UnitFile, err error) {
+func (c *FleetClient) createUnitFile(target string) (unitName string, uf *unit.UnitFile, err error) {
 	component, num, err := splitTarget(target)
 	if err != nil {
 		return

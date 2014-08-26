@@ -51,13 +51,13 @@ deis-registry-data.service: loaded
 deis-logger-data.service: loaded
 deis-builder-data.service: loaded
 
-Activating data containers...
+Launching data containers...
 deis-database-data.service: launched
 deis-registry-data.service: launched
 deis-logger-data.service: launched
 deis-builder-data.service: launched
 
-Scheduling units...
+Scheduling service containers...
 deis-database@1.service: loaded
 deis-cache@1.service: loaded
 deis-logger@1.service: loaded
@@ -66,7 +66,7 @@ deis-controller@1.service: loaded
 deis-builder@1.service: loaded
 deis-router@1.service: loaded
 
-Activating units...
+Launching service containers...
 deis-logger@1.service: launched
 deis-cache@1.service: launched
 deis-database@1.service: launched
@@ -74,7 +74,6 @@ deis-registry@1.service: launched
 deis-controller@1.service: launched
 deis-builder@1.service: launched
 deis-router@1.service: launched
-
 Done.
 ```
 
@@ -85,13 +84,16 @@ You can also use the `deisctl uninstall` command to destroy platform units:
 
 ```console
 $ deisctl uninstall
-Destroyed Unit deis-database@1.service
-Destroyed Unit deis-cache@1.service
-Destroyed Unit deis-logger@1.service
-Destroyed Unit deis-registry@1.service
-Destroyed Unit deis-controller@1.service
-Destroyed Unit deis-builder@1.service
-Destroyed Unit deis-router@1.service
+
+Destroying service containers...
+deis-database@1.service: inactive
+deis-cache@1.service: inactive
+deis-logger@1.service: inactive
+deis-registry@1.service: inactive
+deis-controller@1.service: inactive
+deis-builder@1.service: inactive
+deis-router@1.service: inactive
+Done.
 ```
 
 To uninstall a specific component, use `deisctl uninstall router`.
