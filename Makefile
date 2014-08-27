@@ -71,8 +71,23 @@ install-routers: check-fleet
 	)
 
 install-stores: check-fleet
-	@$(foreach S, $(STORE_DATA_UNITS), \
-		$(FLEETCTL) load store/systemd/$(S) ; \
+	@$(foreach T, $(STORE_DATA_UNITS), \
+		((UNIT_NUM++)) ; \
+		UNIT=`basename $(T)` ; \
+		EXISTS=`$(FLEETCTL) $(list-units) | grep $$UNIT` ; \
+		if [ "$$EXISTS" != "" ]; then \
+		  echo $$UNIT already loaded. Skipping... ; \
+		else \
+			cp store/systemd/deis-store-data@.service.template . ; \
+			NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
+			mv *.template $$NEW_FILENAME ; \
+			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full | awk '{ print $$1 }' | sort -n | sed -n $${UNIT_NUM}p` ; \
+			sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
+			rm -f $$NEW_FILENAME ; \
+			mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
+			$(FLEETCTL) load $$UNIT ; \
+			rm -f $$NEW_FILENAME ; \
+		fi ; \
 	)
 	@$(foreach S, $(STORE_UNITS), \
 		$(FLEETCTL) load store/systemd/$(S) ; \

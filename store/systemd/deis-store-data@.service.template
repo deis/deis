@@ -11,3 +11,4 @@ WantedBy=multi-user.target
 
 [X-Fleet]
 X-Conflicts=deis-store-data@*.service
+X-ConditionMachineID=CHANGEME
