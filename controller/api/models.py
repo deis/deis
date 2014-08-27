@@ -11,6 +11,7 @@ import logging
 import os
 import re
 import subprocess
+import time
 
 from celery.canvas import group
 from django.conf import settings
@@ -162,6 +163,19 @@ class App(UuidAuditedModel):
     def url(self):
         return self.id + '.' + self.cluster.domain
 
+    def log(self, message):
+        """Logs a message to the application's log file.
+
+        This is a workaround for how Django interacts with Python's logging module. Each app
+        needs its own FileHandler instance so it can write to its own log file. That won't work in
+        Django's case because logging is set up before you run the server and it disables all
+        existing logging configurations.
+        """
+        with open(os.path.join(settings.DEIS_LOG_DIR, self.id + '.log'), 'a') as f:
+            f.write('{} deis[api]: {}\n'.format(
+                time.strftime('%Y-%m-%d %H:%M:%S'),
+                message))
+
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self)
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
@@ -209,7 +223,7 @@ class App(UuidAuditedModel):
             if container_type not in available_process_types:
                 raise EnvironmentError(
                     'Container type {} does not exist in application'.format(container_type))
-        msg = 'Containers scaled ' + ' '.join(
+        msg = 'containers scaled ' + ' '.join(
             "{}={}".format(k, v) for k, v in requested_containers.items())
         # iterate and scale by container type (web, worker, etc)
         changed = False
@@ -245,6 +259,7 @@ class App(UuidAuditedModel):
                 subtasks.append(tasks.stop_containers.s(to_remove))
             group(*subtasks).apply_async().join()
             log_event(self, msg)
+            self.log(msg)
         return changed
 
     def logs(self):
@@ -258,7 +273,9 @@ class App(UuidAuditedModel):
     def run(self, command):
         """Run a one-off command in an ephemeral app container."""
         # TODO: add support for interactive shell
-        log_event(self, "deis run '{}'".format(command))
+        msg = "deis run '{}'".format(command)
+        log_event(self, msg)
+        self.log(msg)
         c_num = max([c.num for c in self.container_set.filter(type='admin')] or [0]) + 1
         c = Container.objects.create(owner=self.owner,
                                      app=self,
@@ -654,28 +671,36 @@ class Key(UuidAuditedModel):
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
-        log_event(build.app, "Build {} created".format(build))
+        log_event(build.app, "build {} created".format(build))
 
 
 def _log_release_created(**kwargs):
     if kwargs.get('created'):
         release = kwargs['instance']
-        log_event(release.app, "Release {} created".format(release))
+        log_event(release.app, "release {} created".format(release))
+        # append release lifecycle logs to the app
+        release.app.log(release.summary)
 
 
 def _log_config_updated(**kwargs):
     config = kwargs['instance']
-    log_event(config.app, "Config {} updated".format(config))
+    log_event(config.app, "config {} updated".format(config))
 
 
 def _log_domain_added(**kwargs):
     domain = kwargs['instance']
-    log_event(domain.app, "Domain {} added".format(domain))
+    msg = "domain {} added".format(domain)
+    log_event(domain.app, msg)
+    # adding a domain does not create a release, so we have to log here
+    domain.app.log(msg)
 
 
 def _log_domain_removed(**kwargs):
     domain = kwargs['instance']
-    log_event(domain.app, "Domain {} removed".format(domain))
+    msg = "domain {} removed".format(domain)
+    log_event(domain.app, msg)
+    # adding a domain does not create a release, so we have to log here
+    domain.app.log(msg)
 
 
 def _etcd_publish_key(**kwargs):

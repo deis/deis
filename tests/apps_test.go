@@ -74,7 +74,8 @@ func appsListTest(t *testing.T, params *utils.DeisTestConfig, notflag bool) {
 
 func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := appsLogsCmd
-	utils.Execute(t, cmd, params, true, "204 NO CONTENT")
+	// test for application lifecycle logs
+	utils.Execute(t, cmd, params, false, "204 NO CONTENT")
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
