@@ -8,3 +8,4 @@ VMS=$(vagrant global-status | grep deis | awk '{ print $5 }')
 for dir in $VMS; do
     cd $dir && vagrant destroy --force
 done
+rm -rf $HOME/VirtualBox\ VMs/deis*

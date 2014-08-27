@@ -3,6 +3,7 @@
 # Preps a test environment and runs `make test-integration` with single-node vagrant.
 
 echo Testing ${DEIS_TEST_APP?}...
+THIS_DIR=$(cd $(dirname $0); pwd)  # absolute path
 
 # Environment reset and configuration
 rm -rf ~/.deis ~/.fleetctl ~/.ssh/known_hosts
@@ -13,7 +14,7 @@ cd ${GOPATH?}/src/github.com/deis/deis
 rm -rf tests/example-*
 
 # Vagrant provisioning
-tests/bin/halt-all-vagrant.sh
+$THIS_DIR/halt-all-vagrants.sh
 vagrant destroy --force
 vagrant up --provider virtualbox --provision
 
