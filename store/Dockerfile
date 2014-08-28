@@ -13,8 +13,8 @@ RUN rm /etc/ssh/ssh_host_*
 RUN dpkg-reconfigure openssh-server
 RUN mkdir -p /var/run/sshd
 
-# Change the listen port for SSHd
 RUN sed -i 's/Port 22/Port 2202/g' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
 
 WORKDIR /app
 CMD ["/app/bin/boot"]

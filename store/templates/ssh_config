@@ -1,11 +1,11 @@
 {{ range $key := .deis_store_hosts }}
 Host {{ $key.Value }}
     Port 2202
-    IdentityFile /home/ceph/.ssh/id_rsa
+    IdentityFile /data/ceph/.ssh/id_rsa
     StrictHostKeyChecking no
 
 Host {{ Base $key.Key }}
     Port 2202
-    IdentityFile /home/ceph/.ssh/id_rsa
+    IdentityFile /data/ceph/.ssh/id_rsa
     StrictHostKeyChecking no
 {{ end }}
