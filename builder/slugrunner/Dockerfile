@@ -1,5 +1,5 @@
-FROM progrium/cedarish
-MAINTAINER Jonathan Rudenberg <jonathan@titanous.com>
+FROM progrium/cedarish:cedar
+MAINTAINER OpDemand <info@opdemand.com>
 
 ADD ./runner /runner
 ENTRYPOINT ["/runner/init"]
