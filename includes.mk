@@ -1,36 +1,6 @@
-ifndef FLEETCTL
-  FLEETCTL = fleetctl --strict-host-key-checking=false
-endif
-
-ifndef FLEETCTL_TUNNEL
-$(error You need to set FLEETCTL_TUNNEL to the IP address of a server in the cluster.)
-endif
-
 ifndef DEIS_NUM_INSTANCES
   DEIS_NUM_INSTANCES = 1
 endif
-
-ifndef DEIS_HOSTS
-  DEIS_HOSTS = $(shell seq -f "172.17.8.%g" -s " " 100 1 `expr $(DEIS_NUM_INSTANCES) + 99` )
-endif
-
-ifndef DEIS_NUM_ROUTERS
-  DEIS_NUM_ROUTERS = 1
-endif
-
-ifndef DEIS_FIRST_ROUTER
-  DEIS_FIRST_ROUTER = 1
-endif
-
-DEIS_LAST_ROUTER = $(shell echo $(DEIS_FIRST_ROUTER)\+$(DEIS_NUM_ROUTERS)\-1 | bc)
-
-define ssh_all
-  for host in $(DEIS_HOSTS); do ssh -o LogLevel=FATAL -o Compression=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PasswordAuthentication=no core@$$host -t $(1); done
-endef
-
-define rsync_all
-  for host in $(DEIS_HOSTS); do rsync -Pave "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --exclude=venv/ --exclude=.git/ --exclude='*.pyc' $(SELF_DIR)/* --delete core@$$host:/home/core/share; done
-endef
 
 define echo_cyan
   @echo "\033[0;36m$(subst ",,$(1))\033[0m"
@@ -41,11 +11,25 @@ define echo_yellow
 endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-ROUTER_UNITS = $(shell seq -f "deis-router@%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
 
-check-fleet:
-	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
-	REMOTE_VERSION=`ssh -o StrictHostKeyChecking=no core@$(subst :, -p ,$(FLEETCTL_TUNNEL)) fleetctl -version`; \
-	if [ "$$LOCAL_VERSION" != "$$REMOTE_VERSION" ]; then \
-		echo "Your fleetctl client version should match the server. Local version: $$LOCAL_VERSION, server version: $$REMOTE_VERSION. Install the appropriate version from https://github.com/coreos/fleet/releases"; exit 1; \
+DOCKER_HOST = $(shell echo $$DOCKER_HOST)
+REGISTRY = $(shell echo $$DEIS_REGISTRY)
+GIT_SHA = $(shell git rev-parse --short HEAD)
+GIT_TAG = git-$(GIT_SHA)
+
+check-docker:
+	@if [ -z "$$DOCKER_HOST" ]; then \
+	  echo DOCKER_HOST is not exported, try \`boot2docker up\`; \
+	  exit 2; \
+	fi
+
+check-registry:
+	@if [ -z "$$DEIS_REGISTRY" ]; then \
+	  echo DEIS_REGISTRY is not exported, try \`make dev-registry\`; \
+	  exit 2; \
+	fi
+
+check-deisctl:
+	@if [ -z $$(which deisctl) ]; then \
+	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deisctl"; \
 	fi

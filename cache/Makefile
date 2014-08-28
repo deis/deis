@@ -1,31 +1,36 @@
 include ../includes.mk
 
-build:
-	$(call rsync_all)
-	$(call ssh_all,'cd share/cache && sudo docker build -t deis/cache .')
+build: check-docker
+	docker build -t deis/cache:$(GIT_TAG) .
 
-install: check-fleet
-	$(FLEETCTL) load systemd/*
+push: check-docker check-registry check-deisctl
+	docker tag deis/cache:$(GIT_TAG) $(REGISTRY)/deis/cache:$(GIT_TAG)
+	docker push $(REGISTRY)/deis/cache:$(GIT_TAG)
+	deisctl config cache set image=$$DEIS_REGISTRY/deis/cache:$(GIT_TAG)
 
-uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+clean: check-docker check-registry
+	docker rmi deis/cache:$(GIT_TAG)
+	docker rmi $(REGISTRY)/deis/cache:$(GIT_TAG)
 
-start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+full-clean: check-docker check-registry
+	docker images -q deis/cache | xargs docker rmi -f
+	docker images -q $(REGISTRY)/deis/cache | xargs docker rmi -f
 
-stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+install: check-deisctl
+	deisctl scale cache=1
+
+uninstall: check-deisctl
+	deisctl scale cache=0
+
+start: check-deisctl
+	deisctl start cache
+
+stop: check-deisctl
+	deisctl stop cache
 
 restart: stop start
 
 run: install start
-
-clean: uninstall
-	$(call ssh_all,'sudo docker rm -f deis-cache')
-
-full-clean: clean
-	$(call ssh_all,'sudo docker rmi deis/cache')
 
 test: test-unit test-functional
 

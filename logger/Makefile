@@ -1,31 +1,38 @@
 include ../includes.mk
 
-build:
-	$(call rsync_all)
-	$(call ssh_all,'cd share/logger && sudo docker build -t deis/logger .')
+build: check-docker
+	docker build -t deis/logger:$(GIT_TAG) .
 
-install: check-fleet
-	$(FLEETCTL) load systemd/*
+push: check-docker check-registry check-deisctl
+	docker tag deis/logger:$(GIT_TAG) $(REGISTRY)/deis/logger:$(GIT_TAG)
+	docker push $(REGISTRY)/deis/logger:$(GIT_TAG)
+	deisctl config logger set image=$$DEIS_REGISTRY/deis/logger:$(GIT_TAG)
 
-uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+clean: check-docker check-registry
+	docker rmi deis/logger:$(GIT_TAG)
+	docker rmi $(REGISTRY)/deis/logger:$(GIT_TAG)
 
-start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+full-clean: check-docker check-registry
+	docker images -q deis/logger | xargs docker rmi -f
+	docker images -q $(REGISTRY)/deis/logger | xargs docker rmi -f
 
-stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+install: check-deisctl
+	deisctl install logger-data
+	deisctl scale logger=1
+
+uninstall: check-deisctl
+	deisctl scale logger=0
+	deisctl uninstall logger-data
+
+start: check-deisctl
+	deisctl start logger
+
+stop: check-deisctl
+	deisctl stop logger
 
 restart: stop start
 
 run: install start
-
-clean: uninstall
-	$(call ssh_all,'sudo docker rm -f deis-logger')
-
-full-clean: clean
-	$(call ssh_all,'sudo docker rmi deis/logger')
 
 test: test-unit test-functional
 
