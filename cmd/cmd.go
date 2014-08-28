@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/config"
 	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/update"
 	"github.com/deis/deisctl/utils"
@@ -225,6 +226,13 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 		return
 	}
 	return
+}
+
+func Config() error {
+	if err := config.Config(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func Update() error {

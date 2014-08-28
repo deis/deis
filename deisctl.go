@@ -104,6 +104,8 @@ Options:
 		err = cmd.Install(c, targets)
 	case "uninstall":
 		err = cmd.Uninstall(c, targets)
+	case "config":
+		err = cmd.Config()
 	case "update":
 		err = cmd.Update()
 	default:
