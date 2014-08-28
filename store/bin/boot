@@ -14,7 +14,9 @@ export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/store/hosts/$HOST}
 export ETCD_TTL=${ETCD_TTL:-10}
+
 export NUM_STORES=${NUM_STORES:-3}
+export HOSTNAME=`hostname`
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
@@ -28,8 +30,6 @@ sleep $(($ETCD_TTL+1))
 # we do this here instead of in the Dockerfile so we're operating on the volume shared from deis-store-data
 mkdir -p /data/ceph
 chown -R ceph /data/ceph
-
-HOSTNAME=`hostname`
 
 # generate SSH key if one isn't already in etcd
 if [ ! -f /data/ceph/.ssh/id_rsa ] ; then
@@ -68,10 +68,8 @@ done
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
 
-echo deis-store running...
-
-# let's deploy!
-/app/bin/deploy
+# deploy a new Ceph cluster, or start services if the cluster is already set up
+/app/bin/deploy_or_start
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
