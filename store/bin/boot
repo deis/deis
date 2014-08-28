@@ -25,18 +25,11 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-# smart shutdown on SIGINT and SIGTERM
-function on_exit() {
-  stop ceph-all
-  exit 0
-}
-trap on_exit INT TERM
-
-HOSTNAME=`hostname`
-
 # we do this here instead of in the Dockerfile so we're operating on the volume shared from deis-store-data
 mkdir -p /data/ceph
 chown -R ceph /data/ceph
+
+HOSTNAME=`hostname`
 
 # generate SSH key if one isn't already in etcd
 if [ ! -f /data/ceph/.ssh/id_rsa ] ; then
@@ -65,8 +58,6 @@ if ! etcdctl --no-sync -C $ETCD get /deis/store/hosts/$HOST >/dev/null 2>&1 ; th
   etcdctl --no-sync -C $ETCD set /deis/store/hosts/$HOST $HOSTNAME >/dev/null
 fi
 
-# TODO read other hostnames from etcd and populate /etc/hosts
-
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
   echo "builder: waiting for confd to write initial templates..."
@@ -82,6 +73,14 @@ echo deis-store running...
 # let's deploy!
 /app/bin/deploy
 
-while true ; do /bin/true ; done
+# smart shutdown on SIGINT and SIGTERM
+function on_exit() {
+  stop ceph-all
+  exit 0
+}
+trap on_exit INT TERM
+
+# loop until we are told to exit
+while true ; do sleep 5 ; done
 
 wait
