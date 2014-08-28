@@ -108,6 +108,8 @@ Options:
 		err = cmd.Config()
 	case "update":
 		err = cmd.Update()
+	case "refresh-units":
+		err = cmd.RefreshUnits()
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)

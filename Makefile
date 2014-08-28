@@ -3,6 +3,14 @@ COMPONENTS=builder cache controller database logger registry router
 build:
 	godep go build ./...
 
+installer:
+	rm -rf dist && mkdir -p dist
+	godep go build -a -o dist/deisctl .
+	command -v upx >/dev/null 2>&1 && upx --best --ultra-brute -q dist/deisctl
+	makeself.sh --current --nox11 dist \
+		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
+		"Deis Control CLI" "./deisctl refresh-units"
+
 install:
 	godep go install -v ./...
 

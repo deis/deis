@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/user"
 	"path"
 	"regexp"
 	"strconv"
@@ -13,7 +14,7 @@ import (
 )
 
 // path hierarchy for finding systemd service templates
-var rootPaths = []string{"/var/lib/deis/units", "units"}
+var rootPaths = []string{"/var/lib/deis/units", "~/.deisctl/units"}
 
 // getUnits returns a list of units filtered by target
 func (c *FleetClient) Units(target string) (units []string, err error) {
@@ -118,6 +119,7 @@ func readTemplate(component string) (out []byte, err error) {
 	} else {
 		// otherwise look in rootPaths hierarchy
 		for _, rootPath := range rootPaths {
+			rootPath, _ := expandUser(rootPath)
 			filename := path.Join(rootPath, templateName)
 			if _, err := os.Stat(filename); err == nil {
 				templateFile = filename
@@ -134,4 +136,13 @@ func readTemplate(component string) (out []byte, err error) {
 		return
 	}
 	return
+}
+
+// expandUser replaces "~" in a string with the current user's home directory.
+func expandUser(path string) (string, error) {
+	user, err := user.Current()
+	if err != nil {
+		return path, err
+	}
+	return strings.Replace(path, "~/", user.HomeDir, 1), nil
 }

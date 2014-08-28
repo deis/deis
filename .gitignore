@@ -1,2 +1,8 @@
 package/
 deisctl/deisctl
+
+# ctags index
+tags
+
+# installer droppings
+dist/

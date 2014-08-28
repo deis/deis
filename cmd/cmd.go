@@ -2,6 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/user"
+	"path/filepath"
 	"regexp"
 	"strconv"
 
@@ -247,6 +252,53 @@ func Update() error {
 	if err := utils.Execute(constant.HooksDir + "post-update"); err != nil {
 		fmt.Println("post-updatehook failed")
 		return err
+	}
+	return nil
+}
+
+func RefreshUnits() error {
+	// create the $HOME/.deisctl directory if necessary
+	user, err := user.Current()
+	if err != nil {
+		return err
+	}
+	dir := filepath.Join(user.HomeDir, ".deisctl")
+	if err = os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+
+	// download and save the unit files to $HOME/.deisctl
+	rootUrl := "https://raw.githubusercontent.com/deis/deisctl/"
+	branch := "master"
+	units := []string{
+		"deis-builder.service",
+		"deis-builder-data.service",
+		"deis-cache.service",
+		"deis-controller.service",
+		"deis-database.service",
+		"deis-database-data.service",
+		"deis-logger.service",
+		"deis-logger-data.service",
+		"deis-registry.service",
+		"deis-registry-data.service",
+		"deis-router.service",
+	}
+	for _, unit := range units {
+		src := rootUrl + branch + "/units/" + unit
+		dest := filepath.Join(dir, unit)
+		res, err := http.Get(src)
+		if err != nil {
+			return err
+		}
+		defer res.Body.Close()
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+		if err = ioutil.WriteFile(dest, data, 0600); err != nil {
+			return err
+		}
+		fmt.Printf("Refreshed %s from %s\n", unit, branch)
 	}
 	return nil
 }
