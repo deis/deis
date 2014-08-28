@@ -1,0 +1,9 @@
+[template]
+src   = "ssh_config"
+dest  = "/data/ceph/.ssh/config"
+uid = 1000
+gid = 1000
+mode  = "0600"
+keys = [
+  "/deis/store/hosts",
+]
