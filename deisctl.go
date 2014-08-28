@@ -92,6 +92,8 @@ Options:
 		err = cmd.Scale(c, targets)
 	case "start":
 		err = cmd.Start(c, targets)
+	case "restart":
+		err = cmd.Restart(c, targets)
 	case "stop":
 		err = cmd.Stop(c, targets)
 	case "status":

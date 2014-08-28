@@ -55,6 +55,20 @@ func Stop(c client.Client, targets []string) error {
 	return nil
 }
 
+func Restart(c client.Client, targets []string) error {
+	for _, target := range targets {
+		err := c.Stop(target)
+		if err != nil {
+			return err
+		}
+		err = c.Start(target)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func Status(c client.Client, targets []string) error {
 	for _, target := range targets {
 		err := c.Status(target)
