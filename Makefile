@@ -81,7 +81,7 @@ install-stores: check-fleet
 			cp store/systemd/deis-store-data@.service.template . ; \
 			NEW_FILENAME=`ls *.template | sed 's/\.template//g'`; \
 			mv *.template $$NEW_FILENAME ; \
-			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full | awk '{ print $$1 }' | sort -n | sed -n $${UNIT_NUM}p` ; \
+			MACHINE_ID=`$(FLEETCTL) list-machines --no-legend --full | sort -k 2 | awk '{ print $$1 }' | sed -n $${UNIT_NUM}p` ; \
 			sed -e "s/CHANGEME/$$MACHINE_ID/" $$NEW_FILENAME > $$NEW_FILENAME.bak ; \
 			rm -f $$NEW_FILENAME ; \
 			mv $$NEW_FILENAME.bak $$NEW_FILENAME ; \
