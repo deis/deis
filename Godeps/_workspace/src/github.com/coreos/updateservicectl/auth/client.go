@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"net/http"
 
-	"github.com/tent/hawk-go"
+	"github.com/coreos/updateservicectl/Godeps/_workspace/src/github.com/tent/hawk-go"
 )
 
 var DefaultHawkHasher = sha256.New

@@ -10,7 +10,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"code.google.com/p/go.crypto/ssh"
+	"github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/go.crypto/ssh"
 )
 
 func TestCertLogin(t *testing.T) {

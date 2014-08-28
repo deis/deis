@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/coreos/go-systemd/unit"
+	"github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-systemd/unit"
 )
 
 func NewUnitFile(raw string) (*UnitFile, error) {

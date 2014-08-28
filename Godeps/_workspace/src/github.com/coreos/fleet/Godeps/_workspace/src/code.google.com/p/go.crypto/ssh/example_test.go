@@ -12,7 +12,7 @@ import (
 	"net"
 	"net/http"
 
-	"code.google.com/p/go.crypto/ssh/terminal"
+	"github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/go.crypto/ssh/terminal"
 )
 
 func ExampleNewServerConn() {

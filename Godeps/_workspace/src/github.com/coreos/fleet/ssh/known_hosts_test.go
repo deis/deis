@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"testing"
 
-	gossh "code.google.com/p/go.crypto/ssh"
+	gossh "github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/go.crypto/ssh"
 )
 
 const (

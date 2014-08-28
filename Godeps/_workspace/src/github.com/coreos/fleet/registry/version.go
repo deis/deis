@@ -1,6 +1,6 @@
 package registry
 
-import "github.com/coreos/go-semver/semver"
+import "github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
 
 // LatestVersion attempts to retrieve the latest version of fleet that has
 // been registered in the Registry. It returns the version if it can be

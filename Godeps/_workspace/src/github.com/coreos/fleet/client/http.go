@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"path"
 
-	"code.google.com/p/google-api-go-client/googleapi"
+	"github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"

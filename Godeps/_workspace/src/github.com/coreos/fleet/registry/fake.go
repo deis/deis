@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/coreos/go-semver/semver"
+	"github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/machine"
@@ -16,7 +16,7 @@ import (
 func NewFakeRegistry() *FakeRegistry {
 	return &FakeRegistry{
 		machines:  []machine.MachineState{},
-		jobStates: map[string]*unit.UnitState{},
+		jobStates: map[string]map[string]*unit.UnitState{},
 		jobs:      map[string]job.Job{},
 		units:     []unit.UnitFile{},
 		version:   nil,
@@ -31,7 +31,7 @@ type FakeRegistry struct {
 	sync.RWMutex
 
 	machines  []machine.MachineState
-	jobStates map[string]*unit.UnitState
+	jobStates map[string]map[string]*unit.UnitState
 	jobs      map[string]job.Job
 	units     []unit.UnitFile
 	version   *semver.Version
@@ -58,10 +58,14 @@ func (f *FakeRegistry) SetUnitStates(states []unit.UnitState) {
 	f.Lock()
 	defer f.Unlock()
 
-	f.jobStates = make(map[string]*unit.UnitState, len(states))
+	f.jobStates = make(map[string]map[string]*unit.UnitState, len(states))
 	for _, us := range states {
 		us := us
-		f.jobStates[us.UnitName] = &us
+		name := us.UnitName
+		if _, ok := f.jobStates[name]; !ok {
+			f.jobStates[name] = make(map[string]*unit.UnitState)
+		}
+		f.jobStates[name][us.MachineID] = &us
 	}
 }
 
@@ -234,7 +238,7 @@ func (f *FakeRegistry) SaveUnitState(jobName string, unitState *unit.UnitState, 
 	f.Lock()
 	defer f.Unlock()
 
-	f.jobStates[jobName] = unitState
+	f.jobStates[jobName][unitState.MachineID] = unitState
 }
 
 func (f *FakeRegistry) RemoveUnitState(jobName string) error {
@@ -246,16 +250,24 @@ func (f *FakeRegistry) UnitStates() ([]*unit.UnitState, error) {
 	f.Lock()
 	defer f.Unlock()
 
-	sortable := make([]string, 0)
-	for k := range f.jobStates {
-		sortable = append(sortable, k)
+	var states []*unit.UnitState
+
+	// Sort by unit name, then by machineID
+	sUnitNames := make([]string, 0)
+	for name := range f.jobStates {
+		sUnitNames = append(sUnitNames, name)
 	}
+	sort.Strings(sUnitNames)
 
-	sort.Strings(sortable)
-
-	states := make([]*unit.UnitState, len(f.jobStates))
-	for i, k := range sortable {
-		states[i] = f.jobStates[k]
+	for _, name := range sUnitNames {
+		sMIDs := make([]string, 0)
+		for machineID := range f.jobStates[name] {
+			sMIDs = append(sMIDs, machineID)
+		}
+		sort.Strings(sMIDs)
+		for _, mID := range sMIDs {
+			states = append(states, f.jobStates[name][mID])
+		}
 	}
 
 	return states, nil

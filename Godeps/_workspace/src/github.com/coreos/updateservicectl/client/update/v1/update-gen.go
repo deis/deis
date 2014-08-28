@@ -9,7 +9,7 @@ package update
 
 import (
 	"bytes"
-	"code.google.com/p/google-api-go-client/googleapi"
+	"github.com/coreos/updateservicectl/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
 	"encoding/json"
 	"errors"
 	"fmt"
