@@ -1,7 +1,7 @@
 FROM flynn/busybox
 MAINTAINER Jeff Lindsay <progrium@gmail.com>
 
-ADD ./build/logspout /bin/logspout
+ADD ./stage/logspout /bin/logspout
 
 ENV DOCKER unix:///tmp/docker.sock
 ENV ROUTESPATH /mnt/routes
