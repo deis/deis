@@ -56,8 +56,8 @@ if [ ! -f /data/ceph/.ssh/id_rsa ] ; then
   fi
 fi
 
-# sudo -u ceph eval `ssh-agent -s`
-# sudo -u ceph ssh-add /data/ceph/.ssh/id_rsa
+# start the SSHd
+/usr/sbin/sshd -D -e &
 
 # publish our hostname to etcd
 if ! etcdctl --no-sync -C $ETCD get /deis/store/hosts/$HOST >/dev/null 2>&1 ; then
