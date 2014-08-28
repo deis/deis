@@ -7,7 +7,7 @@ import (
 
 // Status prints the systemd status of target unit(s)
 func (c *FleetClient) Status(target string) (err error) {
-	units, err := c.getUnits(target)
+	units, err := c.Units(target)
 	if err != nil {
 		return
 	}

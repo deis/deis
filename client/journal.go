@@ -7,7 +7,7 @@ import (
 
 // Journal prints the systemd journal of target unit(s)
 func (c *FleetClient) Journal(target string) (err error) {
-	units, err := c.getUnits(target)
+	units, err := c.Units(target)
 	if err != nil {
 		return
 	}

@@ -4,7 +4,7 @@ import "github.com/coreos/fleet/job"
 
 // Start launches target units and blocks until active
 func (c *FleetClient) Start(target string) (err error) {
-	units, err := c.getUnits(target)
+	units, err := c.Units(target)
 	if err != nil {
 		return
 	}

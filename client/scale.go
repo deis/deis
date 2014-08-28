@@ -1,9 +1,11 @@
 package client
 
+import "strconv"
+
 // Scale creates or destroys units to match the desired number
 func (c *FleetClient) Scale(component string, num int) (err error) {
 	for {
-		components, err := c.getUnits(component)
+		components, err := c.Units(component)
 		if err != nil {
 			return err
 		}
@@ -11,14 +13,22 @@ func (c *FleetClient) Scale(component string, num int) (err error) {
 			break
 		}
 		if len(components) < num {
-			err := c.Create(component)
+			num, err = c.nextUnit(component)
+			if err != nil {
+				return err
+			}
+			err := c.Create(component + "@" + strconv.Itoa(num))
 			if err != nil {
 				return err
 			}
 			continue
 		}
 		if len(components) > num {
-			err := c.Destroy(component)
+			num, err = c.lastUnit(component)
+			if err != nil {
+				return err
+			}
+			err := c.Destroy(component + "@" + strconv.Itoa(num))
 			if err != nil {
 				return err
 			}

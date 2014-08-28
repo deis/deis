@@ -16,12 +16,12 @@ func (c *FleetClient) Create(target string) (err error) {
 		unitName string
 		unitFile *unit.UnitFile
 	)
-	// create unit
+	// create unit file
 	unitName, unitFile, err = c.createUnitFile(target)
 	if err != nil {
 		return err
 	}
-	//
+	// define unit
 	u := &schema.Unit{
 		Name:    unitName,
 		Options: schema.MapUnitFileToSchemaUnitOptions(unitFile),
@@ -64,14 +64,6 @@ func (c *FleetClient) createUnitFile(target string) (unitName string, uf *unit.U
 
 // Create normal service unit
 func (c *FleetClient) createServiceUnit(component string, num int) (name string, uf *unit.UnitFile, err error) {
-	// if number wasn't provided get next unit number
-	if num == 0 {
-		num, err = c.nextUnit(component)
-		if err != nil {
-			return "", nil, err
-		}
-	}
-	// build a fleet unit
 	name, err = formatUnitName(component, num)
 	if err != nil {
 		return "", nil, err

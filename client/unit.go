@@ -16,7 +16,7 @@ import (
 var rootPaths = []string{"/var/lib/deis/units", "units"}
 
 // getUnits returns a list of units filtered by target
-func (c *FleetClient) getUnits(target string) (units []string, err error) {
+func (c *FleetClient) Units(target string) (units []string, err error) {
 	allUnits, err := c.Fleet.Units()
 	if err != nil {
 		return
@@ -40,7 +40,7 @@ func (c *FleetClient) getUnits(target string) (units []string, err error) {
 
 // nextUnit returns the next unit number for a given component
 func (c *FleetClient) nextUnit(component string) (num int, err error) {
-	units, err := c.getUnits(component)
+	units, err := c.Units(component)
 	if err != nil {
 		return
 	}
@@ -53,7 +53,7 @@ func (c *FleetClient) nextUnit(component string) (num int, err error) {
 
 // lastUnit returns the last unit number for a given component
 func (c *FleetClient) lastUnit(component string) (num int, err error) {
-	units, err := c.getUnits(component)
+	units, err := c.Units(component)
 	if err != nil {
 		return
 	}
