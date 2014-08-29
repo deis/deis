@@ -1,6 +1,6 @@
 from rest_framework import permissions
 from django.conf import settings
-from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.auth.models import AnonymousUser
 
 from api import models
 

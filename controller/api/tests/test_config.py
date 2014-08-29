@@ -135,6 +135,25 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(str(config), "{}-{}".format(config5['app'], config5['uuid'][:7]))
 
     @mock.patch('requests.post', mock_import_repository_task)
+    def test_admin_can_create_config_on_other_apps(self):
+        """If a non-admin creates an app, an administrator should be able to set config
+        values for that app.
+        """
+        self.client.login(username='autotest2', password='password')
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        self.client.login(username='autotest', password='password')
+        url = "/api/apps/{app_id}/config".format(**locals())
+        # set an initial config value
+        body = {'values': json.dumps({'PORT': '5000'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('PORT', json.loads(response.data['values']))
+
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_limit_memory(self):
         """
         Test that limit is auto-created for a new app and that
@@ -348,4 +367,3 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(self.client.put(url).status_code, 405)
         self.assertEqual(self.client.patch(url).status_code, 405)
         self.assertEqual(self.client.delete(url).status_code, 405)
-        return tags4

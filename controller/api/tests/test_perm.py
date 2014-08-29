@@ -144,16 +144,16 @@ class TestAppPerms(TestCase):
             self.client.login(username='autotest-1', password='password'))
 
     def test_create(self):
-        # check that user 1 sees her lone app
+        # check that user 1 sees her lone app and user 2's app
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data['results']), 2)
         app_id = response.data['results'][0]['id']
-        # check that user 2 can't see any apps
+        # check that user 2 can only see his app
         self.assertTrue(
             self.client.login(username='autotest-2', password='password'))
         response = self.client.get('/api/apps')
-        self.assertEqual(len(response.data['results']), 0)
+        self.assertEqual(len(response.data['results']), 1)
         # check that user 2 can't see any of the app's builds, configs,
         # containers, limits, or releases
         for model in ['builds', 'config', 'containers', 'limits', 'releases']:
@@ -172,7 +172,7 @@ class TestAppPerms(TestCase):
             self.client.login(username='autotest-2', password='password'))
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data['results']), 2)
         # check that user 2 sees (empty) results now for builds, containers,
         # and releases. (config and limit will still give 404s since we didn't
         # push a build here.)
@@ -203,12 +203,12 @@ class TestAppPerms(TestCase):
         body = {'username': 'autotest-2'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        # check that user 2 can see the app
+        # check that user 2 can see the app as well as his own
         self.assertTrue(
             self.client.login(username='autotest-2', password='password'))
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data['results']), 2)
         # try to delete the permission as user 2
         url = "/api/apps/{}/perms/{}".format(app_id, 'autotest-2')
         response = self.client.delete(url, content_type='application/json')
@@ -220,11 +220,11 @@ class TestAppPerms(TestCase):
         response = self.client.delete(url, content_type='application/json')
         self.assertEqual(response.status_code, 204)
         self.assertIsNone(response.data)
-        # check that user 2 can't see any apps
+        # check that user 2 can only see his app
         self.assertTrue(
             self.client.login(username='autotest-2', password='password'))
         response = self.client.get('/api/apps')
-        self.assertEqual(len(response.data['results']), 0)
+        self.assertEqual(len(response.data['results']), 1)
         # delete permission to user 1's app again, expecting an error
         self.assertTrue(
             self.client.login(username='autotest-1', password='password'))
@@ -232,10 +232,10 @@ class TestAppPerms(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_list(self):
-        # check that user 1 sees her lone app
+        # check that user 1 sees her lone app and user 2's app
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(len(response.data['results']), 2)
         app_id = response.data['results'][0]['id']
         # create a new object permission
         url = "/api/apps/{}/perms".format(app_id)
@@ -246,6 +246,12 @@ class TestAppPerms(TestCase):
         response = self.client.get(
             "/api/apps/{}/perms".format(app_id), content_type='application/json')
         self.assertEqual(response.data, {'users': ['autotest-2']})
+
+    def test_admin_can_list(self):
+        """Check that an administrator can list an app's perms"""
+        response = self.client.get('/api/apps')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
 
     def test_list_errors(self):
         response = self.client.get('/api/apps')
