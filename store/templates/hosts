@@ -1,3 +1,2 @@
-{{ range $key := .deis_store_hosts }}
-{{ $key.Value }}
+{{ range $key := .deis_store_hosts }}{{ $key.Value }}
 {{ end }}
