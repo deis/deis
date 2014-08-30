@@ -6,16 +6,27 @@ build:
 installer:
 	rm -rf dist && mkdir -p dist
 	godep go build -a -o dist/deisctl .
-	command -v upx >/dev/null 2>&1 && upx --best --ultra-brute -q dist/deisctl
-	makeself.sh --current --nox11 dist \
+	makeself.sh --bzip2 --current --nox11 dist \
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
 		"Deis Control CLI" "./deisctl refresh-units"
 
 install:
 	godep go install -v ./...
 
-test:
-	godep go test -v ./...
+setup-root-gotools:
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/vet
+	sudo rm -rf /tmp/tmpGOPATH
+
+setup-gotools:
+	go get -v github.com/golang/lint/golint
+
+test-style:
+	go vet -x ./...
+	-golint *.go client/ cmd/ config/ constant/ hooks/ lock/ systemd/ units/ update/ utils/
+
+test: test-style
+	godep go test -v -cover ./...
 
 package:
 	rm -f package

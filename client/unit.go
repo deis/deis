@@ -16,7 +16,7 @@ import (
 // path hierarchy for finding systemd service templates
 var rootPaths = []string{"/var/lib/deis/units", "~/.deisctl/units"}
 
-// getUnits returns a list of units filtered by target
+// Units returns a list of units filtered by target
 func (c *FleetClient) Units(target string) (units []string, err error) {
 	allUnits, err := c.Fleet.Units()
 	if err != nil {

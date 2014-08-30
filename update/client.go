@@ -21,10 +21,10 @@ import (
 )
 
 type Client struct {
-	Id             string
-	SessionId      string
+	ID             string
+	SessionID      string
 	Version        string
-	AppId          string
+	AppID          string
 	Track          string
 	config         *serverConfig
 	errorRate      int
@@ -32,17 +32,17 @@ type Client struct {
 	lock           *lock.Lock
 }
 
-func (c *Client) Log(format string, v ...interface{}) {
-	format = c.Id + ": " + format
-	fmt.Printf(format, v...)
+func (c *Client) Logf(format string, args ...interface{}) {
+	format = c.ID + ": " + format
+	fmt.Printf(format, args...)
 }
 
 func (c *Client) failed(tag string, err error) {
-	c.Log("%s %v\n", tag, err)
+	c.Logf("%s %v\n", tag, err)
 	c.MakeRequest("3", "0", false, false)
 }
 
-func (c *Client) getCodebaseUrl(uc *omaha.UpdateCheck) string {
+func (c *Client) getCodebaseURL(uc *omaha.UpdateCheck) string {
 	return uc.Urls.Urls[0].CodeBase + uc.Manifest.Packages.Packages[0].Name
 }
 
@@ -61,9 +61,9 @@ func (c *Client) RequestLock() {
 
 func (c *Client) OmahaRequest(otype, result string, updateCheck, isPing bool) *omaha.Request {
 	req := omaha.NewRequest("lsb", "CoreOS", "", "")
-	app := req.AddApp(c.AppId, c.Version)
-	app.MachineID = c.Id
-	app.BootId = c.SessionId
+	app := req.AddApp(c.AppID, c.Version)
+	app.MachineID = c.ID
+	app.BootId = c.SessionID
 	app.Track = c.Track
 	app.OEM = Flags.OEM
 
@@ -113,15 +113,15 @@ func (c *Client) MakeRequest(otype, result string, updateCheck, isPing bool) (*o
 
 	if Flags.verbose {
 		raw, _ := xml.MarshalIndent(req, "", " ")
-		c.Log("request: %s\n", string(raw))
+		c.Logf("request: %s\n", string(raw))
 		raw, _ = xml.MarshalIndent(oresp, "", " ")
-		c.Log("response: %s\n", string(raw))
+		c.Logf("response: %s\n", string(raw))
 	}
 
 	return oresp, nil
 }
 
-// Sleep between n and m seconds
+// Loop between n and m seconds
 func (c *Client) Loop(n, m int) {
 	interval := constant.InitialInterval
 	for {
@@ -133,15 +133,15 @@ func (c *Client) Loop(n, m int) {
 		}
 		uc := resp.Apps[0].UpdateCheck
 		if uc.Status != "ok" {
-			c.Log("update check status: %s\n", uc.Status)
+			c.Logf("update check status: %s\n", uc.Status)
 		} else {
-			url := c.getCodebaseUrl(uc)
+			url := c.getCodebaseURL(uc)
 			if !strings.Contains(url, "deis") {
 				c.failed("Wrong Url", err)
 				continue
 			}
 			c.MakeRequest("13", "1", false, false)
-			err = c.downloadFromUrl(url, "/tmp/deis.tar.gz")
+			err = c.downloadFromURL(url, "/tmp/deis.tar.gz")
 			if err != nil {
 				c.failed("Download failed", err)
 				continue
@@ -181,7 +181,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 	// A field can potentially be nil.
 	defer func() {
 		if err := recover(); err != nil {
-			c.Log("%s: error setting version: %v", c.Id, err)
+			c.Logf("%s: error setting version: %v", c.ID, err)
 		}
 	}()
 	uc := resp.Apps[0].UpdateCheck
@@ -191,9 +191,9 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 		c.failed("update failed", err)
 		return
 	}
-	c.Log("Installation done ")
+	c.Logf("Installation done ")
 	c.MakeRequest("2", "1", false, false)
-	c.Log("Update done ")
+	c.Logf("Update done ")
 	c.MakeRequest("3", "1", false, false)
 	// installed
 
@@ -204,7 +204,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 		time.Sleep(1 * time.Second)
 	}
 
-	c.Log("updated from %s to %s\n", c.Version, uc.Manifest.Version)
+	c.Logf("updated from %s to %s\n", c.Version, uc.Manifest.Version)
 
 	c.Version = uc.Manifest.Version
 	utils.PutVersion(c.Version)
@@ -214,7 +214,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 		log.Println(err)
 	}
 
-	c.SessionId = uuid.New()
+	c.SessionID = uuid.New()
 }
 
 func (c *Client) Update() (err error) {
@@ -250,7 +250,7 @@ func (c *Client) Update() (err error) {
 	return nil
 }
 
-func (c *Client) downloadFromUrl(url, filePath string) (err error) {
+func (c *Client) downloadFromURL(url, filePath string) (err error) {
 	fmt.Printf("Downloading %s to %s\n", url, filePath)
 
 	output, err := os.Create(filePath)

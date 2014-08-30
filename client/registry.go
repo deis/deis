@@ -107,7 +107,7 @@ func getRegistryClient() (client.API, error) {
 	// 	fmt.Fprint(os.Stderr, msg)
 	// }
 
-	return &client.RegistryClient{reg}, nil
+	return &client.RegistryClient{Registry: reg}, nil
 }
 
 // checkVersion makes a best-effort attempt to verify that fleetctl is at least as new as the

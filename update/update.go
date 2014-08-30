@@ -18,17 +18,17 @@ const (
 	DefaultOmahaServer = "https://opdemand.update.core-os.net"
 	// DefaultOEM string to report to Omaha Server
 	DefaultOEM = "deisctl"
-	// DefaultAppId used for Omaha protocol
-	DefaultAppId = "0ccac0df-ca24-4f2b-bb7b-4a265bd0eb33"
-	// DefaultGroupId used for Omaha protocol
-	DefaultGroupId = "2e87b742-68c9-4d08-8f37-5cb7bb2c9d3a"
+	// DefaultAppID used for Omaha protocol
+	DefaultAppID = "0ccac0df-ca24-4f2b-bb7b-4a265bd0eb33"
+	// DefaultGroupID used for Omaha protocol
+	DefaultGroupID = "2e87b742-68c9-4d08-8f37-5cb7bb2c9d3a"
 )
 
 // Flags for update package
 var Flags struct {
 	Server        string
-	groupId       string
-	appId         string
+	groupID       string
+	appID         string
 	start         int64
 	end           int64
 	verbose       bool
@@ -51,22 +51,22 @@ func parseInt(arg string) (i int, err error) {
 
 func setUpdateFlags(args map[string]interface{}) error {
 
-	appId := utils.GetKey(constant.UpdatekeyDir, "app-id", "DEISCTL_APP_ID")
+	appID := utils.GetKey(constant.UpdatekeyDir, "app-id", "DEISCTL_APP_ID")
 	if args["--app-id"] != nil {
-		Flags.appId = args["--app-id"].(string)
-	} else if appId != "" {
-		Flags.appId = appId
+		Flags.appID = args["--app-id"].(string)
+	} else if appID != "" {
+		Flags.appID = appID
 	} else {
-		Flags.appId = DefaultAppId
+		Flags.appID = DefaultAppID
 	}
 
-	groupId := utils.GetKey(constant.UpdatekeyDir, "group-id", "DEISCTL_GROUP_ID")
+	groupID := utils.GetKey(constant.UpdatekeyDir, "group-id", "DEISCTL_GROUP_ID")
 	if args["--group-id"] != nil {
-		Flags.groupId = args["--group-id"].(string)
-	} else if groupId != "" {
-		Flags.groupId = groupId
+		Flags.groupID = args["--group-id"].(string)
+	} else if groupID != "" {
+		Flags.groupID = groupID
 	} else {
-		Flags.groupId = DefaultGroupId
+		Flags.groupID = DefaultGroupID
 	}
 
 	// read version from /etc/deis-version
@@ -150,11 +150,11 @@ func doUpdate() error {
 		server: Flags.Server,
 	}
 	c := &Client{
-		Id:        utils.GetClientID(),
-		SessionId: uuid.New(),
+		ID:        utils.GetClientID(),
+		SessionID: uuid.New(),
 		Version:   Flags.version,
-		AppId:     Flags.appId,
-		Track:     Flags.groupId,
+		AppID:     Flags.appID,
+		Track:     Flags.groupID,
 		config:    conf,
 	}
 	go c.Loop(Flags.minSleep, Flags.maxSleep)

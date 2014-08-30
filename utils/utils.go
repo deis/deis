@@ -65,7 +65,7 @@ func PullImage(args string) error {
 	return nil
 }
 
-// getClientID returns the CoreOS Machine ID or an unknown UUID string
+// GetClientID returns the CoreOS Machine ID or an unknown UUID string
 func GetClientID() string {
 	machineID := GetMachineID("/")
 	if machineID == "" {
@@ -75,7 +75,7 @@ func GetClientID() string {
 }
 
 func GetMachineID(root string) string {
-	fullPath := filepath.Join(root, constant.MachineId)
+	fullPath := filepath.Join(root, constant.MachineID)
 	id, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return ""

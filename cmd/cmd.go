@@ -268,7 +268,7 @@ func RefreshUnits() error {
 	}
 
 	// download and save the unit files to $HOME/.deisctl
-	rootUrl := "https://raw.githubusercontent.com/deis/deisctl/"
+	rootURL := "https://raw.githubusercontent.com/deis/deisctl/"
 	branch := "master"
 	units := []string{
 		"deis-builder.service",
@@ -284,7 +284,7 @@ func RefreshUnits() error {
 		"deis-router.service",
 	}
 	for _, unit := range units {
-		src := rootUrl + branch + "/units/" + unit
+		src := rootURL + branch + "/units/" + unit
 		dest := filepath.Join(dir, unit)
 		res, err := http.Get(src)
 		if err != nil {
