@@ -8,7 +8,7 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-store >/dev/null 2>&1 && docker rm -f deis-store || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store` && docker run --name deis-store -h deis-store-%i --rm -p 2202:2202 -p 6789:6789 -p 6800:6800 -p 6801:6801 -p 6802:6802 -p 6803:6803 -p 6804:6804 -p 6805:6805 -p 6806:6806 -p 6807:6807 -p 6808:6808 -p 6809:6809 -p 6810:6810 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from deis-store-data $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store` && docker run --name deis-store --rm -e HOST=$COREOS_PRIVATE_IPV4 --net host --volumes-from deis-store-data $IMAGE"
 ExecStopPost=/usr/bin/docker stop deis-store
 
 [Install]
