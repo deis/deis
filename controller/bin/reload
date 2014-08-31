@@ -1,9 +1,19 @@
 #!/bin/bash
 
-# gracefully reload celery
-kill -HUP $(cat /tmp/celery.pid)
+if [[ -f /tmp/celery.pid ]] ; then
+    # gracefully reload celery
+    kill -HUP $(cat /tmp/celery.pid)
+else
+    # spawn celery worker in the background
+    sudo -E -u deis celery worker --app=deis --loglevel=INFO --workdir=/app --pidfile=/tmp/celery.pid &
+fi
 
-# gracefully reload gunicorn
-kill -HUP $(cat /tmp/gunicorn.pid)
+if [[ -f /tmp/gunicorn.pid ]] ; then
+    # gracefully reload gunicorn
+    kill -HUP $(cat /tmp/gunicorn.pid)
+else
+    # spawn a gunicorn server in the foreground
+    sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
+fi
 
 exit 0
