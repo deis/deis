@@ -14,25 +14,27 @@ if ! etcdctl --no-sync -C $ETCD get /deis/store/setupComplete >/dev/null 2>&1 ; 
   # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
   if etcdctl --no-sync -C $ETCD mk /deis/store/setupLock $HOST >/dev/null 2>&1 ; then
     echo "Obtained the lock to proceed with setting up."
-    # create config directory in /data/ceph
-    # sudo -u ceph mkdir /data/ceph
-
     # create new cluster
+    sudo -u ceph ceph-deploy -q new $(sort hosts | tr "\\n" " ")
 
     # edit ceph.conf to include customized settings:
-    # we want 3 replicas of an object (the default plus two replicas)
-    # osd pool default size = 3
-    # we still want to write objects when only one host is up
-    # osd pool default min_size = 1
+    # - we want n replicas of an object
+    # - we still want to write objects when only one host is up
+    # - we set the number of placement groups to a reasonable size for this cluster
     # see http://ceph.com/docs/master/rados/operations/placement-groups/ for optimal placement group size
-    # osd pool default pg_num = 128
-    # osd pool default pgp_num = 128
+    echo "osd pool default size = ${NUM_STORES}" >> /data/ceph/ceph.conf
+    echo "osd pool default min_size = 1" >> /data/ceph/ceph.conf
+    echo "osd pool default pg_num = ${PG_NUM}" >> /data/ceph/ceph.conf
+    echo "osd pool default pgp_num = ${PG_NUM}" >> /data/ceph/ceph.conf
 
     # ceph install
+    sudo -u ceph ceph-deploy -q install $(sort hosts | tr "\\n" " ")
 
     # create monitors
+    sudo -u ceph ceph-deploy -q mon create-initial
 
     # create OSDs
+
 
     # create RDS volumes
 

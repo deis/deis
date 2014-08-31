@@ -16,6 +16,7 @@ export ETCD_PATH=${ETCD_PATH:-/deis/store/hosts/$HOST}
 export ETCD_TTL=${ETCD_TTL:-10}
 
 export NUM_STORES=${NUM_STORES:-3}
+export PG_NUM=${PG_NUM:-128} # default for 3 nodes
 export HOSTNAME=`hostname`
 
 # wait for etcd to be available
