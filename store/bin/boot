@@ -48,16 +48,18 @@ if [ ! -f /data/ceph/.ssh/id_rsa ] ; then
     chmod 0600 /data/ceph/.ssh/id_rsa
     chmod 0644 /data/ceph/.ssh/id_rsa.pub
   fi
+else
+  # make sure etcd has our keys
+  etcdctl --no-sync -C $ETCD set /deis/store/pubKeys/$HOST < /data/ceph/.ssh/id_rsa.pub >/dev/null
+  etcdctl --no-sync -C $ETCD set /deis/store/keys/$HOST < /data/ceph/.ssh/id_rsa >/dev/null
 fi
 
 # start the SSHd
 /usr/sbin/sshd -D -e &
 
 # publish our hostname to etcd
-if ! etcdctl --no-sync -C $ETCD get /deis/store/hosts/$HOST >/dev/null 2>&1 ; then
-  [[ $DEBUG ]] && echo "Setting hostname for $HOSTNAME"
-  etcdctl --no-sync -C $ETCD set /deis/store/hosts/$HOST $HOSTNAME >/dev/null
-fi
+[[ $DEBUG ]] && echo "Setting hostname for $HOSTNAME"
+etcdctl --no-sync -C $ETCD set /deis/store/hosts/$HOST $HOSTNAME >/dev/null
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
