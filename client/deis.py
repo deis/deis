@@ -67,6 +67,7 @@ from dateutil import tz
 from docopt import docopt
 from docopt import DocoptExit
 import requests
+from termcolor import colored
 import yaml
 
 __version__ = '0.12.0'
@@ -363,16 +364,6 @@ class ResponseError(Exception):
     pass
 
 
-class MaxLevelFilter(logging.Filter):
-    '''Filters (lets through) all messages with level < LEVEL'''
-    def __init__(self, level):
-        self.level = level
-
-    def filter(self, record):
-        # since logger.setLevel is inclusive, this should be exclusive
-        return record.levelno < self.level
-
-
 class DeisClient(object):
     """
     A client which interacts with a Deis controller.
@@ -613,7 +604,22 @@ class DeisClient(object):
         response = self._dispatch('post',
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            sys.stdout.write(response.json())
+            # strip the last newline character
+            for line in response.json().split('\n')[:-1]:
+                # get the tag from the log
+                log_tag = line.split(': ')[0].split(' ')[2]
+                # colorize the log based on the tag
+                color = sum([ord(ch) for ch in log_tag]) % 6
+                def f(x):
+                    return {
+                        0: 'green',
+                        1: 'cyan',
+                        2: 'red',
+                        3: 'yellow',
+                        4: 'blue',
+                        5: 'magenta',
+                    }.get(x, 'magenta')
+                self._logger.info(colored(line, f(color)))
         else:
             raise ResponseError(response)
 
@@ -2148,15 +2154,15 @@ correct and the server is running.")
 
 
 def _init_logger():
+    logger = logging.getLogger(__name__)
     stdoutHandler = logging.StreamHandler(sys.stdout)
     stderrHandler = logging.StreamHandler(sys.stderr)
-    stdoutHandler.addFilter(MaxLevelFilter(logging.WARNING))
-    stdoutHandler.setLevel(logging.DEBUG)
+    # TODO: add a --debug flag
+    logger.setLevel(logging.INFO)
+    stdoutHandler.setLevel(logging.INFO)
     stderrHandler.setLevel(logging.WARNING)
-    logger = logging.getLogger(__name__)
     logger.addHandler(stdoutHandler)
     logger.addHandler(stderrHandler)
-    logger.setLevel(logging.DEBUG)
 
 
 def main():
