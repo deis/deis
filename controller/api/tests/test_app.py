@@ -90,6 +90,7 @@ class AppTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
+        os.remove(path)
         # test run
         url = '/api/apps/{app_id}/run'.format(**locals())
         body = {'command': 'ls -al'}
@@ -135,6 +136,55 @@ class AppTest(TestCase):
             url = '/api/apps/{app_id}/{endpoint}'.format(**locals())
             response = self.client.get(url)
             self.assertEquals(response.status_code, 404)
+
+    def test_admin_can_manage_other_apps(self):
+        """Administrators of Deis should be able to manage all applications.
+        """
+        # log in as non-admin user and create an app
+        self.assertTrue(
+            self.client.login(username='autotest2', password='password'))
+        app_id = 'autotest'
+        url = '/api/apps'
+        body = {'cluster': 'autotest', 'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        # log in as admin, check to see if they have access
+        self.assertTrue(
+            self.client.login(username='autotest', password='password'))
+        url = '/api/apps/{}'.format(app_id)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        # check app logs
+        url = '/api/apps/{app_id}/logs'.format(**locals())
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('autotest2 created initial release', response.data)
+        # run one-off commands
+        url = '/api/apps/{app_id}/run'.format(**locals())
+        body = {'command': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0], 0)
+        # delete the app
+        url = '/api/apps/{}'.format(app_id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+
+    def test_admin_can_see_other_apps(self):
+        """If a user creates an application, the administrator should be able
+        to see it.
+        """
+        # log in as non-admin user and create an app
+        self.assertTrue(
+            self.client.login(username='autotest2', password='password'))
+        app_id = 'autotest'
+        url = '/api/apps'
+        body = {'cluster': 'autotest', 'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        # log in as admin
+        self.assertTrue(
+            self.client.login(username='autotest', password='password'))
+        response = self.client.get(url)
+        self.assertEqual(response.data['count'], 1)
 
 
 FAKE_LOG_DATA = """

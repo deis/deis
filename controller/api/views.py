@@ -6,8 +6,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import json
 
-from django.contrib.auth.models import AnonymousUser
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.utils import timezone
@@ -24,8 +23,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api import models, serializers
-
-from django.conf import settings
+from api.permissions import IsAnonymous, IsOwner, IsAppUser, \
+    IsAdmin, HasRegistrationAuth, HasBuilderAuth
 
 
 class AnonymousAuthentication(BaseAuthentication):
@@ -36,100 +35,6 @@ class AnonymousAuthentication(BaseAuthentication):
         """
         user = AnonymousUser()
         return user, None
-
-
-class IsAnonymous(permissions.BasePermission):
-    """
-    View permission to allow anonymous users.
-    """
-
-    def has_permission(self, request, view):
-        """
-        Return `True` if permission is granted, `False` otherwise.
-        """
-        return type(request.user) is AnonymousUser
-
-
-class IsOwner(permissions.BasePermission):
-    """
-    Object-level permission to allow only owners of an object to access it.
-    Assumes the model instance has an `owner` attribute.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if hasattr(obj, 'owner'):
-            return obj.owner == request.user
-        else:
-            return False
-
-
-class IsAppUser(permissions.BasePermission):
-    """
-    Object-level permission to allow owners or collaborators to access
-    an app-related model.
-    """
-    def has_object_permission(self, request, view, obj):
-        if isinstance(obj, models.App) and obj.owner == request.user:
-            return True
-        elif hasattr(obj, 'app') and obj.app.owner == request.user:
-            return True
-        elif request.user.has_perm('use_app', obj):
-            return request.method != 'DELETE'
-        elif hasattr(obj, 'app') and request.user.has_perm('use_app', obj.app):
-            return request.method != 'DELETE'
-        else:
-            return False
-
-
-class IsAdmin(permissions.BasePermission):
-    """
-    View permission to allow only admins.
-    """
-
-    def has_permission(self, request, view):
-        """
-        Return `True` if permission is granted, `False` otherwise.
-        """
-        return request.user.is_superuser
-
-
-class IsAdminOrSafeMethod(permissions.BasePermission):
-    """
-    View permission to allow only admins to use unsafe methods
-    including POST, PUT, DELETE.
-
-    This allows
-    """
-
-    def has_permission(self, request, view):
-        """
-        Return `True` if permission is granted, `False` otherwise.
-        """
-        return request.method in permissions.SAFE_METHODS or request.user.is_superuser
-
-
-class HasRegistrationAuth(permissions.BasePermission):
-    """
-    Checks to see if registration is enabled
-    """
-    def has_permission(self, request, view):
-        return settings.REGISTRATION_ENABLED
-
-
-class HasBuilderAuth(permissions.BasePermission):
-    """
-    View permission to allow builder to perform actions
-    with a special HTTP header
-    """
-
-    def has_permission(self, request, view):
-        """
-        Return `True` if permission is granted, `False` otherwise.
-        """
-        auth_header = request.environ.get('HTTP_X_DEIS_BUILDER_AUTH')
-        if not auth_header:
-            return False
-        return auth_header == settings.BUILDER_KEY
 
 
 class UserRegistrationView(viewsets.GenericViewSet,
@@ -156,7 +61,6 @@ class UserRegistrationView(viewsets.GenericViewSet,
 class UserCancellationView(viewsets.GenericViewSet,
                            viewsets.mixins.DestroyModelMixin):
     model = User
-
     permission_classes = (permissions.IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
@@ -208,7 +112,9 @@ class AppPermsViewSet(viewsets.ViewSet):
     def list(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
         perm_name = "api.{}".format(self.perm)
-        if request.user != app.owner and not request.user.has_perm(perm_name, app):
+        if request.user != app.owner and \
+                not request.user.has_perm(perm_name, app) and \
+                not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
@@ -216,7 +122,7 @@ class AppPermsViewSet(viewsets.ViewSet):
 
     def create(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner:
+        if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
@@ -225,7 +131,7 @@ class AppPermsViewSet(viewsets.ViewSet):
 
     def destroy(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner:
+        if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=kwargs['username'])
         if user.has_perm(self.perm, app):
@@ -316,6 +222,11 @@ class AppViewSet(OwnerViewSet):
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
+
+    def destroy(self, request, **kwargs):
+        obj = get_object_or_404(self.model, id=kwargs['id'])
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class BaseAppViewSet(viewsets.ModelViewSet):
@@ -519,7 +430,9 @@ class PushHookViewSet(BaseHookViewSet):
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or user in get_users_with_perms(app):
+        if user == app.owner or \
+           user in get_users_with_perms(app) or \
+           user.is_superuser:
             request._data = request.DATA.copy()
             request.DATA['app'] = app
             request.DATA['owner'] = user
@@ -538,7 +451,9 @@ class BuildHookViewSet(BaseHookViewSet):
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or user in get_users_with_perms(app):
+        if user == app.owner or \
+           user in get_users_with_perms(app) or \
+           user.is_superuser:
             request._data = request.DATA.copy()
             request.DATA['app'] = app
             request.DATA['owner'] = user
@@ -568,7 +483,9 @@ class ConfigHookViewSet(BaseHookViewSet):
         user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or user in get_users_with_perms(app):
+        if user == app.owner or \
+           user in get_users_with_perms(app) or \
+           user.is_superuser:
             config = app.release_set.latest().config
             serializer = self.get_serializer(config)
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -89,8 +89,23 @@ class DomainTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_manage_domain_wildcard(self):
-        # Wildcards are not allowed for now.
+        """Wildcards are not allowed for now."""
         url = '/api/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': '*.deis.example.com'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+    def test_admin_can_add_domains_to_other_apps(self):
+        """If a non-admin user creates an app, an administrator should be able to add
+        domains to it.
+        """
+        self.client.login(username='autotest2', password='password')
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.client.login(username='autotest', password='password')
+        url = '/api/apps/{}/domains'.format(self.app_id)
+        body = {'domain': 'example.deis.example.com'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)

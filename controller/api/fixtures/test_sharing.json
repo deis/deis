@@ -25,8 +25,8 @@
     "first_name": "",
     "last_name": "",
     "is_active": true,
-    "is_superuser": false,
-    "is_staff": false,
+    "is_superuser": true,
+    "is_staff": true,
     "last_login": "2013-11-25T21:58:47.420Z",
     "groups": [],
     "user_permissions": [],
@@ -76,6 +76,17 @@
     "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
     "owner": 2,
     "id": "autotest-1-app"
+  }
+},
+{
+  "pk": "5a09a1e0-a27e-4839-928b-449310ed90f1",
+  "model": "api.app",
+  "fields": {
+    "updated": "2013-11-25T22:09:36.726Z",
+    "created": "2013-11-25T22:09:36.726Z",
+    "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
+    "owner": 3,
+    "id": "autotest-2-app"
   }
 }
 ]

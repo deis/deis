@@ -179,3 +179,25 @@ class BuildTest(TransactionTestCase):
         build = Build.objects.get(uuid=response.data['uuid'])
         self.assertEqual(str(build), "{}-{}".format(
                          response.data['app'], response.data['uuid'][:7]))
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_admin_can_create_builds_on_other_apps(self):
+        """If a user creates an application, an administrator should be able
+        to push builds.
+        """
+        # create app as non-admin
+        self.client.login(username='autotest2', password='password')
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build as admin
+        self.client.login(username='autotest', password='password')
+        url = "/api/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        build = Build.objects.get(uuid=response.data['uuid'])
+        self.assertEqual(str(build), "{}-{}".format(
+                         response.data['app'], response.data['uuid'][:7]))
