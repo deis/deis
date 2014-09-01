@@ -4,18 +4,21 @@
 
 ## Installation
 
-In order to build and install `deisctl` you will need the following:
+Download an installer for your platform:
 
- * make
- * Go 1.3+
- * Godeps (install with `go get github.com/tools/godep`)
+[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-linux-amd64.run)
+[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-darwin-amd64.run)
+
+Run the downloaded file as a shell script:
 
 ```console
-$ go get -v github.com/deis/deisctl
-$ cd $GOPATH/src/github.com/deis/deisctl
-$ make install
-
-$ deisctl
+$ sh deisctl-0.11.0-darwin-amd64.run           # (your installer filename may differ)
+Verifying archive integrity... All good.
+Uncompressing Deis Control Utility  100%  
+Refreshed deis-builder.service from master
+...
+Refreshed deis-router.service from master
+$ ./deisctl
 Usage:
   deisctl <command> [<target>...] [options]
 ```
@@ -113,6 +116,7 @@ The `deisctl` tool provides a number of other commands, including:
  * `deisctl install <component>` - install a single platform component
  * `deisctl uninstall <component>` - uninstall a single platform component
  * `deisctl scale <component>=<num>` - scale a component to the target number of units
+ * `deisctl refresh-units` - download latest unit files to ~/.deisctl
 
 ## Usage Examples
 
