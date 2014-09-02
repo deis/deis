@@ -192,13 +192,13 @@ their stateful data. We export these as tarballs before upgrading the containers
 .. code-block:: console
 
     dev $ fleetctl ssh deis-builder.service
-    coreos $ sudo docker export deis-builder-data > /home/coreos/deis-builder-data-backup.tar
+    core $ sudo docker export deis-builder-data > /home/core/deis-builder-data-backup.tar
     dev $ fleetctl ssh deis-database.service
-    coreos $ sudo docker export deis-database-data > /home/coreos/deis-database-data-backup.tar
+    core $ sudo docker export deis-database-data > /home/core/deis-database-data-backup.tar
     dev $ fleetctl ssh deis-logger.service
-    coreos $ sudo docker export deis-logger-data > /home/coreos/deis-logger-data-backup.tar
+    core $ sudo docker export deis-logger-data > /home/core/deis-logger-data-backup.tar
     dev $ fleetctl ssh deis-registry.service
-    coreos $ sudo docker export deis-registry-data > /home/coreos/deis-registry-data-backup.tar
+    core $ sudo docker export deis-registry-data > /home/core/deis-registry-data-backup.tar
 
 Upgrade Deis client and fleetctl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -223,13 +223,13 @@ We need to reimport the saved data containers we exported earlier.
 .. code-block:: console
 
     dev $ fleetctl ssh deis-builder.service
-    coreos $ cat /home/coreos/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
+    core $ cat /home/core/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
     dev $ fleetctl ssh deis-database.service
-    coreos $ cat /home/coreos/deis-database-data-backup.tar | sudo docker import - deis-database-data
+    core $ cat /home/core/deis-database-data-backup.tar | sudo docker import - deis-database-data
     dev $ fleetctl ssh deis-logger.service
-    coreos $ cat /home/coreos/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
+    core $ cat /home/core/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
     dev $ fleetctl ssh deis-registry.service
-    coreos $ cat /home/coreos/deis-registry-data-backup.tar | sudo docker import - deis-registry-data
+    core $ cat /home/core/deis-registry-data-backup.tar | sudo docker import - deis-registry-data
 
 Start the cluster
 ^^^^^^^^^^^^^^^^^
