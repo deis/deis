@@ -45,11 +45,3 @@ class UuidField(models.CharField):
             'max_length': self.max_length,
         })
         return super(UuidField, self).formfield(**kwargs)
-
-
-try:
-    from south.modelsinspector import add_introspection_rules
-    # Tell the South schema migration tool to handle our custom fields.
-    add_introspection_rules([], [r'^api\.fields\.UuidField'])
-except ImportError:  # pragma: no cover
-    pass

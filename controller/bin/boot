@@ -54,7 +54,7 @@ cd /app
 chown -R deis:deis /var/log/deis
 
 # run an idempotent database migration
-sudo -E -u deis ./manage.py syncdb --migrate --noinput
+sudo -E -u deis ./manage.py migrate --noinput --no-color
 
 # spawn celery workers in the background
 sudo -E -u deis celery worker --app=deis --loglevel=$CELERY_LOG_LEVEL --workdir=/app --pidfile=/tmp/celery.pid &
