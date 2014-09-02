@@ -126,7 +126,7 @@ class FleetClient(object):
 
         if use_announcer:
             self._start_announcer(name, env)
-            self._wait_for_announcer(name, env)
+            self._wait_for_container(name, env)
         else:
             self._log_skipped_announcer('start', name)
 
@@ -145,10 +145,20 @@ class FleetClient(object):
             'fleetctl.sh start -no-block {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
-    def _wait_for_announcer(self, name, env):
+    def _wait_for_container(self, name, env):
         status = None
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
+            # check if the main container's running
+            status = subprocess.check_output(
+                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}.service | awk '{{print $2}}'".format(**locals()),  # noqa
+                shell=True, env=env).strip('\n')
+            if status == 'failed':
+                raise RuntimeError('Container failed to start')
+            elif status != 'running':
+                time.sleep(1)
+                continue
+            # wait for the announce service to come up as well
             status = subprocess.check_output(
                 "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
