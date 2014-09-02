@@ -1,0 +1,9 @@
+[template]
+src   = "hosts"
+dest  = "/data/ceph/hosts"
+uid = 1000
+gid = 1000
+mode  = "0644"
+keys = [
+  "/deis/store/hosts",
+]

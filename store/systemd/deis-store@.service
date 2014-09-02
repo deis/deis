@@ -1,0 +1,19 @@
+[Unit]
+Description=deis-store
+Requires=deis-store-data@%i.service
+After=deis-store-data@%i.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-store >/dev/null 2>&1 && docker rm -f deis-store || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store` && docker run --name deis-store --rm -e HOST=$COREOS_PRIVATE_IPV4 --net host --volumes-from deis-store-data $IMAGE"
+ExecStopPost=/usr/bin/docker stop deis-store
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+X-Conflicts=deis-store@*.service
+X-ConditionMachineOf=deis-store-data@%i.service

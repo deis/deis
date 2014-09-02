@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+# Assumptions: We can connect to each other machine by key auth. These should have been propagated before reaching here.
+
+if ! etcdctl --no-sync -C $ETCD get /deis/store/setupComplete >/dev/null 2>&1 ; then
+  echo "Ceph hasn't yet been deployed. Trying to deploy..."
+  # block until the expected number of hosts are up
+  until [ `grep -c deis /data/ceph/hosts` == "$NUM_STORES" ] ; do
+    echo "Waiting for $NUM_STORES store hosts to be up..."
+    sleep 5
+  done
+  # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
+  if etcdctl --no-sync -C $ETCD mk /deis/store/setupLock $HOST >/dev/null 2>&1 ; then
+    echo "Obtained the lock to proceed with setting up."
+    # create new cluster
+    sudo -u ceph ceph-deploy -q new $(sort /data/ceph/hosts | tr "\\n" " ")
+
+    # edit ceph.conf to include customized settings:
+    # - we want n replicas of an object
+    # - we still want to write objects when only one host is up
+    # - we set the number of placement groups to a reasonable size for this cluster
+    # see http://ceph.com/docs/master/rados/operations/placement-groups/ for optimal placement group size
+    echo "osd pool default size = ${NUM_STORES}" >> /data/ceph/ceph.conf
+    echo "osd pool default min_size = 1" >> /data/ceph/ceph.conf
+    echo "osd pool default pg_num = ${PG_NUM}" >> /data/ceph/ceph.conf
+    echo "osd pool default pgp_num = ${PG_NUM}" >> /data/ceph/ceph.conf
+
+    # ceph install
+    sudo -u ceph ceph-deploy -q install $(sort /data/ceph/hosts | tr "\\n" " ")
+
+    # create monitors
+    sudo -u ceph ceph-deploy -q mon create-initial
+
+    # create OSDs
+
+
+    # create RDS volumes
+
+    # mark setup as complete
+    echo "Setup complete."
+    etcdctl --no-sync -C $ETCD set /deis/store/setupComplete youBetcha >/dev/null 2>&1
+  else
+    echo "Someone else is currently setting up and will start our services for us."
+  fi
+else
+  # if we don't need to do setup and we are just coming back up, just start the daemons
+  # start ceph-all
+  echo "$HOSTNAME running..."
+fi

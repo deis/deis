@@ -42,6 +42,8 @@ endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 ROUTER_UNITS = $(shell seq -f "deis-router@%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
+STORE_DATA_UNITS = $(shell seq -f "deis-store-data@%g.service" -s " " 1 1 $(DEIS_NUM_INSTANCES))
+STORE_UNITS = $(shell seq -f "deis-store@%g.service" -s " " 1 1 $(DEIS_NUM_INSTANCES))
 
 check-fleet:
 	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
