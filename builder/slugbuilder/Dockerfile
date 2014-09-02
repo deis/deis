@@ -1,4 +1,4 @@
-FROM progrium/cedarish
+FROM progrium/cedarish:cedar
 MAINTAINER OpDemand <info@opdemand.com>
 
 RUN useradd slugbuilder --home-dir /app
