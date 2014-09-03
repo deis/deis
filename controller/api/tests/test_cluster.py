@@ -65,7 +65,8 @@ class ClusterTest(TestCase):
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         # update cluster hosts
-        new_hosts, new_options = 'host2.domain,host3.sub.domain,127.0.0.1', {'key': 'val2'}
+        new_hosts = 'host2.domain:12222,host3.sub.domain,127.0.0.1:12224'
+        new_options = {'key': 'val2'}
         body = {'hosts': new_hosts, 'options': new_options}
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
