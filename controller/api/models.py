@@ -172,9 +172,8 @@ class App(UuidAuditedModel):
         existing logging configurations.
         """
         with open(os.path.join(settings.DEIS_LOG_DIR, self.id + '.log'), 'a') as f:
-            f.write('{} deis[api]: {}\n'.format(
-                time.strftime('%Y-%m-%d %H:%M:%S'),
-                message))
+            msg = "{} deis[api]: {}\n".format(time.strftime('%Y-%m-%d %H:%M:%S'), message)
+            f.write(msg.encode('utf-8'))
 
     def create(self, *args, **kwargs):
         config = Config.objects.create(owner=self.owner, app=self)

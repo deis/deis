@@ -166,10 +166,10 @@ def _construct_env(env, config):
         if k in config:
             # update values defined by config
             v = config.pop(k)
-        new_env.append("{}={}".format(k, v))
+        new_env.append("{}={}".format(k.encode('utf-8'), v.encode('utf-8')))
     # add other config ENV items
     for k, v in config.items():
-        new_env.append("{}={}".format(k, v))
+        new_env.append("{}={}".format(k.encode('utf-8'), v.encode('utf-8')))
     return new_env
 
 

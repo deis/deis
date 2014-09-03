@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for the Deis api app.
 
@@ -126,6 +127,29 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('PORT', json.loads(response.data['values']))
         self.assertEqual(json.loads(response.data['values'])['PORT'], '5001')
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_config_set_unicode(self):
+        """
+        Test that config sets with unicode values are accepted.
+        """
+        url = '/api/apps'
+        body = {'cluster': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = "/api/apps/{app_id}/config".format(**locals())
+        # set an initial config value
+        body = {'values': json.dumps({'POWERED_BY': 'Деис'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('POWERED_BY', json.loads(response.data['values']))
+        # reset same config value
+        body = {'values': json.dumps({'POWERED_BY': 'Кроликов'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('POWERED_BY', json.loads(response.data['values']))
+        self.assertEqual(json.loads(response.data['values'])['POWERED_BY'], 'Кроликов')
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
