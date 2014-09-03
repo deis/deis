@@ -72,6 +72,8 @@ by setting the value in [cloudformation.json](cloudformation.json) like so:
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`,
 which is already filled out. The defaults will be applied for the other settings.
 
+If updated with update-ec2-cluster.sh, the InstanceType will only impact newly deployed instances (#1758).
+
 NOTE: The smallest recommended instance size is `large`. Having not enough CPU or RAM will result
 in numerous issues when using the cluster.
 
