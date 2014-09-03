@@ -1,0 +1,110 @@
+#!/bin/bash
+# Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
+
+set -e
+
+ETCD_PORT=${ETCD_PORT:-4001}
+ETCD="$HOST:$ETCD_PORT"
+NUM_STORES=${NUM_STORES:-3}
+PG_NUM=${PG_NUM:-128} # default for 3 OSDs
+HOSTNAME=`hostname`
+
+if ! etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&1 ; then
+  echo "store-monitor: Ceph hasn't yet been deployed. Trying to deploy..."
+  # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
+  if etcdctl --no-sync -C $ETCD mk /deis/store/monSetupLock $HOST >/dev/null 2>&1 \
+  || [[ `etcdctl --no-sync -C $ETCD get /deis/store/monSetupLock` == "$HOST" ]] ; then
+    echo "store-monitor: obtained the lock to proceed with setting up."
+
+    # block until the expected number of hosts are up
+    until [ `etcdctl --no-sync -C $ETCD ls /deis/store/hosts | wc -l` == "$NUM_STORES" ] ; do
+      echo "Waiting for $NUM_STORES store hosts to be up..."
+      sleep 5
+    done
+
+    ADDRS=''
+    HOSTS=''
+
+    for i in $(etcdctl --no-sync -C $ETCD ls /deis/store/hosts | sort); do
+      host=$(etcdctl --no-sync -C $ETCD get $i)
+      ip=$(basename $i)
+      HOSTS="${HOSTS}${host},"
+      ADDRS="${ADDRS}${ip}:6789,"
+    done
+
+    ADDRS="${ADDRS%?}"
+    HOSTS="${HOSTS%?}"
+
+    fsid=$(uuidgen)
+    cat <<ENDHERE >/etc/ceph/ceph.conf
+[global]
+fsid = $fsid
+mon initial members = ${HOSTNAME}
+mon host = ${HOSTS}
+mon addr = ${ADDRS}
+auth cluster required = cephx
+auth service required = cephx
+auth client required = cephx
+osd pool default size = ${NUM_STORES}
+osd pool default min_size = 1
+osd pool default pg_num = ${PG_NUM}
+osd pool default pgp_num = ${PG_NUM}
+log file = /dev/stdout
+
+[client.radosgw.gateway]
+host = deis-store-gateway
+keyring = /etc/ceph/ceph.client.radosgw.keyring
+rgw socket path = /var/run/ceph/ceph.radosgw.gateway.fastcgi.sock
+log file = /dev/stdout
+ENDHERE
+
+    # Generate administrator key
+    ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+
+    # Generate the mon. key
+    ceph-authtool /etc/ceph/ceph.mon.keyring --create-keyring --gen-key -n mon. --cap mon 'allow *'
+
+    # Generate initial monitor map
+    monmaptool --create --add ${HOSTNAME} ${HOST} --fsid ${fsid} /etc/ceph/monmap
+
+    etcdctl --no-sync -C $ETCD set /deis/store/conf < /etc/ceph/ceph.conf >/dev/null
+    etcdctl --no-sync -C $ETCD set /deis/store/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
+    etcdctl --no-sync -C $ETCD set /deis/store/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
+
+    # mark setup as complete
+    echo "store-monitor: setup complete."
+    etcdctl --no-sync -C $ETCD set /deis/store/monSetupComplete youBetcha >/dev/null
+  else
+    until etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&1 ; do
+      echo "store-monitor: waiting for another monitor to complete setup..."
+      sleep 5
+    done
+  fi
+fi
+
+until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1; do
+  echo "store-monitor: waiting for confd to write initial templates..."
+  sleep 5
+done
+
+# If we don't have a monitor keyring, this is a new monitor
+if [ ! -e /var/lib/ceph/mon/ceph-${HOSTNAME}/keyring ]; then
+  if [ ! -f /etc/ceph/monmap ]; then
+    ceph mon getmap -o /etc/ceph/monmap
+  fi
+
+  # Import the client.admin keyring and the monitor keyring into a new, temporary one
+  ceph-authtool /tmp/ceph.mon.keyring --create-keyring --import-keyring /etc/ceph/ceph.client.admin.keyring
+  ceph-authtool /tmp/ceph.mon.keyring --import-keyring /etc/ceph/ceph.mon.keyring
+
+  # Make the monitor directory
+  mkdir -p /var/lib/ceph/mon/ceph-${HOSTNAME}
+
+  # Prepare the monitor daemon's directory with the map and keyring
+  ceph-mon --mkfs -i ${HOSTNAME} --monmap /etc/ceph/monmap --keyring /tmp/ceph.mon.keyring
+
+  # Clean up the temporary key
+  rm /tmp/ceph.mon.keyring
+fi
+
+exec /usr/bin/ceph-mon -d -i ${HOSTNAME} --public-addr ${HOST}:6789
