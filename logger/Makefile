@@ -42,7 +42,7 @@ test-style:
 	-golint .
 
 test-unit: test-style
-	go test -v -cover ./syslog
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -cover ./syslog
 
 test-functional:
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
