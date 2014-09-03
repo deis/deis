@@ -67,7 +67,7 @@ def validate_comma_separated(value):
     """Error if the value doesn't look like a list of hostnames or IP addresses
     separated by commas.
     """
-    if not re.search(r'^[a-zA-Z0-9-,\.]+$', value):
+    if not re.search(r'^[a-zA-Z0-9-,:\.]+$', value):
         raise ValidationError(
             "{} should be a comma-separated list".format(value))
 
