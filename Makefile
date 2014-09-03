@@ -23,7 +23,7 @@ build: check-docker
 
 push: check-docker check-registry
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) push || exit 1;)
-	
+
 full-clean:
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) full-clean || exit 1;)
 
