@@ -21,8 +21,7 @@ type Message struct {
 func (m *Message) String() string {
 	timeLayout := "2006-01-02 15:04:05"
 	return fmt.Sprintf(
-		"<%d>%s %s: %s",
-		m.Priority,
+		"%s %s: %s",
 		m.Time.Format(timeLayout),
 		m.Tag,
 		m.Content,
