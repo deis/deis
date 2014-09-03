@@ -1,0 +1,9 @@
+[template]
+src   = "admin_keyring"
+dest  = "/etc/ceph/ceph.client.admin.keyring"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/store/adminKeyring",
+]

@@ -1,0 +1,81 @@
+#!/bin/bash
+# Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
+
+set -e
+
+ETCD_PORT=${ETCD_PORT:-4001}
+ETCD="$HOST:$ETCD_PORT"
+ETCD_PATH=${ETCD_PATH:-/deis/store}
+NUM_STORES=${NUM_STORES:-3}
+PG_NUM=${PG_NUM:-128} # default for 3 OSDs
+HOSTNAME=`hostname`
+
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+}
+
+if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; then
+  echo "store-monitor: Ceph hasn't yet been deployed. Trying to deploy..."
+  # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
+  if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/monSetupLock $HOSTNAME >/dev/null 2>&1 \
+  || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupLock` == "$HOSTNAME" ]] ; then
+    echo "store-monitor: obtained the lock to proceed with setting up."
+
+    # set some defaults in etcd if they're not passed in as environment variables
+    # these are templated in ceph.conf
+    etcd_set_default size ${NUM_STORES}
+    etcd_set_default minSize 1
+    etcd_set_default pgNum ${PG_NUM}
+
+    # Generate administrator key
+    ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
+
+    # Generate the mon. key
+    ceph-authtool /etc/ceph/ceph.mon.keyring --create-keyring --gen-key -n mon. --cap mon 'allow *'
+
+    fsid=$(uuidgen)
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/fsid ${fsid} >/dev/null
+
+    # Generate initial monitor map
+    monmaptool --create --add ${HOSTNAME} ${HOST} --fsid ${fsid} /etc/ceph/monmap
+
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
+
+    # mark setup as complete
+    echo "store-monitor: setup complete."
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monSetupComplete youBetcha >/dev/null
+  else
+    until etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; do
+      echo "store-monitor: waiting for another monitor to complete setup..."
+      sleep 5
+    done
+  fi
+fi
+
+until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1; do
+  echo "store-monitor: waiting for confd to write initial templates..."
+  sleep 5
+done
+
+# If we don't have a monitor keyring, this is a new monitor
+if [ ! -e /var/lib/ceph/mon/ceph-${HOSTNAME}/keyring ]; then
+  if [ ! -f /etc/ceph/monmap ]; then
+    ceph mon getmap -o /etc/ceph/monmap
+  fi
+
+  # Import the client.admin keyring and the monitor keyring into a new, temporary one
+  ceph-authtool /tmp/ceph.mon.keyring --create-keyring --import-keyring /etc/ceph/ceph.client.admin.keyring
+  ceph-authtool /tmp/ceph.mon.keyring --import-keyring /etc/ceph/ceph.mon.keyring
+
+  # Make the monitor directory
+  mkdir -p /var/lib/ceph/mon/ceph-${HOSTNAME}
+
+  # Prepare the monitor daemon's directory with the map and keyring
+  ceph-mon --mkfs -i ${HOSTNAME} --monmap /etc/ceph/monmap --keyring /tmp/ceph.mon.keyring
+
+  # Clean up the temporary key
+  rm /tmp/ceph.mon.keyring
+fi
+
+exec /usr/bin/ceph-mon -d -i ${HOSTNAME} --public-addr ${HOST}:6789

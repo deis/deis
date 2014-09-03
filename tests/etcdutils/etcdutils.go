@@ -34,6 +34,14 @@ func InitEtcd(setdir, setkeys []string, port string) *EtcdHandle {
 	return controllerHandle
 }
 
+func SetSingle(t *testing.T, key string, value string, port string) {
+	c := etcdClient(port)
+	_, err := c.Set(key, value, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // SetEtcd sets an array of values into a test etcd instance.
 func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	for i, key := range keys {
@@ -41,6 +49,15 @@ func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+// Verify an etcd key exists
+func VerifyEtcdKey(t *testing.T, key string, port string) {
+	c := etcdClient(port)
+	_, err := c.Get(key, true, true)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 

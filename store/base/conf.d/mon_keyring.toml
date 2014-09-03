@@ -1,0 +1,9 @@
+[template]
+src   = "mon_keyring"
+dest  = "/etc/ceph/ceph.mon.keyring"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/store/monKeyring",
+]
