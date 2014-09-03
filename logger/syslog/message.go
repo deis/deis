@@ -2,36 +2,18 @@ package syslog
 
 import (
 	"fmt"
-	"net"
+	"log/syslog"
 	"time"
 )
 
 // Message defines an RFC 3164 syslog message.
 type Message struct {
-	Time      time.Time // time the message was logged
-	Source    net.Addr  // source address of the log message
-	Facility            // facility tag (see type Facility)
-	Severity            // severity tag (see type Severity)
-	Timestamp time.Time // optional
-	Hostname  string    // optional
-	Tag       string    // message tag as defined in RFC 3164
-	Content   string    // message content as defined in RFC 3164
-	Tag1      string    // alternate message tag (white rune as separator)
-	Content1  string    // alternate message content (white rune as separator)
-}
-
-// NetSrc only network part of Source as string (IP for UDP or Name for UDS)
-func (m *Message) NetSrc() string {
-	switch a := m.Source.(type) {
-	case *net.UDPAddr:
-		return a.IP.String()
-	case *net.UnixAddr:
-		return a.Name
-	case *net.TCPAddr:
-		return a.IP.String()
-	}
-	// Unknown type
-	return m.Source.String()
+	Time      time.Time
+	Priority  syslog.Priority
+	Timestamp time.Time
+	Hostname  string
+	Tag       string
+	Content   string
 }
 
 // String returns the Message in a string format. This satisfies the fmt.Stringer
@@ -39,9 +21,9 @@ func (m *Message) NetSrc() string {
 func (m *Message) String() string {
 	timeLayout := "2006-01-02 15:04:05"
 	return fmt.Sprintf(
-		"%s %s %s%s",
+		"<%d>%s %s: %s",
+		m.Priority,
 		m.Time.Format(timeLayout),
-		m.Hostname,
 		m.Tag,
 		m.Content,
 	)
