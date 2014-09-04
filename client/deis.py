@@ -874,7 +874,7 @@ class DeisClient(object):
         """
         Creates a new cluster.
 
-        Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
+        Usage: deis clusters:create <id> <domain> [options]
 
         Arguments:
           <id>
@@ -886,6 +886,8 @@ class DeisClient(object):
             Note: this requires wildcard DNS configuration on the domain. For example, a
             <domain> of `deisapp.com` requires that `*.deisapp.com` resolves to one of the
             cluster's router endpoints or the load balancer in front of the routers.
+
+        Options:
           --hosts=<hosts>
             a comma-separated list of the cluster members' private IP addresses.
           --auth=<auth>
@@ -893,20 +895,19 @@ class DeisClient(object):
             connect to the cluster members. This key must not have a password.
 
             NOTE: for EC2 and Rackspace, this key is likely `~/.ssh/deis`.
-
-        Options:
           --type=<type>
             cluster type [default: coreos].
         """
         body = {'id': args['<id>'], 'domain': args['<domain>'],
                 'hosts': args['--hosts'], 'type': args['--type']}
-        auth_path = os.path.expanduser(args['--auth'])
-        if not os.path.exists(auth_path):
-            print('Path to authentication credentials does not exist: {}'.format(auth_path))
-            sys.exit(1)
-        with open(auth_path) as f:
-            data = f.read()
-        body.update({'auth': base64.b64encode(data)})
+        if args['--auth']:
+            auth_path = os.path.expanduser(args['--auth'])
+            if not os.path.exists(auth_path):
+                print('Path to authentication credentials does not exist: {}'.format(auth_path))
+                sys.exit(1)
+            with open(auth_path) as f:
+                data = f.read()
+            body.update({'auth': base64.b64encode(data)})
         sys.stdout.write('Creating cluster... ')
         sys.stdout.flush()
         try:

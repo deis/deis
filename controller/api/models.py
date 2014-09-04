@@ -114,8 +114,11 @@ class Cluster(UuidAuditedModel):
     type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
 
     domain = models.CharField(max_length=128, validators=[validate_domain])
-    hosts = models.CharField(max_length=256, validators=[validate_comma_separated])
-    auth = models.TextField()
+    hosts = models.CharField(max_length=256,
+                             blank=True,
+                             null=True,
+                             validators=[validate_comma_separated])
+    auth = models.TextField(blank=True, null=True)
     options = JSONField(default={}, blank=True)
 
     def __str__(self):

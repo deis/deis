@@ -1,7 +1,6 @@
 from cStringIO import StringIO
-import base64
+from django.conf import settings
 import os
-import random
 import re
 import subprocess
 import time
@@ -23,16 +22,10 @@ class FleetClient(object):
         self.domain = domain
         self.options = options
         self.auth = auth
-        self.auth_path = os.path.join(ROOT_DIR, 'ssh-{cluster_name}'.format(**locals()))
-        with open(self.auth_path, 'w') as f:
-            f.write(base64.b64decode(auth))
-            os.chmod(self.auth_path, 0600)
 
         self.env = {
-            'PATH': '/usr/local/bin:/usr/bin:/bin:{}'.format(
-                os.path.abspath(os.path.join(__file__, '..'))),
-            'FLEETW_KEY': self.auth_path,
-            'FLEETW_HOST': random.choice(self.hosts.split(','))}
+            'FLEETCTL_ENDPOINT': 'http://{}'.format(settings.ETCD)
+        }
 
     # scheduler setup / teardown
 
@@ -87,7 +80,6 @@ class FleetClient(object):
             l.update({'cpu': '-c {}'.format(cpu)})
         else:
             l.update({'cpu': ''})
-        env.update({'FLEETW_UNIT': name + '.service'})
         # construct unit from template
         unit = template.format(**l)
         # prepare tags only if one was provided
@@ -95,25 +87,17 @@ class FleetClient(object):
         if tags:
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
             unit = unit + '\n[X-Fleet]\nX-ConditionMachineMetadata={}\n'.format(tagset)
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(unit)})
-        return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
-                                     shell=True, env=env)
+        return self._submit_unit_file('{name}.service'.format(**l), unit)
 
     def _create_announcer(self, name, image, command, template, env):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
-        env.update({'FLEETW_UNIT': name + '-announce' + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
-        return subprocess.check_call('fleetctl.sh submit {name}-announce.service'.format(**l),  # noqa
-                                     shell=True, env=env)
+        return self._submit_unit_file('{name}-announce.service'.format(**l), template.format(**l))
 
     def _create_log(self, name, image, command, template, env):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
-        env.update({'FLEETW_UNIT': name + '-log' + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
-        return subprocess.check_call('fleetctl.sh submit {name}-log.service'.format(**locals()),  # noqa
-                                     shell=True, env=env)
+        return self._submit_unit_file('{name}-log.service'.format(**l), template.format(**l))
 
     def start(self, name, use_announcer=True):
         """
@@ -132,17 +116,17 @@ class FleetClient(object):
 
     def _start_log(self, name, env):
         subprocess.check_call(
-            'fleetctl.sh start -no-block {name}-log.service'.format(**locals()),
+            'fleetctl start -no-block {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def _start_container(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh start -no-block {name}.service'.format(**locals()),
+            'fleetctl start -no-block {name}.service'.format(**locals()),
             shell=True, env=env)
 
     def _start_announcer(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh start -no-block {name}-announce.service'.format(**locals()),
+            'fleetctl start -no-block {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
     def _wait_for_container(self, name, env):
@@ -151,7 +135,7 @@ class FleetClient(object):
         for _ in range(1200):
             # check if the main container's running
             status = subprocess.check_output(
-                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}.service | awk '{{print $2}}'".format(**locals()),  # noqa
+                "fleetctl list-units --no-legend --fields unit,sub | grep {name}.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
             if status == 'failed':
                 raise RuntimeError('Container failed to start')
@@ -160,7 +144,7 @@ class FleetClient(object):
                 continue
             # wait for the announce service to come up as well
             status = subprocess.check_output(
-                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
+                "fleetctl list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
@@ -185,17 +169,17 @@ class FleetClient(object):
 
     def _stop_container(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}.service'.format(**locals()),
+            'fleetctl stop -block-attempts=600 {name}.service'.format(**locals()),
             shell=True, env=env)
 
     def _stop_announcer(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}-announce.service'.format(**locals()),
+            'fleetctl stop -block-attempts=600 {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
     def _stop_log(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
+            'fleetctl stop -block-attempts=600 {name}-log.service'.format(**locals()),
             shell=True, env=env)
 
     def destroy(self, name, use_announcer=True):
@@ -215,18 +199,26 @@ class FleetClient(object):
 
     def _destroy_container(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh destroy {name}.service'.format(**locals()),
+            'fleetctl destroy {name}.service'.format(**locals()),
             shell=True, env=env)
 
     def _destroy_announcer(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh destroy {name}-announce.service'.format(**locals()),
+            'fleetctl destroy {name}-announce.service'.format(**locals()),
             shell=True, env=env)
 
     def _destroy_log(self, name, env):
         return subprocess.check_call(
-            'fleetctl.sh destroy {name}-log.service'.format(**locals()),
+            'fleetctl destroy {name}-log.service'.format(**locals()),
             shell=True, env=env)
+
+    def _submit_unit_file(self, name, unit_content):
+        with open(name, 'w') as f:
+            f.write(unit_content)
+        submit = subprocess.check_call('fleetctl submit {name}'.format(**locals()),
+                                       shell=True, env=self.env)
+        os.remove(name)
+        return submit
 
     def run(self, name, image, command):
         """
@@ -234,7 +226,7 @@ class FleetClient(object):
         """
         print 'Running {name}'.format(**locals())
         output = subprocess.PIPE
-        p = subprocess.Popen('fleetrun.sh {command}'.format(**locals()), shell=True, env=self.env,
+        p = subprocess.Popen('fleetrun {command}'.format(**locals()), shell=True, env=self.env,
                              stdout=output, stderr=subprocess.STDOUT)
         rc = p.wait()
         return rc, p.stdout.read()
