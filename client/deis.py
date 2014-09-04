@@ -68,7 +68,6 @@ from docopt import docopt
 from docopt import DocoptExit
 import requests
 from termcolor import colored
-import yaml
 
 __version__ = '0.12.0-dev'
 
@@ -180,7 +179,7 @@ class Settings(dict):
     """
     Settings backed by a file in the user's home directory
 
-    On init, settings are loaded from ~/.deis/client.yaml
+    On init, settings are loaded from ~/.deis/client.json
     """
 
     def __init__(self):
@@ -188,10 +187,10 @@ class Settings(dict):
         # Create the $HOME/.deis dir if it doesn't exist
         if not os.path.isdir(path):
             os.mkdir(path, 0700)
-        self._path = os.path.join(path, 'client.yaml')
+        self._path = os.path.join(path, 'client.json')
         if not os.path.exists(self._path):
             with open(self._path, 'w') as f:
-                f.write(yaml.safe_dump({}))
+                json.dump({}, f)
         # load initial settings
         self.load()
 
@@ -201,7 +200,7 @@ class Settings(dict):
         """
         with open(self._path) as f:
             data = f.read()
-        settings = yaml.safe_load(data)
+        settings = json.loads(data)
         self.update(settings)
         return settings
 
@@ -209,7 +208,7 @@ class Settings(dict):
         """
         Serialize and save settings to the filesystem
         """
-        data = yaml.safe_dump(dict(self))
+        data = json.dumps(dict(self))
         with open(self._path, 'w') as f:
             f.write(data)
         return data
