@@ -582,7 +582,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             url = response.json()['url']
             # use the OS's default handler to open this URL
-            webbrowser.open('http://{}.{}/'.format(app, url))
+            webbrowser.open('http://{}/'.format(url))
             return url
         else:
             raise ResponseError(response)
