@@ -39,6 +39,7 @@ setting                                   description
 /deis/builder/port                        port of the builder component (set by builder)
 /deis/controller/host                     host of the controller component (set by controller)
 /deis/controller/port                     port of the controller component (set by controller)
+/deis/router/bodySize                     nginx body size setting (default: 1m)
 /deis/router/gzip                         nginx gzip setting (default: on)
 /deis/router/gzipHttpVersion              nginx gzipHttpVersion setting (default: 1.0)
 /deis/router/gzipCompLevel                nginx gzipCompLevel setting (default: 2)
@@ -46,7 +47,6 @@ setting                                   description
 /deis/router/gzipVary                     nginx gzipVary setting (default: on)
 /deis/router/gzipDisable                  nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                    nginx gzipTypes setting (default: "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml")
-/deis/router/bodySize                     nginx body size setting (default: 1m)
 ====================================      =============================================================================================================================================================================================
 
 Using a custom router image
