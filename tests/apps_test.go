@@ -98,7 +98,7 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, false, "hello")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
