@@ -46,6 +46,7 @@ setting                                   description
 /deis/router/gzipVary                     nginx gzipVary setting (default: on)
 /deis/router/gzipDisable                  nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                    nginx gzipTypes setting (default: "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml")
+/deis/router/bodySize                     nginx body size setting (default: 1m)
 ====================================      =============================================================================================================================================================================================
 
 Using a custom router image
