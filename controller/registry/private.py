@@ -54,6 +54,7 @@ def publish_release(source, config, target):
     image['parent'] = image['id']
     image['id'] = _new_id()
     image['config']['Env'] = _construct_env(image['config']['Env'], config)
+    image['config']['Env'].append("{}={}".format('TAG', target_tag))
     # update and tag the new image
     _commit(target_image, image, _empty_tar_archive(), target_tag)
 
