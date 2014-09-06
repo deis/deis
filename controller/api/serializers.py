@@ -76,8 +76,9 @@ class ClusterSerializer(serializers.ModelSerializer):
         return attrs
 
     def validate_hosts(self, attrs, source):
-        value = attrs[source]
-        models.validate_comma_separated(value)
+        value = attrs.get(source)
+        if value:
+            models.validate_comma_separated(value)
         return attrs
 
 

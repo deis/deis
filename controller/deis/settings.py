@@ -265,7 +265,8 @@ CELERY_RESULT_BACKEND = BROKER_URL
 CELERYD_CONCURRENCY = 8
 
 # etcd settings
-ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].split(':')
+ETCD = os.environ.get('ETCD', '127.0.0.1:4001')
+ETCD_HOST, ETCD_PORT = ETCD.split(',')[0].split(':')
 
 # default deis settings
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))

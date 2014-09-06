@@ -3,12 +3,15 @@ MAINTAINER OpDemand <info@opdemand.com>
 
 # install required system packages
 # HACK: install git so we can install bacongobbler's fork of django-fsm
-# install openssh-client for temporary fleetctl wrapper
 RUN apt-get update && \
-    apt-get install -yq python-dev libpq-dev libyaml-dev git openssh-client
+    apt-get install -yq python-dev libpq-dev libyaml-dev git
 
 # install recent pip
 RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+
+# install fleetctl
+ADD https://s3-us-west-2.amazonaws.com/opdemand/fleetctl-v0.6.2 /usr/local/bin/fleetctl
+RUN chmod +x /usr/local/bin/fleetctl
 
 # add a deis user that has passwordless sudo (for now)
 RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash
