@@ -12,11 +12,12 @@ $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
 ## Customize user-data
 
 ### Discovery URL
-Edit [user-data](../coreos/user-data) and add a new discovery URL.
+Copy [user-data.example](../coreos/user-data.example) to [user-data](../coreos/user-data)
+and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
 
 ### SSH Key
-Add the public key part for the SSH key generated in the first step to the [user-data](../coreos/user-data) file:
+Add the public key part for the SSH key generated in the first step to the [user-data](../coreos/user-data.example) file:
 
 ```yaml
 ssh_authorized_keys:
@@ -24,10 +25,10 @@ ssh_authorized_keys:
 ```
 
 ### Update $private_ipv4
-[CoreOS](https://coreos.com/) on bare metal doesn't detect the `$private_ipv4` reliably. Replace all occurences in the [user-data](../coreos/user-data) with the (private) IP address of the node.
+[CoreOS](https://coreos.com/) on bare metal doesn't detect the `$private_ipv4` reliably. Replace all occurences in the [user-data](../coreos/user-data.example) with the (private) IP address of the node.
 
 ### Add environment
-Since [CoreOS](https://coreos.com/) doesn't detect private and public IP adresses the `/etc/environmnet` file doesn't get written on boot. Add it to the `write_files` section of [user-data](../coreos/user-data)
+Since [CoreOS](https://coreos.com/) doesn't detect private and public IP adresses the `/etc/environmnet` file doesn't get written on boot. Add it to the `write_files` section of [user-data](../coreos/user-data.example)
 
 ```yaml
   - path: /etc/environment
@@ -41,7 +42,7 @@ Since [CoreOS](https://coreos.com/) doesn't detect private and public IP adresse
 Assuming you have booted your bare metal server into [CoreOS](https://coreos.com/) you can perform now perform the installation to disk.
 
 ### Provide the config file to the installer
-Save the [user-data](../coreos/user-data) to your bare metal machine. The example assumes you transferred the config to `/tmp/config`
+Save the [user-data](../coreos/user-data.example) to your bare metal machine. The example assumes you transferred the config to `/tmp/config`
 
 ### Start the installation
 ```console
@@ -79,7 +80,7 @@ email: info@opdemand.com
 ## Known problems
 
 ### Hostname is localhost
-If your hostname after installation to disk is `localhost` set the hostname in [user-data](../coreos/user-data) before installation:
+If your hostname after installation to disk is `localhost` set the hostname in [user-data](../coreos/user-data.example) before installation:
 
 ```yaml
 hostname: your-hostname
@@ -89,7 +90,7 @@ The hostname must not be the fully qualified domain name!
 
 ### Slow name resolution
 
-Certain DNS servers and firewalls have problems with glibc sending out requests for IPv4 and IPv6 addresses in parallel. The solution is to set the option `single-request` in `/etc/resolv.conf`. This can best be accomplished in the [user-data](../coreos/user-data) when installing [CoreOS](https://coreos.com/) to disk. Add the following block to the `write_files` section:
+Certain DNS servers and firewalls have problems with glibc sending out requests for IPv4 and IPv6 addresses in parallel. The solution is to set the option `single-request` in `/etc/resolv.conf`. This can best be accomplished in the [user-data](../coreos/user-data.example) when installing [CoreOS](https://coreos.com/) to disk. Add the following block to the `write_files` section:
 
 ```yaml
   - path: /etc/resolv.conf

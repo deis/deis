@@ -57,6 +57,9 @@ Vagrantfile.local
 .bundle
 /__init__.py
 
+# Shared user-data file
+contrib/coreos/user-data
+
 # EC2 CloudFormation Setup
 contrib/ec2/cloudformation.json
 

@@ -25,6 +25,11 @@ function parse_yaml {
    }'
 }
 
+if [ ! -f $USER_DATA ]; then
+	echo "Please create your $USER_DATA file. You can  copy it from contrib/coreos/user-data.example"
+	exit 1
+fi
+
 if [[ $NUM_INSTANCES -ne 1 ]] ; then
     parse_yaml $USER_DATA | grep -q coreos_etcd_discovery
     if [[ $? -ne 0 ]]; then

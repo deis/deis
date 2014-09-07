@@ -43,7 +43,8 @@ $ export DEIS_NUM_ROUTERS=2
 ```
 
 ## Customize user-data
-Edit [user-data](../coreos/user-data) and add a new discovery URL.
+Copy [user-data.example](../coreos/user-data.example) to [user-data](../coreos/user-data)
+and add a new discovery URL.
 You can get a new one by sending a request to http://discovery.etcd.io/new.
 
 ## Customize cloudformation.json
