@@ -38,6 +38,7 @@ func TestFakeClient(t *testing.T) {
 }
 
 func TestRegistryClient(t *testing.T) {
+	Flags.Tunnel = ""
 	Flags.Endpoint = "http://127.0.0.1:4001"
 	_, err := getRegistryClient()
 	if err != nil && !strings.Contains(err.Error(), "no such host") {
