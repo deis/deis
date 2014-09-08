@@ -35,7 +35,7 @@ runserver:
 	python manage.py runserver
 
 db:
-	python manage.py syncdb --migrate --noinput
+	python manage.py migrate --noinput
 
 coverage:
 	coverage run manage.py test --noinput api

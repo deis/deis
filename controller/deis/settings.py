@@ -1,13 +1,21 @@
 """
 Django settings for the Deis project.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/1.7/topics/settings/
+
+For the full list of settings and their values, see
+https://docs.djangoproject.com/en/1.7/ref/settings/
 """
+
 
 from __future__ import unicode_literals
 import os.path
 import sys
 import tempfile
 
-PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -123,7 +131,7 @@ TEMPLATE_DIRS = (
     # or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    PROJECT_ROOT + '/web/templates',
+    BASE_DIR + '/web/templates',
 )
 
 INSTALLED_APPS = (
@@ -143,7 +151,6 @@ INSTALLED_APPS = (
     'json_field',
     'gunicorn',
     'rest_framework',
-    'south',
     # Deis apps
     'api',
     'web',
@@ -163,9 +170,6 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USERNAME_BLACKLIST = ['system']
 LOGIN_REDIRECT_URL = '/dashboard/'
-
-
-SOUTH_TESTS_MIGRATE = False
 
 REST_FRAMEWORK = {
     'DEFAULT_MODEL_SERIALIZER_CLASS':

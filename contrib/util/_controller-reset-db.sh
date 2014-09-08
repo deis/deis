@@ -4,7 +4,7 @@
 # with the nightmare of double escaping all these commands through `vagrant ssh -c "\\\\\\\\\AGH!"`
 
 # NB. Command for exporting fixtures
-# `./manage.py dumpdata --natural --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission -e south > /app/deis/api/fixtures/dev.json`
+# `./manage.py dumpdata --natural --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission > /app/deis/api/fixtures/dev.json`
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
@@ -21,8 +21,8 @@ cd /vagrant/contrib/vagrant/util
 echo "Dropping and recreating Deis database..."
 echo "su postgres -c 'dropdb deis && createdb --encoding=utf8 --template=template0 deis'" | ./dshell deis-database
 
-echo "Running South migrations..."
-echo '/app/manage.py syncdb --migrate --noinput' | ./dshell deis-controller
+echo "Running Django migrations..."
+echo '/app/manage.py migrate --noinput' | ./dshell deis-controller
 
 echo "Importing fixtures"
 echo '/app/manage.py loaddata /app/api/fixtures/dev.json' | ./dshell deis-controller
