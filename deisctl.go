@@ -60,7 +60,6 @@ Example Commands:
   deisctl journal controller
 
 Options:
-  --debug                     print debug information to stderr
   --version                   print version and exit
   --endpoint=<url>            etcd endpoint for fleet [default: http://127.0.0.1:4001]
   --etcd-key-prefix=<path>    keyspace for fleet data in etcd [default: /_coreos.com/fleet/]
