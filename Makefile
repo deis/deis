@@ -6,9 +6,9 @@ build:
 installer:
 	rm -rf dist && mkdir -p dist
 	godep go build -a -o dist/deisctl .
-	makeself.sh --bzip2 --current --nox11 dist \
+	makeself.sh --bzip2 --nox11 --target /usr/local/bin dist \
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
-		"Deis Control Utility" "./deisctl refresh-units"
+		"Deis Control Utility" "/usr/local/bin/deisctl refresh-units"
 
 install:
 	godep go install -v ./...
