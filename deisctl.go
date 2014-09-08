@@ -45,8 +45,8 @@ Usage:
 
 Example Commands:
 
-  deisctl install
-  deisctl uninstall
+  deisctl install platform
+  deisctl uninstall builder@1
   deisctl list
   deisctl scale router=2
   deisctl start router@2
