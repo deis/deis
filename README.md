@@ -48,10 +48,10 @@ $ export DEISCTL_TUNNEL=172.17.8.100
 
 ## Provision a Deis Platform
 
-The `deisctl install` command will schedule and activate all of the Deis platform units.
+The `deisctl install platform` command will schedule and activate all of the Deis platform units.
 
 ```console
-$ deisctl install
+$ deisctl install platform
 
 Scheduling data containers...
 deis-database-data.service: loaded
@@ -91,7 +91,7 @@ You can scale components with `deisctl scale router=3`, for example.
 You can also use the `deisctl uninstall` command to destroy platform units:
 
 ```console
-$ deisctl uninstall
+$ deisctl uninstall platform
 
 Destroying service containers...
 deis-database@1.service: inactive

@@ -96,8 +96,8 @@ func Journal(c client.Client, targets []string) error {
 }
 
 func Install(c client.Client, targets []string) error {
-	// if targets, install all services
-	if len(targets) == 0 {
+	// if target is platform, install all services
+	if len(targets) == 1 && targets[0] == "platform" {
 		err := installDataContainers(c)
 		if err != nil {
 			return err
@@ -185,8 +185,8 @@ func installDefaultServices(c client.Client) error {
 }
 
 func Uninstall(c client.Client, targets []string) error {
-	// if no targets, uninstall all services
-	if len(targets) == 0 {
+	// if target is platform, uninstall all services
+	if len(targets) == 1 && targets[0] == "platform" {
 		err := uninstallAllServices(c)
 		if err != nil {
 			return err
