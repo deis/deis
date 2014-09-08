@@ -4,24 +4,29 @@
 
 ## Installation
 
-Download an installer for your platform:
+To install `deisctl` on Mac OS X, run this command:
+
+```console
+curl -sSL https://deis.io/deisctl/darwin/ | sudo sh
+```
+
+To install `deisctl` on Linux, run this command:
+
+```console
+curl -sSL https://deis.io/deisctl/linux/ | sudo sh
+```
+
+These installers put `deisctl` in */usr/local/bin* and download current Deis unit files
+to *~/.deisctl* one time.
+
+To change installation options, save the installer directly from one of these links:
 
 [![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-linux-amd64.run)
 [![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-darwin-amd64.run)
 
-Run the downloaded file as a shell script:
+Then run the downloaded file as a shell script, providing `--help` to see what options
+are available.
 
-```console
-$ sh deisctl-0.11.0-darwin-amd64.run           # (your installer filename may differ)
-Verifying archive integrity... All good.
-Uncompressing Deis Control Utility  100%  
-Refreshed deis-builder.service from master
-...
-Refreshed deis-router.service from master
-$ ./deisctl
-Usage:
-  deisctl <command> [<target>...] [options]
-```
 
 ## Remote Configuration
 
