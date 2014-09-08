@@ -11,6 +11,11 @@ import (
 	docopt "github.com/docopt/docopt-go"
 )
 
+const (
+	// Version of deisctl client
+	Version string = "0.11.0"
+)
+
 func exit(err error, code int) {
 	fmt.Printf("Error: %v\n", err)
 	os.Exit(code)
@@ -67,6 +72,11 @@ Options:
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
   --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
 `
+	// special handling for version
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, "", true)
 	if err != nil {
