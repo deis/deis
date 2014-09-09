@@ -6,7 +6,8 @@ build:
 installer:
 	rm -rf dist && mkdir -p dist
 	godep go build -a -o dist/deisctl .
-	makeself.sh --bzip2 --nox11 --target /usr/local/bin dist \
+	@if [ ! -d makeself ]; then git clone -b deisctl-hack https://github.com/deis/makeself.git; fi
+	PATH=./makeself:$$PATH makeself.sh --bzip2 --nox11 --target /usr/local/bin dist \
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
 		"Deis Control Utility" "/usr/local/bin/deisctl refresh-units"
 
