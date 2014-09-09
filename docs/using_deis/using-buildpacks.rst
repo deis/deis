@@ -6,7 +6,7 @@
 Using Buildpacks
 ================
 Deis supports deploying applications via `Heroku Buildpacks`_.
-Buildpacks are useful if you're interested in following Heroku's best practices for building applications or if you are deploying an application that already runs on Heroku.  
+Buildpacks are useful if you're interested in following Heroku's best practices for building applications or if you are deploying an application that already runs on Heroku.
 
 Prepare an Application
 ----------------------
@@ -62,7 +62,7 @@ Use ``git push deis master`` to deploy your application.
     -----> Compiled slug size is 12M
     -----> Building Docker image
     Uploading context 11.81 MB
-    Uploading context 
+    Uploading context
     Step 0 : FROM deis/slugrunner
      ---> 5567a808891d
     Step 1 : RUN mkdir -p /app
@@ -83,7 +83,7 @@ Use ``git push deis master`` to deploy your application.
 
     -----> unisex-huntress deployed to Deis
            http://unisex-huntress.local.deisapp.com
-    
+
            To learn more, use `deis help` or visit http://deis.io
 
     To ssh://git@local.deisapp.com:2222/unisex-huntress.git
@@ -98,17 +98,22 @@ Included Buildpacks
 -------------------
 For convenience, a number of buildpacks come bundled with Deis:
 
- * `Java buildpack`_
  * `Ruby Buildpack`_
- * `Python Buildpack`_
  * `Nodejs Buildpack`_
+ * `Java Buildpack`_
+ * `Gradle Buildpack`_
+ * `Grails Buildpack`_
  * `Play Buildpack`_
- * `PHP Buildpack`_
+ * `Python Buildpack`_
  * `Clojure Buildpack`_
- * `Golang Buildpack`_
+ * `PHP Buildpack`_
+ * `Go Buildpack`_
+ * `Meteorite Buildpack`_
+ * `Perl Buildpack`_
  * `Scala Buildpack`_
  * `Dart Buildpack`_
- * `Perl Buildpack`_
+ * `Nginx Buildpack`_
+ * `Apache Buildpack`_
 
 Deis will cycle through the ``bin/detect`` script of each buildpack to match the code you
 are pushing.
@@ -118,7 +123,7 @@ Using a Custom Buildpack
 To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
 
 .. code-block:: console
-   
+
     $ deis config:set BUILDPACK_URL=https://github.com/dpiddy/heroku-buildpack-ruby-minimal
     Creating config... done, v2
 
@@ -128,15 +133,20 @@ To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
 On your next ``git push``, the custom buildpack will be used.
 
 
+.. _`Ruby Buildpack`: https://github.com/heroku/heroku-buildpack-ruby
+.. _`Nodejs Buildpack`: https://github.com/heroku/heroku-buildpack-nodejs
+.. _`Java Buildpack`: https://github.com/heroku/heroku-buildpack-java
+.. _`Gradle Buildpack`: https://github.com/heroku/heroku-buildpack-gradle
+.. _`Grails Buildpack`: https://github.com/heroku/heroku-buildpack-grails
+.. _`Play Buildpack`: https://github.com/heroku/heroku-buildpack-play
+.. _`Python Buildpack`: https://github.com/heroku/heroku-buildpack-python
+.. _`Clojure Buildpack`: https://github.com/heroku/heroku-buildpack-clojure
+.. _`PHP Buildpack`: https://github.com/deis/heroku-buildpack-php
+.. _`Go Buildpack`: https://github.com/kr/heroku-buildpack-go
+.. _`Meteorite Buildpack`: https://github.com/oortcloud/heroku-buildpack-meteorite
+.. _`Perl Buildpack`: https://github.com/miyagawa/heroku-buildpack-perl
+.. _`Scala Buildpack`: https://github.com/heroku/heroku-buildpack-scala
+.. _`Dart Buildpack`: https://github.com/igrigorik/heroku-buildpack-dart
+.. _`Nginx Buildpack`: https://github.com/rhy-jot/buildpack-nginx
+.. _`Apache Buildpack`: https://github.com/Kloadut/heroku-buildpack-static-apache
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
-.. _`Java buildpack`: https://github.com/heroku/heroku-buildpack-java.git
-.. _`Ruby buildpack`: https://github.com/heroku/heroku-buildpack-ruby.git
-.. _`Python buildpack`: https://github.com/heroku/heroku-buildpack-python.git
-.. _`Nodejs buildpack`: https://github.com/gabrtv/heroku-buildpack-nodejs
-.. _`Play buildpack`: https://github.com/heroku/heroku-buildpack-play.git
-.. _`PHP buildpack`: https://github.com/CHH/heroku-buildpack-php.git
-.. _`Clojure buildpack`: https://github.com/heroku/heroku-buildpack-clojure.git
-.. _`Golang buildpack`: https://github.com/kr/heroku-buildpack-go.git
-.. _`Scala buildpack`: https://github.com/heroku/heroku-buildpack-scala.git
-.. _`Dart buildpack`: https://github.com/igrigorik/heroku-buildpack-dart.git
-.. _`Perl buildpack`: https://github.com/miyagawa/heroku-buildpack-perl/tree/carton

@@ -39,6 +39,7 @@ setting                                   description
 /deis/builder/port                        port of the builder component (set by builder)
 /deis/controller/host                     host of the controller component (set by controller)
 /deis/controller/port                     port of the controller component (set by controller)
+/deis/router/bodySize                     nginx body size setting (default: 1m)
 /deis/router/gzip                         nginx gzip setting (default: on)
 /deis/router/gzipHttpVersion              nginx gzipHttpVersion setting (default: 1.0)
 /deis/router/gzipCompLevel                nginx gzipCompLevel setting (default: 2)

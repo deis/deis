@@ -14,7 +14,7 @@ coreos:
   fleet:
     # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
     # will all publish the same private IP. This is harmless for cloud providers.
-    public_ip: $private_ipv4
+    public-ip: $private_ipv4
     # allow etcd to slow down at times
     etcd_request_timeout: 3
   units:
