@@ -4,19 +4,13 @@
 
 ## Installation
 
-To install `deisctl` on Mac OS X, run this command:
+To install `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
-curl -sSL https://deis.io/deisctl/darwin/ | sudo sh
+curl -sSL https://deis.io/deisctl/install.sh | sudo sh
 ```
 
-To install `deisctl` on Linux, run this command:
-
-```console
-curl -sSL https://deis.io/deisctl/linux/ | sudo sh
-```
-
-These installers put `deisctl` in */usr/local/bin* and download current Deis unit files
+The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
 to *~/.deisctl* one time.
 
 To change installation options, save the installer directly from one of these links:
@@ -24,7 +18,7 @@ To change installation options, save the installer directly from one of these li
 [![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-linux-amd64.run)
 [![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.11.0-darwin-amd64.run)
 
-Then run the downloaded file as a shell script, providing `--help` to see what options
+Then run the downloaded file as a shell script. Append `--help` to see what options
 are available.
 
 
