@@ -7,7 +7,7 @@
 To install `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
-curl -sSL https://deis.io/deisctl/install.sh | sudo sh
+curl -sSL http://deis.io/deisctl/install.sh | sudo sh
 ```
 
 The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
