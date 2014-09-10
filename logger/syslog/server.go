@@ -11,7 +11,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/jeromer/syslogparser/rfc3164"
+	"github.com/deis/syslogparser/rfc3164"
 )
 
 // Server is the wrapper for a syslog server.
@@ -111,23 +111,26 @@ func (s *Server) receiver(c net.PacketConn) {
 			}
 			return
 		}
-		pkt := buf[:n]
-
-		p := rfc3164.NewParser(pkt)
-		if err := p.Parse(); err != nil {
-			log.Println(err)
-		}
-		log := p.Dump()
-
-		m := &Message{
-			Time:      time.Now(),
-			Priority:  log["priority"].(syslog.Priority),
-			Timestamp: log["timestamp"].(time.Time),
-			Hostname:  log["hostname"].(string),
-			Tag:       log["tag"].(string),
-			Content:   log["content"].(string),
-		}
+		m := ParsePacket(buf[:n])
 
 		s.passToHandlers(m)
+	}
+}
+
+func ParsePacket(pkt []byte) *Message {
+	p := rfc3164.NewParser(pkt)
+	if err := p.Parse(); err != nil {
+		log.Println(err)
+	}
+	log := p.Dump()
+
+	// FIXME: parse hostname/tag properly
+	return &Message{
+		Time:      time.Now(),
+		Priority:  syslog.Priority(log["priority"].(int)),
+		Timestamp: log["timestamp"].(time.Time),
+		Hostname:  "",
+		Tag:       strings.Trim(log["hostname"].(string), ":"),
+		Content:   log["tag"].(string) + " " + log["content"].(string),
 	}
 }
