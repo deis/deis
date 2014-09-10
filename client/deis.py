@@ -715,7 +715,7 @@ class DeisClient(object):
             if self.auth_login(login_args) is False:
                 self._logger.info('Login failed')
         else:
-            self._logger.info('Registration failed', response.content)
+            self._logger.info('Registration failed: ' + response.content)
             sys.exit(1)
         return True
 
