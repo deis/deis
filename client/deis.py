@@ -52,6 +52,7 @@ import base64
 import glob
 import json
 import locale
+import logging
 import os.path
 import re
 import subprocess
@@ -66,6 +67,7 @@ from dateutil import tz
 from docopt import docopt
 from docopt import DocoptExit
 import requests
+from termcolor import colored
 import yaml
 
 __version__ = '0.12.0'
@@ -370,6 +372,7 @@ class DeisClient(object):
     def __init__(self):
         self._session = Session()
         self._settings = Settings()
+        self._logger = logging.getLogger(__name__)
 
     def _dispatch(self, method, path, body=None, **kwargs):
         """
@@ -449,7 +452,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             app_id = data['id']
-            print("done, created {}".format(app_id))
+            self._logger.info("done, created {}".format(app_id))
             # set a git remote if necessary
             try:
                 self._session.git_root()
@@ -458,15 +461,15 @@ class DeisClient(object):
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             if args.get('--no-remote'):
-                print('remote available at {}'.format(git_remote))
+                self._logger.info('remote available at {}'.format(git_remote))
             else:
                 try:
                     subprocess.check_call(
                         ['git', 'remote', 'add', '-f', 'deis', git_remote],
                         stdout=subprocess.PIPE)
-                    print('Git remote deis added')
+                    self._logger.info('Git remote deis added')
                 except subprocess.CalledProcessError:
-                    print('Could not create Deis remote')
+                    self._logger.error('Could not create Deis remote')
                     sys.exit(1)
         else:
             raise ResponseError(response)
@@ -491,17 +494,16 @@ class DeisClient(object):
         if confirm == app:
             pass
         else:
-            print("""
+            self._logger.warning("""
  !    WARNING: Potentially Destructive Action
  !    This command will destroy the application: {app}
  !    To proceed, type "{app}" or re-run this command with --confirm={app}
 """.format(**locals()))
             confirm = raw_input('> ').strip('\n')
             if confirm != app:
-                print('Destroy aborted')
+                self._logger.info('Destroy aborted')
                 return
-        sys.stdout.write("Destroying {}... ".format(app))
-        sys.stdout.flush()
+        self._logger.info("Destroying {}... ".format(app))
         try:
             progress = TextProgress()
             progress.start()
@@ -512,14 +514,14 @@ class DeisClient(object):
             progress.join()
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
+            self._logger.info('done in {}s'.format(int(time.time() - before)))
             try:
                 # If the requested app is a heroku app, delete the git remote
                 if self._session.is_git_app():
                     subprocess.check_call(
                         ['git', 'remote', 'rm', 'deis'],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    print('Git remote deis removed')
+                    self._logger.info('Git remote deis removed')
             except (EnvironmentError, subprocess.CalledProcessError):
                 pass  # ignore error
         else:
@@ -534,9 +536,9 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/apps')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
-            print('=== Apps')
+            self._logger.info('=== Apps')
             for item in data['results']:
-                print('{id}'.format(**item))
+                self._logger.info('{id}'.format(**item))
         else:
             raise ResponseError(response)
 
@@ -555,12 +557,11 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch('get', "/api/apps/{}".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Application".format(app))
-            print(json.dumps(response.json(), indent=2))
-            print()
+            self._logger.info("=== {} Application".format(app))
+            self._logger.info(json.dumps(response.json(), indent=2) + '\n')
             self.ps_list(args)
             self.domains_list(args)
-            print()
+            self._logger.info('')
         else:
             raise ResponseError(response)
 
@@ -603,7 +604,22 @@ class DeisClient(object):
         response = self._dispatch('post',
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            sys.stdout.write(response.json())
+            # strip the last newline character
+            for line in response.json().split('\n')[:-1]:
+                # get the tag from the log
+                log_tag = line.split(': ')[0].split(' ')[2]
+                # colorize the log based on the tag
+                color = sum([ord(ch) for ch in log_tag]) % 6
+                def f(x):
+                    return {
+                        0: 'green',
+                        1: 'cyan',
+                        2: 'red',
+                        3: 'yellow',
+                        4: 'blue',
+                        5: 'magenta',
+                    }.get(x, 'magenta')
+                self._logger.info(colored(line, f(color)))
         else:
             raise ResponseError(response)
 
@@ -679,7 +695,7 @@ class DeisClient(object):
             password = getpass('password: ')
             confirm = getpass('password (confirm): ')
             if password != confirm:
-                print('Password mismatch, aborting registration.')
+                self._logger.error('Password mismatch, aborting registration.')
                 sys.exit(1)
         email = args.get('--email')
         if not email:
@@ -693,13 +709,13 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
             self._settings.save()
-            print("Registered {}".format(username))
+            self._logger.info("Registered {}".format(username))
             login_args = {'--username': username, '--password': password,
                           '<controller>': controller}
             if self.auth_login(login_args) is False:
-                print('Login failed')
+                self._logger.info('Login failed')
         else:
-            print('Registration failed', response.content)
+            self._logger.info('Registration failed: ' + response.content)
             sys.exit(1)
         return True
 
@@ -711,9 +727,9 @@ class DeisClient(object):
         """
         controller = self._settings.get('controller')
         if not controller:
-            print('Not logged in to a Deis controller')
+            self._logger.error('Not logged in to a Deis controller')
             sys.exit(1)
-        print('Please log in again in order to cancel this account')
+        self._logger.info('Please log in again in order to cancel this account')
         username = self.auth_login({'<controller>': controller})
         if username:
             confirm = raw_input("Cancel account \"{}\" at {}? (y/n) ".format(username, controller))
@@ -723,9 +739,9 @@ class DeisClient(object):
                 self._session.cookies.save()
                 self._settings['controller'] = None
                 self._settings.save()
-                print('Account cancelled')
+                self._logger.info('Account cancelled')
             else:
-                print('Account not changed')
+                self._logger.info('Account not changed')
 
     def auth_login(self, args):
         """
@@ -765,7 +781,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.found:  # @UndefinedVariable
             self._settings['controller'] = controller
             self._settings.save()
-            print("Logged in as {}".format(username))
+            self._logger.info("Logged in as {}".format(username))
             return username
         else:
             raise ResponseError(response)
@@ -786,7 +802,7 @@ class DeisClient(object):
         self._session.cookies.save()
         self._settings['controller'] = None
         self._settings.save()
-        print('Logged out')
+        self._logger.info('Logged out')
 
     def builds(self, args):
         """
@@ -830,7 +846,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}".format(version))
+            self._logger.info("done, v{}".format(version))
         else:
             raise ResponseError(response)
 
@@ -849,10 +865,10 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch('get', "/api/apps/{}/builds".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Builds".format(app))
+            self._logger.info("=== {} Builds".format(app))
             data = response.json()
             for item in data['results']:
-                print("{0[uuid]:<23} {0[created]}".format(item))
+                self._logger.info("{0[uuid]:<23} {0[created]}".format(item))
         else:
             raise ResponseError(response)
 
@@ -902,7 +918,7 @@ class DeisClient(object):
                 'hosts': args['--hosts'], 'type': args['--type']}
         auth_path = os.path.expanduser(args['--auth'])
         if not os.path.exists(auth_path):
-            print('Path to authentication credentials does not exist: {}'.format(auth_path))
+            self._logger.error('Path to authentication credentials does not exist: {}'.format(auth_path))
             sys.exit(1)
         with open(auth_path) as f:
             data = f.read()
@@ -919,7 +935,7 @@ class DeisClient(object):
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             data = response.json()
             cluster = data['id']
-            print("done, created {}".format(cluster))
+            self._logger.info("done, created {}".format(cluster))
         else:
             raise ResponseError(response)
 
@@ -936,9 +952,8 @@ class DeisClient(object):
         cluster = args.get('<id>')
         response = self._dispatch('get', "/api/clusters/{}".format(cluster))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Cluster".format(cluster))
-            print(json.dumps(response.json(), indent=2))
-            print()
+            self._logger.info("=== {} Cluster".format(cluster))
+            self._logger.info(json.dumps(response.json(), indent=2) + '\n')
         else:
             raise ResponseError(response)
 
@@ -951,9 +966,9 @@ class DeisClient(object):
         response = self._dispatch('get', '/api/clusters')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
-            print("=== Clusters")
+            self._logger.info("=== Clusters")
             for item in data['results']:
-                print("{id}".format(**item))
+                self._logger.info("{id}".format(**item))
         else:
             raise ResponseError(response)
 
@@ -977,14 +992,14 @@ class DeisClient(object):
         if confirm == cluster:
             pass
         else:
-            print("""
+            self._logger.warning("""
  !    WARNING: Potentially Destructive Action
  !    This command will destroy the cluster: {cluster}
  !    To proceed, type "{cluster}" or re-run this command with --confirm={cluster}
 """.format(**locals()))
             confirm = raw_input('> ').strip('\n')
             if confirm != cluster:
-                print('Destroy aborted')
+                self._logger.info('Destroy aborted')
                 return
         sys.stdout.write("Destroying cluster... ".format(cluster))
         sys.stdout.flush()
@@ -998,7 +1013,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
                                     requests.codes.not_found):  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
+            self._logger.info('done in {}s'.format(int(time.time() - before)))
         else:
             raise ResponseError(response)
 
@@ -1033,7 +1048,7 @@ class DeisClient(object):
             if k == 'auth' and args.get('--auth') is not None:
                 auth_path = os.path.expanduser(args['--auth'])
                 if not os.path.exists(auth_path):
-                    print(
+                    self._logger.error(
                         "Path to authentication credentials does not exist: {}".format(auth_path))
                     sys.exit(1)
                 with open(auth_path) as f:
@@ -1046,7 +1061,7 @@ class DeisClient(object):
         response = self._dispatch('patch', '/api/clusters/{}'.format(cluster),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
+            self._logger.info(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -1086,10 +1101,10 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {} Config".format(app))
+            self._logger.info("=== {} Config".format(app))
             items = values.items()
             if len(items) == 0:
-                print('No configuration')
+                self._logger.info('No configuration')
                 return
             keys = sorted(values)
 
@@ -1097,13 +1112,13 @@ class DeisClient(object):
                 width = max(map(len, keys)) + 5
                 for k in keys:
                     v = values[k]
-                    print(("{k:<" + str(width) + "} {v}").format(**locals()))
+                    self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
             else:
                 output = []
                 for k in keys:
                     v = values[k]
                     output.append("{k}={v}".format(**locals()))
-                print(' '.join(output))
+                self._logger.info(' '.join(output))
         else:
             raise ResponseError(response)
 
@@ -1138,16 +1153,16 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {}".format(app))
+            self._logger.info("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
-                print('No configuration')
+                self._logger.info('No configuration')
                 return
             for k, v in values.items():
-                print("{k}: {v}".format(**locals()))
+                self._logger.info("{k}: {v}".format(**locals()))
         else:
             raise ResponseError(response)
 
@@ -1184,16 +1199,16 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
             config = response.json()
             values = json.loads(config['values'])
-            print("=== {}".format(app))
+            self._logger.info("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
-                print('No configuration')
+                self._logger.info('No configuration')
                 return
             for k, v in values.items():
-                print("{k}: {v}".format(**locals()))
+                self._logger.info("{k}: {v}".format(**locals()))
         else:
             raise ResponseError(response)
 
@@ -1243,7 +1258,7 @@ class DeisClient(object):
                     for i in env_dict.keys():
                         f.write("{}={}\n".format(i, env_dict[i]))
             except IOError:
-                print('could not write to local env')
+                self._logger.error('could not write to local env')
                 sys.exit(1)
         else:
             raise ResponseError(response)
@@ -1290,7 +1305,7 @@ class DeisClient(object):
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print("done")
+            self._logger.info("done")
         else:
             raise ResponseError(response)
 
@@ -1323,7 +1338,7 @@ class DeisClient(object):
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print("done")
+            self._logger.info("done")
         else:
             raise ResponseError(response)
 
@@ -1344,12 +1359,12 @@ class DeisClient(object):
             'get', "/api/apps/{app}/domains".format(app=app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             domains = response.json()['results']
-            print("=== {} Domains".format(app))
+            self._logger.info("=== {} Domains".format(app))
             if len(domains) == 0:
-                print('No domains')
+                self._logger.info('No domains')
                 return
             for domain in domains:
-                print(domain['domain'])
+                self._logger.info(domain['domain'])
         else:
             raise ResponseError(response)
 
@@ -1439,7 +1454,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
 
             self._print_limits(app, response.json())
         else:
@@ -1485,28 +1500,28 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
             self._print_limits(app, response.json())
         else:
             raise ResponseError(response)
 
     def _print_limits(self, app, config):
-        print("=== {} Limits".format(app))
+        self._logger.info("=== {} Limits".format(app))
 
         def write(d):
             items = d.items()
             if len(items) == 0:
-                print('Unlimited')
+                self._logger.info('Unlimited')
                 return
             keys = sorted(d)
             width = max(map(len, keys)) + 5
             for k in keys:
                 v = d[k]
-                print(("{k:<" + str(width) + "} {v}").format(**locals()))
+                self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
 
-        print("\n--- Memory")
+        self._logger.info("\n--- Memory")
         write(json.loads(config.get('memory', '{}')))
-        print("\n--- CPU")
+        self._logger.info("\n--- CPU")
         write(json.loads(config.get('cpu', '{}')))
 
     def ps(self, args):
@@ -1541,16 +1556,15 @@ class DeisClient(object):
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
             raise ResponseError(response)
         processes = response.json()
-        print("=== {} Processes".format(app))
+        self._logger.info("=== {} Processes\n".format(app))
         c_map = {}
         for item in processes['results']:
             c_map.setdefault(item['type'], []).append(item)
-        print()
         for c_type in c_map.keys():
-            print("--- {c_type}: ".format(**locals()))
+            self._logger.info("--- {c_type}: ".format(**locals()))
             for c in c_map[c_type]:
-                print("{type}.{num} {state} ({release})".format(**c))
-            print()
+                self._logger.info("{type}.{num} {state} ({release})".format(**c))
+            self._logger.info('')
 
     def ps_scale(self, args):
         """
@@ -1589,7 +1603,7 @@ class DeisClient(object):
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done in {}s'.format(int(time.time() - before)))
+            self._logger.info('done in {}s'.format(int(time.time() - before)))
             self.ps_list({}, app)
         else:
             raise ResponseError(response)
@@ -1660,7 +1674,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
 
             self._print_tags(app, response.json())
         else:
@@ -1698,22 +1712,22 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             version = response.headers['x-deis-release']
-            print("done, v{}\n".format(version))
+            self._logger.info("done, v{}\n".format(version))
             self._print_tags(app, response.json())
         else:
             raise ResponseError(response)
 
     def _print_tags(self, app, config):
         items = json.loads(config['tags'])
-        print("=== {} Tags".format(app))
+        self._logger.info("=== {} Tags".format(app))
         if len(items) == 0:
-            print('No tags defined')
+            self._logger.info('No tags defined')
             return
         keys = sorted(items)
         width = max(map(len, keys)) + 5
         for k in keys:
             v = items[k]
-            print(("{k:<" + str(width) + "} {v}").format(**locals()))
+            self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
 
     def keys(self, args):
         """
@@ -1737,7 +1751,6 @@ class DeisClient(object):
           <key>
             a local file path to an SSH public key used to push application code.
         """
-
         path = args.get('<key>')
         if not path:
             selected_key = self._ask_pubkey_interactively()
@@ -1745,7 +1758,7 @@ class DeisClient(object):
             # check the specified key format
             selected_key = self._parse_key(path)
         if not selected_key:
-            print("usage: deis keys:add [<key>]")
+            self._logger.error("usage: deis keys:add [<key>]")
             return
         # Upload the key to Deis
         body = {
@@ -1756,21 +1769,20 @@ class DeisClient(object):
         sys.stdout.flush()
         response = self._dispatch('post', '/api/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
-            print('done')
+            self._logger.info('done')
         else:
             raise ResponseError(response)
 
     def _parse_key(self, path):
         """Parse an SSH public key path into a Key namedtuple."""
         Key = namedtuple('Key', 'path name type str comment id')
-
         name = path.split(os.path.sep)[-1]
         with open(path) as f:
             data = f.read()
             match = re.match(r'^(ssh-...|ecdsa-[^ ]+) ([^ ]+) ?(.*)',
                              data)
             if not match:
-                print("Could not parse SSH public key {0}".format(name))
+                self._logger.error("Could not parse SSH public key {0}".format(name))
                 sys.exit(1)
             key_type, key_str, key_comment = match.groups()
             if key_comment:
@@ -1784,13 +1796,13 @@ class DeisClient(object):
         ssh_dir = os.path.expanduser('~/.ssh')
         pubkey_paths = glob.glob(os.path.join(ssh_dir, '*.pub'))
         if not pubkey_paths:
-            print('No SSH public keys found')
+            self._logger.error('No SSH public keys found')
             return
         pubkeys_list = [self._parse_key(k) for k in pubkey_paths]
-        print('Found the following SSH public keys:')
+        self._logger.info('Found the following SSH public keys:')
         for i, key_ in enumerate(pubkeys_list):
-            print("{}) {} {}".format(i + 1, key_.name, key_.comment))
-        print("0) Enter path to pubfile (or use keys:add <key_path>) ")
+            self._logger.info("{}) {} {}".format(i + 1, key_.name, key_.comment))
+        self._logger.info("0) Enter path to pubfile (or use keys:add <key_path>) ")
         inp = raw_input('Which would you like to use with Deis? ')
         try:
             if int(inp) != 0:
@@ -1799,7 +1811,7 @@ class DeisClient(object):
                 selected_key_path = raw_input('Enter the path to the pubkey file: ')
                 selected_key = self._parse_key(os.path.expanduser(selected_key_path))
         except:
-            print('Aborting')
+            self._logger.info('Aborting')
             return
         return selected_key
 
@@ -1813,12 +1825,12 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
-                print('No keys found')
+                self._logger.info('No keys found')
                 return
-            print("=== {owner} Keys".format(**data['results'][0]))
+            self._logger.info("=== {owner} Keys".format(**data['results'][0]))
             for key in data['results']:
                 public = key['public']
-                print("{0} {1}...{2}".format(
+                self._logger.info("{0} {1}...{2}".format(
                     key['id'], public[0:16], public[-10:]))
         else:
             raise ResponseError(response)
@@ -1838,7 +1850,7 @@ class DeisClient(object):
         sys.stdout.flush()
         response = self._dispatch('delete', "/api/keys/{}".format(key))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
-            print('done')
+            self._logger.info('done')
         else:
             raise ResponseError(response)
 
@@ -1874,7 +1886,7 @@ class DeisClient(object):
         app, url = self._parse_perms_args(args)
         response = self._dispatch('get', url)
         if response.status_code == requests.codes.ok:
-            print(json.dumps(response.json(), indent=2))
+            self._logger.info(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -1907,7 +1919,7 @@ class DeisClient(object):
         sys.stdout.flush()
         response = self._dispatch('post', url, json.dumps(body))
         if response.status_code == requests.codes.created:
-            print('done')
+            self._logger.info('done')
         else:
             raise ResponseError(response)
 
@@ -1940,7 +1952,7 @@ class DeisClient(object):
         sys.stdout.flush()
         response = self._dispatch('delete', url)
         if response.status_code == requests.codes.no_content:
-            print('done')
+            self._logger.info('done')
         else:
             raise ResponseError(response)
 
@@ -1990,7 +2002,7 @@ class DeisClient(object):
         response = self._dispatch(
             'get', "/api/apps/{app}/releases/{version}".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print(json.dumps(response.json(), indent=2))
+            self._logger.info(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -2009,11 +2021,11 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch('get', "/api/apps/{app}/releases".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            print("=== {} Releases".format(app))
+            self._logger.info("=== {} Releases".format(app))
             data = response.json()
             for item in data['results']:
                 item['created'] = readable_datetime(item['created'])
-                print("v{version:<6} {created:<24} {summary}".format(**item))
+                self._logger.info("v{version:<6} {created:<24} {summary}".format(**item))
         else:
             raise ResponseError(response)
 
@@ -2056,7 +2068,7 @@ class DeisClient(object):
             progress.join()
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             new_version = response.json()['version']
-            print("done, v{}".format(new_version))
+            self._logger.info("done, v{}".format(new_version))
         else:
             raise ResponseError(response)
 
@@ -2066,11 +2078,11 @@ class DeisClient(object):
 
         Usage: deis shortcuts
         """
-        print('Valid shortcuts are:\n')
+        self._logger.info('Valid shortcuts are:\n')
         for shortcut, command in SHORTCUTS.items():
             if ':' not in shortcut:
-                print("{:<10} -> {}".format(shortcut, command))
-        print('\nUse `deis help [command]` to learn more')
+                self._logger.info("{:<10} -> {}".format(shortcut, command))
+        self._logger.info('\nUse `deis help [command]` to learn more')
 
 SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),
@@ -2118,25 +2130,39 @@ def parse_args(cmd):
 
 
 def _dispatch_cmd(method, args):
+    logger = logging.getLogger(__name__)
     try:
         method(args)
     except requests.exceptions.ConnectionError as err:
-        print("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
+        logger.error("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
 correct and the server is running.")
         sys.exit(1)
     except EnvironmentError as err:
-        raise DocoptExit(err.message)
+        logger.error(err.message)
+        sys.exit(1)
     except ResponseError as err:
         resp = err.message
-        print('{} {}'.format(resp.status_code, resp.reason))
+        logger.error('{} {}'.format(resp.status_code, resp.reason))
         try:
             msg = resp.json()
             if 'detail' in msg:
                 msg = "Detail:\n{}".format(msg['detail'])
         except:
             msg = resp.text
-        print(msg)
+        logger.info(msg)
         sys.exit(1)
+
+
+def _init_logger():
+    logger = logging.getLogger(__name__)
+    stdoutHandler = logging.StreamHandler(sys.stdout)
+    stderrHandler = logging.StreamHandler(sys.stderr)
+    # TODO: add a --debug flag
+    logger.setLevel(logging.INFO)
+    stdoutHandler.setLevel(logging.INFO)
+    stderrHandler.setLevel(logging.WARNING)
+    logger.addHandler(stdoutHandler)
+    logger.addHandler(stderrHandler)
 
 
 def main():
@@ -2144,6 +2170,7 @@ def main():
     Create a client, parse the arguments received on the command line, and
     call the appropriate method on the client.
     """
+    _init_logger()
     cli = DeisClient()
     args = docopt(__doc__, version=__version__,
                   options_first=True)
