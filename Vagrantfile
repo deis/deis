@@ -11,7 +11,7 @@ else
   cpus = 1
 end
 
-COREOS_VERSION = "402.2.0"
+COREOS_VERSION = "438.0.0"
 
 Vagrant.configure("2") do |config|
   config.vm.box = "coreos-#{COREOS_VERSION}"

@@ -84,14 +84,14 @@
 
   "Mappings" : {
     "CoreOSAMIs" : {
-      "us-east-1"      : { "PV" : "ami-b85786d0", "HVM" : "ami-a65786ce" },
-      "us-west-2"      : { "PV" : "ami-cfafd5ff", "HVM" : "ami-cdafd5fd" },
-      "us-west-1"      : { "PV" : "ami-45151800", "HVM" : "ami-bb1a17fe" },
-      "eu-west-1"      : { "PV" : "ami-72865b05", "HVM" : "ami-74865b03" },
-      "ap-southeast-1" : { "PV" : "ami-88e4bcda", "HVM" : "ami-ce376c9c" },
-      "ap-southeast-2" : { "PV" : "ami-3ba8ce01", "HVM" : "ami-0d98fe37" },
-      "ap-northeast-1" : { "PV" : "ami-47cb9246", "HVM" : "ami-49cb9248" },
-      "sa-east-1"      : { "PV" : "ami-e1f65efc", "HVM" : "ami-e7f65efa" }
+      "us-east-1"      : { "PV" : "ami-28973b40", "HVM" : "ami-56973b3e" },
+      "us-west-2"      : { "PV" : "ami-afc2839f", "HVM" : "ami-adc2839d" },
+      "us-west-1"      : { "PV" : "ami-b71811f2", "HVM" : "ami-b11811f4" },
+      "eu-west-1"      : { "PV" : "ami-70f35707", "HVM" : "ami-7ef35709" },
+      "ap-southeast-1" : { "PV" : "ami-54446006", "HVM" : "ami-5a446008" },
+      "ap-southeast-2" : { "PV" : "ami-c32142f9", "HVM" : "ami-cd2142f7" },
+      "ap-northeast-1" : { "PV" : "ami-83cee382", "HVM" : "ami-85cee384" },
+      "sa-east-1"      : { "PV" : "ami-51d8724c", "HVM" : "ami-57d8724a" }
     },
     "SubnetConfig" : {
       "VPC"     : { "CIDR" : "10.21.0.0/16" },
