@@ -11,6 +11,11 @@ import (
 	docopt "github.com/docopt/docopt-go"
 )
 
+const (
+	// Version of deisctl client
+	Version string = "0.11.0"
+)
+
 func exit(err error, code int) {
 	fmt.Printf("Error: %v\n", err)
 	os.Exit(code)
@@ -55,7 +60,6 @@ Example Commands:
   deisctl journal controller
 
 Options:
-  --debug                     print debug information to stderr
   --version                   print version and exit
   --endpoint=<url>            etcd endpoint for fleet [default: http://127.0.0.1:4001]
   --etcd-key-prefix=<path>    keyspace for fleet data in etcd [default: /_coreos.com/fleet/]
@@ -67,6 +71,11 @@ Options:
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
   --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
 `
+	// special handling for version
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println(Version)
+		os.Exit(0)
+	}
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, "", true)
 	if err != nil {
