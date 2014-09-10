@@ -70,7 +70,7 @@ import requests
 from termcolor import colored
 import yaml
 
-__version__ = '0.12.0'
+__version__ = '0.12.0-dev'
 
 
 locale.setlocale(locale.LC_ALL, '')
