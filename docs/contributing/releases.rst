@@ -35,6 +35,7 @@ github.com/deis/deis Repo
     * The UI for this is well-hidden: go to https://index.docker.io/builds/ and
       click "Edit".
 - Commit and push the deis/deis release and tag
+    * remove "-dev" from __version__ fields in Python packages
     * ``git commit -a -m 'Updated for vX.Y.Z release.'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
@@ -51,7 +52,7 @@ github.com/deis/deis Repo
       publically downloadable
 - Switch master to upcoming release
     * ``git checkout master``
-    * update __version__ fields in Python packages to *next* version
+    * update __version__ fields in Python packages to *next* version + "-dev"
     * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
     * ``git push origin master``
 
