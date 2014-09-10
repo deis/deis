@@ -22,7 +22,6 @@ func exit(err error, code int) {
 }
 
 func setGlobalFlags(args map[string]interface{}) {
-	client.Flags.Debug = args["--debug"].(bool)
 	client.Flags.Version = args["--version"].(bool)
 	client.Flags.Endpoint = args["--endpoint"].(string)
 	client.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
