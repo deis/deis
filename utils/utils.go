@@ -46,16 +46,6 @@ func GetKey(dir, key, perm string) string {
 	return result.Node.Value
 }
 
-// func GetNewClient() (
-// 	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
-// 	testDaemonAddr := "/var/run/docker.sock"
-// 	testDaemonProto := "unix"
-// 	stdout, stdoutPipe = io.Pipe()
-// 	cli = client.NewDockerCli(
-// 		nil, stdoutPipe, nil, testDaemonProto, testDaemonAddr, nil)
-// 	return
-// }
-
 func PullImage(args string) error {
 	cmdl := exec.Command("docker", "pull", args)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
@@ -196,7 +186,6 @@ func getExitCode(err error) (int, error) {
 }
 
 // RunCommandWithStdoutStderr execs a command and returns its output.
-
 func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, error) {
 	var stdout, stderr bytes.Buffer
 	stderrPipe, err := cmd.StderrPipe()
@@ -267,5 +256,3 @@ func stripTrailingCharacters(target string) string {
 func nLines(s string) int {
 	return strings.Count(s, "\n")
 }
-
-//func deis(bash string , arg string ,  cmd string )
