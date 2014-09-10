@@ -1,5 +1,5 @@
 ifndef DEIS_NUM_INSTANCES
-  DEIS_NUM_INSTANCES = 1
+  DEIS_NUM_INSTANCES = 3
 endif
 
 define echo_cyan
@@ -18,8 +18,8 @@ GIT_SHA = $(shell git rev-parse --short HEAD)
 GIT_TAG = git-$(GIT_SHA)
 
 check-docker:
-	@if [ -z "$$DOCKER_HOST" ]; then \
-	  echo DOCKER_HOST is not exported, try \`boot2docker up\`; \
+	@if [ -z $$(which docker) ]; then \
+	  echo "Missing \`docker\` client which is required for development"; \
 	  exit 2; \
 	fi
 
