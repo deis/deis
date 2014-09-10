@@ -73,10 +73,6 @@ Your Deis installation should now be accessible at `deis.local3.deisapp.com`.
 
 For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
-## Testing the cluster
-
-Integration tests and corresponding documentation can be found under the [`tests/`](tests/) folder.
-
 ## Install the Deis Client
 
 If you're using the latest Deis release, use `pip install --upgrade deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
@@ -177,6 +173,14 @@ $ deis logs
 ```
 
 Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
+
+## Testing the cluster
+
+Integration tests and corresponding documentation can be found under the [`tests/`](tests/) folder.
+
+## Hacking on Deis
+
+Learn how to [hack on Deis](http://docs.deis.io/en/latest/contributing/hacking/) with a Docker-based development workflow.
 
 ## Troubleshooting
 

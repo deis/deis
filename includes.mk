@@ -11,7 +11,6 @@ define echo_yellow
 endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-
 DOCKER_HOST = $(shell echo $$DOCKER_HOST)
 REGISTRY = $(shell echo $$DEIS_REGISTRY)
 GIT_SHA = $(shell git rev-parse --short HEAD)
