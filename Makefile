@@ -9,7 +9,7 @@ installer:
 	@if [ ! -d makeself ]; then git clone -b deisctl-hack https://github.com/deis/makeself.git; fi
 	PATH=./makeself:$$PATH makeself.sh --bzip2 --nox11 --target /usr/local/bin dist \
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
-		"Deis Control Utility" "/usr/local/bin/deisctl refresh-units"
+		"Deis Control Utility" "deisctl refresh-units"
 
 install:
 	godep go install -v ./...
