@@ -15,14 +15,8 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/database}
 export ETCD_TTL=${ETCD_TTL:-10}
 
-# initialize data volume
-if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
-  mkdir -p /var/lib/postgresql/9.3
-  chown -R postgres:postgres /var/lib/postgresql
-  sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
-else
-  chown -R postgres:postgres /var/lib/postgresql
-fi
+export BUCKET_NAME=${BUCKET_NAME:-db_wal}
+export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
@@ -43,12 +37,34 @@ etcd_set_default adminPass ${PG_ADMIN_PASS:-changeme123}
 etcd_set_default user ${PG_USER_NAME:-deis}
 etcd_set_default password ${PG_USER_PASS:-changeme123}
 etcd_set_default name ${PG_USER_DB:-deis}
+etcd_set_default bucketName ${BUCKET_NAME}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 	echo "database: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
+
+# ensure WAL log bucket exists
+envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
+
+# TODO: we need to change this logic - we actually need confd to run before we can do any of this recovery logic,
+# but once confd runs we'll have this directory. so we need to check something else - postgres database existing?
+if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
+  # check if there are any backups -- if so, let's restore
+  # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
+  if [[ `envdir /etc/wal-e.d/env /usr/local/bin/wal-e --terse backup-list | wc -l` -gt "1" ]]; then
+    sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
+    chown -R postgres:postgres /var/lib/postgresql/9.3/main
+    chmod 0700 /var/lib/postgresql/9.3/main
+    echo restore_command = '/usr/bin/envdir /etc/wal-e.d/env /usr/local/bin/wal-e wal-fetch "%f" "%p"' | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
+  else
+    # if no backups, we proceed as before and create a new database
+    mkdir -p /var/lib/postgresql/9.3
+    chown -R postgres:postgres /var/lib/postgresql
+    sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
+  fi
+fi
 
 # run the service in the background
 sudo -i -u postgres /usr/lib/postgresql/9.3/bin/postgres \
@@ -74,6 +90,12 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 
 # perform a one-time reload to populate database entries
 /usr/local/bin/reload
+
+# create a base backup on every start
+sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-push /var/lib/postgresql/9.3/main
+
+# only retain the latest BACKUPS_TO_RETAIN backups
+sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
 
 echo deis-database running...
 
