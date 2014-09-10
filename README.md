@@ -10,17 +10,17 @@ Deis is pre-release software. The current release is [v0.11.0](https://github.co
 
 # Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md), [Google Compute Engine](contrib/gce/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Please open an [issue](https://github.com/deis/deis/issues/new).
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md), [Google Compute Engine](contrib/gce/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Want to see a particular platform supported? Please open an [issue](https://github.com/deis/deis/issues/new).
 
 Trying out Deis? Continue following these instructions for a local installation using Vagrant.
 
 ## Install prerequisites
 
  * Due to its nature as a distributed system, we strongly recommend using Deis with a minimum of 3 nodes even for local development and testing
- * The Deis containers will consume approxtimately 5 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
-* Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+ * The Deis containers will consume approximately 5 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
+ * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
-Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known release for 14.04) has some issues when running in RAM-constrained environments. Please install the lastest version of VirtualBox from Oracle's website.
+Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known release for 14.04) has some issues when running in RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's website.
 
 ## Configure Discovery
 
@@ -32,7 +32,7 @@ Automatically generate a fresh discovery URL with:
 $ sed -i -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
 ```
 
-...or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`.
+or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from <https://discovery.etcd.io/new>.
 
 ## Boot CoreOS
 
@@ -71,11 +71,11 @@ $ deisctl install platform
 
 Your Deis installation should now be accessible at `deis.local3.deisapp.com`.
 
-For clusters on other platforms (EC2, Rackspace, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Testing the cluster
 
-Integration tests and corresponding documentation can be found under the `test/` folder.
+Integration tests and corresponding documentation can be found under the [`tests/`](tests/) folder.
 
 ## Install the Deis Client
 
@@ -186,7 +186,7 @@ Common issues that users have run into when provisioning Deis are detailed below
 Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
 
 #### When running a `deisctl` command - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
-The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Trying destroying and relaunching the cluster with a fresh discovery URL.
+The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Try destroying and relaunching the cluster with a fresh discovery URL.
 
 #### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
 This usually means the controller failed to submit jobs to the scheduler. `deisctl journal controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
@@ -210,7 +210,7 @@ May 12 18:29:47 deis-3 systemd[1]: Unit deis-controller.service entered failed s
 We are exploring workarounds and are working with the Docker team to improve DockerHub reliability. In the meantime, try starting the service again with `deisctl restart <component>`.
 
 ### Any other issues
-Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into #deis and we'll help!
+Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into [#deis](https://botbot.me/freenode/deis/) and we'll help!
 
 ## License
 
