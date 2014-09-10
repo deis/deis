@@ -119,7 +119,7 @@ func readTemplate(component string) (out []byte, err error) {
 	} else {
 		// otherwise look in rootPaths hierarchy
 		for _, rootPath := range rootPaths {
-			rootPath, _ := expandUser(rootPath)
+			rootPath, _ := ExpandUser(rootPath)
 			filename := path.Join(rootPath, templateName)
 			if _, err := os.Stat(filename); err == nil {
 				templateFile = filename
@@ -138,11 +138,11 @@ func readTemplate(component string) (out []byte, err error) {
 	return
 }
 
-// expandUser replaces "~" in a string with the current user's home directory.
-func expandUser(path string) (string, error) {
+// ExpandUser replaces "~" in a string with the current user's home directory.
+func ExpandUser(path string) (string, error) {
 	user, err := user.Current()
 	if err != nil {
 		return path, err
 	}
-	return strings.Replace(path, "~/", user.HomeDir, 1), nil
+	return strings.Replace(path, "~/", user.HomeDir+"/", 1), nil
 }

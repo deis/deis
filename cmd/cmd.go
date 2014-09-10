@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -15,6 +14,7 @@ import (
 	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/update"
 	"github.com/deis/deisctl/utils"
+	"github.com/docopt/docopt-go"
 )
 
 func ListUnits(c client.Client) error {
@@ -257,17 +257,26 @@ func Update() error {
 }
 
 func RefreshUnits() error {
-	// create the $HOME/.deisctl directory if necessary
-	user, err := user.Current()
-	if err != nil {
-		return err
-	}
-	dir := filepath.Join(user.HomeDir, ".deisctl")
-	if err = os.MkdirAll(dir, 0700); err != nil {
-		return err
-	}
+	usage := `Refreshes local unit files from the master repository.
 
-	// download and save the unit files to $HOME/.deisctl
+Usage:
+  deisctl refresh-units [-p <target>]
+
+Options:
+  -p --path=<target>   where to save unit files [default: /var/lib/deis/units]
+`
+	// parse command-line arguments
+	args, err := docopt.Parse(usage, nil, true, "", false)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(2)
+	}
+	dir, _ := client.ExpandUser(args["--path"].(string))
+	// create the target dir if necessary
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+	// download and save the unit files to the specified path
 	rootURL := "https://raw.githubusercontent.com/deis/deisctl/"
 	branch := "master"
 	units := []string{
