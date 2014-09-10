@@ -112,10 +112,10 @@ Table of resources:
 +--------+---------------+--------+---------+
 ```
 
-Launch 3 instances using `coreos-alpha-402-2-0-v20140807` image. You can choose another starting CoreOS image from the listing output of `gcloud compute images list`:
+Launch 3 instances using `coreos-alpha-438-0-0-v20140913` image. You can choose another starting CoreOS image from the listing output of `gcloud compute images list`:
 
 ```console
-$ for num in 1 2 3; do gcutil addinstance --image projects/coreos-cloud/global/images/coreos-alpha-402-2-0-v20140807 --persistent_boot_disk --zone us-central1-a --machine_type n1-standard-2 --tags deis --metadata_from_file user-data:gce-user-data --disk cored${num},deviceName=coredocker --authorized_ssh_keys=core:~/.ssh/deis.pub,core:~/.ssh/google_compute_engine.pub core${num}; done
+$ for num in 1 2 3; do gcutil addinstance --image projects/coreos-cloud/global/images/coreos-alpha-438-0-0-v20140913 --persistent_boot_disk --zone us-central1-a --machine_type n1-standard-2 --tags deis --metadata_from_file user-data:gce-user-data --disk cored${num},deviceName=coredocker --authorized_ssh_keys=core:~/.ssh/deis.pub,core:~/.ssh/google_compute_engine.pub core${num}; done
 
 Table of resources:
 
