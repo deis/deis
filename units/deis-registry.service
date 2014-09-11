@@ -16,4 +16,4 @@ ExecStopPost=/usr/bin/docker stop deis-registry
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=deis-registry-data.service
+MachineOf=deis-registry-data.service
