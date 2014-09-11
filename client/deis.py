@@ -189,8 +189,20 @@ class Settings(dict):
             os.mkdir(path, 0700)
         self._path = os.path.join(path, 'client.json')
         if not os.path.exists(self._path):
+            settings = {}
+            # try once to convert the old settings file if it exists
+            # FIXME: this code can be removed in November 2014 or thereabouts, that's long enough.
+            old_path = os.path.join(path, 'client.yaml')
+            if os.path.exists(old_path):
+                try:
+                    with open(old_path, 'r') as f:
+                        txt = f.read().replace('{', '{"', 1).replace(':', '":', 1).replace("'", '"')
+                        settings = json.loads(txt)
+                        os.remove(old_path)
+                except:
+                    pass  # ignore errors, at least we tried to convert it
             with open(self._path, 'w') as f:
-                json.dump({}, f)
+                json.dump(settings, f)
         # load initial settings
         self.load()
 
