@@ -63,6 +63,7 @@ su slugbuilder
 export APP_DIR="$app_dir"
 export HOME="$app_dir"
 export REQUEST_ID=$(openssl rand -base64 32)
+export STACK=cedar
 
 ## Buildpack detection
 
