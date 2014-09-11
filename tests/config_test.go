@@ -10,8 +10,8 @@ import (
 
 var (
 	configListCmd  = "config:list --app={{.AppName}}"
-	configSetCmd   = "config:set jaf=1 --app={{.AppName}}"
-	configUnsetCmd = "config:unset jaf --app={{.AppName}}"
+	configSetCmd   = "config:set FOO=讲台 --app={{.AppName}}"
+	configUnsetCmd = "config:unset FOO --app={{.AppName}}"
 )
 
 func TestConfig(t *testing.T) {
@@ -48,7 +48,7 @@ func configSetup(t *testing.T) *utils.DeisTestConfig {
 
 func configListTest(
 	t *testing.T, params *utils.DeisTestConfig, notflag bool) {
-	utils.CheckList(t, configListCmd, params, "jaf", notflag)
+	utils.CheckList(t, configListCmd, params, "FOO", notflag)
 }
 
 func configSetTest(t *testing.T, params *utils.DeisTestConfig) {

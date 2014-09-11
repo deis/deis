@@ -1112,11 +1112,13 @@ class DeisClient(object):
                 width = max(map(len, keys)) + 5
                 for k in keys:
                     v = values[k]
+                    k, v = k.encode('utf-8'), v.encode('utf-8')
                     self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
             else:
                 output = []
                 for k in keys:
                     v = values[k]
+                    k, v = k.encode('utf-8'), v.encode('utf-8')
                     output.append("{k}={v}".format(**locals()))
                 self._logger.info(' '.join(output))
         else:
@@ -1162,6 +1164,7 @@ class DeisClient(object):
                 self._logger.info('No configuration')
                 return
             for k, v in values.items():
+                k, v = k.encode('utf-8'), v.encode('utf-8')
                 self._logger.info("{k}: {v}".format(**locals()))
         else:
             raise ResponseError(response)
