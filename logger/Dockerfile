@@ -1,13 +1,6 @@
 FROM deis/base:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
-# install go dependencies
-RUN apt-get update && apt-get install -yq \
-    git \
-    bzr \
-    mercurial \
-    --no-install-recommends
-
 # install go runtime
 RUN wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 
@@ -20,13 +13,12 @@ ENV PATH /usr/local/bin:/usr/bin:/bin:/sbin:/usr/local/go/bin
 RUN mkdir -p /var/log/deis
 
 # prepare execution environment
-WORKDIR /go/src/github.com/deis/deis/logger
+WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 514
 
-ADD bin/ /app/bin/
+ADD . /app
 ADD . /go/src/github.com/deis/deis/logger
 
-# install dependencies
-RUN go get ./syslog
-RUN go install -v ./syslogd
+# compile the binary
+RUN cd /go/src/github.com/deis/deis/logger/syslogd && go install -v .
