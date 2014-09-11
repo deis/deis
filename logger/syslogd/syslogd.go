@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/deis/deis/logger/syslog"
 	"io"
-	"log"
 	"os"
 	"os/signal"
 	"path"
@@ -45,10 +45,10 @@ func fileExists(path string) (bool, error) {
 }
 
 func getLogFile(m *syslog.Message) (io.Writer, error) {
-	r := regexp.MustCompile(`^.* ([-a-z0-9]+)(_v[0-9]+\.[a-z0-9\.]+)?\[[a-z0-9\.]+\].*`)
+	r := regexp.MustCompile(`^.* ([-a-z0-9]+)\[[a-z0-9\.]+\].*`)
 	match := r.FindStringSubmatch(m.String())
 	if match == nil {
-		return nil, errors.New("Could not find app name in message: " + m.String())
+		return nil, errors.New("Could not find app name in message")
 	}
 	appName := match[1]
 	filePath := path.Join(logRoot, appName+".log")
@@ -84,12 +84,13 @@ func (h *handler) mainLoop() {
 		if m == nil {
 			break
 		}
+		fmt.Println(m)
 		err := writeToDisk(m)
 		if err != nil {
-			log.Println(err.Error())
+			panic(err)
 		}
 	}
-	log.Println("Exit handler")
+	fmt.Println("Exit handler")
 	h.End()
 }
 
@@ -105,7 +106,7 @@ func main() {
 	<-sc
 
 	// Shutdown the server
-	log.Println("Shutdown the server...")
+	fmt.Println("Shutdown the server...")
 	s.Shutdown()
-	log.Println("Server is down")
+	fmt.Println("Server is down")
 }

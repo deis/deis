@@ -81,6 +81,11 @@ func (h *FileHandler) checkErr(err error) bool {
 	if err == nil {
 		return false
 	}
+	if h.l == nil {
+		log.Print(h.filename, ": ", err)
+	} else {
+		h.l.Print(h.filename, ": ", err)
+	}
 	return true
 }
 
