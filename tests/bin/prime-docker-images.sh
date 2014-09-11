@@ -15,4 +15,4 @@ docker pull deis/base:latest
 docker pull deis/slugbuilder:latest
 docker pull deis/slugrunner:latest
 docker pull deis/test-etcd:latest
-docker pull paintedfox/postgresql:latest
+docker pull deis/test-postgresql:latest

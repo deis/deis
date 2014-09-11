@@ -16,7 +16,7 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.GetNewClient()
 	done := make(chan bool, 1)
-	dbImage := "paintedfox/postgresql:latest"
+	dbImage := "deis/test-postgresql:latest"
 	ipaddr := utils.GetHostIPAddress()
 	done <- true
 	go func() {
