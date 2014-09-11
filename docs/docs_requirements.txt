@@ -20,13 +20,11 @@ docker-py==0.4.0
 gunicorn==18.0
 psycopg2==2.5.2
 python-etcd==0.3.0
-PyYAML==3.11
 South==1.0
 
 # Deis client requirements
 docopt==0.6.2
 python-dateutil==2.2
-#PyYAML==3.11
 requests==2.3.0
 termcolor==1.1.0
 

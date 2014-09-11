@@ -31,7 +31,7 @@ set -e
 # Build updated Deis CLI and use it for testing
 virtualenv --system-site-packages venv
 . venv/bin/activate
-pip install docopt==0.6.2 python-dateutil==2.2 PyYAML==3.11 requests==2.3.0 pyinstaller==2.1 termcolor==1.1.0
+pip install docopt==0.6.2 python-dateutil==2.2 requests==2.3.0 pyinstaller==2.1 termcolor==1.1.0
 make -C client/ client
 chmod +x client/dist/deis
 export PATH=`pwd`/client/dist:$PATH

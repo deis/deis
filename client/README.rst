@@ -78,7 +78,7 @@ you used to provision the server. You can make a symlink or shell alias for
 
 .. code-block:: console
 
-    $ pip install docopt==0.6.2 python-dateutil==2.2 PyYAML==3.11 requests==2.3.0
+    $ pip install docopt==0.6.2 python-dateutil==2.2 requests==2.3.0 termcolor==1.1.0
     $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]

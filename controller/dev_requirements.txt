@@ -1,7 +1,6 @@
 # Deis client requirements
 docopt==0.6.2
 python-dateutil==2.2
-#PyYAML==3.11
 requests==2.3.0
 
 # PyInstaller builds client binaries
