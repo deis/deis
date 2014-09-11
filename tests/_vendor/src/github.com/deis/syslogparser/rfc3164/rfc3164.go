@@ -2,7 +2,7 @@ package rfc3164
 
 import (
 	"bytes"
-	"github.com/jeromer/syslogparser"
+	"github.com/deis/syslogparser"
 	"time"
 )
 
@@ -35,9 +35,13 @@ func NewParser(buff []byte) *Parser {
 }
 
 func (p *Parser) Parse() error {
-	pri, err := p.parsePriority()
-	if err != nil {
-		return err
+	pri := syslogparser.Priority{}
+	if p.buff[0] == '<' {
+		priority, err := p.parsePriority()
+		if err != nil {
+			return err
+		}
+		pri = priority
 	}
 
 	hdr, err := p.parseHeader()
@@ -126,6 +130,7 @@ func (p *Parser) parseTimestamp() (time.Time, error) {
 	tsFmts := []string{
 		"Jan 02 15:04:05",
 		"Jan  2 15:04:05",
+		"2006-01-02 15:04:05",
 	}
 
 	found := false
