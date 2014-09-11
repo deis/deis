@@ -53,7 +53,9 @@ def publish_release(source, config, target):
     # construct the new image
     image['parent'] = image['id']
     image['id'] = _new_id()
-    image['config']['Env'] = _construct_env(image['config']['Env'], config, target_image, target_tag)
+    config['DEIS_APP'] = target_image
+    config['DEIS_RELEASE'] = target_tag
+    image['config']['Env'] = _construct_env(image['config']['Env'], config)
     # update and tag the new image
     _commit(target_image, image, _empty_tar_archive(), target_tag)
 
@@ -157,11 +159,9 @@ def _put_tag(image_id, repository_path, tag):
 # utility functions
 
 
-def _construct_env(env, config, target_image, target_tag):
+def _construct_env(env, config):
     "Update current environment with latest config"
     new_env = []
-    new_env.append("{}={}".format('DEIS_APP', target_image))
-    new_env.append("{}={}".format('DEIS_RELEASE', target_tag))
     # see if we need to update existing ENV vars
     for e in env:
         k, v = e.split('=', 1)
