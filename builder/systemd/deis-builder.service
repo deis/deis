@@ -16,4 +16,4 @@ ExecStopPost=/usr/bin/docker stop deis-builder
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=deis-builder-data.service
+MachineOf=deis-builder-data.service

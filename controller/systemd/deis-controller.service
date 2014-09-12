@@ -15,4 +15,4 @@ ExecStopPost=/usr/bin/docker stop deis-controller
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=deis-logger.service
+MachineOf=deis-logger.service
