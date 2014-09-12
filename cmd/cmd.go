@@ -259,6 +259,11 @@ func Update() error {
 func RefreshUnits() error {
 	usage := `Refreshes local unit files from the master repository.
 
+deisctl looks for unit files in these directories, in this order:
+- the $DEISCTL_UNITS environment variable, if set
+- $HOME/.deis/units
+- /var/lib/deis/units
+
 Usage:
   deisctl refresh-units [-p <target>]
 

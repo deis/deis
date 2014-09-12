@@ -14,7 +14,11 @@ import (
 )
 
 // path hierarchy for finding systemd service templates
-var rootPaths = []string{"~/.deisctl/units", "/var/lib/deis/units"}
+var templatePaths = []string{
+	os.Getenv("DEISCTL_UNITS"),
+	"~/.deis/units",
+	"/var/lib/deis/units",
+}
 
 // Units returns a list of units filtered by target
 func (c *FleetClient) Units(target string) (units []string, err error) {
@@ -109,22 +113,16 @@ func readTemplate(component string) (out []byte, err error) {
 	templateName := "deis-" + component + ".service"
 	var templateFile string
 
-	// first look for unit files in GOPATH
-	if os.Getenv("GOPATH") != "" {
-		filename := path.Join(os.Getenv("GOPATH"),
-			path.Join("src", "github.com", "deis", "deisctl", "units", templateName))
+	// look in $DEISCTL_UNITS env var, then the local and global root paths
+	for _, p := range templatePaths {
+		if p == "" {
+			continue
+		}
+		p, _ := ExpandUser(p)
+		filename := path.Join(p, templateName)
 		if _, err := os.Stat(filename); err == nil {
 			templateFile = filename
-		}
-	} else {
-		// otherwise look in rootPaths hierarchy
-		for _, rootPath := range rootPaths {
-			rootPath, _ := ExpandUser(rootPath)
-			filename := path.Join(rootPath, templateName)
-			if _, err := os.Stat(filename); err == nil {
-				templateFile = filename
-				break
-			}
+			break
 		}
 	}
 

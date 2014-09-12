@@ -11,7 +11,7 @@ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
 ```
 
 The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
-to *~/.deisctl* one time.
+to */var/lib/deis/units* one time.
 
 To change installation options, save the installer directly from one of these links:
 
@@ -115,7 +115,7 @@ The `deisctl` tool provides a number of other commands, including:
  * `deisctl install <component>` - install a single platform component
  * `deisctl uninstall <component>` - uninstall a single platform component
  * `deisctl scale <component>=<num>` - scale a component to the target number of units
- * `deisctl refresh-units` - download latest unit files to ~/.deisctl
+ * `deisctl refresh-units` - download latest unit files
 
 ## Usage Examples
 
