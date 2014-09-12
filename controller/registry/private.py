@@ -158,6 +158,13 @@ def _put_tag(image_id, repository_path, tag):
 
 # utility functions
 
+def encode(obj):
+    """Return UTF-8 encoding for string objects."""
+    if isinstance(obj, basestring):
+        return obj.encode('utf-8')
+    else:
+        return obj
+
 
 def _construct_env(env, config):
     "Update current environment with latest config"
@@ -168,10 +175,10 @@ def _construct_env(env, config):
         if k in config:
             # update values defined by config
             v = config.pop(k)
-        new_env.append("{}={}".format(k.encode('utf-8'), v.encode('utf-8')))
+        new_env.append("{}={}".format(encode(k), encode(v)))
     # add other config ENV items
     for k, v in config.items():
-        new_env.append("{}={}".format(k.encode('utf-8'), v.encode('utf-8')))
+        new_env.append("{}={}".format(encode(k), encode(v)))
     return new_env
 
 
