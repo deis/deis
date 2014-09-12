@@ -303,6 +303,14 @@ def dictify(args):
     return data
 
 
+def encode(obj):
+    """Return UTF-8 encoding for string objects."""
+    if isinstance(obj, basestring):
+        return obj.encode('utf-8')
+    else:
+        return obj
+
+
 def readable_datetime(datetime_str):
     """
     Return a human-readable datetime string from an ECMA-262 (JavaScript)
@@ -1123,14 +1131,13 @@ class DeisClient(object):
                 width = max(map(len, keys)) + 5
                 for k in keys:
                     v = values[k]
-                    k, v = k.encode('utf-8'), v.encode('utf-8')
-                    self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
+                    self._logger.info("{:<" + str(width) + "} {}".format(
+                        encode(k), encode(v)))
             else:
                 output = []
                 for k in keys:
                     v = values[k]
-                    k, v = k.encode('utf-8'), v.encode('utf-8')
-                    output.append("{k}={v}".format(**locals()))
+                    output.append("{}={}".format(encode(k), encode(v)))
                 self._logger.info(' '.join(output))
         else:
             raise ResponseError(response)
@@ -1175,8 +1182,7 @@ class DeisClient(object):
                 self._logger.info('No configuration')
                 return
             for k, v in values.items():
-                k, v = k.encode('utf-8'), v.encode('utf-8')
-                self._logger.info("{k}: {v}".format(**locals()))
+                self._logger.info("{}: {}".format(encode(k), encode(v)))
         else:
             raise ResponseError(response)
 
