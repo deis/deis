@@ -10,12 +10,7 @@ START_ORDER=logger database cache registry controller builder router
 all: build run
 
 dev-registry: check-docker
-	@# pull registry image if it doesn't already exist
-	@docker history registry:0.8.1 >/dev/null 2>&1 || docker pull registry:0.8.1
-
-	@# run registry container if it doesn't already exist
-	@docker inspect registry >/dev/null 2>&1 || docker run -d -p 5000:5000 --name registry registry:0.8.1
-
+	@docker run -d -p 5000:5000 --name registry registry:0.8.1
 	@echo
 	@echo "To configure the registry for local Deis development:"
 	@echo "    export DEIS_REGISTRY=`boot2docker ip 2>/dev/null`:5000"
@@ -50,8 +45,7 @@ test: test-components test-integration
 test-components:
 	@$(foreach C,$(COMPONENTS), \
 		echo \\nTesting deis/$(C) ; \
-		$(MAKE) -C $(C) test ; \
-	)
+		$(MAKE) -C $(C) build test ;)
 
 test-integration:
 	$(MAKE) -C tests/ test-full

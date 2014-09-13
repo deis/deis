@@ -1,16 +1,16 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/cache:$(GIT_TAG) .
+	docker build -t deis/cache:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/cache:$(GIT_TAG) $(REGISTRY)/deis/cache:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/cache:$(GIT_TAG)
-	deisctl config cache set image=$$DEIS_REGISTRY/deis/cache:$(GIT_TAG)
+	docker tag deis/cache:$(BUILD_TAG) $(REGISTRY)/deis/cache:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/cache:$(BUILD_TAG)
+	deisctl config cache set image=$(REGISTRY)/deis/cache:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/cache:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/cache:$(GIT_TAG)
+	docker rmi deis/cache:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/cache:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/cache | xargs docker rmi -f

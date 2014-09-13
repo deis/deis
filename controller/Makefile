@@ -5,16 +5,16 @@ include ../includes.mk
 all: build run
 
 build: check-docker
-	docker build -t deis/controller:$(GIT_TAG) .
+	docker build -t deis/controller:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/controller:$(GIT_TAG) $(REGISTRY)/deis/controller:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/controller:$(GIT_TAG)
-	deisctl config controller set image=$$DEIS_REGISTRY/deis/controller:$(GIT_TAG)
+	docker tag deis/controller:$(BUILD_TAG) $(REGISTRY)/deis/controller:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/controller:$(BUILD_TAG)
+	deisctl config controller set image=$(REGISTRY)/deis/controller:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/controller:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/controller:$(GIT_TAG)
+	docker rmi deis/controller:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/controller:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/controller | xargs docker rmi -f

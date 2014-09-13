@@ -1,16 +1,16 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/database:$(GIT_TAG) .
+	docker build -t deis/database:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/database:$(GIT_TAG) $(REGISTRY)/deis/database:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/database:$(GIT_TAG)
-	deisctl config database set image=$$DEIS_REGISTRY/deis/database:$(GIT_TAG)
+	docker tag deis/database:$(BUILD_TAG) $(REGISTRY)/deis/database:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/database:$(BUILD_TAG)
+	deisctl config database set image=$(REGISTRY)/deis/database:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/database:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/database:$(GIT_TAG)
+	docker rmi deis/database:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/database:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/database | xargs docker rmi -f

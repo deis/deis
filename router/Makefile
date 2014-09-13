@@ -1,16 +1,16 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/router:$(GIT_TAG) .
+	docker build -t deis/router:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/router:$(GIT_TAG) $(REGISTRY)/deis/router:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/router:$(GIT_TAG)
-	deisctl config router set image=$$DEIS_REGISTRY/deis/router:$(GIT_TAG)
+	docker tag deis/router:$(BUILD_TAG) $(REGISTRY)/deis/router:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/router:$(BUILD_TAG)
+	deisctl config router set image=$(REGISTRY)/deis/router:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/router:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/router:$(GIT_TAG)
+	docker rmi deis/router:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/router:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/router | xargs docker rmi -f

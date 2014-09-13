@@ -1,16 +1,16 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/builder:$(GIT_TAG) .
+	docker build -t deis/builder:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/builder:$(GIT_TAG) $(REGISTRY)/deis/builder:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/builder:$(GIT_TAG)
-	deisctl config builder set image=$$DEIS_REGISTRY/deis/builder:$(GIT_TAG)
+	docker tag deis/builder:$(BUILD_TAG) $(REGISTRY)/deis/builder:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/builder:$(BUILD_TAG)
+	deisctl config builder set image=$(REGISTRY)/deis/builder:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/builder:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/builder:$(GIT_TAG)
+	docker rmi deis/builder:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/builder:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/builder | xargs docker rmi -f

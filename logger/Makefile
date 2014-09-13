@@ -1,16 +1,16 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/logger:$(GIT_TAG) .
+	docker build -t deis/logger:$(BUILD_TAG) .
 
 push: check-docker check-registry check-deisctl
-	docker tag deis/logger:$(GIT_TAG) $(REGISTRY)/deis/logger:$(GIT_TAG)
-	docker push $(REGISTRY)/deis/logger:$(GIT_TAG)
-	deisctl config logger set image=$$DEIS_REGISTRY/deis/logger:$(GIT_TAG)
+	docker tag deis/logger:$(BUILD_TAG) $(REGISTRY)/deis/logger:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/logger:$(BUILD_TAG)
+	deisctl config logger set image=$(REGISTRY)/deis/logger:$(BUILD_TAG)
 
 clean: check-docker check-registry
-	docker rmi deis/logger:$(GIT_TAG)
-	docker rmi $(REGISTRY)/deis/logger:$(GIT_TAG)
+	docker rmi deis/logger:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/logger:$(BUILD_TAG)
 
 full-clean: check-docker check-registry
 	docker images -q deis/logger | xargs docker rmi -f
