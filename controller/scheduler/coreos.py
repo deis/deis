@@ -127,6 +127,7 @@ class FleetClient(object):
         if use_announcer:
             self._start_announcer(name, env)
             self._wait_for_container(name, env)
+            self._wait_for_announcer(name, env)
         else:
             self._log_skipped_announcer('start', name)
 
@@ -153,20 +154,30 @@ class FleetClient(object):
             status = subprocess.check_output(
                 "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
-            if status == 'failed':
+            if status == 'running':
+                break
+            elif status == 'failed':
                 raise RuntimeError('Container failed to start')
-            elif status != 'running':
-                time.sleep(1)
-                continue
-            # wait for the announce service to come up as well
+            time.sleep(1)
+        else:
+            raise RuntimeError('Container timeout on start')
+
+    def _wait_for_announcer(self, name, env):
+        status = None
+        # wait a bit for the announcer to come up, otherwise we may have hit
+        # https://github.com/docker/docker/issues/8022
+        for _ in range(30):
+            # check if the main container's running
             status = subprocess.check_output(
                 "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
                 shell=True, env=env).strip('\n')
             if status == 'running':
                 break
+            elif status == 'failed':
+                raise RuntimeError('Announcer failed to start')
             time.sleep(1)
         else:
-            raise RuntimeError('Container failed to start')
+            raise RuntimeError('Announcer timeout on start')
 
     def stop(self, name, use_announcer=True):
         """
