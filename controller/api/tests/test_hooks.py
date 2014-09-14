@@ -11,7 +11,6 @@ import mock
 import requests
 
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from django.conf import settings
 
@@ -23,7 +22,6 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class HookTest(TransactionTestCase):
 
     """Tests API hooks used to trigger actions from external components"""

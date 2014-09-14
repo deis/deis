@@ -15,8 +15,6 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-10}
 
-export CELERY_LOG_LEVEL=${CELERY_LOG_LEVEL:-INFO}
-
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
@@ -56,18 +54,14 @@ chown -R deis:deis /var/log/deis
 # run an idempotent database migration
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
-# spawn celery workers in the background
-sudo -E -u deis celery worker --app=deis --loglevel=$CELERY_LOG_LEVEL --workdir=/app --pidfile=/tmp/celery.pid &
-
 # spawn a gunicorn server in the background
 sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --preload &
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
-	CELERY_PID=$(cat /tmp/celery.pid)
 	GUNICORN_PID=$(cat /tmp/gunicorn.pid)
-	kill -TERM $CELERY_PID $GUNICORN_PID
-	wait $CELERY_PID $GUNICORN_PID 2>/dev/null
+	kill -TERM $GUNICORN_PID 2>/dev/null
+	wait $GUNICORN_PID 2>/dev/null
 	exit 0
 }
 trap on_exit INT TERM

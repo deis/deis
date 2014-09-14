@@ -6,7 +6,4 @@ the api, provider, cm, and web Django apps.
 
 from __future__ import absolute_import
 
-from .celery import app  # noqa
-
-
 __version__ = '0.12.0-dev'

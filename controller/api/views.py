@@ -195,8 +195,7 @@ class AppViewSet(OwnerViewSet):
         app = self.get_object()
         try:
             models.validate_app_structure(new_structure)
-            app.structure = new_structure
-            app.scale()
+            app.scale(request.user, new_structure)
         except (EnvironmentError, ValidationError) as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT,
@@ -217,7 +216,7 @@ class AppViewSet(OwnerViewSet):
         app = self.get_object()
         command = request.DATA['command']
         try:
-            output_and_rc = app.run(command)
+            output_and_rc = app.run(self.request.user, command)
         except EnvironmentError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         return Response(output_and_rc, status=status.HTTP_200_OK,
@@ -262,7 +261,7 @@ class AppBuildViewSet(BaseAppViewSet):
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
             initial = True if build.app.structure == {} else False
-            build.app.deploy(self.release, initial=initial)
+            build.app.deploy(self.request.user, self.release, initial=initial)
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -296,7 +295,7 @@ class AppConfigViewSet(BaseAppViewSet):
         if created:
             release = config.app.release_set.latest()
             self.release = release.new(self.request.user, config=config)
-            config.app.deploy(self.release)
+            config.app.deploy(self.request.user, self.release)
 
     def get_success_headers(self, data):
         headers = super(AppConfigViewSet, self).get_success_headers(data)
@@ -355,7 +354,7 @@ class AppReleaseViewSet(BaseAppViewSet):
             config=prev.config,
             summary=summary,
             source_version='v{}'.format(version))
-        app.deploy(new_release)
+        app.deploy(request.user, new_release)
         response = {'version': new_release.version}
         return Response(response, status=status.HTTP_201_CREATED)
 
@@ -469,7 +468,7 @@ class BuildHookViewSet(BaseHookViewSet):
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
             initial = True if build.app.structure == {} else False
-            build.app.deploy(new_release, initial=initial)
+            build.app.deploy(self.request.user, new_release, initial=initial)
 
 
 class ConfigHookViewSet(BaseHookViewSet):
