@@ -17,7 +17,7 @@ from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db import models, connections
+from django.db import models
 from django.db.models import Max
 from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
@@ -37,20 +37,6 @@ logger = logging.getLogger(__name__)
 def log_event(app, msg, level=logging.INFO):
     msg = "{}: {}".format(app.id, msg)
     logger.log(level, msg)
-
-
-def close_db_connections(func, *args, **kwargs):
-    """
-    Decorator to close db connections during threaded execution
-
-    Note this is necessary to work around:
-    https://code.djangoproject.com/ticket/22420
-    """
-    def _inner(*args, **kwargs):
-        func(*args, **kwargs)
-        for conn in connections.all():
-            conn.close()
-    return _inner
 
 
 def validate_app_structure(value):
@@ -348,7 +334,6 @@ class Container(UuidAuditedModel):
     def _command_announceable(self):
         return self._command.lower() in ['start web', '']
 
-    @close_db_connections
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
         image = self.release.image
@@ -361,14 +346,12 @@ class Container(UuidAuditedModel):
                                use_announcer=self._command_announceable(),
                                **kwargs)
 
-    @close_db_connections
     @transition(field=state,
                 source=[CREATED, UP, DOWN],
                 target=UP, crashed=DOWN)
     def start(self):
         self._scheduler.start(self._job_id, self._command_announceable())
 
-    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=UP,
@@ -394,12 +377,10 @@ class Container(UuidAuditedModel):
         # destroy old container
         self._scheduler.destroy(old_job_id, self._command_announceable())
 
-    @close_db_connections
     @transition(field=state, source=UP, target=DOWN)
     def stop(self):
         self._scheduler.stop(self._job_id, self._command_announceable())
 
-    @close_db_connections
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=DESTROYED)
