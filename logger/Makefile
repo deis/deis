@@ -52,6 +52,7 @@ test-unit: test-style
 	go test -v -cover ./syslog
 
 test-functional:
+	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
 
 coverage:

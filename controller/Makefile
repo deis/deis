@@ -59,4 +59,6 @@ test-unit: setup-venv test-style
 	venv/bin/python manage.py test --noinput api
 
 test-functional:
+	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd
+	@docker history deis/test-postgresql >/dev/null 2>&1 || docker pull deis/test-postgresql
 	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...

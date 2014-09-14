@@ -8,41 +8,35 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisDatabaseTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func TestDatabase(t *testing.T) {
 	var err error
+	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	etcdName := "deis-etcd-" + tag
+	cli, stdout, stdoutPipe := dockercli.NewClient()
+	dockercli.RunTestEtcd(t, etcdName, etcdPort)
+	defer cli.CmdRm("-f", etcdName)
 	dockercli.RunDeisDataTest(t, "--name", "deis-database-data",
 		"-v", "/var/lib/postgresql", "deis/base", "true")
-	cli, stdout, stdoutPipe := dockercli.GetNewClient()
+	host, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/router:%s at %s:%s\n", tag, host, port)
+	name := "deis-router-" + tag
+	defer cli.CmdRm("-f", name)
 	go func() {
+		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
-			"--name", "deis-database-"+testID,
+			"--name", name,
 			"--rm",
-			"-p", servicePort+":5432",
-			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+utils.GetHostIPAddress(),
+			"-p", port+":5432",
+			"-e", "PUBLISH="+port,
+			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-database-data",
-			"deis/database:"+testID)
+			"deis/database:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-database running")
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestDatabase(t *testing.T) {
-	testID := utils.NewID()
-	err := dockercli.BuildImage(t, "../", "deis/database:"+testID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	etcdPort := utils.GetRandomPort()
-	dockercli.RunEtcdTest(t, testID, etcdPort)
-	servicePort := utils.GetRandomPort()
-	fmt.Printf("--- Test deis-database-%s at port %s\n", testID, servicePort)
-	runDeisDatabaseTest(t, testID, etcdPort, servicePort)
 	dockercli.DeisServiceTest(
-		t, "deis-database-"+testID, servicePort, "tcp")
-	dockercli.ClearTestSession(t, testID)
+		t, "deis-database-"+tag, port, "tcp")
 }

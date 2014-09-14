@@ -8,41 +8,34 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisLoggerTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func TestLogger(t *testing.T) {
 	var err error
+	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	etcdName := "deis-etcd-" + tag
+	cli, stdout, stdoutPipe := dockercli.NewClient()
+	dockercli.RunTestEtcd(t, etcdName, etcdPort)
+	defer cli.CmdRm("-f", etcdName)
 	dockercli.RunDeisDataTest(t, "--name", "deis-logger-data",
 		"-v", "/var/log/deis", "deis/base", "/bin/true")
-	cli, stdout, stdoutPipe := dockercli.GetNewClient()
+	ipaddr, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/logger:%s at %s:%s\n", tag, ipaddr, port)
+	name := "deis-logger-" + tag
+	defer cli.CmdRm("-f", name)
 	go func() {
+		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
-			"--name", "deis-logger-"+testID,
+			"--name", name,
 			"--rm",
-			"-p", servicePort+":514/udp",
-			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+utils.GetHostIPAddress(),
+			"-p", port+":514/udp",
+			"-e", "PUBLISH="+port,
+			"-e", "HOST="+utils.HostAddress(),
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-logger-data",
-			"deis/logger:"+testID)
+			"deis/logger:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestLogger(t *testing.T) {
-	testID := utils.NewID()
-	err := dockercli.BuildImage(t, "../", "deis/logger:"+testID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	etcdPort := utils.GetRandomPort()
-	dockercli.RunEtcdTest(t, testID, etcdPort)
-	servicePort := utils.GetRandomPort()
-	fmt.Printf("--- Test deis-logger-%s at port %s\n", testID, servicePort)
-	runDeisLoggerTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-logger-"+testID, servicePort, "udp")
-	dockercli.ClearTestSession(t, testID)
+	dockercli.DeisServiceTest(t, name, port, "udp")
 }

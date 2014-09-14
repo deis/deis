@@ -40,12 +40,10 @@ restart: stop start
 
 run: install start
 
-test: test-components test-integration
+test: test-components push test-integration
 
 test-components:
-	@$(foreach C,$(COMPONENTS), \
-		echo \\nTesting deis/$(C) ; \
-		$(MAKE) -C $(C) build test ;)
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test || exit 1;)
 
 test-integration:
 	$(MAKE) -C tests/ test-full

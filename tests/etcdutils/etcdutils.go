@@ -18,16 +18,14 @@ type EtcdHandle struct {
 	C    *etcd.Client
 }
 
-func getetcdClient(port string) *etcd.Client {
-	IPAddress := utils.GetHostIPAddress()
-	machines := []string{"http://" + IPAddress + ":" + port}
-	c := etcd.NewClient(machines)
-	return c
+func etcdClient(port string) *etcd.Client {
+	machines := []string{"http://" + utils.HostAddress() + ":" + port}
+	return etcd.NewClient(machines)
 }
 
-// InitetcdValues configures a test etcd instance.
-func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
-	cli := getetcdClient(port)
+// InitEtcd configures a test etcd instance.
+func InitEtcd(setdir, setkeys []string, port string) *EtcdHandle {
+	cli := etcdClient(port)
 	controllerHandle := new(EtcdHandle)
 	controllerHandle.Dirs = setdir
 	controllerHandle.Keys = setkeys
@@ -36,8 +34,8 @@ func InitetcdValues(setdir, setkeys []string, port string) *EtcdHandle {
 	return controllerHandle
 }
 
-// SetEtcdValues sets an array of values into a test etcd instance.
-func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client) {
+// SetEtcd sets an array of values into a test etcd instance.
+func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	for i, key := range keys {
 		_, err := c.Set(key, values[i], 0)
 		if err != nil {
@@ -46,8 +44,8 @@ func SetEtcdValues(t *testing.T, keys []string, values []string, c *etcd.Client)
 	}
 }
 
-// Publishvalues sets canonical etcd values into a test etcd instance.
-func Publishvalues(t *testing.T, ecli *EtcdHandle) {
+// PublishEtcd sets canonical etcd values into a test etcd instance.
+func PublishEtcd(t *testing.T, ecli *EtcdHandle) {
 	fmt.Println("--- Publish etcd keys and values")
 	for _, dir := range ecli.Dirs {
 		_, err := ecli.C.SetDir(dir, 0)

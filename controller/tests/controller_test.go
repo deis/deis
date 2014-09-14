@@ -10,27 +10,8 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisControllerTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
-	var err error
-	cli, stdout, stdoutPipe := dockercli.GetNewClient()
-	go func() {
-		err = dockercli.RunContainer(cli,
-			"--name", "deis-controller-"+testID,
-			"--rm",
-			"-p", servicePort+":8000",
-			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+utils.GetHostIPAddress(),
-			"-e", "ETCD_PORT="+etcdPort,
-			"deis/controller:"+testID)
-	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestController(t *testing.T) {
+	var err error
 	setkeys := []string{
 		"/deis/registry/protocol",
 		"deis/registry/host",
@@ -45,21 +26,34 @@ func TestController(t *testing.T) {
 		"/deis/registry",
 		"/deis/domains",
 	}
-	testID := utils.NewID()
-	err := dockercli.BuildImage(t, "../", "deis/controller:"+testID)
+	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	etcdName := "deis-etcd-" + tag
+	cli, stdout, stdoutPipe := dockercli.NewClient()
+	dockercli.RunTestEtcd(t, etcdName, etcdPort)
+	defer cli.CmdRm("-f", etcdName)
+	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
+	etcdutils.PublishEtcd(t, handler)
+	cli.CmdRm("-f", "deis-test-database-"+tag)
+	mock.RunMockDatabase(t, tag, etcdPort, utils.RandomPort())
+	defer cli.CmdRm("-f", "deis-test-database-"+tag)
+	host, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/controller:%s at %s:%s\n", tag, host, port)
+	name := "deis-controller-" + tag
+	defer cli.CmdRm("-f", name)
+	go func() {
+		cli.CmdRm("-f", name)
+		err = dockercli.RunContainer(cli,
+			"--name", name,
+			"--rm",
+			"-p", port+":8000",
+			"-e", "PUBLISH="+port,
+			"-e", "HOST="+host,
+			"-e", "ETCD_PORT="+etcdPort,
+			"deis/controller:"+tag)
+	}()
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
 		t.Fatal(err)
 	}
-	etcdPort := utils.GetRandomPort()
-	dockercli.RunEtcdTest(t, testID, etcdPort)
-	handler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
-	etcdutils.Publishvalues(t, handler)
-	dbPort := utils.GetRandomPort()
-	mock.RunMockDatabase(t, testID, etcdPort, dbPort)
-	servicePort := utils.GetRandomPort()
-	fmt.Printf("--- Test deis-controller-%s at port %s\n", testID, servicePort)
-	runDeisControllerTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-controller-"+testID, servicePort, "http")
-	dockercli.ClearTestSession(t, testID)
+	dockercli.DeisServiceTest(t, name, port, "http")
 }

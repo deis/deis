@@ -14,10 +14,10 @@ import (
 // RunMockDatabase starts a mock postgresql database for testing.
 func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	var err error
-	cli, stdout, stdoutPipe := dockercli.GetNewClient()
+	cli, stdout, stdoutPipe := dockercli.NewClient()
 	done := make(chan bool, 1)
 	dbImage := "deis/test-postgresql:latest"
-	ipaddr := utils.GetHostIPAddress()
+	ipaddr := utils.HostAddress()
 	done <- true
 	go func() {
 		<-done
@@ -40,9 +40,9 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 		"/deis/database/name",
 	}
 	setdir := []string{}
-	dbhandler := etcdutils.InitetcdValues(setdir, setkeys, etcdPort)
-	etcdutils.Publishvalues(t, dbhandler)
-	etcdutils.SetEtcdValues(t,
+	dbhandler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
+	etcdutils.PublishEtcd(t, dbhandler)
+	etcdutils.SetEtcd(t,
 		[]string{"/deis/database/host", "/deis/database/port", "/deis/database/engine"},
 		[]string{ipaddr, dbPort, "postgresql_psycopg2"}, dbhandler.C)
 	if err != nil {
