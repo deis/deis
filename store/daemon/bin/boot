@@ -1,8 +1,6 @@
 #!/bin/bash
 # Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
 
-set -e
-
 ETCD_PORT=${ETCD_PORT:-4001}
 ETCD="$HOST:$ETCD_PORT"
 
@@ -20,11 +18,16 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1 ; 
 done
 
 if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; then
-  echo "store-daemon: our OSD hasn't yet been created..."
-  sleep 10
-
   echo "store-daemon: creating OSD..."
-  OSD_ID=`ceph osd create`
+  OSD_ID=`ceph osd create 2>/dev/null`
+  rc=$?
+
+  until [ "$rc" -eq 0 ] ; do
+    sleep 5
+    echo "store-daemon: trying again..."
+    OSD_ID=`ceph osd create 2>/dev/null`
+    rc=$?
+  done
 
   echo "store-daemon: created OSD ${OSD_ID}"
   etcdctl --no-sync -C $ETCD set /deis/store/osds/$HOST ${OSD_ID} >/dev/null
