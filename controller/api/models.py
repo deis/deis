@@ -402,7 +402,7 @@ class Container(UuidAuditedModel):
 
     @transition(field=state, source=INITIALIZED, target=CREATED)
     def create(self):
-        image = self.release.image
+        image = self.release.image + ':v' + str(self.release.version)
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags}
@@ -427,7 +427,7 @@ class Container(UuidAuditedModel):
         self.release = new_release
         # deploy new container
         new_job_id = self._job_id
-        image = self.release.image
+        image = self.release.image + ':v' + str(self.release.version)
         c_type = self.type
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
@@ -453,7 +453,8 @@ class Container(UuidAuditedModel):
 
     def run(self, command):
         """Run a one-off command"""
-        rc, output = self._scheduler.run(self._job_id, self.release.image, command)
+        image = self.release.image + ':v' + str(self.release.version)
+        rc, output = self._scheduler.run(self._job_id, image, command)
         return rc, output
 
 
