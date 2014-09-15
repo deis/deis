@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+# fail hard and fast even on pipelines
+set -eo pipefail
+
+# set debug based on envvar
+[[ $DEBUG ]] && set -x
+
+# configure etcd
+export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD="$HOST:$ETCD_PORT"
+export ETCD_PATH=${ETCD_PATH:-/deis/pty-proxy}
+export ETCD_TTL=${ETCD_TTL:-10}
+
+export CELERY_LOG_LEVEL=${CELERY_LOG_LEVEL:-INFO}
+
+# wait for etcd to be available
+until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+    echo "waiting for etcd at $ETCD..."
+    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
+
+# wait until etcd has discarded potentially stale values
+sleep $(($ETCD_TTL+1))
+
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+}
+
+function etcd_safe_mkdir {
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
+}
+
+etcd_set_default protocol ${DEIS_PROTOCOL:-http}
+
+# spawn pty in the background
+/go/bin/pty-proxy &
+
+echo deis-pty-proxy running...
+
+# publish the service to etcd using the injected PORT
+if [[ ! -z $PUBLISH ]]; then
+
+    # configure service discovery
+    PORT=${PORT:-5309}
+    PROTO=${PROTO:-tcp}
+
+    set +e
+
+    # wait for the service to become available on PUBLISH port
+    sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+
+    # while the port is listening, publish to etcd
+    while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+        etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+        etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
+        sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+    done
+
+    # if the loop quits, something went wrong
+    exit 1
+
+fi
+
+wait
