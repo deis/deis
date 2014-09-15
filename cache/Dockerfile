@@ -2,9 +2,9 @@ FROM deis/base:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 # install redis from OS package
-RUN apt-get update && apt-get install -yq python-software-properties
-RUN add-apt-repository ppa:chris-lea/redis-server -y
-RUN apt-get update && apt-get install -yq redis-server
+RUN apt-get update && apt-get install -yq python-software-properties && \
+    add-apt-repository ppa:chris-lea/redis-server -y && \
+    apt-get update && apt-get install -yq redis-server
 
 WORKDIR /app
 CMD ["/app/bin/boot"]
