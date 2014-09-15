@@ -93,6 +93,10 @@
       "ap-northeast-1" : { "PV" : "ami-17210d16", "HVM" : "ami-19210d18" },
       "sa-east-1"      : { "PV" : "ami-efba10f2", "HVM" : "ami-e9ba10f4" }
     },
+    "RootDevices" : {
+      "HVM" : { "Name": "/dev/xvda" },
+      "PV"  : { "Name": "/dev/sda" }
+    },
     "SubnetConfig" : {
       "VPC"     : { "CIDR" : "10.21.0.0/16" },
       "Subnet1" : { "CIDR" : "10.21.1.0/24" },
@@ -221,7 +225,7 @@
         "SecurityGroups": [ { "Fn::GetAtt": ["VPCSecurityGroup", "GroupId"] } ],
         "BlockDeviceMappings" : [
           {
-            "DeviceName" : "/dev/sda",
+            "DeviceName" : { "Fn::FindInMap": [ "RootDevices", { "Ref": "EC2VirtualizationType" }, "Name" ] },
             "Ebs" : { "VolumeSize" : "100" }
           }
         ]
