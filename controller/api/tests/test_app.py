@@ -10,12 +10,10 @@ import json
 import os.path
 
 from django.test import TestCase
-from django.test.utils import override_settings
 
 from django.conf import settings
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class AppTest(TestCase):
 
     """Tests creation of applications"""

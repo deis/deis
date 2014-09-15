@@ -12,7 +12,6 @@ import mock
 import requests
 
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from api.models import Config
 
@@ -24,7 +23,6 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class ConfigTest(TransactionTestCase):
 
     """Tests setting and updating config values"""

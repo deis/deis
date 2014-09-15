@@ -252,18 +252,6 @@ LOGGING = {
 }
 TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 
-# celery settings
-CELERY_ACCEPT_CONTENT = ['pickle', 'json']
-CELERY_IMPORTS = ('api.tasks',)
-BROKER_URL = 'redis://{}:{}/{}'.format(
-             os.environ.get('CACHE_HOST', '127.0.0.1'),
-             os.environ.get('CACHE_PORT', 6379),
-             os.environ.get('CACHE_NAME', 0))
-CELERY_RESULT_BACKEND = BROKER_URL
-# this number should be equal to N+1, where
-# N is number of nodes in largest formation
-CELERYD_CONCURRENCY = 8
-
 # etcd settings
 ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].split(':')
 

@@ -12,7 +12,6 @@ import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-from django.test.utils import override_settings
 
 from django_fsm import TransitionNotAllowed
 
@@ -26,7 +25,6 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class ContainerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 

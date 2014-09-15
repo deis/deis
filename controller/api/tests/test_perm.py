@@ -3,10 +3,8 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
-from django.test.utils import override_settings
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class TestAdminPerms(TestCase):
 
     def test_first_signup(self):
@@ -134,7 +132,6 @@ class TestAdminPerms(TestCase):
         self.assertNotIn('two', str(response.data['results']))
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class TestAppPerms(TestCase):
 
     fixtures = ['test_sharing.json']

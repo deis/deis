@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import json
 
 from django.test import TestCase
-from django.test.utils import override_settings
 
 from api.models import Key
 from api.utils import fingerprint
@@ -31,7 +30,6 @@ ECDSA_PUBKEY = (
 )
 
 
-@override_settings(CELERY_ALWAYS_EAGER=True)
 class KeyTest(TestCase):
 
     """Tests cloud provider credentials"""

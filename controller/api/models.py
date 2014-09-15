@@ -12,8 +12,8 @@ import os
 import re
 import subprocess
 import time
+import threading
 
-from celery.canvas import group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -24,9 +24,11 @@ from django.db.models.signals import post_save
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
 from django_fsm.signals import post_transition
+from docker.utils import utils
 from json_field.fields import JSONField
+import requests
 
-from api import fields, tasks
+from api import fields
 from registry import publish_release
 from utils import dict_diff, fingerprint
 
@@ -119,13 +121,13 @@ class Cluster(UuidAuditedModel):
         """
         Initialize a cluster's router and log aggregator
         """
-        return tasks.create_cluster.delay(self).get()
+        return self._scheduler.setUp()
 
     def destroy(self):
         """
         Destroy a cluster's router and log aggregator
         """
-        return tasks.destroy_cluster.delay(self).get()
+        return self._scheduler.tearDown()
 
 
 @python_2_unicode_compatible
@@ -162,63 +164,87 @@ class App(UuidAuditedModel):
             f.write(msg.encode('utf-8'))
 
     def create(self, *args, **kwargs):
+        """Create a new application with an initial release"""
         config = Config.objects.create(owner=self.owner, app=self)
         build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
         Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
 
     def delete(self, *args, **kwargs):
+        """Delete this application including all containers"""
         for c in self.container_set.all():
             c.destroy()
-        # delete application logs stored by deis/logger
+        self._clean_app_logs()
+        return super(App, self).delete(*args, **kwargs)
+
+    def _clean_app_logs(self):
+        """Delete application logs stored by the logger component"""
         path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
         if os.path.exists(path):
             os.remove(path)
-        return super(App, self).delete(*args, **kwargs)
 
-    def deploy(self, release, initial=False):
-        tasks.deploy_release.delay(self, release).get()
+    def deploy(self, user, release, initial=False):
+        """Deploy a new release to this application"""
+        containers = self.container_set.all()
+        self._deploy_containers(containers, release)
+        # update release in database
+        for c in containers:
+            c.release = release
+            c.save()
+        self.release = release
+        self.save()
+        # perform default scaling if necessary
         if initial:
-            # if there is no SHA, assume a docker image is being promoted
-            if not release.build.sha:
-                self.structure = {'cmd': 1}
-            # if a dockerfile exists without a procfile, assume docker workflow
-            elif release.build.dockerfile and not release.build.procfile:
-                self.structure = {'cmd': 1}
-            # if a procfile exists without a web entry, assume docker workflow
-            elif release.build.procfile and 'web' not in release.build.procfile:
-                self.structure = {'cmd': 1}
-            # default to heroku workflow
-            else:
-                self.structure = {'web': 1}
-            self.save()
-            self.scale()
+            self._default_scale(user, release)
 
-    def destroy(self, *args, **kwargs):
-        return self.delete(*args, **kwargs)
+    def _default_scale(self, user, release):
+        """Scale to default structure based on release type"""
+        # if there is no SHA, assume a docker image is being promoted
+        if not release.build.sha:
+            structure = {'cmd': 1}
+        # if a dockerfile exists without a procfile, assume docker workflow
+        elif release.build.dockerfile and not release.build.procfile:
+            structure = {'cmd': 1}
+        # if a procfile exists without a web entry, assume docker workflow
+        elif release.build.procfile and 'web' not in release.build.procfile:
+            structure = {'cmd': 1}
+        # default to heroku workflow
+        else:
+            structure = {'web': 1}
+        self.scale(user, structure)
 
-    def scale(self, **kwargs):  # noqa
-        """Scale containers up or down to match requested."""
-        requested_containers = self.structure.copy()
+    def _deploy_containers(self, to_deploy, release, **kwargs):
+        """Deploys containers via the scheduler"""
+        threads = []
+        for c in to_deploy:
+            threads.append(threading.Thread(target=c.deploy, args=(release,)))
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+    def scale(self, user, structure):  # noqa
+        """Scale containers up or down to match requested structure."""
+        requested_structure = structure.copy()
         release = self.release_set.latest()
         # test for available process types
         available_process_types = release.build.procfile or {}
-        for container_type in requested_containers.keys():
+        for container_type in requested_structure.keys():
             if container_type == 'cmd':
                 continue  # allow docker cmd types in case we don't have the image source
             if container_type not in available_process_types:
                 raise EnvironmentError(
                     'Container type {} does not exist in application'.format(container_type))
-        msg = 'containers scaled ' + ' '.join(
-            "{}={}".format(k, v) for k, v in requested_containers.items())
+        msg = '{} scaled containers '.format(user.username) + ' '.join(
+            "{}={}".format(k, v) for k, v in requested_structure.items())
+        log_event(self, msg)
+        self.log(msg)
         # iterate and scale by container type (web, worker, etc)
         changed = False
         to_add, to_remove = [], []
-        for container_type in requested_containers.keys():
+        for container_type in requested_structure.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
             # increment new container nums off the most recent container
             results = self.container_set.filter(type=container_type).aggregate(Max('num'))
             container_num = (results.get('num__max') or 0) + 1
-            requested = requested_containers.pop(container_type)
+            requested = requested_structure.pop(container_type)
             diff = requested - len(containers)
             if diff == 0:
                 continue
@@ -228,6 +254,7 @@ class App(UuidAuditedModel):
                 to_remove.append(c)
                 diff += 1
             while diff > 0:
+                # create a database record
                 c = Container.objects.create(owner=self.owner,
                                              app=self,
                                              release=release,
@@ -237,15 +264,37 @@ class App(UuidAuditedModel):
                 container_num += 1
                 diff -= 1
         if changed:
-            subtasks = []
             if to_add:
-                subtasks.append(tasks.start_containers.s(to_add))
+                self._start_containers(to_add)
             if to_remove:
-                subtasks.append(tasks.stop_containers.s(to_remove))
-            group(*subtasks).apply_async().join()
-            log_event(self, msg)
-            self.log(msg)
+                self._destroy_containers(to_remove)
+                # remove the database record
+                for c in to_remove:
+                    c.delete()
+        # save new structure to the database
+        self.structure = structure
+        self.save()
         return changed
+
+    def _start_containers(self, to_add):
+        """Creates and starts containers via the scheduler"""
+        create_threads = []
+        start_threads = []
+        for c in to_add:
+            create_threads.append(threading.Thread(target=c.create))
+            start_threads.append(threading.Thread(target=c.start))
+        [t.start() for t in create_threads]
+        [t.join() for t in create_threads]
+        [t.start() for t in start_threads]
+        [t.join() for t in start_threads]
+
+    def _destroy_containers(self, to_destroy):
+        """Destroys containers via the scheduler"""
+        destroy_threads = []
+        for c in to_destroy:
+            destroy_threads.append(threading.Thread(target=c.destroy))
+        [t.start() for t in destroy_threads]
+        [t.join() for t in destroy_threads]
 
     def logs(self):
         """Return aggregated log data for this application."""
@@ -255,20 +304,37 @@ class App(UuidAuditedModel):
         data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
         return data
 
-    def run(self, command):
+    def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""
         # TODO: add support for interactive shell
-        msg = "deis run '{}'".format(command)
+        msg = "{} runs '{}'".format(user.username, command)
         log_event(self, msg)
         self.log(msg)
         c_num = max([c.num for c in self.container_set.filter(type='admin')] or [0]) + 1
-        c = Container.objects.create(owner=self.owner,
-                                     app=self,
-                                     release=self.release_set.latest(),
-                                     type='admin',
-                                     num=c_num)
-        rc, output = tasks.run_command.delay(c, command).get()
-        return rc, output
+        try:
+            # create database record for admin process
+            c = Container.objects.create(owner=self.owner,
+                                         app=self,
+                                         release=self.release_set.latest(),
+                                         type='admin',
+                                         num=c_num)
+            image = c.release.image + ':v' + str(c.release.version)
+
+            # check for backwards compatibility
+            def _has_hostname(image):
+                repo, tag = utils.parse_repository_tag(image)
+                return True if '/' in repo and '.' in repo.split('/')[0] else False
+
+            if not _has_hostname(image):
+                image = '{}:{}/{}'.format(settings.REGISTRY_HOST,
+                                          settings.REGISTRY_PORT,
+                                          image)
+            # SECURITY: shell-escape user input
+            escaped_command = command.replace("'", "'\\''")
+            return c.run(escaped_command)
+        # always cleanup admin containers
+        finally:
+            c.delete()
 
 
 @python_2_unicode_compatible
@@ -354,13 +420,11 @@ class Container(UuidAuditedModel):
 
     @transition(field=state,
                 source=[INITIALIZED, CREATED, UP, DOWN],
-                target=UP,
-                crashed=DOWN)
-    def deploy(self, release):
+                target=UP, crashed=DOWN)
+    def deploy(self, new_release):
         old_job_id = self._job_id
         # update release
-        self.release = release
-        self.save()
+        self.release = new_release
         # deploy new container
         new_job_id = self._job_id
         image = self.release.image
@@ -385,12 +449,8 @@ class Container(UuidAuditedModel):
                 source=[INITIALIZED, CREATED, UP, DOWN],
                 target=DESTROYED)
     def destroy(self):
-        # TODO: add check for active connections before killing
         self._scheduler.destroy(self._job_id, self._command_announceable())
 
-    @transition(field=state,
-                source=[INITIALIZED, CREATED, DESTROYED],
-                target=DESTROYED)
     def run(self, command):
         """Run a one-off command"""
         rc, output = self._scheduler.run(self._job_id, self.release.image, command)
@@ -521,7 +581,14 @@ class Release(UuidAuditedModel):
         if not build.sha:
             # we assume that the image is not present on our registry,
             # so shell out a task to pull in the repository
-            tasks.import_repository.delay(build.image, self.app.id).get()
+            data = {
+                'src': build.image
+            }
+            requests.post(
+                '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
+                                                    self.app.id),
+                data=data,
+            )
             # update the source image to the repository we just imported
             source_image = self.app.id
             # if the image imported had a tag specified, use that tag as the source
@@ -737,6 +804,10 @@ post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models
 # save FSM transitions as they happen
 def _save_transition(**kwargs):
     kwargs['instance'].save()
+    # close database connections after transition
+    # to avoid leaking connections inside threads
+    from django.db import connection
+    connection.close()
 
 post_transition.connect(_save_transition)
 
