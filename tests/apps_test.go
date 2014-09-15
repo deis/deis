@@ -5,7 +5,6 @@ package tests
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/deis/deis/tests/utils"
 )
@@ -80,8 +79,6 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	utils.Execute(t, gitPushCmd, params, false, "")
-	// TODO: nginx needs a few seconds to wake up here--fixme!
-	time.Sleep(5000 * time.Millisecond)
 	utils.Curl(t, params)
 	utils.Execute(t, cmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
