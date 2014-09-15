@@ -2169,14 +2169,11 @@ correct and the server is running.")
 
 def _init_logger():
     logger = logging.getLogger(__name__)
-    stdoutHandler = logging.StreamHandler(sys.stdout)
-    stderrHandler = logging.StreamHandler(sys.stderr)
+    handler = logging.StreamHandler(sys.stdout)
     # TODO: add a --debug flag
     logger.setLevel(logging.INFO)
-    stdoutHandler.setLevel(logging.INFO)
-    stderrHandler.setLevel(logging.WARNING)
-    logger.addHandler(stdoutHandler)
-    logger.addHandler(stderrHandler)
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
 
 
 def main():
