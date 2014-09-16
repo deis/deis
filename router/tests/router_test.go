@@ -36,14 +36,13 @@ func TestRouter(t *testing.T) {
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/router:%s at %s:%s\n", tag, host, port)
 	name := "deis-router-" + tag
-	defer cli.CmdRm("-f", name)
 	go func() {
 		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
 			"-p", port+":80",
-			"-p", "2222:2222",
+			"-p", utils.RandomPort()+":2222",
 			"-e", "PUBLISH="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
@@ -53,7 +52,8 @@ func TestRouter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// TODO: nginx needs a few seconds to wake up here--fixme!
-	time.Sleep(5000 * time.Millisecond)
+	// FIXME: nginx needs a couple seconds to wake up here
+	time.Sleep(2000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "http")
+	_ = cli.CmdRm("-f", name)
 }

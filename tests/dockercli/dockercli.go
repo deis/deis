@@ -77,6 +77,9 @@ func DockerHost() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
+	if u.Scheme == "unix" {
+		return u.Scheme, u.Path, nil
+	}
 	return u.Scheme, u.Host, nil
 }
 

@@ -38,4 +38,5 @@ test-unit:
 	@echo no unit tests
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
+	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...

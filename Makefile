@@ -19,25 +19,25 @@ discovery-url:
 	sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $$(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
 
 build: check-docker
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build ;)
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build || exit 1;)
 
 push: check-docker check-registry
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) push ;)
-
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) push || exit 1;)
+	
 full-clean:
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) full-clean ;)
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) full-clean || exit 1;)
 
 install:
-	@$(foreach C, $(START_ORDER), $(MAKE) -C $(C) install ;)
+	@$(foreach C, $(START_ORDER), $(MAKE) -C $(C) install || exit 1;)
 
 uninstall:
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) uninstall ;)
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) uninstall || exit 1;)
 
 start:
-	@$(foreach C, $(START_ORDER), $(MAKE) -C $(C) start ;)
+	@$(foreach C, $(START_ORDER), $(MAKE) -C $(C) start || exit 1;)
 
 stop:
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) stop ;)
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) stop || exit 1;)
 
 restart: stop start
 

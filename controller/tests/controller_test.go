@@ -33,7 +33,6 @@ func TestController(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
-	cli.CmdRm("-f", "deis-test-database-"+tag)
 	mock.RunMockDatabase(t, tag, etcdPort, utils.RandomPort())
 	defer cli.CmdRm("-f", "deis-test-database-"+tag)
 	host, port := utils.HostAddress(), utils.RandomPort()

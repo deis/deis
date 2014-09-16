@@ -12,7 +12,7 @@ import (
 )
 
 // RunMockDatabase starts a mock postgresql database for testing.
-func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
+func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	done := make(chan bool, 1)
@@ -22,7 +22,7 @@ func RunMockDatabase(t *testing.T, uid string, etcdPort string, dbPort string) {
 	go func() {
 		<-done
 		err = dockercli.RunContainer(cli,
-			"--name", "deis-test-database-"+uid,
+			"--name", "deis-test-database-"+tag,
 			"--rm",
 			"-p", dbPort+":5432",
 			"-e", "PUBLISH="+dbPort,
