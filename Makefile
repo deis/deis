@@ -15,6 +15,9 @@ dev-registry: check-docker
 	@echo "To configure the registry for local Deis development:"
 	@echo "    export DEIS_REGISTRY=`boot2docker ip 2>/dev/null`:5000"
 
+discovery-url:
+	sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $$(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
+
 build: check-docker
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build ;)
 

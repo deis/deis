@@ -29,7 +29,7 @@ Each time you spin up a new CoreOS cluster, you **must** provide a new [discover
 Automatically generate a fresh discovery URL with:
 
 ```console
-$ sed -i -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
+$ sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
 ```
 
 or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from <https://discovery.etcd.io/new>.
