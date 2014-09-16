@@ -16,4 +16,4 @@ ExecStopPost=/usr/bin/docker stop deis-database
 WantedBy=multi-user.target
 
 [X-Fleet]
-X-ConditionMachineOf=deis-database-data.service
+MachineOf=deis-database-data.service

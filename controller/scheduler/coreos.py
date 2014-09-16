@@ -94,7 +94,7 @@ class FleetClient(object):
         tags = kwargs.get('tags', {})
         if tags:
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
-            unit = unit + '\n[X-Fleet]\nX-ConditionMachineMetadata={}\n'.format(tagset)
+            unit = unit + '\n[X-Fleet]\nMachineMetadata={}\n'.format(tagset)
         env.update({'FLEETW_UNIT_DATA': base64.b64encode(unit)})
         return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
                                      shell=True, env=env)
@@ -285,7 +285,7 @@ ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
 TimeoutStartSec=20m
 
 [X-Fleet]
-X-ConditionMachineOf={name}.service
+MachineOf={name}.service
 """  # noqa
 
 LOG_TEMPLATE = """
@@ -299,5 +299,5 @@ ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app
 TimeoutStartSec=20m
 
 [X-Fleet]
-X-ConditionMachineOf={name}.service
+MachineOf={name}.service
 """  # noqa
