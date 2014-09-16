@@ -85,6 +85,13 @@ func GetGlobalConfig() *DeisTestConfig {
 // Curl connects to a Deis endpoint to see if the example app is running.
 func Curl(t *testing.T, params *DeisTestConfig) {
 	url := "http://" + params.AppName + "." + params.Domain
+	// FIXME: make an initial request to nginx to remove stale worker
+	_, err := http.Get(url)
+	if err != nil {
+		t.Fatalf("not reachable:\n%v", err)
+	}
+	// FIXME: sleep a bit before curling
+	time.Sleep(5000 * time.Millisecond)
 	response, err := http.Get(url)
 	if err != nil {
 		t.Fatalf("not reachable:\n%v", err)

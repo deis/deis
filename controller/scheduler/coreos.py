@@ -1,60 +1,102 @@
-from cStringIO import StringIO
+import cStringIO
 import base64
-import os
-import random
+import copy
+import json
+import httplib
+import paramiko
+import socket
 import re
-import subprocess
 import time
 
-
-ROOT_DIR = os.path.join(os.getcwd(), 'coreos')
-if not os.path.exists(ROOT_DIR):
-    os.mkdir(ROOT_DIR)
 
 MATCH = re.compile(
     '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
 
 
-class FleetClient(object):
+class UHTTPConnection(httplib.HTTPConnection):
+    """Subclass of Python library HTTPConnection that uses a Unix domain socket.
+    """
+
+    def __init__(self, path):
+        httplib.HTTPConnection.__init__(self, 'localhost')
+        self.path = path
+
+    def connect(self):
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.connect(self.path)
+        self.sock = sock
+
+
+class FleetHTTPClient(object):
 
     def __init__(self, cluster_name, hosts, auth, domain, options):
         self.name = cluster_name
         self.hosts = hosts
+        self.auth = auth
         self.domain = domain
         self.options = options
-        self.auth = auth
-        self.auth_path = os.path.join(ROOT_DIR, 'ssh-{cluster_name}'.format(**locals()))
-        with open(self.auth_path, 'w') as f:
-            f.write(base64.b64decode(auth))
-            os.chmod(self.auth_path, 0600)
-
-        self.env = {
-            'PATH': '/usr/local/bin:/usr/bin:/bin:{}'.format(
-                os.path.abspath(os.path.join(__file__, '..'))),
-            'FLEETW_KEY': self.auth_path,
-            'FLEETW_HOST': random.choice(self.hosts.split(','))}
+        # single global connection
+        self.conn = UHTTPConnection('/var/run/fleet.sock')
 
     # scheduler setup / teardown
 
     def setUp(self):
-        """
-        Setup a CoreOS cluster including router and log aggregator
-        """
-        return
+        pass
 
     def tearDown(self):
-        """
-        Tear down a CoreOS cluster including router and log aggregator
-        """
-        return
+        pass
 
-    # announcer helpers
+    # connection helpers
 
-    def _log_skipped_announcer(self, action, name):
-        """
-        Logs a message stating that this operation doesn't require an announcer
-        """
-        print "-- skipping announcer {} for {}".format(action, name)
+    def _put_unit(self, name, body):
+        headers = {'Content-Type': 'application/json'}
+        self.conn.request('PUT', '/v1-alpha/units/{name}.service'.format(**locals()),
+                          headers=headers, body=json.dumps(body))
+        resp = self.conn.getresponse()
+        data = resp.read()
+        if resp.status != 204:
+            errmsg = "Failed to create unit: {} {} - {}".format(
+                resp.status, resp.reason, data)
+            raise RuntimeError(errmsg)
+        return data
+
+    def _delete_unit(self, name):
+        headers = {'Content-Type': 'application/json'}
+        self.conn.request('DELETE', '/v1-alpha/units/{name}.service'.format(**locals()),
+                          headers=headers)
+        resp = self.conn.getresponse()
+        data = resp.read()
+        if resp.status not in (404, 204):
+            errmsg = "Failed to delete unit: {} {} - {}".format(
+                resp.status, resp.reason, data)
+            raise RuntimeError(errmsg)
+        return data
+
+    def _get_state(self, name=None):
+        headers = {'Content-Type': 'application/json'}
+        url = '/v1-alpha/state'
+        if name:
+            url += '?unitName={name}.service'.format(**locals())
+        self.conn.request('GET', url, headers=headers)
+        resp = self.conn.getresponse()
+        data = resp.read()
+        if resp.status not in (200,):
+            errmsg = "Failed to retrieve state: {} {} - {}".format(
+                resp.status, resp.reason, data)
+            raise RuntimeError(errmsg)
+        return json.loads(data)
+
+    def _get_machines(self):
+        headers = {'Content-Type': 'application/json'}
+        url = '/v1-alpha/machines'
+        self.conn.request('GET', url, headers=headers)
+        resp = self.conn.getresponse()
+        data = resp.read()
+        if resp.status not in (200,):
+            errmsg = "Failed to retrieve machines: {} {} - {}".format(
+                resp.status, resp.reason, data)
+            raise RuntimeError(errmsg)
+        return json.loads(data)
 
     # job api
 
@@ -62,17 +104,16 @@ class FleetClient(object):
         """
         Create a new job
         """
-        print 'Creating {name}'.format(**locals())
-        env = self.env.copy()
-        self._create_container(name, image, command, template or CONTAINER_TEMPLATE, env, **kwargs)
-        self._create_log(name, image, command, LOG_TEMPLATE, env)
+        self._create_container(name, image, command,
+                               template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)
+        self._create_log(name, image, command, copy.deepcopy(LOG_TEMPLATE))
+        self._wait_for_container(name)
 
         if use_announcer:
-            self._create_announcer(name, image, command, ANNOUNCE_TEMPLATE, env)
-        else:
-            self._log_skipped_announcer('create', name)
+            self._create_announcer(name, image, command, copy.deepcopy(ANNOUNCE_TEMPLATE))
+            self._wait_for_announcer(name)
 
-    def _create_container(self, name, image, command, template, env, **kwargs):
+    def _create_container(self, name, image, command, unit, **kwargs):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
         # prepare memory limit for the container type
@@ -87,217 +128,223 @@ class FleetClient(object):
             l.update({'cpu': '-c {}'.format(cpu)})
         else:
             l.update({'cpu': ''})
-        env.update({'FLEETW_UNIT': name + '.service'})
         # construct unit from template
-        unit = template.format(**l)
+        for f in unit:
+            f['value'] = f['value'].format(**l)
         # prepare tags only if one was provided
         tags = kwargs.get('tags', {})
         if tags:
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
-            unit = unit + '\n[X-Fleet]\nX-ConditionMachineMetadata={}\n'.format(tagset)
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(unit)})
-        return subprocess.check_call('fleetctl.sh submit {name}.service'.format(**l),
-                                     shell=True, env=env)
+            unit.append({"section": "X-Fleet", "name": "X-ConditionMachineMetadata",
+                         "value": tagset})
+        # post unit to fleet
+        self._put_unit(name, {"desiredState": "launched", "options": unit})
 
-    def _create_announcer(self, name, image, command, template, env):
+    def _create_log(self, name, image, command, unit):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
-        env.update({'FLEETW_UNIT': name + '-announce' + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
-        return subprocess.check_call('fleetctl.sh submit {name}-announce.service'.format(**l),  # noqa
-                                     shell=True, env=env)
+        # construct unit from template
+        for f in unit:
+            f['value'] = f['value'].format(**l)
+        # post unit to fleet
+        self._put_unit(name+'-log', {"desiredState": "launched", "options": unit})
 
-    def _create_log(self, name, image, command, template, env):
+    def _create_announcer(self, name, image, command, unit):
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
-        env.update({'FLEETW_UNIT': name + '-log' + '.service'})
-        env.update({'FLEETW_UNIT_DATA': base64.b64encode(template.format(**l))})
-        return subprocess.check_call('fleetctl.sh submit {name}-log.service'.format(**locals()),  # noqa
-                                     shell=True, env=env)
+        # construct unit from template
+        for f in unit:
+            f['value'] = f['value'].format(**l)
+        # post unit to fleet
+        self._put_unit(name+'-announce', {"desiredState": "launched", "options": unit})
 
     def start(self, name, use_announcer=True):
         """
         Start an idle job
         """
-        print 'Starting {name}'.format(**locals())
-        env = self.env.copy()
-        self._start_container(name, env)
-        self._start_log(name, env)
+        pass
 
-        if use_announcer:
-            self._start_announcer(name, env)
-            self._wait_for_container(name, env)
-            self._wait_for_announcer(name, env)
-        else:
-            self._log_skipped_announcer('start', name)
-
-    def _start_log(self, name, env):
-        subprocess.check_call(
-            'fleetctl.sh start -no-block {name}-log.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _start_container(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh start -no-block {name}.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _start_announcer(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh start -no-block {name}-announce.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _wait_for_container(self, name, env):
-        status = None
+    def _wait_for_container(self, name):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
-            # check if the main container's running
-            status = subprocess.check_output(
-                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}.service | awk '{{print $2}}'".format(**locals()),  # noqa
-                shell=True, env=env).strip('\n')
-            if status == 'running':
-                break
-            elif status == 'failed':
-                raise RuntimeError('Container failed to start')
+            states = self._get_state(name)
+            if states and len(states.get('states', [])) == 1:
+                state = states.get('states')[0]
+                subState = state.get('systemdSubState')
+                if subState == 'running' or subState == 'exited':
+                    break
+                elif subState == 'failed':
+                    raise RuntimeError('Container failed to start')
             time.sleep(1)
         else:
-            raise RuntimeError('Container timeout on start')
+            raise RuntimeError('Container failed to start')
 
-    def _wait_for_announcer(self, name, env):
-        status = None
+    def _wait_for_announcer(self, name):
         # wait a bit for the announcer to come up, otherwise we may have hit
         # https://github.com/docker/docker/issues/8022
         for _ in range(30):
-            # check if the main container's running
-            status = subprocess.check_output(
-                "fleetctl.sh list-units --no-legend --fields unit,sub | grep {name}-announce.service | awk '{{print $2}}'".format(**locals()),  # noqa
-                shell=True, env=env).strip('\n')
-            if status == 'running':
-                break
-            elif status == 'failed':
-                raise RuntimeError('Announcer failed to start')
+            states = self._get_state(name)
+            if states and len(states.get('states', [])) == 1:
+                state = states.get('states')[0]
+                subState = state.get('systemdSubState')
+                if subState == 'running':
+                    # wait for the router to be reconfigured
+                    time.sleep(10)
+                    break
+                elif subState == 'failed':
+                    raise RuntimeError('Announcer failed to start')
             time.sleep(1)
         else:
             raise RuntimeError('Announcer timeout on start')
+
+    def _wait_for_destroy(self, name):
+        for _ in range(1200):
+            states = self._get_state(name)
+            if not states:
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError('Timeout on container destroy')
 
     def stop(self, name, use_announcer=True):
         """
         Stop a running job
         """
-        print 'Stopping {name}'.format(**locals())
-        env = self.env.copy()
-
-        if use_announcer:
-            self._stop_announcer(name, env)
-        else:
-            self._log_skipped_announcer('stop', name)
-
-        self._stop_container(name, env)
-        self._stop_log(name, env)
-
-    def _stop_container(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _stop_announcer(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}-announce.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _stop_log(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh stop -block-attempts=600 {name}-log.service'.format(**locals()),
-            shell=True, env=env)
+        pass
 
     def destroy(self, name, use_announcer=True):
         """
         Destroy an existing job
         """
-        print 'Destroying {name}'.format(**locals())
-        env = self.env.copy()
-
         if use_announcer:
-            self._destroy_announcer(name, env)
-        else:
-            self._log_skipped_announcer('destroy', name)
+            self._destroy_announcer(name)
+        self._destroy_container(name)
+        self._destroy_log(name)
+        self._wait_for_destroy(name)
 
-        self._destroy_container(name, env)
-        self._destroy_log(name, env)
+    def _destroy_container(self, name):
+        return self._delete_unit(name)
 
-    def _destroy_container(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh destroy {name}.service'.format(**locals()),
-            shell=True, env=env)
+    def _destroy_announcer(self, name):
+        return self._delete_unit(name+'-announce')
 
-    def _destroy_announcer(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh destroy {name}-announce.service'.format(**locals()),
-            shell=True, env=env)
-
-    def _destroy_log(self, name, env):
-        return subprocess.check_call(
-            'fleetctl.sh destroy {name}-log.service'.format(**locals()),
-            shell=True, env=env)
+    def _destroy_log(self, name):
+        return self._delete_unit(name+'-log')
 
     def run(self, name, image, command):
         """
         Run a one-off command
         """
-        print 'Running {name}'.format(**locals())
-        output = subprocess.PIPE
-        p = subprocess.Popen('fleetrun.sh {command}'.format(**locals()), shell=True, env=self.env,
-                             stdout=output, stderr=subprocess.STDOUT)
-        rc = p.wait()
-        return rc, p.stdout.read()
+        self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE))
+
+        # wait for the container to return something
+        for _ in range(1200):
+            states = self._get_state(name)
+            if states and len(states.get('states', [])) == 1:
+                state = states.get('states')[0]
+                subState = state.get('systemdSubState')
+                if subState == 'exited' or subState == 'failed' or subState == 'dead':
+                    break
+            time.sleep(1)
+        machineID = state.get('machineID')
+
+        # find the machine
+        machines = self._get_machines()
+        if not machines:
+            raise RuntimeError('No available hosts to run command')
+
+        # find the machine's primaryIP
+        primaryIP = None
+        for m in machines.get('machines', []):
+            if m['id'] == machineID:
+                primaryIP = m['primaryIP']
+        if not primaryIP:
+            raise RuntimeError('Could not find host')
+
+        # prepare ssh key
+        file_obj = cStringIO.StringIO(base64.b64decode(self.auth))
+        pkey = paramiko.RSAKey(file_obj=file_obj)
+
+        # grab output via docker logs over SSH
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(primaryIP, username="core", pkey=pkey)
+
+        # get a pty so stdout/stderr look right
+        tran = ssh.get_transport()
+        chan = tran.open_session()
+        chan.get_pty()
+        out = chan.makefile()
+
+        # exec the command to gather container output
+        chan.exec_command('docker logs {name}'.format(**locals()))
+        rc, output = chan.recv_exit_status(), out.read()
+        if rc != 0:
+            raise RuntimeError('Could not attach to container')
+
+        # use another channel to inspect the container
+        chan = tran.open_session()
+        chan.get_pty()
+        out = chan.makefile()
+        chan.exec_command('docker inspect {name}'.format(**locals()))
+        rc, inspect_output = chan.recv_exit_status(), out.read()
+        if rc != 0:
+            raise RuntimeError('Could not determine exit code')
+        container = json.loads(inspect_output)
+        rc = container[0]["State"]["ExitCode"]
+
+        # cleanup
+        self._destroy_container(name)
+        self._wait_for_destroy(name)
+
+        # return rc and output
+        return rc, output
 
     def attach(self, name):
         """
         Attach to a job's stdin, stdout and stderr
         """
-        return StringIO(), StringIO(), StringIO()
+        raise NotImplementedError
 
-SchedulerClient = FleetClient
+SchedulerClient = FleetHTTPClient
 
 
-CONTAINER_TEMPLATE = """
-[Unit]
-Description={name}
+CONTAINER_TEMPLATE = [
+    {"section": "Unit", "name": "Description", "value": "{name}"},
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f {name}'''},
+    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
+]
 
-[Service]
-ExecStartPre=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"
-ExecStartPre=/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"
-ExecStart=/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"
-ExecStop=/usr/bin/docker rm -f {name}
-TimeoutStartSec=20m
-"""  # noqa
 
-# TODO revisit the "not getting a port" issue after we upgrade to Docker 1.1.0
-ANNOUNCE_TEMPLATE = """
-[Unit]
-Description={name} announce
-BindsTo={name}.service
+LOG_TEMPLATE = [
+    {"section": "Unit", "name": "Description", "value": "{name} log"},
+    {"section": "Unit", "name": "BindsTo", "value": "{name}.service"},
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"'''},  # noqa
+    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
+    {"section": "X-Fleet", "name": "X-ConditionMachineOf", "value": "{name}.service"},
+]
 
-[Service]
-EnvironmentFile=/etc/environment
-ExecStartPre=/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"
-ExecStart=/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"
-ExecStop=/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}
-TimeoutStartSec=20m
 
-[X-Fleet]
-X-ConditionMachineOf={name}.service
-"""  # noqa
+ANNOUNCE_TEMPLATE = [
+    {"section": "Unit", "name": "Description", "value": "{name} announce"},
+    {"section": "Unit", "name": "BindsTo", "value": "{name}.service"},
+    {"section": "Service", "name": "EnvironmentFile", "value": "/etc/environment"},
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": "/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}"},  # noqa
+    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
+    {"section": "X-Fleet", "name": "X-ConditionMachineOf", "value": "{name}.service"},
+]
 
-LOG_TEMPLATE = """
-[Unit]
-Description={name} log
-BindsTo={name}.service
 
-[Service]
-ExecStartPre=/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"
-ExecStart=/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"
-TimeoutStartSec=20m
-
-[X-Fleet]
-X-ConditionMachineOf={name}.service
-"""  # noqa
+RUN_TEMPLATE = [
+    {"section": "Unit", "name": "Description", "value": "{name} admin command"},
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker run --name {name} --entrypoint=/bin/bash -a stdout -a stderr $IMAGE -c '{command}'"'''},  # noqa
+    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
+]
