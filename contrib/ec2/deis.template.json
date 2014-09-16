@@ -96,7 +96,8 @@
     "SubnetConfig" : {
       "VPC"     : { "CIDR" : "10.21.0.0/16" },
       "Subnet1" : { "CIDR" : "10.21.1.0/24" },
-      "Subnet2" : { "CIDR" : "10.21.2.0/24" }
+      "Subnet2" : { "CIDR" : "10.21.2.0/24" },
+      "Subnet3" : { "CIDR" : "10.21.3.0/24" }
     }
   },
 
@@ -130,6 +131,18 @@
         "VpcId" : { "Ref" : "VPC" },
         "AvailabilityZone": { "Fn::Select" : [ 1, { "Fn::GetAZs" : "" } ] },
         "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "Subnet2", "CIDR" ]},
+        "Tags" : [
+          { "Key" : "Application", "Value" : "Deis" },
+          { "Key" : "Network", "Value" : "Private" }
+        ]
+      }
+    },
+    "Subnet3" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "AvailabilityZone": { "Fn::Select" : [ 2, { "Fn::GetAZs" : "" } ] },
+        "CidrBlock" : { "Fn::FindInMap" : [ "SubnetConfig", "Subnet3", "CIDR" ]},
         "Tags" : [
           { "Key" : "Application", "Value" : "Deis" },
           { "Key" : "Network", "Value" : "Private" }
@@ -186,16 +199,25 @@
         "RouteTableId" : { "Ref" : "PublicRouteTable" }
       }
     },
+    "Subnet3RouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet3" },
+        "RouteTableId" : { "Ref" : "PublicRouteTable" }
+      }
+    },
     "CoreOSServerAutoScale": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "AvailabilityZones": [
           { "Fn::GetAtt" : [ "Subnet1", "AvailabilityZone" ] },
-          { "Fn::GetAtt" : [ "Subnet2", "AvailabilityZone" ] }
+          { "Fn::GetAtt" : [ "Subnet2", "AvailabilityZone" ] },
+          { "Fn::GetAtt" : [ "Subnet3", "AvailabilityZone" ] }
         ],
         "VPCZoneIdentifier": [
           { "Ref" : "Subnet1" },
-          { "Ref" : "Subnet2" }
+          { "Ref" : "Subnet2" },
+          { "Ref" : "Subnet3" }
         ],
         "LaunchConfigurationName": {"Ref": "CoreOSServerLaunchConfig"},
         "MinSize": "3",
@@ -240,7 +262,8 @@
         },
         "Subnets": [
           { "Ref" : "Subnet1" },
-          { "Ref" : "Subnet2" }
+          { "Ref" : "Subnet2" },
+          { "Ref" : "Subnet3" }
         ],
         "Listeners": [
           {
