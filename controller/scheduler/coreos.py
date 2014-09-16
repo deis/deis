@@ -135,7 +135,7 @@ class FleetHTTPClient(object):
         tags = kwargs.get('tags', {})
         if tags:
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
-            unit.append({"section": "X-Fleet", "name": "X-ConditionMachineMetadata",
+            unit.append({"section": "X-Fleet", "name": "MachineMetadata",
                          "value": tagset})
         # post unit to fleet
         self._put_unit(name, {"desiredState": "launched", "options": unit})
@@ -325,7 +325,7 @@ LOG_TEMPLATE = [
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"'''},  # noqa
     {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
-    {"section": "X-Fleet", "name": "X-ConditionMachineOf", "value": "{name}.service"},
+    {"section": "X-Fleet", "name": "MachineOf", "value": "{name}.service"},
 ]
 
 
@@ -337,7 +337,7 @@ ANNOUNCE_TEMPLATE = [
     {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"'''},  # noqa
     {"section": "Service", "name": "ExecStop", "value": "/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}"},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
-    {"section": "X-Fleet", "name": "X-ConditionMachineOf", "value": "{name}.service"},
+    {"section": "X-Fleet", "name": "MachineOf", "value": "{name}.service"},
 ]
 
 
