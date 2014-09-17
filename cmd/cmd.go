@@ -17,6 +17,19 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+const (
+	PlatformInstallCommand string = "platform"
+)
+
+var (
+	DefaultDataContainers = []string{
+		"database-data",
+		"registry-data",
+		"logger-data",
+		"builder-data",
+	}
+)
+
 func ListUnits(c client.Client) error {
 	err := c.ListUnits()
 	return err
@@ -42,12 +55,61 @@ func Scale(c client.Client, targets []string) error {
 }
 
 func Start(c client.Client, targets []string) error {
+	// if target is platform, install all services
+	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
+		return StartPlatform(c)
+	}
 	for _, target := range targets {
 		err := c.Start(target)
 		if err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+func StartPlatform(c client.Client) error {
+	fmt.Println("Starting Platform...")
+	if err := startDataContainers(c); err != nil {
+		return err
+	}
+	if err := startDefaultServices(c); err != nil {
+		return err
+	}
+	fmt.Println("Platform started.")
+	return nil
+}
+
+func startDataContainers(c client.Client) error {
+	fmt.Println("Launching data containers...")
+	for _, dataContainer := range DefaultDataContainers {
+		err := c.Start(dataContainer)
+		if err != nil {
+			return err
+		}
+	}
+	fmt.Println("Data containers launched.")
+	return nil
+}
+
+func startDefaultServices(c client.Client) error {
+	fmt.Println("Launching service containers...")
+	if err := Start(c, []string{"logger", "cache", "database"}); err != nil {
+		return err
+	}
+	if err := Start(c, []string{"registry"}); err != nil {
+		return err
+	}
+	if err := Start(c, []string{"controller"}); err != nil {
+		return err
+	}
+	if err := Start(c, []string{"builder"}); err != nil {
+		return err
+	}
+	if err := Start(c, []string{"router"}); err != nil {
+		return err
+	}
+	fmt.Println("Service containers launched.")
 	return nil
 }
 
@@ -97,23 +159,12 @@ func Journal(c client.Client, targets []string) error {
 
 func Install(c client.Client, targets []string) error {
 	// if target is platform, install all services
-	if len(targets) == 1 && targets[0] == "platform" {
-		err := installDataContainers(c)
-		if err != nil {
-			return err
-		}
-		err = installDefaultServices(c)
-		if err != nil {
-			return err
-		}
+	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
+		return InstallPlatform(c)
 	} else {
-		// otherwise create and start the specific targets
+		// otherwise create the specific targets
 		for _, target := range targets {
 			err := c.Create(target)
-			if err != nil {
-				return err
-			}
-			err = c.Start(target)
 			if err != nil {
 				return err
 			}
@@ -122,28 +173,27 @@ func Install(c client.Client, targets []string) error {
 	return nil
 }
 
-func installDataContainers(c client.Client) error {
-	// data containers
-	dataContainers := []string{
-		"database-data",
-		"registry-data",
-		"logger-data",
-		"builder-data",
+func InstallPlatform(c client.Client) error {
+	err := installDataContainers(c)
+	if err != nil {
+		return err
 	}
-	fmt.Println("\nScheduling data containers...")
-	for _, dataContainer := range dataContainers {
+	err = installDefaultServices(c)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func installDataContainers(c client.Client) error {
+	fmt.Println("Scheduling data containers...")
+	for _, dataContainer := range DefaultDataContainers {
 		err := c.Create(dataContainer)
 		if err != nil {
 			return err
 		}
 	}
-	fmt.Println("\nLaunching data containers...")
-	for _, dataContainer := range dataContainers {
-		err := c.Start(dataContainer)
-		if err != nil {
-			return err
-		}
-	}
+	fmt.Println("Data containers scheduled.")
 	return nil
 }
 
@@ -157,36 +207,17 @@ func installDefaultServices(c client.Client) error {
 		"controller=1",
 		"builder=1",
 		"router=1"}
-	fmt.Println("\nScheduling service containers...")
-	err := Scale(c, targets)
-	fmt.Println("\nLaunching service containers...")
-	err = Start(c, []string{"logger", "cache", "database"})
-	if err != nil {
+	fmt.Println("Scheduling service containers...")
+	if err := Scale(c, targets); err != nil {
 		return err
 	}
-	err = Start(c, []string{"registry"})
-	if err != nil {
-		return err
-	}
-	err = Start(c, []string{"controller"})
-	if err != nil {
-		return err
-	}
-	err = Start(c, []string{"builder"})
-	if err != nil {
-		return err
-	}
-	err = Start(c, []string{"router"})
-	if err != nil {
-		return err
-	}
-	fmt.Println("Done.")
+	fmt.Println("Service containers scheduled.")
 	return nil
 }
 
 func Uninstall(c client.Client, targets []string) error {
 	// if target is platform, uninstall all services
-	if len(targets) == 1 && targets[0] == "platform" {
+	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		err := uninstallAllServices(c)
 		if err != nil {
 			return err
@@ -212,9 +243,9 @@ func uninstallAllServices(c client.Client) error {
 		"controller=0",
 		"builder=0",
 		"router=0"}
-	fmt.Println("\nDestroying service containers...")
+	fmt.Println("Destroying service containers...")
 	err := Scale(c, targets)
-	fmt.Println("Done.")
+	fmt.Println("Service containers destroyed.")
 	return err
 }
 
