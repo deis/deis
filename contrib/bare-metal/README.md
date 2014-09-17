@@ -27,7 +27,7 @@ ssh_authorized_keys:
 [CoreOS](https://coreos.com/) on bare metal doesn't detect the `$private_ipv4` reliably. Replace all occurences in the [user-data](../coreos/user-data) with the (private) IP address of the node.
 
 ### Add environment
-Since [CoreOS](https://coreos.com/) doesn't detect private and public IP adresses the `/etc/environmnet` file doesn't get written on boot. Add it to the `write_files` section of [user-data](../coreos/user-data)
+Since [CoreOS](https://coreos.com/) doesn't detect private and public IP adresses the `/etc/environment` file doesn't get written on boot. Add it to the `write_files` section of [user-data](../coreos/user-data)
 
 ```yaml
   - path: /etc/environment
