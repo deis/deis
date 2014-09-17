@@ -1,6 +1,11 @@
 package client
 
-import "github.com/coreos/fleet/job"
+import (
+	"strings"
+
+	"github.com/coreos/fleet/job"
+	"github.com/coreos/fleet/schema"
+)
 
 // Start launches target units and blocks until active
 func (c *FleetClient) Start(target string) (err error) {
@@ -14,8 +19,16 @@ func (c *FleetClient) Start(target string) (err error) {
 		if err != nil {
 			return err
 		}
-		outchan, errchan := waitForUnitStates(units, desiredState)
-		err = printUnitState(name, outchan, errchan)
+		// wait for systemd to tell us that it's running, not fleet
+		var errchan chan error
+		var outchan chan *schema.Unit
+		// data containers are special snowflakes who just exit
+		if strings.Contains(name, "-data.service") {
+			outchan, errchan = waitForUnitSubStates(units, "exited")
+		} else {
+			outchan, errchan = waitForUnitSubStates(units, "running")
+		}
+		err = printUnitSubState(name, outchan, errchan)
 		if err != nil {
 			return err
 		}
