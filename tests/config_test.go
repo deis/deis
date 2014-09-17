@@ -11,6 +11,7 @@ import (
 var (
 	configListCmd  = "config:list --app={{.AppName}}"
 	configSetCmd   = "config:set FOO=讲台 --app={{.AppName}}"
+	configSet2Cmd  = "config:set FOO=10 --app={{.AppName}}"
 	configUnsetCmd = "config:unset FOO --app={{.AppName}}"
 )
 
@@ -52,11 +53,13 @@ func configListTest(
 }
 
 func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
-	utils.Execute(t, configSetCmd, params, false, "")
+	utils.Execute(t, configSetCmd, params, false, "讲台")
 	utils.CheckList(t, appsInfoCmd, params, "(v3)", false)
+	utils.Execute(t, configSet2Cmd, params, false, "10")
+	utils.CheckList(t, appsInfoCmd, params, "(v4)", false)
 }
 
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
-	utils.CheckList(t, appsInfoCmd, params, "(v4)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
 }
