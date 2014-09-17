@@ -9,7 +9,7 @@ import (
 	"github.com/coreos/fleet/schema"
 )
 
-// waitForUnitStates polls each of the indicated jobs until each of their
+// waitForUnitSubStates polls each of the indicated jobs until each of their
 // systemd substates is equal to that which the caller indicates
 func waitForUnitSubStates(units []string, desiredState string) (outchan chan *schema.Unit, errchan chan error) {
 	var wg sync.WaitGroup
