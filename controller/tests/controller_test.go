@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
@@ -54,5 +55,9 @@ func TestController(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "http")
+	etcdutils.VerifyEtcdValue(t, "/deis/controller/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/controller/port", port, etcdPort)
 }

@@ -42,12 +42,12 @@ if [[ ! -z $PUBLISH ]]; then
     set +e
 
     # wait for the service to become available on PUBLISH port
-    sleep 1 && while [[ -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+    sleep 1 && while [[ -z $(netstat -lnu | awk "\$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
     # while the port is listening, publish to etcd
-    while [[ ! -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+    while [[ ! -z $(netstat -lnu | awk "\$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
         etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/host $HOST --no-sync >/dev/null
-        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/port $PORT --no-sync >/dev/null
+        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/port $PUBLISH --no-sync >/dev/null
         sleep $(($ETCD_TTL/2)) # sleep for half the TTL
     done
 
