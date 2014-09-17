@@ -1,5 +1,4 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM deis/common:0.12.0-dev
 
 # install required system packages
 # HACK: install git so we can install bacongobbler's fork of django-fsm
@@ -7,8 +6,8 @@ MAINTAINER OpDemand <info@opdemand.com>
 RUN apt-get update && \
     apt-get install -yq python-dev libpq-dev libyaml-dev git openssh-client
 
-# install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+# install pip
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # add a deis user that has passwordless sudo (for now)
 RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash

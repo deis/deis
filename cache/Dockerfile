@@ -1,9 +1,7 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM deis/common:0.12.0-dev
 
 # build Redis from source
 RUN buildDeps='gcc libc6-dev make curl'; \
-    export DEBIAN_FRONTEND=noninteractive; \
     set -x; \
     apt-get update && apt-get install -y $buildDeps net-tools --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \

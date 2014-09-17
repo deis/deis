@@ -42,6 +42,7 @@ endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 ROUTER_UNITS = $(shell seq -f "deis-router@%g.service" -s " " $(DEIS_FIRST_ROUTER) 1 $(DEIS_LAST_ROUTER))
+VERSION = $(shell cat $(SELF_DIR)/version/version.go | sed -n -e 's/^.*Version = "\(.*\)"/\1/p')
 
 check-fleet:
 	@LOCAL_VERSION=`$(FLEETCTL) -version`; \
