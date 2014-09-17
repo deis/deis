@@ -30,8 +30,9 @@ if ! etcdctl --no-sync -C $ETCD ls $ETCD_PATH >/dev/null 2>&1 ; then
 fi
 
 # spawn the service in the background
+mkdir -p /var/lib/redis
 cd /var/lib/redis
-sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf &
+/usr/local/bin/redis-server /etc/redis/redis.conf &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
