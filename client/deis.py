@@ -1130,12 +1130,12 @@ class DeisClient(object):
             if not oneline:
                 width = max(map(len, keys)) + 5
                 for k in keys:
-                    v = encode(values[k])
+                    k, v = encode(k), encode(values[k])
                     self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
             else:
                 output = []
                 for k in keys:
-                    v = encode(values[k])
+                    k, v = encode(k), encode(values[k])
                     output.append("{k}={v}".format(**locals()))
                 self._logger.info(' '.join(output))
         else:
