@@ -108,6 +108,14 @@ def fingerprint(key):
     return ':'.join(a + b for a, b in zip(fp_plain[::2], fp_plain[1::2]))
 
 
+def encode(obj):
+    """Return UTF-8 encoding for string objects."""
+    if isinstance(obj, basestring):
+        return obj.encode('utf-8')
+    else:
+        return obj
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
