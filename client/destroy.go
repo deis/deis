@@ -10,12 +10,17 @@ import (
 // Destroy units for a given target
 func (c *FleetClient) Destroy(target string) (err error) {
 	// check if the unit exists
-	if _, err := c.Units(target); err != nil {
+	units, err := c.Units(target)
+	if err != nil {
 		return err
 	}
 	component, num, err := splitTarget(target)
 	if err != nil {
 		return
+	}
+	// if no number is specified, destroy ALL THE UNITS!
+	if num == 0 {
+		num = len(units)
 	}
 	if strings.HasSuffix(component, "-data") {
 		err = c.destroyDataUnit(component)
