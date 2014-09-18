@@ -70,13 +70,8 @@ Options:
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
   --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
 `
-	// special handling for version
-	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		fmt.Println(Version)
-		os.Exit(0)
-	}
 	// parse command-line arguments
-	args, err := docopt.Parse(usage, nil, true, "", true)
+	args, err := docopt.Parse(usage, nil, true, Version, true)
 	if err != nil {
 		exit(err, 2)
 	}

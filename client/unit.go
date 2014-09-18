@@ -40,6 +40,9 @@ func (c *FleetClient) Units(target string) (units []string, err error) {
 			units = append(units, u.Name)
 		}
 	}
+	if len(units) == 0 {
+		err = fmt.Errorf("could not find unit: %s", target)
+	}
 	return
 }
 

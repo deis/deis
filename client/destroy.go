@@ -9,6 +9,10 @@ import (
 
 // Destroy units for a given target
 func (c *FleetClient) Destroy(target string) (err error) {
+	// check if the unit exists
+	if _, err := c.Units(target); err != nil {
+		return err
+	}
 	component, num, err := splitTarget(target)
 	if err != nil {
 		return

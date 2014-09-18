@@ -23,8 +23,8 @@ setup-gotools:
 	go get -v github.com/golang/lint/golint
 
 test-style:
-	go vet -x ./...
-	-golint *.go client/ cmd/ config/ constant/ hooks/ lock/ systemd/ units/ update/ utils/
+	go vet ./...
+	-golint *.go client/*.go cmd/*.go config/*.go constant/*.go lock/*.go update/*.go utils/*.go
 
 test: test-style
 	godep go test -v -cover ./...
