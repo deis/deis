@@ -6,9 +6,10 @@ import tarfile
 import urlparse
 import uuid
 
+from django.conf import settings
 from docker.utils import utils
 
-from django.conf import settings
+from api.utils import encode
 
 
 def publish_release(source, config, target):
@@ -157,14 +158,6 @@ def _put_tag(image_id, repository_path, tag):
 
 
 # utility functions
-
-def encode(obj):
-    """Return UTF-8 encoding for string objects."""
-    if isinstance(obj, basestring):
-        return obj.encode('utf-8')
-    else:
-        return obj
-
 
 def _construct_env(env, config):
     "Update current environment with latest config"
