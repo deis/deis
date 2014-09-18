@@ -11,37 +11,37 @@ import (
 
 // Create schedules a new unit for the given component
 // and blocks until the unit is loaded
-func (c *FleetClient) Create(target string) (err error) {
-	var (
-		unitName string
-		unitFile *unit.UnitFile
-	)
-	// create unit file
-	unitName, unitFile, err = c.createUnitFile(target)
-	if err != nil {
-		return err
-	}
-	// define unit
-	u := &schema.Unit{
-		Name:    unitName,
-		Options: schema.MapUnitFileToSchemaUnitOptions(unitFile),
-	}
-	// schedule unit
-	if err := c.Fleet.CreateUnit(u); err != nil {
-		// ignore units that already exist
-		if err.Error() != "job already exists" {
-			return fmt.Errorf("failed creating job %s: %v", unitName, err)
+func (c *FleetClient) Create(targets []string) error {
+	units := make([]*schema.Unit, len(targets))
+	for i, target := range targets {
+		unitName, unitFile, err := c.createUnitFile(target)
+		if err != nil {
+			return err
+		}
+		units[i] = &schema.Unit{
+			Name:    unitName,
+			Options: schema.MapUnitFileToSchemaUnitOptions(unitFile),
 		}
 	}
-	desiredState := string(job.JobStateLoaded)
-	err = c.Fleet.SetUnitTargetState(unitName, desiredState)
-	if err != nil {
-		return err
+	for _, unit := range units {
+		// schedule unit
+		if err := c.Fleet.CreateUnit(unit); err != nil {
+			// ignore units that already exist
+			if err.Error() != "job already exists" {
+				return fmt.Errorf("failed creating job %s: %v", unit.Name, err)
+			}
+		}
+		desiredState := string(job.JobStateLoaded)
+		if err := c.Fleet.SetUnitTargetState(unit.Name, desiredState); err != nil {
+			return err
+		}
 	}
-	outchan, errchan := waitForUnitStates([]string{unitName}, desiredState)
-	err = printUnitState(unitName, outchan, errchan)
-	if err != nil {
-		return err
+	for _, unit := range units {
+		desiredState := string(job.JobStateLoaded)
+		outchan, errchan := waitForUnitStates([]string{unit.Name}, desiredState)
+		if err := printUnitState(unit.Name, outchan, errchan); err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -17,8 +17,7 @@ func (c *FleetClient) Scale(component string, requested int) (err error) {
 			if err != nil {
 				return err
 			}
-			err = c.Create(component + "@" + strconv.Itoa(num))
-			if err != nil {
+			if err = c.Create([]string{component + "@" + strconv.Itoa(num)}); err != nil {
 				return err
 			}
 			continue
@@ -28,8 +27,7 @@ func (c *FleetClient) Scale(component string, requested int) (err error) {
 			if err != nil {
 				return err
 			}
-			err = c.Destroy(component + "@" + strconv.Itoa(num))
-			if err != nil {
+			if err = c.Destroy([]string{component + "@" + strconv.Itoa(num)}); err != nil {
 				return err
 			}
 			continue
