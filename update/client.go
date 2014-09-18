@@ -232,17 +232,17 @@ func (c *Client) Update() (err error) {
 		}
 		localService := strings.Split(strings.Split(service, "-")[1], ".service")[0]
 		fmt.Printf("destroying %v\n", localService)
-		err := deis.Destroy(localService)
+		err := deis.Destroy([]string{localService})
 		if err != nil {
 			return err
 		}
 		fmt.Printf("re-creating %v\n", localService)
-		err = deis.Create(localService)
+		err = deis.Create([]string{localService})
 		if err != nil {
 			return err
 		}
 		fmt.Printf("starting %v\n", localService)
-		err = deis.Start(localService)
+		err = deis.Start([]string{localService})
 		if err != nil {
 			return err
 		}
