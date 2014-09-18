@@ -148,6 +148,12 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertIn('POWERED_BY', json.loads(response.data['values']))
         self.assertEqual(json.loads(response.data['values'])['POWERED_BY'], 'Кроликов')
+        # set an integer to test unicode regression
+        body = {'values': json.dumps({'INTEGER': 1})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('INTEGER', json.loads(response.data['values']))
+        self.assertEqual(json.loads(response.data['values'])['INTEGER'], 1)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
