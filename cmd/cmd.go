@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/deis/deisctl/client"
 	"github.com/deis/deisctl/config"
@@ -152,6 +153,13 @@ func Install(c client.Client, targets []string) error {
 		return InstallPlatform(c)
 	}
 	// otherwise create the specific targets
+	for i, target := range targets {
+		// if we're installing a component without a number attached,
+		// consider the user doesn't know better
+		if !strings.Contains(target, "@") {
+			targets[i] += "@1"
+		}
+	}
 	return c.Create(targets)
 }
 
