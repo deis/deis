@@ -790,8 +790,11 @@ def _etcd_publish_domains(**kwargs):
     if app_domains:
         _etcd_client.write('/deis/domains/{}'.format(app),
                            ' '.join(str(d.domain) for d in app_domains))
-    else:
-        _etcd_client.delete('/deis/domains/{}'.format(app))
+
+
+def _etcd_purge_domains(**kwargs):
+    app = kwargs['instance'].app
+    _etcd_client.delete('/deis/domains/{}'.format(app))
 
 
 # Log significant app-related events
@@ -825,6 +828,6 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
     post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
-    post_delete.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_domains, sender=Domain, dispatch_uid='api.models')
     post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
