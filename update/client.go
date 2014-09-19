@@ -14,7 +14,7 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/coreos/go-omaha/omaha"
-	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/backend/fleet"
 	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/lock"
 	"github.com/deis/deisctl/utils"
@@ -218,7 +218,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 }
 
 func (c *Client) Update() (err error) {
-	deis, _ := client.NewClient()
+	deis, _ := fleet.NewClient()
 	localServices := deis.GetLocaljobs()
 	fmt.Printf("local services: %v\n", localServices)
 

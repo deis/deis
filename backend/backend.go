@@ -1,7 +1,7 @@
-package client
+package backend
 
-// Client interface used to interact with the cluster control plane
-type Client interface {
+// Backend interface is used to interact with the cluster control plane
+type Backend interface {
 	Create([]string) error
 	Destroy([]string) error
 	Start([]string) error

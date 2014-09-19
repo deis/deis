@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/backend"
 	"github.com/deis/deisctl/config"
 	"github.com/deis/deisctl/constant"
 	"github.com/deis/deisctl/update"
@@ -31,23 +31,23 @@ var (
 	}
 )
 
-func ListUnits(c client.Client) error {
-	err := c.ListUnits()
+func ListUnits(b backend.Backend) error {
+	err := b.ListUnits()
 	return err
 }
 
-func ListUnitFiles(c client.Client) error {
-	err := c.ListUnitFiles()
+func ListUnitFiles(b backend.Backend) error {
+	err := b.ListUnitFiles()
 	return err
 }
 
-func Scale(c client.Client, targets []string) error {
+func Scale(b backend.Backend, targets []string) error {
 	for _, target := range targets {
 		component, num, err := splitScaleTarget(target)
 		if err != nil {
 			return err
 		}
-		err = c.Scale(component, num)
+		err = b.Scale(component, num)
 		if err != nil {
 			return err
 		}
@@ -55,102 +55,102 @@ func Scale(c client.Client, targets []string) error {
 	return nil
 }
 
-func Start(c client.Client, targets []string) error {
+func Start(b backend.Backend, targets []string) error {
 	// if target is platform, start all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		return StartPlatform(c)
+		return StartPlatform(b)
 	}
-	return c.Start(targets)
+	return b.Start(targets)
 }
 
-func StartPlatform(c client.Client) error {
+func StartPlatform(b backend.Backend) error {
 	fmt.Println("Starting Platform...")
-	if err := startDataContainers(c); err != nil {
+	if err := startDataContainers(b); err != nil {
 		return err
 	}
-	if err := startDefaultServices(c); err != nil {
+	if err := startDefaultServices(b); err != nil {
 		return err
 	}
 	fmt.Println("Platform started.")
 	return nil
 }
 
-func startDataContainers(c client.Client) error {
+func startDataContainers(b backend.Backend) error {
 	fmt.Println("Launching data containers...")
-	if err := c.Start(DefaultDataContainers); err != nil {
+	if err := b.Start(DefaultDataContainers); err != nil {
 		return err
 	}
 	fmt.Println("Data containers launched.")
 	return nil
 }
 
-func startDefaultServices(c client.Client) error {
+func startDefaultServices(b backend.Backend) error {
 	fmt.Println("Launching service containers...")
-	if err := Start(c, []string{"logger"}); err != nil {
+	if err := Start(b, []string{"logger"}); err != nil {
 		return err
 	}
-	if err := Start(c, []string{"cache", "router", "database", "controller", "registry", "builder"}); err != nil {
+	if err := Start(b, []string{"cache", "router", "database", "controller", "registry", "builder"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers launched.")
 	return nil
 }
 
-func Stop(c client.Client, targets []string) error {
+func Stop(b backend.Backend, targets []string) error {
 	// if target is platform, stop all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		return StopPlatform(c)
+		return StopPlatform(b)
 	}
-	return c.Stop(targets)
+	return b.Stop(targets)
 }
 
-func StopPlatform(c client.Client) error {
+func StopPlatform(b backend.Backend) error {
 	fmt.Println("Stopping Platform...")
-	if err := stopDefaultServices(c); err != nil {
+	if err := stopDefaultServices(b); err != nil {
 		return err
 	}
 	fmt.Println("Platform stopped.")
 	return nil
 }
 
-func stopDefaultServices(c client.Client) error {
+func stopDefaultServices(b backend.Backend) error {
 	fmt.Println("Stopping service containers...")
-	if err := Stop(c, []string{"builder", "registry", "controller", "database", "cache", "router", "logger"}); err != nil {
+	if err := Stop(b, []string{"builder", "registry", "controller", "database", "cache", "router", "logger"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers stopped.")
 	return nil
 }
 
-func Restart(c client.Client, targets []string) error {
-	if err := c.Stop(targets); err != nil {
+func Restart(b backend.Backend, targets []string) error {
+	if err := b.Stop(targets); err != nil {
 		return err
 	}
-	return c.Start(targets)
+	return b.Start(targets)
 }
 
-func Status(c client.Client, targets []string) error {
+func Status(b backend.Backend, targets []string) error {
 	for _, target := range targets {
-		if err := c.Status(target); err != nil {
+		if err := b.Status(target); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func Journal(c client.Client, targets []string) error {
+func Journal(b backend.Backend, targets []string) error {
 	for _, target := range targets {
-		if err := c.Journal(target); err != nil {
+		if err := b.Journal(target); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func Install(c client.Client, targets []string) error {
+func Install(b backend.Backend, targets []string) error {
 	// if target is platform, install all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		return InstallPlatform(c)
+		return InstallPlatform(b)
 	}
 	// otherwise create the specific targets
 	for i, target := range targets {
@@ -160,26 +160,26 @@ func Install(c client.Client, targets []string) error {
 			targets[i] += "@1"
 		}
 	}
-	return c.Create(targets)
+	return b.Create(targets)
 }
 
-func InstallPlatform(c client.Client) error {
-	if err := installDataContainers(c); err != nil {
+func InstallPlatform(b backend.Backend) error {
+	if err := installDataContainers(b); err != nil {
 		return err
 	}
-	return installDefaultServices(c)
+	return installDefaultServices(b)
 }
 
-func installDataContainers(c client.Client) error {
+func installDataContainers(b backend.Backend) error {
 	fmt.Println("Scheduling data containers...")
-	if err := c.Create(DefaultDataContainers); err != nil {
+	if err := b.Create(DefaultDataContainers); err != nil {
 		return err
 	}
 	fmt.Println("Data containers scheduled.")
 	return nil
 }
 
-func installDefaultServices(c client.Client) error {
+func installDefaultServices(b backend.Backend) error {
 	// start service containers
 	targets := []string{
 		"database=1",
@@ -190,23 +190,23 @@ func installDefaultServices(c client.Client) error {
 		"builder=1",
 		"router=1"}
 	fmt.Println("Scheduling service containers...")
-	if err := Scale(c, targets); err != nil {
+	if err := Scale(b, targets); err != nil {
 		return err
 	}
 	fmt.Println("Service containers scheduled.")
 	return nil
 }
 
-func Uninstall(c client.Client, targets []string) error {
+func Uninstall(b backend.Backend, targets []string) error {
 	// if target is platform, uninstall all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		return uninstallAllServices(c)
+		return uninstallAllServices(b)
 	}
 	// uninstall the specific target
-	return c.Destroy(targets)
+	return b.Destroy(targets)
 }
 
-func uninstallAllServices(c client.Client) error {
+func uninstallAllServices(b backend.Backend) error {
 	targets := []string{
 		"database=0",
 		"cache=0",
@@ -216,7 +216,7 @@ func uninstallAllServices(c client.Client) error {
 		"builder=0",
 		"router=0"}
 	fmt.Println("Destroying service containers...")
-	err := Scale(c, targets)
+	err := Scale(b, targets)
 	fmt.Println("Service containers destroyed.")
 	return err
 }
@@ -279,7 +279,7 @@ Options:
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(2)
 	}
-	dir, _ := client.ExpandUser(args["--path"].(string))
+	dir, _ := utils.ExpandUser(args["--path"].(string))
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err

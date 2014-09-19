@@ -1,16 +1,16 @@
-package client
+package fleet
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/coreos/fleet/unit"
+	"github.com/deis/deisctl/utils"
 )
 
 // path hierarchy for finding systemd service templates
@@ -121,7 +121,7 @@ func readTemplate(component string) (out []byte, err error) {
 		if p == "" {
 			continue
 		}
-		p, _ := ExpandUser(p)
+		p, _ := utils.ExpandUser(p)
 		filename := path.Join(p, templateName)
 		if _, err := os.Stat(filename); err == nil {
 			templateFile = filename
@@ -137,13 +137,4 @@ func readTemplate(component string) (out []byte, err error) {
 		return
 	}
 	return
-}
-
-// ExpandUser replaces "~" in a string with the current user's home directory.
-func ExpandUser(path string) (string, error) {
-	user, err := user.Current()
-	if err != nil {
-		return path, err
-	}
-	return strings.Replace(path, "~/", user.HomeDir+"/", 1), nil
 }
