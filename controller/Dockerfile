@@ -1,5 +1,17 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM ubuntu:14.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# install common packages
+RUN apt-get update && apt-get install -y curl
+
+# install etcdctl
+RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+    && chmod +x /usr/local/bin/etcdctl
+
+# install confd
+RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-v0.5.0-json \
+    && chmod +x /usr/local/bin/confd
 
 # install required system packages
 # HACK: install git so we can install bacongobbler's fork of django-fsm
@@ -7,8 +19,8 @@ MAINTAINER OpDemand <info@opdemand.com>
 RUN apt-get update && \
     apt-get install -yq python-dev libpq-dev libyaml-dev git openssh-client
 
-# install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+# install pip
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
 
 # add a deis user that has passwordless sudo (for now)
 RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash
