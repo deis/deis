@@ -29,7 +29,7 @@ echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 
 # install test suite requirements
 apt-get install -yq python-dev libpq-dev libyaml-dev git postgresql postgresql-client
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
 pip install virtualenv
 
 # create jenkins user and install node bootstrap script
