@@ -41,8 +41,17 @@ func setGlobalFlags(args map[string]interface{}) {
 }
 
 func main() {
-	usage := `Deis Control Utility
+	circle := "\033[31m●"
+	square := "\033[32m■"
+	triangle := "\033[34m▴"
+	reset := "\033[0m"
+	title := reset + "Deis Control Utility"
 
+	deisctlMotd := fmt.Sprintf("%s %s %s\n%s %s %s %s\n%s %s %s%s\n",
+		circle, triangle, square,
+		square, circle, triangle, title,
+		triangle, square, circle, reset)
+	usage := deisctlMotd + `
 Usage:
   deisctl <command> [<target>...] [options]
 
