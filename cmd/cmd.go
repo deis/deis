@@ -281,7 +281,7 @@ Options:
 	}
 	dir, _ := client.ExpandUser(args["--path"].(string))
 	// create the target dir if necessary
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 	// download and save the unit files to the specified path
@@ -312,7 +312,7 @@ Options:
 		if err != nil {
 			return err
 		}
-		if err = ioutil.WriteFile(dest, data, 0600); err != nil {
+		if err = ioutil.WriteFile(dest, data, 0644); err != nil {
 			return err
 		}
 		fmt.Printf("Refreshed %s from %s\n", unit, branch)
