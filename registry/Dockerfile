@@ -1,13 +1,25 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM ubuntu:14.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# install common packages
+RUN apt-get update && apt-get install -y curl
+
+# install etcdctl
+RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+    && chmod +x /usr/local/bin/etcdctl
+
+# install confd
+RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-v0.5.0-json \
+    && chmod +x /usr/local/bin/confd
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y git-core build-essential python-dev \
-    libevent-dev python-openssl liblzma-dev wget
+    libevent-dev python-openssl liblzma-dev
 
-# install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+# install pip
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
 
 # create a registry user
 RUN useradd -s /bin/bash registry
