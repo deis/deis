@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y git-core build-essential python-dev \
     libevent-dev python-openssl liblzma-dev
 
 # install pip
-RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # create a registry user
 RUN useradd -s /bin/bash registry

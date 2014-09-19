@@ -20,7 +20,7 @@ RUN apt-get update && \
     apt-get install -yq python-dev libpq-dev libyaml-dev git openssh-client
 
 # install pip
-RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # add a deis user that has passwordless sudo (for now)
 RUN useradd deis --groups sudo --home-dir /app --shell /bin/bash

@@ -29,7 +29,7 @@ RUN dpkg-reconfigure openssh-server
 RUN mkdir -p /var/run/sshd
 
 # install pip
-RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # install hook dependencies
 RUN pip install pyyaml==3.11 requests==2.4.1
