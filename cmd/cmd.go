@@ -164,10 +164,16 @@ func Install(b backend.Backend, targets []string) error {
 }
 
 func InstallPlatform(b backend.Backend) error {
+    fmt.Println("Installing Platform...")
 	if err := installDataContainers(b); err != nil {
 		return err
 	}
-	return installDefaultServices(b)
+    if err := installDefaultServices(b); err != nil {
+        return err
+    }
+	fmt.Println("Platform installed.")
+    fmt.Println("Please run `deisctl start platorm` to boot up the platform.")
+    return nil
 }
 
 func installDataContainers(b backend.Backend) error {
