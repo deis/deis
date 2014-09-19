@@ -63,10 +63,11 @@ Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl`
 $ export DEISCTL_TUNNEL=172.17.8.100
 ```
 
-Use `deisctl install platform` to start all Deis components across the cluster. This can take some time - the registry service will pull and prepare a large Docker image, the builder service will download the Heroku cedar stack.  Grab some more coffee!
+Use `deisctl install platform` to install all Deis components across the cluster, then `deisctl start platform` to start them. This can take some time - the registry service will pull and prepare a large Docker image, the builder service will download the Heroku cedar stack.  Grab some more coffee!
 
 ```console
 $ deisctl install platform
+$ deisctl start platform
 ```
 
 Your Deis installation should now be accessible at `deis.local3.deisapp.com`.
