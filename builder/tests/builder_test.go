@@ -52,7 +52,7 @@ func TestBuilder(t *testing.T) {
 			"-e", "STORAGE_DRIVER=aufs",
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"--privileged", "deis/builder:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")

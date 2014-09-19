@@ -46,7 +46,7 @@ func TestController(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":8000",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/controller:"+tag)

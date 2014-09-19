@@ -28,7 +28,7 @@ func TestCache(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":6379",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/cache:"+tag)

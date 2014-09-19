@@ -25,7 +25,7 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 			"--name", "deis-test-database-"+tag,
 			"--rm",
 			"-p", dbPort+":5432",
-			"-e", "PUBLISH="+dbPort,
+			"-e", "EXTERNAL_PORT="+dbPort,
 			"-e", "HOST="+ipaddr,
 			"-e", "USER=deis",
 			"-e", "DB=deis",

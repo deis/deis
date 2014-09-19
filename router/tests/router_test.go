@@ -43,7 +43,7 @@ func TestRouter(t *testing.T) {
 			"--rm",
 			"-p", port+":80",
 			"-p", utils.RandomPort()+":2222",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/router:"+tag)

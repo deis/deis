@@ -29,7 +29,7 @@ func TestLogger(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":514/udp",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-logger-data",
