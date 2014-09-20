@@ -24,12 +24,12 @@ wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.6.3_x86_64.deb
 dpkg -i vagrant_1.6.3_x86_64.deb && rm vagrant_1.6.3_x86_64.deb
 
 # install go
-wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
+curl -sSL https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 
 # install test suite requirements
 apt-get install -yq python-dev libpq-dev libyaml-dev git postgresql postgresql-client
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 pip install virtualenv
 
 # create jenkins user and install node bootstrap script

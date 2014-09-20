@@ -1,13 +1,12 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM deis/common:0.12.0-dev
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
 RUN sed -i 's/main$/main universe/' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y git-core build-essential python-dev \
-    libevent-dev python-openssl liblzma-dev wget
+    libevent-dev python-openssl liblzma-dev
 
-# install recent pip
-RUN wget -qO- https://raw.githubusercontent.com/pypa/pip/1.5.5/contrib/get-pip.py | python -
+# install pip
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # create a registry user
 RUN useradd -s /bin/bash registry

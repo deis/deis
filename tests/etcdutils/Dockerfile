@@ -1,13 +1,8 @@
-FROM ubuntu:12.04
-
-# Download etcdctl binary -- keep in sync with CoreOS' version.
-ADD https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 /usr/local/bin/etcdctl
-RUN chmod +x /usr/local/bin/etcdctl
+FROM deis/common:0.12.0-dev
 
 # build etcd and then clean up
 RUN buildDeps='curl git-core'; \
     set -x; \
-    export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && apt-get install -y $buildDeps --no-install-recommends \
     && curl -sSL https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz \
     && git clone -q https://github.com/coreos/etcd.git /opt/etcd \

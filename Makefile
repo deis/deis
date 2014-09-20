@@ -32,6 +32,7 @@ DATA_CONTAINER_TEMPLATES=builder/systemd/deis-builder-data.service database/syst
 all: build run
 
 build: rsync
+	$(MAKE) -C common/ build
 	$(call ssh_all,'cd share && for c in $(ALL_COMPONENTS); do cd $$c && docker build -t deis/$$c . && cd ..; done')
 
 clean: uninstall
@@ -39,6 +40,7 @@ clean: uninstall
 
 full-clean: clean
 	$(call ssh_all,'for c in $(ALL_COMPONENTS); do docker rmi deis-$$c; done')
+	$(MAKE) -C common/ full-clean
 
 install: check-fleet install-routers install-data-containers
 	$(FLEETCTL) load $(START_UNITS)
@@ -166,3 +168,6 @@ test-smoke:
 uninstall: check-fleet stop
 	$(FLEETCTL) unload -block-attempts=600 $(call deis_units,.)
 	$(FLEETCTL) destroy $(strip $(call deis_units,.))
+
+show-version:
+	@echo $(VERSION)

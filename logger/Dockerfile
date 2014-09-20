@@ -1,8 +1,7 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM deis/common:0.12.0-dev
 
 # install go runtime
-RUN wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
+RUN curl -sSL https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 
 # prepare go environment
 RUN mkdir -p /go
