@@ -24,7 +24,7 @@ to the [latest documentation](http://docs.deis.io/en/latest/).
 ## Install prerequisites
 On your workstation:
 * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install the fleetctl client: Install v0.8.0 from the [fleet GitHub page](https://github.com/coreos/fleet/releases/tag/v0.8.0).
+* Install the fleetctl client: Install v0.8.1 from the [fleet GitHub page](https://github.com/coreos/fleet/releases/tag/v0.8.1).
 
 A single-node cluster launched with Vagrant will consume about 5 GB of RAM on
 the host machine. Please be sure you have sufficient free memory before
