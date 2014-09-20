@@ -19,7 +19,7 @@ func TestDatabase(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	dataName := "deis-database-data-" + tag
 	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/var/lib/postgresql", "deis/base", "true")
+		"-v", "/var/lib/postgresql", "ubuntu:14.04", "true")
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/database:%s at %s:%s\n", tag, host, port)
 	name := "deis-database-" + tag
