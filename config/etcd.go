@@ -10,11 +10,11 @@ import (
 	fleetEtcd "github.com/coreos/fleet/etcd"
 	"github.com/coreos/fleet/ssh"
 	"github.com/coreos/go-etcd/etcd"
-	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/backend/fleet"
 )
 
 func getTunnelFlag() string {
-	tun := client.Flags.Tunnel
+	tun := fleet.Flags.Tunnel
 	if tun != "" && !strings.Contains(tun, ":") {
 		tun += ":22"
 	}
@@ -22,10 +22,10 @@ func getTunnelFlag() string {
 }
 
 func getChecker() *ssh.HostKeyChecker {
-	if !client.Flags.StrictHostKeyChecking {
+	if !fleet.Flags.StrictHostKeyChecking {
 		return nil
 	}
-	keyFile := ssh.NewHostKeyFile(client.Flags.KnownHostsFile)
+	keyFile := ssh.NewHostKeyFile(fleet.Flags.KnownHostsFile)
 	return ssh.NewHostKeyChecker(keyFile)
 }
 
@@ -68,8 +68,8 @@ func getEtcdClient() (*etcdClient, error) {
 		}
 	}
 
-	tlsConfig, err := fleetEtcd.ReadTLSConfigFiles(client.Flags.EtcdCAFile,
-		client.Flags.EtcdCertFile, client.Flags.EtcdKeyFile)
+	tlsConfig, err := fleetEtcd.ReadTLSConfigFiles(fleet.Flags.EtcdCAFile,
+		fleet.Flags.EtcdCertFile, fleet.Flags.EtcdKeyFile)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +79,8 @@ func getEtcdClient() (*etcdClient, error) {
 		TLSClientConfig: tlsConfig,
 	}
 
-	timeout := time.Duration(client.Flags.RequestTimeout*1000) * time.Millisecond
-	machines := []string{client.Flags.Endpoint}
+	timeout := time.Duration(fleet.Flags.RequestTimeout*1000) * time.Millisecond
+	machines := []string{fleet.Flags.Endpoint}
 
 	c := etcd.NewClient(machines)
 	c.SetDialTimeout(timeout)

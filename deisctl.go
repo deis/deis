@@ -5,8 +5,8 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/deis/deisctl/backend/fleet"
 	"github.com/deis/deisctl/client"
-	"github.com/deis/deisctl/cmd"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -22,22 +22,21 @@ func exit(err error, code int) {
 }
 
 func setGlobalFlags(args map[string]interface{}) {
-	client.Flags.Version = args["--version"].(bool)
-	client.Flags.Endpoint = args["--endpoint"].(string)
-	client.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
-	client.Flags.EtcdKeyFile = args["--etcd-keyfile"].(string)
-	client.Flags.EtcdCertFile = args["--etcd-certfile"].(string)
-	client.Flags.EtcdCAFile = args["--etcd-cafile"].(string)
-	//client.Flags.UseAPI = args["--experimental-api"].(bool)
-	client.Flags.KnownHostsFile = args["--known-hosts-file"].(string)
-	client.Flags.StrictHostKeyChecking = args["--strict-host-key-checking"].(bool)
+	fleet.Flags.Endpoint = args["--endpoint"].(string)
+	fleet.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
+	fleet.Flags.EtcdKeyFile = args["--etcd-keyfile"].(string)
+	fleet.Flags.EtcdCertFile = args["--etcd-certfile"].(string)
+	fleet.Flags.EtcdCAFile = args["--etcd-cafile"].(string)
+	//fleet.Flags.UseAPI = args["--experimental-api"].(bool)
+	fleet.Flags.KnownHostsFile = args["--known-hosts-file"].(string)
+	fleet.Flags.StrictHostKeyChecking = args["--strict-host-key-checking"].(bool)
 	timeout, _ := strconv.ParseFloat(args["--request-timeout"].(string), 64)
-	client.Flags.RequestTimeout = timeout
+	fleet.Flags.RequestTimeout = timeout
 	tunnel := args["--tunnel"].(string)
 	if tunnel != "" {
-		client.Flags.Tunnel = tunnel
+		fleet.Flags.Tunnel = tunnel
 	} else {
-		client.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
+		fleet.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
 	}
 }
 
@@ -79,40 +78,36 @@ Options:
 	targets := args["<target>"].([]string)
 	setGlobalFlags(args)
 	// construct a client
-	c, err := client.NewClient()
+	c, err := client.NewClient("fleet")
 	if err != nil {
 		exit(err, 1)
 	}
 	// dispatch the command
 	switch command {
 	case "list":
-		err = cmd.ListUnits(c)
-	case "list-units":
-		err = cmd.ListUnits(c)
-	case "list-unit-files":
-		err = cmd.ListUnitFiles(c)
+		err = c.List()
 	case "scale":
-		err = cmd.Scale(c, targets)
+		err = c.Scale(targets)
 	case "start":
-		err = cmd.Start(c, targets)
+		err = c.Start(targets)
 	case "restart":
-		err = cmd.Restart(c, targets)
+		err = c.Restart(targets)
 	case "stop":
-		err = cmd.Stop(c, targets)
+		err = c.Stop(targets)
 	case "status":
-		err = cmd.Status(c, targets)
+		err = c.Status(targets)
 	case "journal":
-		err = cmd.Journal(c, targets)
+		err = c.Journal(targets)
 	case "install":
-		err = cmd.Install(c, targets)
+		err = c.Install(targets)
 	case "uninstall":
-		err = cmd.Uninstall(c, targets)
+		err = c.Uninstall(targets)
 	case "config":
-		err = cmd.Config()
+		err = c.Config()
 	case "update":
-		err = cmd.Update()
+		err = c.Update()
 	case "refresh-units":
-		err = cmd.RefreshUnits()
+		err = c.RefreshUnits()
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)

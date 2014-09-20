@@ -1,4 +1,4 @@
-package client
+package fleet
 
 import (
 	"github.com/coreos/fleet/job"
