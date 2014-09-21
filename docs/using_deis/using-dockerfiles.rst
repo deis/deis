@@ -19,10 +19,10 @@ If you do not have an existing application, you can clone an example application
 
 Dockerfile Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
-In order to deploy Dockerfile applications, they must conform to the following guidelines:
+In order to deploy Dockerfile applications, they must conform to the following requirements:
 
  * The Dockerfile must EXPOSE only one port
- * The first exposed port must be an HTTP service that can be connected to an HTTP router
+ * The exposed port must be an HTTP service that can be connected to an HTTP router
  * A default CMD must be specified for running the container
 
 .. note::
@@ -57,7 +57,7 @@ Use ``git push deis master`` to deploy your application.
     Total 13 (delta 2), reused 0 (delta 0)
     -----> Building Docker image
     Uploading context 4.096 kB
-    Uploading context 
+    Uploading context
     Step 0 : FROM deis/base:latest
      ---> 60024338bc63
     Step 1 : MAINTAINER OpDemand <info@opdemand.com>
@@ -100,9 +100,9 @@ Use ``git push deis master`` to deploy your application.
     Removing intermediate container 7eb8ec45dcb0
     Successfully built ea1a8cc93ca3
     -----> Pushing image to private registry
-    
+
            Launching... done, v2
-    
+
     -----> folksy-offshoot deployed to Deis
            http://folksy-offshoot.local.deisapp.com
 
@@ -110,7 +110,7 @@ Use ``git push deis master`` to deploy your application.
 
     To ssh://git@local.deisapp.com:2222/folksy-offshoot.git
      * [new branch]      master -> master
-     
+
     $ curl -s http://folksy-offshoot.local.deisapp.com
     Welcome to Deis!
     See the documentation at http://docs.deis.io/ for more information.

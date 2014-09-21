@@ -52,6 +52,8 @@ Deploying a Docker image onto Deis allows you to take a Docker image from either
 or a private registry and copy it over bit-for-bit, ensuring that you are running the same
 image in development or in your CI pipeline as you are in production.
 
+Learn how to use deploy applications on Deis :ref:`using-docker-images`.
+
 
 .. _`twelve-factor methodology`: http://12factor.net/
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
