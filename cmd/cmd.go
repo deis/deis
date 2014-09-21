@@ -47,8 +47,11 @@ func Scale(b backend.Backend, targets []string) error {
 		if err != nil {
 			return err
 		}
-		err = b.Scale(component, num)
-		if err != nil {
+		// the router is the only component that can scale past 1 at the moment
+		if num > 1 && !strings.Contains(component, "router") {
+			return fmt.Errorf("cannot scale %s past 1", component)
+		}
+		if err := b.Scale(component, num); err != nil {
 			return err
 		}
 	}
