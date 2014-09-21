@@ -11,9 +11,8 @@ Contributing
 
 
     overview
-    localdev
+    hacking
     standards
     community
     conduct
     releases
-

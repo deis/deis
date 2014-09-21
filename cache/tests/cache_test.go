@@ -8,38 +8,32 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-func runDeisCacheTest(
-	t *testing.T, testID string, etcdPort string, servicePort string) {
+func TestCache(t *testing.T) {
 	var err error
-	cli, stdout, stdoutPipe := dockercli.GetNewClient()
+	tag := utils.BuildTag()
+	etcdPort := utils.RandomPort()
+	etcdName := "deis-etcd-" + tag
+	cli, stdout, stdoutPipe := dockercli.NewClient()
+	dockercli.RunTestEtcd(t, etcdName, etcdPort)
+	defer cli.CmdRm("-f", etcdName)
+	ipaddr, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/cache:%s at %s:%s\n", tag, ipaddr, port)
+	name := "deis-cache-" + tag
+	defer cli.CmdRm("-f", name)
 	go func() {
+		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
-			"--name", "deis-cache-"+testID,
+			"--name", name,
 			"--rm",
-			"-p", servicePort+":6379",
-			"-e", "PUBLISH="+servicePort,
-			"-e", "HOST="+utils.GetHostIPAddress(),
+			"-p", port+":6379",
+			"-e", "PUBLISH="+port,
+			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/cache:"+testID)
+			"deis/cache:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "started")
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestCache(t *testing.T) {
-	testID := utils.NewID()
-	err := dockercli.BuildImage(t, "../", "deis/cache:"+testID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	etcdPort := utils.GetRandomPort()
-	dockercli.RunEtcdTest(t, testID, etcdPort)
-	servicePort := utils.GetRandomPort()
-	fmt.Printf("--- Test deis-cache-%s at port %s\n", testID, servicePort)
-	runDeisCacheTest(t, testID, etcdPort, servicePort)
-	dockercli.DeisServiceTest(
-		t, "deis-cache-"+testID, servicePort, "tcp")
-	dockercli.ClearTestSession(t, testID)
+	dockercli.DeisServiceTest(t, name, port, "tcp")
 }

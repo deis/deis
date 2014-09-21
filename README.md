@@ -6,89 +6,76 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
+Deis is pre-release software. The current release is [v0.11.0](https://github.com/deis/deis/tree/v0.11.0). Until there is a stable release, we recommend you check out the latest ["master" branch](https://github.com/deis/deis) code and refer to the [latest documentation](http://docs.deis.io/en/latest/).  Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
+
 # Deploying Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md), [Google Compute Engine](contrib/gce/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Documentation for other platforms is forthcoming. Want to see a particular platform supported? Open an [issue](https://github.com/deis/deis/issues/new) and we'll investigate.
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the deployment-specific documentation for [Rackspace](contrib/rackspace/README.md), [EC2](contrib/ec2/README.md), [DigitalOcean](contrib/digitalocean/README.md), [Google Compute Engine](contrib/gce/README.md) or [bare-metal](contrib/bare-metal/README.md) provisioning. Want to see a particular platform supported? Please open an [issue](https://github.com/deis/deis/issues/new).
 
-Trying out Deis? Continue following these instructions for a local cluster setup. This is also a great Deis testing/development environment.
-
-# Upgrading Deis
-
-Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
-
-Deis is pre-release software. The current release is [v0.11.0](https://github.com/deis/deis/tree/v0.11.0).
-Until there is a stable release, we recommend you check out the latest
-["master" branch](https://github.com/deis/deis) code and refer
-to the [latest documentation](http://docs.deis.io/en/latest/).
+Trying out Deis? Continue following these instructions for a local installation using Vagrant.
 
 ## Install prerequisites
-On your workstation:
-* Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-* Install the fleetctl client: Install v0.8.1 from the [fleet GitHub page](https://github.com/coreos/fleet/releases/tag/v0.8.1).
 
-A single-node cluster launched with Vagrant will consume about 5 GB of RAM on
-the host machine. Please be sure you have sufficient free memory before
-proceeding.
+ * Due to its nature as a distributed system, we strongly recommend using Deis with a minimum of 3 nodes even for local development and testing
+ * The Deis containers will consume approximately 5 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
+ * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
-Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known
-release for 14.04) has some issues when running in RAM-constrained
-environments. Please install the lastest version of VirtualBox from Oracle's
-website.
+Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known release for 14.04) has some issues when running in RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's website.
 
-## Additional setup for a multi-node cluster
-If you'd like to spin up more than one VM to test an entire cluster, there are a few additional prerequisites:
-* Edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from `https://discovery.etcd.io/new`
-* Set `DEIS_NUM_INSTANCES` to the desired size of your cluster (typically 3 or 5): ```$ export DEIS_NUM_INSTANCES=3```
-* If you'd like to spin up more than one router, set `DEIS_NUM_ROUTERS`: ```$ export DEIS_NUM_ROUTERS=2```
-* Instead of `local.deisapp.com`, use either `local3.deisapp.com` or `local5.deisapp.com` as your cluster domain
+## Configure Discovery
 
-Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
-For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+Each time you spin up a new CoreOS cluster, you **must** provide a new [discovery service URL](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) in the [CoreOS user-data](https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/) file.  This URL allows hosts to find each other and perform initial leader election.
 
-Deis clusters of less than 3 nodes are unsupported for anything other than local development.
+Automatically generate a fresh discovery URL with:
+
+```console
+$ sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
+```
+
+or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from <https://discovery.etcd.io/new>.
 
 ## Boot CoreOS
 
-First, start the CoreOS cluster on VirtualBox. From a command prompt, `cd` to the root of the Deis project code and type:
+Start the CoreOS cluster on VirtualBox. From a command prompt, `cd` to the root of the Deis project code and type:
 
 ```console
+$ export DEIS_NUM_INSTANCES=3
 $ vagrant up
 ```
 
-This instructs Vagrant to spin up each VM. To be able to connect to the VMs, you must add your Vagrant-generated SSH key to the ssh-agent (fleetctl tunnel requires the agent to have this key):
+This instructs Vagrant to spin up 3 VMs. To be able to connect to the VMs, you must add your Vagrant-generated SSH key to the ssh-agent (`deisctl` requires the agent to have this key):
+
 ```console
 $ ssh-add ~/.vagrant.d/insecure_private_key
 ```
 
-Export `FLEETCTL_TUNNEL` so you can connect to the VM using the `fleetctl` client on your workstation.
+## Provision Deis
+
+Install the [deisctl utility](https://github.com/deis/deisctl#installation) used to provision and operate Deis.
 
 ```console
-$ export FLEETCTL_TUNNEL=172.17.8.100
+$ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
 ```
 
-## Optional: Build Deis
-
-If you'd like to build Deis from source instead of using the pre-built public Dockerfiles, use `make build` to build each component from its Dockerfile.  Grab some coffee while it builds the images on each VM (it can take a while).
-If you're not testing code changes for Deis, it's faster just to skip to the next step.
+Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl` client on your workstation.
 
 ```console
-$ make build
+$ export DEISCTL_TUNNEL=172.17.8.100
 ```
 
-## Run Deis
-
-Use `make run` to start all Deis components. This can take some time - the registry service will pull and prepare a large Docker image. Grab some more coffee!
+Use `deisctl install platform` to install all Deis components across the cluster, then `deisctl start platform` to start them. This can take some time - the registry service will pull and prepare a large Docker image, the builder service will download the Heroku cedar stack.  Grab some more coffee!
 
 ```console
-$ make run
+$ deisctl install platform
+$ deisctl start platform
 ```
 
-Your Vagrant VM is accessible at `local.deisapp.com` (or `local3.deisapp.com`/`local5.deisapp.com`). For clusters on other platforms (EC2, Rackspace, DigitalOcean, bare metal, etc.), see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+Your Deis installation should now be accessible at `deis.local3.deisapp.com`.
 
-## Testing the cluster
-Integration tests and corresponding documentation can be found under the `test/` folder.
+For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Install the Deis Client
+
 If you're using the latest Deis release, use `pip install --upgrade deis` to install the latest [Deis Client](https://pypi.python.org/pypi/deis/) or download [pre-compiled binaries](https://github.com/deis/deis/tree/master/client#get-started).
 
 If you're working off master, precompiled binaries are likely out of date. You should either symlink the python file directly or build a local copy of the client:
@@ -106,7 +93,7 @@ $ cd client && python setup.py install
 Use the Deis Client to register a new user.
 
 ```console
-$ deis register http://deis.local.deisapp.com
+$ deis register http://deis.local3.deisapp.com
 $ deis keys:add
 ```
 
@@ -117,12 +104,12 @@ Use `deis keys:add` to add your SSH public key for `git push` access.
 Initialize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
 
 ```console
-$ deis clusters:create dev local.deisapp.com --hosts=172.17.8.100 --auth=~/.vagrant.d/insecure_private_key
+$ deis clusters:create dev local3.deisapp.com --hosts=172.17.8.100 --auth=~/.vagrant.d/insecure_private_key
 ```
 
 The parameters to `deis clusters:create` are:
 * cluster name (`dev`) - the name used by Deis to reference the cluster
-* cluster hostname (`local.deisapp.com`) - the hostname under which apps are created, like `balancing-giraffe.local.deisapp.com`
+* cluster hostname (`local.3deisapp.com`) - the hostname under which apps are created, like `balancing-giraffe.local3.deisapp.com`
 * cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for cloud providers, this is a list of the IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
 * auth SSH key (`--auth`) - the SSH private key used to provision servers -- cannot have a password (for cloud providers, this key is likely `~/.ssh/deis`)
 
@@ -188,21 +175,32 @@ $ deis logs
 
 Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
 
+## Testing the cluster
+
+Integration tests and corresponding documentation can be found under the [`tests/`](tests/) folder.
+
+## Hacking on Deis
+
+Learn how to [hack on Deis](http://docs.deis.io/en/latest/contributing/hacking/) with a Docker-based development workflow.
+
 ## Troubleshooting
 
 Common issues that users have run into when provisioning Deis are detailed below.
 
-#### When running a `make` action - 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'
+#### When running a `deisctl` command - 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'
 Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
 
-#### When running a `make` action - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
-The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Destroy and relaunch the cluster, ensuring to use a fresh discovery URL.
+#### When running a `deisctl` command - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
+The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Try destroying and relaunching the cluster with a fresh discovery URL.
 
 #### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
-This means the controller failed to submit jobs for the app to fleet. `fleetctl status deis-controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
+This usually means the controller failed to submit jobs to the scheduler. `deisctl journal controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
 
 #### A Deis component fails to start
-Use `fleetctl status deis-<component>.service` to get the output of the service. The most common cause of services failing to start are sporadic issues with the Docker index. The telltale sign of this is:
+
+Use `deisctl status <component>` to view the status of the component.  You can also use `deisctl journal <component>` to tail logs for a component, or `deisctl list` to list all components.
+
+The most common cause of services failing to start are sporadic issues with DockerHub. The telltale sign of this is:
 
 ```console
 May 12 18:24:37 deis-3 systemd[1]: Starting deis-controller...
@@ -214,10 +212,10 @@ May 12 18:29:47 deis-3 systemd[1]: Failed to start deis-controller.
 May 12 18:29:47 deis-3 systemd[1]: Unit deis-controller.service entered failed state.
 ```
 
-We are exploring workarounds and are working with the Docker team to improve their index. In the meantime, try starting the service again with `fleetctl start deis-<component>.service`.
+We are exploring workarounds and are working with the Docker team to improve DockerHub reliability. In the meantime, try starting the service again with `deisctl restart <component>`.
 
 ### Any other issues
-Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into #deis and we'll help!
+Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into [#deis](https://botbot.me/freenode/deis/) and we'll help!
 
 ## License
 

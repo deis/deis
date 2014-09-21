@@ -4,32 +4,37 @@ include ../includes.mk
 
 all: build run
 
-build:
-	$(call rsync_all)
-	$(call ssh_all,'cd share/controller && sudo docker build -t deis/controller .')
+build: check-docker
+	docker build -t deis/controller:$(BUILD_TAG) .
 
-install: check-fleet
-	$(FLEETCTL) load systemd/*
+push: check-docker check-registry check-deisctl
+	docker tag deis/controller:$(BUILD_TAG) $(REGISTRY)/deis/controller:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/controller:$(BUILD_TAG)
+	deisctl config controller set image=$(REGISTRY)/deis/controller:$(BUILD_TAG)
 
-uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+clean: check-docker check-registry
+	docker rmi deis/controller:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/controller:$(BUILD_TAG)
 
-start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+full-clean: check-docker check-registry
+	docker images -q deis/controller | xargs docker rmi -f
+	docker images -q $(REGISTRY)/deis/controller | xargs docker rmi -f
 
-stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+install: check-deisctl
+	deisctl scale controller=1
+
+uninstall: check-deisctl
+	deisctl scale controller=0
+
+start: check-deisctl
+	deisctl start controller
+
+stop: check-deisctl
+	deisctl stop controller
 
 restart: stop start
 
 run: install start
-
-clean: uninstall
-	$(call ssh_all,'sudo docker rm -f deis-controller')
-
-full-clean: clean
-	$(call ssh_all,'sudo docker rmi deis/controller')
 
 runserver:
 	python manage.py runserver
@@ -54,4 +59,6 @@ test-unit: setup-venv test-style
 	venv/bin/python manage.py test --noinput api
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
+	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@docker history deis/test-postgresql >/dev/null 2>&1 || docker pull deis/test-postgresql:latest
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...

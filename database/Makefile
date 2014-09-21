@@ -1,31 +1,38 @@
 include ../includes.mk
 
-build:
-	$(call rsync_all)
-	$(call ssh_all,'cd share/database && sudo docker build -t deis/database .')
+build: check-docker
+	docker build -t deis/database:$(BUILD_TAG) .
 
-install: check-fleet
-	$(FLEETCTL) load systemd/*
+push: check-docker check-registry check-deisctl
+	docker tag deis/database:$(BUILD_TAG) $(REGISTRY)/deis/database:$(BUILD_TAG)
+	docker push $(REGISTRY)/deis/database:$(BUILD_TAG)
+	deisctl config database set image=$(REGISTRY)/deis/database:$(BUILD_TAG)
 
-uninstall: check-fleet stop
-	$(FLEETCTL) unload systemd/*
-	$(FLEETCTL) destroy systemd/*
+clean: check-docker check-registry
+	docker rmi deis/database:$(BUILD_TAG)
+	docker rmi $(REGISTRY)/deis/database:$(BUILD_TAG)
 
-start: check-fleet
-	$(FLEETCTL) start -no-block systemd/*
+full-clean: check-docker check-registry
+	docker images -q deis/database | xargs docker rmi -f
+	docker images -q $(REGISTRY)/deis/database | xargs docker rmi -f
 
-stop: check-fleet
-	$(FLEETCTL) stop -block-attempts=600 systemd/*
+install: check-deisctl
+	deisctl install database-data
+	deisctl scale database=1
+
+uninstall: check-deisctl
+	deisctl scale database=0
+	deisctl uninstall database-data
+
+start: check-deisctl
+	deisctl start database
+
+stop: check-deisctl
+	deisctl stop database
 
 restart: stop start
 
 run: install start
-
-clean: uninstall
-	$(call ssh_all,'sudo docker rm -f deis-database')
-
-full-clean: clean
-	$(call ssh_all,'sudo docker rmi deis/database')
 
 test: test-unit test-functional
 
@@ -33,4 +40,5 @@ test-unit:
 	@echo no unit tests
 
 test-functional:
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v -timeout 20m ./tests/...
+	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
