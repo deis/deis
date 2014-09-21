@@ -7,6 +7,7 @@ import (
 
 	"github.com/deis/deisctl/backend/fleet"
 	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/utils"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -41,8 +42,8 @@ func setGlobalFlags(args map[string]interface{}) {
 }
 
 func main() {
-	usage := `Deis Control Utility
-
+	deisctlMotd := utils.DeisIfy("Deis Control Utility")
+	usage := deisctlMotd + `
 Usage:
   deisctl <command> [<target>...] [options]
 

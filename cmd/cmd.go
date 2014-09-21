@@ -64,14 +64,14 @@ func Start(b backend.Backend, targets []string) error {
 }
 
 func StartPlatform(b backend.Backend) error {
-	fmt.Println("Starting Platform...")
+	fmt.Println(utils.DeisIfy("Starting Deis..."))
 	if err := startDataContainers(b); err != nil {
 		return err
 	}
 	if err := startDefaultServices(b); err != nil {
 		return err
 	}
-	fmt.Println("Platform started.")
+	fmt.Println("Deis started.")
 	return nil
 }
 
@@ -105,11 +105,11 @@ func Stop(b backend.Backend, targets []string) error {
 }
 
 func StopPlatform(b backend.Backend) error {
-	fmt.Println("Stopping Platform...")
+	fmt.Println("Stopping Deis...")
 	if err := stopDefaultServices(b); err != nil {
 		return err
 	}
-	fmt.Println("Platform stopped.")
+	fmt.Println("Deis stopped.")
 	return nil
 }
 
@@ -164,10 +164,16 @@ func Install(b backend.Backend, targets []string) error {
 }
 
 func InstallPlatform(b backend.Backend) error {
+	fmt.Println(utils.DeisIfy("Installing Deis..."))
 	if err := installDataContainers(b); err != nil {
 		return err
 	}
-	return installDefaultServices(b)
+	if err := installDefaultServices(b); err != nil {
+		return err
+	}
+	fmt.Println("Deis installed.")
+	fmt.Println("Please run `deisctl start platform` to boot up Deis.")
+	return nil
 }
 
 func installDataContainers(b backend.Backend) error {
