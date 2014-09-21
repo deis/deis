@@ -81,6 +81,7 @@ Done.
 
 Note that the default install command activates 1 of each component.
 You can scale components with `deisctl scale router=3`, for example.
+The router is the only component that _currently_ scales beyond 1 unit.
 
 You can also use the `deisctl uninstall` command to destroy platform units:
 
