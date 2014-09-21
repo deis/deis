@@ -17,19 +17,19 @@ Trying out Deis? Continue following these instructions for a local installation 
 ## Install prerequisites
 
  * Due to its nature as a distributed system, we strongly recommend using Deis with a minimum of 3 nodes even for local development and testing
- * The Deis containers will consume approximately 5 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
+ * The Deis "control plane" containers will consume approximately 2 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
  * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
 Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known release for 14.04) has some issues when running in RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's website.
 
 ## Configure Discovery
 
-Each time you spin up a new CoreOS cluster, you **must** provide a new [discovery service URL](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) in the [CoreOS user-data](https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/) file.  This URL allows hosts to find each other and perform initial leader election.
+Each time you spin up a new CoreOS cluster, you **must** provide a new [discovery service URL](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) in the [CoreOS user-data](https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/) file.  This URL allows hosts to find each other and perform leader election.
 
 Automatically generate a fresh discovery URL with:
 
 ```console
-$ sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $(curl -q -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
+$ make discovery-url
 ```
 
 or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from <https://discovery.etcd.io/new>.
@@ -63,16 +63,16 @@ Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl`
 $ export DEISCTL_TUNNEL=172.17.8.100
 ```
 
-Use `deisctl install platform` to install all Deis components across the cluster, then `deisctl start platform` to start them. This can take some time - the registry service will pull and prepare a large Docker image, the builder service will download the Heroku cedar stack.  Grab some more coffee!
+Use `deisctl install platform` to install all Deis components across the cluster, then `deisctl start platform` to start them.
 
 ```console
 $ deisctl install platform
 $ deisctl start platform
 ```
 
-Your Deis installation should now be accessible at `deis.local3.deisapp.com`.
+This can take some time - the **builder** and **registry** components must download and install the beefy Heroku cedar stack.  Grab some more coffee!
 
-For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+Your Deis platform should be accessible at `deis.local3.deisapp.com`.  For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
 
 ## Install the Deis Client
 
@@ -97,7 +97,7 @@ $ deis register http://deis.local3.deisapp.com
 $ deis keys:add
 ```
 
-Use `deis keys:add` to add your SSH public key for `git push` access.
+Use `deis keys:add` to add your SSH public key for `git push` access -- normally `$HOME/.ssh/id_rsa.pub`.
 
 ## Initialize a Cluster
 
@@ -117,12 +117,24 @@ The `dev` cluster will be used as the default cluster for future `deis` commands
 
 # Usage
 
-## Clone an example application or use an existing one
-Example applications can be cloned from the Deis GitHub [organization](https://github.com/deis).
-Commonly-used example applications include [Helloworld (Dockerfile)](https://github.com/deis/helloworld), [Go](https://github.com/deis/example-go), and [Ruby](https://github.com/deis/example-ruby-sinatra).
+Deis supports 3 deployment workflows:
+
+ * Heroku Buildpacks via `git push` -- Learn more about [Using Buildpacks](http://docs.deis.io/en/latest/using_deis/using-buildpacks/)
+ * Dockerfiles via `git push` -- Learn more about [Using Dockerfiles](http://docs.deis.io/en/latest/using_deis/using-dockerfiles/)
+ * Docker Images via `deis pull` -- Learn more about [Using Docker Images](http://docs.deis.io/en/latest/using_deis/using-docker-images/)
+
+As an example, we will walk through deploying a Ruby application using the Heroku Buildpack workflow.
+
+## Prepare an Application
+Clone an example Ruby application:
+
+```console
+$ git clone https://github.com/deis/example-ruby-sinatra.git
+$ cd example-ruby-sinatra
+```
 
 ## Create an Application
-From within the application directory, create an application on the default `dev` cluster:
+From within the application directory, create an application on Deis:
 
 ```console
 $ cd example-ruby-sinatra
@@ -131,16 +143,14 @@ $ deis create
 
 Use `deis create --cluster=prod` to place the app on a different cluster.  Don't like our name-generator?  Use `deis create myappname`.
 
-## Push
-Push builds of your application from your local git repository or from a Docker Registry.  Each build creates a new release, which can be rolled back.
-
-#### From a Git Repository
-When you created the application, a git remote for Deis was added automatically.
+## Deploy
+When you created the application, a git remote for Deis was added automatically.  Deploy with `git push`.
 
 ```console
 $ git push deis master
 ```
-This will use the Deis builder to package your application as a Docker Image and deploy it on your application's cluster.
+This will use the Deis builder to package your application as a Docker Image and automatically deploy it to the platform.
+Each build creates a new release, which can be rolled back.
 
 ## Configure
 Configure your application with environment variables.  Each config change also creates a new release.
@@ -150,14 +160,13 @@ $ deis config:set DATABASE_URL=postgres://
 ```
 
 ## Test
-### Run tests
-Test your application by running commands inside an ephemeral Docker container.
+Test the application by running your test suite inside an ephemeral Docker container.
 
 ```console
 $ deis run make test
 ```
 
-To integrate with your CI system, check the return code.
+Use the return code to integrate with a CI system.
 
 ## Scale
 Scale containers horizontally with ease.
@@ -173,7 +182,7 @@ Access to aggregated logs makes it easy to troubleshoot problems with your appli
 $ deis logs
 ```
 
-Use `deis run` to execute one-off commands and explore the deployed container.  Coming soon: `deis attach` to jump into a live container.
+Use `deis run` to execute one-off commands and explore the deployed container.
 
 ## Testing the cluster
 
@@ -197,22 +206,9 @@ The most common cause of this issue is that a [new discovery URL](https://discov
 This usually means the controller failed to submit jobs to the scheduler. `deisctl journal controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
 
 #### A Deis component fails to start
-
 Use `deisctl status <component>` to view the status of the component.  You can also use `deisctl journal <component>` to tail logs for a component, or `deisctl list` to list all components.
 
-The most common cause of services failing to start are sporadic issues with DockerHub. The telltale sign of this is:
-
-```console
-May 12 18:24:37 deis-3 systemd[1]: Starting deis-controller...
-May 12 18:24:37 deis-3 sh[6176]: 2014/05/12 18:24:37 Error: No such id: deis/controller
-May 12 18:24:37 deis-3 sh[6176]: Pulling repository deis/controller
-May 12 18:29:47 deis-3 sh[6176]: 2014/05/12 18:29:47 Could not find repository on any of the indexed registries.
-May 12 18:29:47 deis-3 systemd[1]: deis-controller.service: control process exited, code=exited status=1
-May 12 18:29:47 deis-3 systemd[1]: Failed to start deis-controller.
-May 12 18:29:47 deis-3 systemd[1]: Unit deis-controller.service entered failed state.
-```
-
-We are exploring workarounds and are working with the Docker team to improve DockerHub reliability. In the meantime, try starting the service again with `deisctl restart <component>`.
+The most common cause of services failing to start are sporadic issues with Docker Hub.  We are exploring workarounds and are working with the Docker team to improve Docker Hub reliability. In the meantime, try starting the service again with `deisctl restart <component>`.
 
 ### Any other issues
 Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into [#deis](https://botbot.me/freenode/deis/) and we'll help!
