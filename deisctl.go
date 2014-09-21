@@ -7,6 +7,7 @@ import (
 
 	"github.com/deis/deisctl/backend/fleet"
 	"github.com/deis/deisctl/client"
+	"github.com/deis/deisctl/utils"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -41,16 +42,7 @@ func setGlobalFlags(args map[string]interface{}) {
 }
 
 func main() {
-	circle := "\033[31m●"
-	square := "\033[32m■"
-	triangle := "\033[34m▴"
-	reset := "\033[0m"
-	title := reset + "Deis Control Utility"
-
-	deisctlMotd := fmt.Sprintf("%s %s %s\n%s %s %s %s\n%s %s %s%s\n",
-		circle, triangle, square,
-		square, circle, triangle, title,
-		triangle, square, circle, reset)
+	deisctlMotd := utils.DeisIfy("Deis Control Utility")
 	usage := deisctlMotd + `
 Usage:
   deisctl <command> [<target>...] [options]
