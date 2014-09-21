@@ -468,7 +468,7 @@ class BuildHookViewSet(BaseHookViewSet):
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
             initial = True if build.app.structure == {} else False
-            build.app.deploy(self.request.user, new_release, initial=initial)
+            build.app.deploy(build.owner, new_release, initial=initial)
 
 
 class ConfigHookViewSet(BaseHookViewSet):
