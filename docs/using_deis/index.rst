@@ -17,5 +17,6 @@ Using Deis
     deploy-application
     using-buildpacks
     using-dockerfiles
+    using-docker-images
     config-application
     manage-application
