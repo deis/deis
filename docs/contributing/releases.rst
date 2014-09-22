@@ -17,46 +17,67 @@ product release.
 
 Please keep this document up-to-date with any changes in this process.
 
-github.com/deis/deis Repo
--------------------------
+deis Repo
+---------
 - Create the next `deis milestone`_
-- Move any `deis open issues`_ from the current release to the
-  next milestone
+- Move any `deis open issues`_ from the current release to the next milestone
 - Close the current `deis milestone`_
-- Recreate CHANGELOG.md in the root of the project using the `changelog script`_
+- Update CHANGELOG.md using the `changelog script`_
     * ``./contrib/util/generate-changelog.sh vU.V.W vX.Y.Z | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
       substituting the previous release for vU.V.W and the current one for vX.Y.Z.
     * proofread the new CHANGELOG.md to ensure it was generated correctly
-    * ``git add CHANGELOG.md && git commit -m "Updated CHANGELOG.md."``
+    * ``git add CHANGELOG.md && git commit -m "docs(CHANGELOG): update for v.X.Y.Z"``
 - Merge git master into release branch locally
     * ``git checkout release && git merge master``
 - Edit contrib/coreos/user-data and update ``DEIS_RELEASE`` to ":vX.Y.Z"
-- At the Docker Index, create a tagged image build ":vX.Y.Z" for every component
-    * The UI for this is well-hidden: go to https://index.docker.io/builds/ and
-      click "Edit".
 - Commit and push the deis/deis release and tag
     * remove "-dev" from __version__ fields in Python packages
     * remove "-dev" from Version constant in version/version.go
-    * ``git commit -a -m 'Updated for vX.Y.Z release.'``
+    * ``git commit -a -m 'chore(release): update version to vX.Y.Z'``
     * ``git push origin release``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
+- At the Docker Hub, create an automatic tagged build ":vX.Y.Z" for every component
 - Publish CLI to pypi.python.org
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
-- Create CLI binaries for Windows, Mac OS X, Debian
-    - ``pip install pyinstaller && make -C controller client``
-    - build **deis-osx-X.Y.Z.tgz** on Mac OS X 10.9
-    - build **deis-win64-X.Y.Z.zip** on Windows 7 64-bit
-    - build **deis-ubuntu-X.Y.Z.tgz** on Ubuntu 14.04
-    - upload all binaries to the `aws-eng S3 bucket`_ and set each as
-      publically downloadable
+- Continuous delivery jobs at ci.deis.io will update the deis CLI. Double-check that the
+  current binaries are publicly downloadable from the opdemand S3 bucket.
 - Switch master to upcoming release
     * ``git checkout master``
     * update __version__ fields in Python packages to *next* version + "-dev"
     * update Version constant in version/version.go to *next* version + "-dev"
-    * ``git commit -a -m 'Switch master to vA.B.C.'`` (**next** version)
+    * ``git commit -a -m 'chore(release): update version to vR.S.T-dev'`` (**next** version)
     * ``git push origin master``
+
+deisctl repo
+------------
+- Create the next `deisctl milestone`_ to match the next `deis milestone`_
+- Move any `deisctl open issues`_ from the current release to the next milestone
+- Close the current `deisctl milestone`_
+- Update CHANGELOG.md using the `changelog script`_ in the deis project:
+    * ``../deis/contrib/util/generate-changelog.sh vU.V.W vX.Y.Z | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
+      substituting the previous release for vU.V.W and the current one for vX.Y.Z.
+    * proofread the new CHANGELOG.md to ensure it was generated correctly
+    * ``git add CHANGELOG.md && git commit -m "docs(CHANGELOG): update for v.X.Y.Z"``
+- Continuous delivery jobs at ci.deis.io will update the deisctl installer. Double-check that the
+  current binaries are publicly downloadable from the opdemand S3 bucket.
+- Commit and push the deis/deisctl release and tag
+    * remove "-dev" from the deis-version file in the project root
+    * remove "-dev" from the string resource in deisctl.go
+    * remove "-dev" from the installer links in README.md
+    * ``git commit -a -m 'chore(release): update version to vX.Y.Z'``
+    * ``git push origin master``
+    * ``git tag vX.Y.Z``
+    * ``git push --tags origin vX.Y.Z``
+- Switch master to upcoming release
+   * update deis-version file in the project root to *next* version + "-dev"
+   * update Version constant in deisctl.go to *next* version + "-dev"
+   * ``git commit -a -m 'chore(release): update version to vR.S.T-dev'`` (**next** version)
+   * ``git push origin master``
+- Update deis.io installer script to point to new -dev version
+   * update https://github.com/deis/deis.io/blob/gh-pages/deisctl/install.sh to point to new
+     -dev release version
 
 Documentation
 -------------
@@ -73,7 +94,7 @@ Documentation
     * the zipfile will be at **docs/docs.zip**
     * log in to http://pypi.python.org/ and use the web form at the
       `Deis Pypi`_ page to upload the zipfile
-- Check documentation for deis/* projects at the `Docker Index`_
+- Check documentation for deis/* projects at the `Docker Hub`_
     * click "Settings" for each project (deis/controller, deis/cache, etc.)
     * paste the contents of each README.md into the "long description" field if
       there are discrepencies. (These don't automatically sync up after the
@@ -89,9 +110,11 @@ Documentation
 
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
 .. _`deis open issues`: https://github.com/deis/deis/issues?state=open
+.. _`deisctl milestone`: https://github.com/deis/deisctl/issues/milestones
+.. _`deisctl open issues`: https://github.com/deis/deisctl/issues?state=open
 .. _`changelog script`: https://github.com/deis/deis/blob/master/contrib/util/generate-changelog.sh
 .. _`release notes`: https://github.com/deis/deis/releases
 .. _`aws-eng S3 bucket`: https://s3-us-west-2.amazonaws.com/opdemand/
 .. _`Deis Pypi`:  https://pypi.python.org/pypi/deis/
-.. _`Docker Index`: https://index.docker.io/
+.. _`Docker Hub`: https://hub.docker.com/
 .. _`deis/deis.io`: https://github.com/deis/deis.io
