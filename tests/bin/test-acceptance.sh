@@ -20,6 +20,7 @@ rm -rf tests/example-*
 
 set -e
 
+make -C docs/ test
 make build
 make test-components
 
