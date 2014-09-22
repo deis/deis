@@ -80,14 +80,14 @@ $ export DEIS_NUM_ROUTERS=2
 Once the cluster is up:
 * **If required, allocate and associate floating IPs to any or all of your hosts**
 * Get the IP address of any of the machines from Openstack
-* set FLEETCTL_TUNNEL, and issue a `make run` from the project root:
+* set DEISCTL_TUNNEL and install the platform:
 
 ```console
-$ export FLEETCTL_TUNNEL=23.253.219.94
-$ cd ../.. && make run
+$ export DEISCTL_TUNNEL=23.253.219.94
+$ deisctl install platform && deisctl start platform
 ```
 
-The script will deploy Deis and make sure the services start properly.
+The installer will deploy Deis and make sure the services start properly.
 
 ### Configure DNS
 You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
@@ -103,9 +103,5 @@ email: info@opdemand.com
 ```
 
 ## Hack on Deis
-If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
-```console
-$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
-```
 
-This variable is used in the `make build` command.
+See [Hacking on Deis](http://docs.deis.io/en/latest/contributing/hacking/).

@@ -58,8 +58,8 @@ Once your server(s) are all provisioned you can proceed to install Deis. Use the
 
 ```console
 $ ssh-add ~/.ssh/deis
-$ export FLEETCTL_TUNNEL=your.server.name.here
-$ cd ../.. && make run
+$ export DEISCTL_TUNNEL=your.server.name.here
+$ deisctl install platform && deisctl start platform
 ```
 
 ## Use Deis!

@@ -82,10 +82,10 @@ $ export DEIS_NUM_ROUTERS=2
 
 ## Initialize the cluster
 Once the cluster is up, get the IPs of any of the machines using `tugboat droplets`, set
-FLEETCTL_TUNNEL to one of these IPs:
+DEISCTL_TUNNEL to one of these IPs:
 ```console
-$ export FLEETCTL_TUNNEL=23.253.219.94
-$ cd ../.. && make run
+$ export DEISCTL_TUNNEL=23.253.219.94
+$ deisctl install platform && deisctl start platform
 ```
 The script will deploy Deis and make sure the services start properly.
 
@@ -103,9 +103,5 @@ email: info@opdemand.com
 ```
 
 ## Hack on Deis
-If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
-```console
-$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
-```
 
-This variable is used in the `make build` command.
+See [Hacking on Deis](http://docs.deis.io/en/latest/contributing/hacking/).

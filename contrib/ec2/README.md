@@ -37,9 +37,9 @@ For more information, see [optimal etcd cluster size](https://github.com/coreos/
 Deis clusters of less than 3 nodes are unsupported.
 
 ## Choose number of routers
-By default, the Makefile will provision 1 router. You can override this by setting `DEIS_NUM_ROUTERS`:
+By default, deisctl will provision 1 router. You can override this by scaling up:
 ```console
-$ export DEIS_NUM_ROUTERS=2
+$ deisctl scale router=3
 ```
 
 ## Customize user-data
@@ -110,13 +110,13 @@ Please wait for all instances to come up as "running" before continuing.
 
 ## Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from EC2, set
-FLEETCTL_TUNNEL, and issue a `make run` from the project root:
+DEISCTL_TUNNEL, and issue a `deisctl install`:
 ```console
 $ ssh-add ~/.ssh/deis
-$ export FLEETCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
-$ cd ../.. && make run
+$ export DEISCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
+$ deisctl install platform && deisctl start platform
 ```
-The script will deploy Deis and make sure the services start properly.
+Deisctl will deploy Deis and make sure the services start properly.
 
 ## Configure load balancer
 The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis
@@ -139,12 +139,8 @@ email: info@opdemand.com
 ```
 
 ## Hack on Deis
-If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
-```console
-$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
-```
 
-This variable is used in the `make build` command.
+See [Hacking on Deis](http://docs.deis.io/en/latest/contributing/hacking/).
 
 [aws-cli]: https://github.com/aws/aws-cli
 [template]: https://s3.amazonaws.com/coreos.com/dist/aws/coreos-alpha.template
