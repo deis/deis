@@ -3,6 +3,7 @@ package fleet
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -157,10 +158,13 @@ func printUnitSubState(name string, outchan chan *schema.Unit, errchan chan erro
 			// continue processing if error channel closed
 			if err == nil {
 				continue
+			} else if strings.Contains(err.Error(), "timeout reached") {
+				// ignore intermittent timeout errors
+				continue
 			}
 			return err
 		}
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
 
@@ -191,9 +195,12 @@ func printUnitState(name string, outchan chan *schema.Unit, errchan chan error) 
 			// continue processing if error channel closed
 			if err == nil {
 				continue
+			} else if strings.Contains(err.Error(), "timeout reached") {
+				// ignore intermittent timeout errors
+				continue
 			}
 			return err
 		}
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
