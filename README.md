@@ -7,7 +7,7 @@
 To install `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
-curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+$ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
 ```
 
 The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
@@ -21,6 +21,17 @@ To change installation options, save the installer directly from one of these li
 Then run the downloaded file as a shell script. Append `--help` to see what options
 are available.
 
+If you want to install from source, clone the repository and run
+
+```console
+$ godep get .
+```
+
+Then, export the `DEISCTL_UNITS` environment variable so deisctl can find the units:
+
+```console
+$ export DEISCTL_UNITS="$PATH_TO_DEISCTL/units"
+```
 
 ## Remote Configuration
 
@@ -42,23 +53,21 @@ $ export DEISCTL_TUNNEL=172.17.8.100
 
 ## Provision a Deis Platform
 
-The `deisctl install platform` command will schedule and activate all of the Deis platform units.
+The `deisctl install platform` command will schedule all of the Deis platform
+units. `deisctl start platform` activates these units.
 
 ```console
 $ deisctl install platform
+● ▴ ■
+■ ● ▴ Installing Deis...
+▴ ■ ●
 
 Scheduling data containers...
 deis-database-data.service: loaded
 deis-registry-data.service: loaded
 deis-logger-data.service: loaded
 deis-builder-data.service: loaded
-
-Launching data containers...
-deis-database-data.service: launched
-deis-registry-data.service: launched
-deis-logger-data.service: launched
-deis-builder-data.service: launched
-
+Data containers scheduled.
 Scheduling service containers...
 deis-database@1.service: loaded
 deis-cache@1.service: loaded
@@ -67,19 +76,33 @@ deis-registry@1.service: loaded
 deis-controller@1.service: loaded
 deis-builder@1.service: loaded
 deis-router@1.service: loaded
+Service containers scheduled.
+Deis installed.
+Please run `deisctl start platform` to boot up Deis.
 
+$ deisctl start platform
+● ▴ ■
+■ ● ▴ Starting Deis...
+▴ ■ ●
+
+Launching data containers...
+deis-database-data.service: exited
+deis-registry-data.service: exited
+deis-logger-data.service: exited
+deis-builder-data.service: exited
+Data containers launched.
 Launching service containers...
-deis-logger@1.service: launched
-deis-cache@1.service: launched
-deis-database@1.service: launched
-deis-registry@1.service: launched
-deis-controller@1.service: launched
-deis-builder@1.service: launched
-deis-router@1.service: launched
-Done.
+deis-logger@1.service: running
+deis-cache@1.service: running
+deis-router@1.service: running
+deis-database@1.service: running
+deis-controller@1.service: running
+deis-registry@1.service: running
+deis-builder@1.service: running
+Deis started.
 ```
 
-Note that the default install command activates 1 of each component.
+Note that the default start command activates 1 of each component.
 You can scale components with `deisctl scale router=3`, for example.
 The router is the only component that _currently_ scales beyond 1 unit.
 
