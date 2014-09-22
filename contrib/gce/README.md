@@ -6,7 +6,7 @@ Let's build a Deis cluster in Google's Compute Engine!
 
 This assumes you have a couple of items installed already:
 
-* `fleetctl` (You can install form Homebrew using `brew install fleetctl`)
+* [deisctl](https://github.com/deis/deisctl)
 * `git` (Available via Homebrew or Xcode Command Line Tools)
 * A clone of the Deis repository (`git clone https://github.com/deis/deis.git`)
 * You are running commands from the a cloned `deis` folder (`cd deis` after cloning)
@@ -292,83 +292,43 @@ $ sudo pip install --upgrade ./client
 
 ### Setup
 
-The `FLEETCTL_TUNNEL` environment variable provides a SSH gateway to use in with CoreOS. Use the public IP address for one of the CoreOS nodes we deployed earlier:
+The `DEISCTL_TUNNEL` environment variable provides a SSH gateway to use in with `deisctl`. Use the public IP address for one of the CoreOS nodes we deployed earlier:
 
 ```shell
-export FLEETCTL_TUNNEL=23.236.59.66
+export DEISCTL_TUNNEL=23.236.59.66
 ```
 
-Verify the CoreOS cluster is operation and that we can see all our nodes:
+Verify the CoreOS cluster is operational and that we can communicate with the cluster:
 
 ```console
-$ fleetctl list-machines
+$ deisctl list
 MACHINE		IP		METADATA
-b0d96509...	10.240.19.74	-
-c6e39062...	10.240.174.34	-
-e084a014...	10.240.26.179	-
 ```
 
-Now we can bootstrap the Deis containers. `DEIS_NUM_INSTANCES` should match the number of EC2 instances launched. `DEIS_NUM_ROUTERS` should be at least 2. But can also match node count:
+Now we can bootstrap the Deis containers:
 
 ```shell
-DEIS_NUM_INSTANCES=3 DEIS_NUM_ROUTERS=3 make run
-Job deis-router.1.service loaded on 47c540a2.../10.240.62.89
-Job deis-router.2.service loaded on 794c2897.../10.240.194.149
-Job deis-router.3.service loaded on 177b5a76.../10.240.98.27
-Job deis-builder-data.service loaded on 177b5a76.../10.240.98.27
-Job deis-database-data.service loaded on 47c540a2.../10.240.62.89
-Job deis-logger-data.service loaded on 177b5a76.../10.240.98.27
-Job deis-registry-data.service loaded on 47c540a2.../10.240.62.89
-fleetctl --strict-host-key-checking=false load registry/systemd/deis-registry.service logger/systemd/deis-logger.service cache/systemd/deis-cache.service database/systemd/deis-database.service
-Job deis-logger.service loaded on 177b5a76.../10.240.98.27
-Job deis-registry.service loaded on 47c540a2.../10.240.62.89
-Job deis-cache.service loaded on 47c540a2.../10.240.62.89
-Job deis-database.service loaded on 47c540a2.../10.240.62.89
-fleetctl --strict-host-key-checking=false load controller/systemd/*.service
-Job deis-controller.service loaded on 177b5a76.../10.240.98.27
-fleetctl --strict-host-key-checking=false load builder/systemd/*.service
-Job deis-builder.service loaded on 177b5a76.../10.240.98.27
-Deis components may take a long time to start the first time they are initialized.
-Waiting for 1 of 3 deis-routers to start...
-fleetctl --strict-host-key-checking=false start -no-block deis-router.1.service; fleetctl --strict-host-key-checking=false start -no-block deis-router.2.service; fleetctl --strict-host-key-checking=false start -no-block deis-router.3.service;
-Triggered job deis-router.1.service start
-Triggered job deis-router.2.service start
-Triggered job deis-router.3.service start
-Waiting for deis-registry to start...
-fleetctl --strict-host-key-checking=false start -no-block registry/systemd/deis-registry.service logger/systemd/deis-logger.service cache/systemd/deis-cache.service database/systemd/deis-database.service
-Triggered job deis-registry.service start
-Triggered job deis-logger.service start
-Triggered job deis-cache.service start
-Triggered job deis-database.service start
-Waiting for deis-controller to start...
-fleetctl --strict-host-key-checking=false start -no-block controller/systemd/*
-Triggered job deis-controller.service start
-Waiting for deis-builder to start...
-fleetctl --strict-host-key-checking=false start -no-block builder/systemd/*.service
-Triggered job deis-builder.service start
-Your Deis cluster is ready to go! Continue following the README to login and use Deis.
+deisctl install platform && deisctl start platform
 ```
 
 This operation will take a while as all the Deis systemd units are loaded into the CoreOS cluster and the Docker images are pulled down. Grab some iced tea!
 
-Verify that all the units are active after the `make run` operation completes:
+Verify that all the units are active after the operation completes:
 
 ```console
-$ fleetctl list-units
-UNIT				STATE		LOAD	ACTIVE	SUB	DESC			MACHINE
-deis-builder-data.service	loaded		loaded	active	exited	deis-builder-data	177b5a76.../10.240.98.27
-deis-builder.service		launched	loaded	active	running	deis-builder		177b5a76.../10.240.98.27
-deis-cache.service		launched	loaded	active	running	deis-cache		47c540a2.../10.240.62.89
-deis-controller.service		launched	loaded	active	running	deis-controller		177b5a76.../10.240.98.27
-deis-database-data.service	loaded		loaded	active	exited	deis-database-data	47c540a2.../10.240.62.89
-deis-database.service		launched	loaded	active	running	deis-database		47c540a2.../10.240.62.89
-deis-logger-data.service	loaded		loaded	active	exited	deis-logger-data	177b5a76.../10.240.98.27
-deis-logger.service		launched	loaded	active	running	deis-logger		177b5a76.../10.240.98.27
-deis-registry-data.service	loaded		loaded	active	exited	deis-registry-data	47c540a2.../10.240.62.89
-deis-registry.service		launched	loaded	active	running	deis-registry		47c540a2.../10.240.62.89
-deis-router.1.service		launched	loaded	active	running	deis-router		47c540a2.../10.240.62.89
-deis-router.2.service		launched	loaded	active	running	deis-router		794c2897.../10.240.194.149
-deis-router.3.service		launched	loaded	active	running	deis-router		177b5a76.../10.240.98.27
+$ deisctl list
+UNIT                        MACHINE                     LOAD    ACTIVE  SUB
+deis-builder-data.service   dea53588.../172.17.8.100    loaded  active  exited
+deis-builder@1.service      dea53588.../172.17.8.100    loaded  active  running
+deis-cache@1.service        dea53588.../172.17.8.100    loaded  active  running
+deis-controller@1.service   dea53588.../172.17.8.100    loaded  active  running
+deis-database-data.service  dea53588.../172.17.8.100    loaded  active  exited
+deis-database@1.service     dea53588.../172.17.8.100    loaded  active  running
+deis-logger-data.service    dea53588.../172.17.8.100    loaded  active  exited
+deis-logger@1.service       dea53588.../172.17.8.100    loaded  active  running
+deis-registry-data.service  dea53588.../172.17.8.100    loaded  active  exited
+deis-registry@1.service     dea53588.../172.17.8.100    loaded  active  running
+deis-router@1.service       dea53588.../172.17.8.100    loaded  active  running
 ```
 
 Everything looks good! Register the admin user. The first user added to the system becomes the admin:

@@ -54,12 +54,6 @@ Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
 $ ./provision-rackspace-cluster.sh deis-key
 ```
 
-### Choose number of routers
-By default, the Makefile will provision 1 router. You can override this by setting `DEIS_NUM_ROUTERS`:
-```console
-$ export DEIS_NUM_ROUTERS=2
-```
-
 ### Update CoreOS
 Due to image publishing limitations on Rackspace, CoreOS images on Rackspace are frequently out of date.
 Each machine needs to be updated. On each one, run:
@@ -72,12 +66,19 @@ Once the machine is rebooted, it should have a recent CoreOS version.
 
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
-FLEETCTL_TUNNEL, and issue a `make run` from the project root:
+DEISCTL_TUNNEL and install the platform:
 ```console
-$ export FLEETCTL_TUNNEL=23.253.219.94
-$ cd ../.. && make run
+$ export DEISCTL_TUNNEL=23.253.219.94
+$ deisctl install platform && deisctl start platform
 ```
-The script will deploy Deis and make sure the services start properly.
+
+The installer will deploy Deis and make sure the services start properly.
+
+### Choose number of routers
+By default, `deisctl` will provision 1 router. You can override this by scaling up:
+```console
+$ deisctl scale router=2
+```
 
 ### Configure DNS
 You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
@@ -108,9 +109,5 @@ email: info@opdemand.com
 ```
 
 ## Hack on Deis
-If you'd like to use this deployment to build Deis, you'll need to set `DEIS_HOSTS` to an array of your cluster hosts:
-```console
-$ DEIS_HOSTS="1.2.3.4 2.3.4.5 3.4.5.6" make build
-```
 
-This variable is used in the `make build` command.
+See [Hacking on Deis](http://docs.deis.io/en/latest/contributing/hacking/).
