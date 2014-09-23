@@ -15,8 +15,8 @@ to */var/lib/deis/units* one time.
 
 To change installation options, save the installer directly from one of these links:
 
-[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-dev-linux-amd64.run)
-[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-dev-darwin-amd64.run)
+[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-linux-amd64.run)
+[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-darwin-amd64.run)
 
 Then run the downloaded file as a shell script. Append `--help` to see what options
 are available.
