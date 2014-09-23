@@ -266,11 +266,11 @@ Time to install Deis!
 
 ### Install
 
-We cloned the Deis repository in the prerequisites. In this example we will be deploying version `0.11.0`:
+We cloned the Deis repository in the prerequisites. In this example we will be deploying version `0.12.0`:
 
 ```console
-$ git checkout v0.11.0
-Note: checking out 'v0.11.0'.
+$ git checkout v0.12.0
+Note: checking out 'v0.12.0'.
 
 You are in 'detached HEAD' state. You can look around, make experimental
 changes and commit them, and you can discard any commits you make in this
