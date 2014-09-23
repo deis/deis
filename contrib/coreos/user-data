@@ -42,6 +42,15 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
+  - name: install-deisctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install deisctl utility
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/sh -c 'curl -sSL http://deis.io/deisctl/install.sh | sh'
 write_files:
   - path: /etc/deis-release
     content: |
