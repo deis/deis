@@ -1,0 +1,13 @@
+[Unit]
+Description=deis-store-data
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "docker inspect deis-store-data >/dev/null 2>&1 || docker run --name deis-store-data -v /var/lib/ceph -v /etc/ceph deis/base true"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineID=CHANGEME
