@@ -12,7 +12,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -256,15 +255,6 @@ func stripTrailingCharacters(target string) string {
 
 func nLines(s string) int {
 	return strings.Count(s, "\n")
-}
-
-// ExpandUser replaces "~" in a string with the current user's home directory.
-func ExpandUser(path string) (string, error) {
-	user, err := user.Current()
-	if err != nil {
-		return path, err
-	}
-	return strings.Replace(path, "~/", user.HomeDir+"/", 1), nil
 }
 
 // DeisIfy returns a pretty-printed deis logo along with the corresponding message
