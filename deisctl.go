@@ -14,7 +14,7 @@ import (
 
 const (
 	// Version of deisctl client
-	Version string = "0.12.0"
+	Version string = "0.13.0-dev"
 )
 
 func exit(err error, code int) {
