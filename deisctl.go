@@ -47,11 +47,22 @@ func main() {
 Usage:
   deisctl <command> [<target>...] [options]
 
-Example Commands:
+Commands:
+  deisctl install [<service> | platform]
+  deisctl uninstall [<service> | platform]
+  deisctl list
+  deisctl scale [<service>=<num>]
+  deisctl start [<service> | platform]
+  deisctl stop [<service> | platform]
+  deisctl restart [<service> | platform]
+  deisctl journal <service>
+  deisctl config <component> <get|set> <args>
+  deisctl update
+  deisctl refresh-units
 
+Example Commands:
   deisctl install platform
   deisctl uninstall builder@1
-  deisctl list
   deisctl scale router=2
   deisctl start router@2
   deisctl stop router builder
