@@ -1,4 +1,4 @@
-FROM deis/store-base:latest
+#FROM is generated dynamically by the Makefile
 MAINTAINER OpDemand <info@opdemand.com>
 
 EXPOSE 6800
