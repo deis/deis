@@ -288,7 +288,7 @@ Options:
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(2)
 	}
-	dir, _ := utils.ExpandUser(args["--path"].(string))
+	dir := args["--path"].(string)
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err

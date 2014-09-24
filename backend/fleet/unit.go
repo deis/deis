@@ -10,13 +10,12 @@ import (
 	"strings"
 
 	"github.com/coreos/fleet/unit"
-	"github.com/deis/deisctl/utils"
 )
 
 // path hierarchy for finding systemd service templates
 var templatePaths = []string{
 	os.Getenv("DEISCTL_UNITS"),
-	"~/.deis/units",
+	os.Getenv("HOME") + "/.deis/units",
 	"/var/lib/deis/units",
 }
 
@@ -121,7 +120,6 @@ func readTemplate(component string) (out []byte, err error) {
 		if p == "" {
 			continue
 		}
-		p, _ := utils.ExpandUser(p)
 		filename := path.Join(p, templateName)
 		if _, err := os.Stat(filename); err == nil {
 			templateFile = filename
