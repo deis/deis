@@ -1,7 +1,7 @@
 COMPONENTS=builder cache controller database logger registry router
 
 build:
-	godep go build ./...
+	CGO_ENABLED=0 godep go build -a -ldflags '-s' ./...
 
 installer:
 	rm -rf dist && mkdir -p dist
