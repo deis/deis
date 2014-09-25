@@ -10,9 +10,8 @@
 celery==3.1.13
 Django==1.6.7
 django-allauth==0.15.0
-# HACK: use bacongobbler's feature branch until
-# https://github.com/kmmbvnr/django-fsm/pull/31 is merged
-git+https://github.com/bacongobbler/django-fsm@add-exception-handling
+# FIXME: switch to upstream pending merge of https://github.com/kmmbvnr/django-fsm/pull/59
+git+https://github.com/deis/django-fsm@propagate-false
 django-guardian==1.2.4
 django-json-field==0.5.5
 djangorestframework==2.3.14

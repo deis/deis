@@ -38,12 +38,6 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post('/api/clusters', json.dumps(body),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        # create a malicious scheduler as well
-        body['id'] = 'autotest2'
-        body['type'] = 'faulty'
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     def test_container_state_good(self):
         """Test that the finite state machine transitions with a good scheduler"""
@@ -65,41 +59,8 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(c.state, 'created')
         c.start()
         self.assertEqual(c.state, 'up')
-        c.deploy(App.objects.get(id=app_id).release_set.latest())
-        self.assertEqual(c.state, 'up')
         c.destroy()
         self.assertEqual(c.state, 'destroyed')
-
-    def test_container_state_bad(self):
-        """Test that the finite state machine transitions with a faulty scheduler"""
-        url = '/api/apps'
-        body = {'cluster': 'autotest2'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        # create a container
-        c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
-                                     type='web',
-                                     num=1)
-        self.assertEqual(c.state, 'initialized')
-        self.assertRaises(Exception, lambda: c.create())
-        self.assertEqual(c.state, 'initialized')
-        # test an illegal transition
-        self.assertRaises(TransitionNotAllowed, lambda: c.start())
-        self.assertEqual(c.state, 'initialized')
-        self.assertRaises(
-            Exception,
-            lambda: c.deploy(
-                App.objects.get(id=app_id).release_set.latest()
-            )
-        )
-        self.assertEqual(c.state, 'down')
-        self.assertRaises(Exception, lambda: c.destroy())
-        self.assertEqual(c.state, 'down')
-        self.assertRaises(Exception, lambda: c.run('echo hello world'))
-        self.assertEqual(c.state, 'down')
 
     def test_container_state_protected(self):
         """Test that you cannot directly modify the state"""

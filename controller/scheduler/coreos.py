@@ -1,6 +1,7 @@
 import cStringIO
 import base64
 import copy
+import functools
 import json
 import httplib
 import paramiko
@@ -98,20 +99,16 @@ class FleetHTTPClient(object):
             raise RuntimeError(errmsg)
         return json.loads(data)
 
-    # job api
+    # container api
 
     def create(self, name, image, command='', template=None, use_announcer=True, **kwargs):
-        """
-        Create a new job
-        """
+        """Create a container"""
         self._create_container(name, image, command,
                                template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)
         self._create_log(name, image, command, copy.deepcopy(LOG_TEMPLATE))
-        self._wait_for_container(name)
 
         if use_announcer:
             self._create_announcer(name, image, command, copy.deepcopy(ANNOUNCE_TEMPLATE))
-            self._wait_for_announcer(name)
 
     def _create_container(self, name, image, command, unit, **kwargs):
         l = locals().copy()
@@ -159,10 +156,11 @@ class FleetHTTPClient(object):
         self._put_unit(name+'-announce', {"desiredState": "launched", "options": unit})
 
     def start(self, name, use_announcer=True):
-        """
-        Start an idle job
-        """
-        pass
+        """Start a container"""
+        self._wait_for_container(name)
+
+        if use_announcer:
+            self._wait_for_announcer(name)
 
     def _wait_for_container(self, name):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
@@ -174,10 +172,10 @@ class FleetHTTPClient(object):
                 if subState == 'running' or subState == 'exited':
                     break
                 elif subState == 'failed':
-                    raise RuntimeError('Container failed to start')
+                    raise RuntimeError('container failed to start')
             time.sleep(1)
         else:
-            raise RuntimeError('Container failed to start')
+            raise RuntimeError('container failed to start')
 
     def _wait_for_announcer(self, name):
         # wait a bit for the announcer to come up, otherwise we may have hit
@@ -192,34 +190,37 @@ class FleetHTTPClient(object):
                     time.sleep(10)
                     break
                 elif subState == 'failed':
-                    raise RuntimeError('Announcer failed to start')
+                    raise RuntimeError('announcer failed to start')
             time.sleep(1)
         else:
-            raise RuntimeError('Announcer timeout on start')
+            raise RuntimeError('announcer timeout on start')
 
     def _wait_for_destroy(self, name):
-        for _ in range(1200):
+        for _ in range(30):
             states = self._get_state(name)
             if not states:
                 break
             time.sleep(1)
         else:
-            raise RuntimeError('Timeout on container destroy')
+            raise RuntimeError('timeout on container destroy')
 
     def stop(self, name, use_announcer=True):
-        """
-        Stop a running job
-        """
-        pass
+        """Stop a container"""
+        raise NotImplementedError
 
     def destroy(self, name, use_announcer=True):
-        """
-        Destroy an existing job
-        """
+        """Destroy a container"""
+        funcs = []
         if use_announcer:
-            self._destroy_announcer(name)
-        self._destroy_container(name)
-        self._destroy_log(name)
+            funcs.append(functools.partial(self._destroy_announcer, name))
+        funcs.append(functools.partial(self._destroy_container, name))
+        funcs.append(functools.partial(self._destroy_log, name))
+        # call all destroy functions, ignoring any errors
+        for f in funcs:
+            try:
+                f()
+            except:
+                pass
         self._wait_for_destroy(name)
 
     def _destroy_container(self, name):
@@ -232,9 +233,7 @@ class FleetHTTPClient(object):
         return self._delete_unit(name+'-log')
 
     def run(self, name, image, command):
-        """
-        Run a one-off command
-        """
+        """Run a one-off command"""
         self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE))
 
         # wait for the container to return something
@@ -251,7 +250,7 @@ class FleetHTTPClient(object):
         # find the machine
         machines = self._get_machines()
         if not machines:
-            raise RuntimeError('No available hosts to run command')
+            raise RuntimeError('no available hosts to run command')
 
         # find the machine's primaryIP
         primaryIP = None
@@ -259,7 +258,7 @@ class FleetHTTPClient(object):
             if m['id'] == machineID:
                 primaryIP = m['primaryIP']
         if not primaryIP:
-            raise RuntimeError('Could not find host')
+            raise RuntimeError('could not find host')
 
         # prepare ssh key
         file_obj = cStringIO.StringIO(base64.b64decode(self.auth))
@@ -280,7 +279,7 @@ class FleetHTTPClient(object):
         chan.exec_command('docker logs {name}'.format(**locals()))
         rc, output = chan.recv_exit_status(), out.read()
         if rc != 0:
-            raise RuntimeError('Could not attach to container')
+            raise RuntimeError('could not attach to container')
 
         # use another channel to inspect the container
         chan = tran.open_session()
@@ -289,7 +288,7 @@ class FleetHTTPClient(object):
         chan.exec_command('docker inspect {name}'.format(**locals()))
         rc, inspect_output = chan.recv_exit_status(), out.read()
         if rc != 0:
-            raise RuntimeError('Could not determine exit code')
+            raise RuntimeError('could not determine exit code')
         container = json.loads(inspect_output)
         rc = container[0]["State"]["ExitCode"]
 

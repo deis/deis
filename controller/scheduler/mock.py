@@ -13,42 +13,36 @@ class MockSchedulerClient(object):
     # scheduler setup / teardown
 
     def setUp(self):
-        """
-        Setup a Cluster including router and log aggregator
-        """
         return None
 
     def tearDown(self):
-        """
-        Tear down a cluster including router and log aggregator
-        """
         return None
 
-    # job api
+    # container api
 
     def create(self, name, image, command, use_announcer, **kwargs):
         """
-        Create a new job
+        Create a new container
         """
-        return {'state': 'inactive'}
+        return
 
     def start(self, name, use_announcer):
         """
-        Start an idle job
+        Start a container
         """
-        return {'state': 'active'}
+        return
 
     def stop(self, name, use_announcer):
         """
-        Stop a running job
+        Stop a container
         """
-        return {'state': 'inactive'}
+        return
 
     def destroy(self, name, use_announcer):
         """
-        Destroy an existing job
+        Destroy a container
         """
-        return {'state': 'inactive'}
+        return
 
     def run(self, name, image, command):
         """
