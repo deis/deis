@@ -1,9 +1,0 @@
-[template]
-src   = "etc_hosts"
-dest  = "/etc/hosts"
-uid = 0
-gid = 0
-mode  = "0644"
-keys = [
-  "/deis/store/gateway",
-]

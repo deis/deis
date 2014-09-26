@@ -40,7 +40,6 @@ RUN git clone https://github.com/wal-e/wal-e.git
 WORKDIR /tmp/wal-e
 RUN pip install .
 RUN mkdir -p /etc/wal-e.d/env
-ADD WALE_S3_ENDPOINT /etc/wal-e.d/env/WALE_S3_ENDPOINT
 RUN chown -R root:postgres /etc/wal-e.d
 
 # Use modified confd with a fix for /etc/hosts - see https://github.com/kelseyhightower/confd/pull/123
