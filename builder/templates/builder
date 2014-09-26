@@ -26,6 +26,10 @@ puts-step() {
     echo "-----> $@"
 }
 
+puts-step-sameline() {
+    echo -n "-----> $@"
+}
+
 puts-warn() {
     echo " !     $@"
 }
@@ -150,7 +154,7 @@ fi
 RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
 DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g')
 
-indent "Launching..."
+puts-step-sameline "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
 DATA="{\"sha\":\"$GIT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$IMAGE_REFERENCE\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
 
@@ -163,9 +167,9 @@ RESPONSE=$(curl -s -XPOST \
 
 RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]')
 DOMAIN=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["domains"][0]')
-indent "done, v$RELEASE"
-echo
+echo "done, v$RELEASE"
 puts-step "$APP_NAME deployed to Deis"
+echo
 indent "http://$DOMAIN"
 echo
 indent "To learn more, use \`deis help\` or visit http://deis.io"

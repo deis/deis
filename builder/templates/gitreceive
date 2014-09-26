@@ -3,7 +3,7 @@ set -eo pipefail
 
 # Places cursor at start of line, so that subsequent text replaces existing text. For example;
 # "remote: Updated branch 'master' of 'repo'. Deploying to dev." becomes
-# "------> Updated branch 'master' of 'repo'. Deploying to dev."
+# "Updated branch 'master' of 'repo'. Deploying to dev."
 strip_remote_prefix() {
     sed -u "s/^/"$'\e[1G'"/"
 }
