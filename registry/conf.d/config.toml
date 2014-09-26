@@ -6,7 +6,8 @@ gid = 0
 mode  = "0644"
 keys = [
   "/deis/cache",
-  "/deis/registry"
+  "/deis/registry",
+  "/deis/store/gateway",
 ]
 check_cmd = "/app/bin/check {{ .src }}"
 reload_cmd = "/app/bin/reload"
