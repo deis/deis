@@ -1,7 +1,7 @@
 # All other flavors inherit the `common' config snippet
 common: &common
     # Default log level is info
-    loglevel: _env:LOGLEVEL:info
+    loglevel: _env:LOGLEVEL:debug
     # Enable the debugging /_versions endpoint
     debug_versions: _env:DEBUG_VERSIONS:false
     # By default, the registry acts standalone (eg: doesn't query the index)
@@ -90,16 +90,17 @@ s3: &s3
 ceph-s3: &ceph-s3
     <<: *common
     storage: s3
+    s3_region: ~
     s3_bucket: {{ .deis_registry_bucketName }}
     s3_secure: false
     s3_encrypt: false
-    storage_path: /
+    storage_path: /registry
     s3_access_key: {{ .deis_store_gateway_accessKey }}
     s3_secret_key: {{ .deis_store_gateway_secretKey }}
     boto_host: {{ .deis_store_gateway_host }}
     boto_port: {{ .deis_store_gateway_port }}
-    boto_debug: false
-    boto_calling_format: OrdinaryCallingFormat
+    boto_debug: 0
+    boto_calling_format: boto.s3.connection.OrdinaryCallingFormat
 
 # Google Cloud Storage Configuration
 # See:
