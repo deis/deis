@@ -321,11 +321,9 @@ UNIT                        MACHINE                     LOAD    ACTIVE  SUB
 deis-builder@1.service      dea53588.../172.17.8.100    loaded  active  running
 deis-cache@1.service        dea53588.../172.17.8.100    loaded  active  running
 deis-controller@1.service   dea53588.../172.17.8.100    loaded  active  running
-deis-database-data.service  dea53588.../172.17.8.100    loaded  active  exited
 deis-database@1.service     dea53588.../172.17.8.100    loaded  active  running
 deis-logger-data.service    dea53588.../172.17.8.100    loaded  active  exited
 deis-logger@1.service       dea53588.../172.17.8.100    loaded  active  running
-deis-registry-data.service  dea53588.../172.17.8.100    loaded  active  exited
 deis-registry@1.service     dea53588.../172.17.8.100    loaded  active  running
 deis-router@1.service       dea53588.../172.17.8.100    loaded  active  running
 ```

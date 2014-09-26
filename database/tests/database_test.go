@@ -17,9 +17,6 @@ func TestDatabase(t *testing.T) {
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
-	dataName := "deis-database-data-" + tag
-	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/var/lib/postgresql", "ubuntu:14.04", "true")
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/database:%s at %s:%s\n", tag, host, port)
 	name := "deis-database-" + tag
@@ -33,7 +30,6 @@ func TestDatabase(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"--volumes-from", dataName,
 			"deis/database:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-database running")
