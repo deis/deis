@@ -42,10 +42,6 @@ RUN pip install .
 RUN mkdir -p /etc/wal-e.d/env
 RUN chown -R root:postgres /etc/wal-e.d
 
-# Use modified confd with a fix for /etc/hosts - see https://github.com/kelseyhightower/confd/pull/123
-ADD https://s3-us-west-2.amazonaws.com/opdemand/confd-git-0e563e5 /usr/local/bin/confd
-RUN chmod +x /usr/local/bin/confd
-
 # define the execution environment
 VOLUME ["/var/lib/postgresql"]
 WORKDIR /app
