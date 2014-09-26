@@ -28,7 +28,6 @@ var (
 		"database-data",
 		"registry-data",
 		"logger-data",
-		"builder-data",
 	}
 )
 
@@ -301,7 +300,6 @@ Options:
 	tag := args["--tag"].(string)
 	units := []string{
 		"deis-builder.service",
-		"deis-builder-data.service",
 		"deis-cache.service",
 		"deis-controller.service",
 		"deis-database.service",
