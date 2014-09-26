@@ -3,6 +3,7 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
@@ -37,7 +38,7 @@ func TestRegistry(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":5000",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-registry-data",
@@ -47,5 +48,9 @@ func TestRegistry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "http")
+	etcdutils.VerifyEtcdValue(t, "/deis/registry/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/registry/port", port, etcdPort)
 }

@@ -3,8 +3,10 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
+	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -27,7 +29,7 @@ func TestDatabase(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":5432",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-database-data",
@@ -37,6 +39,9 @@ func TestDatabase(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dockercli.DeisServiceTest(
-		t, "deis-database-"+tag, port, "tcp")
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
+	dockercli.DeisServiceTest(t, name, port, "tcp")
+	etcdutils.VerifyEtcdValue(t, "/deis/database/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/database/port", port, etcdPort)
 }

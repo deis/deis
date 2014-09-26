@@ -3,8 +3,10 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
+	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -17,8 +19,8 @@ func TestLogger(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	dockercli.RunDeisDataTest(t, "--name", "deis-logger-data",
 		"-v", "/var/log/deis", "deis/base", "/bin/true")
-	ipaddr, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/logger:%s at %s:%s\n", tag, ipaddr, port)
+	host, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/logger:%s at %s:%s\n", tag, host, port)
 	name := "deis-logger-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -27,8 +29,8 @@ func TestLogger(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":514/udp",
-			"-e", "PUBLISH="+port,
-			"-e", "HOST="+utils.HostAddress(),
+			"-e", "EXTERNAL_PORT="+port,
+			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--volumes-from", "deis-logger-data",
 			"deis/logger:"+tag)
@@ -37,5 +39,9 @@ func TestLogger(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "udp")
+	etcdutils.VerifyEtcdValue(t, "/deis/logs/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/logs/port", port, etcdPort)
 }

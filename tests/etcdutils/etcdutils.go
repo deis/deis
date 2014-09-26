@@ -44,6 +44,18 @@ func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	}
 }
 
+// Verify the value of an etcd key
+func VerifyEtcdValue(t *testing.T, key string, expected_value string, port string) {
+	c := etcdClient(port)
+	result, err := c.Get(key, true, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Node.Value != expected_value {
+		t.Errorf(key + ": expected '" + expected_value + "', got '" + result.Node.Value + "'.")
+	}
+}
+
 // PublishEtcd sets canonical etcd values into a test etcd instance.
 func PublishEtcd(t *testing.T, ecli *EtcdHandle) {
 	fmt.Println("--- Publish etcd keys and values")

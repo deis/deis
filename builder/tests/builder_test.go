@@ -38,8 +38,8 @@ func TestBuilder(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
-	ipaddr, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/builder:%s at %s:%s\n", tag, ipaddr, port)
+	host, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/builder:%s at %s:%s\n", tag, host, port)
 	name := "deis-builder-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -48,18 +48,21 @@ func TestBuilder(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":22",
-			"-e", "PUBLISH=22",
+			"-e", "PORT=22",
 			"-e", "STORAGE_DRIVER=aufs",
-			"-e", "HOST="+ipaddr,
+			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"-e", "PORT="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"--privileged", "deis/builder:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
 	if err != nil {
 		t.Fatal(err)
 	}
-	// TODO: builder needs a few seconds to wake up here--fixme!
+	// FIXME: builder needs a few seconds to wake up here!
+	// FIXME: Wait until etcd keys are published
 	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "tcp")
+	etcdutils.VerifyEtcdValue(t, "/deis/builder/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/builder/port", port, etcdPort)
 }

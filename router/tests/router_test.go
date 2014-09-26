@@ -43,7 +43,7 @@ func TestRouter(t *testing.T) {
 			"--rm",
 			"-p", port+":80",
 			"-p", utils.RandomPort()+":2222",
-			"-e", "PUBLISH="+port,
+			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/router:"+tag)
@@ -53,7 +53,11 @@ func TestRouter(t *testing.T) {
 		t.Fatal(err)
 	}
 	// FIXME: nginx needs a couple seconds to wake up here
-	time.Sleep(2000 * time.Millisecond)
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "http")
+	routerKeyPrefix := "/deis/router/"+host
+	etcdutils.VerifyEtcdValue(t, routerKeyPrefix+"/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, routerKeyPrefix+"/port", port, etcdPort)
 	_ = cli.CmdRm("-f", name)
 }

@@ -63,8 +63,8 @@ CONFD_PID=$!
 
 echo deis-registry running...
 
-# publish the service to etcd using the injected PORT
-if [[ ! -z $PUBLISH ]]; then
+# publish the service to etcd using the injected EXTERNAL_PORT
+if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# configure service discovery
 	PORT=${PORT:-5000}
@@ -72,13 +72,13 @@ if [[ ! -z $PUBLISH ]]; then
 
 	set +e
 
-	# wait for the service to become available on PUBLISH port
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+	# wait for the service to become available on PORT
+	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
 	# while the port is listening, publish to etcd
-	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
 		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 

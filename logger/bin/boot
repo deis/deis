@@ -32,8 +32,8 @@ trap on_exit INT TERM
 
 echo deis-logger running...
 
-# publish the service to etcd using the injected PORT
-if [[ ! -z $PUBLISH ]]; then
+# publish the service to etcd using the injected EXTERNAL_PORT
+if [[ ! -z $EXTERNAL_PORT ]]; then
 
     # configure service discovery
     PORT=${PORT:-514}
@@ -41,13 +41,13 @@ if [[ ! -z $PUBLISH ]]; then
 
     set +e
 
-    # wait for the service to become available on PUBLISH port
-    sleep 1 && while [[ -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+    # wait for the service to become available on PORT
+    sleep 1 && while [[ -z $(netstat -lnu | awk "\$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
     # while the port is listening, publish to etcd
-    while [[ ! -z $(netstat -lnu | awk "\$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+    while [[ ! -z $(netstat -lnu | awk "\$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
         etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/host $HOST --no-sync >/dev/null
-        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/port $PORT --no-sync >/dev/null
+        etcdctl -C $ETCD set --ttl $ETCD_TTL $ETCD_PATH/port $EXTERNAL_PORT --no-sync >/dev/null
         sleep $(($ETCD_TTL/2)) # sleep for half the TTL
     done
 

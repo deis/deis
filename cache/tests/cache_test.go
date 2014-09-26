@@ -3,8 +3,10 @@ package tests
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/dockercli"
+	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -16,8 +18,8 @@ func TestCache(t *testing.T) {
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
-	ipaddr, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/cache:%s at %s:%s\n", tag, ipaddr, port)
+	host, port := utils.HostAddress(), utils.RandomPort()
+	fmt.Printf("--- Run deis/cache:%s at %s:%s\n", tag, host, port)
 	name := "deis-cache-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -26,8 +28,8 @@ func TestCache(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":6379",
-			"-e", "PUBLISH="+port,
-			"-e", "HOST="+ipaddr,
+			"-e", "EXTERNAL_PORT="+port,
+			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/cache:"+tag)
 	}()
@@ -35,5 +37,9 @@ func TestCache(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// FIXME: Wait until etcd keys are published
+	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "tcp")
+	etcdutils.VerifyEtcdValue(t, "/deis/cache/host", host, etcdPort)
+	etcdutils.VerifyEtcdValue(t, "/deis/cache/port", port, etcdPort)
 }
