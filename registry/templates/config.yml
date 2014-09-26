@@ -2,6 +2,8 @@
 common: &common
     # Default log level is info
     loglevel: _env:LOGLEVEL:info
+    # Enable the debugging /_versions endpoint
+    debug_versions: _env:DEBUG_VERSIONS:false
     # By default, the registry acts standalone (eg: doesn't query the index)
     standalone: _env:STANDALONE:true
     # The default endpoint to use (if NOT standalone) is index.docker.io
@@ -53,6 +55,20 @@ common: &common
     # Enable bugsnag (set the API key)
     bugsnag: _env:BUGSNAG
 
+    # CORS support is not enabled by default
+    cors:
+        origins: _env:CORS_ORIGINS:["null"]
+        methods: _env:CORS_METHODS
+        headers: _env:CORS_HEADERS:[Content-Type]
+        expose_headers: _env:CORS_EXPOSE_HEADERS
+        supports_credentials: _env:CORS_SUPPORTS_CREDENTIALS
+        max_age: _env:CORS_MAX_AGE
+        send_wildcard: _env:CORS_SEND_WILDCARD
+        always_send: _env:CORS_ALWAYS_SEND
+        automatic_options: _env:CORS_AUTOMATIC_OPTIONS
+        vary_header: _env:CORS_VARY_HEADER
+        resources: _env:CORS_RESOURCES
+
 local: &local
     <<: *common
     storage: local
@@ -70,6 +86,24 @@ s3: &s3
     s3_secure: bool({{ or (.deis_registry_s3secure) "true" }})
     s3_access_key: {{ or (.deis_registry_s3accessKey) "" }}
     s3_secret_key: {{ or (.deis_registry_s3secretKey) "" }}
+
+# Ceph Object Gateway Configuration
+# See http://ceph.com/docs/master/radosgw/ for details on installing this service.
+ceph-s3: &ceph-s3
+    <<: *common
+    storage: s3
+    s3_region: ~
+    s3_bucket: {{ .deis_registry_bucketName }}
+    s3_encrypt: false
+    s3_secure: false
+    storage_path: /registry
+    s3_access_key: {{ .deis_store_gateway_accessKey }}
+    s3_secret_key: {{ .deis_store_gateway_secretKey }}
+    boto_bucket: {{ .deis_registry_bucketName }}
+    boto_host: {{ .deis_store_gateway_host }}
+    boto_port: {{ .deis_store_gateway_port }}
+    boto_debug: 0
+    boto_calling_format: boto.s3.connection.OrdinaryCallingFormat
 
 # Google Cloud Storage Configuration
 # See:
@@ -139,8 +173,6 @@ elliptics:
     elliptics_logfile: _env:ELLIPTICS_LOGFILE:/dev/stderr
     elliptics_addr_family: _env:ELLIPTICS_ADDR_FAMILY:2
 
-
-
 # This is the default configuration when no flavor is specified
 dev: &dev
     <<: *local
@@ -164,5 +196,5 @@ prod:
 deis:
     {{ if .deis_registry_s3accessKey }}<<: *s3
     {{ else if .deis_registry_swiftAuthURL }} <<: *openstack-swift
-    {{ else }} <<: *local
+    {{ else }} <<: *ceph-s3
     {{ end }}
