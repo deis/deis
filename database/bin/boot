@@ -65,10 +65,6 @@ if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
     echo "restore_command = 'envdir /etc/wal-e.d/env wal-e wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
   else
     echo "database: no backups found. Initializing a new database..."
-    # if no backups, we proceed as before and create a new database
-    mkdir -p /var/lib/postgresql/9.3
-    chown -R postgres:postgres /var/lib/postgresql
-    sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
     initial_backup=1
   fi
   # either way, we mark the database as initialized
