@@ -46,8 +46,10 @@ fi
 if ! radosgw-admin user info --uid=deis >/dev/null 2>&1 ; then
   radosgw-admin user create --uid=deis --display-name="Deis" >/etc/ceph/user.json
   # store the access key and secret key for consumption by other services
-  cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["access_key"]);' | tr -d '"' | etcdctl --no-sync -C $ETCD set $ETCD_PATH/accessKey >/dev/null
-  cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["secret_key"]);' | tr -d '"' | etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey >/dev/null
+  ACCESS_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["access_key"]);' | tr -d '"'`
+  SECRET_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["secret_key"]);' | tr -d '"'`
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/accessKey ${ACCESS_KEY} >/dev/null
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
 fi
 
 # spawn the service in the background
