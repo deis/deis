@@ -51,6 +51,8 @@ done
 # ensure WAL log bucket exists
 envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
 
+initial_backup=0
+
 # TODO: we need to change this logic - we actually need confd to run before we can do any of this recovery logic,
 # but once confd runs we'll have this directory. so we need to check something else - postgres database existing?
 if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
@@ -66,8 +68,7 @@ if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
     mkdir -p /var/lib/postgresql/9.3
     chown -R postgres:postgres /var/lib/postgresql
     sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
-    # perform an initial backup
-    sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-push /var/lib/postgresql/9.3/main
+    initial_backup=1
   fi
 fi
 
@@ -98,6 +99,12 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 
 echo deis-database running...
 
+if [[ "${initial_backup}" == "1" ]] ; then
+  echo Performing an initial backup...
+  # perform an initial backup
+  sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-push /var/lib/postgresql/9.3/main
+fi
+
 count=1
 # publish the service to etcd using the injected HOST and EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
@@ -118,6 +125,7 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
     # perform a backup whenever we hit BACKUP_FREQUENCY
     # we really need cron :(
     if [[ "${count}" == "${BACKUP_FREQUENCY}" ]] ; then
+      echo Performing a backup...
       # perform a backup
       sudo -u postgres envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-push /var/lib/postgresql/9.3/main
       # only retain the latest BACKUPS_TO_RETAIN backups
