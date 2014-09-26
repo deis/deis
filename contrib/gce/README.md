@@ -318,7 +318,6 @@ Verify that all the units are active after the operation completes:
 ```console
 $ deisctl list
 UNIT                        MACHINE                     LOAD    ACTIVE  SUB
-deis-builder-data.service   dea53588.../172.17.8.100    loaded  active  exited
 deis-builder@1.service      dea53588.../172.17.8.100    loaded  active  running
 deis-cache@1.service        dea53588.../172.17.8.100    loaded  active  running
 deis-controller@1.service   dea53588.../172.17.8.100    loaded  active  running

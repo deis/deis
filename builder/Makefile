@@ -17,12 +17,10 @@ full-clean: check-docker check-registry
 	docker images -q $(REGISTRY)/deis/builder | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl install builder-data
 	deisctl scale builder=1
 
 uninstall: check-deisctl
 	deisctl scale builder=0
-	deisctl uninstall builder-data
 
 start: check-deisctl
 	deisctl start builder
