@@ -52,10 +52,7 @@ done
 envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
 
 initial_backup=0
-
-# TODO: we need to change this logic - we actually need confd to run before we can do any of this recovery logic,
-# but once confd runs we'll have this directory. so we need to check something else - postgres database existing?
-if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
+if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
   echo "database: no existing database found."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
@@ -73,6 +70,8 @@ if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
     sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
     initial_backup=1
   fi
+  # either way, we mark the database as initialized
+  touch /var/lib/postgresql/9.3/main/initialized
 else
   echo "database: existing data directory found. Starting postgres..."
 fi
