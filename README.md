@@ -66,7 +66,6 @@ Scheduling data containers...
 deis-database-data.service: loaded
 deis-registry-data.service: loaded
 deis-logger-data.service: loaded
-deis-builder-data.service: loaded
 Data containers scheduled.
 Scheduling service containers...
 deis-database@1.service: loaded
@@ -89,7 +88,6 @@ Launching data containers...
 deis-database-data.service: exited
 deis-registry-data.service: exited
 deis-logger-data.service: exited
-deis-builder-data.service: exited
 Data containers launched.
 Launching service containers...
 deis-logger@1.service: running
@@ -146,7 +144,6 @@ The `deisctl` tool provides a number of other commands, including:
 ```console
 $ deisctl list
 UNIT				MACHINE				LOAD	ACTIVE	SUB
-deis-builder-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-builder@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-cache@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller@1.service	f936b7a5.../172.17.8.100	loaded	active	running
