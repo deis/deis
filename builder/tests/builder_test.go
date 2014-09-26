@@ -38,8 +38,6 @@ func TestBuilder(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
-	dockercli.RunDeisDataTest(t, "--name", "deis-builder-data",
-		"-v", "/var/lib/docker", "deis/base", "true")
 	ipaddr, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/builder:%s at %s:%s\n", tag, ipaddr, port)
 	name := "deis-builder-" + tag
@@ -55,7 +53,6 @@ func TestBuilder(t *testing.T) {
 			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "PORT="+port,
-			"--volumes-from", "deis-builder-data",
 			"--privileged", "deis/builder:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
