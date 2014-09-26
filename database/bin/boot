@@ -58,6 +58,7 @@ if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
   if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
     echo "database: restoring from backup..."
+    rm -rf /var/lib/postgresql/9.3/main
     sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
     chown -R postgres:postgres /var/lib/postgresql/9.3/main
     chmod 0700 /var/lib/postgresql/9.3/main
@@ -128,13 +129,17 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
     # perform a backup whenever we hit BACKUP_FREQUENCY
     # we really need cron :(
-    if [[ "${count}" == "${BACKUP_FREQUENCY}" ]] ; then
+    if [[ "${count}" -ge "${BACKUP_FREQUENCY}" ]] ; then
       echo "database: performing a backup..."
-      # perform a backup
-      sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
-      # only retain the latest BACKUPS_TO_RETAIN backups
-      sudo -u postgres envdir /etc/wal-e.d/env wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
-      count=0
+      if [[ -f /var/lib/postgresql/9.3/main/recovery.conf ]] ; then
+        echo "database: database is currently recovering from a backup. Will try again next loop..."
+      else
+        # perform a backup
+        sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+        # only retain the latest BACKUPS_TO_RETAIN backups
+        sudo -u postgres envdir /etc/wal-e.d/env wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
+        count=0
+      fi
     fi
     ((count++))
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
