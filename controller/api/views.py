@@ -198,6 +198,8 @@ class AppViewSet(OwnerViewSet):
             app.scale(request.user, new_structure)
         except (EnvironmentError, ValidationError) as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        except RuntimeError as e:
+            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(status=status.HTTP_204_NO_CONTENT,
                         content_type='application/json')
 
@@ -219,6 +221,8 @@ class AppViewSet(OwnerViewSet):
             output_and_rc = app.run(self.request.user, command)
         except EnvironmentError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        except RuntimeError as e:
+            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
@@ -261,7 +265,11 @@ class AppBuildViewSet(BaseAppViewSet):
             release = build.app.release_set.latest()
             self.release = release.new(self.request.user, build=build)
             initial = True if build.app.structure == {} else False
-            build.app.deploy(self.request.user, self.release, initial=initial)
+            try:
+                build.app.deploy(self.request.user, self.release, initial=initial)
+            except RuntimeError:
+                self.release.delete()
+                raise
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -272,7 +280,10 @@ class AppBuildViewSet(BaseAppViewSet):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
         request._data = request.DATA.copy()
         request.DATA['app'] = app
-        return super(AppBuildViewSet, self).create(request, *args, **kwargs)
+        try:
+            return super(AppBuildViewSet, self).create(request, *args, **kwargs)
+        except RuntimeError as e:
+            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class AppConfigViewSet(BaseAppViewSet):
@@ -295,7 +306,11 @@ class AppConfigViewSet(BaseAppViewSet):
         if created:
             release = config.app.release_set.latest()
             self.release = release.new(self.request.user, config=config)
-            config.app.deploy(self.request.user, self.release)
+            try:
+                config.app.deploy(self.request.user, self.release)
+            except RuntimeError:
+                self.release.delete()
+                raise
 
     def get_success_headers(self, data):
         headers = super(AppConfigViewSet, self).get_success_headers(data)
@@ -321,7 +336,10 @@ class AppConfigViewSet(BaseAppViewSet):
                 # remove config keys if we provided a null value
                 [data.pop(k) for k, v in provided.items() if v is None]
             request.DATA[attr] = data
-        return super(AppConfigViewSet, self).create(request, *args, **kwargs)
+        try:
+            return super(AppConfigViewSet, self).create(request, *args, **kwargs)
+        except RuntimeError as e:
+            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class AppReleaseViewSet(BaseAppViewSet):
@@ -354,7 +372,11 @@ class AppReleaseViewSet(BaseAppViewSet):
             config=prev.config,
             summary=summary,
             source_version='v{}'.format(version))
-        app.deploy(request.user, new_release)
+        try:
+            app.deploy(request.user, new_release)
+        except RuntimeError as e:
+            new_release.delete()
+            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
         response = {'version': new_release.version}
         return Response(response, status=status.HTTP_201_CREATED)
 
@@ -456,11 +478,14 @@ class BuildHookViewSet(BaseHookViewSet):
             request._data = request.DATA.copy()
             request.DATA['app'] = app
             request.DATA['owner'] = user
-            super(BuildHookViewSet, self).create(request, *args, **kwargs)
-            # return the application databag
-            response = {'release': {'version': app.release_set.latest().version},
-                        'domains': ['.'.join([app.id, app.cluster.domain])]}
-            return Response(response, status=status.HTTP_200_OK)
+            try:
+                super(BuildHookViewSet, self).create(request, *args, **kwargs)
+                # return the application databag
+                response = {'release': {'version': app.release_set.latest().version},
+                            'domains': ['.'.join([app.id, app.cluster.domain])]}
+                return Response(response, status=status.HTTP_200_OK)
+            except RuntimeError as e:
+                return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
         raise PermissionDenied()
 
     def post_save(self, build, created=False):
@@ -468,7 +493,11 @@ class BuildHookViewSet(BaseHookViewSet):
             release = build.app.release_set.latest()
             new_release = release.new(build.owner, build=build)
             initial = True if build.app.structure == {} else False
-            build.app.deploy(build.owner, new_release, initial=initial)
+            try:
+                build.app.deploy(build.owner, new_release, initial=initial)
+            except RuntimeError:
+                new_release.delete()
+                raise
 
 
 class ConfigHookViewSet(BaseHookViewSet):

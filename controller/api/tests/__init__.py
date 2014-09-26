@@ -58,3 +58,4 @@ from .test_hooks import *  # noqa
 from .test_key import *  # noqa
 from .test_perm import *  # noqa
 from .test_release import *  # noqa
+from .test_scheduler import *  # noqa

@@ -38,7 +38,8 @@ logger = logging.getLogger(__name__)
 
 def log_event(app, msg, level=logging.INFO):
     msg = "{}: {}".format(app.id, msg)
-    logger.log(level, msg)
+    logger.log(level, msg)  # django logger
+    app.log(msg)            # local filesystem
 
 
 def validate_app_structure(value):
@@ -95,7 +96,7 @@ class Cluster(UuidAuditedModel):
 
     CLUSTER_TYPES = (('mock', 'Mock Cluster'),
                      ('coreos', 'CoreOS Cluster'),
-                     ('faulty', 'Faulty Cluster'))
+                     ('chaos', 'Chaos Cluster'))
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128, unique=True)
@@ -182,44 +183,6 @@ class App(UuidAuditedModel):
         if os.path.exists(path):
             os.remove(path)
 
-    def deploy(self, user, release, initial=False):
-        """Deploy a new release to this application"""
-        containers = self.container_set.all()
-        self._deploy_containers(containers, release)
-        # update release in database
-        for c in containers:
-            c.release = release
-            c.save()
-        self.release = release
-        self.save()
-        # perform default scaling if necessary
-        if initial:
-            self._default_scale(user, release)
-
-    def _default_scale(self, user, release):
-        """Scale to default structure based on release type"""
-        # if there is no SHA, assume a docker image is being promoted
-        if not release.build.sha:
-            structure = {'cmd': 1}
-        # if a dockerfile exists without a procfile, assume docker workflow
-        elif release.build.dockerfile and not release.build.procfile:
-            structure = {'cmd': 1}
-        # if a procfile exists without a web entry, assume docker workflow
-        elif release.build.procfile and 'web' not in release.build.procfile:
-            structure = {'cmd': 1}
-        # default to heroku workflow
-        else:
-            structure = {'web': 1}
-        self.scale(user, structure)
-
-    def _deploy_containers(self, to_deploy, release, **kwargs):
-        """Deploys containers via the scheduler"""
-        threads = []
-        for c in to_deploy:
-            threads.append(threading.Thread(target=c.deploy, args=(release,)))
-        [t.start() for t in threads]
-        [t.join() for t in threads]
-
     def scale(self, user, structure):  # noqa
         """Scale containers up or down to match requested structure."""
         requested_structure = structure.copy()
@@ -235,7 +198,6 @@ class App(UuidAuditedModel):
         msg = '{} scaled containers '.format(user.username) + ' '.join(
             "{}={}".format(k, v) for k, v in requested_structure.items())
         log_event(self, msg)
-        self.log(msg)
         # iterate and scale by container type (web, worker, etc)
         changed = False
         to_add, to_remove = [], []
@@ -268,9 +230,6 @@ class App(UuidAuditedModel):
                 self._start_containers(to_add)
             if to_remove:
                 self._destroy_containers(to_remove)
-                # remove the database record
-                for c in to_remove:
-                    c.delete()
         # save new structure to the database
         self.structure = structure
         self.save()
@@ -285,8 +244,15 @@ class App(UuidAuditedModel):
             start_threads.append(threading.Thread(target=c.start))
         [t.start() for t in create_threads]
         [t.join() for t in create_threads]
+        if set([c.state for c in to_add]) != set([Container.CREATED]):
+            err = 'aborting, failed to create some containers'
+            log_event(self, err, logging.ERROR)
+            raise RuntimeError(err)
         [t.start() for t in start_threads]
         [t.join() for t in start_threads]
+        if set([c.state for c in to_add]) != set([Container.UP]):
+            err = 'warning, some containers failed to start'
+            log_event(self, err, logging.WARNING)
 
     def _destroy_containers(self, to_destroy):
         """Destroys containers via the scheduler"""
@@ -295,6 +261,75 @@ class App(UuidAuditedModel):
             destroy_threads.append(threading.Thread(target=c.destroy))
         [t.start() for t in destroy_threads]
         [t.join() for t in destroy_threads]
+        [c.delete() for c in to_destroy if c.state == Container.DESTROYED]
+        if set([c.state for c in to_destroy]) != set([Container.DESTROYED]):
+            err = 'aborting, failed to destroy some containers'
+            log_event(self, err, logging.ERROR)
+            raise RuntimeError(err)
+
+    def deploy(self, user, release, initial=False):
+        """Deploy a new release to this application"""
+        existing = self.container_set.all()
+        new = []
+        for e in existing:
+            n = e.clone(release)
+            n.save()
+            new.append(n)
+
+        # create new containers
+        threads = []
+        for c in new:
+            threads.append(threading.Thread(target=c.create))
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+        # check for containers that failed to create
+        if len(new) > 0 and set([c.state for c in new]) != set([Container.CREATED]):
+            err = 'aborting, failed to create some containers'
+            log_event(self, err, logging.ERROR)
+            self._destroy_containers(new)
+            raise RuntimeError(err)
+
+        # start new containers
+        threads = []
+        for c in new:
+            threads.append(threading.Thread(target=c.start))
+        [t.start() for t in threads]
+        [t.join() for t in threads]
+
+        # check for containers that didn't come up correctly
+        if len(new) > 0 and set([c.state for c in new]) != set([Container.UP]):
+            # report the deploy error
+            err = 'warning, some containers failed to start'
+            log_event(self, err, logging.WARNING)
+
+        # destroy old containers
+        if existing:
+            self._destroy_containers(existing)
+
+        # perform default scaling if necessary
+        if initial:
+            self._default_scale(user, release)
+
+    def _default_scale(self, user, release):
+        """Scale to default structure based on release type"""
+        # if there is no SHA, assume a docker image is being promoted
+        if not release.build.sha:
+            structure = {'cmd': 1}
+
+        # if a dockerfile exists without a procfile, assume docker workflow
+        elif release.build.dockerfile and not release.build.procfile:
+            structure = {'cmd': 1}
+
+        # if a procfile exists without a web entry, assume docker workflow
+        elif release.build.procfile and 'web' not in release.build.procfile:
+            structure = {'cmd': 1}
+
+        # default to heroku workflow
+        else:
+            structure = {'web': 1}
+
+        self.scale(user, structure)
 
     def logs(self):
         """Return aggregated log data for this application."""
@@ -309,7 +344,6 @@ class App(UuidAuditedModel):
         # TODO: add support for interactive shell
         msg = "{} runs '{}'".format(user.username, command)
         log_event(self, msg)
-        self.log(msg)
         c_num = max([c.num for c in self.container_set.filter(type='admin')] or [0]) + 1
         try:
             # create database record for admin process
@@ -347,12 +381,16 @@ class Container(UuidAuditedModel):
     UP = 'up'
     DOWN = 'down'
     DESTROYED = 'destroyed'
+    CRASHED = 'crashed'
+    ERROR = 'error'
     STATE_CHOICES = (
         (INITIALIZED, 'initialized'),
         (CREATED, 'created'),
         (UP, 'up'),
         (DOWN, 'down'),
-        (DESTROYED, 'destroyed')
+        (DESTROYED, 'destroyed'),
+        (CRASHED, 'crashed'),
+        (ERROR, 'error'),
     )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -360,7 +398,8 @@ class Container(UuidAuditedModel):
     release = models.ForeignKey('Release')
     type = models.CharField(max_length=128, blank=False)
     num = models.PositiveIntegerField()
-    state = FSMField(default=INITIALIZED, choices=STATE_CHOICES, protected=True)
+    state = FSMField(default=INITIALIZED, choices=STATE_CHOICES,
+                     protected=True, propagate=False)
 
     def short_name(self):
         return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
@@ -400,62 +439,73 @@ class Container(UuidAuditedModel):
     def _command_announceable(self):
         return self._command.lower() in ['start web', '']
 
-    @transition(field=state, source=INITIALIZED, target=CREATED)
+    def clone(self, release):
+        c = Container.objects.create(owner=self.owner,
+                                     app=self.app,
+                                     release=release,
+                                     type=self.type,
+                                     num=self.num)
+        return c
+
+    @transition(field=state, source=INITIALIZED, target=CREATED, on_error=ERROR)
     def create(self):
         image = self.release.image + ':v' + str(self.release.version)
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags}
-        self._scheduler.create(name=self._job_id,
-                               image=image,
-                               command=self._command,
-                               use_announcer=self._command_announceable(),
-                               **kwargs)
+        job_id = self._job_id
+        try:
+            self._scheduler.create(
+                name=job_id,
+                image=image,
+                command=self._command,
+                use_announcer=self._command_announceable(), **kwargs)
+        except Exception as e:
+            err = '{} (create): {}'.format(job_id, e)
+            log_event(self.app, err, logging.ERROR)
+            raise
 
-    @transition(field=state,
-                source=[CREATED, UP, DOWN],
-                target=UP, crashed=DOWN)
+    @transition(field=state, source=[CREATED, UP, DOWN], target=UP, on_error=CRASHED)
     def start(self):
-        self._scheduler.start(self._job_id, self._command_announceable())
+        job_id = self._job_id
+        try:
+            self._scheduler.start(job_id, self._command_announceable())
+        except Exception as e:
+            err = '{} (start): {}'.format(job_id, e)
+            log_event(self.app, err, logging.WARNING)
+            raise
 
-    @transition(field=state,
-                source=[INITIALIZED, CREATED, UP, DOWN],
-                target=UP, crashed=DOWN)
-    def deploy(self, new_release):
-        old_job_id = self._job_id
-        # update release
-        self.release = new_release
-        # deploy new container
-        new_job_id = self._job_id
-        image = self.release.image + ':v' + str(self.release.version)
-        c_type = self.type
-        kwargs = {'memory': self.release.config.memory,
-                  'cpu': self.release.config.cpu,
-                  'tags': self.release.config.tags}
-        self._scheduler.create(name=new_job_id,
-                               image=image,
-                               command=self._command.format(**locals()),
-                               use_announcer=self._command_announceable(),
-                               **kwargs)
-        self._scheduler.start(new_job_id, self._command_announceable())
-        # destroy old container
-        self._scheduler.destroy(old_job_id, self._command_announceable())
-
-    @transition(field=state, source=UP, target=DOWN)
+    @transition(field=state, source=UP, target=DOWN, on_error=ERROR)
     def stop(self):
-        self._scheduler.stop(self._job_id, self._command_announceable())
+        job_id = self._job_id
+        try:
+            self._scheduler.stop(job_id, self._command_announceable())
+        except Exception as e:
+            err = '{} (stop): {}'.format(job_id, e)
+            log_event(self.app, err, logging.ERROR)
+            raise
 
-    @transition(field=state,
-                source=[INITIALIZED, CREATED, UP, DOWN],
-                target=DESTROYED)
+    @transition(field=state, source='*', target=DESTROYED, on_error=ERROR)
     def destroy(self):
-        self._scheduler.destroy(self._job_id, self._command_announceable())
+        job_id = self._job_id
+        try:
+            self._scheduler.destroy(job_id, self._command_announceable())
+        except Exception as e:
+            err = '{} (destroy): {}'.format(job_id, e)
+            log_event(self.app, err, logging.ERROR)
+            raise
 
     def run(self, command):
         """Run a one-off command"""
         image = self.release.image + ':v' + str(self.release.version)
-        rc, output = self._scheduler.run(self._job_id, image, command)
-        return rc, output
+        job_id = self._job_id
+        try:
+            rc, output = self._scheduler.run(job_id, image, command)
+            return rc, output
+        except Exception as e:
+            err = '{} (run): {}'.format(job_id, e)
+            log_event(self.app, err, logging.ERROR)
+            raise
 
 
 @python_2_unicode_compatible
@@ -579,7 +629,8 @@ class Release(UuidAuditedModel):
             owner=user, app=self.app, config=config,
             build=build, version=new_version, image=target_image, summary=summary)
         # IOW, this image did not come from the builder
-        if not build.sha:
+        # FIXME: remove check for mock registry module
+        if not build.sha and 'mock' not in settings.REGISTRY_MODULE:
             # we assume that the image is not present on our registry,
             # so shell out a task to pull in the repository
             data = {
