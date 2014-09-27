@@ -1,7 +1,7 @@
 # All other flavors inherit the `common' config snippet
 common: &common
     # Default log level is info
-    loglevel: _env:LOGLEVEL:debug
+    loglevel: _env:LOGLEVEL:info
     # Enable the debugging /_versions endpoint
     debug_versions: _env:DEBUG_VERSIONS:false
     # By default, the registry acts standalone (eg: doesn't query the index)
