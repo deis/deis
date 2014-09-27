@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/deis/deisctl",
+	"ImportPath": "github.com/deis/deis/deisctl",
 	"GoVersion": "go1.3",
 	"Deps": [
 		{

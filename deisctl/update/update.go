@@ -8,8 +8,8 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/coreos/updateservicectl/auth"
 	update "github.com/coreos/updateservicectl/client/update/v1"
-	"github.com/deis/deisctl/constant"
-	"github.com/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/constant"
+	"github.com/deis/deis/deisctl/utils"
 	docopt "github.com/docopt/docopt-go"
 )
 

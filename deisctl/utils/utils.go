@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
-	"github.com/deis/deisctl/constant"
+	"github.com/deis/deis/deisctl/constant"
 	_ "github.com/docker/docker/api/client"
 	uuid "github.com/satori/go.uuid"
 )

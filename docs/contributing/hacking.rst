@@ -205,7 +205,7 @@ http://ci.deis.io to ensure the pull request doesn't break any tests or reduce c
 coverage.
 
 .. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
-.. _`deisctl`: https://github.com/deis/deisctl
+.. _`deisctl`: https://github.com/deis/deis/deisctl
 .. _`fork the Deis repository`: https://github.com/deis/deis/fork
 .. _`running the tests`: https://github.com/deis/deis/tree/master/tests#readme
 .. _`pull request`: https://github.com/deis/deis/pulls

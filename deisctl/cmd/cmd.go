@@ -11,11 +11,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deis/deisctl/backend"
-	"github.com/deis/deisctl/config"
-	"github.com/deis/deisctl/constant"
-	"github.com/deis/deisctl/update"
-	"github.com/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/backend"
+	"github.com/deis/deis/deisctl/config"
+	"github.com/deis/deis/deisctl/constant"
+	"github.com/deis/deis/deisctl/update"
+	"github.com/deis/deis/deisctl/utils"
 	"github.com/docopt/docopt-go"
 )
 
@@ -296,7 +296,7 @@ Options:
 		return err
 	}
 	// download and save the unit files to the specified path
-	rootURL := "https://raw.githubusercontent.com/deis/deisctl/"
+	rootURL := "https://raw.githubusercontent.com/deis/deis/deisctl/"
 	tag := args["--tag"].(string)
 	units := []string{
 		"deis-builder.service",

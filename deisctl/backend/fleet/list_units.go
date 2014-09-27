@@ -9,7 +9,7 @@ import (
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
-	"github.com/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/utils"
 )
 
 // initialize tabwriter on stdout

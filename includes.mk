@@ -32,5 +32,5 @@ check-registry:
 
 check-deisctl:
 	@if [ -z $$(which deisctl) ]; then \
-	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deisctl"; \
+	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deis/deisctl"; \
 	fi

@@ -14,10 +14,10 @@ import (
 
 	"code.google.com/p/go-uuid/uuid"
 	"github.com/coreos/go-omaha/omaha"
-	"github.com/deis/deisctl/backend/fleet"
-	"github.com/deis/deisctl/constant"
-	"github.com/deis/deisctl/lock"
-	"github.com/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/backend/fleet"
+	"github.com/deis/deis/deisctl/constant"
+	"github.com/deis/deis/deisctl/lock"
+	"github.com/deis/deis/deisctl/utils"
 )
 
 type Client struct {

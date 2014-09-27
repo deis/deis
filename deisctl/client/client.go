@@ -3,9 +3,9 @@ package client
 import (
 	"errors"
 
-	"github.com/deis/deisctl/backend"
-	"github.com/deis/deisctl/backend/fleet"
-	"github.com/deis/deisctl/cmd"
+	"github.com/deis/deis/deisctl/backend"
+	"github.com/deis/deis/deisctl/backend/fleet"
+	"github.com/deis/deis/deisctl/cmd"
 )
 
 type DeisCtlClient interface {
