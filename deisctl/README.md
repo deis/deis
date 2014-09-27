@@ -80,8 +80,6 @@ $ deisctl install platform
 ▴ ■ ●
 
 Scheduling data containers...
-deis-database-data.service: loaded
-deis-registry-data.service: loaded
 deis-logger-data.service: loaded
 Data containers scheduled.
 Scheduling service containers...
@@ -102,8 +100,6 @@ $ deisctl start platform
 ▴ ■ ●
 
 Launching data containers...
-deis-database-data.service: exited
-deis-registry-data.service: exited
 deis-logger-data.service: exited
 Data containers launched.
 Launching service containers...
@@ -164,11 +160,9 @@ UNIT				MACHINE				LOAD	ACTIVE	SUB
 deis-builder@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-cache@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller@1.service	f936b7a5.../172.17.8.100	loaded	active	running
-deis-database-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-database@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-logger-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-logger@1.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-registry-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-registry@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-router@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 ```

@@ -1,7 +1,5 @@
 [Unit]
 Description=deis-database
-Requires=deis-database-data.service
-After=deis-database-data.service
 
 [Service]
 EnvironmentFile=/etc/environment
@@ -13,6 +11,3 @@ ExecStopPost=/usr/bin/docker stop deis-database
 
 [Install]
 WantedBy=multi-user.target
-
-[X-Fleet]
-MachineOf=deis-database-data.service

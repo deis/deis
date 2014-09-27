@@ -26,8 +26,6 @@ const (
 
 var (
 	DefaultDataContainers = []string{
-		"database-data",
-		"registry-data",
 		"logger-data",
 	}
 )
@@ -93,7 +91,20 @@ func startDefaultServices(b backend.Backend) error {
 	if err := Start(b, []string{"logger@1"}); err != nil {
 		return err
 	}
-	if err := Start(b, []string{"publisher", "logspout", "cache@1", "router@1", "database@1", "controller@1", "registry@1", "builder@1"}); err != nil {
+	targets := []string{
+		"publisher",
+		"store-monitor",
+		"store-daemon",
+		"store-gateway@1",
+		"logspout",
+		"cache@1",
+		"router@1",
+		"database@1",
+		"controller@1",
+		"registry@1",
+		"builder@1",
+	}
+	if err := Start(b, targets); err != nil {
 		return err
 	}
 	fmt.Println("Service containers launched.")
@@ -119,7 +130,21 @@ func StopPlatform(b backend.Backend) error {
 
 func stopDefaultServices(b backend.Backend) error {
 	fmt.Println("Stopping service containers...")
-	if err := Stop(b, []string{"publisher", "logspout", "builder@1", "registry@1", "controller@1", "database@1", "cache@1", "router@1", "logger@1"}); err != nil {
+	targets := []string{
+		"publisher",
+		"logspout",
+		"builder@1",
+		"registry@1",
+		"controller@1",
+		"database@1",
+		"store-gateway@1",
+		"store-daemon",
+		"store-monitor",
+		"cache@1",
+		"router@1",
+		"logger@1",
+	}
+	if err := Stop(b, targets); err != nil {
 		return err
 	}
 	fmt.Println("Service containers stopped.")
@@ -183,8 +208,13 @@ func installDataContainers(b backend.Backend) error {
 }
 
 func installDefaultServices(b backend.Backend) error {
+	// Install global units
+	if err := b.Create([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
+		return err
+	}
 	// start service containers
 	targets := []string{
+		"store-gateway=1",
 		"database=1",
 		"cache=1",
 		"logger=1",
@@ -195,9 +225,6 @@ func installDefaultServices(b backend.Backend) error {
 	}
 	fmt.Println("Scheduling service containers...")
 	if err := Scale(b, targets); err != nil {
-		return err
-	}
-	if err := b.Create([]string{"publisher", "logspout"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers scheduled.")
@@ -215,6 +242,7 @@ func Uninstall(b backend.Backend, targets []string) error {
 
 func uninstallAllServices(b backend.Backend) error {
 	targets := []string{
+		"store-gateway=0",
 		"database=0",
 		"cache=0",
 		"logger=0",
@@ -227,7 +255,8 @@ func uninstallAllServices(b backend.Backend) error {
 	if err := Scale(b, targets); err != nil {
 		return err
 	}
-	if err := b.Destroy([]string{"publisher", "logspout"}); err != nil {
+	// Uninstall global units
+	if err := b.Destroy([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers destroyed.")
@@ -310,14 +339,15 @@ Options:
 		"deis-cache.service",
 		"deis-controller.service",
 		"deis-database.service",
-		"deis-database-data.service",
 		"deis-logger.service",
 		"deis-logger-data.service",
 		"deis-logspout.service",
 		"deis-publisher.service",
 		"deis-registry.service",
-		"deis-registry-data.service",
 		"deis-router.service",
+		"deis-store-daemon.service",
+		"deis-store-gateway.service",
+		"deis-store-monitor.service",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit
