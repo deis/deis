@@ -1,0 +1,19 @@
+[Unit]
+Description=deis-controller
+Requires=deis-logger@1.service
+After=deis-logger@1.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "echo Waiting for deis-logger to start... ; until docker inspect deis-logger >/dev/null 2>&1; do sleep 2; done"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-controller >/dev/null && docker rm -f deis-controller || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller -v /var/run/fleet.sock:/var/run/fleet.sock --rm -p 8000:8000 -e EXTERNAL_PORT=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger $IMAGE"
+ExecStopPost=/usr/bin/docker stop deis-controller
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineOf=deis-logger@1.service

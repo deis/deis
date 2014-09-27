@@ -1,0 +1,14 @@
+[Unit]
+Description=deis-registry-data
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/sh -c "docker history deis/base:latest >/dev/null 2>&1 || docker pull deis/base:latest"
+ExecStart=/bin/sh -c "docker inspect deis-registry-data >/dev/null 2>&1 || docker run --name deis-registry-data -v /data deis/base:latest /bin/true"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineID=CHANGEME

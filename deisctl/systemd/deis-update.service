@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-update service
+Requires=fleet.service
+After=fleet.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Environment="DEISCTL_GROUP_ID=2e87b742-68c9-4d08-8f37-5cb7bb2c9d3a"
+ExecStart=/opt/bin/deisctl update platform
+
+[Install]
+WantedBy=multi-user.target

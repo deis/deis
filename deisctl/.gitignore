@@ -1,0 +1,9 @@
+package/
+deisctl/deisctl
+makeself/
+
+# ctags index
+tags
+
+# installer droppings
+dist/

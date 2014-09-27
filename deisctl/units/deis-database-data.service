@@ -1,0 +1,14 @@
+[Unit]
+Description=deis-database-data
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=/bin/sh -c "docker history deis/base:latest >/dev/null 2>&1 || docker pull deis/base:latest"
+ExecStart=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || docker run --name deis-database-data -v /var/lib/postgresql deis/base:latest true"
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineID=CHANGEME
