@@ -100,6 +100,24 @@ func NewDataUnit(component string, machineID string) (uf *unit.UnitFile, err err
 	return
 }
 
+// NewStoreUnit takes a component type and returns a Fleet unit
+// that is hard-scheduled to a machine ID
+// NOTE: even though this code is identical to NewDataUnit's, we soon want to remove
+// data units. This eases that removal.
+func NewStoreUnit(component string, machineID string) (uf *unit.UnitFile, err error) {
+	template, err := readTemplate(component)
+	if err != nil {
+		return
+	}
+	// replace CHANGEME with specific machineID
+	replaced := strings.Replace(string(template), "CHANGEME", machineID, 1)
+	uf, err = unit.NewUnitFile(replaced)
+	if err != nil {
+		return
+	}
+	return
+}
+
 // formatUnitName returns a properly formatted systemd service name
 // using the given component type and number
 func formatUnitName(component string, num int) (unitName string, err error) {

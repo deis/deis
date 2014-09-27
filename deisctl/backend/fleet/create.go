@@ -52,6 +52,8 @@ func (c *FleetClient) createUnitFile(target string) (unitName string, uf *unit.U
 	}
 	if strings.HasSuffix(component, "-data") {
 		unitName, uf, err = c.createDataUnit(component)
+	} else if strings.Contains(component, "store") {
+		unitName, uf, err = c.createStoreUnit(component, num)
 	} else {
 		unitName, uf, err = c.createServiceUnit(component, num)
 	}
@@ -74,6 +76,23 @@ func (c *FleetClient) createServiceUnit(component string, num int) (name string,
 	return name, uf, nil
 }
 
+// Create store unit
+func (c *FleetClient) createStoreUnit(component string, num int) (name string, uf *unit.UnitFile, err error) {
+	name, err = formatUnitName(component, num)
+	if err != nil {
+		return
+	}
+	machineIDs, err := getMachineIDs(c)
+	if err != nil {
+		return
+	}
+	uf, err = NewStoreUnit(component, machineIDs[num-1])
+	if err != nil {
+		return
+	}
+	return name, uf, nil
+}
+
 // Create data container unit
 func (c *FleetClient) createDataUnit(component string) (name string, uf *unit.UnitFile, err error) {
 	name, err = formatUnitName(component, 0)
@@ -89,5 +108,4 @@ func (c *FleetClient) createDataUnit(component string) (name string, uf *unit.Un
 		return
 	}
 	return name, uf, nil
-
 }

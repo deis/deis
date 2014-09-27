@@ -19,15 +19,24 @@ func NewClient() (*FleetClient, error) {
 	return &FleetClient{Fleet: client}, nil
 }
 
-// randomMachineID return a random machineID from the Fleet cluster
-func randomMachineID(c *FleetClient) (machineID string, err error) {
+// getMachineIDs returns a list of machineIDs from the Fleet cluster
+func getMachineIDs(c *FleetClient) (machineIDs []string, err error) {
 	machineState, err := c.Fleet.Machines()
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
-	var machineIDs []string
 	for _, ms := range machineState {
 		machineIDs = append(machineIDs, ms.ID)
+	}
+	return
+}
+
+// randomMachineID return a random machineID from the Fleet cluster
+func randomMachineID(c *FleetClient) (machineID string, err error) {
+	var machineIDs []string
+	machineIDs, err = getMachineIDs(c)
+	if err != nil {
+		return "", err
 	}
 	return randomValue(machineIDs), nil
 }

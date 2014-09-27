@@ -25,8 +25,6 @@ const (
 
 var (
 	DefaultDataContainers = []string{
-		"database-data",
-		"registry-data",
 		"logger-data",
 	}
 )
@@ -47,9 +45,11 @@ func Scale(b backend.Backend, targets []string) error {
 		if err != nil {
 			return err
 		}
-		// the router is the only component that can scale past 1 at the moment
-		if num > 1 && !strings.Contains(component, "router") {
-			return fmt.Errorf("cannot scale %s past 1", component)
+		// router, store-daemon, and store-monitor are currently the only components that can scale past 1
+		if num > 1 && !strings.Contains(component, "router") &&
+									!strings.Contains(component, "store-monitor") &&
+									!strings.Contains(component, "store-daemon") {
+				return fmt.Errorf("cannot scale %s past 1", component)
 		}
 		if err := b.Scale(component, num); err != nil {
 			return err
@@ -92,7 +92,23 @@ func startDefaultServices(b backend.Backend) error {
 	if err := Start(b, []string{"logger@1"}); err != nil {
 		return err
 	}
-	if err := Start(b, []string{"publisher", "cache@1", "router@1", "database@1", "controller@1", "registry@1", "builder@1"}); err != nil {
+	targets := []string{
+		"publisher",
+		"store-monitor@1",
+		"store-monitor@2",
+		"store-monitor@3",
+		"store-daemon@1",
+		"store-daemon@2",
+		"store-daemon@3",
+		"store-gateway@1",
+		"cache@1",
+		"router@1",
+		"database@1",
+		"controller@1",
+		"registry@1",
+		"builder@1",
+	}
+	if err := Start(b, targets); err != nil {
 		return err
 	}
 	fmt.Println("Service containers launched.")
@@ -118,7 +134,24 @@ func StopPlatform(b backend.Backend) error {
 
 func stopDefaultServices(b backend.Backend) error {
 	fmt.Println("Stopping service containers...")
-	if err := Stop(b, []string{"publisher", "builder@1", "registry@1", "controller@1", "database@1", "cache@1", "router@1", "logger@1"}); err != nil {
+	targets := []string{
+		"publisher",
+		"builder@1",
+		"registry@1",
+		"controller@1",
+		"database@1",
+		"cache@1",
+		"router@1",
+		"logger@1",
+		"store-gateway@1",
+		"store-daemon@1",
+		"store-daemon@2",
+		"store-daemon@3",
+		"store-monitor@1",
+		"store-monitor@2",
+		"store-monitor@3",
+	}
+	if err := Stop(b, targets); err != nil {
 		return err
 	}
 	fmt.Println("Service containers stopped.")
@@ -184,6 +217,9 @@ func installDataContainers(b backend.Backend) error {
 func installDefaultServices(b backend.Backend) error {
 	// start service containers
 	targets := []string{
+		"store-monitor=3",
+		"store-daemon=3",
+		"store-gateway=1",
 		"database=1",
 		"cache=1",
 		"logger=1",
@@ -214,6 +250,9 @@ func Uninstall(b backend.Backend, targets []string) error {
 
 func uninstallAllServices(b backend.Backend) error {
 	targets := []string{
+		"store-monitor=3",
+		"store-daemon=3",
+		"store-gateway=1",
 		"database=0",
 		"cache=0",
 		"logger=0",
@@ -280,12 +319,12 @@ deisctl looks for unit files in these directories, in this order:
 - /var/lib/deis/units
 
 Usage:
-  deisctl refresh-units [-p <target>] [-t <tag>]
+	deisctl refresh-units [-p <target>] [-t <tag>]
 
 Options:
-  -p --path=<target>   where to save unit files [default: /var/lib/deis/units]
-  -t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
-                       [default: master]
+	-p --path=<target>   where to save unit files [default: /var/lib/deis/units]
+	-t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
+											 [default: master]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, "", false)
@@ -306,13 +345,14 @@ Options:
 		"deis-cache.service",
 		"deis-controller.service",
 		"deis-database.service",
-		"deis-database-data.service",
 		"deis-logger.service",
 		"deis-logger-data.service",
 		"deis-publisher.service",
 		"deis-registry.service",
-		"deis-registry-data.service",
 		"deis-router.service",
+		"deis-store-daemon.service",
+		"deis-store-gateway.service",
+		"deis-store-monitor.service",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit

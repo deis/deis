@@ -67,7 +67,7 @@ func splitJobName(component string) (c string, num int, err error) {
 
 func splitTarget(target string) (component string, num int, err error) {
 	// see if we were provided a specific target
-	r := regexp.MustCompile(`^([a-z]+)(\-data|@\d+)?$`)
+	r := regexp.MustCompile(`^([a-z-]+)(\-data|@\d+)?$`)
 	match := r.FindStringSubmatch(target)
 	// check for failed match
 	if len(match) != 3 {
