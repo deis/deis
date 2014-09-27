@@ -6,7 +6,7 @@ Let's build a Deis cluster in Google's Compute Engine!
 
 This assumes you have a couple of items installed already:
 
-* [deisctl](https://github.com/deis/deisctl)
+* [deisctl](https://github.com/deis/deis/deisctl)
 * `git` (Available via Homebrew or Xcode Command Line Tools)
 * A clone of the Deis repository (`git clone https://github.com/deis/deis.git`)
 * You are running commands from the a cloned `deis` folder (`cd deis` after cloning)

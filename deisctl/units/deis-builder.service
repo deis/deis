@@ -1,0 +1,14 @@
+[Unit]
+Description=deis-builder
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-builder >/dev/null && docker rm -f deis-builder || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:22 -e EXTERNAL_PORT=2223 -e HOST=$COREOS_PRIVATE_IPV4 --privileged $IMAGE"
+ExecStartPost=/bin/sh -c "echo 'Waiting for builder on 2223/tcp...' && until /bin/sh -c \"cat </dev/null>/dev/tcp/$COREOS_PRIVATE_IPV4/2223\" >/dev/null 2>&1; do sleep 1; done"
+ExecStopPost=/usr/bin/docker stop deis-builder
+
+[Install]
+WantedBy=multi-user.target

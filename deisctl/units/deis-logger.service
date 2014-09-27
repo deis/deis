@@ -1,0 +1,18 @@
+[Unit]
+Description=deis-logger
+Requires=deis-logger-data.service
+After=deis-logger-data.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-logger >/dev/null && docker rm -f deis-logger || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker run --name deis-logger --rm -p 514:514/udp -e EXTERNAL_PORT=514 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from deis-logger-data $IMAGE"
+ExecStopPost=/usr/bin/docker stop deis-logger
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineOf=deis-logger-data.service

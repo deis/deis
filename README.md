@@ -51,7 +51,7 @@ $ ssh-add ~/.vagrant.d/insecure_private_key
 
 ## Provision Deis
 
-Install the [deisctl utility](https://github.com/deis/deisctl#installation) used to provision and operate Deis.
+Install the [deisctl utility](https://github.com/deis/deis/deisctl#installation) used to provision and operate Deis.
 
 ```console
 $ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
