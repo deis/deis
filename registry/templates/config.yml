@@ -97,6 +97,7 @@ ceph-s3: &ceph-s3
     storage_path: /registry
     s3_access_key: {{ .deis_store_gateway_accessKey }}
     s3_secret_key: {{ .deis_store_gateway_secretKey }}
+    boto_bucket: {{ .deis_registry_bucketName }}
     boto_host: {{ .deis_store_gateway_host }}
     boto_port: {{ .deis_store_gateway_port }}
     boto_debug: 0
