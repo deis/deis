@@ -27,7 +27,7 @@ RUN useradd -s /bin/bash registry
 # add the docker registry source from github
 RUN git clone https://github.com/deis/docker-registry /docker-registry && \
     cd /docker-registry && \
-    git checkout 0e6954b && \
+    git checkout 6af878c && \
     chown -R registry:registry /docker-registry
 
 # install boto configuration

@@ -87,13 +87,15 @@ s3: &s3
     s3_access_key: {{ or (.deis_registry_s3accessKey) "" }}
     s3_secret_key: {{ or (.deis_registry_s3secretKey) "" }}
 
+# Ceph Object Gateway Configuration
+# See http://ceph.com/docs/master/radosgw/ for details on installing this service.
 ceph-s3: &ceph-s3
     <<: *common
     storage: s3
     s3_region: ~
     s3_bucket: {{ .deis_registry_bucketName }}
-    s3_secure: false
     s3_encrypt: false
+    s3_secure: false
     storage_path: /registry
     s3_access_key: {{ .deis_store_gateway_accessKey }}
     s3_secret_key: {{ .deis_store_gateway_secretKey }}
