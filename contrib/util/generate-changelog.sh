@@ -40,7 +40,7 @@ main() {
     # if REPOROOT is already in the environment, don't overload it and use that
     if [ -z "$REPOROOT" ];
     then
-        REPOROOT="http://github.com/deis/deis"
+        REPOROOT="https://github.com/deis/deis"
     fi
 
     # if TYPES is already in the environment, don't overload it and use that
@@ -61,7 +61,7 @@ main() {
     FROM=$1
     TO=${2:-"HEAD"}
 
-    printf "### $FROM -> $TO \n\n"
+    printf "### $FROM -> $TO\n\n"
 
     # Iterate over the types of messages specified
     for LEGALTYPE in $TYPES
