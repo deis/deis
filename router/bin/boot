@@ -43,7 +43,7 @@ etcd_set_default gzipCompLevel 2
 etcd_set_default gzipProxied any
 etcd_set_default gzipVary on
 etcd_set_default gzipDisable "\"msie6\""
-etcd_set_default gzipTypes "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml"
+etcd_set_default gzipTypes "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml"
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do

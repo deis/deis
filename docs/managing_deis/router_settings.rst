@@ -30,31 +30,31 @@ Settings used by router
 ---------------------------
 The following etcd keys are used by the router component.
 
-====================================      =============================================================================================================================================================================================
-setting                                   description
-====================================      =============================================================================================================================================================================================
-/deis/domains/*                           domain configuration for applications (set by controller)
-/deis/services/*                          application configuration (set by application unit files)
-/deis/builder/host                        host of the builder component (set by builder)
-/deis/builder/port                        port of the builder component (set by builder)
-/deis/controller/host                     host of the controller component (set by controller)
-/deis/controller/port                     port of the controller component (set by controller)
-/deis/router/bodySize                     nginx body size setting (default: 1m)
-/deis/router/builder/timeout/connect      proxy_connect_timeout for deis-builder (default: 10000). Unit in miliseconds
-/deis/router/builder/timeout/read         proxy_read_timeout for deis-builder (default: 1200000). Unit in miliseconds
-/deis/router/builder/timeout/send         proxy_send_timeout for deis-builder (default: 1200000). Unit in miliseconds
-/deis/router/builder/timeout/tcp          timeout for deis-builder (default: 1200000). Unit in miliseconds
-/deis/router/controller/timeout/connect   proxy_connect_timeout for deis-controller (default: 10m)
-/deis/router/controller/timeout/read      proxy_read_timeout for deis-controller (default: 20m)
-/deis/router/controller/timeout/send      proxy_send_timeout for deis-controller (default: 20m)
-/deis/router/gzip                         nginx gzip setting (default: on)
-/deis/router/gzipHttpVersion              nginx gzipHttpVersion setting (default: 1.0)
-/deis/router/gzipCompLevel                nginx gzipCompLevel setting (default: 2)
-/deis/router/gzipProxied                  nginx gzipProxied setting (default: any)
-/deis/router/gzipVary                     nginx gzipVary setting (default: on)
-/deis/router/gzipDisable                  nginx gzipDisable setting (default: "msie6")
-/deis/router/gzipTypes                    nginx gzipTypes setting (default: "application/x-javascript, application/xhtml+xml, application/xml, application/xml+rss, application/json, text/css, text/javascript, text/plain, text/xml")
-====================================      =============================================================================================================================================================================================
+=======================================      =============================================================================================================================================================================================
+setting                                      description
+=======================================      =============================================================================================================================================================================================
+/deis/domains/*                              domain configuration for applications (set by controller)
+/deis/services/*                             application configuration (set by application unit files)
+/deis/builder/host                           host of the builder component (set by builder)
+/deis/builder/port                           port of the builder component (set by builder)
+/deis/controller/host                        host of the controller component (set by controller)
+/deis/controller/port                        port of the controller component (set by controller)
+/deis/router/bodySize                        nginx body size setting (default: 1m)
+/deis/router/builder/timeout/connect         proxy_connect_timeout for deis-builder (default: 10000). Unit in miliseconds
+/deis/router/builder/timeout/read            proxy_read_timeout for deis-builder (default: 1200000). Unit in miliseconds
+/deis/router/builder/timeout/send            proxy_send_timeout for deis-builder (default: 1200000). Unit in miliseconds
+/deis/router/builder/timeout/tcp             timeout for deis-builder (default: 1200000). Unit in miliseconds
+/deis/router/controller/timeout/connect      proxy_connect_timeout for deis-controller (default: 10m)
+/deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
+/deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
+/deis/router/gzip                            nginx gzip setting (default: on)
+/deis/router/gzipHttpVersion                 nginx gzipHttpVersion setting (default: 1.0)
+/deis/router/gzipCompLevel                   nginx gzipCompLevel setting (default: 2)
+/deis/router/gzipProxied                     nginx gzipProxied setting (default: any)
+/deis/router/gzipVary                        nginx gzipVary setting (default: on)
+/deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
+/deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
+=======================================      =============================================================================================================================================================================================
 
 Using a custom router image
 ---------------------------
