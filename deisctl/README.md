@@ -211,6 +211,13 @@ deis-router@2.service: launched
 deis-router@3.service: launched
 ```
 
+## Unit Search Paths
+
+deisctl looks for unit files in these directories, in this order:
+- the $DEISCTL_UNITS environment variable, if set
+- $HOME/.deis/units
+- /var/lib/deis/units
+
 ## License
 
 Copyright 2014, OpDemand LLC
