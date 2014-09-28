@@ -1,7 +1,7 @@
 COMPONENTS=builder cache controller database logger registry router
 
 build:
-	CGO_ENABLED=0 godep go build -a -ldflags '-s' ./...
+	CGO_ENABLED=0 godep go build -a -ldflags '-s' .
 
 installer:
 	rm -rf dist && mkdir -p dist
@@ -12,7 +12,7 @@ installer:
 		"deisctl refresh-units && chmod 755 /var/lib/deis /var/lib/deis/units && chmod -R 644 /var/lib/deis/units/*"
 
 install:
-	godep go install -v ./...
+	godep go install -v .
 
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
