@@ -1,4 +1,4 @@
 FROM scratch
 
-ADD publisher /bin/publisher
-CMD /bin/publisher
+ADD publisher /usr/local/bin/publisher
+ENTRYPOINT ["/usr/local/bin/publisher"]
