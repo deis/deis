@@ -1,38 +1,43 @@
 include ../includes.mk
 
-build: check-docker
-	docker build -t deis/logger:$(BUILD_TAG) .
+COMPONENT = logger
+IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
+DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
-push: check-docker check-registry check-deisctl
-	docker tag deis/logger:$(BUILD_TAG) $(REGISTRY)/deis/logger:$(BUILD_TAG)
-	docker push $(REGISTRY)/deis/logger:$(BUILD_TAG)
-	deisctl config logger set image=$(REGISTRY)/deis/logger:$(BUILD_TAG)
+build: check-docker
+	docker build -t $(IMAGE) .
 
 clean: check-docker check-registry
-	docker rmi deis/logger:$(BUILD_TAG)
-	docker rmi $(REGISTRY)/deis/logger:$(BUILD_TAG)
+	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
-	docker images -q deis/logger | xargs docker rmi -f
-	docker images -q $(REGISTRY)/deis/logger | xargs docker rmi -f
+	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl install logger-data
-	deisctl scale logger=1
+	deisctl scale $(COMPONENT)=1
 
 uninstall: check-deisctl
-	deisctl scale logger=0
-	deisctl uninstall logger-data
+	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start logger
+	deisctl start $(COMPONENT)
 
 stop: check-deisctl
-	deisctl stop logger
+	deisctl stop $(COMPONENT)
 
 restart: stop start
 
 run: install start
+
+dev-release: check-registry check-deisctl
+	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker push $(DEV_IMAGE)
+	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
+
+release:
+	docker push $(IMAGE)
+
+deploy: build dev-release restart
 
 test: test-unit test-functional
 

@@ -7,15 +7,7 @@ Release Checklist
 =================
 
 These instructions are to assist the Deis maintainers with creating a new Deis
-product release.
-
-.. image:: http://upload.wikimedia.org/wikipedia/commons/3/37/Grace_Hopper_and_UNIVAC.jpg
-  :width: 220
-  :height: 193
-  :align: right
-  :alt: Grace Hopper and UNIVAC, from the Wikimedia Commons
-
-Please keep this document up-to-date with any changes in this process.
+product release. Please keep this document up-to-date with any changes in this process.
 
 deis Repo
 ---------

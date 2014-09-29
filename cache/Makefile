@@ -1,36 +1,43 @@
 include ../includes.mk
 
-build: check-docker
-	docker build -t deis/cache:$(BUILD_TAG) .
+COMPONENT = cache
+IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
+DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
-push: check-docker check-registry check-deisctl
-	docker tag deis/cache:$(BUILD_TAG) $(REGISTRY)/deis/cache:$(BUILD_TAG)
-	docker push $(REGISTRY)/deis/cache:$(BUILD_TAG)
-	deisctl config cache set image=$(REGISTRY)/deis/cache:$(BUILD_TAG)
+build: check-docker
+	docker build -t $(IMAGE) .
 
 clean: check-docker check-registry
-	docker rmi deis/cache:$(BUILD_TAG)
-	docker rmi $(REGISTRY)/deis/cache:$(BUILD_TAG)
+	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
-	docker images -q deis/cache | xargs docker rmi -f
-	docker images -q $(REGISTRY)/deis/cache | xargs docker rmi -f
+	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl scale cache=1
+	deisctl scale $(COMPONENT)=1
 
 uninstall: check-deisctl
-	deisctl scale cache=0
+	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start cache
+	deisctl start $(COMPONENT)
 
 stop: check-deisctl
-	deisctl stop cache
+	deisctl stop $(COMPONENT)
 
 restart: stop start
 
 run: install start
+
+dev-release: check-registry check-deisctl
+	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker push $(DEV_IMAGE)
+	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
+
+release:
+	docker push $(IMAGE)
+
+deploy: build dev-release restart
 
 test: test-unit test-functional
 

@@ -77,7 +77,7 @@ Test connectivity using ``deisctl list``:
 Configure a Docker Registry
 ---------------------------
 
-The development workflow requires Docker Registry set at the ``DEIS_REGISTRY``
+The development workflow requires Docker Registry set at the ``DEV_REGISTRY``
 environment variable.  If you're developing locally you can use the ``dev-registry``
 target to spin up a quick, disposable registry inside a Docker container.
 
@@ -86,7 +86,7 @@ target to spin up a quick, disposable registry inside a Docker container.
     $ make dev-registry
 
     To configure the registry for local Deis development:
-        export DEIS_REGISTRY=192.168.59.103:5000
+        export DEV_REGISTRY=192.168.59.103:5000
 
 If you are developing elsewhere, you must setup the registry yourself.
 Make sure it meets the following requirements:
@@ -101,23 +101,23 @@ Deis includes ``Makefile`` targets designed to simplify the development workflow
 This workflow is typically:
 
   #. Update source code and commit your changes using ``git``
-  #. Use ``make -C <component> build`` to build a new Docker Image
-  #. Use ``make -C <component> push`` to push the image and start using it
+  #. Use ``make -C <component> build`` to build a new Docker image
+  #. Use ``make -C <component> dev-release`` to push a snapshot release
   #. Use ``make -C <component> restart`` to restart the component
 
-This can be shortened to a one-liner:
+This can be shortened to a one-liner using the ``deploy`` target:
 
 .. code-block:: console
 
-    $ make -C controller build push restart
+    $ make -C controller deploy
 
 You can also use the same tasks on the root ``Makefile`` to operate on all
-components at once.  For example, ``make build push restart`` will build, push
+components at once.  For example, ``make deploy`` will build, dev-release,
 and restart all components on the cluster.
 
 .. important::
 
-   In order to push a new image, you must commit changes using ``git`` to increment
+   In order to cut a dev-release, you must commit changes using ``git`` to increment
    the SHA used when tagging Docker images
 
 Test Your Changes

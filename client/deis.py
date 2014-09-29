@@ -502,6 +502,7 @@ class DeisClient(object):
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+
           --confirm=<app>
             skips the prompt for the application name. <app> is the uniquely identifiable
             name for the application.
@@ -914,19 +915,20 @@ class DeisClient(object):
         Arguments:
           <id>
             a uniquely identifiable name for the cluster, such as 'dev' or 'prod'.
+
           <domain>
             a domain under which app hostnames will live. This must be provided to support
             multiple applications hosted on the cluster.
-
-            Note: this requires wildcard DNS configuration on the domain. For example, a
+            NOTE: this requires wildcard DNS configuration on the domain. For example, a
             <domain> of `deisapp.com` requires that `*.deisapp.com` resolves to one of the
             cluster's router endpoints or the load balancer in front of the routers.
+
           --hosts=<hosts>
             a comma-separated list of the cluster members' private IP addresses.
+
           --auth=<auth>
             a local file path to an SSH private key. This is the key used to provision and
             connect to the cluster members. This key must not have a password.
-
             NOTE: for EC2 and Rackspace, this key is likely `~/.ssh/deis`.
 
         Options:
@@ -1108,6 +1110,7 @@ class DeisClient(object):
         Options:
           --oneline
             print output on one line.
+
           -a --app=<app>
             the uniquely identifiable name of the application.
         """
@@ -1899,6 +1902,7 @@ class DeisClient(object):
           -a --app=<app>
             lists all users with permission to <app>. <app> is the uniquely identifiable name
             for the application.
+
           --admin
             lists all users with system administrator privileges.
         """
@@ -1924,6 +1928,7 @@ class DeisClient(object):
           -a --app=<app>
             grants <username> permission to use <app>. <app> is the uniquely identifiable name
             for the application.
+
           --admin
             grants <username> system administrator privileges.
         """
@@ -1957,6 +1962,7 @@ class DeisClient(object):
           -a --app=<app>
             revokes <username> permission to use <app>. <app> is the uniquely identifiable name
             for the application.
+
           --admin
             revokes <username> system administrator privileges.
         """

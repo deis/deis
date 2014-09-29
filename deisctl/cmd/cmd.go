@@ -296,7 +296,7 @@ Options:
 		return err
 	}
 	// download and save the unit files to the specified path
-	rootURL := "https://raw.githubusercontent.com/deis/deis/deisctl/"
+	rootURL := "https://raw.githubusercontent.com/deis/deis/"
 	tag := args["--tag"].(string)
 	units := []string{
 		"deis-builder.service",
@@ -311,7 +311,7 @@ Options:
 		"deis-router.service",
 	}
 	for _, unit := range units {
-		src := rootURL + tag + "/units/" + unit
+		src := rootURL + tag + "/deisctl/units/" + unit
 		dest := filepath.Join(dir, unit)
 		res, err := http.Get(src)
 		if err != nil {

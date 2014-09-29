@@ -1,42 +1,63 @@
 #!/bin/bash
 #
-# Preps a test environment and runs `make test-integration` with single-node vagrant.
+# Preps a test environment and runs `make test-integration`
+# against artifacts produced from the current source tree
+#
 
-echo Testing ${DEIS_TEST_APP?}...
-THIS_DIR=$(cd $(dirname $0); pwd)  # absolute path
+# fail on any command exiting non-zero
+set -eo pipefail
 
-# Environment reset and configuration
-rm -rf ~/.deis ~/.fleetctl ~/.ssh/known_hosts
-ssh-add -D || eval $(ssh-agent) && ssh-add -D
-ssh-add ~/.vagrant.d/insecure_private_key
-ssh-add ~/.ssh/deis
-cd ${GOPATH?}/src/github.com/deis/deis
-rm -rf tests/example-*
+# absolute path to current directory
+export THIS_DIR=$(cd $(dirname $0); pwd)
 
-# Vagrant provisioning
-$THIS_DIR/halt-all-vagrants.sh
-vagrant destroy --force
-vagrant up --provider virtualbox --provision
+# setup the test environment
+source $THIS_DIR/test-setup.sh
 
-# Trap exit signal to halt vagrant
-function cleanup {
-    set +e
-    make stop
-    vagrant halt
-}
+# setup callbacks on process exit and error
 trap cleanup EXIT
+trap dump_logs ERR
 
-set -e
+log_phase "Building from current source tree"
 
-# Build updated Deis CLI and use it for testing
-virtualenv --system-site-packages venv
-. venv/bin/activate
-pip install docopt==0.6.2 python-dateutil==2.2 requests==2.3.0 pyinstaller==2.1 termcolor==1.1.0
-make -C client/ client
-chmod +x client/dist/deis
-export PATH=`pwd`/client/dist:$PATH
-
-# Install Deis and run tests
+# build all docker images and client binaries
 make build
-make run
-make test-integration
+
+# use the built client binaries
+export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+
+log_phase "Running documentation tests"
+
+# test building documentation
+make -C docs/ test
+
+log_phase "Running unit and functional tests"
+
+make test-components
+
+log_phase "Provisioning 3-node CoreOS"
+
+export DEIS_NUM_INSTANCES=3
+git checkout $DEIS_ROOT/contrib/coreos/user-data
+make discovery-url
+vagrant up --provider virtualbox
+
+log_phase "Waiting for etcd/fleet"
+
+until deisctl list >/dev/null 2>&1; do
+    sleep 1
+done
+
+log_phase "Publishing release from source tree"
+
+make dev-release
+
+log_phase "Provisioning Deis"
+
+deisctl install platform
+deisctl scale router=3
+deisctl start router@1 router@2 router@3
+time deisctl start platform
+
+log_phase "Running integration suite"
+
+time make test-integration

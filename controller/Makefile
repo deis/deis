@@ -4,37 +4,44 @@ include ../includes.mk
 
 all: build run
 
-build: check-docker
-	docker build -t deis/controller:$(BUILD_TAG) .
+COMPONENT = controller
+IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
+DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
-push: check-docker check-registry check-deisctl
-	docker tag deis/controller:$(BUILD_TAG) $(REGISTRY)/deis/controller:$(BUILD_TAG)
-	docker push $(REGISTRY)/deis/controller:$(BUILD_TAG)
-	deisctl config controller set image=$(REGISTRY)/deis/controller:$(BUILD_TAG)
+build: check-docker
+	docker build -t $(IMAGE) .
 
 clean: check-docker check-registry
-	docker rmi deis/controller:$(BUILD_TAG)
-	docker rmi $(REGISTRY)/deis/controller:$(BUILD_TAG)
+	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
-	docker images -q deis/controller | xargs docker rmi -f
-	docker images -q $(REGISTRY)/deis/controller | xargs docker rmi -f
+	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl scale controller=1
+	deisctl scale $(COMPONENT)=1
 
 uninstall: check-deisctl
-	deisctl scale controller=0
+	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start controller
+	deisctl start $(COMPONENT)
 
 stop: check-deisctl
-	deisctl stop controller
+	deisctl stop $(COMPONENT)
 
 restart: stop start
 
 run: install start
+
+dev-release: check-registry check-deisctl
+	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker push $(DEV_IMAGE)
+	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
+
+release:
+	docker push $(IMAGE)
+
+deploy: build dev-release restart
 
 runserver:
 	python manage.py runserver
