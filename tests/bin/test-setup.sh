@@ -2,9 +2,13 @@
 #
 # Prepares the process environment to run a test
 
-echo
-echo "Preparing test environment..."
-echo
+function log_phase {
+    echo
+    echo ">>> $1 <<<"
+    echo
+}
+
+log_phase "Preparing test environment"
 
 # use GOPATH to determine project root
 export DEIS_ROOT=${GOPATH?}/src/github.com/deis/deis
@@ -64,22 +68,16 @@ vagrant destroy --force
 
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
-    echo
-    echo "Cleaning up..."
-    echo
+    log_phase "Cleaning up"
     set +e
     ${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh
     VBoxManage list vms | grep deis | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
     vagrant global-status --prune
-    echo
-    echo "Test run complete."
-    echo
+    log_phase "Test run complete"
 }
 
 function dump_logs {
-  echo
-  echo "Error detected, dumping logs..."
-  echo
+  log_phase "Error detected, dumping logs"
   set +e
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
   set -x

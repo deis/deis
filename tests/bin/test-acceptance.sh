@@ -17,16 +17,7 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
-echo
-echo "Running test-acceptance..."
-echo
-
-# test building documentation
-make -C docs/ test
-
-echo
-echo "Building from current source tree..."
-echo
+log_phase "Building from current source tree"
 
 # build all docker images and client binaries
 make build
@@ -34,31 +25,28 @@ make build
 # use the built client binaries
 export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
 
-echo
-echo "Running unit and functional tests..."
-echo
+log_phase "Running documentation tests"
+
+make -C docs/ test
+
+log_phase "Running unit and functional tests"
 
 make test-components
 
-echo
-echo "Provisioning 3-node CoreOS..."
-echo
+log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
 git checkout $DEIS_ROOT/contrib/coreos/user-data
 make discovery-url
 vagrant up --provider virtualbox
 
-echo
-echo "Waiting for etcd/fleet..."
+log_phase "Waiting for etcd/fleet"
 
 until deisctl list >/dev/null 2>&1; do
     sleep 1
 done
 
-echo
-echo "Provisioning Deis on old release..."
-echo
+log_phase "Provisioning Deis on old release"
 
 function set_release {
   deisctl config $1 set image=deis/$1:$2
@@ -75,27 +63,19 @@ deisctl scale router=3
 deisctl start router@1 router@2 router@3
 time deisctl start platform
 
-echo
-echo "Running smoke tests..."
-echo
+log_phase "Running smoke tests"
 
 time make test-smoke
 
-echo
-echo "Publishing new release..."
-echo
+log_phase "Publishing new release"
 
 time make release
 
-echo
-echo "Updating channel with new release..."
-echo
+log_phase "Updating channel with new release"
 
 updateservicectl channel update --app-id=${APP_ID} --channel=${CHANNEL} --version=${BUILD_TAG} --publish=true
 
-echo
-echo "Waiting for upgrade to complete..."
-echo
+log_phase "Waiting for upgrade to complete"
 
 deisctl config platform channel=${CHANNEL} autoupdate=true
 
@@ -116,8 +96,6 @@ wait_for_update deis-3 &
 update3=$!
 wait update1 update2 update3
 
-echo
-echo "Running end-to-end integration test..."
-echo
+log_phase "Running end-to-end integration test"
 
 time make test-integration

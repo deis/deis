@@ -18,13 +18,9 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
-echo
-echo "Running test-nightly on $DEIS_TEST_APP..."
-echo
+log_phase "Running test-nightly on $DEIS_TEST_APP"
 
-echo
-echo "Installing clients..."
-echo
+log_phase "Installing clients"
 
 # FIXME: switch to deis CLI install from website
 cd $DEIS_ROOT/client
@@ -34,25 +30,20 @@ cd $THIS_DIR
 # install latest deisctl from the website
 curl -sSL http://deis.io/deisctl/install.sh | sudo sh
 
-echo
-echo "Provisioning 3-node CoreOS..."
-echo
+log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
 git checkout contrib/coreos/user-data
 make discovery-url
 vagrant up --provider virtualbox
 
-echo
-echo "Waiting for etcd/fleet..."
+log_phase "Waiting for etcd/fleet"
 
 until deisctl list >/dev/null 2>&1; do
     sleep 1
 done
 
-echo
-echo "Provisioning Deis..."
-echo
+log_phase "Provisioning Deis"
 
 # provision deis from master using :latest
 deisctl install platform
@@ -60,9 +51,7 @@ deisctl scale router=3
 deisctl start router@1 router@2 router@3
 time deisctl start platform
 
-echo
-echo "Running integration tests..."
-echo
+log_phase "Running integration tests"
 
 # run the full integration suite
 time make test-integration

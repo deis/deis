@@ -17,16 +17,7 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
-echo
-echo "Running test-integration..."
-echo
-
-# test building documentation
-make -C docs/ test
-
-echo
-echo "Building from current source tree..."
-echo
+log_phase "Building from current source tree"
 
 # build all docker images and client binaries
 make build
@@ -34,45 +25,39 @@ make build
 # use the built client binaries
 export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
 
-echo
-echo "Running unit and functional tests..."
-echo
+log_phase "Running documentation tests"
+
+# test building documentation
+make -C docs/ test
+
+log_phase "Running unit and functional tests"
 
 make test-components
 
-echo
-echo "Provisioning 3-node CoreOS..."
-echo
+log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
 git checkout $DEIS_ROOT/contrib/coreos/user-data
 make discovery-url
 vagrant up --provider virtualbox
 
-echo
-echo "Waiting for etcd/fleet..."
+log_phase "Waiting for etcd/fleet"
 
 until deisctl list >/dev/null 2>&1; do
     sleep 1
 done
 
-echo
-echo "Publishing release from source tree..."
-echo
+log_phase "Publishing release from source tree"
 
 make dev-release
 
-echo
-echo "Provisioning Deis..."
-echo
+log_phase "Provisioning Deis"
 
 deisctl install platform
 deisctl scale router=3
 deisctl start router@1 router@2 router@3
 time deisctl start platform
 
-echo
-echo "Running integration suite..."
-echo
+log_phase "Running integration suite"
 
 time make test-integration
