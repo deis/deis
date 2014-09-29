@@ -105,6 +105,9 @@ class Session(requests.Session):
         try:
             return self._get_name_from_git_remote(self.git_root())
         except EnvironmentError:
+            logger = logging.getLogger(__name__)
+            logger.warning("!    WARNING: No app specified.")
+            logger.warning("!    Run this command from an app folder or specify which app to use with --app APP.")
             return os.path.basename(os.getcwd())
 
     def is_git_app(self):
@@ -2044,6 +2047,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
+
         response = self._dispatch('get', "/api/apps/{app}/releases".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._logger.info("=== {} Releases".format(app))
