@@ -13,6 +13,7 @@ import (
 // and blocks until the unit is loaded
 func (c *FleetClient) Create(targets []string) error {
 	units := make([]*schema.Unit, len(targets))
+	desiredState := string(job.JobStateLoaded)
 	for i, target := range targets {
 		unitName, unitFile, err := c.createUnitFile(target)
 		if err != nil {
@@ -31,13 +32,11 @@ func (c *FleetClient) Create(targets []string) error {
 				return fmt.Errorf("failed creating job %s: %v", unit.Name, err)
 			}
 		}
-		desiredState := string(job.JobStateLoaded)
 		if err := c.Fleet.SetUnitTargetState(unit.Name, desiredState); err != nil {
 			return err
 		}
 	}
 	for _, unit := range units {
-		desiredState := string(job.JobStateLoaded)
 		outchan, errchan := waitForUnitStates([]string{unit.Name}, desiredState)
 		if err := printUnitState(unit.Name, outchan, errchan); err != nil {
 			return err

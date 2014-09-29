@@ -126,6 +126,11 @@ func assertUnitState(name string, desiredState string, outchan chan *schema.Unit
 	// send unit across the output channel
 	outchan <- u
 
+	// HACK: global units have no soul
+	if u.CurrentState == "" {
+		return true
+	}
+
 	if u.DesiredState == u.CurrentState {
 		return true
 	}
@@ -180,6 +185,10 @@ func printUnitState(name string, outchan chan *schema.Unit, errchan chan error) 
 			}
 			// ignore units that don't match our unit
 			if u.Name != name {
+				continue
+			}
+			// HACK: global units have no soul
+			if u.CurrentState == "" {
 				continue
 			}
 			// otherwise print output
