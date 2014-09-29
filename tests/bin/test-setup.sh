@@ -34,6 +34,10 @@ echo "DEIS_TEST_DOMAIN=$DEIS_TEST_DOMAIN"
 export DEISCTL_TUNNEL=${DEISCTL_TUNNEL:-127.0.0.1:2222}
 echo "DEISCTL_TUNNEL=$DEISCTL_TUNNEL"
 
+# set units used by deisctl
+export DEISCTL_UNITS=${DEISCTL_UNITS:-$DEIS_ROOT/deisctl/units}
+echo "DEISCTL_UNITS=$DEISCTL_UNITS"
+
 # the registry used to host dev-release images
 # must be accessible to local Docker engine and Deis cluster
 export DEV_REGISTRY=${DEV_REGISTRY?}
