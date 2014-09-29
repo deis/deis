@@ -5,7 +5,10 @@ IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
 build: check-docker
-	docker build -t $(IMAGE) .
+	cd parent && docker build -t deis/binary-router .
+	docker cp `docker run -d deis/binary-router`:/nginx.tgz .
+	docker build -t $(IMAGE) .	
+	rm nginx.tgz
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)
