@@ -18,17 +18,21 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
-log_phase "Running test-nightly on $DEIS_TEST_APP"
+log_phase "Running test-latest on $DEIS_TEST_APP"
 
 log_phase "Installing clients"
 
 # FIXME: switch to deis CLI install from website
-cd $DEIS_ROOT/client
-sudo python setup.py install
-cd $THIS_DIR
+make -C client build
 
 # install latest deisctl from the website
 curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+
+# ensure we use distributed unit files
+unset DEISCTL_UNITS
+
+# use the built client binaries
+export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
 
 log_phase "Provisioning 3-node CoreOS"
 
