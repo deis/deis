@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Preps a test environment and runs `make test-integration`
+# Preps a test environment and runs `make test-smoke`
 # against artifacts produced from the current source tree
 #
 
@@ -18,7 +18,7 @@ trap cleanup EXIT
 trap dump_logs ERR
 
 echo
-echo "Running test-integration..."
+echo "Running test-smoke..."
 echo
 
 # test building documentation
@@ -51,6 +51,7 @@ vagrant up --provider virtualbox
 
 echo
 echo "Waiting for etcd/fleet..."
+echo
 
 until deisctl list >/dev/null 2>&1; do
     sleep 1
@@ -66,13 +67,13 @@ echo
 echo "Provisioning Deis..."
 echo
 
-deisctl install platform
+time deisctl install platform
 deisctl scale router=3
 deisctl start router@1 router@2 router@3
 time deisctl start platform
 
 echo
-echo "Running integration suite..."
+echo "Starting smoke tests..."
 echo
 
-time make test-integration
+time make test-smoke
