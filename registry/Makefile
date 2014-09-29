@@ -1,38 +1,43 @@
 include ../includes.mk
 
-build: check-docker
-	docker build -t deis/registry:$(BUILD_TAG) .
+COMPONENT = registry
+IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
+DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
-push: check-docker check-registry check-deisctl
-	docker tag deis/registry:$(BUILD_TAG) $(REGISTRY)/deis/registry:$(BUILD_TAG)
-	docker push $(REGISTRY)/deis/registry:$(BUILD_TAG)
-	deisctl config registry set image=$(REGISTRY)/deis/registry:$(BUILD_TAG)
+build: check-docker
+	docker build -t $(IMAGE) .
 
 clean: check-docker check-registry
-	docker rmi deis/registry:$(BUILD_TAG)
-	docker rmi $(REGISTRY)/deis/registry:$(BUILD_TAG)
+	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
-	docker images -q deis/registry | xargs docker rmi -f
-	docker images -q $(REGISTRY)/deis/registry | xargs docker rmi -f
+	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl install registry-data
-	deisctl scale registry=1
+	deisctl scale $(COMPONENT)=1
 
 uninstall: check-deisctl
-	deisctl scale registry=0
-	deisctl uninstall registry-data
+	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start registry
+	deisctl start $(COMPONENT)
 
 stop: check-deisctl
-	deisctl stop registry
+	deisctl stop $(COMPONENT)
 
 restart: stop start
 
 run: install start
+
+dev-release: check-registry check-deisctl
+	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker push $(DEV_IMAGE)
+	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
+
+release:
+	docker push $(IMAGE)
+
+deploy: build dev-release restart
 
 test: test-unit test-functional
 

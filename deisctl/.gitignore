@@ -7,3 +7,6 @@ tags
 
 # installer droppings
 dist/
+
+# make build droppings
+deisctl

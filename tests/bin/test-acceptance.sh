@@ -1,43 +1,101 @@
 #!/bin/bash
 #
-# Preps a test environment and runs `make test-integration` with single-node vagrant.
+# Preps a test environment and runs `make test-integration`
+# against artifacts produced from the current source tree
+#
 
-echo Testing ${DEIS_TEST_APP?}...
-THIS_DIR=$(cd $(dirname $0); pwd)  # absolute path
+# fail on any command exiting non-zero
+set -eo pipefail
 
-cd ${GOPATH?}/src/github.com/deis/deis
-echo HOST_IPADDR=${HOST_IPADDR?}
-echo DEISCTL_TUNNEL=${DEISCTL_TUNNEL?}
+# absolute path to current directory
+export THIS_DIR=$(cd $(dirname $0); pwd)
 
-# Environment reset and configuration
-rm -rf ~/.deis
-ssh-add -D || eval $(ssh-agent) && ssh-add -D
-ssh-add ~/.vagrant.d/insecure_private_key
-ssh-add ~/.ssh/deis
-$THIS_DIR/halt-all-vagrants.sh
-vagrant destroy --force
-rm -rf tests/example-*
+# setup the test environment
+source $THIS_DIR/test-setup.sh
 
-set -e
+# setup callbacks on process exit and error
+trap cleanup EXIT
+trap dump_logs ERR
+
+log_phase "Building from current source tree"
+
+# build all docker images and client binaries
+make build
+
+# use the built client binaries
+export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+
+log_phase "Running documentation tests"
 
 make -C docs/ test
-make build
+
+log_phase "Running unit and functional tests"
+
 make test-components
 
-if ! [[ -x deisctl ]]; then
-    curl -sSL http://deis.io/deisctl/install.sh | sudo sh
-fi
+log_phase "Provisioning 3-node CoreOS"
 
-if [[ -z "$DEIS_REGISTRY" ]]; then
-    docker ps | grep -q registry && curl -s http://$HOST_IPADDR:5000 2>&1 >/dev/null
-    [[ $? -eq 0 ]] || make dev-registry
-    export DEIS_REGISTRY=$HOST_IPADDR:5000
-fi
-
+export DEIS_NUM_INSTANCES=3
+git checkout $DEIS_ROOT/contrib/coreos/user-data
+make discovery-url
 vagrant up --provider virtualbox
-make push
+
+log_phase "Waiting for etcd/fleet"
+
+until deisctl list >/dev/null 2>&1; do
+    sleep 1
+done
+
+log_phase "Provisioning Deis on old release"
+
+function set_release {
+  deisctl config $1 set image=deis/$1:$2
+}
+set_release logger ${OLD_TAG}
+set_release cache ${OLD_TAG}
+set_release router ${OLD_TAG}
+set_release database ${OLD_TAG}
+set_release controller ${OLD_TAG}
+set_release registry ${OLD_TAG}
+
 deisctl install platform
-deisctl start platform
-make test-integration
-deisctl uninstall platform
-vagrant halt
+deisctl scale router=3
+deisctl start router@1 router@2 router@3
+time deisctl start platform
+
+log_phase "Running smoke tests"
+
+time make test-smoke
+
+log_phase "Publishing new release"
+
+time make release
+
+log_phase "Updating channel with new release"
+
+updateservicectl channel update --app-id=${APP_ID} --channel=${CHANNEL} --version=${BUILD_TAG} --publish=true
+
+log_phase "Waiting for upgrade to complete"
+
+deisctl config platform channel=${CHANNEL} autoupdate=true
+
+function wait_for_update {
+  set -x
+  vagrant ssh $1 -c "journalctl -n 500 -u deis-updater.service -f" &
+  pid_$1=$!
+  vagrant ssh $1 -c "/bin/sh -c \"while [[ \"\$(cat /etc/deis-version)\" != \"${BUILD_TAG}\" ]]; do echo waiting for update to complete...; sleep 5; done\""
+  kill $pid_$1
+  set +x
+}
+
+wait_for_update deis-1 &
+update1=$!
+wait_for_update deis-2 &
+update2=$!
+wait_for_update deis-3 &
+update3=$!
+wait update1 update2 update3
+
+log_phase "Running end-to-end integration test"
+
+time make test-integration

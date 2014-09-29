@@ -1,4 +1,8 @@
-COMPONENTS=builder cache controller database logger registry router
+include ../includes.mk
+
+COMPONENT = deisctl
+IMAGE =  $(IMAGE_PREFIX)/$(COMPONENT):$(BUILD_TAG)
+PACKAGE = $(COMPONENT)-$(BUILD_TAG).tar.gz
 
 build:
 	CGO_ENABLED=0 godep go build -a -ldflags '-s' .
@@ -29,9 +33,10 @@ test-style:
 test: test-style
 	godep go test -v -cover ./...
 
-package:
-	rm -f package
-	docker build -t deis/deis/deisctl .
-	mkdir -p package
-	-docker cp `docker run -d deis/deis/deisctl`:/tmp/deisctl.tar.gz package/
-	mv package/deisctl.tar.gz package/deisctl-v`cat deis-version`.tar.gz
+release: check-docker
+	rm -rf dist
+	docker build -t $(IMAGE) .
+	mkdir -p dist
+	-docker cp `docker run -d $(IMAGE)`:/tmp/deisctl.tar.gz dist/
+	mv dist/deisctl.tar.gz dist/$(PACKAGE)
+	aws s3 cp dist/$(PACKAGE) s3://$(S3_BUCKET)/$(PACKAGE) --acl public-read

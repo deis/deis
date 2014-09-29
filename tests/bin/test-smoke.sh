@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Preps a test environment and runs `make test-integration`
+# Preps a test environment and runs `make test-smoke`
 # against artifacts produced from the current source tree
 #
 
@@ -25,9 +25,8 @@ make build
 # use the built client binaries
 export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
 
-log_phase "Running documentation tests"
+log_phase "Running test-smoke"
 
-# test building documentation
 make -C docs/ test
 
 log_phase "Running unit and functional tests"
@@ -53,11 +52,11 @@ make dev-release
 
 log_phase "Provisioning Deis"
 
-deisctl install platform
+time deisctl install platform
 deisctl scale router=3
 deisctl start router@1 router@2 router@3
 time deisctl start platform
 
-log_phase "Running integration suite"
+log_phase "Starting smoke tests"
 
-time make test-integration
+time make test-smoke
