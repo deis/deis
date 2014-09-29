@@ -8,7 +8,7 @@ REMOTE_IMAGE := $(REGISTRY)/$(RELEASE_IMAGE)
 build: check-docker
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/publisher image/
-	docker build -t $(DOCKER_IMAGE) image
+	docker build -t $(RELEASE_IMAGE) image
 	rm -rf image/publisher
 
 clean: check-docker check-registry
