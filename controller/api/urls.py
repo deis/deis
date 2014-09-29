@@ -27,7 +27,7 @@ Applications
 
 .. http:get:: /api/apps/(string:id)/
 
-  Retrieve a :class:`~api.models.Application` by its `id`.
+  Retrieve a :class:`~api.models.App` by its `id`.
 
 .. http:delete:: /api/apps/(string:id)/
 
@@ -64,14 +64,6 @@ Application Release Components
 .. http:post:: /api/apps/(string:id)/builds/
 
   Create a new :class:`~api.models.Build`.
-
-.. http:get:: /api/apps/(string:id)/limits/
-
-  Retrieve the latest :class:`~api.models.Limit`.
-
-.. http:post:: /api/apps/(string:id)/limits/
-
-  Create a new :class:`~api.models.Limit`.
 
 .. http:get:: /api/apps/(string:id)/releases/(int:version)/
 
@@ -137,11 +129,6 @@ Application Actions
   See also
   :meth:`AppViewSet.run() <api.views.AppViewSet.run>`
 
-.. http:post:: /api/apps/(string:id)/calculate/
-
-  See also
-  :meth:`AppViewSet.calculate() <api.views.AppViewSet.calculate>`
-
 
 Application Sharing
 ===================
@@ -200,11 +187,11 @@ Auth
 
 .. http:post:: /api/auth/register/
 
-  Create a new :class:`~django.contrib.auth.models.User`.
+  Create a new User.
 
 .. http:delete:: /api/auth/register/
 
-  Destroy the logged-in :class:`~django.contrib.auth.models.User`.
+  Destroy the logged-in User.
 
 .. http:post:: /api/auth/login
 
@@ -292,8 +279,6 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'post': 'logs'})),
     url(r'^apps/(?P<id>{})/run/?'.format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'post': 'run'})),
-    url(r'^apps/(?P<id>{})/calculate/?'.format(settings.APP_URL_REGEX),
-        views.AppViewSet.as_view({'post': 'calculate'})),
     # apps sharing
     url(r'^apps/(?P<id>{})/perms/(?P<username>[-_\w]+)/?'.format(settings.APP_URL_REGEX),
         views.AppPermsViewSet.as_view({'delete': 'destroy'})),

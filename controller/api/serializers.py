@@ -33,7 +33,7 @@ class OwnerSlugRelatedField(serializers.SlugRelatedField):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.User` model."""
+    """Serialize a User model."""
 
     class Meta:
         """Metadata options for a UserSerializer."""
@@ -52,7 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
-    """Serialize admin status for a :class:`~api.models.User` model."""
+    """Serialize admin status for a User model."""
 
     class Meta:
         model = User
