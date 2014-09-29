@@ -12,11 +12,15 @@ endef
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 DOCKER_HOST = $(shell echo $$DOCKER_HOST)
-REGISTRY = $(shell echo $$DEIS_REGISTRY)
+REGISTRY = $(shell echo $$DEV_REGISTRY)
 GIT_SHA = $(shell git rev-parse --short HEAD)
 ifndef BUILD_TAG
   BUILD_TAG = git-$(GIT_SHA)
 endif
+ifndef S3_BUCKET
+  S3_BUCKET = deis-updates
+endif
+IMAGE_PREFIX := deis/
 
 check-docker:
 	@if [ -z $$(which docker) ]; then \
@@ -25,12 +29,12 @@ check-docker:
 	fi
 
 check-registry:
-	@if [ -z "$$DEIS_REGISTRY" ]; then \
-	  echo DEIS_REGISTRY is not exported, try \`make dev-registry\`; \
-	  exit 2; \
+	@if [ -z "$$DEV_REGISTRY" ]; then \
+	  echo "DEV_REGISTRY is not exported, try:  make dev-registry"; \
+	exit 2; \
 	fi
 
 check-deisctl:
 	@if [ -z $$(which deisctl) ]; then \
-	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deis/deisctl"; \
+	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deis"; \
 	fi
