@@ -65,6 +65,7 @@ test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUT
 
 # prepare the SSH agent
 ssh-add -D || eval $(ssh-agent) && ssh-add -D
+ssh-add ~/.ssh/$DEIS_TEST_AUTH_KEY
 ssh-add $DEIS_TEST_SSH_KEY
 
 # clean out deis session data
