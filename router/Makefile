@@ -1,7 +1,10 @@
 include ../includes.mk
 
 build: check-docker
-	docker build -t deis/router:$(BUILD_TAG) .
+	cd parent && docker build -t deis/binary-router .
+	docker cp `docker run -d deis/binary-router`:/nginx.tgz .
+	docker build -t deis/router:$(BUILD_TAG) .	
+	rm nginx.tgz
 
 push: check-docker check-registry check-deisctl
 	docker tag deis/router:$(BUILD_TAG) $(REGISTRY)/deis/router:$(BUILD_TAG)
