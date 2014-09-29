@@ -16,7 +16,11 @@ dev-registry: check-docker
 	@echo "    export DEIS_REGISTRY=`boot2docker ip 2>/dev/null`:5000"
 
 discovery-url:
-	sed -i .orig -e "s,# discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data
+	@mv -f contrib/coreos/user-data contrib/coreos/user-data.orig
+	@cat contrib/coreos/user-data.orig | \
+	sed -e "s,# discovery: https://discovery.etcd.io/,discovery: https://discovery.etcd.io/)," | \
+	sed -e "s,discovery: https://discovery.etcd.io/.*,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," > \
+	contrib/coreos/user-data
 
 build: check-docker
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build || exit 1;)
