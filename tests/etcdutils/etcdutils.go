@@ -44,6 +44,15 @@ func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	}
 }
 
+// Verify an etcd key exists
+func VerifyEtcdKey(t *testing.T, key string, port string) {
+	c := etcdClient(port)
+	_, err := c.Get(key, true, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // Verify the value of an etcd key
 func VerifyEtcdValue(t *testing.T, key string, expected_value string, port string) {
 	c := etcdClient(port)
