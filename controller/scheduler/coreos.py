@@ -281,7 +281,7 @@ class FleetHTTPClient(object):
             return rc, output
 
         # wait for container to start
-        for _ in range(30):
+        for _ in range(1200):
             rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
             if rc == 0:
                 break
