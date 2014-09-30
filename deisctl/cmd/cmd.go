@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -283,7 +284,7 @@ Usage:
   deisctl refresh-units [-p <target>] [-t <tag>]
 
 Options:
-  -p --path=<target>   where to save unit files [default: /var/lib/deis/units]
+  -p --path=<target>   where to save unit files [default: $HOME/.deis/units]
   -t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
                        [default: master]
 `
@@ -294,6 +295,9 @@ Options:
 		os.Exit(2)
 	}
 	dir := args["--path"].(string)
+	if dir == "$HOME/.deis/units" || dir == "~/.deis/units" {
+		dir = path.Join(os.Getenv("HOME"), ".deis", "units")
+	}
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
