@@ -10,5 +10,5 @@ for dir in $VMS; do
 done
 
 # optional commands to remove all VirtualBox vms, since sometimes they are orphaned
-#VBoxManage list vms | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -i VBoxManage unregistervm {} --delete
+#VBoxManage list vms | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
 #rm -rf $HOME/VirtualBox\ VMs/deis*

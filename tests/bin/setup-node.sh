@@ -3,34 +3,39 @@
 # Preps a Ubuntu 14.04 box with requirements to run as a Jenkins node to http://ci.deis.io/
 # Should be run as root.
 
-# install docker 1.1.2
+# install docker 1.2.0
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sh -c "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
-apt-get update
-apt-get install -yq lxc-docker-1.1.2
+apt-get update && apt-get install -yq lxc-docker-1.2.0
 
 # install java
-apt-get install -yq java-common openjdk-7-jre-headless
+apt-get install -yq openjdk-7-jre-headless
 
 # install virtualbox 4.3.14
 apt-get install -yq build-essential libgl1 libgl1-mesa-glx libpython2.7 libqt4-network libqt4-opengl \
     libqtcore4 libqtgui4 libsdl1.2debian libvpx1 libxcursor1
-wget http://download.virtualbox.org/virtualbox/4.3.14/virtualbox-4.3_4.3.14-95030~Ubuntu~raring_amd64.deb
-dpkg -i virtualbox-4.3_4.3.14-95030~Ubuntu~raring_amd64.deb && \
-    rm virtualbox-4.3_4.3.14-95030~Ubuntu~raring_amd64.deb
+wget http://download.virtualbox.org/virtualbox/4.3.16/virtualbox-4.3_4.3.16-95972~Ubuntu~raring_amd64.deb
+dpkg -i virtualbox-4.3_4.3.16-95972~Ubuntu~raring_amd64.deb && \
+    rm virtualbox-4.3_4.3.16-95972~Ubuntu~raring_amd64.deb
 
 # install vagrant
-wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.6.3_x86_64.deb
-dpkg -i vagrant_1.6.3_x86_64.deb && rm vagrant_1.6.3_x86_64.deb
+wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.6.5_x86_64.deb
+dpkg -i vagrant_1.6.5_x86_64.deb && rm vagrant_1.6.5_x86_64.deb
 
 # install go
 wget -qO- https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
+echo "You must reboot for the global $PATH changes to take effect."
 
 # install test suite requirements
-apt-get install -yq python-dev libpq-dev libyaml-dev git postgresql postgresql-client
+apt-get install -yq curl mercurial python-dev libpq-dev libyaml-dev git postgresql postgresql-client
 RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 pip install virtualenv
+
+# set up PostgreSQL requirements for controller unit tests
+sudo -u postgres createuser --createdb jenkins
+# sudo -u postgres psql
+# postgres=# create database deis owner jenkins
 
 # create jenkins user and install node bootstrap script
 useradd -G docker,vboxusers -s /bin/bash -m jenkins
