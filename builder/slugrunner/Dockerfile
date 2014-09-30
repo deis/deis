@@ -1,4 +1,4 @@
-FROM progrium/cedarish:cedar
+FROM progrium/cedarish:latest
 MAINTAINER OpDemand <info@opdemand.com>
 
 RUN mkdir /app
