@@ -58,17 +58,16 @@ func HostAddress() string {
 	return IP
 }
 
-// Hostname returns the hostname of the machine running the container
+// Hostname returns the hostname of the machine running the container, *not* the local machine
+// We infer the hostname because we don't necessarily know how to log in.
 func Hostname() string {
-	addr := HostAddress()
-	hostname := ""
-	if addr == "172.17.8.100" {
-		hostname = "deis-1"
-	} else {
-		// assume boot2docker
-		hostname = "boot2docker"
+	switch HostAddress() {
+		case "172.17.8.100": return "deis-1"
+		case "172.17.8.101": return "deis-2"
+		case "172.17.8.102": return "deis-3"
+		case "172.21.12.100": return "docker-registry"
+		default: return "boot2docker"
 	}
-	return hostname
 }
 
 // NewID returns the first part of a random RFC 4122 UUID

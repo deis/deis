@@ -11,7 +11,15 @@ import (
 )
 
 func TestStore(t *testing.T) {
+  hostname := utils.Hostname()
+
+  if hostname == "boot2docker" {
+    fmt.Printf("--- SKIPPING STORE TEST -- host machine is boot2docker, which does not successfully run store")
+    return
+  }
+
   var err error
+
   // Set up etcd, which will be used by all containers
   tag, etcdPort := utils.BuildTag(), utils.RandomPort()
   etcdName := "deis-etcd-" + tag
@@ -21,7 +29,6 @@ func TestStore(t *testing.T) {
   host := utils.HostAddress()
 
   // prep etcd with the monitor hostname -- this is done in an ExecStartPre in the monitor unit
-  hostname := utils.Hostname()
   etcdutils.SetSingle(t, "/deis/store/hosts/"+host, hostname, etcdPort)
 
   // test deis-store-monitor
@@ -68,7 +75,7 @@ func TestStore(t *testing.T) {
       "--net=host",
       "deis/store-daemon:"+tag)
   }()
-  dockercli.PrintToStdout(t, stdout2, stdoutPipe2, "Booting")
+  dockercli.PrintToStdout(t, stdout2, stdoutPipe2, "journal close /var/lib/ceph/osd/ceph-0/journal")
   if err != nil {
     t.Fatal(err)
   }
@@ -94,7 +101,7 @@ func TestStore(t *testing.T) {
       "-e", "ETCD_PORT="+etcdPort,
       "deis/store-gateway:"+tag)
   }()
-  dockercli.PrintToStdout(t, stdout3, stdoutPipe3, "Booting")
+  dockercli.PrintToStdout(t, stdout3, stdoutPipe3, "deis-store-gateway running...")
   if err != nil {
     t.Fatal(err)
   }
