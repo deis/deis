@@ -58,6 +58,19 @@ func HostAddress() string {
 	return IP
 }
 
+// Hostname returns the hostname of the machine running the container
+func Hostname() string {
+	addr := HostAddress()
+	hostname := ""
+	if addr == "172.17.8.100" {
+		hostname = "deis-1"
+	} else {
+		// assume boot2docker
+		hostname = "boot2docker"
+	}
+	return hostname
+}
+
 // NewID returns the first part of a random RFC 4122 UUID
 // See http://play.golang.org/p/4FkNSiUDMg
 func NewID() string {

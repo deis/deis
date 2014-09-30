@@ -12,11 +12,6 @@ import (
 
 func TestStore(t *testing.T) {
   var err error
-  setkeys := []string{
-  }
-  setdir := []string{
-    "/deis/store",
-  }
   // Set up etcd, which will be used by all containers
   tag, etcdPort := utils.BuildTag(), utils.RandomPort()
   etcdName := "deis-etcd-" + tag
@@ -25,14 +20,11 @@ func TestStore(t *testing.T) {
   defer cli.CmdRm("-f", etcdName)
   host := utils.HostAddress()
 
-  // test deis-store-monitor
-  handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
-  etcdutils.PublishEtcd(t, handler)
-  etcdutils.SetEtcd(t,
-    []string{"/deis/store/hosts/"+host},
-    []string{"boot2docker"},
-    handler.C)
+  // prep etcd with the monitor hostname -- this is done in an ExecStartPre in the monitor unit
+  hostname := utils.Hostname()
+  etcdutils.SetSingle(t, "/deis/store/hosts/"+host, hostname, etcdPort)
 
+  // test deis-store-monitor
   fmt.Printf("--- Run deis/store-monitor:%s at %s:%s\n", tag, host, "6789")
   name := "deis-store-monitor-" + tag
   defer cli.CmdRm("-f", name)
@@ -63,10 +55,11 @@ func TestStore(t *testing.T) {
   // test deis-store-daemon
   fmt.Printf("--- Run deis/store-daemon:%s at %s:%s\n", tag, host, "6800")
   name = "deis-store-daemon-" + tag
-  defer cli.CmdRm("-f", name)
+  cli2, stdout2, stdoutPipe2 := dockercli.NewClient()
+  defer cli2.CmdRm("-f", name)
   go func() {
-    _ = cli.CmdRm("-f", name)
-    err = dockercli.RunContainer(cli,
+    _ = cli2.CmdRm("-f", name)
+    err = dockercli.RunContainer(cli2,
       "--name", name,
       "--rm",
       "-p", "6800",
@@ -75,7 +68,7 @@ func TestStore(t *testing.T) {
       "--net=host",
       "deis/store-daemon:"+tag)
   }()
-  dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+  dockercli.PrintToStdout(t, stdout2, stdoutPipe2, "Booting")
   if err != nil {
     t.Fatal(err)
   }
@@ -88,10 +81,11 @@ func TestStore(t *testing.T) {
   port := utils.RandomPort()
   fmt.Printf("--- Run deis/store-gateway:%s at %s:%s\n", tag, host, port)
   name = "deis-store-gateway-" + tag
-  defer cli.CmdRm("-f", name)
+  cli3, stdout3, stdoutPipe3 := dockercli.NewClient()
+  defer cli3.CmdRm("-f", name)
   go func() {
-    _ = cli.CmdRm("-f", name)
-    err = dockercli.RunContainer(cli,
+    _ = cli3.CmdRm("-f", name)
+    err = dockercli.RunContainer(cli3,
       "--name", name,
       "--rm",
       "-p", port+":8888",
@@ -100,7 +94,7 @@ func TestStore(t *testing.T) {
       "-e", "ETCD_PORT="+etcdPort,
       "deis/store-gateway:"+tag)
   }()
-  dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+  dockercli.PrintToStdout(t, stdout3, stdoutPipe3, "Booting")
   if err != nil {
     t.Fatal(err)
   }
