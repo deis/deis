@@ -232,19 +232,19 @@ class FleetHTTPClient(object):
     def _destroy_log(self, name):
         return self._delete_unit(name+'-log')
 
-    def run(self, name, image, command):
+    def run(self, name, image, command):  # noqa
         """Run a one-off command"""
         self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE))
 
-        # wait for the container to return something
-        for _ in range(1200):
+        # wait for the container to get scheduled
+        for _ in range(30):
             states = self._get_state(name)
             if states and len(states.get('states', [])) == 1:
                 state = states.get('states')[0]
-                subState = state.get('systemdSubState')
-                if subState == 'exited' or subState == 'failed' or subState == 'dead':
-                    break
+                break
             time.sleep(1)
+        else:
+            raise RuntimeError('container did not report state')
         machineID = state.get('machineID')
 
         # find the machine
@@ -268,28 +268,50 @@ class FleetHTTPClient(object):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(primaryIP, username="core", pkey=pkey)
-
-        # get a pty so stdout/stderr look right
+        # share a transport
         tran = ssh.get_transport()
-        chan = tran.open_session()
-        chan.get_pty()
-        out = chan.makefile()
 
-        # exec the command to gather container output
-        chan.exec_command('docker logs {name}'.format(**locals()))
-        rc, output = chan.recv_exit_status(), out.read()
-        if rc != 0:
+        def _do_ssh(cmd):
+            chan = tran.open_session()
+            # get a pty so stdout/stderr look right
+            chan.get_pty()
+            out = chan.makefile()
+            chan.exec_command(cmd)
+            rc, output = chan.recv_exit_status(), out.read()
+            return rc, output
+
+        # wait for container to start
+        for _ in range(30):
+            rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
+            if rc == 0:
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError('container failed to start on host')
+
+        # wait for container to complete
+        for _ in range(1200):
+            _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
+            if _rc != 0:
+                raise RuntimeError('failed to inspect container')
+            _container = json.loads(_output)
+            finished_at = _container[0]["State"]["FinishedAt"]
+            if not finished_at.startswith('0001'):
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError('container timed out')
+
+        # gather container output
+        _rc, output = _do_ssh('docker logs {name}'.format(**locals()))
+        if _rc != 0:
             raise RuntimeError('could not attach to container')
 
-        # use another channel to inspect the container
-        chan = tran.open_session()
-        chan.get_pty()
-        out = chan.makefile()
-        chan.exec_command('docker inspect {name}'.format(**locals()))
-        rc, inspect_output = chan.recv_exit_status(), out.read()
-        if rc != 0:
+        # determine container exit code
+        _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
+        if _rc != 0:
             raise RuntimeError('could not determine exit code')
-        container = json.loads(inspect_output)
+        container = json.loads(_output)
         rc = container[0]["State"]["ExitCode"]
 
         # cleanup
