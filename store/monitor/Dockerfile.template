@@ -1,5 +1,4 @@
 #FROM is generated dynamically by the Makefile
-MAINTAINER OpDemand <info@opdemand.com>
 
 EXPOSE 6789
 ENTRYPOINT ["/app/bin/boot"]

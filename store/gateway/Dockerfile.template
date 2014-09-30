@@ -1,5 +1,4 @@
 #FROM is generated dynamically by the Makefile
-MAINTAINER OpDemand <info@opdemand.com>
 
 # install Apache and RADOS gateway
 RUN curl -sSL https://raw.github.com/ceph/ceph/master/keys/autobuild.asc | apt-key add -
