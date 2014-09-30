@@ -54,16 +54,6 @@ Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
 $ ./provision-rackspace-cluster.sh deis-key
 ```
 
-### Update CoreOS
-Due to image publishing limitations on Rackspace, CoreOS images on Rackspace are frequently out of date.
-Each machine needs to be updated. On each one, run:
-
-```console
-$ sudo systemctl unmask update-engine && sudo systemctl start update-engine && sudo update_engine_client -update && sudo reboot
-```
-
-Once the machine is rebooted, it should have a recent CoreOS version.
-
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 DEISCTL_TUNNEL and install the platform:
