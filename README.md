@@ -18,7 +18,7 @@ Trying out Deis? Continue following these instructions for a local installation 
 
  * Due to its nature as a distributed system, we strongly recommend using Deis with a minimum of 3 nodes even for local development and testing
  * The Deis "control plane" containers will consume approximately 2 GB of RAM across the cluster. Please be sure you have sufficient free memory before proceeding.
- * Install [Vagrant v1.6+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+ * Install [Vagrant v1.6.5+](http://www.vagrantup.com/downloads.html) and [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 
 Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known release for 14.04) has some issues when running in RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's website.
 

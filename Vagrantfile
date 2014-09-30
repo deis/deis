@@ -3,7 +3,7 @@
 
 require 'fileutils'
 
-Vagrant.require_version ">= 1.6.0"
+Vagrant.require_version ">= 1.6.5"
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "contrib", "coreos", "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
