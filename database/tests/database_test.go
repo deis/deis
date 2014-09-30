@@ -32,7 +32,7 @@ func TestDatabase(t *testing.T) {
 			"-e", "ETCD_PORT="+etcdPort,
 			"deis/database:"+tag)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-database running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "database: postgres is running...")
 	if err != nil {
 		t.Fatal(err)
 	}
