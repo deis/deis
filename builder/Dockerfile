@@ -41,7 +41,6 @@ RUN wget -O /progrium_cedarish.tar --progress=dot:giga \
         https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014.05.27.tar
 
 # define the execution environment
-VOLUME /var/lib/docker
 WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
