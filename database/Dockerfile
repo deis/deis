@@ -38,12 +38,12 @@ RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.p
 WORKDIR /tmp
 RUN git clone https://github.com/wal-e/wal-e.git
 WORKDIR /tmp/wal-e
+RUN git checkout c6f0d02
 RUN pip install .
 RUN mkdir -p /etc/wal-e.d/env
 RUN chown -R root:postgres /etc/wal-e.d
 
 # define the execution environment
-VOLUME ["/var/lib/postgresql"]
 WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5432
