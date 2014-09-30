@@ -101,14 +101,11 @@ class FleetHTTPClient(object):
 
     # container api
 
-    def create(self, name, image, command='', template=None, use_announcer=True, **kwargs):
+    def create(self, name, image, command='', template=None, **kwargs):
         """Create a container"""
         self._create_container(name, image, command,
                                template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)
         self._create_log(name, image, command, copy.deepcopy(LOG_TEMPLATE))
-
-        if use_announcer:
-            self._create_announcer(name, image, command, copy.deepcopy(ANNOUNCE_TEMPLATE))
 
     def _create_container(self, name, image, command, unit, **kwargs):
         l = locals().copy()
@@ -146,21 +143,9 @@ class FleetHTTPClient(object):
         # post unit to fleet
         self._put_unit(name+'-log', {"desiredState": "launched", "options": unit})
 
-    def _create_announcer(self, name, image, command, unit):
-        l = locals().copy()
-        l.update(re.match(MATCH, name).groupdict())
-        # construct unit from template
-        for f in unit:
-            f['value'] = f['value'].format(**l)
-        # post unit to fleet
-        self._put_unit(name+'-announce', {"desiredState": "launched", "options": unit})
-
-    def start(self, name, use_announcer=True):
+    def start(self, name):
         """Start a container"""
         self._wait_for_container(name)
-
-        if use_announcer:
-            self._wait_for_announcer(name)
 
     def _wait_for_container(self, name):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
@@ -177,24 +162,6 @@ class FleetHTTPClient(object):
         else:
             raise RuntimeError('container failed to start')
 
-    def _wait_for_announcer(self, name):
-        # wait a bit for the announcer to come up, otherwise we may have hit
-        # https://github.com/docker/docker/issues/8022
-        for _ in range(30):
-            states = self._get_state(name)
-            if states and len(states.get('states', [])) == 1:
-                state = states.get('states')[0]
-                subState = state.get('systemdSubState')
-                if subState == 'running':
-                    # wait for the router to be reconfigured
-                    time.sleep(10)
-                    break
-                elif subState == 'failed':
-                    raise RuntimeError('announcer failed to start')
-            time.sleep(1)
-        else:
-            raise RuntimeError('announcer timeout on start')
-
     def _wait_for_destroy(self, name):
         for _ in range(30):
             states = self._get_state(name)
@@ -204,15 +171,13 @@ class FleetHTTPClient(object):
         else:
             raise RuntimeError('timeout on container destroy')
 
-    def stop(self, name, use_announcer=True):
+    def stop(self, name):
         """Stop a container"""
         raise NotImplementedError
 
-    def destroy(self, name, use_announcer=True):
+    def destroy(self, name):
         """Destroy a container"""
         funcs = []
-        if use_announcer:
-            funcs.append(functools.partial(self._destroy_announcer, name))
         funcs.append(functools.partial(self._destroy_container, name))
         funcs.append(functools.partial(self._destroy_log, name))
         # call all destroy functions, ignoring any errors
@@ -225,9 +190,6 @@ class FleetHTTPClient(object):
 
     def _destroy_container(self, name):
         return self._delete_unit(name)
-
-    def _destroy_announcer(self, name):
-        return self._delete_unit(name+'-announce')
 
     def _destroy_log(self, name):
         return self._delete_unit(name+'-log')
@@ -345,18 +307,6 @@ LOG_TEMPLATE = [
     {"section": "Unit", "name": "BindsTo", "value": "{name}.service"},
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"'''},  # noqa
     {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"'''},  # noqa
-    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
-    {"section": "X-Fleet", "name": "MachineOf", "value": "{name}.service"},
-]
-
-
-ANNOUNCE_TEMPLATE = [
-    {"section": "Unit", "name": "Description", "value": "{name} announce"},
-    {"section": "Unit", "name": "BindsTo", "value": "{name}.service"},
-    {"section": "Service", "name": "EnvironmentFile", "value": "/etc/environment"},
-    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name} >/dev/null 2>&1; do sleep 2; done; port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); if [[ -z $port ]]; then echo We have no port...; exit 1; fi; echo Waiting for $port/tcp...; until netstat -lnt | grep :$port >/dev/null; do sleep 1; done"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "port=$(docker inspect -f '{{{{range $i, $e := .NetworkSettings.Ports }}}}{{{{$p := index $e 0}}}}{{{{$p.HostPort}}}}{{{{end}}}}' {name}); echo Connected to $COREOS_PRIVATE_IPV4:$port/tcp, publishing to etcd...; while netstat -lnt | grep :$port >/dev/null; do etcdctl set /deis/services/{app}/{name} $COREOS_PRIVATE_IPV4:$port --ttl 60 >/dev/null; sleep 45; done"'''},  # noqa
-    {"section": "Service", "name": "ExecStop", "value": "/usr/bin/etcdctl rm --recursive /deis/services/{app}/{name}"},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "X-Fleet", "name": "MachineOf", "value": "{name}.service"},
 ]

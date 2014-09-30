@@ -436,9 +436,6 @@ class Container(UuidAuditedModel):
 
     _command = property(_get_command)
 
-    def _command_announceable(self):
-        return self._command.lower() in ['start web', '']
-
     def clone(self, release):
         c = Container.objects.create(owner=self.owner,
                                      app=self.app,
@@ -459,7 +456,7 @@ class Container(UuidAuditedModel):
                 name=job_id,
                 image=image,
                 command=self._command,
-                use_announcer=self._command_announceable(), **kwargs)
+                **kwargs)
         except Exception as e:
             err = '{} (create): {}'.format(job_id, e)
             log_event(self.app, err, logging.ERROR)
@@ -469,7 +466,7 @@ class Container(UuidAuditedModel):
     def start(self):
         job_id = self._job_id
         try:
-            self._scheduler.start(job_id, self._command_announceable())
+            self._scheduler.start(job_id)
         except Exception as e:
             err = '{} (start): {}'.format(job_id, e)
             log_event(self.app, err, logging.WARNING)
@@ -479,7 +476,7 @@ class Container(UuidAuditedModel):
     def stop(self):
         job_id = self._job_id
         try:
-            self._scheduler.stop(job_id, self._command_announceable())
+            self._scheduler.stop(job_id)
         except Exception as e:
             err = '{} (stop): {}'.format(job_id, e)
             log_event(self.app, err, logging.ERROR)
@@ -489,7 +486,7 @@ class Container(UuidAuditedModel):
     def destroy(self):
         job_id = self._job_id
         try:
-            self._scheduler.destroy(job_id, self._command_announceable())
+            self._scheduler.destroy(job_id)
         except Exception as e:
             err = '{} (destroy): {}'.format(job_id, e)
             log_event(self.app, err, logging.ERROR)

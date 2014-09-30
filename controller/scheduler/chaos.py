@@ -25,12 +25,12 @@ class ChaosSchedulerClient(object):
 
     # job api
 
-    def create(self, name, image, command, use_announcer, **kwargs):
+    def create(self, name, image, command, **kwargs):
         if random.random() < CREATE_ERROR_RATE:
             raise RuntimeError
         return True
 
-    def start(self, name, use_announcer):
+    def start(self, name):
         """
         Start an idle job
         """
@@ -38,7 +38,7 @@ class ChaosSchedulerClient(object):
             raise RuntimeError
         return True
 
-    def stop(self, name, use_announcer):
+    def stop(self, name):
         """
         Stop a running job
         """
@@ -46,7 +46,7 @@ class ChaosSchedulerClient(object):
             raise RuntimeError
         return True
 
-    def destroy(self, name, use_announcer):
+    def destroy(self, name):
         """
         Destroy an existing job
         """

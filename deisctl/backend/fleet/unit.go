@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -25,18 +24,18 @@ func (c *FleetClient) Units(target string) (units []string, err error) {
 	if err != nil {
 		return
 	}
-	var r *regexp.Regexp
 	if strings.HasSuffix(target, "-data") {
-		r = regexp.MustCompile(`deis\-(` + target + `)\.service`)
-	} else if strings.Contains(target, "@") {
-		r = regexp.MustCompile(`deis\-(` + target + `)\.service`)
+		for _, u := range allUnits {
+			if strings.Contains(u.Name, target) {
+				units = []string{u.Name}
+				return
+			}
+		}
 	} else {
-		r = regexp.MustCompile(`deis\-(` + target + `)@([\d]+)\.service`)
-	}
-	for _, u := range allUnits {
-		match := r.MatchString(u.Name)
-		if match {
-			units = append(units, u.Name)
+		for _, u := range allUnits {
+			if strings.Contains(u.Name, target) && !strings.HasSuffix(u.Name, "-data.service") {
+				units = append(units, u.Name)
+			}
 		}
 	}
 	if len(units) == 0 {

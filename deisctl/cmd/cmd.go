@@ -89,10 +89,10 @@ func startDataContainers(b backend.Backend) error {
 
 func startDefaultServices(b backend.Backend) error {
 	fmt.Println("Launching service containers...")
-	if err := Start(b, []string{"logger"}); err != nil {
+	if err := Start(b, []string{"logger@1"}); err != nil {
 		return err
 	}
-	if err := Start(b, []string{"cache", "router", "database", "controller", "registry", "builder"}); err != nil {
+	if err := Start(b, []string{"publisher", "cache@1", "router@1", "database@1", "controller@1", "registry@1", "builder@1"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers launched.")
@@ -118,7 +118,7 @@ func StopPlatform(b backend.Backend) error {
 
 func stopDefaultServices(b backend.Backend) error {
 	fmt.Println("Stopping service containers...")
-	if err := Stop(b, []string{"builder", "registry", "controller", "database", "cache", "router", "logger"}); err != nil {
+	if err := Stop(b, []string{"publisher", "builder@1", "registry@1", "controller@1", "database@1", "cache@1", "router@1", "logger@1"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers stopped.")
@@ -156,13 +156,6 @@ func Install(b backend.Backend, targets []string) error {
 		return InstallPlatform(b)
 	}
 	// otherwise create the specific targets
-	for i, target := range targets {
-		// if we're installing a component without a number attached,
-		// consider the user doesn't know better
-		if !strings.Contains(target, "@") {
-			targets[i] += "@1"
-		}
-	}
 	return b.Create(targets)
 }
 
@@ -197,9 +190,13 @@ func installDefaultServices(b backend.Backend) error {
 		"registry=1",
 		"controller=1",
 		"builder=1",
-		"router=1"}
+		"router=1",
+	}
 	fmt.Println("Scheduling service containers...")
 	if err := Scale(b, targets); err != nil {
+		return err
+	}
+	if err := b.Create([]string{"publisher"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers scheduled.")
@@ -223,11 +220,17 @@ func uninstallAllServices(b backend.Backend) error {
 		"registry=0",
 		"controller=0",
 		"builder=0",
-		"router=0"}
+		"router=0",
+	}
 	fmt.Println("Destroying service containers...")
-	err := Scale(b, targets)
+	if err := Scale(b, targets); err != nil {
+		return err
+	}
+	if err := b.Destroy([]string{"publisher"}); err != nil {
+		return err
+	}
 	fmt.Println("Service containers destroyed.")
-	return err
+	return nil
 }
 
 func splitScaleTarget(target string) (c string, num int, err error) {
@@ -306,6 +309,7 @@ Options:
 		"deis-database-data.service",
 		"deis-logger.service",
 		"deis-logger-data.service",
+		"deis-publisher.service",
 		"deis-registry.service",
 		"deis-registry-data.service",
 		"deis-router.service",

@@ -11,17 +11,13 @@ import (
 func (c *FleetClient) Destroy(targets []string) error {
 	for _, target := range targets {
 		// check if the unit exists
-		units, err := c.Units(target)
+		_, err := c.Units(target)
 		if err != nil {
 			return err
 		}
 		component, num, err := splitTarget(target)
 		if err != nil {
 			return err
-		}
-		// if no number is specified, destroy ALL THE UNITS!
-		if num == 0 {
-			num = len(units)
 		}
 		if strings.HasSuffix(component, "-data") {
 			err = c.destroyDataUnit(component)
@@ -35,7 +31,7 @@ func (c *FleetClient) Destroy(targets []string) error {
 	return nil
 }
 
-func (c *FleetClient) destroyServiceUnit(component string, num int) (err error) {
+func (c *FleetClient) destroyServiceUnit(component string, num int) error {
 	name, err := formatUnitName(component, num)
 	if err != nil {
 		return err
@@ -46,34 +42,30 @@ func (c *FleetClient) destroyServiceUnit(component string, num int) (err error) 
 		return err
 	}
 	outchan, errchan := waitForUnitStates([]string{name}, desiredState)
-	err = printUnitState(name, outchan, errchan)
-	if err != nil {
+	if err := printUnitState(name, outchan, errchan); err != nil {
 		return err
 	}
 	if err = c.Fleet.DestroyUnit(name); err != nil {
 		return fmt.Errorf("failed destroying job %s: %v", name, err)
 	}
-	return err
+	return nil
 }
 
-func (c *FleetClient) destroyDataUnit(component string) (err error) {
+func (c *FleetClient) destroyDataUnit(component string) error {
 	name, err := formatUnitName(component, 0)
+	desiredState := string(job.JobStateInactive)
 	if err != nil {
 		return err
 	}
-	desiredState := string(job.JobStateInactive)
-	err = c.Fleet.SetUnitTargetState(name, desiredState)
-	if err != nil {
+	if err := c.Fleet.SetUnitTargetState(name, desiredState); err != nil {
 		return err
 	}
 	outchan, errchan := waitForUnitStates([]string{name}, desiredState)
-	err = printUnitState(name, outchan, errchan)
-	if err != nil {
+	if err := printUnitState(name, outchan, errchan); err != nil {
 		return err
 	}
-	if err = c.Fleet.DestroyUnit(name); err != nil {
+	if err := c.Fleet.DestroyUnit(name); err != nil {
 		return fmt.Errorf("failed destroying job %s: %v", name, err)
 	}
-	return err
-
+	return nil
 }

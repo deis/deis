@@ -99,9 +99,9 @@ changed, making it easy to rollback code and configuration.
 Run Stage
 ^^^^^^^^^
 The run stage shells out jobs to the scheduler. The scheduler is in control of balancing the
-processes evenly across the cluster, as well as the announcers and the loggers for each
-application. The scheduler uses SSH to submit jobs to each node in the cluster and updates
-the proxy component between releases, making zero downtime deployments possible.
+processes evenly across the cluster, as well as the loggers for each application. The
+scheduler uses SSH to submit jobs to each node in the cluster and updates the proxy
+component between releases, making zero downtime deployments possible.
 
 .. _concepts_backing_services:
 

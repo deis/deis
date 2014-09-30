@@ -4,8 +4,8 @@
 
 include includes.mk
 
-COMPONENTS=builder cache controller database logger registry router
-START_ORDER=logger database cache registry controller builder router
+COMPONENTS=builder cache controller database logger publisher registry router
+START_ORDER=publisher logger database cache registry controller builder router
 CLIENTS=client deisctl
 
 all: build run
