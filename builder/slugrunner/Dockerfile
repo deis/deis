@@ -1,9 +1,19 @@
 FROM progrium/cedarish:cedar
 MAINTAINER OpDemand <info@opdemand.com>
 
-ADD ./runner /runner
-ENTRYPOINT ["/runner/init"]
+RUN mkdir /app
+RUN addgroup --quiet --gid 2000 slug && \
+    useradd slug --uid=2000 --gid=2000 --home-dir /app --no-create-home \
+        --shell /bin/bash
+RUN chown slug:slug /app
+WORKDIR /app
 
 # add default port to expose (can be overridden)
 ENV PORT 5000
 EXPOSE 5000
+
+ADD ./runner /runner
+RUN chown slug:slug /runner/init
+USER slug
+ENV HOME /app
+ENTRYPOINT ["/runner/init"]

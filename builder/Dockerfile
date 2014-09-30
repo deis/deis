@@ -59,6 +59,8 @@ ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
 
+RUN addgroup --quiet --gid 2000 slug && useradd slug --uid=2000 --gid=2000
+
 ADD . /app
 ADD sshd_config /etc/ssh/sshd_config
 RUN chown -R root:root /app

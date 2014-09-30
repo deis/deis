@@ -25,10 +25,16 @@ def parse_args():
     return user, repo, branch, app
 
 
+def recursive_chown(path, uid, guid):
+    os.chown(os.path.join(path), uid, guid)
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chown(os.path.join(root, d), uid, guid)
+        for f in files:
+            os.chown(os.path.join(root, f), uid, guid)
+
+
 DOCKERFILE_SHIM = """FROM deis/slugrunner
-RUN mkdir -p /app
-WORKDIR /app
-ENTRYPOINT ["/runner/init"]
 ADD slug.tgz /app
 """
 
@@ -73,7 +79,13 @@ if __name__ == '__main__':
         config_env = " ".join([ "-e {}='{}'".format(*kv) for kv in json.loads(r.json().get('values', '{}')).items()])
         # some applications do not have a Procfile, so only check for a Dockerfile
         if not os.path.exists(dockerfile):
+            # fix permissions
+            slug_uid = 2000
+            slug_guid = 2000
+            for path in (cache_dir, temp_dir):
+                recursive_chown(path, slug_uid, slug_guid)
             if os.path.exists('/buildpacks'):
+                recursive_chown('/buildpacks', slug_uid, slug_guid)
                 build_cmd = "docker run -i -a stdin {config_env} -v {temp_dir}:/tmp/app -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
             else:
                 build_cmd = "docker run -i -a stdin {config_env} -v {temp_dir}:/tmp/app -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
