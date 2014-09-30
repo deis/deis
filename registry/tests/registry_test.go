@@ -16,9 +16,14 @@ func TestRegistry(t *testing.T) {
 	setkeys := []string{
 		"/deis/cache/host",
 		"/deis/cache/port",
+		"/deis/store/gateway/host",
+		"/deis/store/gateway/port",
+		"/deis/store/gateway/accessKey",
+		"/deis/store/gateway/secretKey",
 	}
 	setdir := []string{
 		"/deis/cache",
+		"/deis/store",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	etcdName := "deis-etcd-" + tag
