@@ -49,7 +49,7 @@ func TestBuilder(t *testing.T) {
 			"--rm",
 			"-p", port+":22",
 			"-e", "PORT=22",
-			"-e", "STORAGE_DRIVER=aufs",
+			"-e", "STORAGE_DRIVER=devicemapper",
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "EXTERNAL_PORT="+port,
