@@ -53,7 +53,6 @@ RUN curl -#SL -o /progrium_cedarish.tar \
     https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_cedar.tar
 
 # define the execution environment
-VOLUME /var/lib/docker
 WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
