@@ -6,7 +6,7 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker run --name deis-store-daemon -e HOST=$COREOS_PRIVATE_IPV4 -p 6800 --net host $IMAGE || docker start deis-store-daemon >/dev/null"
--ExecStopPost=/usr/bin/docker stop deis-publisher
+-ExecStopPost=/usr/bin/docker stop deis-store-daemon
 
 [Install]
 WantedBy=multi-user.target
