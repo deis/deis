@@ -3,6 +3,13 @@ include ../includes.mk
 TEMPLATE_IMAGES=daemon monitor gateway
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 
+DAEMON_IMAGE = $(IMAGE_PREFIX)store-daemon:$(BUILD_TAG)
+DAEMON_DEV_IMAGE = $(DEV_REGISTRY)/$(DAEMON_IMAGE)
+MONITOR_IMAGE = $(IMAGE_PREFIX)store-monitor:$(BUILD_TAG)
+MONITOR_DEV_IMAGE = $(DEV_REGISTRY)/$(MONITOR_IMAGE)
+GATEWAY_IMAGE = $(IMAGE_PREFIX)store-gateway:$(BUILD_TAG)
+GATEWAY_DEV_IMAGE = $(DEV_REGISTRY)/$(GATEWAY_IMAGE)
+
 build: check-docker
 	@# Build base as normal
 	docker build -t deis/store-base:$(BUILD_TAG) base/
@@ -66,6 +73,22 @@ stop: check-deisctl
 restart: stop start
 
 run: install start
+
+dev-release: check-registry check-deisctl
+	docker tag $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	docker push $(DAEMON_DEV_IMAGE)
+	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
+	docker tag $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+	docker push $(MONITOR_DEV_IMAGE)
+	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
+	docker tag $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
+	docker push $(GATEWAY_DEV_IMAGE)
+	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
+
+release:
+	docker push $(DAEMON_IMAGE)
+	docker push $(MONITOR_IMAGE)
+	docker push $(GATEWAY_IMAGE)
 
 test: test-unit test-functional
 
