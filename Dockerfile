@@ -3,7 +3,7 @@ MAINTAINER Jeff Lindsay <progrium@gmail.com>
 
 ADD ./stage/logspout /bin/logspout
 
-ENV DOCKER unix:///tmp/docker.sock
+ENV DOCKER_HOST unix:///tmp/docker.sock
 ENV ROUTESPATH /mnt/routes
 VOLUME /mnt/routes
 
