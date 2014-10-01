@@ -1,46 +1,39 @@
 #!/usr/bin/env bash
 
-cd /tmp
-
 export VERSION_NGINX=nginx-1.6.2
-export VERSION_TCP_PROXY=v0.4.5
+export VERSION_TCP_PROXY=0.4.5
 
-# URLs to the source directories
-export SOURCE_NGINX=http://nginx.org/download
-export SOURCE_TCP_PROXY=https://github.com/yaoweibin/nginx_tcp_proxy_module/archive
+export BUILD_PATH=/tmp/build
 
-export BPATH=`pwd`/build
-export PREFIX=/deis
-export STATICLIBSSL="$PREFIX"
+# nginx installation directory
+export PREFIX=/nginx
 
 rm -rf $PREFIX
 mkdir $PREFIX
 
+mkdir $BUILD_PATH
+cd $BUILD_PATH
+
 # install required packages to build
 apt-get update \
-  && apt-get install -y patch curl wget build-essential \
+  && apt-get install -y patch curl build-essential \
   libpcre3 libpcre3-dev libssl-dev libgeoip-dev zlib1g-dev
 
-# where the installers are
-mkdir $BPATH
-
 # grab the source files
-wget -P $BPATH ${SOURCE_NGINX}/${VERSION_NGINX}.tar.gz
-wget -P $BPATH ${SOURCE_TCP_PROXY}/${VERSION_TCP_PROXY}.tar.gz
-
+curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
+curl -sSL https://github.com/yaoweibin/nginx_tcp_proxy_module/archive/v$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
 
 # expand the source files
-cd $BPATH
 tar xzf $VERSION_NGINX.tar.gz
 tar xzf $VERSION_TCP_PROXY.tar.gz
 
 # build nginx
-cd $BPATH/$VERSION_NGINX
+cd $BUILD_PATH/$VERSION_NGINX
 
-patch -p1 < /$BPATH/nginx_tcp_proxy_module-0.4.5/tcp.patch
+patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
 
 ./configure \
-  --prefix=/nginx \
+  --prefix=$PREFIX \
   --pid-path=/run/nginx.pid \
   --with-debug \
   --with-pcre-jit \
@@ -57,5 +50,5 @@ patch -p1 < /$BPATH/nginx_tcp_proxy_module-0.4.5/tcp.patch
   --with-http_sub_module \
   --with-mail \
   --with-mail_ssl_module \
-  --add-module=$BPATH/nginx_tcp_proxy_module-0.4.5 \
+  --add-module=$BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY \
   && make && make install
