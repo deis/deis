@@ -45,12 +45,6 @@ etcd_set_default gzipVary on
 etcd_set_default gzipDisable "\"msie6\""
 etcd_set_default gzipTypes "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml"
 
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do
-    echo "router: waiting for confd to write initial templates..."
-    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
-
 # spawn the service in the background
 echo "Starting Nginx..."
 /nginx/sbin/nginx &
@@ -63,6 +57,12 @@ function on_exit() {
     exit 0
 }
 trap on_exit INT TERM
+
+# wait for confd to run once and install initial templates
+until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/null; do
+    echo "router: waiting for confd to write initial templates..."
+    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+done
 
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
