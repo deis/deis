@@ -128,7 +128,7 @@ func httpStreamer(w http.ResponseWriter, req *http.Request, logstream chan *Log,
 func main() {
 	debugMode = getopt("DEBUG", "") != ""
 	port := getopt("PORT", "8000")
-	endpoint := getopt("DOCKER", "unix:///var/run/docker.sock")
+	endpoint := getopt("DOCKER_HOST", "unix:///var/run/docker.sock")
 	routespath := getopt("ROUTESPATH", "/var/lib/logspout")
 
 	client, err := docker.NewClient(endpoint)
