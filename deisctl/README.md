@@ -4,7 +4,9 @@
 
 ## Installation
 
-To install `deisctl` on Linux or Mac OS X, run this command:
+### Latest deisctl
+
+To install the latest `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
 $ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
@@ -20,6 +22,17 @@ To change installation options, save the installer directly from one of these li
 
 Then run the downloaded file as a shell script. Append `--help` to see what options
 are available.
+
+### Builds for a specific Deis release
+
+Note that this script will always give you the most freshly-built deisctl off master. If you are
+using a specific Deis release (not latest), you'll want to use the deisctl built for your release.
+
+Builds are hosted on an S3 bucket at this URL format: `https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run`
+
+The deisctl release for Deis version 0.12 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-linux-amd64.run)
+
+### Building from source
 
 If you want to install from source, clone the repository and run
 
