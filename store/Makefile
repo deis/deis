@@ -90,6 +90,8 @@ release:
 	docker push $(MONITOR_IMAGE)
 	docker push $(GATEWAY_IMAGE)
 
+deploy: build dev-release restart
+
 test: test-unit test-functional
 
 test-unit:
