@@ -28,7 +28,7 @@ func TestRegistry(t *testing.T) {
 	etcdutils.PublishEtcd(t, handler)
 	dataName := "deis-registry-data-" + tag
 	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/data", "deis/base", "/bin/true")
+		"-v", "/data", "ubuntu:14.04", "/bin/true")
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/registry:%s at %s:%s\n", tag, host, port)
 	name := "deis-registry-" + tag

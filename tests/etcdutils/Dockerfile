@@ -1,8 +1,13 @@
-FROM ubuntu:12.04
+FROM ubuntu:14.04
 
-# Download etcdctl binary -- keep in sync with CoreOS' version.
-ADD https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 /usr/local/bin/etcdctl
-RUN chmod +x /usr/local/bin/etcdctl
+ENV DEBIAN_FRONTEND noninteractive
+
+# install common packages
+RUN apt-get update && apt-get install -y curl
+
+# install etcdctl
+RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+    && chmod +x /usr/local/bin/etcdctl
 
 # build etcd and then clean up
 RUN buildDeps='curl git-core'; \

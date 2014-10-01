@@ -1,23 +1,17 @@
 # Deis Cache
 
-A cache server for use in the [Deis](http://deis.io) open source PaaS.
+A Redis cache server for use in the [Deis](http://deis.io/) open source PaaS.
 
-[![image](https://d207aa93qlcgug.cloudfront.net/img/icons/framed-icon-checked-repository.svg)](https://index.docker.io/u/deis/cache/)
+This Docker image is based on the official
+[ubuntu:14.04](https://registry.hub.docker.com/_/ubuntu/) image.
 
-[**Trusted Build**](https://index.docker.io/u/deis/cache/)
-
-This Docker image is based on the trusted build
-[deis/base](https://index.docker.io/u/deis/base/), which itself is based
-on the official [ubuntu:12.04](https://index.docker.io/_/ubuntu/) image.
-
-Please add any issues you find with this software to the
-[Deis project](https://github.com/deis/deis/issues).
+Please add any [issues](https://github.com/deis/deis/issues) you find with this software to
+the [Deis Project](https://github.com/deis/deis).
 
 ## Usage
 
-* `make build` builds the *deis/cache* image inside a vagrant VM
-* `make run` installs and starts *deis/cache*, then displays log output from
-  the container
+Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
+install, and start **deis/cache**.
 
 ## Environment Variables
 

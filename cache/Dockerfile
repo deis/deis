@@ -1,9 +1,16 @@
-FROM deis/base:latest
-MAINTAINER OpDemand <info@opdemand.com>
+FROM ubuntu:14.04
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# install common packages
+RUN apt-get update && apt-get install -y curl
+
+# install etcdctl
+RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+    && chmod +x /usr/local/bin/etcdctl
 
 # build Redis from source
-RUN buildDeps='gcc libc6-dev make curl'; \
-    export DEBIAN_FRONTEND=noninteractive; \
+RUN buildDeps='gcc libc6-dev make'; \
     set -x; \
     apt-get update && apt-get install -y $buildDeps net-tools --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
