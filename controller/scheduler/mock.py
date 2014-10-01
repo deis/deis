@@ -44,7 +44,7 @@ class MockSchedulerClient(object):
         """
         return
 
-    def run(self, name, image, command):
+    def run(self, name, image, entrypoint, command):
         """
         Run a one-off command
         """
