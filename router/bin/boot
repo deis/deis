@@ -53,7 +53,7 @@ done
 
 # spawn the service in the background
 echo "Starting Nginx..."
-/usr/sbin/nginx &
+/nginx/sbin/nginx &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
