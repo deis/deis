@@ -18,6 +18,9 @@ Managing Deis
     logger_settings
     registry_settings
     router_settings
+    store_daemon_settings
+    store_gateway_settings
+    store_monitor_settings
     managing_users
     platform_logging
     platform_monitoring

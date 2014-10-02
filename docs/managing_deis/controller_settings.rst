@@ -13,7 +13,7 @@ Requires: :ref:`controller <controller_settings>`, :ref:`cache <cache_settings>`
 
 Required by: :ref:`router <router_settings>`
 
-Considerations: must live on the same host as both builder and logger (see `#985`_)
+Considerations: must live on the same host as logger (see `#985`_)
 
 Settings set by controller
 --------------------------

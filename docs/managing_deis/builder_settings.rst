@@ -13,8 +13,6 @@ Requires: :ref:`controller <controller_settings>`, :ref:`registry <registry_sett
 
 Required by: :ref:`router <router_settings>`
 
-Considerations: must live on the same host as controller (see `#985`_)
-
 Settings set by builder
 -----------------------
 The following etcd keys are set by the builder component, typically in its /bin/boot script.
