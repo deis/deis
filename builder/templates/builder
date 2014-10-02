@@ -94,11 +94,12 @@ RESPONSE=$(curl -s -XPOST \
      $URL)
 
 # massage response for the environment variables in form HELLO=world
-CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" || echo $RESPONSE)
+CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" 2> /dev/null || echo $RESPONSE)
 
 if [ "$CONFIG" == "$RESPONSE" ];
 then
-    echo $RESPONSE
+    puts-warn "failed retrieving config from controller"
+    puts-warn $RESPONSE
     exit 1
 fi
 
@@ -171,11 +172,13 @@ RESPONSE=$(curl -s -XPOST \
      --data "$DATA" \
      $URL)
 
-RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]' || echo $RESPONSE)
+RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]' 2> /dev/null || echo $RESPONSE)
 
 if [ "$RELEASE" == "$RESPONSE" ];
 then
-    echo $RESPONSE
+    # we're printing inline with "Launching..."
+    echo "failed"
+    puts-warn $RESPONSE
     exit 1
 fi
 
