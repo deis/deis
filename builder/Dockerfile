@@ -53,6 +53,9 @@ RUN curl -#SL -o /progrium_cedarish.tar \
     https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_cedar.tar
 
 # define the execution environment
+# use VOLUME to remove /var/lib/docker from copy-on-write for performance
+# we don't want to stack overlay filesystems
+VOLUME /var/lib/docker
 WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
