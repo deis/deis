@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"code.google.com/p/go.net/websocket"
+	"github.com/coreos/go-etcd/etcd"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/go-martini/martini"
 )
@@ -135,6 +136,21 @@ func main() {
 	assert(err, "docker")
 	attacher := NewAttachManager(client)
 	router := NewRouteManager(attacher)
+
+	// HACK: if we are connecting to etcd, get the logger's connection
+	// details from there
+	if etcdHost := os.Getenv("ETCD_HOST"); etcdHost != "" {
+		connectionString := []string{"http://" + etcdHost + ":4001"}
+		debug("etcd:", connectionString[0])
+		etcd := etcd.NewClient(connectionString)
+		hostResp, err := etcd.Get("/deis/logs/host", false, false)
+		assert(err, "url")
+		portResp, err := etcd.Get("/deis/logs/port", false, false)
+		assert(err, "url")
+		host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
+		log.Println("routing all to " + host)
+		router.Add(&Route{Target: Target{Type: "syslog", Addr: host}})
+	}
 
 	if len(os.Args) > 1 {
 		u, err := url.Parse(os.Args[1])

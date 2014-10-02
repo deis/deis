@@ -1,13 +1,6 @@
-FROM flynn/busybox
-MAINTAINER Jeff Lindsay <progrium@gmail.com>
+FROM deis/go:latest
+MAINTAINER OpDemand <info@opdemand.com>
 
-ADD ./stage/logspout /bin/logspout
-
-ENV DOCKER_HOST unix:///tmp/docker.sock
-ENV ROUTESPATH /mnt/routes
-VOLUME /mnt/routes
-
-EXPOSE 8000
-
-ENTRYPOINT ["/bin/logspout"]
-CMD []
+WORKDIR /go/src/github.com/deis/deis/logspout
+ADD . /go/src/github.com/deis/deis/logspout
+RUN go get .

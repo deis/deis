@@ -80,7 +80,7 @@ func (m *AttachManager) attach(id string) {
 		m.Unlock()
 		success <- struct{}{}
 		m.send(&AttachEvent{ID: id, Name: name, Type: "attach"})
-		debug("attach:", id, "success")
+		debug("attach:", id, name, "success")
 		return
 	}
 	debug("attach:", id, "failure:", <-failure)

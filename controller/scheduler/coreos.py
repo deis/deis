@@ -1,7 +1,6 @@
 import cStringIO
 import base64
 import copy
-import functools
 import json
 import httplib
 import paramiko
@@ -105,7 +104,6 @@ class FleetHTTPClient(object):
         """Create a container"""
         self._create_container(name, image, command,
                                template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)
-        self._create_log(name, image, command, copy.deepcopy(LOG_TEMPLATE))
 
     def _create_container(self, name, image, command, unit, **kwargs):
         l = locals().copy()
@@ -137,15 +135,6 @@ class FleetHTTPClient(object):
                          "value": tagset})
         # post unit to fleet
         self._put_unit(name, {"desiredState": "launched", "options": unit})
-
-    def _create_log(self, name, image, command, unit):
-        l = locals().copy()
-        l.update(re.match(MATCH, name).groupdict())
-        # construct unit from template
-        for f in unit:
-            f['value'] = f['value'].format(**l)
-        # post unit to fleet
-        self._put_unit(name+'-log', {"desiredState": "launched", "options": unit})
 
     def start(self, name):
         """Start a container"""
@@ -181,22 +170,15 @@ class FleetHTTPClient(object):
 
     def destroy(self, name):
         """Destroy a container"""
-        funcs = []
-        funcs.append(functools.partial(self._destroy_container, name))
-        funcs.append(functools.partial(self._destroy_log, name))
         # call all destroy functions, ignoring any errors
-        for f in funcs:
-            try:
-                f()
-            except:
-                pass
+        try:
+            self._destroy_container(name)
+        except:
+            pass
         self._wait_for_destroy(name)
 
     def _destroy_container(self, name):
         return self._delete_unit(name)
-
-    def _destroy_log(self, name):
-        return self._delete_unit(name+'-log')
 
     def run(self, name, image, entrypoint, command):  # noqa
         """Run a one-off command"""
@@ -304,16 +286,6 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"'''},  # noqa
     {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f {name}'''},
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
-]
-
-
-LOG_TEMPLATE = [
-    {"section": "Unit", "name": "Description", "value": "{name} log"},
-    {"section": "Unit", "name": "BindsTo", "value": "{name}.service"},
-    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "until docker inspect {name} >/dev/null 2>&1; do sleep 1; done"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "docker logs -f {name} 2>&1 | logger -p local0.info -t {app}[{c_type}.{c_num}] --udp --server $(etcdctl get /deis/logs/host) --port $(etcdctl get /deis/logs/port)"'''},  # noqa
-    {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
-    {"section": "X-Fleet", "name": "MachineOf", "value": "{name}.service"},
 ]
 
 
