@@ -50,14 +50,6 @@ fi
 # buildpacks expect that.
 cp -r $app_dir/. $build_root
 
-# Grant the slugbuilder user access to all relevant
-# directories, then run the rest as slugbuilder
-chown -R slugbuilder:slugbuilder	$app_dir \
-					$cache_root \
-					$buildpack_root \
-					$build_root
-su slugbuilder
-
 ## Buildpack fixes
 
 export APP_DIR="$app_dir"
