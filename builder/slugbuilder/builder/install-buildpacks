@@ -16,20 +16,15 @@ download_buildpack() {
 
 mkdir -p $BUILDPACK_INSTALL_PATH
 
-download_buildpack https://github.com/ddollar/heroku-buildpack-multi.git         d5b4b97
-download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v126
+download_buildpack https://github.com/ddollar/heroku-buildpack-multi.git         9350571
+download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v127
 download_buildpack https://github.com/heroku/heroku-buildpack-nodejs.git         v60
-download_buildpack https://github.com/heroku/heroku-buildpack-java.git           b7e7b29
-download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         e6c2297
+download_buildpack https://github.com/heroku/heroku-buildpack-java.git           v28
+download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         743f73c
 download_buildpack https://github.com/heroku/heroku-buildpack-grails.git         1ef927d
-download_buildpack https://github.com/heroku/heroku-buildpack-play.git           420fb6a
+download_buildpack https://github.com/heroku/heroku-buildpack-play.git           ceede86
 download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v52
 download_buildpack https://github.com/heroku/heroku-buildpack-php.git            v43
-download_buildpack https://github.com/heroku/heroku-buildpack-clojure.git        v7
-download_buildpack https://github.com/kr/heroku-buildpack-go.git                 b261aab
-download_buildpack https://github.com/oortcloud/heroku-buildpack-meteorite.git   76efa5c
-download_buildpack https://github.com/miyagawa/heroku-buildpack-perl.git         2da7480
-download_buildpack https://github.com/heroku/heroku-buildpack-scala.git          52f689d
-download_buildpack https://github.com/igrigorik/heroku-buildpack-dart.git        c492c52
-download_buildpack https://github.com/rhy-jot/buildpack-nginx.git                f914a3d
-download_buildpack https://github.com/Kloadut/heroku-buildpack-static-apache.git f65c835
+download_buildpack https://github.com/heroku/heroku-buildpack-clojure.git        bc2bfd8
+download_buildpack https://github.com/heroku/heroku-buildpack-scala.git          v41
+download_buildpack https://github.com/heroku/heroku-buildpack-go.git             b261aab
