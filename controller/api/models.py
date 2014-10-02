@@ -496,8 +496,14 @@ class Container(UuidAuditedModel):
         """Run a one-off command"""
         image = self.release.image + ':v' + str(self.release.version)
         job_id = self._job_id
+        entrypoint = '/bin/bash'
+        if self.release.build.procfile:
+            entrypoint = '/runner/init'
+            command = "'{}'".format(command)
+        else:
+            command = "-c '{}'".format(command)
         try:
-            rc, output = self._scheduler.run(job_id, image, command)
+            rc, output = self._scheduler.run(job_id, image, entrypoint, command)
             return rc, output
         except Exception as e:
             err = '{} (run): {}'.format(job_id, e)

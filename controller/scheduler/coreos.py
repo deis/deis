@@ -122,6 +122,10 @@ class FleetHTTPClient(object):
             l.update({'cpu': '-c {}'.format(cpu)})
         else:
             l.update({'cpu': ''})
+        # should a special entrypoint be used
+        entrypoint = kwargs.get('entrypoint')
+        if entrypoint:
+            l.update({'entrypoint': '{}'.format(entrypoint)})
         # construct unit from template
         for f in unit:
             f['value'] = f['value'].format(**l)
@@ -194,9 +198,10 @@ class FleetHTTPClient(object):
     def _destroy_log(self, name):
         return self._delete_unit(name+'-log')
 
-    def run(self, name, image, command):  # noqa
+    def run(self, name, image, entrypoint, command):  # noqa
         """Run a one-off command"""
-        self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE))
+        self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE),
+                               entrypoint=entrypoint)
 
         # wait for the container to get scheduled
         for _ in range(30):
@@ -316,6 +321,6 @@ RUN_TEMPLATE = [
     {"section": "Unit", "name": "Description", "value": "{name} admin command"},
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker run --name {name} --entrypoint=/bin/bash -a stdout -a stderr $IMAGE -c '{command}'"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker run --name {name} --entrypoint={entrypoint} -a stdout -a stderr $IMAGE {command}"'''},  # noqa
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
 ]

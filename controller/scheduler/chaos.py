@@ -54,7 +54,7 @@ class ChaosSchedulerClient(object):
             raise RuntimeError
         return True
 
-    def run(self, name, image, command):
+    def run(self, name, image, entrypoint, command):
         """
         Run a one-off command
         """
