@@ -49,7 +49,7 @@ func getLogFile(m *syslog.Message) (io.Writer, error) {
 	r := regexp.MustCompile(`^.* ([-a-z0-9]+)\[[a-z0-9-_\.]+\].*`)
 	match := r.FindStringSubmatch(m.String())
 	if match == nil {
-		return nil, fmt.Errorf("Could not find app name in message", m.String())
+		return nil, fmt.Errorf("Could not find app name in message: %s", m)
 	}
 	appName := match[1]
 	filePath := path.Join(logRoot, appName+".log")
