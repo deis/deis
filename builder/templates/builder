@@ -94,7 +94,13 @@ RESPONSE=$(curl -s -XPOST \
      $URL)
 
 # massage response for the environment variables in form HELLO=world
-CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]")
+CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" || echo $RESPONSE)
+
+if [ "$CONFIG" == "$RESPONSE" ];
+then
+    echo $RESPONSE
+    exit 1
+fi
 
 # build option string to send to slugbuilder
 BUILD_OPTS=""
@@ -165,7 +171,14 @@ RESPONSE=$(curl -s -XPOST \
      --data "$DATA" \
      $URL)
 
-RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]')
+RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]' || echo $RESPONSE)
+
+if [ "$RELEASE" == "$RESPONSE" ];
+then
+    echo $RESPONSE
+    exit 1
+fi
+
 DOMAIN=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["domains"][0]')
 echo "done, v$RELEASE"
 puts-step "$APP_NAME deployed to Deis"
