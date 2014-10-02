@@ -1,15 +1,15 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"github.com/deis/deis/logger/syslog"
 	"io"
 	"os"
 	"os/signal"
 	"path"
 	"regexp"
 	"syscall"
+
+	"github.com/deis/deis/logger/syslog"
 )
 
 const logRoot = "/var/log/deis"
@@ -48,7 +48,7 @@ func getLogFile(m *syslog.Message) (io.Writer, error) {
 	r := regexp.MustCompile(`^.* ([-a-z0-9]+)\[[a-z0-9\.]+\].*`)
 	match := r.FindStringSubmatch(m.String())
 	if match == nil {
-		return nil, errors.New("Could not find app name in message")
+		return nil, fmt.Errorf("Could not find app name in message", m.String())
 	}
 	appName := match[1]
 	filePath := path.Join(logRoot, appName+".log")
