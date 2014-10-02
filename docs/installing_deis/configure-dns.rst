@@ -28,10 +28,14 @@ This record is necessary for all deployments of Deis (EC2, Rackspace, DigitalOce
 
 Using xip.io
 ------------
-An alternative to configuring your own DNS records is to use `xip`_. For example, for EC2:
+An alternative to configuring your own DNS records is to use `xip`_ to reference the IP of your load balancer. For example:
 
 .. code-block:: console
 
-    $ deis register http://deis.deis-DeisWebELB-8N30OETT0HOK-2005743466.us-west-2.elb.amazonaws.com.xip.io
+    $ deis register http://deis.10.21.12.2.xip.io
+
+You would then create the cluster with ``10.21.12.2.xip.io`` as the cluster domain.
+
+Note that xip does not seem to work for EC2 ELBs - you will have to use an actual DNS record.
 
 .. _`xip`: http://xip.io/
