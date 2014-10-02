@@ -57,5 +57,5 @@ time deisctl start platform
 
 log_phase "Running integration tests"
 
-# run the full integration suite
-time make test-integration
+# run the smoke tests unless another target is specified
+make ${TEST_TYPE:-test-smoke}

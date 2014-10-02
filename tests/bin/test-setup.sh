@@ -14,6 +14,9 @@ log_phase "Preparing test environment"
 export DEIS_ROOT=${GOPATH?}/src/github.com/deis/deis
 echo "DEIS_ROOT=$DEIS_ROOT"
 
+# prepend GOPATH/bin to PATH
+export PATH=${GOPATH}/bin:$PATH
+
 # the application under test
 export DEIS_TEST_APP=${DEIS_TEST_APP:-example-go}
 echo "DEIS_TEST_APP=$DEIS_TEST_APP"
@@ -37,6 +40,10 @@ echo "DEISCTL_TUNNEL=$DEISCTL_TUNNEL"
 # set units used by deisctl
 export DEISCTL_UNITS=${DEISCTL_UNITS:-$DEIS_ROOT/deisctl/units}
 echo "DEISCTL_UNITS=$DEISCTL_UNITS"
+
+# ip address for docker containers to communicate in functional tests
+export HOST_IPADDR=${HOST_IPADDR?}
+echo "HOST_IPADDR=$HOST_IPADDR"
 
 # the registry used to host dev-release images
 # must be accessible to local Docker engine and Deis cluster
