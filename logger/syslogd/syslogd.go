@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/signal"
 	"path"
@@ -86,7 +87,7 @@ func (h *handler) mainLoop() {
 		}
 		err := writeToDisk(m)
 		if err != nil {
-			panic(err)
+			log.Println(err)
 		}
 	}
 	h.End()
