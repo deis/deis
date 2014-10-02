@@ -54,7 +54,9 @@ setting                                      description
 /deis/router/gzipProxied                     nginx gzipProxied setting (default: any)
 /deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/atom+xml application/javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/svg+xml image/x-icon text/css text/plain text/x-component")
 /deis/router/gzipVary                        nginx gzipVary setting (default: on)
-/deis/services/*                             application configuration (set by application unit files)
+/deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
+/deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
+/deis/services/*                             healthy application containers reported by deis/publisher
 /deis/store/gateway/host                     host of the store gateway component (set by store-gateway)
 /deis/store/gateway/port                     port of the store gateway component (set by store-gateway)
 =======================================      ==================================================================================================================================================================================================================================================================================================================================

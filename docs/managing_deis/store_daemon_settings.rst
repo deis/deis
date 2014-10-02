@@ -29,15 +29,19 @@ Settings used by store-daemon
 ------------------------------
 The following etcd keys are used by the store-daemon component.
 
-====================================      ============================================================================
+====================================      =================================================================================================
 setting                                   description
-====================================      ============================================================================
+====================================      =================================================================================================
 /deis/store/adminKeyring                  keyring for an admin user to access the Ceph cluster (set by store-monitor)
-/deis/store/conf                          Ceph configuration file shared by store components (set by store-monitor)
-/deis/store/hosts                         deis-monitor hosts (set by store-monitor)
+/deis/store/fsid                          Ceph filesystem ID (set by store-monitor)
+/deis/store/hosts/*                       deis-monitor hosts (set by store-monitor)
 /deis/store/monKeyring                    keyring for the monitor to access the Ceph cluster (set by store-monitor)
-/deis/store/monSetupComplete              set when the Ceph cluster setup is complete
-====================================      ============================================================================
+/deis/store/monSetupComplete              set when the Ceph cluster setup is complete (set by store-monitor)
+/deis/store/monSetupLock                  host of store-monitor that completed setup (set by store-monitor)
+/deis/store/minSize                       minimum number of store-daemons necessary for the cluster to accept writes (set by store-monitor)
+/deis/store/pgNum                         number of Ceph placement groups for the storage pools (set by store-monitor)
+/deis/store/size                          number of replicas for data stored in Ceph (set by store-monitor)
+====================================      =================================================================================================
 
 Using a custom store-daemon image
 ---------------------------------

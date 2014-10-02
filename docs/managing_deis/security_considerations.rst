@@ -7,7 +7,8 @@ Security considerations
 ========================
 
 A major goal of Deis is to be operationally secure and trusted by operations engineers in every deployed
-environment. To reach that goal, several security concerns need to be addressed.
+environment. There are, however, two notable security-related considerations to be aware of
+when deploying Deis.
 
 Access to etcd
 --------------
@@ -24,15 +25,24 @@ containers. Some requirements include:
 * Containers must be able to access other containers
 * Containers cannot access the CoreOS host (SSH, etcd, etc)
 
+In practice, this is really only a concern when clusters are running untrusted applications.
 Further discussion about this approach is appreciated in GitHub issue `#986`_.
 
-Separate runtime environments
------------------------------
-A design goal of Deis is to become scheduler agnostic. While the core Deis components (builder,
-cache, controller, database) will remain on a CoreOS cluster running etcd, application containers
-will be scheduled to an external cluster. The registry, logger, and router components will live on
-each scheduling cluster. This enables Deis to use other scheduling algorithms, and it also introduces
-a clean network segregation. This will alleviate the concern that application containers have access
-to the core Deis etcd installation, but access policies between clusters will need to be introduced.
+Application runtime segregation
+-------------------------------
+Users of Deis often want to deploy their applications to separate environments
+(commonly: development, staging, and production). Typically, physical network isolation isn't
+the goal, but rather segregation of application environments - if a development app goes haywire,
+it shouldn't affect production applications that are running in the cluster.
+
+In Deis, deployed applications can be segregated by using the ```deis tags``` command. This
+enables you to tag machines in your cluster with arbitrary metadata, then configure your applications
+to be scheduled to machines which match the metadata.
+
+For example, if some machines in your cluster are tagged with ```environment=production``` and some
+with ```environment=staging```, you can configure an application to be deployed to the production
+environment by using ```deis tags set environment=production```. Deis will pass this configuration
+along to the scheduler, and your applications in different environments on running on separate
+hardware.
 
 .. _`#986`: https://github.com/deis/deis/issues/986
