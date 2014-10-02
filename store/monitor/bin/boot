@@ -5,58 +5,27 @@ set -e
 
 ETCD_PORT=${ETCD_PORT:-4001}
 ETCD="$HOST:$ETCD_PORT"
+ETCD_PATH=${ETCD_PATH:-/deis/store}
 NUM_STORES=${NUM_STORES:-3}
 PG_NUM=${PG_NUM:-128} # default for 3 OSDs
 HOSTNAME=`hostname`
 
-if ! etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&1 ; then
+function etcd_set_default {
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+}
+
+if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; then
   echo "store-monitor: Ceph hasn't yet been deployed. Trying to deploy..."
   # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
-  if etcdctl --no-sync -C $ETCD mk /deis/store/monSetupLock $HOST >/dev/null 2>&1 \
-  || [[ `etcdctl --no-sync -C $ETCD get /deis/store/monSetupLock` == "$HOST" ]] ; then
+  if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/monSetupLock $HOSTNAME >/dev/null 2>&1 \
+  || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupLock` == "$HOSTNAME" ]] ; then
     echo "store-monitor: obtained the lock to proceed with setting up."
 
-    # block until the expected number of hosts are up
-    until [ `etcdctl --no-sync -C $ETCD ls /deis/store/hosts | wc -l` == "$NUM_STORES" ] ; do
-      echo "Waiting for $NUM_STORES store hosts to be up..."
-      sleep 5
-    done
-
-    ADDRS=''
-    HOSTS=''
-
-    for i in $(etcdctl --no-sync -C $ETCD ls /deis/store/hosts | sort); do
-      host=$(etcdctl --no-sync -C $ETCD get $i)
-      ip=$(basename $i)
-      HOSTS="${HOSTS}${host},"
-      ADDRS="${ADDRS}${ip}:6789,"
-    done
-
-    ADDRS="${ADDRS%?}"
-    HOSTS="${HOSTS%?}"
-
-    fsid=$(uuidgen)
-    cat <<ENDHERE >/etc/ceph/ceph.conf
-[global]
-fsid = $fsid
-mon initial members = ${HOSTNAME}
-mon host = ${HOSTS}
-mon addr = ${ADDRS}
-auth cluster required = cephx
-auth service required = cephx
-auth client required = cephx
-osd pool default size = ${NUM_STORES}
-osd pool default min_size = 2
-osd pool default pg_num = ${PG_NUM}
-osd pool default pgp_num = ${PG_NUM}
-log file = /dev/stdout
-
-[client.radosgw.gateway]
-host = deis-store-gateway
-keyring = /etc/ceph/ceph.client.radosgw.keyring
-rgw socket path = /var/run/ceph/ceph.radosgw.gateway.fastcgi.sock
-log file = /dev/stdout
-ENDHERE
+    # set some defaults in etcd if they're not passed in as environment variables
+    # these are templated in ceph.conf
+    etcd_set_default size ${NUM_STORES}
+    etcd_set_default minSize 2
+    etcd_set_default pgNum ${PG_NUM}
 
     # Generate administrator key
     ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
@@ -64,18 +33,20 @@ ENDHERE
     # Generate the mon. key
     ceph-authtool /etc/ceph/ceph.mon.keyring --create-keyring --gen-key -n mon. --cap mon 'allow *'
 
+    fsid=$(uuidgen)
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/fsid ${fsid} >/dev/null
+
     # Generate initial monitor map
     monmaptool --create --add ${HOSTNAME} ${HOST} --fsid ${fsid} /etc/ceph/monmap
 
-    etcdctl --no-sync -C $ETCD set /deis/store/conf < /etc/ceph/ceph.conf >/dev/null
-    etcdctl --no-sync -C $ETCD set /deis/store/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
-    etcdctl --no-sync -C $ETCD set /deis/store/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
 
     # mark setup as complete
     echo "store-monitor: setup complete."
-    etcdctl --no-sync -C $ETCD set /deis/store/monSetupComplete youBetcha >/dev/null
+    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monSetupComplete youBetcha >/dev/null
   else
-    until etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&1 ; do
+    until etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; do
       echo "store-monitor: waiting for another monitor to complete setup..."
       sleep 5
     done
