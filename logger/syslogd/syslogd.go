@@ -84,13 +84,11 @@ func (h *handler) mainLoop() {
 		if m == nil {
 			break
 		}
-		fmt.Println(m)
 		err := writeToDisk(m)
 		if err != nil {
 			panic(err)
 		}
 	}
-	fmt.Println("Exit handler")
 	h.End()
 }
 
@@ -106,7 +104,6 @@ func main() {
 	<-sc
 
 	// Shutdown the server
-	fmt.Println("Shutdown the server...")
+	fmt.Println("Shutting down...")
 	s.Shutdown()
-	fmt.Println("Server is down")
 }
