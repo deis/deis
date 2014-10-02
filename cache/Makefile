@@ -5,7 +5,10 @@ IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
 build: check-docker
-	docker build -t $(IMAGE) .
+	cd parent && docker build -t deis/binary-redis .
+	docker cp `docker run -d deis/binary-redis`:/redis.tgz .
+	docker build -t $(IMAGE) .	
+	rm redis.tgz
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)
