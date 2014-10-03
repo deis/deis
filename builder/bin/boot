@@ -56,10 +56,10 @@ done
 # HACK: load progrium/cedarish tarball for faster boot times
 # see https://github.com/deis/deis/issues/1027
 if ! docker history progrium/cedarish >/dev/null 2>/dev/null ; then
-	echo "Loading cedarish..."
-	docker load -i /progrium_cedarish.tar
+    echo "Loading cedarish..."
+    docker load -i /progrium_cedarish.tar
 else
-	echo "Cedarish already loaded"
+    echo "Cedarish already loaded"
 fi
 
 # build required images
