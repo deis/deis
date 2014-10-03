@@ -12,7 +12,8 @@ set -eo pipefail
 # configure etcd
 export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
-export ETCD_PATH=${ETCD_PATH:-/deis/router/$HOST}
+export ETCD_PATH=${ETCD_PATH:-/deis/router}
+export HOST_ETCD_PATH=${HOST_ETCD_PATH:-/deis/router/$HOST}
 export ETCD_TTL=${ETCD_TTL:-10}
 
 # wait for etcd to be available
@@ -36,7 +37,6 @@ etcd_safe_mkdir /deis/controller
 etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
 etcd_safe_mkdir /deis/builder
-etcd_set_default port ${PORT:-80}
 etcd_set_default gzip on
 etcd_set_default gzipHttpVersion 1.0
 etcd_set_default gzipCompLevel 2
@@ -84,8 +84,8 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
     sleep $(($ETCD_TTL/2)) # sleep for half the TTL
   done
 
