@@ -3,7 +3,7 @@ FROM ubuntu:14.04
 ENV DEBIAN_FRONTEND noninteractive
 
 # install common packages
-RUN apt-get update && apt-get install -y libgeoip1 curl net-tools && apt-get clean
+RUN apt-get update && apt-get install -y libgeoip1 curl && apt-get clean
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
@@ -21,4 +21,6 @@ CMD ["/app/bin/boot"]
 
 ADD . /app
 
-RUN mkdir /nginx && tar zxpvf /app/nginx.tgz -C /nginx && rm /app/nginx.tgz
+ADD nginx.tgz /nginx
+
+RUN rm nginx.tgz
