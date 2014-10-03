@@ -11,7 +11,7 @@ import time
 
 
 MATCH = re.compile(
-    '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z]+)?.(?P<c_num>[0-9]+)')
+    '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z-_]+)?.(?P<c_num>[0-9]+)')
 
 
 class UHTTPConnection(httplib.HTTPConnection):
