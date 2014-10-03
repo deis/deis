@@ -6,7 +6,7 @@ export VERSION_TCP_PROXY=0.4.5
 export BUILD_PATH=/tmp/build
 
 # nginx installation directory
-export PREFIX=/nginx
+export PREFIX=/opt/nginx
 
 rm -rf $PREFIX
 mkdir $PREFIX

@@ -21,6 +21,6 @@ CMD ["/app/bin/boot"]
 
 ADD . /app
 
-ADD nginx.tgz /nginx
+ADD nginx.tgz /opt/nginx
 
 RUN rm nginx.tgz

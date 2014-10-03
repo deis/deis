@@ -47,7 +47,7 @@ etcd_set_default gzipTypes "application/x-javascript application/xhtml+xml appli
 
 # spawn the service in the background
 echo "Starting Nginx..."
-/nginx/sbin/nginx &
+/opt/nginx/sbin/nginx &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM

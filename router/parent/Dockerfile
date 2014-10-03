@@ -4,4 +4,4 @@ ADD . /tmp
 
 RUN /tmp/build.sh
 
-RUN tar -C /nginx -czf /nginx.tgz .
+RUN tar -C /opt/nginx -czf /nginx.tgz .
