@@ -55,7 +55,9 @@ chown -R deis:deis /var/log/deis
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
 # spawn a gunicorn server in the background
-sudo -E -u deis ./manage.py run_gunicorn -b 0.0.0.0 -w 8 -t 600 -n deis --log-level debug --pid=/tmp/gunicorn.pid --timeout=1200 &
+sudo -E -u deis gunicorn deis.wsgi -b 0.0.0.0 -w 8 -n deis --timeout=1200 --pid=/tmp/gunicorn.pid \
+                         --log-level info --error-logfile - --access-logfile - \
+                         --access-logformat '%(h)s "%(r)s" %(s)s %(b)s "%(a)s"' &
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
