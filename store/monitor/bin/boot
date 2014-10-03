@@ -24,7 +24,7 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&
     # set some defaults in etcd if they're not passed in as environment variables
     # these are templated in ceph.conf
     etcd_set_default size ${NUM_STORES}
-    etcd_set_default minSize 2
+    etcd_set_default minSize 1
     etcd_set_default pgNum ${PG_NUM}
 
     # Generate administrator key
