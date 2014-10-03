@@ -7,6 +7,6 @@ if grep -q "<no value>" $1 ; then
 	exit 1
 fi
 
-if ! /usr/sbin/nginx -t -c $1 ; then
+if ! /opt/nginx/sbin/nginx -t -c $1 ; then
 	exit 1
 fi
