@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"code.google.com/p/go.net/websocket"
 	"github.com/coreos/go-etcd/etcd"
@@ -143,6 +144,7 @@ func main() {
 		connectionString := []string{"http://" + etcdHost + ":4001"}
 		debug("etcd:", connectionString[0])
 		etcd := etcd.NewClient(connectionString)
+		etcd.SetDialTimeout(3 * time.Second)
 		hostResp, err := etcd.Get("/deis/logs/host", false, false)
 		assert(err, "url")
 		portResp, err := etcd.Get("/deis/logs/port", false, false)
