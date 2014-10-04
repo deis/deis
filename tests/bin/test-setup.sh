@@ -100,6 +100,7 @@ function dump_logs {
   fleetctl -strict-host-key-checking=false list-units
   fleetctl -strict-host-key-checking=false ssh deis-controller@1 etcdctl ls / --recursive
   fleetctl -strict-host-key-checking=false ssh deis-controller@1 docker logs deis-controller
+  fleetctl -strict-host-key-checking=false ssh deis-registry@1 docker logs deis-registry
   fleetctl -strict-host-key-checking=false ssh deis-builder@1 docker logs deis-builder
   fleetctl -strict-host-key-checking=false ssh deis-logger@1 docker logs deis-logger
   set +x
