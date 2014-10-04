@@ -305,7 +305,7 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f {name}'''},
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "Service", "name": "RestartSec", "value": "5"},
-    {"section": "Service", "name": "Restart", "value": "on-failure"},    
+    {"section": "Service", "name": "Restart", "value": "on-failure"},
 ]
 
 
