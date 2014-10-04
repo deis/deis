@@ -1,6 +1,6 @@
 #FROM is generated dynamically by the Makefile
 
-EXPOSE 6800
+EXPOSE 6800 6801 6802 6803
 
 ADD bin/boot /app/bin/boot
 ENTRYPOINT ["/app/bin/boot"]
