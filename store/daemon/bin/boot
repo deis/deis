@@ -25,6 +25,13 @@ if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; the
 
   OSD_ID=`ceph osd create 2>/dev/null`
 
+  if ! [[ "${OSD_ID}" =~ ^-?[0-9]+$ ]] ; then
+    echo "store-daemon: FATAL - We have an OSD ID that isn't an integer"
+    echo "store-daemon: FATAL - This likely means the monitor we tried to connect to isn't up, but others may be."
+    echo "store-daemon: FATAL - We can't proceed because we don't know if an OSD was created or not."
+    exit 1
+  fi
+
   echo "store-daemon: created OSD ${OSD_ID}"
   etcdctl --no-sync -C $ETCD set /deis/store/osds/$HOST ${OSD_ID} >/dev/null
 fi
