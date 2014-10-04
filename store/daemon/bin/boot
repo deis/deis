@@ -19,16 +19,11 @@ done
 
 if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; then
   echo "store-daemon: creating OSD..."
-  OSD_ID=`ceph osd create 2>/dev/null`
 
-  # we check for an integer here instead of the return value, since it seems `ceph osd create`
-  # returns successfully even when there is a monitor fault.
-  until [[ "${OSD_ID}" =~ ^-?[0-9]+$ ]] ; do
-    sleep 5
-    echo "store-daemon: trying again..."
-    OSD_ID=`ceph osd create 2>/dev/null`
-    rc=$?
-  done
+  # sleep to actually let the mons come up
+  sleep 10
+
+  OSD_ID=`ceph osd create 2>/dev/null`
 
   echo "store-daemon: created OSD ${OSD_ID}"
   etcdctl --no-sync -C $ETCD set /deis/store/osds/$HOST ${OSD_ID} >/dev/null
