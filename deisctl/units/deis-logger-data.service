@@ -4,8 +4,8 @@ Description=deis-logger-data
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStartPre=/bin/sh -c "docker history ubuntu:14.04 >/dev/null 2>&1 || docker pull ubuntu:14.04"
-ExecStart=/bin/sh -c "docker inspect deis-logger-data >/dev/null 2>&1 || docker run --name deis-logger-data -v /var/log/deis ubuntu:14.04 /bin/true"
+ExecStartPre=/bin/sh -c "docker history ubuntu-debootstrap:14.04 >/dev/null 2>&1 || docker pull ubuntu-debootstrap:14.04"
+ExecStart=/bin/sh -c "docker inspect deis-logger-data >/dev/null 2>&1 || docker run --name deis-logger-data -v /var/log/deis ubuntu-debootstrap:14.04 /bin/true"
 
 [Install]
 WantedBy=multi-user.target
