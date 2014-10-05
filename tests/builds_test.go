@@ -82,7 +82,7 @@ func buildsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	utils.Execute(t, appsCreateCmd, params, false, "")
+	utils.Execute(t, appsCreateCmdNoRemote, params, false, "")
 	utils.Execute(t, buildsCreateCmd, params, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
