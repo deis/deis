@@ -25,7 +25,7 @@ func TestDatabase(t *testing.T) {
 	cephName := "deis-ceph-" + tag
 	mock.RunMockCeph(t, cephName, cli, etcdPort)
 	defer cli.CmdRm("-f", cephName+"-monitor")
-	defer cli.CmdRm("-f", cephName+"-daemon")
+	defer cli.CmdRm("-f", "-v", cephName+"-daemon")
 	defer cli.CmdRm("-f", cephName+"-gateway")
 
 	// run database container

@@ -56,9 +56,9 @@ func TestStore(t *testing.T) {
 	fmt.Printf("--- Run deis/store-daemon:%s at %s:%s\n", tag, host, "6800")
 	name = "deis-store-daemon-" + tag
 	cli2, stdout2, stdoutPipe2 := dockercli.NewClient()
-	defer cli2.CmdRm("-f", name)
+	defer cli2.CmdRm("-f", "-v", name)
 	go func() {
-		_ = cli2.CmdRm("-f", name)
+		_ = cli2.CmdRm("-f", "-v", name)
 		err = dockercli.RunContainer(cli2,
 			"--name", name,
 			"--rm",
