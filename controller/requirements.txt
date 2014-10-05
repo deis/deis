@@ -9,7 +9,6 @@ django-allauth==0.15.0
 git+https://github.com/deis/django-fsm@propagate-false
 django-guardian==1.2.4
 django-json-field==0.5.5
-django-yamlfield==0.5
 djangorestframework==2.3.14
 docker-py==0.4.0
 gunicorn==19.1.1
