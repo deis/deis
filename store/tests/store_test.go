@@ -12,12 +12,6 @@ import (
 
 func TestStore(t *testing.T) {
 	hostname := utils.Hostname()
-
-	if hostname == "boot2docker" {
-		fmt.Printf("--- SKIPPING STORE TEST -- host machine is boot2docker, which does not successfully run store")
-		return
-	}
-
 	var err error
 
 	// Set up etcd, which will be used by all containers
