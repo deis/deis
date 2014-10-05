@@ -10,13 +10,14 @@ import (
 )
 
 var (
-	appsCreateCmd  = "apps:create {{.AppName}}"
-	appsListCmd    = "apps:list"
-	appsRunCmd     = "apps:run echo hello"
-	appsOpenCmd    = "apps:open --app={{.AppName}}"
-	appsLogsCmd    = "apps:logs --app={{.AppName}}"
-	appsInfoCmd    = "apps:info --app={{.AppName}}"
-	appsDestroyCmd = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+	appsCreateCmd         = "apps:create {{.AppName}}"
+	appsCreateCmdNoRemote = "apps:create {{.AppName}} --no-remote"
+	appsListCmd           = "apps:list"
+	appsRunCmd            = "apps:run echo hello"
+	appsOpenCmd           = "apps:open --app={{.AppName}}"
+	appsLogsCmd           = "apps:logs --app={{.AppName}}"
+	appsInfoCmd           = "apps:info --app={{.AppName}}"
+	appsDestroyCmd        = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 )
 
 func TestApps(t *testing.T) {
