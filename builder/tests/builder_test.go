@@ -41,9 +41,9 @@ func TestBuilder(t *testing.T) {
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/builder:%s at %s:%s\n", tag, host, port)
 	name := "deis-builder-" + tag
-	defer cli.CmdRm("-f", name)
+	defer cli.CmdRm("-f", "-v", name)
 	go func() {
-		_ = cli.CmdRm("-f", name)
+		_ = cli.CmdRm("-f", "-v", name)
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
