@@ -7,27 +7,28 @@ import (
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
+	"github.com/deis/deis/tests/mock"
 	"github.com/deis/deis/tests/utils"
 )
 
 func TestDatabase(t *testing.T) {
 	var err error
-	setkeys := []string{
-		"/deis/store/gateway/host",
-		"/deis/store/gateway/port",
-		"/deis/store/gateway/accessKey",
-		"/deis/store/gateway/secretKey",
-	}
-	setdir := []string{
-		"/deis/store",
-	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
-	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
+
+	// start etcd container
+	etcdName := "deis-etcd-" + tag
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
-	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
-	etcdutils.PublishEtcd(t, handler)
+
+	// run mock ceph containers
+	cephName := "deis-ceph-" + tag
+	mock.RunMockCeph(t, cephName, cli, etcdPort)
+	defer cli.CmdRm("-f", cephName+"-monitor")
+	defer cli.CmdRm("-f", cephName+"-daemon")
+	defer cli.CmdRm("-f", cephName+"-gateway")
+
+	// run database container
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/database:%s at %s:%s\n", tag, host, port)
 	name := "deis-database-" + tag
