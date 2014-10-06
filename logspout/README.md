@@ -1,16 +1,16 @@
 # logspout
 
-A log router for Docker container output that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want. 
+A log router for Docker container output that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want.
 
 It's a 100% stateless log appliance (unless you persist routes). It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
 
-For now it only captures stdout and stderr, but soon Docker will let us hook into more ... perhaps getting everything from every container's /dev/log. 
+For now it only captures stdout and stderr, but soon Docker will let us hook into more ... perhaps getting everything from every container's /dev/log.
 
 ## Getting logspout
 
-Logspout is a very small Docker container (14MB virtual, based on busybox), so you can just pull it from the index:
+Logspout is a very small Docker container, so you can just pull it from the index:
 
-	$ docker pull progrium/logspout
+	$ docker pull deis/logspout
 
 ## Using logspout
 
@@ -18,9 +18,9 @@ Logspout is a very small Docker container (14MB virtual, based on busybox), so y
 
 The simplest way to use logspout is to just take all logs and ship to a remote syslog. Just pass a default syslog target URI as the command. Also, we always mount the Docker Unix socket with `-v` to `/tmp/docker.sock`:
 
-	$ docker run -v=/var/run/docker.sock:/tmp/docker.sock progrium/logspout syslog://logs.papertrailapp.com:55555
+	$ docker run -v=/var/run/docker.sock:/tmp/docker.sock deis/logspout syslog://logs.papertrailapp.com:55555
 
-Logs will be tagged with the container name. The hostname will be the hostname of the logspout container, so you probably want to set the container hostname to the actual hostname by adding `-h $HOSTNAME`.
+If deis/logspout is deployed on Deis, it will connect automatically to deis-logger via service discovery.
 
 #### Inspect log streams using curl
 
@@ -28,7 +28,7 @@ Whether or not you run it with a default routing target, if you publish its port
 
 	$ docker run -d -p 8000:8000 \
 		-v=/var/run/docker.sock:/tmp/docker.sock \
-		progrium/logspout
+		deis/logspout
 	$ curl $(docker port `docker ps -lq` 8000)/logs
 
 You should see a nicely colored stream of all your container logs. You can filter by container name, log type, and more. You can also get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
@@ -37,14 +37,14 @@ See [Streaming Endpoints](#streaming-endpoints) for all options.
 
 #### Create custom routes via HTTP
 
-Along with streaming endpoints, logspout also exposes a `/routes` resource to create and manage routes. 
+Along with streaming endpoints, logspout also exposes a `/routes` resource to create and manage routes.
 
 	$ curl $(docker port `docker ps -lq` 8000)/logs -X POST \
 		-d '{"source": {"filter": "db", "types": ["stderr"]}, target": {"type": "syslog", "addr": "logs.papertrailapp.com:55555"}}'
 
-That example creates a new syslog route to [Papertrail](https://papertrailapp.com) of only `stderr` for containers with `db` in their name. 
+That example creates a new syslog route to [Papertrail](https://papertrailapp.com) of only `stderr` for containers with `db` in their name.
 
-By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, they will be persisted to disk. 
+By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, they will be persisted to disk.
 
 See [Routes Resource](#routes-resource) for all options.
 
@@ -88,9 +88,9 @@ Takes a JSON object like this:
 		}
 	}
 
-The `source` field should be an object with `filter`, `name`, or `id` fields. You can specify specific log types with the `types` field to collect only `stdout` or `stderr`. If you don't specify `types`, it will route all types. 
+The `source` field should be an object with `filter`, `name`, or `id` fields. You can specify specific log types with the `types` field to collect only `stdout` or `stderr`. If you don't specify `types`, it will route all types.
 
-To route all logs of all types on all containers, don't specify a `source`. 
+To route all logs of all types on all containers, don't specify a `source`.
 
 The `append_tag` field of `target` is optional and specific to `syslog`. It lets you append to the tag of syslog packets for this route. By default the tag is `<container-name>`, so an `append_tag` value of `.app` would make the tag `<container-name>.app`.
 
