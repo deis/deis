@@ -105,9 +105,11 @@ fi
 
 # build option string to send to slugbuilder
 BUILD_OPTS=""
-for i in $CONFIG; do
-    BUILD_OPTS+="-e $i "
-done
+echo $CONFIG > tmp
+while read envvar; do
+    BUILD_OPTS+="-e $envvar "
+done < tmp
+rm tmp
 
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
