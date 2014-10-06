@@ -13,15 +13,6 @@ import (
 
 func TestDatabase(t *testing.T) {
 	var err error
-	setkeys := []string{
-		"/deis/store/gateway/host",
-		"/deis/store/gateway/port",
-		"/deis/store/gateway/accessKey",
-		"/deis/store/gateway/secretKey",
-	}
-	setdir := []string{
-		"/deis/store",
-	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 
