@@ -6,9 +6,6 @@ Deis controller, providing a Heroku-inspired PaaS workflow.
 .. image:: https://badge.fury.io/py/deis.png
     :target: http://badge.fury.io/py/deis
 
-.. image:: https://travis-ci.org/deis/deis.png?branch=master
-    :target: https://travis-ci.org/deis/deis
-
 .. image:: https://pypip.in/d/deis/badge.png
     :target: https://pypi.python.org/pypi/deis/
     :alt: Downloads
