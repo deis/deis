@@ -92,7 +92,7 @@ func startDefaultServices(b backend.Backend) error {
 	if err := Start(b, []string{"logger@1"}); err != nil {
 		return err
 	}
-	if err := Start(b, []string{"publisher", "cache@1", "router@1", "database@1", "controller@1", "registry@1", "builder@1"}); err != nil {
+	if err := Start(b, []string{"publisher", "logspout", "cache@1", "router@1", "database@1", "controller@1", "registry@1", "builder@1"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers launched.")
@@ -118,7 +118,7 @@ func StopPlatform(b backend.Backend) error {
 
 func stopDefaultServices(b backend.Backend) error {
 	fmt.Println("Stopping service containers...")
-	if err := Stop(b, []string{"publisher", "builder@1", "registry@1", "controller@1", "database@1", "cache@1", "router@1", "logger@1"}); err != nil {
+	if err := Stop(b, []string{"publisher", "logspout", "builder@1", "registry@1", "controller@1", "database@1", "cache@1", "router@1", "logger@1"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers stopped.")
@@ -196,7 +196,7 @@ func installDefaultServices(b backend.Backend) error {
 	if err := Scale(b, targets); err != nil {
 		return err
 	}
-	if err := b.Create([]string{"publisher"}); err != nil {
+	if err := b.Create([]string{"publisher", "logspout"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers scheduled.")
@@ -226,7 +226,7 @@ func uninstallAllServices(b backend.Backend) error {
 	if err := Scale(b, targets); err != nil {
 		return err
 	}
-	if err := b.Destroy([]string{"publisher"}); err != nil {
+	if err := b.Destroy([]string{"publisher", "logspout"}); err != nil {
 		return err
 	}
 	fmt.Println("Service containers destroyed.")
@@ -309,6 +309,7 @@ Options:
 		"deis-database-data.service",
 		"deis-logger.service",
 		"deis-logger-data.service",
+		"deis-logspout.service",
 		"deis-publisher.service",
 		"deis-registry.service",
 		"deis-registry-data.service",

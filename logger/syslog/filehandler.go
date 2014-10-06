@@ -19,7 +19,7 @@ type FileHandler struct {
 
 // NewFileHandler accepts all arguments expected by NewBaseHandler plus
 // filename which is the path to the log file.
-func NewFileHandler(filename string, qlen int, filter func(*Message) bool,
+func NewFileHandler(filename string, qlen int, filter func(SyslogMessage) bool,
 	ft bool) *FileHandler {
 
 	h := &FileHandler{
@@ -61,7 +61,7 @@ func (h *FileHandler) mainLoop() {
 	}
 }
 
-func (h *FileHandler) saveMessage(m *Message) {
+func (h *FileHandler) saveMessage(m SyslogMessage) {
 	var err error
 	if h.f == nil {
 		h.f, err = os.OpenFile(
@@ -90,6 +90,6 @@ func (h *FileHandler) checkErr(err error) bool {
 }
 
 // Handle queues and dispatches a message. See BaseHandler.Handle
-func (h *FileHandler) Handle(m *Message) *Message {
+func (h *FileHandler) Handle(m SyslogMessage) SyslogMessage {
 	return h.bh.Handle(m)
 }
