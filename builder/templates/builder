@@ -107,7 +107,9 @@ fi
 BUILD_OPTS=""
 echo $CONFIG > tmp
 while read envvar; do
-    BUILD_OPTS+="-e $envvar "
+    if [ "$envvar" != "" ]; then
+        BUILD_OPTS+="-e $envvar "
+    fi
 done < tmp
 rm tmp
 
