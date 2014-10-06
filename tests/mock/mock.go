@@ -33,7 +33,7 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 			dbImage)
 	}()
 	time.Sleep(1000 * time.Millisecond)
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Starting")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Initialization complete.")
 	setkeys := []string{
 		"/deis/database/user",
 		"/deis/database/password",
