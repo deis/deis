@@ -57,7 +57,7 @@ func TestRouter(t *testing.T) {
 	time.Sleep(5000 * time.Millisecond)
 	dockercli.DeisServiceTest(t, name, port, "http")
 	etcdutils.VerifyEtcdValue(t, "/deis/router/gzip", "on", etcdPort)
-	routerKeyPrefix := "/deis/router/"+host
+	routerKeyPrefix := "/deis/router/" + host
 	etcdutils.VerifyEtcdValue(t, routerKeyPrefix+"/host", host, etcdPort)
 	etcdutils.VerifyEtcdValue(t, routerKeyPrefix+"/port", port, etcdPort)
 	_ = cli.CmdRm("-f", name)

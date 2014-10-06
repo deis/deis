@@ -27,7 +27,7 @@ func getopt(name, dfault string) string {
 
 func main() {
 	endpoint := getopt("DOCKER_HOST", "unix:///var/run/docker.sock")
-    etcdHost := getopt("ETCD_HOST", "127.0.0.1")
+	etcdHost := getopt("ETCD_HOST", "127.0.0.1")
 
 	client, err := docker.NewClient(endpoint)
 	if err != nil {
