@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"log/syslog"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -62,10 +62,31 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 		if typestr != ",," && !strings.Contains(typestr, logline.Type) {
 			continue
 		}
-		tag := logline.Name + target.AppendTag
-		remote, err := syslog.Dial("udp", target.Addr, syslog.LOG_USER|syslog.LOG_INFO, tag)
+		tag, pid := getLogName(logline.Name)
+		conn, err := net.Dial("udp", target.Addr)
 		assert(err, "syslog")
-		io.WriteString(remote, logline.Data)
+		// HACK: Go's syslog package hardcodes the log format, so let's send our own message
+		_, err = fmt.Fprintf(conn,
+			"%s %s[%s]: %s",
+			time.Now().Format("2006-01-02 15:04:05"),
+			tag,
+			pid,
+			logline.Data)
+		assert(err, "syslog")
+	}
+}
+
+// getLogName returns a custom tag and PID for containers that
+// match Deis' specific application name format. Otherwise,
+// it returns the original name and 1 as the PID.
+func getLogName(name string) (string, string) {
+	// example regex that should match: go_v2.web.1
+	r := regexp.MustCompile(`(^[a-z0-9-]+)_(v[0-9]+)\.([a-z-_]+\.[0-9]+)$`)
+	match := r.FindStringSubmatch(name)
+	if match == nil {
+		return name, "1"
+	} else {
+		return match[1], match[3]
 	}
 }
 
