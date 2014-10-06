@@ -1,6 +1,9 @@
 package syslog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type SyslogMessage interface {
 	fmt.Stringer
@@ -12,5 +15,5 @@ type Message struct {
 }
 
 func (m *Message) String() string {
-	return m.Msg
+	return strings.TrimSuffix(m.Msg, "\n")
 }
