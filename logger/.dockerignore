@@ -1,0 +1,6 @@
+image
+syslog
+syslogd
+Dockerfile
+Makefile
+tests
