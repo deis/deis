@@ -1,0 +1,10 @@
+[template]
+src   = "push-images"
+dest  = "/usr/local/bin/push-images"
+uid = 0
+gid = 0
+mode  = "0755"
+keys = [
+  "/deis/registry",
+]
+check_cmd = "/app/bin/check {{ .src }}"
