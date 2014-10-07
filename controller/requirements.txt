@@ -17,5 +17,7 @@ psycopg2==2.5.2
 python-etcd==0.3.0
 PyYAML==3.11
 redis==2.9.1
+restkit==4.2.2
 static==1.0.2
 South==1.0
+webob==1.4

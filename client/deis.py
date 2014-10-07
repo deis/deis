@@ -870,6 +870,49 @@ class DeisClient(object):
         else:
             raise ResponseError(response)
 
+    def push(self, args):
+        """
+        Pushes a local docker image to a Deis app as a new release.
+
+        Usage: deis push <image> [--app=<app>]
+
+        Arguments:
+          <image>
+            A fully-qualified docker image from the local graph
+
+        Options:
+          --app=<app>
+            The uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        image = args['<image>']
+        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+        remote = "{}/{}".format(hostname, app)
+        try:
+            subprocess.check_call(
+                ['docker', 'tag', image, remote],
+                stdout=subprocess.PIPE)
+        except subprocess.CalledProcessError:
+            print('Could not tag docker image')
+            sys.exit(1)
+        try:
+            subprocess.check_call(
+                ['docker', 'push', remote])
+        except subprocess.CalledProcessError:
+            print('Could not push docker image')
+            sys.exit(1)
+        sys.stdout.write('Creating build... ')
+        sys.stdout.flush()
+        body = {'image': 'http://172.17.8.100:5000/{}'.format(app)} #TODO: hardcoded
+        response = self._dispatch('post', "/api/apps/{}/builds".format(app), json.dumps(body))
+        if response.status_code == requests.codes.created:  # @UndefinedVariable
+            version = response.headers['x-deis-release']
+            print("done, v{}".format(version))
+        else:
+            raise ResponseError(response)
+
     def builds_list(self, args):
         """
         Lists build history for an application.

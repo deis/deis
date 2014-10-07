@@ -14,6 +14,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 import static
 
+from registry.importer import forward_to_registry
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "deis.settings")
 
@@ -31,6 +32,9 @@ class Dispatcher(object):
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'].startswith('/static'):
             return self.static_handler(environ, start_response)
+        elif environ['PATH_INFO'].startswith('/push'):
+            environ['PATH_INFO'] = environ['PATH_INFO'][5:]
+            return forward_to_registry(environ, start_response)
         else:
             return self.django_handler(environ, start_response)
 
