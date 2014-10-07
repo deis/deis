@@ -26,7 +26,7 @@ log_phase "Installing clients"
 make -C client build
 
 # install latest deisctl from the website
-curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+curl -sSL http://deis.io/deisctl/install.sh | sh
 
 # ensure we use distributed unit files
 unset DEISCTL_UNITS

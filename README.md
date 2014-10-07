@@ -54,7 +54,7 @@ $ ssh-add ~/.vagrant.d/insecure_private_key
 Install the [deisctl utility](deisctl#installation) used to provision and operate Deis.
 
 ```console
-$ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+$ curl -sSL http://deis.io/deisctl/install.sh | sh
 ```
 
 Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl` client on your workstation.
