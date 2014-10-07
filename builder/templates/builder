@@ -147,7 +147,7 @@ puts-step "Pushing image to private registry"
 docker push $TARGET_IMAGE  &>/dev/null
 
 if [ -f $TMP_DIR/slug.tgz ]; then
-    RELEASE_INFO=$(tar --to-stdout -xzf $TMP_DIR/slug.tgz ./.release | python -c 'import sys,yaml,json;print json.dumps(yaml.safe_load(sys.stdin).get("default_process_types", {}))')
+    RELEASE_INFO=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | python -c 'import sys,yaml,json;print json.dumps(yaml.safe_load(sys.stdin).get("default_process_types", {}))')
 else
     RELEASE_INFO="{}"
 fi
