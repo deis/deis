@@ -65,15 +65,19 @@ restart: stop start
 
 run: install start
 
-dev-release: check-registry check-deisctl
+dev-release: push set-image
+
+push: check-registry
 	docker tag $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
 	docker push $(DAEMON_DEV_IMAGE)
-	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
 	docker tag $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
 	docker push $(MONITOR_DEV_IMAGE)
-	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
 	docker tag $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	docker push $(GATEWAY_DEV_IMAGE)
+
+set-image: check-deisctl
+	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
+	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
 	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
 
 release:

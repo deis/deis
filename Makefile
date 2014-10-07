@@ -50,6 +50,12 @@ run: install start
 dev-release:
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) dev-release &&) echo done
 
+push:
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) push &&) echo done
+
+set-image:
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) set-image &&) echo done
+
 release: check-registry
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) release &&) echo done
 	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) release &&) echo done

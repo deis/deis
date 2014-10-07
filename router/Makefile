@@ -7,7 +7,7 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 build: check-docker
 	cd parent && docker build -t deis/binary-router .
 	docker cp `docker run -d deis/binary-router`:/nginx.tgz .
-	docker build -t $(IMAGE) .	
+	docker build -t $(IMAGE) .
 	rm nginx.tgz
 
 clean: check-docker check-registry
@@ -32,9 +32,13 @@ restart: stop start
 
 run: install start
 
-dev-release: check-registry check-deisctl
+dev-release: push set-image
+
+push: check-registry
 	docker tag $(IMAGE) $(DEV_IMAGE)
 	docker push $(DEV_IMAGE)
+
+set-image: check-deisctl
 	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
 
 release:
