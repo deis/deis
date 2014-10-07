@@ -2,7 +2,7 @@ test: test-smoke
 
 test-smoke: test-style
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
-		go test -tags integration -short -v -run TestSmoke
+		go test -tags integration -short -timeout 20m -v -run TestSmoke
 
 test-full: test-style
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
