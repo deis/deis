@@ -49,7 +49,7 @@ coreos-install -C alpha -c /tmp/config -d /dev/sda
 ```
 
 This will install the current [CoreOS](https://coreos.com/) release to disk. If you want to install the recommended [CoreOS](https://coreos.com/) version check the [Deis changelog](../../CHANGELOG.md)
-and specify that version by appending the `-V` parameter to the install command, e.g. `-V 452.0.0`.
+and specify that version by appending the `-V` parameter to the install command, e.g. `-V 459.0.0`.
 
 After the installation has finished reboot your server. Once your machine is back up you should be able to log in as the `core` user using the `deis` ssh key.
 
