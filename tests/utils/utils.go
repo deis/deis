@@ -58,6 +58,18 @@ func HostAddress() string {
 	return IP
 }
 
+// Hostname returns the hostname of the machine running the container, *not* the local machine
+// We infer the hostname because we don't necessarily know how to log in.
+func Hostname() string {
+	switch HostAddress() {
+		case "172.17.8.100": return "deis-1"
+		case "172.17.8.101": return "deis-2"
+		case "172.17.8.102": return "deis-3"
+		case "172.21.12.100": return "docker-registry"
+		default: return "boot2docker"
+	}
+}
+
 // NewID returns the first part of a random RFC 4122 UUID
 // See http://play.golang.org/p/4FkNSiUDMg
 func NewID() string {

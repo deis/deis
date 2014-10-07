@@ -7,6 +7,7 @@ import (
 
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/etcdutils"
+	"github.com/deis/deis/tests/mock"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -15,9 +16,14 @@ func TestRegistry(t *testing.T) {
 	setkeys := []string{
 		"/deis/cache/host",
 		"/deis/cache/port",
+		"/deis/store/gateway/host",
+		"/deis/store/gateway/port",
+		"/deis/store/gateway/accessKey",
+		"/deis/store/gateway/secretKey",
 	}
 	setdir := []string{
 		"/deis/cache",
+		"/deis/store",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	etcdName := "deis-etcd-" + tag
@@ -26,9 +32,14 @@ func TestRegistry(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
-	dataName := "deis-registry-data-" + tag
-	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/data", "ubuntu:14.04", "/bin/true")
+
+	// run mock ceph containers
+	cephName := "deis-ceph-" + tag
+	mock.RunMockCeph(t, cephName, cli, etcdPort)
+	defer cli.CmdRm("-f", cephName+"-monitor")
+	defer cli.CmdRm("-f", "-v", cephName+"-daemon")
+	defer cli.CmdRm("-f", cephName+"-gateway")
+
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/registry:%s at %s:%s\n", tag, host, port)
 	name := "deis-registry-" + tag
@@ -42,7 +53,6 @@ func TestRegistry(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"--volumes-from", dataName,
 			"deis/registry:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")

@@ -1,0 +1,1 @@
+{{ .deis_store_gateway_accessKey }}
