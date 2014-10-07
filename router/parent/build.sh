@@ -2,6 +2,7 @@
 
 export VERSION_NGINX=nginx-1.6.2
 export VERSION_TCP_PROXY=0.4.5
+export VERSION_TCP_UPSTREAM_CHECK=0.3.0
 
 export BUILD_PATH=/tmp/build
 
@@ -22,15 +23,18 @@ apt-get update \
 # grab the source files
 curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
 curl -sSL https://github.com/yaoweibin/nginx_tcp_proxy_module/archive/v$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
+curl -sSL https://github.com/yaoweibin/nginx_upstream_check_module/archive/v$VERSION_TCP_UPSTREAM_CHECK.tar.gz -o $BUILD_PATH/$VERSION_TCP_UPSTREAM_CHECK.tar.gz
 
 # expand the source files
 tar xzf $VERSION_NGINX.tar.gz
 tar xzf $VERSION_TCP_PROXY.tar.gz
+tar xzf $VERSION_TCP_UPSTREAM_CHECK.tar.gz
 
 # build nginx
 cd $BUILD_PATH/$VERSION_NGINX
 
 patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
+patch -p1 < $BUILD_PATH/nginx_upstream_check_module-$VERSION_TCP_UPSTREAM_CHECK/check_1.5.12+.patch
 
 ./configure \
   --prefix=$PREFIX \
@@ -51,4 +55,5 @@ patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
   --with-mail \
   --with-mail_ssl_module \
   --add-module=$BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY \
+  --add-module=$BUILD_PATH/nginx_upstream_check_module-$VERSION_TCP_UPSTREAM_CHECK \
   && make && make install
