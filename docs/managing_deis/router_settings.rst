@@ -30,9 +30,9 @@ Settings used by router
 ---------------------------
 The following etcd keys are used by the router component.
 
-=======================================      =============================================================================================================================================================================================
+=======================================      ==================================================================================================================================================================================================================================================================================================================================
 setting                                      description
-=======================================      =============================================================================================================================================================================================
+=======================================      ==================================================================================================================================================================================================================================================================================================================================
 /deis/domains/*                              domain configuration for applications (set by controller)
 /deis/services/*                             application configuration (set by application unit files)
 /deis/builder/host                           host of the builder component (set by builder)
@@ -48,13 +48,14 @@ setting                                      description
 /deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
 /deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
 /deis/router/gzip                            nginx gzip setting (default: on)
-/deis/router/gzipHttpVersion                 nginx gzipHttpVersion setting (default: 1.0)
-/deis/router/gzipCompLevel                   nginx gzipCompLevel setting (default: 2)
+/deis/router/gzipHttpVersion                 nginx gzipHttpVersion setting (default: 1.1)
+/deis/router/gzipCompLevel                   nginx gzipCompLevel setting (default: 5)
 /deis/router/gzipProxied                     nginx gzipProxied setting (default: any)
 /deis/router/gzipVary                        nginx gzipVary setting (default: on)
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
-/deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
-=======================================      =============================================================================================================================================================================================
+/deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/atom+xml application/javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/svg+xml image/x-icon text/css text/plain text/x-component")
+/deis/router/gzipMinLength                   nginx gzipMinLength setting (default: 256)
+=======================================      ==================================================================================================================================================================================================================================================================================================================================
 
 Using a custom router image
 ---------------------------
