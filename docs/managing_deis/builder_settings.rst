@@ -13,8 +13,6 @@ Requires: :ref:`controller <controller_settings>`, :ref:`registry <registry_sett
 
 Required by: :ref:`router <router_settings>`
 
-Considerations: must live on the same host as controller (see `#985`_)
-
 Settings set by builder
 -----------------------
 The following etcd keys are set by the builder component, typically in its /bin/boot script.
@@ -40,7 +38,7 @@ setting                                   description
 /deis/controller/protocol                 protocol of the controller component (set by controller)
 /deis/registry/host                       host of the controller component (set by registry)
 /deis/registry/port                       port of the controller component (set by registry)
-/deis/services/*                          application metadata (set by controller)
+/deis/services/*                          healthy application containers reported by deis/publisher
 /deis/slugbuilder/image                   slugbuilder image to use (default: deis/slugbuilder:latest)
 /deis/slugrunner/image                    slugrunner image to use (default: deis/slugrunner:latest)
 ====================================      ===========================================================
@@ -52,14 +50,14 @@ supplied with Deis:
 
 .. code-block:: console
 
-    $ etcdctl set /deis/builder/image myaccount/myimage:latest
+    $ deisctl config builder set image myaccount/myimage:latest
 
 This will pull the image from the public Docker registry. You can also pull from a private
 registry:
 
 .. code-block:: console
 
-    $ etcdctl set /deis/builder/image registry.mydomain.org:5000/myaccount/myimage:latest
+    $ deisctl config builder set image registry.mydomain.org:5000/myaccount/myimage:latest
 
 Be sure that your custom image functions in the same way as the `stock builder image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.

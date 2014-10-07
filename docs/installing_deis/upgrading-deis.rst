@@ -122,8 +122,8 @@ To migrate over, start by pointing the new cluster at the old cluster's endpoint
 
 .. code-block:: console
 
-    $ etcdctl set /deis/database/host pqsl.example.org
-    $ etcdctl set /deis/database/port 1234
+    $ deisctl config database set host pqsl.example.org
+    $ deisctl config database set port 1234
     ...
 
 Next, you'll also want to migrate over the application directories:
