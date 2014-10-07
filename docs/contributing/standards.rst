@@ -308,17 +308,3 @@ Examples
     character size.
 
     closes #392
-
-Forcing no Build for TravisCI
-"""""""""""""""""""""""""""""
-
-If you're committing a PR that is just a small typo fix or a README change, you can force
-TravisCI to not build your commit by adding [skip ci] below the message body. For example:
-
-.. code-block:: console
-
-    fix(README): typo
-
-    It's spelled tomato, not tomatoe.
-
-    [skip ci]
