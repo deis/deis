@@ -128,6 +128,13 @@ to 1200 seconds to match the timeout on the router and application unit files.
 While you can reference the controller and hosted applications with public hostnames provided by EC2, it is recommended for ease-of-use that
 you configure your own DNS records using a domain you own. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
 
+## Install the python client
+Before deis is available as a standard cmd you need to install the python client
+```console
+$ cd client
+$ make install 
+```
+
 ## Use Deis!
 After that, register with Deis!
 ```console
