@@ -12,8 +12,8 @@ To install the latest `deisctl` on Linux or Mac OS X, run this command:
 $ curl -sSL http://deis.io/deisctl/install.sh | sh
 ```
 
-The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
-to */var/lib/deis/units* one time.
+The installer puts `deisctl` in your current directory and downloads current Deis unit files
+to *$HOME/.deis/units* one time. You should move `deisctl` somewhere in your $PATH.
 
 To change installation options, save the installer directly from one of these links:
 
