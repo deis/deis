@@ -66,6 +66,30 @@ fi
 docker build -t deis/slugbuilder /app/slugbuilder/
 docker build -t deis/slugrunner /app/slugrunner/
 
+set +e
+
+REGISTRY_HOST=$(etcdctl --no-sync -C $ETCD get /deis/registry/host)
+
+if [ "$?" -ne "0" ];
+then
+    echo "failed to retrieve registry host"
+    exit 1
+fi
+
+REGISTRY_PORT=$(etcdctl --no-sync -C $ETCD get /deis/registry/port)
+
+if [ "$?" -ne "0" ];
+then
+    echo "failed to retrieve registry port"
+    exit 1
+fi
+
+set -e
+
+# push deis/slugrunner to the registry for a faster app boot time
+docker tag deis/slugrunner $REGISTRY_HOST:$REGISTRY_PORT/deis/slugrunner
+docker push $REGISTRY_HOST:$REGISTRY_PORT/deis/slugrunner
+
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
 SSHD_PID=$!
