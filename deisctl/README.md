@@ -9,7 +9,7 @@
 To install the latest `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
-$ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+$ curl -sSL http://deis.io/deisctl/install.sh | sh
 ```
 
 The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
@@ -46,8 +46,8 @@ Then, export the `DEISCTL_UNITS` environment variable so deisctl can find the un
 $ export DEISCTL_UNITS="$PATH_TO_DEISCTL/units"
 ```
 
-This is also useful for specifying custom behavior on Deis units, such as using 
-fleet metadata to lock the builder to a more powerful node, or keep application 
+This is also useful for specifying custom behavior on Deis units, such as using
+fleet metadata to lock the builder to a more powerful node, or keep application
 nodes free of control plane elements.
 
 ## Remote Configuration

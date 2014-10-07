@@ -50,7 +50,7 @@ coreos:
 
       [Service]
       Type=oneshot
-      ExecStart=/usr/bin/sh -c 'curl -sSL http://deis.io/deisctl/install.sh | sh'
+      ExecStart=/usr/bin/sh -c 'curl -sSL http://deis.io/deisctl/install.sh | sh -s 0.13.0-dev'
 write_files:
   - path: /etc/deis-release
     content: |
