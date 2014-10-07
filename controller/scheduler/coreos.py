@@ -54,7 +54,7 @@ class FleetHTTPClient(object):
                           headers=headers, body=json.dumps(body))
         resp = self.conn.getresponse()
         data = resp.read()
-        if 200 <= resp.status <= 299:
+        if not 200 <= resp.status <= 299:
             errmsg = "Failed to create unit: {} {} - {}".format(
                 resp.status, resp.reason, data)
             raise RuntimeError(errmsg)
