@@ -6,8 +6,8 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker start -a deis-database >/dev/null || docker run --name deis-database -p 5432:5432 -e EXTERNAL_PORT=5432 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
-ExecStop=/bin/bash -c "nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format='{{ .State.Pid }}' deis-database) sudo service postgresql stop"
-ExecStopPost=/usr/bin/docker stop deis-database
+ExecStopPost=-/bin/bash -c "nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format='{{ .State.Pid }}' deis-database) sudo service postgresql stop"
+ExecStopPost=-/usr/bin/docker stop deis-database
 
 [Install]
 WantedBy=multi-user.target
