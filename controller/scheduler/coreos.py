@@ -148,6 +148,7 @@ class FleetHTTPClient(object):
         self._wait_for_container(name)
 
     def _wait_for_container(self, name):
+        failures = 0
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
             states = self._get_state(name)
@@ -157,7 +158,10 @@ class FleetHTTPClient(object):
                 if subState == 'running' or subState == 'exited':
                     break
                 elif subState == 'failed':
-                    raise RuntimeError('container failed to start')
+                    # FIXME: fleet unit state reports failed when containers are fine
+                    failures += 1
+                    if failures == 10:
+                        raise RuntimeError('container failed to start')
             time.sleep(1)
         else:
             raise RuntimeError('container timeout on start')
