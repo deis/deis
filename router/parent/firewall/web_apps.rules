@@ -1,0 +1,118 @@
+
+##########################################################################
+#
+# doxi_rulesets - rules fo nginx+naxsi
+# desc      : WEB_APPS
+# file      : web_apps.rules
+# created   : 2014-09-28 - 12:29
+# by        : nginx-goodies
+# download  : https://bitbucket.org/lazy_dogtown/doxi-rules
+#
+###########################################################################
+                       
+#
+# sid: 42000276 | date: 2013-07-21 - 10:19 
+#
+# https://www.owasp.org/index.php/HTTP_Request_Smuggling
+#
+MainRule "str:get http" "msg:HTTP - Smuggling-Attempt (Proxy-GET in Headers)" "mz:HEADERS" "s:$EVADE:8" id:42000276  ;
+      
+       
+#
+# sid: 42000239 | date: 2013-01-24 - 17:30 
+#
+# typo3-standard-featurte, DONTWANT
+#
+MainRule "str:jumpurl=" "msg:Typo3-JumpURL-Access " "mz:ARGS" "s:$UWA:8" id:42000239  ;
+      
+       
+#
+# sid: 42000126 | date: 2012-12-25 - 12:28 
+#
+# http://www.securityfocus.com/bid/53787/info
+# http://downloads.securityfocus.com/vulnerabilities/exploits/53787.php
+#
+MainRule "str:/uploadify/uploadify.php" "msg:WordPress Uploadify-Access" "mz:URL" "s:$ATTACK:8" id:42000126  ;
+      
+       
+#
+# sid: 42000125 | date: 2012-12-25 - 11:49 
+#
+# http://seclists.org/fulldisclosure/2012/Dec/242
+# http://git.zx2c4.com/w3-total-fail/tree/w3-total-fail.sh
+#
+MainRule "str:/w3tc/dbcache" "msg:WordPress TotalCache-DBCache-Access" "mz:URL" "s:$UWA:8" id:42000125  ;
+      
+       
+#
+# sid: 42000123 | date: 2012-12-21 - 13:59 
+#
+# http://markmaunder.com/2011/08/01/zero-day-vulnerability-in-many-wordpress-themes/
+# http://packetstormsecurity.org/files/view/105240/timthumb-exec.txt
+#
+MainRule "str:/timthumbdir/cache" "msg:WP TimThumb - Cache - Access " "mz:URL" "s:$ATTACK:8" id:42000123  ;
+      
+       
+#
+# sid: 42000089 | date: 2012-12-18 - 14:14 
+#
+# 
+#
+MainRule "str:/xmlrpc.php" "msg:XMLRPC - Access detected (misc Wordpress/Magento-Vulns)" "mz:URL" "s:$UWA:8" id:42000089  ;
+      
+       
+#
+# sid: 42000088 | date: 2012-12-18 - 12:03 
+#
+# http://seclists.org/bugtraq/2012/Dec/101
+# https://github.com/FireFart/WordpressPingbackPortScanner
+# http://www.acunetix.com/blog/web-security-zone/wordpress-pingback-vulnerability/
+#
+MainRule "str:pingback.ping" "msg:Possible WordpressPingbackPortScanner" "mz:BODY" "s:$ATTACK:8,$UWA:8" id:42000088  ;
+      
+       
+#
+# sid: 42000086 | date: 2012-11-27 - 18:47 
+#
+# http://piwik.org/blog/2012/11/security-report-piwik-org-webserver-hacked-for-a-few-hours-on-2012-nov-26th/
+# http://forum.piwik.org/read.php?2,97666
+#
+MainRule "str:/core/datatable/filter/megre.php" "msg:PIWIK-RemoteShell Access" "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000086  ;
+      
+       
+#
+# sid: 42000085 | date: 2012-11-27 - 18:46 
+#
+# http://piwik.org/blog/2012/11/security-report-piwik-org-webserver-hacked-for-a-few-hours-on-2012-nov-26th/
+# http://forum.piwik.org/read.php?2,97666
+#
+MainRule "str:/core/loader.php" "msg:PIWIK-Backdoor-Access " "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000085  ;
+      
+       
+#
+# sid: 42000071 | date: 2012-10-18 - 09:37 
+#
+# http://www.securityfocus.com/bid/34236/info
+#
+MainRule "str:/scripts/setup.php" "msg:PHPMYADMIN setup.php - Access " "mz:URL" "s:$ATTACK:8" id:42000071  ;
+      
+       
+#
+# sid: 42000065 | date: 2012-10-18 - 09:16 
+#
+# www.magentocommerce.com/blog/comments/important-security-update-zend-platform-vulnerability/
+# www.magentocommerce.com/blog/update-zend-framework-vulnerability-security-update
+# www.exploit-db.com/exploits/19793/
+#
+MainRule "str:/api/xmlrpc" "msg:Magento XMLRPC-Exploit Attempt" "mz:URL|BODY" "s:$ATTACK:8" id:42000065  ;
+      
+             
+       
+#
+# sid: 42000055 | date: 2012-10-17 - 16:39 
+#
+# http://www.exploit-db.com/exploits/21851/
+#
+MainRule "str:/file/show.cgi/bin/" "msg:WEBMIN /file/show.cgi Remote Command Execution" "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000055  ;
+      
+       

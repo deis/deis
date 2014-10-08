@@ -1,5 +1,7 @@
 FROM golang:1.3
 
+ADD firewall /tmp/firewall
+
 ADD build.sh /go/src/github.com/deis/deis/router/build.sh
 
 WORKDIR /go/src/github.com/deis/deis/router

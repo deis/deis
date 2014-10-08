@@ -1,0 +1,1285 @@
+
+##########################################################################
+#
+# doxi_rulesets - rules fo nginx+naxsi
+# desc      : SCAN
+# file      : scanner.rules
+# created   : 2014-09-28 - 12:29
+# by        : nginx-goodies
+# download  : https://bitbucket.org/lazy_dogtown/doxi-rules
+#
+###########################################################################
+
+#
+# sid: 42000395 | date: 2014-09-25 - 17:03 
+#
+# https://gist.github.com/anonymous/929d622f3b36b00c0be1
+# https://www.virustotal.com/en/file/73b0d95541c84965fa42c3e257bb349957b3be626dec9d55efcc6ebcba6fa489/analysis/1411634118/
+#
+MainRule "str:thanks-rob" "msg:Bash0day - Scan-Attempt" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000395  ;
+      
+       
+#
+# sid: 42000394 | date: 2014-09-25 - 10:27 
+#
+# http://blog.erratasec.com/2014/09/bash-shellshock-scan-of-internet.html
+#
+MainRule "str:shellshock-scan" "msg:Shellshock-Masscan by Erratasec" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000394  ;
+      
+       
+#
+# sid: 42000390 | date: 2014-09-23 - 20:50 
+#
+# https://community.rapid7.com/community/infosec/blog/2013/01/29/security-flaws-in-universal-plug-and-play-unplug-dont-play
+#
+MainRule "str:/gatedesc.xml" "msg:UPNP-Scan" "mz:URL" "s:$UWA:8" id:42000390  ;
+      
+       
+#
+# sid: 42000389 | date: 2014-09-23 - 20:49 
+#
+# http://en.wikipedia.org/wiki/Proxy_auto-config
+#
+MainRule "str:wpad.dat" "msg:Open Proxy-Autoconfig-Scan" "mz:URL" "s:$UWA:8" id:42000389  ;
+      
+       
+#
+# sid: 42000388 | date: 2014-09-23 - 20:49 
+#
+# http://en.wikipedia.org/wiki/Proxy_auto-config
+# https://isc.sans.edu/forums/diary/Web+Scan+looking+for+infowhitelistpac/18675
+#
+MainRule "str:proxy.pac" "msg:Open Proxy-Autoconfig-Scan" "mz:URL" "s:$UWA:8" id:42000388  ;
+      
+       
+#
+# sid: 42000387 | date: 2014-09-23 - 20:49 
+#
+# https://isc.sans.edu/forums/diary/Web+Scan+looking+for+infowhitelistpac/18675
+#
+MainRule "str:/whitelist.pac" "msg:Open Proxy-Autoconfig-Scan" "mz:URL" "s:$UWA:8" id:42000387  ;
+      
+       
+#
+# sid: 42000366 | date: 2014-04-24 - 09:57 
+#
+# 
+#
+MainRule "str:openvas" "msg:OpenVAS - Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000366  ;
+      
+       
+#
+# sid: 42000365 | date: 2014-04-24 - 09:54 
+#
+# 
+#
+MainRule "str:sitelock" "msg:SiteLock Vulnerability Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000365  ;
+      
+       
+#
+# sid: 42000364 | date: 2014-04-24 - 09:54 
+#
+# 
+#
+MainRule "str:sucuri" "msg:Sucuri Vulnerability Scaner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000364  ;
+      
+       
+#
+# sid: 42000363 | date: 2014-04-24 - 09:52 
+#
+# http://www.botopedia.org/index.php?option=com_k2&view=item&id=350:scanalert-bot
+#
+MainRule "str:scanalert" "msg:ScanAlert Vulnerability Scaner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000363  ;
+      
+       
+#
+# sid: 42000362 | date: 2014-04-24 - 09:46 
+#
+# 
+#
+MainRule "str:.bash" "msg:Bash-Profile et al Scan" "mz:URL" "s:$UWA:8" id:42000362  ;
+      
+       
+#
+# sid: 42000361 | date: 2014-04-19 - 17:19 
+#
+# 
+#
+MainRule "str:java/" "msg:JAVA-UA, possible Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000361  ;
+      
+       
+#
+# sid: 42000339 | date: 2014-04-07 - 16:28 
+#
+# 
+#
+MainRule "str:/wp-content/themes/" "msg:WP-Content Themes-Scan" "mz:URL" "s:$UWA:8" id:42000339  ;
+      
+       
+#
+# sid: 42000338 | date: 2013-12-03 - 00:06 
+#
+# http://www.reddit.com/r/netsec/comments/1rrftk/optimizepress_wordpress_theme_0day_found_actively/
+# http://www.osirt.com/2013/11/wordpress-optimizepress-hack-file-upload-vulnerability/
+#
+MainRule "str:/wp-content/uploads/optpress/" "msg:WP-OptimizePress - Scan" "mz:URL" "s:$UWA:8" id:42000338  ;
+      
+       
+#
+# sid: 42000336 | date: 2013-11-27 - 22:19 
+#
+# http://www.exploit-db.com/exploits/29859/
+#
+MainRule "str:/login.rol" "msg:Apache Roller-Scan" "mz:URL" "s:$UWA:8" id:42000336  ;
+      
+       
+#
+# sid: 42000328 | date: 2013-10-21 - 09:05 
+#
+# 
+#
+MainRule "str:/ip_checkhost.cgi" "msg:GestioIP Remote Code Execution - Scan" "mz:URL" "s:$UWA:8" id:42000328  ;
+      
+       
+#
+# sid: 42000326 | date: 2014-03-19 - 01:52 
+#
+# https://github.com/robertdavidgraham/masscan
+# http://blog.erratasec.com/search/label/masscan
+# http://blog.erratasec.com/2013/09/masscan-entire-internet-in-3-minutes.html
+#
+MainRule "str:masscan/" "msg:MASSCAN - UA Detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000326  ;
+      
+       
+#
+# sid: 42000323 | date: 2013-10-12 - 00:21 
+#
+# http://www.vbulletin.org/forum/showthread.php?p=2443431
+#
+MainRule "str:/core/install/" "msg:vBulletinBoard-Scan " "mz:URL" "s:$UWA:8" id:42000323  ;
+      
+       
+#
+# sid: 42000319 | date: 2013-10-04 - 21:26 
+#
+# http://localhost.re/p/whmcs-527-vulnerability
+#
+MainRule "str:/register.php" "msg:Possible WHMCS - Scan" "mz:URL" "s:$UWA:8" id:42000319  ;
+      
+       
+#
+# sid: 42000317 | date: 2013-09-27 - 16:11 
+#
+# http://pastebin.com/NP64hTQr
+# http://blog.initiative-s.de/2013/09/kompromitierte-wordpress-blogs-werden-fuer-ddos-attacken-genutzt/
+#
+MainRule "str:wordpress/" "msg:Wordpress-UA, probably Botnet-Attack" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000317  ;
+      
+       
+#
+# sid: 42000316 | date: 2013-09-20 - 21:07 
+#
+# http://isc.sans.edu/diary/Arrays+in+requests%2C+PHP+and+DedeCMS/16625
+#
+MainRule "str:winhttprequest" "msg:WinHttpRequest - UA" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000316  ;
+      
+       
+      
+#
+# sid: 42000312 | date: 2013-09-04 - 20:44 
+#
+# 
+#
+MainRule "str:havij" "msg:Havij-SQL_scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000312  ;
+      
+       
+#
+# sid: 42000311 | date: 2013-09-04 - 20:41 
+#
+# http://superuser.com/questions/146133/what-is-apache-synapse
+#
+MainRule "str:synapse" "msg:poss. malicious Scanner using Fake UA Apache/Synapse" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000311  ;
+      
+       
+#
+# sid: 42000310 | date: 2013-08-23 - 21:56 
+#
+# et: from the list aug 23 2013
+#
+MainRule "str:http://http://" "msg:Abnormal double http:// in HTTP header," "mz:HEADERS" "s:$UWA:8" id:42000310  ;
+      
+       
+#
+# sid: 42000309 | date: 2013-08-22 - 15:46 
+#
+# 
+#
+MainRule "rx:^/http" "msg:Misformed Proxy-Scan" "mz:URL" "s:$UWA:8" id:42000309  ;
+      
+       
+#
+# sid: 42000307 | date: 2013-08-13 - 23:30 
+#
+# inspired by http://ceriksen.com/2013/01/12/wordpress-floating-social-media-link-plugins-remote-file-inclusion/
+#
+MainRule "str:/wp-content/plugins/" "msg:WP-Contents/Plugins Access" "mz:URL" "s:$UWA:8" id:42000307  ;
+      
+       
+#
+# sid: 42000306 | date: 2013-08-11 - 10:37 
+#
+# http://stateofsecurity.com/?p=467
+#
+MainRule "str:/soapcaller.bs" "msg:Morfeus - F*cking-Scanner " "mz:URL" "s:$UWA:8" id:42000306  ;
+      
+       
+#
+# sid: 42000305 | date: 2013-08-09 - 09:03 
+#
+# http://www.sourcesec.com/Lab/dlink_hnap_captcha.pdf
+#
+MainRule "str:/hnap1/" "msg:Possible HNAP-Exploit-Attempt" "mz:URL" "s:$UWA:8" id:42000305  ;
+      
+       
+#
+# sid: 42000304 | date: 2013-08-05 - 15:33 
+#
+# http://www.botsvsbrowsers.com/details/515320/index.html
+# http://www.spambotsecurity.com/forum/viewtopic.php?f=9&t=814
+#
+MainRule "str:windows-live-social-object-extractor-engine" "msg:Spambot Windows-Live-Social-Object-Extractor-Engine" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000304  ;
+      
+       
+#
+# sid: 42000300 | date: 2013-08-04 - 22:38 
+#
+# 
+#
+MainRule "str:exec%20master%2e%2esp%5fconfigure" "msg:SQLNinja Attempt To Recreate xp_cmdshell Using sp_configure" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000300  ;
+      
+       
+#
+# sid: 42000273 | date: 2013-07-12 - 13:05 
+#
+# et: https://lists.emergingthreats.net/pipermail/emerging-sigs/2013-July/022356.html
+#
+MainRule "str:/arachni" "msg:Arachni Web Scan (URL)" "mz:URL" "s:$ATTACK:8" id:42000273  ;
+      
+       
+#
+# sid: 42000272 | date: 2013-07-12 - 12:55 
+#
+# et: 2014869
+#
+MainRule "str:arachni" "msg:Arachni Scanner Web Scan (UA)" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000272  ;
+      
+       
+#
+# sid: 42000266 | date: 2013-06-10 - 13:50 
+#
+# 
+#
+MainRule "str:.idea/workspace.xml" "msg:IDE - workspace.xml - Scan" "mz:URL" "s:$UWA:8" id:42000266  ;
+      
+       
+#
+# sid: 42000258 | date: 2013-02-23 - 11:25 
+#
+# et 2015703
+#
+MainRule "str:brutus/" "msg:Brutus - Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000258  ;
+      
+       
+#
+# sid: 42000256 | date: 2013-02-23 - 11:11 
+#
+# et 2002667
+#
+MainRule "str:/sumthin" "msg:Sumthin Scan" "mz:URL" "s:$UWA:8" id:42000256  ;
+      
+       
+#
+# sid: 42000255 | date: 2013-02-23 - 11:10 
+#
+# et 2010720
+#
+MainRule "str:/thisdoesnotexist" "msg:PHP Scan Precursor" "mz:URL" "s:$ATTACK:8" id:42000255  ;
+      
+       
+#
+# sid: 42000251 | date: 2013-02-23 - 11:02 
+#
+# et: 2009029
+#
+MainRule "str:nv32ts" "msg:SQL-Injection-Scanner NV32ts" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000251  ;
+      
+       
+#
+# sid: 42000249 | date: 2013-02-23 - 10:31 
+#
+# et 2003616
+#
+MainRule "str:datacha0s" "msg:Webserver-Scanner DataCha0s" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000249  ;
+      
+       
+#
+# sid: 42000248 | date: 2013-02-23 - 10:26 
+#
+# et: 2011174
+#
+MainRule "str:czxt2s" "msg:SQL-Injection Scanner CZxt2s" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000248  ;
+      
+       
+      
+       
+#
+# sid: 42000241 | date: 2013-02-08 - 12:21 
+#
+# 
+#
+MainRule "str:/mysqldumper " "msg:MysqlDumper - Scanner " "mz:URL" "s:$UWA:8" id:42000241  ;
+      
+       
+#
+# sid: 42000240 | date: 2013-01-27 - 16:24 
+#
+# 
+#
+MainRule "str:apachebench" "msg:AB - ApacheBenchmark-Tool detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:4" id:42000240  ;
+      
+       
+#
+# sid: 42000238 | date: 2013-01-19 - 17:56 
+#
+# 
+#
+MainRule "str:sqlspider" "msg:NMAP SQLSpider-Scan" "mz:URL|ARGS|$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000238  ;
+      
+       
+#
+# sid: 42000227 | date: 2013-01-03 - 20:32 
+#
+# 
+#
+MainRule "str:zmeu" "msg:Scanner ZmEu exploit scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000227  ;
+      
+       
+#
+# sid: 42000226 | date: 2013-01-03 - 20:32 
+#
+# 
+#
+MainRule "str:mozilla/4.0 (compatible; msie 6.0; windows nt 5.0; myie2" "msg:Scanner WITOOL SQL Injection Scan" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000226  ;
+      
+       
+#
+# sid: 42000225 | date: 2013-01-03 - 20:30 
+#
+# 
+#
+MainRule "str:/actsensepostnottherenonotive" "msg:Wikto Backend Data Miner Scan" "mz:URL" "s:$UWA:8" id:42000225  ;
+      
+       
+#
+# sid: 42000224 | date: 2013-01-03 - 20:30 
+#
+# 
+#
+MainRule "str:/.adsensepostnottherenonobook" "msg:Scanner Wikto Scan" "mz:URL" "s:$UWA:8" id:42000224  ;
+      
+       
+#
+# sid: 42000223 | date: 2013-01-03 - 20:29 
+#
+# 
+#
+MainRule "str:webshag" "msg:Scanner  WebShag Web Application Scan" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000223  ;
+      
+       
+#
+# sid: 42000222 | date: 2013-01-03 - 20:29 
+#
+# 
+#
+MainRule "str:webcollage" "msg:Open-Proxy ScannerBot (webcollage-UA) " "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000222  ;
+      
+       
+#
+# sid: 42000221 | date: 2013-01-03 - 20:28 
+#
+# 
+#
+MainRule "str:python-httplib" "msg:Scanner Python-httplib" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:4" id:42000221  ;
+      
+       
+#
+# sid: 42000220 | date: 2013-01-03 - 20:28 
+#
+# 
+#
+MainRule "str:whcc/" "msg:Scanner WebHack Control Center" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000220  ;
+      
+       
+#
+# sid: 42000218 | date: 2013-01-03 - 20:26 
+#
+# 
+#
+MainRule "str:/<invalid>hello.html" "msg:Scanner WafWoof Web Application Firewall Detection Scan" "mz:URL" "s:$UWA:8" id:42000218  ;
+      
+       
+#
+# sid: 42000217 | date: 2013-01-03 - 20:24 
+#
+# 
+#
+MainRule "str:/manager/html/upload" "msg:Tomcat upload from external source" "mz:URL" "s:$UWA:8" id:42000217  ;
+      
+       
+#
+# sid: 42000209 | date: 2013-01-03 - 20:00 
+#
+# 
+#
+MainRule "str:dragostea" "msg:Scanner  Toata Scanner User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000209  ;
+      
+       
+#
+# sid: 42000208 | date: 2013-01-03 - 19:57 
+#
+# 
+#
+MainRule "str:sundayddr" "msg:Scanner Sipvicious" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000208  ;
+      
+       
+#
+# sid: 42000207 | date: 2013-01-03 - 19:56 
+#
+# 
+#
+MainRule "str:friendly-scanner" "msg:Scanner Sipvicious User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000207  ;
+      
+       
+#
+# sid: 42000206 | date: 2013-01-03 - 19:56 
+#
+# 
+#
+MainRule "str:sql power injector" "msg:Scanner SQL Power Injector SQL Injection" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000206  ;
+      
+       
+#
+# sid: 42000205 | date: 2013-01-03 - 19:55 
+#
+# 
+#
+MainRule "str:uil2pn" "msg:Scanner SQL Injection Attempt (Agent uil2pn)" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000205  ;
+      
+       
+#
+# sid: 42000204 | date: 2013-01-03 - 19:54 
+#
+# 
+#
+MainRule "str:pavuk" "msg:Scanner Pavuk  - Website Mirroring Tool for Off-line Analysis" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:4" id:42000204  ;
+      
+       
+#
+# sid: 42000203 | date: 2013-01-03 - 19:53 
+#
+# 
+#
+MainRule "str:paros/" "msg:Scanner Paros Proxy Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000203  ;
+      
+       
+#
+# sid: 42000202 | date: 2013-01-03 - 19:34 
+#
+# 
+#
+MainRule "str:/netsparker" "msg:Netsparker-Scan in Progress" "mz:URL" "s:$UWA:8" id:42000202  ;
+      
+       
+#
+# sid: 42000201 | date: 2013-01-03 - 19:34 
+#
+# 
+#
+MainRule "str:netsparker" "msg:Scanner Netsparker" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000201  ;
+      
+       
+#
+# sid: 42000200 | date: 2013-01-03 - 19:33 
+#
+# 
+#
+MainRule "str:mysqloit" "msg:Scanner Mysqloit  - Mysql Injection Takover Tool" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000200  ;
+      
+       
+#
+# sid: 42000199 | date: 2013-01-03 - 19:32 
+#
+# 
+#
+MainRule "str:prog.customcrawler" "msg:Scanner Mini MySqlatOr SQL Injection" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000199  ;
+      
+       
+#
+# sid: 42000198 | date: 2013-01-03 - 19:31 
+#
+# 
+#
+MainRule "str:network-services-auditor" "msg:Scanner IBM NSA User Agent" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000198  ;
+      
+       
+#
+# sid: 42000197 | date: 2013-01-03 - 19:30 
+#
+# 
+#
+MainRule "str:/etc/passwd?format=" "msg:Scanner Httprecon Web Server Fingerprint Scan" "mz:URL" "s:$UWA:8" id:42000197  ;
+      
+       
+#
+# sid: 42000196 | date: 2013-01-03 - 19:28 
+#
+# 
+#
+MainRule "str:mozilla/5.0 (compatible; grendel-scan" "msg:Scanner Grendel Web Scan" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000196  ;
+      
+       
+#
+# sid: 42000194 | date: 2013-01-03 - 19:26 
+#
+# 
+#
+MainRule "str:dav.pm" "msg:Scanner DavTest WebDav Vulnerability Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000194  ;
+      
+       
+#
+# sid: 42000193 | date: 2013-01-03 - 19:18 
+#
+# 
+#
+MainRule "str:crimscanner" "msg:Scanner crimscanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000193  ;
+      
+       
+#
+# sid: 42000192 | date: 2013-01-03 - 19:18 
+#
+# 
+#
+MainRule "str:cisco-torch" "msg:Scanner Cisco-torch" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000192  ;
+      
+       
+#
+# sid: 42000191 | date: 2013-01-03 - 19:14 
+#
+# 
+#
+MainRule "str:bsqlbf" "msg:Scanner bsqlbf Brute Force SQL Injection" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000191  ;
+      
+       
+#
+# sid: 42000190 | date: 2013-01-03 - 19:09 
+#
+# 
+#
+MainRule "str:autogetcolumn" "msg:Scanner  AutoGetColumn" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000190  ;
+      
+       
+#
+# sid: 42000189 | date: 2013-01-03 - 19:07 
+#
+# 
+#
+MainRule "str:/appscan_fingerprint" "msg:Scanner Watchfire AppScan Web App Vulnerability Scanner" "mz:URL" "s:$UWA:8" id:42000189  ;
+      
+       
+#
+# sid: 42000188 | date: 2014-04-24 - 09:41 
+#
+# 
+#
+MainRule "str:/acunetix" "msg:Acunetix-Scanner detected" "mz:URL" "s:$UWA:8" id:42000188  ;
+      
+       
+#
+# sid: 42000187 | date: 2013-01-03 - 18:47 
+#
+# 
+#
+MainRule "str:absinthe" "msg:Scanner Absinthe" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000187  ;
+      
+       
+#
+# sid: 42000186 | date: 2013-01-03 - 18:04 
+#
+# 
+#
+MainRule "str:\." "msg:Scanner / Broken UserAgent " "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000186  ;
+      
+       
+#
+# sid: 42000185 | date: 2013-01-03 - 18:02 
+#
+# 
+#
+MainRule "str:t34mh4k" "msg:Scanner t34mh4k" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000185  ;
+      
+       
+#
+# sid: 42000184 | date: 2013-01-03 - 18:01 
+#
+# 
+#
+MainRule "str:searchbot admin@google" "msg:Scanner Fake GoogleBot" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000184  ;
+      
+       
+#
+# sid: 42000183 | date: 2013-01-03 - 18:00 
+#
+# 
+#
+MainRule "str:neuralbot" "msg:Scanner neuralbot" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000183  ;
+      
+       
+#
+# sid: 42000182 | date: 2013-01-03 - 17:57 
+#
+# 
+#
+MainRule "str:gameboy" "msg:Scanner gameboy" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000182  ;
+      
+       
+#
+# sid: 42000181 | date: 2013-01-03 - 17:56 
+#
+# 
+#
+MainRule "str:webster pro" "msg:Scanner webster pro" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000181  ;
+      
+       
+#
+# sid: 42000180 | date: 2013-01-03 - 17:56 
+#
+# 
+#
+MainRule "str:picscout" "msg:Scanner picscout" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000180  ;
+      
+       
+#
+# sid: 42000179 | date: 2013-01-03 - 17:47 
+#
+# 
+#
+MainRule "str:digimarc webreader" "msg:Scanner digimarc webreader" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000179  ;
+      
+       
+#
+# sid: 42000178 | date: 2013-01-03 - 17:45 
+#
+# 
+#
+MainRule "str:w3af" "msg:Scanner w3af" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000178  ;
+      
+       
+#
+# sid: 42000177 | date: 2013-01-03 - 17:45 
+#
+# 
+#
+MainRule "str:n-stealth" "msg:Scanner n-stealth" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000177  ;
+      
+       
+#
+# sid: 42000176 | date: 2013-01-03 - 17:44 
+#
+# 
+#
+MainRule "str:chinaclaw" "msg:Scanner chinaclaw" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000176  ;
+      
+       
+#
+# sid: 42000175 | date: 2013-01-03 - 17:44 
+#
+# 
+#
+MainRule "str:wordpress hash grabber" "msg:Scanner wordpress hash grabber" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000175  ;
+      
+       
+#
+# sid: 42000174 | date: 2013-01-03 - 17:43 
+#
+# 
+#
+MainRule "str:http_get_vars" "msg:PHP-Injetion on UA" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000174  ;
+      
+       
+#
+# sid: 42000173 | date: 2013-01-03 - 17:43 
+#
+# 
+#
+MainRule "str:mozilla/5.0 sf" "msg:Scanner SkipFish" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000173  ;
+      
+       
+#
+# sid: 42000172 | date: 2013-01-03 - 17:41 
+#
+# 
+#
+MainRule "str:linux mozilla" "msg:Scanner XSSS (probably)" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000172  ;
+      
+       
+#
+# sid: 42000171 | date: 2013-01-03 - 17:39 
+#
+# 
+#
+MainRule "str:whisker" "msg:Scanner whisker" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000171  ;
+      
+       
+#
+# sid: 42000170 | date: 2013-01-03 - 17:37 
+#
+# 
+#
+MainRule "str:sqlmap" "msg:Scanner sqlmap" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000170  ;
+      
+       
+#
+# sid: 42000169 | date: 2013-01-03 - 17:36 
+#
+# 
+#
+MainRule "str:nmap" "msg:Scanner Nmap" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000169  ;
+      
+       
+#
+# sid: 42000167 | date: 2014-04-24 - 09:42 
+#
+# http://www.webhostingtalk.com/showthread.php?t=627447
+#
+MainRule "str:acunetix" "msg:Scanner Acunetix detected" "mz:$HEADERS_VAR:User-Agent|$HEADERS_VAR:Acunetix-Product" "s:$UWA:8" id:42000167  ;
+      
+       
+#
+# sid: 42000166 | date: 2013-01-03 - 17:30 
+#
+# 
+#
+MainRule "str:planetwork" "msg:Scanner planetwork" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000166  ;
+      
+       
+#
+# sid: 42000165 | date: 2013-01-03 - 17:30 
+#
+# 
+#
+MainRule "str:kmccrew" "msg:Scanner kmccrew" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000165  ;
+      
+       
+#
+# sid: 42000164 | date: 2013-01-03 - 17:30 
+#
+# 
+#
+MainRule "str:casper" "msg:Scanner casper" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000164  ;
+      
+       
+#
+# sid: 42000163 | date: 2013-01-03 - 17:29 
+#
+# 
+#
+MainRule "str:twengabot" "msg:Scanner twengabot" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000163  ;
+      
+       
+#
+# sid: 42000162 | date: 2013-01-03 - 17:29 
+#
+# 
+#
+MainRule "str:autoemailspider" "msg:Scanner autoemailspider" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000162  ;
+      
+       
+#
+# sid: 42000161 | date: 2013-01-03 - 17:27 
+#
+# 
+#
+MainRule "str:siphon" "msg:Scanner siphon" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000161  ;
+      
+       
+#
+# sid: 42000160 | date: 2013-01-03 - 17:26 
+#
+# 
+#
+MainRule "str:core-project/" "msg:Scanner core-project" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000160  ;
+      
+       
+#
+# sid: 42000159 | date: 2013-01-03 - 17:25 
+#
+# 
+#
+MainRule "str:webmole" "msg:Scanner webmole" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000159  ;
+      
+       
+#
+# sid: 42000158 | date: 2013-01-03 - 17:24 
+#
+# 
+#
+MainRule "str:webinspect" "msg:Scanner webinspect" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000158  ;
+      
+       
+#
+# sid: 42000157 | date: 2013-01-03 - 17:24 
+#
+# 
+#
+MainRule "str:s.t.a.l.k.e.r" "msg:Scanner s.t.a.l.k.e.r" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000157  ;
+      
+       
+#
+# sid: 42000156 | date: 2013-01-03 - 17:24 
+#
+# 
+#
+MainRule "str:safexplorer" "msg:Scanner safexplorer" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000156  ;
+      
+       
+#
+# sid: 42000155 | date: 2013-01-03 - 17:23 
+#
+# 
+#
+MainRule "str:poe-component-client" "msg:Scanner poe-component-client" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000155  ;
+      
+       
+#
+# sid: 42000154 | date: 2013-01-03 - 17:23 
+#
+# 
+#
+MainRule "str:pmafind" "msg:Scanner pmafind" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000154  ;
+      
+       
+#
+# sid: 42000153 | date: 2013-01-03 - 17:23 
+#
+# 
+#
+MainRule "str:n-stealth" "msg:Scanner n-stealth" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000153  ;
+      
+       
+#
+# sid: 42000152 | date: 2013-01-03 - 17:23 
+#
+# 
+#
+MainRule "str:nsauditor" "msg:Scanner nsauditor" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000152  ;
+      
+       
+#
+# sid: 42000151 | date: 2013-01-03 - 17:22 
+#
+# 
+#
+MainRule "str:whatweb" "msg:Scanner whatweb" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000151  ;
+      
+       
+#
+# sid: 42000150 | date: 2013-01-03 - 17:21 
+#
+# 
+#
+MainRule "str:.nasl" "msg:Scanner .nasl" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000150  ;
+      
+       
+#
+# sid: 42000149 | date: 2013-01-03 - 17:21 
+#
+# 
+#
+MainRule "str:nameofagent" "msg:Scanner nameofagent" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000149  ;
+      
+       
+#
+# sid: 42000148 | date: 2013-01-03 - 17:21 
+#
+# 
+#
+MainRule "str:murzillo" "msg:Scanner murzillo" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000148  ;
+      
+       
+#
+# sid: 42000147 | date: 2013-01-03 - 17:20 
+#
+# 
+#
+MainRule "str:mosiac" "msg:Scanner mosiac" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000147  ;
+      
+       
+#
+# sid: 42000146 | date: 2013-01-03 - 17:20 
+#
+# 
+#
+MainRule "str:morzilla" "msg:Scanner morzilla" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000146  ;
+      
+       
+#
+# sid: 42000145 | date: 2013-01-03 - 17:19 
+#
+# 
+#
+MainRule "str:morfeus" "msg:Scanner morfeus" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000145  ;
+      
+       
+#
+# sid: 42000144 | date: 2013-01-03 - 17:19 
+#
+# 
+#
+MainRule "str:jaascois" "msg:Scanner jaascois" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000144  ;
+      
+       
+#
+# sid: 42000143 | date: 2013-01-03 - 17:19 
+#
+# 
+#
+MainRule "str:internet-exprorer" "msg:Scanner internet-exprorer" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000143  ;
+      
+       
+#
+# sid: 42000142 | date: 2013-01-03 - 17:13 
+#
+# 
+#
+MainRule "str:gameboy" "msg:Scanner gameboy" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000142  ;
+      
+       
+#
+# sid: 42000141 | date: 2013-01-03 - 17:12 
+#
+# 
+#
+MainRule "str:fantombrowser" "msg:Scanner fantombrowser" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000141  ;
+      
+       
+#
+# sid: 42000140 | date: 2013-01-03 - 17:12 
+#
+# 
+#
+MainRule "str:extractor" "msg:Scanner extractor" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000140  ;
+      
+       
+#
+# sid: 42000139 | date: 2013-01-03 - 17:12 
+#
+# 
+#
+MainRule "str:exploit" "msg:Scanner exploit" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000139  ;
+      
+       
+#
+# sid: 42000138 | date: 2013-01-03 - 17:11 
+#
+# 
+#
+MainRule "str:datacha0s" "msg:Scanner datacha0s" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000138  ;
+      
+       
+#
+# sid: 42000137 | date: 2013-01-03 - 17:02 
+#
+# 
+#
+MainRule "str:copyrightcheck" "msg:Scanner copyrightcheck" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000137  ;
+      
+       
+#
+# sid: 42000136 | date: 2013-01-03 - 17:01 
+#
+# 
+#
+MainRule "str:copyguard" "msg:Scanner copyguard" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000136  ;
+      
+       
+#
+# sid: 42000135 | date: 2013-01-03 - 17:01 
+#
+# 
+#
+MainRule "str:cherrypicker" "msg:Scanner cherrypickernice" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000135  ;
+      
+       
+#
+# sid: 42000134 | date: 2013-01-03 - 17:00 
+#
+# 
+#
+MainRule "str:cgichk" "msg:Scanner cgichk" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000134  ;
+      
+       
+#
+# sid: 42000133 | date: 2013-01-03 - 17:00 
+#
+# 
+#
+MainRule "str:bwh3_user_agent" "msg:Scanner bwh3_user_agent" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000133  ;
+      
+       
+#
+# sid: 42000132 | date: 2013-01-03 - 17:00 
+#
+# 
+#
+MainRule "str:blackwidow" "msg:Scanner blackwidow" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000132  ;
+      
+       
+#
+# sid: 42000131 | date: 2013-01-03 - 16:59 
+#
+# 
+#
+MainRule "str:bilbo" "msg:Scanner bilbo" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000131  ;
+      
+       
+#
+# sid: 42000130 | date: 2013-01-03 - 16:59 
+#
+# 
+#
+MainRule "str:backdoor" "msg:Scanner backdoor" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000130  ;
+      
+       
+#
+# sid: 42000129 | date: 2013-01-03 - 16:59 
+#
+# 
+#
+MainRule "str:atomic_email_hunter" "msg:Scanner atomic_email_hunter" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000129  ;
+      
+       
+#
+# sid: 42000128 | date: 2013-01-03 - 16:58 
+#
+# 
+#
+MainRule "str:nessus" "msg:Nessus-Scanner detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000128  ;
+      
+       
+#
+# sid: 42000127 | date: 2013-01-03 - 16:57 
+#
+# 
+#
+MainRule "str:amiga-aweb/3.4" "msg:Scanner Amiga-Aweb" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000127  ;
+      
+       
+#
+# sid: 42000122 | date: 2012-12-21 - 13:59 
+#
+# http://markmaunder.com/2011/08/01/zero-day-vulnerability-in-many-wordpress-themes/
+# http://packetstormsecurity.org/files/view/105240/timthumb-exec.txt
+#
+MainRule "str:/timthumb.php" "msg:WP Timthumb - Access " "mz:URL" "s:$ATTACK:8" id:42000122  ;
+      
+       
+      
+       
+#
+# sid: 42000076 | date: 2012-10-20 - 11:26 
+#
+# VTI_BIN is a sharepoint-thingie
+#
+MainRule "str:/_vti_bin/" "msg:VTI_BIN - Access " "mz:URL" "s:$UWA:8" id:42000076  ;
+      
+       
+#
+# sid: 42000073 | date: 2012-10-20 - 10:33 
+#
+# 
+#
+MainRule "str:urllib/" "msg:Python-urllib UA, possible Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:4" id:42000073  ;
+      
+       
+#
+# sid: 42000051 | date: 2012-10-11 - 16:04 
+#
+# 
+#
+MainRule "str:nikto" "msg:Nikto-Scanner UA detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000051  ;
+      
+       
+#
+# sid: 42000046 | date: 2012-10-11 - 15:13 
+#
+# original request: /w00tw00t.at.ISC.SANS.DFind 
+# http://serverfault.com/questions/125607/dealing-with-http-w00tw00t-attacks
+#
+MainRule "str:/w00tw00t" "msg:DFind w00tw00t GET-Requests" "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000046  ;
+      
+       
+#
+# sid: 42000045 | date: 2012-10-11 - 15:09 
+#
+# emerging sid:2009158
+#
+MainRule "str:webshag" "msg:WebShag Web Application Scan Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000045  ;
+      
+       
+#
+# sid: 42000044 | date: 2012-10-11 - 14:59 
+#
+# emerging sid:2008617
+#
+MainRule "str:/.adsensepostnottherenonobook" "msg:Wikto Scan" "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000044  ;
+      
+       
+#
+# sid: 42000043 | date: 2012-10-11 - 14:59 
+#
+# emerging sid:2010960
+#
+MainRule "str:whatweb/" "msg:WhatWeb Web Application Fingerprint Scanner Default User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:4,$UWA:4" id:42000043  ;
+      
+       
+#
+# sid: 42000042 | date: 2012-10-11 - 14:58 
+#
+# emerging sid:2010768
+#
+MainRule "str: webcollage/" "msg:Open-Proxy ScannerBot (webcollage-UA)" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000042  ;
+      
+       
+#
+# sid: 42000040 | date: 2012-10-11 - 14:55 
+#
+# emerging sid:2009159
+#
+MainRule "str:toata dragostea" "msg:Toata Scanner User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000040  ;
+      
+       
+#
+# sid: 42000038 | date: 2012-10-11 - 14:53 
+#
+# emerging sid:2010508
+#
+MainRule "str:springenwerk" "msg:Springenwerk XSS Scanner User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000038  ;
+      
+       
+#
+# sid: 42000037 | date: 2012-10-11 - 14:52 
+#
+# emerging sid:2010953
+#
+MainRule "str:mozilla/5.0 sf" "msg:kipfish Web Application Scan Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000037  ;
+      
+       
+#
+# sid: 42000036 | date: 2012-10-11 - 14:47 
+#
+# DirBuster
+#
+MainRule "str:dirbuster" "msg:DirBuster Web App Scan in Progress" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000036  ;
+      
+       
+#
+# sid: 42000035 | date: 2012-10-11 - 14:45 
+#
+# emerging sid:2009154
+#
+MainRule "str:autogetcolumn" "msg:Automated Injection Tool User-Agent (AutoGetColumn)" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:4,$SQL:4,$UWA:4" id:42000035  ;
+      
+       
+#
+# sid: 42000034 | date: 2012-10-11 - 14:42 
+#
+# emerging
+#
+MainRule "str:absinthe" "msg:Absinthe SQL Injection Tool HTTP Header Detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:4,$SQL:4" id:42000034  ;
+      
+       
+#
+# sid: 42000031 | date: 2012-10-11 - 14:35 
+#
+# emerging sid:2013115
+#
+MainRule "str:/muieblackcat" "msg:Muieblackcat scanner" "mz:URL" "s:$ATTACK:8" id:42000031  ;
+      
+       
+#
+# sid: 42000019 | date: 2012-10-11 - 12:59 
+#
+# emerging sid:2009288
+#
+MainRule "str:revolt" "msg:Attack Tool Revolt Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8,$UWA:8" id:42000019  ;
+      
+       
+#
+# sid: 42000014 | date: 2012-10-11 - 12:44 
+#
+# emerging sid:2011286
+# eromang.zataz.com/2010/07/13/byroenet-casper-bot-search-e107-rce-scanner/
+#
+MainRule "str:mama" "msg:Bot Search RFI Scan (Casper-Like MaMa Cyber/ebes)" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000014  ;
+      
+       
+#
+# sid: 42000013 | date: 2012-10-11 - 12:42 
+#
+# emerging  sid:2011285
+# eromang.zataz.com/2010/07/13/byroenet-casper-bot-search-e107-rce-scanner/
+#
+MainRule "str:jcomers bot" "msg:Bot Search RFI Scan (Casper-Like, Jcomers Bot scan)" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000013  ;
+      
+       
+#
+# sid: 42000012 | date: 2012-10-11 - 12:39 
+#
+# emerging sid:2011244
+# eromang.zataz.com/2010/07/13/byroenet-casper-bot-search-e107-rce-scanner/
+#
+MainRule "str:mozilla/4.76 [ru] (x11; u; sunos 5.7 sun4u)" "msg:Bot Search RFI Scan (ByroeNet/Casper-Like sun4u)" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000012  ;
+      
+       
+#
+# sid: 42000011 | date: 2012-10-11 - 12:37 
+#
+# emerging sid:2011243# eromang.zataz.com/2010/07/13/byroenet-casper-bot-search-e107-rce-scanner/
+#
+MainRule "str:planetwork" "msg:Bot Search RFI Scan (ByroeNet/Casper-Like, planetwork" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000011  ;
+      
+       
+#
+# sid: 42000010 | date: 2012-10-11 - 12:36 
+#
+# emerging sid:2011175# eromang.zataz.com/2010/07/13/byroenet-casper-bot-search-e107-rce-scanner/
+#
+MainRule "str:casper bot" "msg:Casper Bot Search RFI Scan" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000010  ;
+      
+       
+#
+# sid: 42000009 | date: 2012-10-11 - 12:34 
+#
+# emerging sid:2009799
+#
+MainRule "str:m fucking scanner" "msg:PHP Attack Tool Morfeus F Scanner - M" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000009  ;
+      
+       
+#
+# sid: 42000008 | date: 2012-10-11 - 12:33 
+#
+# emerging  sid:2003466
+#
+MainRule "str:morpheus" "msg:PHP Attack Tool Morfeus F Scanner" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000008  ;
+      
+       
