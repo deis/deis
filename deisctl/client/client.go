@@ -13,7 +13,6 @@ type DeisCtlClient interface {
 	Install(targets []string) error
 	Journal(targets []string) error
 	List() error
-	RefreshUnits() error
 	Restart(targets []string) error
 	Scale(targets []string) error
 	Start(targets []string) error
@@ -61,10 +60,6 @@ func (c *Client) Journal(targets []string) error {
 
 func (c *Client) List() error {
 	return cmd.ListUnits(c.Backend)
-}
-
-func (c *Client) RefreshUnits() error {
-	return cmd.RefreshUnits()
 }
 
 func (c *Client) Restart(targets []string) error {

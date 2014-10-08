@@ -89,6 +89,17 @@ Options:
 	command := args["<command>"]
 	targets := args["<target>"].([]string)
 	setGlobalFlags(args)
+
+	// handle this command differently, since it doesn't
+	// require a client to be constructed
+	if command == "refresh-units" {
+		err = RefreshUnits()
+		if err != nil {
+			exit(err, 1)
+		}
+		return
+	}
+
 	// construct a client
 	c, err := client.NewClient("fleet")
 	if err != nil {
@@ -118,8 +129,6 @@ Options:
 		err = c.Config()
 	case "update":
 		err = c.Update()
-	case "refresh-units":
-		err = c.RefreshUnits()
 	default:
 		fmt.Printf(usage)
 		os.Exit(2)
