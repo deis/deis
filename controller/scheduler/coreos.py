@@ -189,7 +189,13 @@ class FleetHTTPClient(object):
         self._wait_for_destroy(name)
 
     def _destroy_container(self, name):
-        return self._delete_unit(name)
+        for attempt in range(RETRIES):
+            try:
+                self._delete_unit(name)
+                break
+            except:
+                if attempt == (RETRIES - 1):  # account for 0 indexing
+                    raise
 
     def run(self, name, image, entrypoint, command):  # noqa
         """Run a one-off command"""
