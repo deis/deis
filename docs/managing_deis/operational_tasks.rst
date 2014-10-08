@@ -29,6 +29,8 @@ and ``osdmap e7: 3 osds: 3 up, 3 in`` which means all three daemon containers ar
 
 We can also see from the ``pgmap`` that we have 192 placement groups, all of which are ``active+clean``.
 
+For additional information on troubleshooting Ceph, see `troubleshooting`_.
+
 Managing users
 ==============
 
@@ -47,3 +49,5 @@ You can use the ``deis perms`` command to promote a user to an administrator:
 .. code-block:: console
 
     $ deis perms:create john --admin
+
+.. _`troubleshooting`: http://docs.ceph.com/docs/firefly/rados/troubleshooting/
