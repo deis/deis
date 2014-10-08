@@ -22,7 +22,7 @@ func exit(err error, code int) {
 	os.Exit(code)
 }
 
-func setGlobalFlags(args map[string]interface{}) {
+func setGlobalFlags(args map[string]interface{}, setTunnel bool) {
 	fleet.Flags.Endpoint = args["--endpoint"].(string)
 	fleet.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
 	fleet.Flags.EtcdKeyFile = args["--etcd-keyfile"].(string)
@@ -33,11 +33,13 @@ func setGlobalFlags(args map[string]interface{}) {
 	fleet.Flags.StrictHostKeyChecking = args["--strict-host-key-checking"].(bool)
 	timeout, _ := strconv.ParseFloat(args["--request-timeout"].(string), 64)
 	fleet.Flags.RequestTimeout = timeout
-	tunnel := args["--tunnel"].(string)
-	if tunnel != "" {
-		fleet.Flags.Tunnel = tunnel
-	} else {
-		fleet.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
+	if setTunnel == true {
+		tunnel := args["--tunnel"].(string)
+		if tunnel != "" {
+			fleet.Flags.Tunnel = tunnel
+		} else {
+			fleet.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
+		}
 	}
 }
 
@@ -88,7 +90,12 @@ Options:
 	}
 	command := args["<command>"]
 	targets := args["<target>"].([]string)
-	setGlobalFlags(args)
+	setTunnel := true
+	// refresh-units doesn't need SSH tunneling
+	if command == "refresh-units" {
+		setTunnel = false
+	}
+	setGlobalFlags(args, setTunnel)
 	// construct a client
 	c, err := client.NewClient("fleet")
 	if err != nil {
