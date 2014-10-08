@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+require 'octokit'
+
+date_since = ARGV.first
+
+if date_since.nil? or date_since.empty?
+  puts "Usage: deis-contributions-since <yyyy-mm-dd>"
+  exit 1
+end
+
+# ignore project maintainers
+ignored_contributors = %w[bacongobbler carmstrong gabrtv mboersma]
+
+# make our GitHub calls here
+client = Octokit::Client.new(:access_token => ENV['GITHUB_ACCESS_TOKEN'])
+prs_obj = client.search_issues("repo:deis/deis is:pr is:merged merged:>#{date_since}", {:sort => 'updated', :order => 'desc', :per_page => 1000})
+issues_obj = client.search_issues("repo:deis/deis is:issue created:>#{date_since}", {:per_page => 1000})
+
+contributors = {}
+
+puts "-----"
+puts "Found #{issues_obj.items.size} issues opened on or after #{date_since}"
+puts "Found #{prs_obj.items.count} pull requests merged on or after #{date_since}"
+puts "-----"
+puts
+
+issues_obj.items.each do |issue|
+  author = issue.user.login.to_s
+  title = issue.title.to_s
+  if contributors[author].nil?
+    contributors[author] = [title]
+  else
+    contributors[author].push(title)
+  end
+end
+
+prs_obj.items.each do |pr|
+  author = pr.user.login.to_s
+  title = pr.title.to_s
+  if contributors[author].nil?
+    contributors[author] = [title]
+  else
+    contributors[author].push(title)
+  end
+  puts "- #{pr.title} - [\##{pr.number}](#{pr.pull_request.html_url}) ([@#{pr.user.login}](#{pr.user.html_url}))"
+end
+puts
+
+# remove project maintainers from the list of contributors
+contributors.reject! {|k,v| ignored_contributors.include?(k) }
+
+puts '### Community Shout-Outs'
+puts
+puts 'We want to thank the following Deis community members for creating GitHub issues,
+providing support to others, and working on various Deis branches:'
+puts
+contributors.sort_by {|k,v| k.downcase}.map do |author, titles|
+  puts "@#{author}: #{titles.join(", ")}"
+end
+puts
+puts "The Deis community continues to grow, and Deis wouldn't be here without you! If we slighted your contribution to this release, please let us know so we can update."
+puts
