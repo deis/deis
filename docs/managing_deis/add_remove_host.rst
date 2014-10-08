@@ -196,6 +196,12 @@ Finally, let's check the health of the cluster:
 
 We're done!
 
+Removing the host from etcd
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The etcd cluster still has an entry for the host we've removed, so we'll need to remove this entry.
+This can be achieved by making a request to the etcd API. See `remove machines`_ for details.
+
+.. _`remove machines`: https://coreos.com/docs/distributed-configuration/etcd-api/#remove-machines
 .. _`removing monitors`: http://ceph.com/docs/v0.80.5/rados/operations/add-or-rm-mons/#removing-monitors
 .. _`removing OSDs`: http://docs.ceph.com/docs/v0.80.5/rados/operations/add-or-rm-osds/#removing-osds-manual
-
