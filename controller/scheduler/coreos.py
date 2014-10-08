@@ -11,6 +11,7 @@ import time
 
 MATCH = re.compile(
     '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z-_]+)?.(?P<c_num>[0-9]+)')
+RETRIES = 3
 
 
 class UHTTPConnection(httplib.HTTPConnection):
@@ -133,8 +134,14 @@ class FleetHTTPClient(object):
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
                          "value": tagset})
-        # post unit to fleet
-        self._put_unit(name, {"desiredState": "launched", "options": unit})
+        # post unit to fleet and retry
+        for attempt in range(RETRIES):
+            try:
+                self._put_unit(name, {"desiredState": "launched", "options": unit})
+                break
+            except:
+                if attempt == (RETRIES - 1):  # account for 0 indexing
+                    raise
 
     def start(self, name):
         """Start a container"""
@@ -153,7 +160,7 @@ class FleetHTTPClient(object):
                     raise RuntimeError('container failed to start')
             time.sleep(1)
         else:
-            raise RuntimeError('container failed to start')
+            raise RuntimeError('container timeout on start')
 
     def _wait_for_destroy(self, name):
         for _ in range(30):
