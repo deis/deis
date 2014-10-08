@@ -81,7 +81,7 @@ Options:
   --known-hosts-file=<path>   file used to store remote machine fingerprints [default: ~/.ssh/known_hosts]
   --strict-host-key-checking  verify SSH host keys [default: true]
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
-  --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
+  --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 10.0]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, Version, true)
