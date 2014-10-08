@@ -4,8 +4,9 @@
 ```console
 $ pip install awscli
 Downloading/unpacking awscli
-  Downloading awscli-1.3.6.tar.gz (173kB): 173kB downloaded
-  ...
+  Downloading awscli-1.5.0.tar.gz (248kB): 248kB downloaded
+...
+Successfully installed awscli
 ```
 
 ## Configure aws-cli
@@ -36,15 +37,15 @@ For more information, see [optimal etcd cluster size](https://github.com/coreos/
 
 Deis clusters of less than 3 nodes are unsupported.
 
-## Choose number of routers
-By default, deisctl will provision 1 router. You can override this by scaling up:
-```console
-$ deisctl scale router=3
-```
-
 ## Customize user-data
+
 Edit [user-data](../coreos/user-data) and add a new discovery URL.
-You can get a new one by sending a request to http://discovery.etcd.io/new.
+You can get a new one by sending a request to http://discovery.etcd.io/new, or automatically
+generate a fresh discovery URL with:
+
+```console
+$ make discovery-url
+```
 
 ## Customize cloudformation.json
 Any of the parameter defaults defined in deis.template.json can be overridden
@@ -108,6 +109,9 @@ Your Deis cluster has successfully deployed.
 Please wait for all instances to come up as "running" before continuing.
 ```
 
+Check the AWS EC2 web control panel and wait until "Status Checks" for all instances have passed.
+This will take several minutes.
+
 ## Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from EC2, set
 DEISCTL_TUNNEL, and issue a `deisctl install`:
@@ -117,6 +121,12 @@ $ export DEISCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
 $ deisctl install platform && deisctl start platform
 ```
 Deisctl will deploy Deis and make sure the services start properly.
+
+## Choose number of routers
+By default, deisctl will provision 1 router. You can override this by scaling up:
+```console
+$ deisctl scale router=3
+```
 
 ## Configure load balancer
 The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis
