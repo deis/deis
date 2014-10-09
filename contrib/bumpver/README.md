@@ -33,6 +33,7 @@ $ ./contrib/bumpver/bumpver -f 0.13.0-dev 0.13.3 \
     client/deis.py \
     client/setup.py \
     deisctl/deis-version \
+    deisctl/deisctl.go \
     controller/deis/__init__.py \
     tests/bin/test-latest.sh
 $ # update from the first semver string found
@@ -42,6 +43,7 @@ $ ./contrib/bumpver/bumpver 0.14.0 \
     client/deis.py \
     client/setup.py \
     deisctl/deis-version \
+    deisctl/deisctl.go \
     contrib/coreos/user-data \
     controller/deis/__init__.py \
     tests/bin/test-latest.sh

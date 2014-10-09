@@ -28,6 +28,7 @@ deis repo
         client/deis.py \
         client/setup.py \
         deisctl/deis-version \
+        deisctl/deisctl.go \
         contrib/coreos/user-data \
         controller/deis/__init__.py \
         tests/bin/test-latest.sh
