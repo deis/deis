@@ -29,10 +29,13 @@ func TestController(t *testing.T) {
 		"/deis/domains",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+
+	//start etcd container
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
+
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
 	mock.RunMockDatabase(t, tag, etcdPort, utils.RandomPort())

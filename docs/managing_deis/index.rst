@@ -22,6 +22,7 @@ Managing Deis
     router_settings
     store_daemon_settings
     store_gateway_settings
+    store_metadata_settings
     store_monitor_settings
     operational_tasks
     platform_logging

@@ -79,8 +79,6 @@ $ deisctl install platform
 ■ ● ▴ Installing Deis...
 ▴ ■ ●
 
-Data containers...
-deis-logger-data.service: loaded
 Logging subsystem...
 deis-logger.service: loaded
 Storage subsystem...
@@ -105,8 +103,6 @@ $ deisctl start platform
 ■ ● ▴ Starting Deis...
 ▴ ■ ●
 
-Data containers...
-deis-logger-data.service: exited
 Logging subsystem...
 deis-logger.service: running
 deis-logspout.service: running
@@ -186,7 +182,6 @@ deis-builder.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-cache.service  		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller.service	    f936b7a5.../172.17.8.100	loaded	active	running
 deis-database.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-logger-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-logger.service	    	f936b7a5.../172.17.8.100	loaded	active	running
 deis-registry.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-router@1.service		f936b7a5.../172.17.8.100	loaded	active	running

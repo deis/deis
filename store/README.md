@@ -18,10 +18,12 @@ The store component is comprised of four containers:
 
 * [store-daemon](https://index.docker.io/u/deis/store-daemon/) - the daemon which serves data
 (in Ceph, this is an object store daemon, or OSD)
-* [store-monitor](https://index.docker.io/u/deis/store-monitor/) - the service responsible for
-keeping track of the cluster state (this is also called a monitor in Ceph)
 * [store-gateway](https://index.docker.io/u/deis/store-gateway/) - the blob store gateway,
 offering Swift and S3-compatible bucket APIs
+* [store-metadata](https://index.docker.io/u/deis/store-metadata/) - the metadata service necessary
+to use the CephFS shared filesystem (in Ceph, this is a metadata server daemon, or MDS)
+* [store-monitor](https://index.docker.io/u/deis/store-monitor/) - the service responsible for
+keeping track of the cluster state (this is also called a monitor in Ceph)
 
 These are all based upon the [store-base](https://github.com/deis/deis/tree/master/store/base) image,
 which is a Docker container that preinstalls Ceph.

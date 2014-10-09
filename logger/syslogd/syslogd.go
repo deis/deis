@@ -11,7 +11,7 @@ import (
 	"github.com/deis/deis/logger/syslog"
 )
 
-const logRoot = "/var/log/deis"
+const logRoot = "/data/logs"
 
 type handler struct {
 	// To simplify implementation of our handler we embed helper

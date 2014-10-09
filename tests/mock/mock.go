@@ -59,23 +59,22 @@ func RunMockCeph(t *testing.T, name string, cli *client.DockerCli, etcdPort stri
 	etcdutils.SetSingle(t, "/deis/store/hosts/"+utils.HostAddress(), utils.HostAddress(), etcdPort)
 
 	monitorName := name + "-monitor"
-	RunMockCephMonitor(t, monitorName, "6379", etcdPort)
+	RunMockCephMonitor(t, monitorName, etcdPort)
 
 	daemonName := name + "-daemon"
-	RunMockCephDaemon(t, daemonName, "6800", etcdPort)
+	RunMockCephDaemon(t, daemonName, etcdPort)
 
 	gatewayName := name + "-gateway"
 	RunMockCephGateway(t, gatewayName, utils.RandomPort(), etcdPort)
 }
 
 // RunMockCephMonitor runs a Ceph Monitor agent
-func RunMockCephMonitor(t *testing.T, name string, port string, etcdPort string) {
+func RunMockCephMonitor(t *testing.T, name string, etcdPort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	cephImage := "deis/store-monitor:" + utils.BuildTag()
 	ipaddr := utils.HostAddress()
-	cephAddr := ipaddr + ":" + port
-	fmt.Printf("--- Running deis/mock-ceph-monitor at %s\n", cephAddr)
+	fmt.Printf("--- Running deis/mock-ceph-monitor at %s\n", ipaddr)
 	done2 := make(chan bool, 1)
 	go func() {
 		done2 <- true
@@ -83,7 +82,6 @@ func RunMockCephMonitor(t *testing.T, name string, port string, etcdPort string)
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
-			"-p", port,
 			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "NUM_STORES=1",
@@ -97,13 +95,12 @@ func RunMockCephMonitor(t *testing.T, name string, port string, etcdPort string)
 }
 
 // RunMockCephDaemon sets up a single Ceph OSD
-func RunMockCephDaemon(t *testing.T, name string, port string, etcdPort string) {
+func RunMockCephDaemon(t *testing.T, name string, etcdPort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	cephImage := "deis/store-daemon:" + utils.BuildTag()
 	ipaddr := utils.HostAddress()
-	cephAddr := ipaddr + ":" + port
-	fmt.Printf("--- Running deis/mock-ceph-daemon at %s\n", cephAddr)
+	fmt.Printf("--- Running deis/mock-ceph-daemon at %s\n", ipaddr)
 	done := make(chan bool, 1)
 	go func() {
 		done <- true
@@ -111,7 +108,6 @@ func RunMockCephDaemon(t *testing.T, name string, port string, etcdPort string) 
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
-			"-p", port,
 			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--net=host",

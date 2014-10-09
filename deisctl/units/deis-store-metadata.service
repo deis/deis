@@ -1,0 +1,18 @@
+[Unit]
+Description=deis-store-metadata
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-metadata` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-store-metadata >/dev/null 2>&1 && docker rm -f deis-store-metadata || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-metadata` && docker run --name deis-store-metadata --rm -e HOST=$COREOS_PRIVATE_IPV4 --net host $IMAGE"
+ExecStopPost=-/usr/bin/docker stop deis-store-metadata
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

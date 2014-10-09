@@ -2,7 +2,6 @@ package fleet
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -34,12 +33,7 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan str
 	}
 
 	requestState := "launched"
-	var desiredState string
-	if strings.Contains(name, "-data.service") {
-		desiredState = "exited"
-	} else {
-		desiredState = "running"
-	}
+	desiredState := "running"
 
 	if err := c.Fleet.SetUnitTargetState(name, requestState); err != nil {
 		errchan <- err
