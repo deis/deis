@@ -1,3 +1,238 @@
+### v0.12.0 -> v0.13.0
+
+#### Features
+
+ - [`664b579`](https://github.com/deis/deis/commit/664b579e272bc2f557ea679c62edb78c78451d9b) router: Changed store hostname to deis-store
+ - [`74a018a`](https://github.com/deis/deis/commit/74a018a214d6b4330a18d7bcf862d069ef4903e3) client: "make installer" creates distributable CLI package
+ - [`e5bf847`](https://github.com/deis/deis/commit/e5bf847e651bd9cc57ae091d56815db3d59d0199) deisctl: add store support; drop database-data and registry-data
+ - [`4eb0089`](https://github.com/deis/deis/commit/4eb00899ea5e58a1cab2a72f0fe54e2fc5d9870e) registry: use store component for filesystem layers
+ - [`b7c2990`](https://github.com/deis/deis/commit/b7c299053abb173e2ad2a6e2af39b0169a1f9a4e) database: use deis-store and WAL-e to ship WAL logs
+ - [`b5cb742`](https://github.com/deis/deis/commit/b5cb7427b3e83381afa4aa6e52c29231c5a18862) store: add deis-store component
+ - [`481fe92`](https://github.com/deis/deis/commit/481fe92911253069cda1f43b91c4d9a73017e1ed) router: Improved router defaults
+ - [`1280daf`](https://github.com/deis/deis/commit/1280daf770263eff1c98caca4d10efa4d61304d2) controller: introduce deis/logspout
+ - [`0dcb368`](https://github.com/deis/deis/commit/0dcb3681f91536d9f12a8ecb834bb655362be1d8) controller: fix flake8 error.
+ - [`0254f28`](https://github.com/deis/deis/commit/0254f28a760558eeb544587fd9607a0719661d20) controller: restart the app if there is a failure.
+ - [`7df6688`](https://github.com/deis/deis/commit/7df6688d6ad92be4bbc456678d3275ef61cbcbb4) contrib: add bumpver tool to help with semantic version releases
+ - [`d1066c8`](https://github.com/deis/deis/commit/d1066c8ff1eaeae02d54c2349b226152cceb1a92) tests: Show all etcd keys on error
+ - [`c27bd53`](https://github.com/deis/deis/commit/c27bd53bae98abca3fddea2bee52136ee327e526) router: image without development libraries to reduce the size.
+ - [`0b0cb6f`](https://github.com/deis/deis/commit/0b0cb6fc6f85fc026697cc78a3ae6f8373eb4245) deisctl: add deis/publisher
+ - [`a9c98c1`](https://github.com/deis/deis/commit/a9c98c1b06a4976fdb84c90b265b0afefc919c45) cmd: refresh-units accepts -t for tag, branch, or SHA
+ - [`3158d8b`](https://github.com/deis/deis/commit/3158d8bbc99f5995c052547a120993158c2be80d) userdata: add deisctl to the coreos install
+ - [`ee5f8a3`](https://github.com/deis/deis/commit/ee5f8a3e8a5af58650971df1c2845eee3a800752) contrib/digitalocean: Use native CoreOS integration
+ - [`938f4eb`](https://github.com/deis/deis/commit/938f4eb3c2c490d0f92dce25d1fd4f684012dfee) cmd: add informative messages to install
+ - [`c45fade`](https://github.com/deis/deis/commit/c45fadeebe09026599d90193ffd594016cd7e7e7) deisctl: colorize deisctl
+ - [`615a2cb`](https://github.com/deis/deis/commit/615a2cb40aa7585428f596114b4270027e1e8ab5) start/stop: allow starting or stopping > 1 unit at a time
+ - [`077429c`](https://github.com/deis/deis/commit/077429cb472553ef2818c9fc27653d574203f3e7) start: wait on containers to start
+ - [`74e9337`](https://github.com/deis/deis/commit/74e9337f174a928d68d33f657afa4655bce2582b) installer: use /usr/local/bin and one-liner install scripts
+ - [`2ae953e`](https://github.com/deis/deis/commit/2ae953ece143a84fe891f10d039902acef28945b) Makefile: create shell script installer
+ - [`6d541aa`](https://github.com/deis/deis/commit/6d541aae5dd141ea8ee3bd1434c6d233770fb37d) config: first pass at config subcommand
+ - [`c182966`](https://github.com/deis/deis/commit/c1829662a1f02eadf7902963f62207f22ffaf5f4) restart: add restart command for convenience
+ - [`bf68a8e`](https://github.com/deis/deis/commit/bf68a8e64d9095ddbc151ca61fae5a868646aff7) journal: add journal support
+ - [`65ee91e`](https://github.com/deis/deis/commit/65ee91eaafdebf672c78d3205e7354806ecb8922) deisctl: move server env variable to etcd
+ - [`975ac6b`](https://github.com/deis/deis/commit/975ac6bb840bd492d1863564691598ed91233868) deisctl:  add new feautes and update core-os updatectl to updateservicectl
+ - [`b366679`](https://github.com/deis/deis/commit/b366679d4111b6b098f791ae9f559ed999c819e3) deisctl: get groupid and app id from etcd defaults to env variables
+ - [`8509f01`](https://github.com/deis/deis/commit/8509f0147dcc8921b781ec438876eadbfa1b8783) deisctl: removed unneccessary code
+ - [`558bfb0`](https://github.com/deis/deis/commit/558bfb0660ce1eea91625dfa8ae51f05bd928afe) deisctl:  add hooks and units dirs to constants
+ - [`cdd0150`](https://github.com/deis/deis/commit/cdd015093622f30e50f34aa3837892c0ec3433b1) hook: add pre/post update hooks
+ - [`74f5229`](https://github.com/deis/deis/commit/74f5229658ad61a7583e166d04cca63bccf75078) deisctl:  working version of updater latest
+ - [`d96d9bb`](https://github.com/deis/deis/commit/d96d9bbc1b97bd1c58c1bd0d9b9855ccf9453ee7) deisctl:  basic working version of updater
+ - [`4c509b1`](https://github.com/deis/deis/commit/4c509b1055e629aab3eb743688b8da90d5a32fb0) deisctl:  change flag to string
+ - [`5a5f859`](https://github.com/deis/deis/commit/5a5f85988b9b28a9b123b6bee611d36cf6db66b2) deisctl: fix package names
+ - [`d07a923`](https://github.com/deis/deis/commit/d07a923d167535380441f3c1b7e86d2502cdfcf1) deisctl: updated command instance
+ - [`cb18218`](https://github.com/deis/deis/commit/cb18218d3661ae94854166df759e59853273cd1b) deisctl: removed systemd and distibuted lock
+ - [`82ccd66`](https://github.com/deis/deis/commit/82ccd6689aa9180e5d075840d64ba2068efb4803) deisctl: add utils for client instance functions
+ - [`dcd22f1`](https://github.com/deis/deis/commit/dcd22f1b14571b9b65bfb4a7a9e11ec0b31bd19f) deisctl:  add update command and updatectl package
+
+#### Fixes
+
+ - [`4049d70`](https://github.com/deis/deis/commit/4049d70dd50f157650ab4975794c119d3335625b) deisctl: escape $HOME in post-install script
+ - [`99ccce4`](https://github.com/deis/deis/commit/99ccce4afa5ae7d8fc7338d4c472ce2d7cfdbae7) controller: use build image for publishing releases
+ - [`be5ad23`](https://github.com/deis/deis/commit/be5ad2327cc28c481c90fd623fc95fed60febca2) deisctl/units: don't fail units if ExecStopPost fails
+ - [`bc7853a`](https://github.com/deis/deis/commit/bc7853af475b6adab0f6be9b3cdd1708c90f15fc) deisctl/units: short-circuit if we don't have an image
+ - [`13401a4`](https://github.com/deis/deis/commit/13401a4fa6176ecd0b8dc90d1054fd6c43b97ea4) controller: increment run containers and keep db models
+ - [`02213f9`](https://github.com/deis/deis/commit/02213f979458f5c6266b0425ee3d246f9b3403e6) deisctl: bump default etcd timeout to 10s
+ - [`f81c766`](https://github.com/deis/deis/commit/f81c766c652c9c5c5e0083ca0044067a5bbe0945) controller: add retry on destroy
+ - [`3eb39c0`](https://github.com/deis/deis/commit/3eb39c067dd974905935c908f758608c5dbc7116) controller: work around fleet state reporting bug where units report as "failed" before they go "active"
+ - [`2c1ae82`](https://github.com/deis/deis/commit/2c1ae8206af983fbf1228a122ead8dcd2754a001) controller: add retries on container creation
+ - [`9e86f87`](https://github.com/deis/deis/commit/9e86f877dd15737e65506fe680b882b85111517a) deisctl: bump status pollwait sleeps to 3s
+ - [`ea51772`](https://github.com/deis/deis/commit/ea517729e7e1fa08476e13a088407ba8d85ec157) deisctl: don't set SSH tunnel for refresh-units command
+ - [`f6f11b0`](https://github.com/deis/deis/commit/f6f11b0c2fa14719764e1a95e68f742aa90c9437) tests: correct typo in cli installer versioning
+ - [`b20d2c8`](https://github.com/deis/deis/commit/b20d2c8941f491e27d5a19bfa1a4ad1bb8aedeba) publisher: skip when failed to retrieve container
+ - [`39a5e7f`](https://github.com/deis/deis/commit/39a5e7faf433a6b324fa09a6866f6558c585ee12) store: remove pg_num reconfiguration
+ - [`18cad13`](https://github.com/deis/deis/commit/18cad13b1415feb72377855f10d0d5c2b423eae3) (all): resolve store rebase issues
+ - [`0ceb125`](https://github.com/deis/deis/commit/0ceb1255ba32932ea275f460e1bb5529df5a5505) tests: dont use git remote on deis pull test
+ - [`8a3fa67`](https://github.com/deis/deis/commit/8a3fa672198804dfa3516ec1e2bf7764268ccaf0) builder: remove vfs on tests
+ - [`83e585e`](https://github.com/deis/deis/commit/83e585ea3a4be2e0109949449b1476c3a141fa20) (all): add store dependencies to tests
+ - [`4eb0089`](https://github.com/deis/deis/commit/4eb00899ea5e58a1cab2a72f0fe54e2fc5d9870e) registry: use store component for filesystem layers
+ - [`b7c2990`](https://github.com/deis/deis/commit/b7c299053abb173e2ad2a6e2af39b0169a1f9a4e) database: use deis-store and WAL-e to ship WAL logs
+ - [`b5cb742`](https://github.com/deis/deis/commit/b5cb7427b3e83381afa4aa6e52c29231c5a18862) store: add deis-store component
+ - [`29f2b40`](https://github.com/deis/deis/commit/29f2b406251fad0066a6f4d7bb81e18048007c5b) controller: alter logic on container creation
+ - [`53e93e8`](https://github.com/deis/deis/commit/53e93e8535c8d1e9753787b24405a5c7a4798b08) contrib/ec2: fix HVM AMIs for CoreOS 459.0.0
+ - [`f6093db`](https://github.com/deis/deis/commit/f6093db6a29578079e0773572d77cecc20cc1ff5) deisctl: refresh-units uses $HOME/.deis/units by default
+ - [`2ce2fca`](https://github.com/deis/deis/commit/2ce2fca501b4243d7948ab744abe7e8163a1701b) tests: Increased test timeout for smoke tests
+ - [`a2f1475`](https://github.com/deis/deis/commit/a2f1475f6a215a88b47d0607c23b8cedce337629) builder: compiled slug is no longer a tarball
+ - [`dcf37ea`](https://github.com/deis/deis/commit/dcf37ea00c138fc7b72a55f010eef4b87fd39ebc) router: Use official javascript content type
+ - [`5b474ae`](https://github.com/deis/deis/commit/5b474aee9d8e8dd83a9346b05e629df8fb001e63) deisctl: fix global unit display
+ - [`88a6eea`](https://github.com/deis/deis/commit/88a6eea678d833b7317c7d509a6ab2f5cefaffd7) builder: do not add build option if empty
+ - [`b989ab7`](https://github.com/deis/deis/commit/b989ab75d5407e189b5c83c40b2d7c122dceccf1) tests: mock postgresql should wait until initialization complete
+ - [`9dcdfd6`](https://github.com/deis/deis/commit/9dcdfd64d7254dea513173b0a75c92e9affcfd92) builder: pipe envvars to temp file
+ - [`59f3b7d`](https://github.com/deis/deis/commit/59f3b7d0d191117c55894c356d0da5a025a2eeaf) router: update to confd 0.5.x branch to fix sort issue
+ - [`6512cfd`](https://github.com/deis/deis/commit/6512cfd9f97f464f90569df96b0847d4a9f6c672) logspout: use custom log format
+ - [`e39edb6`](https://github.com/deis/deis/commit/e39edb65d74d88db5dab4c5744cfa2b1cc6bdb60) logger: trim newline character from message
+ - [`4a56691`](https://github.com/deis/deis/commit/4a5669111ed0915e360d09c3d97792b82f1edc79) deisctl: add timeoutstartsec to logspout
+ - [`2cdf3ee`](https://github.com/deis/deis/commit/2cdf3ee77046bda80baf33970b9f34d57102b929) deisctl: remove PostExecStop for global units
+ - [`15b0843`](https://github.com/deis/deis/commit/15b0843519a04fd76f37795aa75837153af9e21d) logspout: add etcd client request timeout
+ - [`a315026`](https://github.com/deis/deis/commit/a315026ab609e7ba9d334325932086e776184309) builder: suppress stderr
+ - [`eb27432`](https://github.com/deis/deis/commit/eb27432391b5e6d6e39813399901c889ce920963) builder: exit if response is bad
+ - [`bd384bd`](https://github.com/deis/deis/commit/bd384bda890ff709768b52615bfc019ed040fc02) tests: add registry log output on error
+ - [`ad2981d`](https://github.com/deis/deis/commit/ad2981d6cd82d352e7e00660a17e4661c9bc3ede) tests: shrink deis pull image by 200MB
+ - [`0b6635b`](https://github.com/deis/deis/commit/0b6635b38a37f9dc84c32a2c258b6e3ed7d52629) router: change nginx directory to /opt/nginx.
+ - [`ccffb4f`](https://github.com/deis/deis/commit/ccffb4f683f76e5cc4272bd5a077513f9a8b4fd0) router: use docker capability to decompress files.
+ - [`f7f00c1`](https://github.com/deis/deis/commit/f7f00c1dd9c7cc217f1aa30672b5e862ab381322) router: Set default values in /deis/router
+ - [`8ddb7dc`](https://github.com/deis/deis/commit/8ddb7dc122304b09d73b4445414b61e2c80ff594) controller: Use correct entrypoint for run
+ - [`ebeab96`](https://github.com/deis/deis/commit/ebeab96b2e8994488620f1757bd3ca82a2288efe) scheduler: allow proctypes with dashes and underscores
+ - [`78eb4ec`](https://github.com/deis/deis/commit/78eb4ec445de9927d94a0bc5e4062c0bc36b9c52) logger: log the error, but don't panic
+ - [`89c1f41`](https://github.com/deis/deis/commit/89c1f418a638d84c6dedb53759aa4b10b1f54163) logger: add more verbose message
+ - [`da17824`](https://github.com/deis/deis/commit/da17824ffb790e68bf9da1de3c29f67e1c705fce) logger: don't print a message on every incoming message
+ - [`aa98983`](https://github.com/deis/deis/commit/aa989830a7511d108fb91304a7ed178136afc904) builder: restore VOLUME instruction so builder does not stack overlay filesystems
+ - [`b38763a`](https://github.com/deis/deis/commit/b38763aaff45de0ea789686daf8df623490ce859) router: use ubuntu:14.04.
+ - [`0d114a6`](https://github.com/deis/deis/commit/0d114a65469e60c20e12ada7670b2d5f767ed92d) deisctl: typos in publisher unit file
+ - [`c2119d4`](https://github.com/deis/deis/commit/c2119d4f43e1970842e92f458c8f58e1c20d92f0) router: ubuntu-debotstrap doesn't have netstat and confd errors are redirected to /dev/null.
+ - [`f521001`](https://github.com/deis/deis/commit/f52100171cff438ff8d34c49333afa9e86b23ca8) router: build cleanup.
+ - [`fef3f1a`](https://github.com/deis/deis/commit/fef3f1aaf4c93ad623333680049b02227abb6073) builder: Reverted to default php buildpack
+ - [`edca91b`](https://github.com/deis/deis/commit/edca91bc54be2eac592629a35031afbb2095b718) builder: Non-root slugrunner and slugbuilder
+ - [`c092fed`](https://github.com/deis/deis/commit/c092fed075e71e87dcce0a1103fe7cba4d65c1ea) builder: exec the runner
+ - [`9c203ca`](https://github.com/deis/deis/commit/9c203ca084e579a232ece13b64e4cb76c30e8f2f) publisher: fixup entrypoint
+ - [`74ef30c`](https://github.com/deis/deis/commit/74ef30c5c4e8e61281d446ec0a2607c0dbc76128) publisher: use git sha tag for `make build`
+ - [`1655fa5`](https://github.com/deis/deis/commit/1655fa504206e192ea5cc640483a646baf9f5873) controller: bump timeout to 20 min for image to download
+ - [`af4a0d0`](https://github.com/deis/deis/commit/af4a0d0f5ce79142a3978a5a7abf6e620a3ae69e) controller: work around fleet state reporting on deis run
+ - [`f9c6828`](https://github.com/deis/deis/commit/f9c682856b0bb685ac1aa090ae3ab7daade508cb) deisctl/units: fix ncat loop in builder and registry
+ - [`640892a`](https://github.com/deis/deis/commit/640892a1d9a21ebae815040add2ecb744493afc8) tests: data containers should not be shared
+ - [`f8dd119`](https://github.com/deis/deis/commit/f8dd1198014a13d4dab67d3214c90819b9d926fd) makefile: use portable sed for make discovery-url
+ - [`c34be6b`](https://github.com/deis/deis/commit/c34be6b63868aabe11fc13bfba0159355e9c193a) deisctl: create unit download URL properly after move to subdir
+ - [`d45b4d9`](https://github.com/deis/deis/commit/d45b4d9c16c83b516ed3d2ead12f3bab07370c0f) tests: add correct key to ssh-agent
+ - [`c35fda4`](https://github.com/deis/deis/commit/c35fda48f65aac5a69c6061173e8baf613a3d32c) docs: clean up sources and treat warnings as errors
+ - [`e271725`](https://github.com/deis/deis/commit/e2717250843af3ba702717ac4a67279d22d4a692) tests: add DEISCTL_UNITS to test-setup
+ - [`3710994`](https://github.com/deis/deis/commit/37109941286fde45d962d93d0790e3af5c915b70) makefile: replace user-data inline
+ - [`4d853a7`](https://github.com/deis/deis/commit/4d853a773b447e1962162c7c44dbac29515d0931) tests: install required go dependencies
+ - [`d45dc77`](https://github.com/deis/deis/commit/d45dc77dba02ba5d4df186c27ac653292c3dacf8) tests: add log_phase helper
+ - [`c0887df`](https://github.com/deis/deis/commit/c0887df7417322f45c27f0b2e94f5175a6c58268) deisctl: install only deisctl
+ - [`2f17744`](https://github.com/deis/deis/commit/2f17744b3485e2d5fa28e1af23a533d5bbeaefba) readme: use relative link to deisctl in repo
+ - [`897bec2`](https://github.com/deis/deis/commit/897bec27c9810db90209ff5a4a6afeca53340697) CHANGELOG: use SSL for github and recreate change entries
+ - [`b91abd7`](https://github.com/deis/deis/commit/b91abd7ace1580f011da836c03e9d0e3f3e6aa74) router: gzip content types syntax fixed
+ - [`dfca1d1`](https://github.com/deis/deis/commit/dfca1d13bdcdf7567668d74e328b6c8aad90250e) (all): Announce the published port to etcd
+ - [`e8aa998`](https://github.com/deis/deis/commit/e8aa998e1a43406b67eb408de80fdbe7d8921b11) (all): Announce the published port to etcd
+ - [`85b7922`](https://github.com/deis/deis/commit/85b79224663428ac463e1e4ecc8b39f95a35a29d) deisctl: Use $HOME/.deis/units, don't expand tilde (~
+ - [`322bc2f`](https://github.com/deis/deis/commit/322bc2f37d711100060d175911a843b5854042a2) Makefile: static complication in installer
+ - [`742da09`](https://github.com/deis/deis/commit/742da09b30dbf9f82f9027b11103c378fee842c6) help: `deis help` lists all available commands
+ - [`5933146`](https://github.com/deis/deis/commit/59331461d559552fd1daccefc6dee8cbfa80a1cf) Makefile: static binary
+ - [`683d054`](https://github.com/deis/deis/commit/683d05429b146bb8b7d5e715cc12508fd5a22288) Dockerfile: deisctl is a static binary
+ - [`be4bef3`](https://github.com/deis/deis/commit/be4bef39543eb5bc391899e18ac95b65627a46f7) state: ignore intermittent timeouts when polling for UnitState
+ - [`e316572`](https://github.com/deis/deis/commit/e31657238b1e5a5f5b6d82e821f1300936370aa0) Makefile: ensure the installer makes /var/lib/deis/units readable
+ - [`d831066`](https://github.com/deis/deis/commit/d8310669d884a7a1b7cb152415c74001229f593b) registry: fix duplicate tag in registry-data unit file
+ - [`561fb31`](https://github.com/deis/deis/commit/561fb31baa434881886cb810074ddecf43c62153) units: show start-pre status when downloading data container base
+ - [`81371d5`](https://github.com/deis/deis/commit/81371d59c20325051e7287326a6b9648e53d2a61) cmd: only allow the router to scale past 1
+ - [`05f027c`](https://github.com/deis/deis/commit/05f027c6fc89ebc731da91ead64628c0e7e093da) cmd: create unit files as readable to all users
+ - [`043739e`](https://github.com/deis/deis/commit/043739ea7f87a70cf087cf17d98ecb9c02367e09) client: destroy all units if none specified
+ - [`40b084f`](https://github.com/deis/deis/commit/40b084f4384b83a79061dfc2a920649b2a0581fa) client: dramatically simplify scaling logic
+ - [`37c348e`](https://github.com/deis/deis/commit/37c348ef2f94ef62b51b09381c41f9abccea85e6) cmd: append "@1" if none supplied to install
+ - [`8f14e8a`](https://github.com/deis/deis/commit/8f14e8aea22f415b5e14624a4371b15b5baed327) client: destroy all units if none specified
+ - [`725ae0d`](https://github.com/deis/deis/commit/725ae0d84e51e466f31cd864521a856773015011) client: check if unit exists
+ - [`7bd1709`](https://github.com/deis/deis/commit/7bd17097de3e1a6d0f98d86daa95d863323d69ef) client: return error if unit list is empty
+ - [`1f79c8b`](https://github.com/deis/deis/commit/1f79c8bbc6f09861b2af05a20c31745430d0e92b) deisctl: use docopt's native version parser
+ - [`fd18f5b`](https://github.com/deis/deis/commit/fd18f5b77491a5950ddc56966f33a2f8eb71c308) makefile: expand paths for golint
+ - [`cc9e0a4`](https://github.com/deis/deis/commit/cc9e0a49785edf0b11be97d3b75df44464415570) units: add fleet.sock bind-mount for controller
+ - [`4497af2`](https://github.com/deis/deis/commit/4497af28bb2de71205623a25462fd374b2eb6180) cmd: allow `-p` to specify where to save local unit files
+ - [`318514e`](https://github.com/deis/deis/commit/318514e3bbf8f11577e70b65a52a180dbcab7691) client: look for unit files in ~/.deisctl before /var/lib/deis/units
+ - [`c325ca2`](https://github.com/deis/deis/commit/c325ca28c085acc5ffbec8432cec31d8e820da8e) debug: remove other vestige of unused --debug flag
+ - [`72cb9d8`](https://github.com/deis/deis/commit/72cb9d89fddded0057fc6de416170236eef45163) README: fix installer link to use http, not https
+ - [`54dc7df`](https://github.com/deis/deis/commit/54dc7dfc9aaea32a1f2d16897d05c90f2e56171c) README: update installer link
+ - [`ba85174`](https://github.com/deis/deis/commit/ba851748bde851f61462a0010d7c5f0d7055e155) installer: use deisctl-hack fork of makeself
+ - [`dce122d`](https://github.com/deis/deis/commit/dce122d2ec7a770b6f3dcb168ee591a83f6e6bc6) debug: remove unused --debug option
+ - [`9459a83`](https://github.com/deis/deis/commit/9459a835089a6fa7c3fd37d5e3d8b4da22214033) version: add special handling for --version
+ - [`3aaf764`](https://github.com/deis/deis/commit/3aaf764cceadb29d88499d716f669e38ef03359c) cmd: add explicit platform target
+ - [`4b9f157`](https://github.com/deis/deis/commit/4b9f157dbd63b0b3589b7f4bd3d6174b851aab8a) tests: explicitly set tunnel to null
+ - [`dce34ce`](https://github.com/deis/deis/commit/dce34ce3edc89f6eb12a334a2963625c46e5ab71) destroy: fix shadowing bug in destroy
+ - [`3227656`](https://github.com/deis/deis/commit/3227656ad05a171b30cb63f1c8b9cdd62f619744) units: controller waits for logger container in ExecStartPre
+ - [`471e4e8`](https://github.com/deis/deis/commit/471e4e87c899288ea130962c97be68103db18012) units: use @ in wildcard for router conflict
+ - [`c2b75ee`](https://github.com/deis/deis/commit/c2b75ee318ed1f6adaeadd941908d64b7d89f881) unit: match @ units properly
+ - [`f6e0b86`](https://github.com/deis/deis/commit/f6e0b86d21a077c8376c5eb17eca4e3a055c004d) destroy: wait for job state inactive on destroy
+ - [`e6d260a`](https://github.com/deis/deis/commit/e6d260ad150d185c53928b7d20486fb49f4db2f0) ssh: switch to default known hosts
+ - [`cba85ee`](https://github.com/deis/deis/commit/cba85eeff5797fb9957a22695b5e37c2792801f3) units: use default GOPATH for unit lookup, if available
+ - [`a6dc5a9`](https://github.com/deis/deis/commit/a6dc5a9818a43ce3895c3d4d00c1f0484494cc12) update: fix imports
+ - [`700ad7b`](https://github.com/deis/deis/commit/700ad7b1185c39369a4fa0972fe07553df89b23b) state: print inactive states without substates
+ - [`265cc3d`](https://github.com/deis/deis/commit/265cc3d8c765b42c7eb23dda0e4dc4291ee1df02) units: switch to systemd template units
+ - [`985f003`](https://github.com/deis/deis/commit/985f0039729bfdf8843344d4040b14668dd9b882) deisctl: fix utils error
+ - [`7358f4d`](https://github.com/deis/deis/commit/7358f4d7ea7dc28d35427fd7b14769745d9314cf) update: extract update to root
+ - [`1d629e5`](https://github.com/deis/deis/commit/1d629e566858456dfe6a1b34606ed38ad3358f12) update: add update service as systemd unit
+ - [`d6ccce2`](https://github.com/deis/deis/commit/d6ccce20c906d1ef2ec07a4c8b8a1149910544bd) updatectl: fix data container matching, fallback to envvar for version
+ - [`88745a8`](https://github.com/deis/deis/commit/88745a825d66d11caef6d588ae657268bb6f21f1) update: do not pull images on update
+ - [`329c372`](https://github.com/deis/deis/commit/329c372cd153eb481da25de20803262e56fda32b) constant: add new constant package
+ - [`7c2c5db`](https://github.com/deis/deis/commit/7c2c5db2c7d42c015e39d1d77ad2b372274a2518) (all): rename constant folder, go fmt
+ - [`63e7db9`](https://github.com/deis/deis/commit/63e7db9f804491aebeb321b5c751634c27f099e4) units: cleanup post-start output for builder/registry
+ - [`910ccef`](https://github.com/deis/deis/commit/910ccef6c735a02ff0e773f488969bf21c26aa7d) install: install registry after cache
+ - [`7687c1d`](https://github.com/deis/deis/commit/7687c1d7e26fe3a2a52041d53eeba7110d1da2e1) units: switch to new fleet X-ConditionMachineID
+ - [`4be9b61`](https://github.com/deis/deis/commit/4be9b6192b573f55d1fe26515a72911efaac1716) packaging: add version to package tarball
+ - [`557cefd`](https://github.com/deis/deis/commit/557cefde26489774e19d483b8d76554f611cb5cf) packaging: update Dockerfile and paths
+ - [`f7363fa`](https://github.com/deis/deis/commit/f7363fae83f1ee9c46c94198cc73c7d1939666bc) upstream: rebase against fleet upstream changes
+ - [`5602a17`](https://github.com/deis/deis/commit/5602a17f2573c0d4ae3b4dce78bf9dbf99185006) main: fix package path
+
+#### Documentation
+
+ - [`11b75e7`](https://github.com/deis/deis/commit/11b75e71e5b30a7737bfabde31f663ff0d719d4b) store: remove not-implemented store-data
+ - [`fe25f72`](https://github.com/deis/deis/commit/fe25f721244cb54da507e635cea0fa44419b1359) ec2: move "scale routers" section after platform installation
+ - [`ed04d75`](https://github.com/deis/deis/commit/ed04d755dee51b8ad89e8318b8e46df9955068a4) managing_deis: remove dead machine from etcd cluster
+ - [`46e0cfa`](https://github.com/deis/deis/commit/46e0cfad2631d10a575d9ac9b035f7ac6b121bb2) managing_deis: link to Ceph troubleshooting guide
+ - [`9080b77`](https://github.com/deis/deis/commit/9080b7766b2bf326fd2f446e1e5fd5c0cc2588a7) releases: update procedure for Deis releases
+ - [`17e2d1f`](https://github.com/deis/deis/commit/17e2d1f54fc34d0af86f81d0f59207b9619c60cb) managing_deis: rewrite several pages based on store
+ - [`fb7d9c4`](https://github.com/deis/deis/commit/fb7d9c40b12e44092d90f16f881ce7419036ed92) client: update docs with preferred deis CLI install method
+ - [`009ddf7`](https://github.com/deis/deis/commit/009ddf7685269dbdd036831128ab851fcbaefedc) (all): changed etcdctl references to deisctl
+ - [`779fdad`](https://github.com/deis/deis/commit/779fdad57260c2ab3c676a50ff958eebd5e37d16) managing_deis: add store documentation
+ - [`ca16746`](https://github.com/deis/deis/commit/ca167467dfcc7ada68ca2e77ca7e19e787a4fdc6) deisctl: remove sudo from deisctl installer examples
+ - [`104e6a8`](https://github.com/deis/deis/commit/104e6a8036016ee33e2be748c4b5038c3dd4b56e) standards: remove [skip ci] instructions
+ - [`e5d5c1e`](https://github.com/deis/deis/commit/e5d5c1e020a6a5ca9ecdb289a838594541dd2279) client readme: remove travis build status icon, as travis is no longer being used
+ - [`cbb3b0f`](https://github.com/deis/deis/commit/cbb3b0f038fe09548c67771e7f4e40a8e25387a5) logspout: update docs to reflect deis' fork
+ - [`188e30a`](https://github.com/deis/deis/commit/188e30a6b852b10d4225d3fd3705d051763373dd) deisctl: document DEISCTL_UNITS better
+ - [`ded85ec`](https://github.com/deis/deis/commit/ded85ece8995538fd27d353fa1050bfbec4b656c) installing_deis: remove xip.io instructions for ELB
+ - [`4b81149`](https://github.com/deis/deis/commit/4b81149cdfe57f490bc5590c6f049659accbdcf5) deisctl: clarify deisctl version when using install.sh
+ - [`6f096af`](https://github.com/deis/deis/commit/6f096af4c85a1625cf317bb319627d6537cf1975) vagrant: bump version to v1.6.5
+ - [`ed1dba5`](https://github.com/deis/deis/commit/ed1dba5fa37927d6494a630c72cbfc6f9988a93d) contrib/rackspace: add manual update instructions"
+ - [`5550a3a`](https://github.com/deis/deis/commit/5550a3afc683afc8ff669adf3e4a7f68348ae916) deisctl: add unit search paths behavior to README
+ - [`bafe331`](https://github.com/deis/deis/commit/bafe331f8c2f972946a1554c35ba612b514d919e) CHANGELOG: update for v0.12.0
+ - [`1c30515`](https://github.com/deis/deis/commit/1c30515f5aff816167159131ab5fc0cec0c31557) README: update dev documentation
+ - [`97b553a`](https://github.com/deis/deis/commit/97b553af90a24a3c4494ac3d16a9118fafa9d966) README: link to latest installers on S3, omit "how to build"
+ - [`486b422`](https://github.com/deis/deis/commit/486b4225db58f1bfd44437e094179c1ec5c7280e) readme: update install instructions
+ - [`e65ffcb`](https://github.com/deis/deis/commit/e65ffcbf1968ce1acf7105c938c86d2a40971d0d) readme: minor language updates
+ - [`b08541d`](https://github.com/deis/deis/commit/b08541dd6da1d32c57b153e217f41df8c919ac2e) readme: first pass at readme
+
+#### Maintenance
+
+ - [`4eb0089`](https://github.com/deis/deis/commit/4eb00899ea5e58a1cab2a72f0fe54e2fc5d9870e) registry: use store component for filesystem layers
+ - [`893414a`](https://github.com/deis/deis/commit/893414a5f0216851caa353efc4897d95e5cc9c12) (all): remove deis-database-data and deis-registry-data
+ - [`b5cb742`](https://github.com/deis/deis/commit/b5cb7427b3e83381afa4aa6e52c29231c5a18862) store: add deis-store component
+ - [`4bdfcb3`](https://github.com/deis/deis/commit/4bdfcb317e2054a0b299243b8e11353ffe50c4f9) contrib/gce: bump CoreOS to 459.0.0
+ - [`f83ceae`](https://github.com/deis/deis/commit/f83ceae687340f71e5af98580260851809002a64) (all): bump CoreOS to 459.0.0
+ - [`7a1feec`](https://github.com/deis/deis/commit/7a1feece3669ef85854f05e56949b2ae3c4754a6) controller: remove unused django-yamlfield from requirements
+ - [`5756746`](https://github.com/deis/deis/commit/57567465c63479765b988faf61b390c0e40fdc5d) controller: bump gunicorn to 19.1.1
+ - [`b9fe218`](https://github.com/deis/deis/commit/b9fe21830b1d986bfe1905721e7780f18a9abb8f) builder: migrate to cedar-14 stack
+ - [`70969eb`](https://github.com/deis/deis/commit/70969eb56a8ee97b9d77971e2cf071e6d7a49ceb) pip: update pip installs to 1.5.6
+ - [`c5e6e01`](https://github.com/deis/deis/commit/c5e6e01c98192aa5b5143c44029898d98dd449e4) (all): bump CoreOS to 452.0.0
+ - [`d45dc77`](https://github.com/deis/deis/commit/d45dc77dba02ba5d4df186c27ac653292c3dacf8) tests: add log_phase helper
+ - [`420bc97`](https://github.com/deis/deis/commit/420bc97afcafddc58abbc7e291ef1e3c3b547043) (all): Rename PUBLISH to EXTERNAL_PORT
+ - [`7595033`](https://github.com/deis/deis/commit/75950332cade70fba1602f3513881af5990430f0) cache: Remove moved systemd unit file
+ - [`9faf9fa`](https://github.com/deis/deis/commit/9faf9fac7bdbf03c4ef8a2530812b777576071de) (all): Rename PUBLISH to EXTERNAL_PORT
+ - [`ddb34d3`](https://github.com/deis/deis/commit/ddb34d3bc309cf2f0a402bcb9112a785f5bbba9e) (all): remove deis-builder-data
+ - [`ccb48ae`](https://github.com/deis/deis/commit/ccb48aee7585fb5869168fc77822d3002b25b641) (all): remove deis-builder-data
+ - [`05eeb77`](https://github.com/deis/deis/commit/05eeb771604a123bfe9cd3d8d55a422f37a9ca4f) deis: bump version to 0.13.0-dev
+ - [`f4446eb`](https://github.com/deis/deis/commit/f4446eb2ffada63e7513d84f4d84360eb7e153ef) deisctl: bump version to v0.13.0-dev
+ - [`2b93db0`](https://github.com/deis/deis/commit/2b93db06d0d5e79fa00e834935f5978960841e05) release: update version to v0.12.0
+ - [`1a38aff`](https://github.com/deis/deis/commit/1a38aff5d22a7bee965029e54fbdeb4b3a0b8fbb) units: remove deprecated X-Condition from fleet units
+ - [`006556e`](https://github.com/deis/deis/commit/006556e9ef8c437d0a1204b00c6e4902dd574e92) README: update current version to 0.12.0-dev
+ - [`539ed23`](https://github.com/deis/deis/commit/539ed23e7d972b6f8bda81b92f618ed09f8c08a3) deictl: bump version in sync with Deis
+ - [`23301e8`](https://github.com/deis/deis/commit/23301e84b52fb0354cbcfcad451f96627a8c4d53) godeps: bump fleet, updateservicectl, docker
+ - [`3d0bf7f`](https://github.com/deis/deis/commit/3d0bf7f17d916cf24f15cde34da4707a519862a8) flags: switch to DEISCTL_TUNNEL
+ - [`b610417`](https://github.com/deis/deis/commit/b6104173b1c6fadcf311650335b556670fcdbcc4) version: bump to 0.11.0
+
 ### v0.11.0 -> v0.12.0
 
 #### Features
