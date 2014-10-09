@@ -22,10 +22,8 @@ The store component is comprised of four containers:
 keeping track of the cluster state (this is also called a monitor in Ceph)
 * [store-gateway](https://index.docker.io/u/deis/store-gateway/) - the blob store gateway,
 offering Swift and S3-compatible bucket APIs
-* [store-data](systemd/deis-store-data@.service.template) - a container which exposes volumes
-to be used by the other containers
 
-These are all based upon the [store-base](https://index.docker.io/u/deis/store-base/) image,
+These are all based upon the [store-base](https://github.com/deis/deis/tree/master/store/base) image,
 which is a Docker container that preinstalls Ceph.
 
 ## Usage
