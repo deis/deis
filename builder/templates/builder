@@ -104,13 +104,14 @@ fi
 
 # build option string to send to slugbuilder
 BUILD_OPTS=""
-echo $CONFIG > tmp
+TMP_FILE=$(mktemp --tmpdir=$TMP_DIR)
+echo $CONFIG > $TMP_FILE
 while read envvar; do
     if [ "$envvar" != "" ]; then
         BUILD_OPTS+="-e $envvar "
     fi
-done < tmp
-rm tmp
+done < $TMP_FILE
+rm $TMP_FILE
 
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
