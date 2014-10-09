@@ -1122,7 +1122,7 @@ class DeisClient(object):
         response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
-            values = json.loads(config['values'])
+            values = config['values']
             self._logger.info("=== {} Config".format(app))
             items = values.items()
             if len(items) == 0:
@@ -1177,7 +1177,7 @@ class DeisClient(object):
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
-            values = json.loads(config['values'])
+            values = config['values']
             self._logger.info("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
@@ -1223,7 +1223,7 @@ class DeisClient(object):
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
-            values = json.loads(config['values'])
+            values = config['values']
             self._logger.info("=== {}".format(app))
             items = values.items()
             if len(items) == 0:
@@ -1267,7 +1267,7 @@ class DeisClient(object):
                 pass
         response = self._dispatch('get', "/api/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            config = json.loads(response.json()['values'])
+            config = response.json()['values']
             for k, v in config.items():
                 if interactive and raw_input("overwrite {} with {}? (y/N) ".format(k, v)) == 'y':
                     env_dict[k] = v
@@ -1542,9 +1542,9 @@ class DeisClient(object):
                 self._logger.info(("{k:<" + str(width) + "} {v}").format(**locals()))
 
         self._logger.info("\n--- Memory")
-        write(json.loads(config.get('memory', '{}')))
+        write(config.get('memory', '{}'))
         self._logger.info("\n--- CPU")
-        write(json.loads(config.get('cpu', '{}')))
+        write(config.get('cpu', '{}'))
 
     def ps(self, args):
         """
@@ -1740,7 +1740,7 @@ class DeisClient(object):
             raise ResponseError(response)
 
     def _print_tags(self, app, config):
-        items = json.loads(config['tags'])
+        items = config['tags']
         self._logger.info("=== {} Tags".format(app))
         if len(items) == 0:
             self._logger.info('No tags defined')

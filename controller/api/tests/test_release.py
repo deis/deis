@@ -54,7 +54,7 @@ class ReleaseTest(TransactionTestCase):
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
         # check to see that an initial release was created
         url = '/api/apps/{app_id}/releases'.format(**locals())
         response = self.client.get(url)
@@ -183,7 +183,7 @@ class ReleaseTest(TransactionTestCase):
         url = "/api/apps/{app_id}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['values'], json.dumps({}))
+        self.assertEqual(response.data['values'], {})
         # rollback to #3 and see that it has the correct config
         url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
         body = {'version': 3}
@@ -193,7 +193,7 @@ class ReleaseTest(TransactionTestCase):
         url = "/api/apps/{app_id}/config".format(**locals())
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        values = json.loads(response.data['values'])
+        values = response.data['values']
         self.assertIn('NEW_URL1', values)
         self.assertEqual('http://localhost:8080/', values['NEW_URL1'])
 
@@ -228,7 +228,7 @@ class ReleaseTest(TransactionTestCase):
         response = self.client.post(
             url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
         # check to see that an initial release was created
         url = '/api/apps/{app_id}/releases'.format(**locals())
         response = self.client.get(url)

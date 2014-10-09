@@ -4,7 +4,6 @@ RESTful view classes for presenting Deis API objects.
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import json
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
@@ -302,6 +301,27 @@ class AppConfigViewSet(BaseAppViewSet):
             raise Http404("No {} matches the given query.".format(
                 self.model._meta.object_name))
 
+    def pre_save(self, config):
+        """merge the old config with the new"""
+        previous_config = config.app.config_set.latest()
+        config.owner = previous_config.owner
+        if previous_config:
+            for attr in ['cpu', 'memory', 'tags', 'values']:
+                # Guard against migrations from older apps without fixes to
+                # JSONField encoding.
+                try:
+                    data = getattr(previous_config, attr).copy()
+                except AttributeError:
+                    data = {}
+                try:
+                    new_data = getattr(config, attr).copy()
+                except AttributeError:
+                    new_data = {}
+                data.update(new_data)
+                # remove config keys if we provided a null value
+                [data.pop(k) for k, v in new_data.items() if v is None]
+                setattr(config, attr, data)
+
     def post_save(self, config, created=False):
         if created:
             release = config.app.release_set.latest()
@@ -318,24 +338,8 @@ class AppConfigViewSet(BaseAppViewSet):
         return headers
 
     def create(self, request, *args, **kwargs):
-        request._data = request.DATA.copy()
-        # assume an existing config object exists
         obj = self.get_object()
         request.DATA['app'] = obj.app
-        for attr in ['cpu', 'memory', 'tags', 'values']:
-            # Guard against migrations from older apps without fixes to
-            # JSONField encoding.
-            try:
-                data = getattr(obj, attr).copy()
-            except AttributeError:
-                data = {}
-            if attr in request.DATA:
-                # merge config values
-                provided = json.loads(request.DATA[attr])
-                data.update(provided)
-                # remove config keys if we provided a null value
-                [data.pop(k) for k, v in provided.items() if v is None]
-            request.DATA[attr] = data
         try:
             return super(AppConfigViewSet, self).create(request, *args, **kwargs)
         except RuntimeError as e:

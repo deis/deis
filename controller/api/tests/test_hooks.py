@@ -163,7 +163,7 @@ class HookTest(TransactionTestCase):
         self.assertIn('results', response.data)
         build = response.data['results'][0]
         self.assertEqual(build['sha'], SHA)
-        self.assertEqual(build['procfile'], json.dumps(PROCFILE))
+        self.assertEqual(build['procfile'], PROCFILE)
         # test listing/retrieving container info
         url = "/api/apps/{app_id}/containers/web".format(**locals())
         response = self.client.get(url)

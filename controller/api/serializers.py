@@ -4,6 +4,7 @@ Classes to serialize the RESTful representation of Deis API models.
 
 from __future__ import unicode_literals
 
+import json
 import re
 
 from django.conf import settings
@@ -30,6 +31,18 @@ class OwnerSlugRelatedField(serializers.SlugRelatedField):
         """
         self.queryset = self.queryset.filter(owner=self.context['request'].user)
         return serializers.SlugRelatedField.from_native(self, data)
+
+
+class JSONFieldSerializer(serializers.WritableField):
+    def to_native(self, obj):
+        return obj
+
+    def from_native(self, value):
+        try:
+            val = json.loads(value)
+        except TypeError:
+            val = value
+        return val
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,6 +77,7 @@ class ClusterSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Cluster` model."""
 
     owner = serializers.Field(source='owner.username')
+    options = JSONFieldSerializer(source='options', required=False)
 
     class Meta:
         """Metadata options for a :class:`ClusterSerializer`."""
@@ -98,6 +112,7 @@ class BuildSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
+    procfile = JSONFieldSerializer(source='procfile', required=False)
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
@@ -110,14 +125,10 @@ class ConfigSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
-    values = serializers.ModelField(
-        model_field=models.Config()._meta.get_field('values'), required=False)
-    memory = serializers.ModelField(
-        model_field=models.Config()._meta.get_field('memory'), required=False)
-    cpu = serializers.ModelField(
-        model_field=models.Config()._meta.get_field('cpu'), required=False)
-    tags = serializers.ModelField(
-        model_field=models.Config()._meta.get_field('tags'), required=False)
+    values = JSONFieldSerializer(source='values', required=False)
+    memory = JSONFieldSerializer(source='memory', required=False)
+    cpu = JSONFieldSerializer(source='cpu', required=False)
+    tags = JSONFieldSerializer(source='tags', required=False)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
@@ -185,6 +196,7 @@ class AppSerializer(serializers.ModelSerializer):
     id = serializers.SlugField(default=utils.generate_app_name)
     cluster = serializers.SlugRelatedField(slug_field='id')
     url = serializers.Field(source='url')
+    structure = JSONFieldSerializer(source='structure', required=False)
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""
@@ -201,14 +213,6 @@ class AppSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
         if value == 'deis':
             raise serializers.ValidationError("App IDs cannot be 'deis'")
-        return attrs
-
-    def validate_structure(self, attrs, source):
-        """
-        Check that the structure JSON dict has non-negative ints as its values.
-        """
-        value = attrs[source]
-        models.validate_app_structure(value)
         return attrs
 
 
