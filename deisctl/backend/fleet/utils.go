@@ -42,8 +42,7 @@ func countUnits(units []string) (count []int, err error) {
 	for _, unit := range units {
 		_, n, err := splitJobName(unit)
 		if err != nil {
-			// FIXME: assume data container for now
-			continue
+			return []int{}, err
 		}
 		count = append(count, n)
 	}
@@ -67,7 +66,7 @@ func splitJobName(component string) (c string, num int, err error) {
 
 func splitTarget(target string) (component string, num int, err error) {
 	// see if we were provided a specific target
-	r := regexp.MustCompile(`^([a-z-]+)(\-data|@\d+)?$`)
+	r := regexp.MustCompile(`^([a-z-]+)(@\d+)?$`)
 	match := r.FindStringSubmatch(target)
 	// check for failed match
 	if len(match) != 3 {
@@ -76,9 +75,6 @@ func splitTarget(target string) (component string, num int, err error) {
 	}
 	if match[2] == "" {
 		component = match[1]
-		return component, 0, nil
-	} else if match[2] == "-data" {
-		component = match[1] + "-data"
 		return component, 0, nil
 	}
 	num, err = strconv.Atoi(match[2][1:])

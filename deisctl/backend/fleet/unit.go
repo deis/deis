@@ -24,18 +24,9 @@ func (c *FleetClient) Units(target string) (units []string, err error) {
 	if err != nil {
 		return
 	}
-	if strings.HasSuffix(target, "-data") {
-		for _, u := range allUnits {
-			if strings.Contains(u.Name, target) {
-				units = []string{u.Name}
-				return
-			}
-		}
-	} else {
-		for _, u := range allUnits {
-			if strings.Contains(u.Name, target) && !strings.HasSuffix(u.Name, "-data.service") {
-				units = append(units, u.Name)
-			}
+	for _, u := range allUnits {
+		if strings.Contains(u.Name, target) {
+			units = append(units, u.Name)
 		}
 	}
 	if len(units) == 0 {
@@ -78,22 +69,6 @@ func NewUnit(component string) (uf *unit.UnitFile, err error) {
 		return
 	}
 	uf, err = unit.NewUnitFile(string(template))
-	if err != nil {
-		return
-	}
-	return
-}
-
-// NewDataUnit takes a component type and returns a Fleet unit
-// that is hard-scheduled to a machine ID
-func NewDataUnit(component string, machineID string) (uf *unit.UnitFile, err error) {
-	template, err := readTemplate(component)
-	if err != nil {
-		return
-	}
-	// replace CHANGEME with random machineID
-	replaced := strings.Replace(string(template), "CHANGEME", machineID, 1)
-	uf, err = unit.NewUnitFile(replaced)
 	if err != nil {
 		return
 	}

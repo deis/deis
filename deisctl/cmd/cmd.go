@@ -27,12 +27,6 @@ const (
 	PlatformInstallCommand string = "platform"
 )
 
-var (
-	DefaultDataContainers = []string{
-		"logger-data",
-	}
-)
-
 func ListUnits(b backend.Backend) error {
 	err := b.ListUnits()
 	return err
@@ -110,7 +104,6 @@ func StartPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Starting Deis...")
 
-	startDataContainers(b, &wg, outchan, errchan)
 	startDefaultServices(b, &wg, outchan, errchan)
 
 	wg.Wait()
@@ -120,12 +113,6 @@ func StartPlatform(b backend.Backend) error {
 	fmt.Println()
 	fmt.Println("Please use `deis register` to setup an administrator account.")
 	return nil
-}
-
-func startDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	outchan <- fmt.Sprintf("Data containers...")
-	b.Start(DefaultDataContainers, wg, outchan, errchan)
-	wg.Wait()
 }
 
 func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
@@ -147,7 +134,14 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 
 	// wait for groups to come up
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+	wg.Wait()
+
+	b.Start([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
@@ -221,7 +215,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	b.Stop([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -289,7 +283,6 @@ func InstallPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Installing Deis...")
 
-	installDataContainers(b, &wg, outchan, errchan)
 	installDefaultServices(b, &wg, outchan, errchan)
 
 	wg.Wait()
@@ -301,12 +294,6 @@ func InstallPlatform(b backend.Backend) error {
 	return nil
 }
 
-func installDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	outchan <- fmt.Sprintf("Data containers...")
-	b.Create(DefaultDataContainers, wg, outchan, errchan)
-	wg.Wait()
-}
-
 func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -314,7 +301,7 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
@@ -385,7 +372,7 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	b.Destroy([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -490,14 +477,15 @@ Options:
 		"deis-controller.service",
 		"deis-database.service",
 		"deis-logger.service",
-		"deis-logger-data.service",
 		"deis-logspout.service",
 		"deis-publisher.service",
 		"deis-registry.service",
 		"deis-router.service",
 		"deis-store-daemon.service",
 		"deis-store-gateway.service",
+		"deis-store-metadata.service",
 		"deis-store-monitor.service",
+		"deis-store-volume.serviice",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit

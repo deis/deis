@@ -2,7 +2,6 @@ package fleet
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/coreos/fleet/job"
@@ -62,11 +61,7 @@ func (c *FleetClient) createUnitFile(target string) (unitName string, uf *unit.U
 	if err != nil {
 		return
 	}
-	if strings.HasSuffix(component, "-data") {
-		unitName, uf, err = c.createDataUnit(component)
-	} else {
-		unitName, uf, err = c.createServiceUnit(component, num)
-	}
+	unitName, uf, err = c.createServiceUnit(component, num)
 	if err != nil {
 		return unitName, uf, err
 	}
@@ -84,22 +79,4 @@ func (c *FleetClient) createServiceUnit(component string, num int) (name string,
 		return
 	}
 	return name, uf, nil
-}
-
-// Create data container unit
-func (c *FleetClient) createDataUnit(component string) (name string, uf *unit.UnitFile, err error) {
-	name, err = formatUnitName(component, 0)
-	if err != nil {
-		return
-	}
-	machineID, err := randomMachineID(c)
-	if err != nil {
-		return
-	}
-	uf, err = NewDataUnit(component, machineID)
-	if err != nil {
-		return
-	}
-	return name, uf, nil
-
 }

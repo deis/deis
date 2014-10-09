@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 if [[ -z $DOCKER_BUILD ]]; then
-  echo 
+  echo
   echo "Note: this script is intended for use by the Dockerfile and not as a way to build the controller locally"
-  echo 
+  echo
   exit 1
 fi
 
@@ -27,9 +27,6 @@ mkdir -p /app && chown -R deis:deis /app
 
 # create directory for confd templates
 mkdir -p /templates && chown -R deis:deis /templates
-
-# create directory for logs
-mkdir -p /var/log/deis && chown -R deis:deis /var/log/deis
 
 # install dependencies
 pip install -r /app/requirements.txt
