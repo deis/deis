@@ -29,7 +29,7 @@ which is a Docker container that preinstalls Ceph.
 ## Usage
 
 Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
-install, and start **deis/database**.
+install, and start **deis/store**.
 
 ## License
 
