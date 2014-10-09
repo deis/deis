@@ -30,7 +30,7 @@ using a specific Deis release (not latest), you'll want to use the deisctl built
 
 Builds are hosted on an S3 bucket at this URL format: `https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run`
 
-The deisctl release for Deis version 0.12 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-linux-amd64.run)
+The deisctl release for Deis version 0.13 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.13.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.13.0-linux-amd64.run)
 
 ### Building from source
 
