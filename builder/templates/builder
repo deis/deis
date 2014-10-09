@@ -61,9 +61,8 @@ GIT_SHA=$(get_git_sha $REPO_DIR $BRANCH)
 SHORT_SHA=${GIT_SHA:0:8}
 
 # define image names
-TMP_IMAGE="${APP_NAME}:git-${SHORT_SHA}"
-TARGET_IMAGE="{{ .deis_registry_host }}:{{ .deis_registry_port }}/${APP_NAME}"
-IMAGE_REFERENCE=$APP_NAME
+IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
+TMP_IMAGE="{{ .deis_registry_host }}:{{ .deis_registry_port }}/$IMAGE_NAME"
 
 # create app directories
 mkdir -p $BUILD_DIR $CACHE_DIR
@@ -142,10 +141,8 @@ fi
 echo
 puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
-docker tag $TMP_IMAGE $TARGET_IMAGE
-
 puts-step "Pushing image to private registry"
-docker push $TARGET_IMAGE  &>/dev/null
+docker push $TMP_IMAGE  &>/dev/null
 echo
 
 if [ -f $TMP_DIR/slug.tgz ]; then
@@ -169,7 +166,7 @@ DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g')
 
 puts-step "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
-DATA="{\"sha\":\"$GIT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$IMAGE_REFERENCE\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
+DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
 
 # notify the controller that the push was successful
 RESPONSE=$(curl -s -XPOST \
@@ -199,4 +196,4 @@ echo
 cd $REPO_DIR
 git gc &>/dev/null
 docker rm -f $JOB &>/dev/null
-docker rmi -f $TMP_IMAGE $TARGET_IMAGE &>/dev/null
+docker rmi -f $TMP_IMAGE &>/dev/null
