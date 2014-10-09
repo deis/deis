@@ -29,8 +29,10 @@ deis repo
         client/setup.py \
         deisctl/deis-version \
         deisctl/deisctl.go \
+        deisctl/README.md \
         contrib/coreos/user-data \
         controller/deis/__init__.py \
+        README.md \
         tests/bin/test-latest.sh
 
 - Commit and push the deis/deis release and tag

@@ -34,7 +34,9 @@ $ ./contrib/bumpver/bumpver -f 0.13.0-dev 0.13.3 \
     client/setup.py \
     deisctl/deis-version \
     deisctl/deisctl.go \
+    deisctl/README.md \
     controller/deis/__init__.py \
+    README.md \
     tests/bin/test-latest.sh
 $ # update from the first semver string found
 $ # this type of command should now be enough to bump everything
@@ -44,8 +46,10 @@ $ ./contrib/bumpver/bumpver 0.14.0 \
     client/setup.py \
     deisctl/deis-version \
     deisctl/deisctl.go \
+    deisctl/README.md \
     contrib/coreos/user-data \
     controller/deis/__init__.py \
+    README.md \
     tests/bin/test-latest.sh
 ```
 
