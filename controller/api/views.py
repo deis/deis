@@ -392,6 +392,8 @@ class AppContainerViewSet(BaseAppViewSet):
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)
+        else:
+            qs = qs.exclude(type='run')
         return qs
 
     def get_object(self, *args, **kwargs):
