@@ -98,6 +98,7 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	utils.Execute(t, cmd, params, false, "hello")
+	utils.Execute(t, "apps:run env", params, true, "GIT_SHA")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
