@@ -19,8 +19,6 @@ deis repo
       substituting the previous release for vU.V.W and the current one for vX.Y.Z.
     * proofread the new CHANGELOG.md to ensure it was generated correctly
     * ``git add CHANGELOG.md && git commit -m "docs(CHANGELOG): update for v.X.Y.Z"``
-- Merge git master into release branch locally
-    * ``git checkout release && git merge master``
 - Update version strings with the ``bumpver`` tool:
 
   .. code-block:: console
@@ -28,16 +26,15 @@ deis repo
     $ ./contrib/bumpver/bumpver X.Y.Z \
         version/version.go \
         client/deis.py \
-        client/README.rst \
         client/setup.py \
+        deisctl/deis-version \
         contrib/coreos/user-data \
         controller/deis/__init__.py \
-        docs/installing_deis/register-admin-user.rst \
-        docs/using_deis/install-client.rst
+        tests/bin/test-latest.sh
 
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'chore(release): update version to vX.Y.Z'``
-    * ``git push origin release``
+    * ``git push origin master``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - Publish CLI to pypi.python.org
