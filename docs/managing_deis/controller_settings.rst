@@ -9,7 +9,7 @@ The following settings are tunable for the :ref:`controller` component.
 
 Dependencies
 ------------
-Requires: :ref:`controller <controller_settings>`, :ref:`cache <cache_settings>`, :ref:`database <database_settings>`, :ref:`registry <registry_settings>`
+Requires: :ref:`cache <cache_settings>`, :ref:`database <database_settings>`, :ref:`registry <registry_settings>`
 
 Required by: :ref:`router <router_settings>`
 
