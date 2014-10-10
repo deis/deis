@@ -60,7 +60,8 @@ func listenContainers(client *docker.Client, etcdClient *etcd.Client, ttl time.D
 			if event.Status == "start" {
 				container, err := getContainer(client, event.ID)
 				if err != nil {
-					log.Fatal(err)
+					log.Println(err)
+					continue
 				}
 				publishContainer(etcdClient, container, ttl)
 			}

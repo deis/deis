@@ -84,14 +84,14 @@
 
   "Mappings" : {
     "CoreOSAMIs" : {
-      "us-east-1"      : { "PV" : "ami-fc60d494", "HVM" : "ami-fe60d496" },
-      "us-west-2"      : { "PV" : "ami-03de9d33", "HVM" : "ami-01de9d31" },
-      "us-west-1"      : { "PV" : "ami-2b81896e", "HVM" : "ami-2981896c" },
-      "eu-west-1"      : { "PV" : "ami-ee983999", "HVM" : "ami-ec98399b" },
-      "ap-southeast-1" : { "PV" : "ami-2e486f7c", "HVM" : "ami-2c486f7e" },
-      "ap-southeast-2" : { "PV" : "ami-ddd4b7e7", "HVM" : "ami-d3d4b7e9" },
-      "ap-northeast-1" : { "PV" : "ami-9994bd98", "HVM" : "ami-9794bd96" },
-      "sa-east-1"      : { "PV" : "ami-3119b32c", "HVM" : "ami-3319b32e" }
+      "us-east-1"      : { "PV" : "ami-aed360c6", "HVM" : "ami-acd360c4" },
+      "us-west-2"      : { "PV" : "ami-91014ca1", "HVM" : "ami-af014c9f" },
+      "us-west-1"      : { "PV" : "ami-8be5eece", "HVM" : "ami-89e5eecc" },
+      "eu-west-1"      : { "PV" : "ami-62903315", "HVM" : "ami-64903313" },
+      "ap-southeast-1" : { "PV" : "ami-34b89f66", "HVM" : "ami-3ab89f68" },
+      "ap-southeast-2" : { "PV" : "ami-01a9cb3b", "HVM" : "ami-07a9cb3d" },
+      "ap-northeast-1" : { "PV" : "ami-73e4ce72", "HVM" : "ami-75e4ce74" },
+      "sa-east-1"      : { "PV" : "ami-f98237e4", "HVM" : "ami-fb8237e6" }
     },
     "RootDevices" : {
       "HVM" : { "Name": "/dev/xvda" },

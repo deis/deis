@@ -24,13 +24,15 @@ you used to provision the server. You can make a symlink or shell alias for
     $ deis
     Usage: deis <command> [<args>...]
 
-If you don't have Python_ installed, you can download a binary executable
-version of the Deis client for Mac OS X, Linux amd64, or Windows:
+If you don't have Python_, install the latest `deis` binary executable for
+Linux or Mac OS X with this command:
 
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-0.13.0-dev-darwin.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-0.13.0-dev-linux.tgz
-    - https://s3-us-west-2.amazonaws.com/opdemand/deis-0.13.0-dev-win64.tgz
+.. code-block:: console
 
+    $ curl -sSL http://deis.io/deis-cli/install.sh | sh
+
+The installer puts `deis` in your current directory, but you should move it
+somewhere in your $PATH.
 
 Register a User
 ---------------

@@ -9,11 +9,11 @@
 To install the latest `deisctl` on Linux or Mac OS X, run this command:
 
 ```console
-$ curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+$ curl -sSL http://deis.io/deisctl/install.sh | sh
 ```
 
-The installer puts `deisctl` in */usr/local/bin* and downloads current Deis unit files
-to */var/lib/deis/units* one time.
+The installer puts `deisctl` in your current directory and downloads current Deis unit files
+to *$HOME/.deis/units* one time. You should move `deisctl` somewhere in your $PATH.
 
 To change installation options, save the installer directly from one of these links:
 
@@ -30,7 +30,7 @@ using a specific Deis release (not latest), you'll want to use the deisctl built
 
 Builds are hosted on an S3 bucket at this URL format: `https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run`
 
-The deisctl release for Deis version 0.12 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.12.0-linux-amd64.run)
+The deisctl release for Deis version 0.13 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.13.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.13.0-linux-amd64.run)
 
 ### Building from source
 
@@ -46,8 +46,8 @@ Then, export the `DEISCTL_UNITS` environment variable so deisctl can find the un
 $ export DEISCTL_UNITS="$PATH_TO_DEISCTL/units"
 ```
 
-This is also useful for specifying custom behavior on Deis units, such as using 
-fleet metadata to lock the builder to a more powerful node, or keep application 
+This is also useful for specifying custom behavior on Deis units, such as using
+fleet metadata to lock the builder to a more powerful node, or keep application
 nodes free of control plane elements.
 
 ## Remote Configuration
@@ -80,8 +80,6 @@ $ deisctl install platform
 ▴ ■ ●
 
 Scheduling data containers...
-deis-database-data.service: loaded
-deis-registry-data.service: loaded
 deis-logger-data.service: loaded
 Data containers scheduled.
 Scheduling service containers...
@@ -102,8 +100,6 @@ $ deisctl start platform
 ▴ ■ ●
 
 Launching data containers...
-deis-database-data.service: exited
-deis-registry-data.service: exited
 deis-logger-data.service: exited
 Data containers launched.
 Launching service containers...
@@ -164,11 +160,9 @@ UNIT				MACHINE				LOAD	ACTIVE	SUB
 deis-builder@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-cache@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller@1.service	f936b7a5.../172.17.8.100	loaded	active	running
-deis-database-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-database@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-logger-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-logger@1.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-registry-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
 deis-registry@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-router@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 ```

@@ -14,7 +14,7 @@ import (
 // path hierarchy for finding systemd service templates
 var templatePaths = []string{
 	os.Getenv("DEISCTL_UNITS"),
-	os.Getenv("HOME") + "/.deis/units",
+	path.Join(os.Getenv("HOME"), ".deis", "units"),
 	"/var/lib/deis/units",
 }
 

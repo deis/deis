@@ -19,6 +19,17 @@ clean:
 client:
 	pyinstaller deis.spec
 
+installer: build
+	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
+	PATH=./makeself:$$PATH BINARY=deis makeself.sh --bzip2 --current --nox11 dist \
+		dist/deis-cli-`grep '__version__\ =\ ' deis.py | cut -d' ' -f3 | tr -d \'`-`go env GOOS`-`go env GOARCH`.run \
+		"Deis CLI" "echo \
+		&& echo '\033[0;36mdeis\033[0m is in the current directory. Please' \
+		&& echo 'move \033[0;36mdeis\033[0m to a directory in your search PATH.' \
+		&& echo \
+		&& echo 'See http://docs.deis.io/ for documentation.' \
+		&& echo"
+
 setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
 	venv/bin/pip install -q flake8==2.2.2

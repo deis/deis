@@ -6,10 +6,9 @@ After=docker.socket etcd.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/publisher`; docker history $IMAGE >/dev/null || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/publisher` && docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-publisher >/dev/null && docker rm -f deis-publisher || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/publisher` && docker run --name deis-publisher --rm -e HOST=$COREOS_PRIVATE_IPV4 -e ETCD_HOST=$COREOS_PRIVATE_IPV4 -v /var/run/docker.sock:/var/run/docker.sock $IMAGE"
-ExecStopPost=/usr/bin/docker stop deis-publisher
 
 [Install]
 WantedBy=multi-user.target

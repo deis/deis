@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# wait until the docker image exists
+until docker history deis/slugrunner >/dev/null 2>&1; do
+  sleep 2
+done
+
+# tag and push
+docker tag deis/slugrunner:latest {{ .deis_registry_host }}:{{ .deis_registry_port }}/deis/slugrunner:latest
+docker push {{ .deis_registry_host }}:{{ .deis_registry_port }}/deis/slugrunner:latest

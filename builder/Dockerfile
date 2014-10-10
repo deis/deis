@@ -23,6 +23,9 @@ RUN apt-get update && apt-get install -yq \
     aufs-tools iptables lxc \
     lxc-docker-1.2.0
 
+# install jq for parsing json
+RUN curl http://stedolan.github.io/jq/download/linux64/jq > /usr/bin/jq && chmod 755 /usr/bin/jq
+
 # configure ssh server
 RUN rm /etc/ssh/ssh_host_*
 RUN dpkg-reconfigure openssh-server
@@ -60,9 +63,9 @@ WORKDIR /app
 ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
-
 RUN addgroup --quiet --gid 2000 slug && useradd slug --uid=2000 --gid=2000
 
+ADD templates/shim.dockerfile /home/git/
 ADD . /app
 ADD sshd_config /etc/ssh/sshd_config
 RUN chown -R root:root /app

@@ -15,18 +15,15 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/database}
 export ETCD_TTL=${ETCD_TTL:-10}
 
-# initialize data volume
-if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
-  mkdir -p /var/lib/postgresql/9.3
-  chown -R postgres:postgres /var/lib/postgresql
-  sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
-else
-  chown -R postgres:postgres /var/lib/postgresql
-fi
+export BUCKET_NAME=${BUCKET_NAME:-db_wal}
+export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
+
+# how many TTL/2 sleeps between backups -- 2160 is 3 hours
+export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-2160}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
-	echo "waiting for etcd at $ETCD..."
+	echo "database: waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -43,12 +40,38 @@ etcd_set_default adminPass ${PG_ADMIN_PASS:-changeme123}
 etcd_set_default user ${PG_USER_NAME:-deis}
 etcd_set_default password ${PG_USER_PASS:-changeme123}
 etcd_set_default name ${PG_USER_DB:-deis}
+etcd_set_default bucketName ${BUCKET_NAME}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 	echo "database: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
+
+# ensure WAL log bucket exists
+envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
+
+initial_backup=0
+if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
+  echo "database: no existing database found."
+  # check if there are any backups -- if so, let's restore
+  # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
+  if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
+    echo "database: restoring from backup..."
+    rm -rf /var/lib/postgresql/9.3/main
+    sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
+    chown -R postgres:postgres /var/lib/postgresql/9.3/main
+    chmod 0700 /var/lib/postgresql/9.3/main
+    echo "restore_command = 'envdir /etc/wal-e.d/env wal-e wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
+  else
+    echo "database: no backups found. Initializing a new database..."
+    initial_backup=1
+  fi
+  # either way, we mark the database as initialized
+  touch /var/lib/postgresql/9.3/main/initialized
+else
+  echo "database: existing data directory found. Starting postgres..."
+fi
 
 # run the service in the background
 sudo -i -u postgres /usr/lib/postgresql/9.3/bin/postgres \
@@ -75,11 +98,17 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 # perform a one-time reload to populate database entries
 /usr/local/bin/reload
 
-echo deis-database running...
+if [[ "${initial_backup}" == "1" ]] ; then
+  echo "database: performing an initial backup..."
+  # perform an initial backup
+  sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+fi
 
+echo "database: postgres is running..."
+
+count=1
 # publish the service to etcd using the injected HOST and EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
-
 	# configure service discovery
 	PORT=${PORT:-5432}
 	PROTO=${PROTO:-tcp}
@@ -93,6 +122,22 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
 		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
 		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+
+    # perform a backup whenever we hit BACKUP_FREQUENCY
+    # we really need cron :(
+    if [[ "${count}" -ge "${BACKUP_FREQUENCY}" ]] ; then
+      echo "database: performing a backup..."
+      if [[ -f /var/lib/postgresql/9.3/main/recovery.conf ]] ; then
+        echo "database: database is currently recovering from a backup. Will try again next loop..."
+      else
+        # perform a backup
+        sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+        # only retain the latest BACKUPS_TO_RETAIN backups
+        sudo -u postgres envdir /etc/wal-e.d/env wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
+        count=0
+      fi
+    fi
+    ((count++))
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 

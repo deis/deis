@@ -39,7 +39,7 @@ func checkUnitSubState(name string, desiredState string, outchan chan *schema.Un
 		if assertUnitSubState(name, desiredState, outchan, errchan) {
 			return
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(3000 * time.Millisecond)
 	}
 }
 
@@ -112,7 +112,7 @@ func checkUnitState(name string, desiredState string, outchan chan *schema.Unit,
 		if assertUnitState(name, desiredState, outchan, errchan) {
 			return
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(3000 * time.Millisecond)
 	}
 }
 

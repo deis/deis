@@ -1,6 +1,13 @@
 #!/bin/bash
 set -eo pipefail
 
+# Places cursor at start of line, so that subsequent text replaces existing text. For example;
+# "remote: Updated branch 'master' of 'repo'. Deploying to dev." becomes
+# "Updated branch 'master' of 'repo'. Deploying to dev."
+strip_remote_prefix() {
+    sed -u "s/^/"$'\e[1G'"/"
+}
+
 GITUSER=${GITUSER:-git}
 GITHOME="/home/$GITUSER"
 SELF=`which $0`
@@ -58,7 +65,7 @@ EOF
       # if we're processing a receive-pack on an existing repo, run a build
       if [[ $SSH_ORIGINAL_COMMAND == git-receive-pack* ]]; then
         # SECURITY: git user runs the builder as root (for docker access)
-        sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $refname >&2
+        sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $refname 2>&1 | strip_remote_prefix
       fi
     done
     ;;

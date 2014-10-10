@@ -10,13 +10,14 @@ import (
 )
 
 var (
-	appsCreateCmd  = "apps:create {{.AppName}}"
-	appsListCmd    = "apps:list"
-	appsRunCmd     = "apps:run echo hello"
-	appsOpenCmd    = "apps:open --app={{.AppName}}"
-	appsLogsCmd    = "apps:logs --app={{.AppName}}"
-	appsInfoCmd    = "apps:info --app={{.AppName}}"
-	appsDestroyCmd = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+	appsCreateCmd         = "apps:create {{.AppName}}"
+	appsCreateCmdNoRemote = "apps:create {{.AppName}} --no-remote"
+	appsListCmd           = "apps:list"
+	appsRunCmd            = "apps:run echo hello"
+	appsOpenCmd           = "apps:open --app={{.AppName}}"
+	appsLogsCmd           = "apps:logs --app={{.AppName}}"
+	appsInfoCmd           = "apps:info --app={{.AppName}}"
+	appsDestroyCmd        = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 )
 
 func TestApps(t *testing.T) {
@@ -80,7 +81,8 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 	}
 	utils.Execute(t, gitPushCmd, params, false, "")
 	utils.Curl(t, params)
-	utils.Execute(t, cmd, params, false, "")
+	utils.Execute(t, cmd, params, false, "created initial release")
+	utils.Execute(t, cmd, params, false, "listening on 5000...")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}

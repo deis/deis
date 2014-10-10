@@ -27,7 +27,7 @@ RUN useradd -s /bin/bash registry
 # add the docker registry source from github
 RUN git clone https://github.com/deis/docker-registry /docker-registry && \
     cd /docker-registry && \
-    git checkout f93804c && \
+    git checkout 94e7707 && \
     chown -R registry:registry /docker-registry
 
 # install boto configuration
@@ -38,15 +38,10 @@ RUN cd /docker-registry && pip install -r requirements/main.txt
 RUN pip install /docker-registry/depends/docker-registry-core
 
 # Install registry
-RUN pip install file:///docker-registry#egg=docker-registry[bugsnag]
+RUN pip install file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config.yml
 ENV SETTINGS_FLAVOR deis
-
-# create data volume
-RUN mkdir -p /data/repositories && chown -R registry:registry /data
-ENV STORAGE_PATH /data
-VOLUME /data
 
 # define the execution environment
 WORKDIR /app

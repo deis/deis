@@ -27,7 +27,7 @@ this component.
 Database
 --------
 The database component is a `PostgreSQL`_ server used to store durable
-platform state.
+platform state. Backups and WAL logs are pushed to :ref:`Store`.
 
 .. _cache:
 
@@ -62,8 +62,7 @@ is deployed across the platform automatically.
 Registry
 --------
 The registry component hosts `Docker`_ images on behalf of the platform.
-Image data is typically stored on a storage service like
-`Amazon S3`_ or `OpenStack Storage`_.
+Image data is stored by :ref:`Store`.
 
 .. _logger:
 
@@ -80,14 +79,22 @@ Router
 The router component uses `Nginx`_ to route traffic to
 application containers.
 
-.. _`Django`: https://www.djangoproject.com/
-.. _`Celery`: http://www.celeryproject.org/
-.. _`PostgreSQL`: http://www.postgresql.org/
-.. _`etcd`: https://github.com/coreos/etcd
-.. _`Redis`: http://redis.io/
-.. _`Git`: http://git-scm.com/
-.. _`Docker`: http://docker.io/
+.. _store:
+
+Store
+------
+The store component uses `Ceph`_ to store data for Deis components
+which need to store state (namely :ref:`Registry` and :ref:`Database`).
+
 .. _`Amazon S3`: http://aws.amazon.com/s3/
-.. _`OpenStack Storage`: http://www.openstack.org/software/openstack-storage/
-.. _`rsyslog`: http://www.rsyslog.com/
+.. _`Celery`: http://www.celeryproject.org/
+.. _`Ceph`: http://ceph.com
+.. _`Django`: https://www.djangoproject.com/
+.. _`Docker`: http://docker.io/
+.. _`etcd`: https://github.com/coreos/etcd
+.. _`Git`: http://git-scm.com/
 .. _`Nginx`: http://nginx.org/
+.. _`OpenStack Storage`: http://www.openstack.org/software/openstack-storage/
+.. _`PostgreSQL`: http://www.postgresql.org/
+.. _`Redis`: http://redis.io/
+.. _`rsyslog`: http://www.rsyslog.com/

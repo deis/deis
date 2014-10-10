@@ -14,7 +14,7 @@ import (
 
 const (
 	// Version of deisctl client
-	Version string = "0.13.0-dev"
+	Version string = "0.13.0"
 )
 
 func exit(err error, code int) {
@@ -22,7 +22,7 @@ func exit(err error, code int) {
 	os.Exit(code)
 }
 
-func setGlobalFlags(args map[string]interface{}) {
+func setGlobalFlags(args map[string]interface{}, setTunnel bool) {
 	fleet.Flags.Endpoint = args["--endpoint"].(string)
 	fleet.Flags.EtcdKeyPrefix = args["--etcd-key-prefix"].(string)
 	fleet.Flags.EtcdKeyFile = args["--etcd-keyfile"].(string)
@@ -33,11 +33,13 @@ func setGlobalFlags(args map[string]interface{}) {
 	fleet.Flags.StrictHostKeyChecking = args["--strict-host-key-checking"].(bool)
 	timeout, _ := strconv.ParseFloat(args["--request-timeout"].(string), 64)
 	fleet.Flags.RequestTimeout = timeout
-	tunnel := args["--tunnel"].(string)
-	if tunnel != "" {
-		fleet.Flags.Tunnel = tunnel
-	} else {
-		fleet.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
+	if setTunnel == true {
+		tunnel := args["--tunnel"].(string)
+		if tunnel != "" {
+			fleet.Flags.Tunnel = tunnel
+		} else {
+			fleet.Flags.Tunnel = os.Getenv("DEISCTL_TUNNEL")
+		}
 	}
 }
 
@@ -79,7 +81,7 @@ Options:
   --known-hosts-file=<path>   file used to store remote machine fingerprints [default: ~/.ssh/known_hosts]
   --strict-host-key-checking  verify SSH host keys [default: true]
   --tunnel=<host>             establish an SSH tunnel for communication with fleet and etcd [default: ]
-  --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 3.0]
+  --request-timeout=<secs>    amount of time to allow a single request before considering it failed. [default: 10.0]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, nil, true, Version, true)
@@ -88,7 +90,12 @@ Options:
 	}
 	command := args["<command>"]
 	targets := args["<target>"].([]string)
-	setGlobalFlags(args)
+	setTunnel := true
+	// refresh-units doesn't need SSH tunneling
+	if command == "refresh-units" {
+		setTunnel = false
+	}
+	setGlobalFlags(args, setTunnel)
 	// construct a client
 	c, err := client.NewClient("fleet")
 	if err != nil {

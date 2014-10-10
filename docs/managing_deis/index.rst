@@ -1,5 +1,5 @@
 :title: Managing Deis
-:description: Step-by-step guide for operations engineers setting up a private PaaS using Deis.
+:description: Guide for operations engineers managing a private PaaS using Deis.
 
 .. _managing_deis:
 
@@ -11,6 +11,8 @@ Managing Deis
 
 .. toctree::
 
+    add_remove_host
+    backing_up_data
     builder_settings
     cache_settings
     controller_settings
@@ -18,9 +20,10 @@ Managing Deis
     logger_settings
     registry_settings
     router_settings
-    managing_users
+    store_daemon_settings
+    store_gateway_settings
+    store_monitor_settings
+    operational_tasks
     platform_logging
     platform_monitoring
-    backing_up_data
-    ha_database
     security_considerations

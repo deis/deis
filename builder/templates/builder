@@ -1,189 +1,199 @@
-#!/usr/bin/env python
+#!/usr/bin/env bash
 #
 # builder hook called on every git receive-pack
 # NOTE: this script must be run as root (for docker access)
 #
-import hashlib
-import json
-import os
-import requests
-import shutil
-import subprocess
-import sys
-import tarfile
-import tempfile
-import uuid
-import yaml
+set -e
 
+ARGS=3
 
-def parse_args():
-    if len(sys.argv) < 3:
-        print('Usage: {} [user] [repo] [branch]'.format(sys.argv[0]))
-        sys.exit(1)
-    user, repo, branch = sys.argv[1], sys.argv[2], sys.argv[3]
-    app = repo.split('.')[0]
-    return user, repo, branch, app
+get_app_name() {
+    echo $1 | awk -F"." '{print $1}'
+}
 
+get_git_sha() {
+    repo=$1
+    branch=$2
+    branch_file="${repo}/${branch}"
+    cat $branch_file
+}
 
-def recursive_chown(path, uid, guid):
-    os.chown(os.path.join(path), uid, guid)
-    for root, dirs, files in os.walk(path):
-        for d in dirs:
-            os.chown(os.path.join(root, d), uid, guid)
-        for f in files:
-            os.chown(os.path.join(root, f), uid, guid)
+indent() {
+    echo "       $@"
+}
 
+puts-step() {
+    echo "-----> $@"
+}
 
-DOCKERFILE_SHIM = """FROM deis/slugrunner
-ADD slug.tgz /app
-"""
+puts-step-sameline() {
+    echo -n "-----> $@"
+}
 
+puts-warn() {
+    echo " !     $@"
+}
 
-if __name__ == '__main__':
-    user, repo, branch, app = parse_args()
-    # create required directories
-    repo_dir = os.path.join(os.getcwd(), repo)
-    build_dir = os.path.join(repo_dir, 'build')
-    cache_dir = os.path.join(repo_dir, 'cache')
-    # get sha of branch
-    with open(os.path.join(repo_dir, branch)) as f:
-        sha = f.read().strip('\n')
-    short_sha = sha[:8]
-    # define image names
-    tmp_image = "{app}:git-{short_sha}".format(**locals())
-    target_image = "{{ .deis_registry_host }}:{{ .deis_registry_port }}/{app}".format(**locals())
-    image_reference = "{app}".format(**locals())
-    for d in (cache_dir, build_dir):
-        if not os.path.exists(d):
-            os.mkdir(d)
-    try:
-        # create temporary directory
-        temp_dir = tempfile.mkdtemp(dir=build_dir)
-        # extract git branch
-        p = subprocess.Popen(
-            'git archive {branch} | tar -x -C {temp_dir}'.format(**locals()),
-            shell=True, cwd=repo_dir)
-        rc = p.wait()
-        if rc != 0:
-            raise Exception('Could not extract git archive')
-        dockerfile = os.path.join(temp_dir, 'Dockerfile')
-        procfile = os.path.join(temp_dir, 'Procfile')
-        # pull config to be used during build
-        body = {}
-        body['receive_user'], body['receive_repo'] = user, app
-        url = "{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/config"
-        headers = {'Content-Type': 'application/json', 'X-Deis-Builder-Auth': '{{ .deis_controller_builderKey }}'}
-        r = requests.post(url, headers=headers, data=json.dumps(body))
-        if r.status_code != 200:
-            raise Exception('Config hook error: {} {}'.format(r.status_code, r.text))
-        config_env = " ".join([ "-e {}='{}'".format(*kv) for kv in json.loads(r.json().get('values', '{}')).items()])
-        # some applications do not have a Procfile, so only check for a Dockerfile
-        if not os.path.exists(dockerfile):
-            # fix permissions
-            slug_uid = 2000
-            slug_guid = 2000
-            for path in (cache_dir, temp_dir):
-                recursive_chown(path, slug_uid, slug_guid)
-            if os.path.exists('/buildpacks'):
-                recursive_chown('/buildpacks', slug_uid, slug_guid)
-                build_cmd = "docker run -i -a stdin {config_env} -v {temp_dir}:/tmp/app -v {cache_dir}:/tmp/cache:rw -v /buildpacks:/tmp/buildpacks deis/slugbuilder".format(**locals())
-            else:
-                build_cmd = "docker run -i -a stdin {config_env} -v {temp_dir}:/tmp/app -v {cache_dir}:/tmp/cache:rw deis/slugbuilder".format(**locals())
-            # run slugbuilder in the background
-            p = subprocess.Popen(build_cmd, shell=True, cwd=repo_dir, stdout=subprocess.PIPE)
-            container = p.stdout.read().strip('\n')
-            # attach to slugbuilder output
-            p = subprocess.Popen('docker attach {container}'.format(**locals()), shell=True, cwd=temp_dir)
-            rc = p.wait()
-            if rc != 0:
-                raise Exception('Slugbuilder returned error code')
-            # extract slug
-            p = subprocess.Popen('docker cp {container}:/tmp/slug.tgz .'.format(**locals()), shell=True, cwd=temp_dir)
-            rc = p.wait()
-            if rc != 0:
-                raise Exception('Could not extract slug from container')
-            slug_path = os.path.join(temp_dir, 'slug.tgz')
-            # write out a dockerfile shim for slugbuilder
-            with open(dockerfile, 'w') as f:
-                f.write(DOCKERFILE_SHIM)
-        # build the docker image
-        print('-----> Building Docker image')
-        sys.stdout.flush(), sys.stderr.flush()
-        p = subprocess.Popen('docker build -t {tmp_image} .'.format(**locals()), shell=True, cwd=temp_dir)
-        rc = p.wait()
-        if rc != 0:
-            raise Exception('Could not build Docker image')
-        # tag the image
-        p = subprocess.Popen('docker tag {tmp_image} {target_image}'.format(**locals()), shell=True)
-        rc = p.wait()
-        if rc != 0:
-            raise Exception('Could not tag Docker image')
-        # push the image, output to /dev/null
-        print('-----> Pushing image to private registry')
-        sys.stdout.flush(), sys.stderr.flush()
-        p = subprocess.Popen('docker push {target_image}'.format(**locals()), shell=True,
-                              stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-        rc = p.wait()
-        if rc != 0:
-            raise Exception('Could not push Docker image')
-        # construct json body for posting to the build hook
-        body = {}
-        body['sha'] = sha
-        body['receive_user'] = user
-        body['receive_repo'] = app
-        body['image'] = image_reference
-        # use sha of branch
-        with open(os.path.join(repo_dir, branch)) as f:
-            body['sha'] = f.read().strip('\n')
-        # extract the user-defined Procfile and any default_process_types
-        procfile_dict = {}
-        p = subprocess.Popen('tar --to-stdout -xzf {temp_dir}/slug.tgz ./.release'.format(**locals()), shell=True, cwd=temp_dir,
-                            stdout=subprocess.PIPE, stderr=open(os.devnull, 'w'))
-        rc = p.wait()
-        if rc == 0:
-            stdout = p.stdout.read()
-            default_process_types = yaml.safe_load(stdout).get('default_process_types', {})
-            procfile_dict.update(default_process_types)
-        if os.path.exists(procfile):
-            with open(procfile) as f:
-                raw_procfile = f.read()
-                procfile_dict.update(yaml.safe_load(raw_procfile))
-        if procfile_dict:
-            body['procfile'] = json.dumps(procfile_dict)
-        # extract Dockerfile
-        if os.path.exists(dockerfile):
-            with open(dockerfile) as f:
-                body['dockerfile'] = f.read()
-        # trigger build hook
-        sys.stdout.write('\n       Launching... ')
-        sys.stdout.flush()
-        url = "{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
-        headers = {'Content-Type': 'application/json', 'X-Deis-Builder-Auth': '{{ .deis_controller_builderKey }}'}
-        r = requests.post(url, headers=headers, data=json.dumps(body))
-        if r.status_code != 200:
-            raise Exception('Build hook error: {} {}'.format(r.status_code, r.text))
-        # write out results for git user
-        response = r.json()
-        sys.stdout.write('done, v{version}\n\n'.format(**response['release']))
-        print("-----> {app} deployed to Deis".format(**locals()))
-        domains = response.get('domains', [])
-        if domains:
-            for domain in domains:
-                print("       http://{domain}".format(**locals()))
-        else:
-            print('       No domains found for this application')
-        print('\n       To learn more, use `deis help` or visit http://deis.io\n')
-        p = subprocess.Popen("git gc", shell=True, cwd=repo_dir)
-        p.wait()
-    except Exception as e:
-        print(e.message)
-        sys.exit(1)
-    finally:
-        l = locals()
-        shutil.rmtree(temp_dir)
-        if 'container' in l:
-            subprocess.Popen('docker rm -f {container}'.format(**l), shell=True,
-                             stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
-        if 'tmp_image' in l and 'target_image' in l:
-            subprocess.Popen('docker rmi -f {tmp_image} {target_image}'.format(**l), shell=True,
-                             stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+usage() {
+    echo "Usage: $0 <user> <repo> <branch>"
+}
+
+if [ $# -ne $ARGS ]; then
+    usage
+    exit 1
+fi
+
+USER=$1
+REPO=$2
+BRANCH=$3
+APP_NAME=$(get_app_name $REPO)
+
+cd $(dirname $0) # ensure we are in the root dir
+
+ROOT_DIR=$(pwd)
+DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
+REPO_DIR="${ROOT_DIR}/${REPO}"
+BUILD_DIR="${REPO_DIR}/build"
+CACHE_DIR="${REPO_DIR}/cache"
+
+# get git sha of branch
+GIT_SHA=$(get_git_sha $REPO_DIR $BRANCH)
+SHORT_SHA=${GIT_SHA:0:8}
+
+# define image names
+IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
+TMP_IMAGE="{{ .deis_registry_host }}:{{ .deis_registry_port }}/$IMAGE_NAME"
+
+# create app directories
+mkdir -p $BUILD_DIR $CACHE_DIR
+# create temporary directory inside the build dir for this push
+TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
+
+cd $REPO_DIR
+# extract git branch
+git archive $BRANCH | tar -xC $TMP_DIR
+
+# switch to app context
+cd $TMP_DIR
+
+if [ -f Dockerfile ]; then
+    DOCKERFILE=$(cat Dockerfile)
+fi
+
+if [ -f Procfile ]; then
+    PROCFILE=$(cat Procfile)
+fi
+
+# pull config from controller to be used during build
+URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/config"
+RESPONSE=$(curl -s -XPOST \
+     -H "Content-Type: application/json" \
+     -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
+     --data "{\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\"}" \
+     $URL)
+
+# massage response for the environment variables in form HELLO=world
+CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" 2> /dev/null || echo $RESPONSE)
+
+if [ "$CONFIG" == "$RESPONSE" ];
+then
+    puts-warn "failed retrieving config from controller"
+    puts-warn $RESPONSE
+    exit 1
+fi
+
+# build option string to send to slugbuilder
+BUILD_OPTS=""
+echo $CONFIG > tmp
+while read envvar; do
+    if [ "$envvar" != "" ]; then
+        BUILD_OPTS+="-e $envvar "
+    fi
+done < tmp
+rm tmp
+
+# if no Dockerfile is present, use slugbuilder to compile a heroku slug
+# and write out a Dockerfile to use that slug
+if [ ! -f Dockerfile ]; then
+    if [ -f /buildpacks ]; then
+        BUILD_OPTS+="-v /buildpacks:/tmp/buildpacks:rw "
+        # give non-root slubuilder user R/W perms for docker volumes
+        chown -R 2000:2000 /buildpacks
+    fi
+
+    # run in the background, we'll attach to it to retrieve logs
+    BUILD_OPTS+="-d "
+    BUILD_OPTS+="-v $TMP_DIR:/tmp/app "
+    BUILD_OPTS+="-v $CACHE_DIR:/tmp/cache:rw "
+    # give non-root slubuilder user R/W perms for docker volumes
+    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
+
+    # build the application and attach to the process
+    JOB=$(docker run $BUILD_OPTS deis/slugbuilder)
+    docker attach $JOB
+
+    # copy out the compiled slug
+    docker cp $JOB:/tmp/slug.tgz .
+    # copy over the Dockerfile shim to the build dir
+    cp $DOCKERFILE_SHIM ./Dockerfile
+fi
+
+echo
+puts-step "Building Docker image"
+docker build -t $TMP_IMAGE . 2>&1
+puts-step "Pushing image to private registry"
+docker push $TMP_IMAGE  &>/dev/null
+echo
+
+if [ -f $TMP_DIR/slug.tgz ]; then
+    RELEASE_INFO=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | python -c 'import sys,yaml,json;print json.dumps(yaml.safe_load(sys.stdin).get("default_process_types", {}))')
+else
+    RELEASE_INFO="{}"
+fi
+
+if [ -f $TMP_DIR/Procfile ]; then
+    # update release info with data from the Procfile
+    RELEASE_INFO=$(echo $RELEASE_INFO | python -c "import sys,json,os,yaml;obj=json.load(sys.stdin);procfile=open('Procfile').read();obj.update(yaml.safe_load(procfile));print json.dumps(obj)")
+fi
+
+if [ -f $TMP_DIR/Dockerfile ]; then
+    DOCKERFILE=$(cat $TMP_DIR/Dockerfile)
+fi
+
+# safely escape double quotes
+RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
+DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g')
+
+puts-step "Launching... "
+URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
+DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
+
+# notify the controller that the push was successful
+RESPONSE=$(curl -s -XPOST \
+     -H "Content-Type: application/json" \
+     -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
+     --data "$DATA" \
+     $URL)
+
+RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]' 2> /dev/null || echo $RESPONSE)
+
+if [ "$RELEASE" == "$RESPONSE" ];
+then
+    puts-warn "ERROR: Failed to launch container"
+    puts-warn $RESPONSE
+    exit 1
+fi
+
+DOMAIN=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["domains"][0]')
+indent "done, $APP_NAME:v$RELEASE deployed to Deis"
+echo
+indent "http://$DOMAIN"
+echo
+indent "To learn more, use \`deis help\` or visit http://deis.io"
+echo
+
+# cleanup
+cd $REPO_DIR
+git gc &>/dev/null
+docker rm -f $JOB &>/dev/null
+docker rmi -f $TMP_IMAGE &>/dev/null

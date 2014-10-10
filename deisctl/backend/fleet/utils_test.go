@@ -78,12 +78,12 @@ func TestSplitTarget(t *testing.T) {
 		t.Fatalf("Invalid split on \"%v\": %v %v", "router@3", c, num)
 	}
 
-	c, num, err = splitTarget("database-data")
+	c, num, err = splitTarget("store-gateway")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c != "database-data" || num != 0 {
-		t.Fatalf("Invalid split on \"%v\": %v %v", "database-data", c, num)
+	if c != "store-gateway" || num != 0 {
+		t.Fatalf("Invalid split on \"%v\": %v %v", "store-gateway", c, num)
 	}
 
 }

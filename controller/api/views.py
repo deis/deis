@@ -392,6 +392,8 @@ class AppContainerViewSet(BaseAppViewSet):
         container_type = self.kwargs.get('type')
         if container_type:
             qs = qs.filter(type=container_type)
+        else:
+            qs = qs.exclude(type='run')
         return qs
 
     def get_object(self, *args, **kwargs):
@@ -491,7 +493,10 @@ class BuildHookViewSet(BaseHookViewSet):
     def post_save(self, build, created=False):
         if created:
             release = build.app.release_set.latest()
-            new_release = release.new(build.owner, build=build)
+            source_version = 'latest'
+            if build.sha:
+                source_version = 'git-{}'.format(build.sha)
+            new_release = release.new(build.owner, build=build, source_version=source_version)
             initial = True if build.app.structure == {} else False
             try:
                 build.app.deploy(build.owner, new_release, initial=initial)

@@ -18,6 +18,8 @@ export ETCD_TTL=${ETCD_TTL:-10}
 # run.sh requires $REGISTRY_PORT
 export REGISTRY_PORT=${PORT:-5000}
 
+export BUCKET_NAME=${BUCKET_NAME:-registry}
+
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
@@ -34,6 +36,7 @@ function etcd_set_default {
 # seed initial service configuration if necessary
 etcd_set_default protocol http
 etcd_set_default secretKey ${REGISTRY_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
+etcd_set_default bucketName ${BUCKET_NAME}
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml; do
@@ -41,8 +44,8 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml; do
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
-# reset filesystem permissions for data container
-test -d /data && chown registry:registry /data
+# ensure registry bucket exists
+/app/bin/create_bucket ${BUCKET_NAME}
 
 # spawn the service in the background
 cd /docker-registry

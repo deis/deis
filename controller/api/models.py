@@ -172,7 +172,7 @@ class App(UuidAuditedModel):
 
     def delete(self, *args, **kwargs):
         """Delete this application including all containers"""
-        for c in self.container_set.all():
+        for c in self.container_set.exclude(type='run'):
             c.destroy()
         self._clean_app_logs()
         return super(App, self).delete(*args, **kwargs)
@@ -344,31 +344,28 @@ class App(UuidAuditedModel):
         # TODO: add support for interactive shell
         msg = "{} runs '{}'".format(user.username, command)
         log_event(self, msg)
-        c_num = max([c.num for c in self.container_set.filter(type='admin')] or [0]) + 1
-        try:
-            # create database record for admin process
-            c = Container.objects.create(owner=self.owner,
-                                         app=self,
-                                         release=self.release_set.latest(),
-                                         type='admin',
-                                         num=c_num)
-            image = c.release.image + ':v' + str(c.release.version)
+        c_num = max([c.num for c in self.container_set.filter(type='run')] or [0]) + 1
 
-            # check for backwards compatibility
-            def _has_hostname(image):
-                repo, tag = utils.parse_repository_tag(image)
-                return True if '/' in repo and '.' in repo.split('/')[0] else False
+        # create database record for run process
+        c = Container.objects.create(owner=self.owner,
+                                     app=self,
+                                     release=self.release_set.latest(),
+                                     type='run',
+                                     num=c_num)
+        image = c.release.image + ':v' + str(c.release.version)
 
-            if not _has_hostname(image):
-                image = '{}:{}/{}'.format(settings.REGISTRY_HOST,
-                                          settings.REGISTRY_PORT,
-                                          image)
-            # SECURITY: shell-escape user input
-            escaped_command = command.replace("'", "'\\''")
-            return c.run(escaped_command)
-        # always cleanup admin containers
-        finally:
-            c.delete()
+        # check for backwards compatibility
+        def _has_hostname(image):
+            repo, tag = utils.parse_repository_tag(image)
+            return True if '/' in repo and '.' in repo.split('/')[0] else False
+
+        if not _has_hostname(image):
+            image = '{}:{}/{}'.format(settings.REGISTRY_HOST,
+                                      settings.REGISTRY_PORT,
+                                      image)
+        # SECURITY: shell-escape user input
+        escaped_command = command.replace("'", "'\\''")
+        return c.run(escaped_command)
 
 
 @python_2_unicode_compatible

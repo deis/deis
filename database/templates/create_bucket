@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+import boto
+import sys
+from boto.s3.connection import OrdinaryCallingFormat
+
+conn = boto.connect_s3(host='{{ .deis_store_gateway_host }}',
+                       port={{ .deis_store_gateway_port }},
+                       is_secure=False,
+                       calling_format=OrdinaryCallingFormat(),
+                      )
+bucket = sys.argv[1]
+
+if not bucket in conn.get_all_buckets():
+  conn.create_bucket(bucket)

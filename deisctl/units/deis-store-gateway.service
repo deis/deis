@@ -1,0 +1,12 @@
+[Unit]
+Description=deis-store-gateway
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-gateway` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-store-gateway >/dev/null 2>&1 && docker rm -f deis-store-gateway || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-gateway` && docker run --name deis-store-gateway -h deis-store-gateway --rm -e HOST=$COREOS_PRIVATE_IPV4 -e EXTERNAL_PORT=8888 -p 8888:8888 $IMAGE"
+
+[Install]
+WantedBy=multi-user.target

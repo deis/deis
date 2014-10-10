@@ -22,17 +22,22 @@ log_phase "Running test-latest on $DEIS_TEST_APP"
 
 log_phase "Installing clients"
 
-# FIXME: switch to deis CLI install from website
-make -C client build
+# install deis CLI from http://deis.io/ website
+pushd $DEIS_ROOT/deisctl
+curl -sSL http://deis.io/deis-cli/install.sh | sh -s 0.13.0
+popd
 
-# install latest deisctl from the website
-curl -sSL http://deis.io/deisctl/install.sh | sudo sh
+# install deisctl from http://deis.io/ website
+# installs latest unit files to $HOME/.deis/units
+pushd $DEIS_ROOT/client
+curl -sSL http://deis.io/deisctl/install.sh | sh -s 0.13.0
+popd
 
 # ensure we use distributed unit files
 unset DEISCTL_UNITS
 
 # use the built client binaries
-export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client:$PATH
 
 log_phase "Provisioning 3-node CoreOS"
 

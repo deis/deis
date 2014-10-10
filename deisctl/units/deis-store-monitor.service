@@ -1,0 +1,16 @@
+[Unit]
+Description=deis-store-monitor
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "etcdctl set /deis/store/hosts/$COREOS_PRIVATE_IPV4 `hostname` >/dev/null"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker start -a deis-store-monitor >/dev/null || docker run --name deis-store-monitor -e HOST=$COREOS_PRIVATE_IPV4 -p 6789 --net host $IMAGE"
+ExecStopPost=-/usr/bin/docker stop deis-store-monitor
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

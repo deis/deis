@@ -7,37 +7,20 @@ Backing up Data
 ========================
 
 While applications deployed on Deis follow the Twelve-Factor methodology and are thus stateless,
-Deis maintains platform state in two places: data containers and etcd.
+Deis maintains platform state in two places: the :ref:`Store` component, and in etcd.
 
-Data containers
+Store component
 ---------------
-Data containers are simply Docker containers that expose a volume which is shared with another container.
-The components with data containers are builder, database, logger, and registry. Since these are just
-Docker containers, they can be exported with ordinary Docker commands:
+The store component runs `Ceph`_, and is used by the :ref:`Database` and :ref:`Registry` components
+as a data store. This enables the components themselves to freely move around the cluster while
+their state is backed by store.
 
-.. code-block:: console
+The store component is configured to still operate in a degraded state, and will automatically
+recover should a host fail and then rejoin the cluster. Total data loss of Ceph is only possible
+if all of the store containers are removed. However, backup of Ceph is fairly straightforward.
 
-    dev $ fleetctl ssh deis-builder.service
-    coreos $ sudo docker export deis-builder-data > /home/coreos/deis-builder-data-backup.tar
-    dev $ fleetctl ssh deis-database.service
-    coreos $ sudo docker export deis-database-data > /home/coreos/deis-database-data-backup.tar
-    dev $ fleetctl ssh deis-logger.service
-    coreos $ sudo docker export deis-logger-data > /home/coreos/deis-logger-data-backup.tar
-    dev $ fleetctl ssh deis-registry.service
-    coreos $ sudo docker export deis-registry-data > /home/coreos/deis-registry-data-backup.tar
-
-Importing looks very similar:
-
-.. code-block:: console
-
-    dev $ fleetctl ssh deis-builder.service
-    coreos $ cat /home/coreos/deis-builder-data-backup.tar | sudo docker import - deis-builder-data
-    dev $ fleetctl ssh deis-database.service
-    coreos $ cat /home/coreos/deis-database-data-backup.tar | sudo docker import - deis-database-data
-    dev $ fleetctl ssh deis-logger.service
-    coreos $ cat /home/coreos/deis-logger-data-backup.tar | sudo docker import - deis-logger-data
-    dev $ fleetctl ssh deis-registry.service
-    coreos $ cat /home/coreos/deis-registry-data-backup.tar | sudo docker import - deis-registry-data
+Data in Ceph is stored on the filesystem in ``/var/lib/ceph``, and metadata information is stored
+within Ceph. Ceph provides the ability to take snapshots of storage pools with the `rados`_ command.
 
 Using pg_dump
 -------------
@@ -46,7 +29,7 @@ dump of the database.
 
 .. code-block:: console
 
-    dev $ fleetctl ssh deis-database.service
+    dev $ fleetctl ssh deis-database@1.service
     coreos $ nse deis-database
     coreos $ sudo -u postgres pg_dumpall > pg_dump.sql
 
@@ -61,3 +44,5 @@ documentation in `#683`_.
 
 .. _`#683`: https://github.com/coreos/etcd/issues/683
 .. _`etcd-dump`: https://github.com/AaronO/etcd-dump
+.. _`Ceph`: http://ceph.com
+.. _`rados`: http://ceph.com/docs/master/man/8/rados
