@@ -2,10 +2,14 @@ include ../includes.mk
 
 COMPONENT = logger
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
+BUILD_IMAGE := $(COMPONENT)-build
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
 build: check-docker
+	docker build -t $(BUILD_IMAGE) image
+	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/syslogd bin/
 	docker build -t $(IMAGE) .
+	rm -rf bin/syslogd
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)

@@ -19,7 +19,7 @@ export ETCD_TTL=${ETCD_TTL:-10}
 chmod 755 /var/log/deis
 
 # spawn the service in the background
-/go/bin/syslogd &
+/app/bin/syslogd &
 SERVICE_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
