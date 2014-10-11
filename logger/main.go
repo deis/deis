@@ -18,15 +18,15 @@ const (
 )
 
 func main() {
-	etcdHost := getopt("ETCD_HOST", "127.0.0.1")
+	host := getopt("HOST", "127.0.0.1")
 	etcdPort := getopt("ETCD_PORT", "4001")
 	etcdPath := getopt("ETCD_PATH", "/deis/logs")
 
 	externalPort := getopt("EXTERNAL_PORT", "514")
 
-	client := etcd.NewClient([]string{"http://" + etcdHost + ":" + etcdPort})	
+	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})	
 
-	go publishService(client, etcdHost, etcdPath, externalPort, uint64(ttl.Seconds()))
+	go publishService(client, host, etcdPath, externalPort, uint64(ttl.Seconds()))
 
 	// Wait for terminating signal
 	exitChan := make(chan os.Signal, 2)
