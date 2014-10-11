@@ -97,6 +97,7 @@ func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
 	s.AddHandler(newHandler())
 	s.Listen("0.0.0.0:514")
 	fmt.Println("Syslog server started...")
+	fmt.Println("deis-logger running")
 
 	// Wait for terminating signal
 	for _ = range signalChan {
