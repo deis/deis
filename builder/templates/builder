@@ -92,8 +92,8 @@ RESPONSE=$(curl -s -XPOST \
      --data "{\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\"}" \
      $URL)
 
-# massage response for the environment variables in form HELLO=world
-CONFIG=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["values"]' | jq -c -M "to_entries|map(\"\(.key)=\(.value|tostring)\")|.[]" 2> /dev/null || echo $RESPONSE)
+# massage response for the environment variables in the form "-e HELLO=world"
+CONFIG=$(echo $RESPONSE | jq -r ".values|to_entries|map(\"-e \(.key)=\(.value|tostring)\")|.[]" | sed -e 's/^"//' -e 's/"$//' 2> /dev/null || echo $RESPONSE)
 
 if [ "$CONFIG" == "$RESPONSE" ];
 then
@@ -102,31 +102,24 @@ then
     exit 1
 fi
 
-# build option string to send to slugbuilder
-BUILD_OPTS=""
-echo $CONFIG > tmp
-while read envvar; do
-    if [ "$envvar" != "" ]; then
-        BUILD_OPTS+="-e $envvar "
-    fi
-done < tmp
-rm tmp
-
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
+    # build option string to send to slugbuilder
+    BUILD_OPTS=("$CONFIG")
+
+    # run in the background, we'll attach to it to retrieve logs
+    BUILD_OPTS+=" -d"
+    BUILD_OPTS+=" -v $TMP_DIR:/tmp/app"
+    BUILD_OPTS+=" -v $CACHE_DIR:/tmp/cache:rw"
+    # give non-root slubuilder user R/W perms for docker volumes
+    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
+
     if [ -f /buildpacks ]; then
-        BUILD_OPTS+="-v /buildpacks:/tmp/buildpacks:rw "
+        BUILD_OPTS+=" -v /buildpacks:/tmp/buildpacks:rw"
         # give non-root slubuilder user R/W perms for docker volumes
         chown -R 2000:2000 /buildpacks
     fi
-
-    # run in the background, we'll attach to it to retrieve logs
-    BUILD_OPTS+="-d "
-    BUILD_OPTS+="-v $TMP_DIR:/tmp/app "
-    BUILD_OPTS+="-v $CACHE_DIR:/tmp/cache:rw "
-    # give non-root slubuilder user R/W perms for docker volumes
-    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
 
     # build the application and attach to the process
     JOB=$(docker run $BUILD_OPTS deis/slugbuilder)
