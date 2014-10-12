@@ -39,13 +39,13 @@ Deis clusters of less than 3 nodes are unsupported.
 
 ## Customize user-data
 
-Edit [user-data](../coreos/user-data) and add a new discovery URL.
-You can get a new one by sending a request to http://discovery.etcd.io/new, or automatically
-generate a fresh discovery URL with:
+Create a user-data file with a new discovery URL this way:
 
 ```console
 $ make discovery-url
 ```
+
+Or copy [`contrib/coreos/user-data.example`](../coreos/user-data.example) to `contrib/coreos/user-data` and follow the directions in the `etcd:` section to add a unique discovery URL.
 
 ## Customize cloudformation.json
 Any of the parameter defaults defined in deis.template.json can be overridden

@@ -37,7 +37,6 @@ make test-components
 log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
-git checkout $DEIS_ROOT/contrib/coreos/user-data
 make discovery-url
 vagrant up --provider virtualbox
 
