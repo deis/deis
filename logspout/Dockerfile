@@ -1,4 +1,4 @@
-FROM deis/go:latest
+FROM golang:1.3
 MAINTAINER OpDemand <info@opdemand.com>
 
 WORKDIR /go/src/github.com/deis/deis/logspout

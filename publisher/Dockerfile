@@ -1,4 +1,4 @@
-FROM deis/go:latest
+FROM golang:1.3
 
 WORKDIR /go/src/github.com/deis/deis/publisher
 CMD /go/bin/publisher
