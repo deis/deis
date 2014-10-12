@@ -46,7 +46,7 @@ $ ./contrib/bumpver/bumpver 0.14.0 \
     deisctl/deis-version \
     deisctl/deisctl.go \
     deisctl/README.md \
-    contrib/coreos/user-data \
+    contrib/coreos/user-data.example \
     controller/deis/__init__.py \
     README.md
 ```

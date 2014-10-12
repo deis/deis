@@ -12,8 +12,14 @@ $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
 ## Customize user-data
 
 ### Discovery URL
-Edit [user-data](../coreos/user-data) and add a new discovery URL.
-You can get a new one by sending a request to http://discovery.etcd.io/new.
+
+Create a user-data file with a new discovery URL this way:
+
+```console
+$ make discovery-url
+```
+
+Or copy [`contrib/coreos/user-data.example`](../coreos/user-data.example) to `contrib/coreos/user-data` and follow the directions in the `etcd:` section to add a unique discovery URL.
 
 ### SSH Key
 Add the public key part for the SSH key generated in the first step to the [user-data](../coreos/user-data) file:
