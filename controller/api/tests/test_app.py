@@ -79,13 +79,13 @@ class AppTest(TestCase):
         if os.path.exists(path):
             os.remove(path)
         url = '/api/apps/{app_id}/logs'.format(**locals())
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data, 'No logs for {}'.format(app_id))
         # write out some fake log data and try again
         with open(path, 'a') as f:
             f.write(FAKE_LOG_DATA)
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
         os.remove(path)
@@ -107,7 +107,7 @@ class AppTest(TestCase):
         app_id = response.data['id']  # noqa
         path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
         url = '/api/apps/{app_id}/logs'.format(**locals())
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertIn('autotest created initial release', response.data)
         self.assertEqual(response.status_code, 200)
         # delete file for future runs
@@ -170,7 +170,7 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # check app logs
         url = '/api/apps/{app_id}/logs'.format(**locals())
-        response = self.client.post(url)
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('autotest2 created initial release', response.data)
         # run one-off commands

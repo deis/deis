@@ -621,7 +621,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('post',
+        response = self._dispatch('get',
                                   "/api/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             # strip the last newline character

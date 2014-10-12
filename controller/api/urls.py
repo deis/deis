@@ -119,7 +119,7 @@ Application Actions
   See also
   :meth:`AppViewSet.scale() <api.views.AppViewSet.scale>`
 
-.. http:post:: /api/apps/(string:id)/logs/
+.. http:get:: /api/apps/(string:id)/logs/
 
   See also
   :meth:`AppViewSet.logs() <api.views.AppViewSet.logs>`
@@ -276,7 +276,7 @@ urlpatterns = patterns(
     url(r'^apps/(?P<id>{})/scale/?'.format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'post': 'scale'})),
     url(r'^apps/(?P<id>{})/logs/?'.format(settings.APP_URL_REGEX),
-        views.AppViewSet.as_view({'post': 'logs'})),
+        views.AppViewSet.as_view({'get': 'logs'})),
     url(r'^apps/(?P<id>{})/run/?'.format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'post': 'run'})),
     # apps sharing
