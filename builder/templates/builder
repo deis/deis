@@ -112,12 +112,12 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=" -d"
     BUILD_OPTS+=" -v $TMP_DIR:/tmp/app"
     BUILD_OPTS+=" -v $CACHE_DIR:/tmp/cache:rw"
-    # give non-root slubuilder user R/W perms for docker volumes
+    # give non-root slugbuilder user R/W perms for docker volumes
     chown -R 2000:2000 $TMP_DIR $CACHE_DIR
 
     if [ -f /buildpacks ]; then
         BUILD_OPTS+=" -v /buildpacks:/tmp/buildpacks:rw"
-        # give non-root slubuilder user R/W perms for docker volumes
+        # give non-root slugbuilder user R/W perms for docker volumes
         chown -R 2000:2000 /buildpacks
     fi
 
