@@ -132,7 +132,7 @@ if [ ! -f Dockerfile ]; then
 fi
 
 # inject builder-specific environment variables into the application environment
-echo "ENV GIT_SHA=$GIT_SHA" >> Dockerfile
+echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
 
 echo
 puts-step "Building Docker image"
