@@ -658,10 +658,13 @@ class DeisClient(object):
           -a --app=<app>
             the uniquely identifiable name for the application.
         """
+        command = ' '.join(args.get('<command>'))
+        self._logger.info('Running `{}`...'.format(command))
+
         app = args.get('--app')
         if not app:
             app = self._session.app
-        body = {'command': ' '.join(args.get('<command>'))}
+        body = {'command': command}
         response = self._dispatch('post',
                                   "/api/apps/{}/run".format(app),
                                   json.dumps(body))
