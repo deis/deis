@@ -22,4 +22,4 @@ WORKDIR /app
 
 ADD . /app
 
-RUN /app/build.sh
+RUN DOCKER_BUILD=true /app/build.sh

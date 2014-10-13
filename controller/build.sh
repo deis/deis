@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+if [[ -z $DOCKER_BUILD ]]; then
+  echo 
+  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the controller locally"
+  echo 
+  exit 1
+fi
+
 DEBIAN_FRONTEND=noninteractive
 
 # install required system packages
