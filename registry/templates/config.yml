@@ -26,8 +26,8 @@ common: &common
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
     cache:
-        host: {{ or (.deis_cache_host) "" }}
-        port: {{ or (.deis_cache_port) "" }}
+        host: {{ or (.deis_cache_host) "~" }}
+        port: {{ or (.deis_cache_port) "~" }}
         password: _env:CACHE_REDIS_PASSWORD
         db: 1
 
