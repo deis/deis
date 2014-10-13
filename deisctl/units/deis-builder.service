@@ -10,6 +10,8 @@ ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker ru
 ExecStartPost=/bin/sh -c "echo 'Waiting for builder on 2223/tcp...' && until echo 'dummy-value' | ncat $COREOS_PRIVATE_IPV4 2223 >/dev/null 2>&1; do sleep 1; done"
 ExecStartPost=/bin/bash -c "nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format='{{ .State.Pid }}' deis-builder) /usr/local/bin/push-images"
 ExecStopPost=-/usr/bin/docker stop deis-builder
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
