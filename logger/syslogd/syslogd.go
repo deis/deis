@@ -1,14 +1,12 @@
-package main
+package syslogd
 
 import (
 	"fmt"
 	"io"
 	"log"
 	"os"
-	"os/signal"
 	"path"
 	"regexp"
-	"syscall"
 
 	"github.com/deis/deis/logger/syslog"
 )
@@ -92,18 +90,20 @@ func (h *handler) mainLoop() {
 	h.End()
 }
 
-func main() {
+func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
+	fmt.Println("Starting syslog...")
 	// Create a server with one handler and run one listen gorutine
 	s := syslog.NewServer()
 	s.AddHandler(newHandler())
 	s.Listen("0.0.0.0:514")
+	fmt.Println("Syslog server started...")
+	fmt.Println("deis-logger running")
 
 	// Wait for terminating signal
-	sc := make(chan os.Signal, 2)
-	signal.Notify(sc, syscall.SIGTERM, syscall.SIGINT)
-	<-sc
-
-	// Shutdown the server
-	fmt.Println("Shutting down...")
-	s.Shutdown()
+	for _ = range signalChan {
+		// Shutdown the server
+		fmt.Println("Shutting down...")
+		s.Shutdown()
+		cleanupDone <- true
+	}
 }
