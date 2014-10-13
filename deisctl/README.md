@@ -34,7 +34,7 @@ The deisctl release for Deis version 0.12 can be downloaded here: [Mac OS X](htt
 
 ### Building from source
 
-If you want to install from source, clone the repository and run
+If you want to install from source, ensure you have [https://github.com/tools/godep](godep) installed, clone the repository and run
 
 ```console
 $ godep get .
