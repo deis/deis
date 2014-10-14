@@ -37,8 +37,8 @@ RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.p
 # install hook dependencies
 RUN pip install pyyaml==3.11 requests==2.4.1
 
-# install all i18n locales
-RUN ln -s /usr/share/i18n/SUPPORTED /var/lib/locales/supported.d/all && locale-gen
+# configure locale
+RUN echo LANG="en_US.UTF-8" > /etc/default/locale && dpkg-reconfigure locales
 
 # install git and configure gituser
 ENV GITHOME /home/git
