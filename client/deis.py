@@ -152,16 +152,8 @@ class Session(requests.Session):
 
     def request(self, *args, **kwargs):
         """
-        Issue an HTTP request with proper cookie handling including
-        `Django CSRF tokens <https://docs.djangoproject.com/en/dev/ref/contrib/csrf/>`
+        Issue an HTTP request with proper cookie handling
         """
-        for cookie in self.cookies:
-            if cookie.name == 'csrftoken':
-                if 'headers' in kwargs:
-                    kwargs['headers']['X-CSRFToken'] = cookie.value
-                else:
-                    kwargs['headers'] = {'X-CSRFToken': cookie.value}
-                break
         url = args[1]
         if 'headers' in kwargs:
             kwargs['headers']['Referer'] = url
