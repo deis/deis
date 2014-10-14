@@ -85,7 +85,7 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH "{'host': '$HOST', 'port': $EXTERNAL_PORT}" --ttl $ETCD_TTL >/dev/null
+    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH "$HOST:$EXTERNAL_PORT" --ttl $ETCD_TTL >/dev/null
     sleep $(($ETCD_TTL/2)) # sleep for half the TTL
   done
 

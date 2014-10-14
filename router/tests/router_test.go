@@ -62,7 +62,7 @@ func TestRouter(t *testing.T) {
 	etcdutils.VerifyEtcdValue(t, "/deis/router/gzip", "on", etcdPort)
 	etcdutils.VerifyEtcdValue(t,
 		"/deis/router/hosts/"+host,
-		fmt.Printf("{'host': '%s', 'port': %d}", host, port),
+		fmt.Sprintf("%s:%s", host, port),
 		etcdPort)
 	_ = cli.CmdRm("-f", name)
 }
