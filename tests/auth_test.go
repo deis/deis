@@ -37,7 +37,7 @@ func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := authLoginCmd
 	utils.Execute(t, cmd, params, false, "")
 	params = authSetup(t)
-	utils.Execute(t, cmd, params, true, "200 OK")
+	utils.Execute(t, cmd, params, true, "400 BAD REQUEST")
 }
 
 func authLogoutTest(t *testing.T, params *utils.DeisTestConfig) {

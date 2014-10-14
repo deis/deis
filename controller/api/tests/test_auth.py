@@ -9,8 +9,10 @@ from __future__ import unicode_literals
 import json
 import urllib
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.utils import override_settings
+from rest_framework.authtoken.models import Token
 
 
 class AuthTest(TestCase):
@@ -23,12 +25,6 @@ class AuthTest(TestCase):
         """
         Test that a user can register using the API, login and logout
         """
-        # make sure logging in with an invalid username/password
-        # results in a 200 login page
-        url = '/api/auth/login/'
-        body = {'username': 'fail', 'password': 'this'}
-        response = self.client.post(url, data=json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 200)
         # test registration workflow
         username, password = 'newuser', 'password'
         first_name, last_name = 'Otto', 'Test'
@@ -54,17 +50,12 @@ class AuthTest(TestCase):
         self.assertTrue(response.data['is_active'])
         self.assertFalse(response.data['is_superuser'])
         self.assertFalse(response.data['is_staff'])
-        self.assertTrue(
-            self.client.login(username=username, password=password))
-        # test logout and login
-        url = '/api/auth/logout/'
-        response = self.client.post(url, content_type='application/json')
-        self.assertEqual(response.status_code, 200)
+        # test login
         url = '/api/auth/login/'
         payload = urllib.urlencode({'username': username, 'password': password})
         response = self.client.post(url, data=payload,
                                     content_type='application/x-www-form-urlencoded')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     @override_settings(REGISTRATION_ENABLED=False)
     def test_auth_registration_disabled(self):
@@ -101,11 +92,10 @@ class AuthTest(TestCase):
         url = '/api/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(
-            self.client.login(username=username, password=password))
         # cancel the account
         url = '/api/auth/cancel'
-        response = self.client.delete(url)
+        user = User.objects.get(username=username)
+        token = Token.objects.get(user=user).key
+        response = self.client.delete(url,
+                                      HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(
-            self.client.login(username=username, password=password))

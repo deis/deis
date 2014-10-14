@@ -12,8 +12,8 @@ import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-
 from django_fsm import TransitionNotAllowed
+from rest_framework.authtoken.models import Token
 
 from api.models import Container, App
 
@@ -31,13 +31,13 @@ class ContainerTest(TransactionTestCase):
     fixtures = ['tests.json']
 
     def setUp(self):
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
+        self.user = User.objects.get(username='autotest')
+        self.token = Token.objects.get(user=self.user).key
 
     def test_container_state_good(self):
         """Test that the finite state machine transitions with a good scheduler"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # create a container
@@ -59,7 +59,7 @@ class ContainerTest(TransactionTestCase):
     def test_container_state_protected(self):
         """Test that you cannot directly modify the state"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         c = Container.objects.create(owner=User.objects.get(username='autotest'),
@@ -71,209 +71,225 @@ class ContainerTest(TransactionTestCase):
 
     def test_container_api_heroku(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 4, 'worker': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # test listing/retrieving container info
         url = "/api/apps/{app_id}/containers/web".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 4)
         num = response.data['results'][0]['num']
         url = "/api/apps/{app_id}/containers/web/{num}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['num'], num)
         # scale down
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 2, 'worker': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(max(c['num'] for c in response.data['results']), 2)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # scale down to 0
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 0, 'worker': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_container_api_docker(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'dockerfile': "FROM busybox\nCMD /bin/true"}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'cmd': 6}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # test listing/retrieving container info
         url = "/api/apps/{app_id}/containers/cmd".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
         # scale down
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'cmd': 3}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 3)
         self.assertEqual(max(c['num'] for c in response.data['results']), 3)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # scale down to 0
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'cmd': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         url = "/api/apps/{app_id}".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_container_release(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['release'], 'v2')
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['image'], body['image'])
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['release'], 'v3')
         # post new config
         url = "/api/apps/{app_id}/config".format(**locals())
         body = {'values': json.dumps({'KEY': 'value'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['release'], 'v4')
 
     def test_container_errors(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 'not_an_int'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertContains(response, 'Invalid scaling format', status_code=400)
         body = {'invalid': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertContains(response, 'Container type invalid', status_code=400)
 
     def test_container_str(self):
         """Test the text representation of a container."""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 4, 'worker': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # should start with zero
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 6)
         uuid = response.data['results'][0]['uuid']
@@ -286,22 +302,24 @@ class ContainerTest(TransactionTestCase):
     def test_container_command_format(self):
         # regression test for https://github.com/deis/deis/pull/1285
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         # verify that the container._command property got formatted
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
@@ -311,60 +329,66 @@ class ContainerTest(TransactionTestCase):
 
     def test_container_scale_errors(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # scale to a negative number
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': -1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
         # scale to something other than a number
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 'one'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
         # scale to something other than a number
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': [1]}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
         # scale up to an integer as a sanity check
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 1}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
     def test_admin_can_manage_other_containers(self):
         """If a non-admin user creates a container, an administrator should be able to
         manage it.
         """
-        self.client.login(username='autotest2', password='password')
+        user = User.objects.get(username='autotest2')
+        token = Token.objects.get(user=user).key
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 201)
-        # login as admin
-        self.client.login(username='autotest', password='password')
-        # scale up
+        # login as admin, scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 4, 'worker': 2}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)

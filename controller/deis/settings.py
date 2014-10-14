@@ -139,6 +139,7 @@ INSTALLED_APPS = (
     'json_field',
     'gunicorn',
     'rest_framework',
+    'rest_framework.authtoken',
     'south',
     # Deis apps
     'api',
@@ -167,7 +168,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'PAGINATE_BY': 100,
 }

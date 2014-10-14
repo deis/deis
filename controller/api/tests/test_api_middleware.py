@@ -5,7 +5,9 @@ Run the tests with "./manage.py test api"
 """
 from __future__ import unicode_literals
 
+from django.contrib.auth.models import User
 from django.test import TestCase
+from rest_framework.authtoken.models import Token
 
 from deis import __version__
 
@@ -17,8 +19,8 @@ class APIMiddlewareTest(TestCase):
     fixtures = ['tests.json']
 
     def setUp(self):
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
+        self.user = User.objects.get(username='autotest')
+        self.token = Token.objects.get(user=self.user).key
 
     def test_x_deis_version_header_good(self):
         """
@@ -26,7 +28,8 @@ class APIMiddlewareTest(TestCase):
         """
         response = self.client.get(
             '/api/apps',
-            HTTP_X_DEIS_VERSION=__version__.rsplit('.', 1)[0]
+            HTTP_X_DEIS_VERSION=__version__.rsplit('.', 1)[0],
+            HTTP_AUTHORIZATION='token {}'.format(self.token),
         )
         self.assertEqual(response.status_code, 200)
 
@@ -36,7 +39,8 @@ class APIMiddlewareTest(TestCase):
         """
         response = self.client.get(
             '/api/apps',
-            HTTP_X_DEIS_VERSION='1234.5678'
+            HTTP_X_DEIS_VERSION='1234.5678',
+            HTTP_AUTHORIZATION='token {}'.format(self.token),
         )
         self.assertEqual(response.status_code, 405)
 
@@ -44,5 +48,6 @@ class APIMiddlewareTest(TestCase):
         """
         Test that when the version header is not present, the request is accepted.
         """
-        response = self.client.get('/api/apps')
+        response = self.client.get('/api/apps',
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)

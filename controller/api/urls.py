@@ -173,15 +173,7 @@ Auth
 
   Destroy the logged-in User.
 
-.. http:post:: /api/auth/login
-
-  Authenticate for the REST framework.
-
-.. http:post:: /api/auth/logout
-
-  Clear authentication for the REST framework.
-
-.. http:get:: /api/generate-api-key/
+.. http:get:: /api/auth/login/
 
   Generate an API key.
 
@@ -281,9 +273,7 @@ urlpatterns = patterns(
         views.UserRegistrationView.as_view({'post': 'create'})),
     url(r'^auth/cancel/?',
         views.UserCancellationView.as_view({'delete': 'destroy'})),
-    url(r'^auth/',
-        include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^generate-api-key/',
+    url(r'^auth/login/',
         'rest_framework.authtoken.views.obtain_auth_token'),
     # admin sharing
     url(r'^admin/perms/(?P<username>[-_\w]+)/?',
