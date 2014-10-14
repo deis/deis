@@ -175,7 +175,12 @@ func printUnitSubState(name string, outchan chan *schema.Unit, errchan chan erro
 
 func printUnitState(name string, outchan chan *schema.Unit, errchan chan error) error {
 	// print output while jobs are transitioning
-	defer fmt.Printf("\n")
+	newline := true
+	defer func() {
+		if newline == true {
+			fmt.Printf("\n")
+		}
+	}()
 	for {
 		select {
 		case u := <-outchan:
@@ -189,6 +194,7 @@ func printUnitState(name string, outchan chan *schema.Unit, errchan chan error) 
 			}
 			// HACK: global units have no soul
 			if u.CurrentState == "" {
+				newline = false
 				continue
 			}
 			// otherwise print output
