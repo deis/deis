@@ -62,4 +62,5 @@ func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
 	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
+	utils.CheckList(t, "run env --app={{.AppName}}", params, "FOO", true)
 }
