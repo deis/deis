@@ -32,6 +32,8 @@ set-image: check-deisctl
 
 release: check-docker
 	docker push $(DOCKER_IMAGE)
+	
+deploy: build dev-release restart
 
 restart: stop start
 
