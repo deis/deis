@@ -618,7 +618,8 @@ class Release(UuidAuditedModel):
         if not build:
             build = self.build
         # always create a release off the latest image
-        source_image = '{}:{}'.format(build.image, source_version)
+        source_tag = 'git-{}'.format(build.sha) if build.sha else source_version
+        source_image = '{}:{}'.format(build.image, source_tag)
         # construct fully-qualified target image
         new_version = self.version + 1
         tag = 'v{}'.format(new_version)
