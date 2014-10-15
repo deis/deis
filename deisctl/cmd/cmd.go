@@ -17,7 +17,8 @@ import (
 	"github.com/deis/deis/deisctl/constant"
 	"github.com/deis/deis/deisctl/update"
 	"github.com/deis/deis/deisctl/utils"
-	"github.com/docopt/docopt-go"
+
+	docopt "github.com/docopt/docopt-go"
 )
 
 const (
@@ -73,41 +74,47 @@ func StartPlatform(b backend.Backend) error {
 	if err := startDefaultServices(b); err != nil {
 		return err
 	}
-	fmt.Println("Deis started.")
 	return nil
 }
 
 func startDataContainers(b backend.Backend) error {
-	fmt.Println("Launching data containers...")
+	fmt.Println("Data containers...")
 	if err := b.Start(DefaultDataContainers); err != nil {
 		return err
 	}
-	fmt.Println("Data containers launched.")
 	return nil
 }
 
 func startDefaultServices(b backend.Backend) error {
-	fmt.Println("Launching service containers...")
-	if err := Start(b, []string{"logger@1"}); err != nil {
+
+	fmt.Println("Logging subsystem...")
+	if err := b.Start([]string{"logger", "logspout"}); err != nil {
 		return err
 	}
-	targets := []string{
-		"publisher",
-		"store-monitor",
-		"store-daemon",
-		"store-gateway@1",
-		"logspout",
-		"cache@1",
-		"router@1",
-		"database@1",
-		"controller@1",
-		"registry@1",
-		"builder@1",
-	}
-	if err := Start(b, targets); err != nil {
+
+	fmt.Println("Storage subsystem...")
+	if err := b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}); err != nil {
 		return err
 	}
-	fmt.Println("Service containers launched.")
+
+	fmt.Println("Control plane...")
+	if err := b.Start([]string{
+		"cache", "database", "registry",
+		"controller", "builder"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Data plane...")
+	if err := b.Start([]string{"publisher"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Routing mesh...")
+	if err := b.Start([]string{"router@1", "router@2", "router@3"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Done.")
 	return nil
 }
 
@@ -124,30 +131,40 @@ func StopPlatform(b backend.Backend) error {
 	if err := stopDefaultServices(b); err != nil {
 		return err
 	}
-	fmt.Println("Deis stopped.")
 	return nil
 }
 
 func stopDefaultServices(b backend.Backend) error {
-	fmt.Println("Stopping service containers...")
-	targets := []string{
-		"publisher",
-		"logspout",
-		"builder@1",
-		"registry@1",
-		"controller@1",
-		"database@1",
-		"store-gateway@1",
-		"store-daemon",
-		"store-monitor",
-		"cache@1",
-		"router@1",
-		"logger@1",
-	}
-	if err := Stop(b, targets); err != nil {
+
+	fmt.Println("Routing mesh...")
+	if err := b.Stop([]string{"router@1", "router@2", "router@3"}); err != nil {
 		return err
 	}
-	fmt.Println("Service containers stopped.")
+
+	fmt.Println("Data plane...")
+	if err := b.Stop([]string{"publisher"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Control plane...")
+	if err := b.Stop([]string{
+		"controller", "builder",
+		"cache", "database", "registry",
+	}); err != nil {
+		return err
+	}
+
+	fmt.Println("Storage subsystem...")
+	if err := b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Logging subsystem...")
+	if err := b.Stop([]string{"logger", "logspout"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Done.")
 	return nil
 }
 
@@ -199,41 +216,51 @@ func InstallPlatform(b backend.Backend) error {
 }
 
 func installDataContainers(b backend.Backend) error {
-	fmt.Println("Scheduling data containers...")
+	fmt.Println("Data containers...")
 	if err := b.Create(DefaultDataContainers); err != nil {
 		return err
 	}
-	fmt.Println("Data containers scheduled.")
 	return nil
 }
 
 func installDefaultServices(b backend.Backend) error {
-	// Install global units
-	if err := b.Create([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
+
+	fmt.Println("Logging subsystem...")
+	if err := b.Create([]string{"logger", "logspout"}); err != nil {
 		return err
 	}
-	// start service containers
-	targets := []string{
-		"store-gateway=1",
-		"database=1",
-		"cache=1",
-		"logger=1",
-		"registry=1",
-		"controller=1",
-		"builder=1",
-		"router=1",
-	}
-	fmt.Println("Scheduling service containers...")
-	if err := Scale(b, targets); err != nil {
+
+	fmt.Println("Storage subsystem...")
+	if err := b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}); err != nil {
 		return err
 	}
-	fmt.Println("Service containers scheduled.")
+
+	fmt.Println("Control plane...")
+	if err := b.Create([]string{
+		"cache", "database", "registry",
+		"controller", "builder",
+	}); err != nil {
+		return err
+	}
+
+	fmt.Println("Data plane...")
+	if err := b.Create([]string{"publisher"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Routing mesh...")
+	if err := b.Create([]string{"router@1", "router@2", "router@3"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Done.")
 	return nil
 }
 
 func Uninstall(b backend.Backend, targets []string) error {
 	// if target is platform, uninstall all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
+		fmt.Println(utils.DeisIfy("Uninstalling Deis..."))
 		return uninstallAllServices(b)
 	}
 	// uninstall the specific target
@@ -241,25 +268,36 @@ func Uninstall(b backend.Backend, targets []string) error {
 }
 
 func uninstallAllServices(b backend.Backend) error {
-	targets := []string{
-		"store-gateway=0",
-		"database=0",
-		"cache=0",
-		"logger=0",
-		"registry=0",
-		"controller=0",
-		"builder=0",
-		"router=0",
-	}
-	fmt.Println("Destroying service containers...")
-	if err := Scale(b, targets); err != nil {
+
+	fmt.Println("Routing mesh...")
+	if err := b.Destroy([]string{"router@1", "router@2", "router@3"}); err != nil {
 		return err
 	}
-	// Uninstall global units
-	if err := b.Destroy([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
+
+	fmt.Println("Data plane...")
+	if err := b.Destroy([]string{"publisher"}); err != nil {
 		return err
 	}
-	fmt.Println("Service containers destroyed.")
+
+	fmt.Println("Control plane...")
+	if err := b.Destroy([]string{
+		"controller", "builder",
+		"cache", "database", "registry",
+	}); err != nil {
+		return err
+	}
+
+	fmt.Println("Storage subsystem...")
+	if err := b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Logging subsystem...")
+	if err := b.Destroy([]string{"logger", "logspout"}); err != nil {
+		return err
+	}
+
+	fmt.Println("Done.")
 	return nil
 }
 
