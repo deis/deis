@@ -72,8 +72,6 @@ def _commit(repository_path, image, layer, tag):
     cookies = _put_layer(image['id'], layer)
     _put_checksum(image, cookies)
     _put_tag(image['id'], repository_path, tag)
-    # point latest to the new tag
-    _put_tag(image['id'], repository_path, 'latest')
 
 
 def _put_first_image(repository_path):
