@@ -3,9 +3,15 @@ include ../includes.mk
 COMPONENT = cache
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BUILD_IMAGE := $(COMPONENT)-build
 
 build: check-docker
+	docker build -t $(BUILD_IMAGE) image
+	docker cp `docker run -d $(BUILD_IMAGE)`:/usr/local/bin/redis-server bin/
+	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/boot bin/
 	docker build -t $(IMAGE) .
+	rm bin/boot
+	rm bin/redis-server
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)
