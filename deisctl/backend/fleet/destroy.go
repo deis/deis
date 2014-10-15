@@ -13,6 +13,9 @@ func (c *FleetClient) Destroy(targets []string) error {
 		// check if the unit exists
 		_, err := c.Units(target)
 		if err != nil {
+			if strings.Contains(err.Error(), "could not find unit") {
+				return nil
+			}
 			return err
 		}
 		component, num, err := splitTarget(target)
@@ -24,7 +27,7 @@ func (c *FleetClient) Destroy(targets []string) error {
 		} else {
 			err = c.destroyServiceUnit(component, num)
 		}
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "could not find unit") {
 			return err
 		}
 	}
