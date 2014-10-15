@@ -14,8 +14,6 @@ var (
 	gitCloneCmd  = "if [ ! -d {{.ExampleApp}} ] ; then git clone https://github.com/deis/{{.ExampleApp}}.git ; fi"
 	gitRemoveCmd = "git remote remove deis"
 	gitPushCmd   = "git push deis master"
-	gitAddCmd    = "git add ."
-	gitCommitCmd = "git commit -m fake"
 )
 
 func TestGlobal(t *testing.T) {
