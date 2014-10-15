@@ -51,8 +51,8 @@ done
 # initialize database if one doesn't already exist
 # for example, in the case of a data container
 if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
-	sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main --locale=en_US.UTF-8
 	chown -R postgres:postgres /var/lib/postgresql
+	sudo -u postgres /usr/lib/postgresql/9.3/bin/initdb -D /var/lib/postgresql/9.3/main
 fi
 
 # ensure WAL log bucket exists
