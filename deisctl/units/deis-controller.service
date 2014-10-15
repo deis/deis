@@ -1,7 +1,7 @@
 [Unit]
 Description=deis-controller
-Requires=deis-logger@1.service
-After=deis-logger@1.service
+Requires=deis-logger.service
+After=deis-logger.service
 
 [Service]
 EnvironmentFile=/etc/environment
