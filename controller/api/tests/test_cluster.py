@@ -42,7 +42,7 @@ class ClusterTest(TestCase):
         self.assertIn('auth', response.data)
         self.assertIn('options', response.data)
         self.assertEqual(response.data['hosts'], 'host1,host2')
-        self.assertEqual(json.loads(response.data['options']), {'key': 'val'})
+        self.assertEqual(response.data['options'], {'key': 'val'})
         response = self.client.get('/api/clusters')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
@@ -68,7 +68,7 @@ class ClusterTest(TestCase):
         response = self.client.patch(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['hosts'], new_hosts)
-        self.assertEqual(json.loads(response.data['options']), new_options)
+        self.assertEqual(response.data['options'], new_options)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 

@@ -54,7 +54,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('values', response.data)
-        self.assertEqual(response.data['values'], json.dumps({}))
+        self.assertEqual(response.data['values'], {})
         config1 = response.data
         # set an initial config value
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
@@ -63,28 +63,28 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('x-deis-release', response._headers)
         config2 = response.data
         self.assertNotEqual(config1['uuid'], config2['uuid'])
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
         # read the config
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         config3 = response.data
         self.assertEqual(config2, config3)
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
         # set an additional config value
         body = {'values': json.dumps({'NEW_URL2': 'http://localhost:8080/'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         config3 = response.data
         self.assertNotEqual(config2['uuid'], config3['uuid'])
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
-        self.assertIn('NEW_URL2', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
+        self.assertIn('NEW_URL2', response.data['values'])
         # read the config again
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         config4 = response.data
         self.assertEqual(config3, config4)
-        self.assertIn('NEW_URL1', json.loads(response.data['values']))
-        self.assertIn('NEW_URL2', json.loads(response.data['values']))
+        self.assertIn('NEW_URL1', response.data['values'])
+        self.assertIn('NEW_URL2', response.data['values'])
         # unset a config value
         body = {'values': json.dumps({'NEW_URL2': None})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -118,13 +118,13 @@ class ConfigTest(TransactionTestCase):
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('PORT', json.loads(response.data['values']))
+        self.assertIn('PORT', response.data['values'])
         # reset same config value
         body = {'values': json.dumps({'PORT': '5001'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('PORT', json.loads(response.data['values']))
-        self.assertEqual(json.loads(response.data['values'])['PORT'], '5001')
+        self.assertIn('PORT', response.data['values'])
+        self.assertEqual(response.data['values']['PORT'], '5001')
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_unicode(self):
@@ -141,19 +141,19 @@ class ConfigTest(TransactionTestCase):
         body = {'values': json.dumps({'POWERED_BY': 'Деис'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('POWERED_BY', json.loads(response.data['values']))
+        self.assertIn('POWERED_BY', response.data['values'])
         # reset same config value
         body = {'values': json.dumps({'POWERED_BY': 'Кроликов'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('POWERED_BY', json.loads(response.data['values']))
-        self.assertEqual(json.loads(response.data['values'])['POWERED_BY'], 'Кроликов')
+        self.assertIn('POWERED_BY', response.data['values'])
+        self.assertEqual(response.data['values']['POWERED_BY'], 'Кроликов')
         # set an integer to test unicode regression
         body = {'values': json.dumps({'INTEGER': 1})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('INTEGER', json.loads(response.data['values']))
-        self.assertEqual(json.loads(response.data['values'])['INTEGER'], 1)
+        self.assertIn('INTEGER', response.data['values'])
+        self.assertEqual(response.data['values']['INTEGER'], 1)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
@@ -179,7 +179,7 @@ class ConfigTest(TransactionTestCase):
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('PORT', json.loads(response.data['values']))
+        self.assertIn('PORT', response.data['values'])
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_limit_memory(self):
@@ -197,7 +197,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('memory', response.data)
-        self.assertEqual(json.loads(response.data['memory']), {})
+        self.assertEqual(response.data['memory'], {})
         # regression test for https://github.com/deis/deis/issues/1563
         self.assertNotIn('"', response.data['memory'])
         # set an initial limit
@@ -211,7 +211,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('memory', response.data)
-        memory = json.loads(response.data['memory'])
+        memory = response.data['memory']
         self.assertIn('web', memory)
         self.assertEqual(memory['web'], '1G')
         # set an additional value
@@ -220,7 +220,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         limit2 = response.data
         self.assertNotEqual(limit1['uuid'], limit2['uuid'])
-        memory = json.loads(response.data['memory'])
+        memory = response.data['memory']
         self.assertIn('worker', memory)
         self.assertEqual(memory['worker'], '512M')
         self.assertIn('web', memory)
@@ -230,7 +230,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         limit3 = response.data
         self.assertEqual(limit2, limit3)
-        memory = json.loads(response.data['memory'])
+        memory = response.data['memory']
         self.assertIn('worker', memory)
         self.assertEqual(memory['worker'], '512M')
         self.assertIn('web', memory)
@@ -240,11 +240,11 @@ class ConfigTest(TransactionTestCase):
         body = {'values': json.dumps({'NEW_URL2': 'http://localhost:8080/'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('NEW_URL2', json.loads(response.data['values']))
+        self.assertIn('NEW_URL2', response.data['values'])
         # read the limit again
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        memory = json.loads(response.data['memory'])
+        memory = response.data['memory']
         self.assertIn('worker', memory)
         self.assertEqual(memory['worker'], '512M')
         self.assertIn('web', memory)
@@ -277,7 +277,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('cpu', response.data)
-        self.assertEqual(json.loads(response.data['cpu']), {})
+        self.assertEqual(response.data['cpu'], {})
         # regression test for https://github.com/deis/deis/issues/1563
         self.assertNotIn('"', response.data['cpu'])
         # set an initial limit
@@ -290,7 +290,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('cpu', response.data)
-        cpu = json.loads(response.data['cpu'])
+        cpu = response.data['cpu']
         self.assertIn('web', cpu)
         self.assertEqual(cpu['web'], '1024')
         # set an additional value
@@ -299,7 +299,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         limit2 = response.data
         self.assertNotEqual(limit1['uuid'], limit2['uuid'])
-        cpu = json.loads(response.data['cpu'])
+        cpu = response.data['cpu']
         self.assertIn('worker', cpu)
         self.assertEqual(cpu['worker'], '512')
         self.assertIn('web', cpu)
@@ -309,7 +309,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         limit3 = response.data
         self.assertEqual(limit2, limit3)
-        cpu = json.loads(response.data['cpu'])
+        cpu = response.data['cpu']
         self.assertIn('worker', cpu)
         self.assertEqual(cpu['worker'], '512')
         self.assertIn('web', cpu)
@@ -342,7 +342,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('tags', response.data)
-        self.assertEqual(json.loads(response.data['tags']), {})
+        self.assertEqual(response.data['tags'], {})
         # set some tags
         body = {'tags': json.dumps({'environ': 'dev'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
@@ -353,7 +353,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIn('tags', response.data)
-        tags = json.loads(response.data['tags'])
+        tags = response.data['tags']
         self.assertIn('environ', tags)
         self.assertEqual(tags['environ'], 'dev')
         # set an additional value
@@ -362,7 +362,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         tags2 = response.data
         self.assertNotEqual(tags1['uuid'], tags2['uuid'])
-        tags = json.loads(response.data['tags'])
+        tags = response.data['tags']
         self.assertIn('rack', tags)
         self.assertEqual(tags['rack'], '1')
         self.assertIn('environ', tags)
@@ -372,7 +372,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         tags3 = response.data
         self.assertEqual(tags2, tags3)
-        tags = json.loads(response.data['tags'])
+        tags = response.data['tags']
         self.assertIn('rack', tags)
         self.assertEqual(tags['rack'], '1')
         self.assertIn('environ', tags)
