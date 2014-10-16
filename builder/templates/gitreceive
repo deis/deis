@@ -35,37 +35,26 @@ case "$1" in
 cat | $SELF pre-receive
 EOF
     chmod +x $PRERECEIVE_HOOK
-    POSTRECEIVE_HOOK="$REPO_PATH/hooks/post-receive"
-    # inject a post-receive hook
-    cat > $POSTRECEIVE_HOOK <<EOF
-#!/bin/bash
-cat | $SELF post-receive
-EOF
-    chmod +x $POSTRECEIVE_HOOK
+    # call the original git-shell
     git-shell -c "$SSH_ORIGINAL_COMMAND"
     ;;
 
   pre-receive)
     while read oldrev newrev refname
     do
+      # check for authorization on this repo
       $GITHOME/receiver "$RECEIVE_REPO" "$newrev" "$RECEIVE_USER" "$RECEIVE_FINGERPRINT"
       rc=$?
       if [[ $rc != 0 ]] ; then
         echo "      ERROR: failed on rev $newrev - push denied"
         exit $rc
       fi
-    done
-    ;;
-
-  post-receive)
-    while read oldrev newrev refname
-    do
       # builder assumes that we are running this script from $GITHOME
       cd $GITHOME
       # if we're processing a receive-pack on an existing repo, run a build
       if [[ $SSH_ORIGINAL_COMMAND == git-receive-pack* ]]; then
         # SECURITY: git user runs the builder as root (for docker access)
-        sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $refname 2>&1 | strip_remote_prefix
+        sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $newrev 2>&1 | strip_remote_prefix
       fi
     done
     ;;
