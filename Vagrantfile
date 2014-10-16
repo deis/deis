@@ -35,7 +35,7 @@ else
   $vb_cpus = 1
 end
 
-COREOS_VERSION = "459.0.0"
+COREOS_VERSION = "471.1.0"
 
 if File.exist?(CONFIG)
   require CONFIG
