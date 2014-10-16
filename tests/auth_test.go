@@ -19,6 +19,7 @@ func TestAuth(t *testing.T) {
 	authRegisterTest(t, params)
 	authLogoutTest(t, params)
 	authLoginTest(t, params)
+	authWhoamiTest(t, params)
 	authCancel(t, params)
 }
 
@@ -47,4 +48,8 @@ func authRegisterTest(t *testing.T, params *utils.DeisTestConfig) {
 	cmd := authRegisterCmd
 	utils.Execute(t, cmd, params, false, "")
 	utils.Execute(t, cmd, params, true, "Registration failed")
+}
+
+func authWhoamiTest(t *testing.T, params *utils.DeisTestConfig) {
+	utils.Execute(t, "auth:whoami", params, true, params.UserName)
 }
