@@ -684,6 +684,7 @@ class DeisClient(object):
         auth:cancel            remove the current account
         auth:login             authenticate against a controller
         auth:logout            clear the current user session
+        auth:whoami            display the authenticated user
 
         Use `deis help [command]` to learn more.
         """
@@ -803,6 +804,7 @@ class DeisClient(object):
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.found:  # @UndefinedVariable
             self._settings['controller'] = controller
+            self._settings['username'] = username
             self._settings.save()
             self._logger.info("Logged in as {}".format(username))
             return username
@@ -824,8 +826,22 @@ class DeisClient(object):
         self._session.cookies.clear()
         self._session.cookies.save()
         self._settings['controller'] = None
+        self._settings['username'] = None
         self._settings.save()
         self._logger.info('Logged out')
+
+    def auth_whoami(self, args):
+        """
+        Displays the currently logged in user.
+
+        Usage: deis auth:whoami
+        """
+        user = self._settings.get('username')
+        if user:
+            self._logger.info(user)
+        else:
+            self._logger.info(
+                'Not logged in. Use `deis login` or `deis register` to get started.')
 
     def builds(self, args):
         """
@@ -2130,6 +2146,7 @@ SHORTCUTS = OrderedDict([
     ('sharing:list', 'perms:list'),
     ('sharing:add', 'perms:create'),
     ('sharing:remove', 'perms:delete'),
+    ('whoami', 'auth:whoami'),
 ])
 
 
