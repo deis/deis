@@ -1,3 +1,42 @@
+### v0.13.0 -> v0.13.1
+
+#### Features
+
+ - [`5688c6b`](https://github.com/deis/deis/commit/5688c6b3def8a45ab76e366c30e0793660df5f82) builder: inject GIT_SHA into builder apps
+ - [`2c50d5c`](https://github.com/deis/deis/commit/2c50d5c2c7bf34f26b2f6e605673a78cc3602602) client: add loading info msg to run command
+ - [`91164f6`](https://github.com/deis/deis/commit/91164f6d5c6fd9ec632d505a480d84cfe3f4eb97) registry: image without development libraries to reduce the size.
+ - [`da80165`](https://github.com/deis/deis/commit/da80165693661ccb0df4a3944bad024cd0043d6f) contrib/util: add script to generate project contributors
+
+#### Fixes
+
+ - [`91cdd70`](https://github.com/deis/deis/commit/91cdd704cb629b6686700e2a427a4b9ad4533cfe) builder: use proper dockerfile syntax
+ - [`bb352b4`](https://github.com/deis/deis/commit/bb352b48449cb08831c9f9126adc8d0b77a2279d) controller: use build tag if present
+ - [`8418141`](https://github.com/deis/deis/commit/8418141d64dd5eb4288f3bfecb7b7bbbe5527036) controller: do not commit to latest
+ - [`b65e499`](https://github.com/deis/deis/commit/b65e4995129c7c62a6224c81a68e2823f1bac370) controller: inject config on top of existing environment
+ - [`f98fea6`](https://github.com/deis/deis/commit/f98fea634784f8e8077a4be130e10302daaa3ce9) controller: don't clone run containers on deploy
+ - [`2b8aa07`](https://github.com/deis/deis/commit/2b8aa07ee34d2e46730d7c0436531b355afe874c) controller: set default config owner to request.user
+ - [`70da474`](https://github.com/deis/deis/commit/70da474dd73dc749f9913f87d7f1a8cb38d5556a) deisctl: control plane components should restart on failure
+ - [`2084164`](https://github.com/deis/deis/commit/20841647809d178e4d1428a4b2b5ccf1c722bdbb) controller: include message to avoid confusion building the component
+ - [`7f6c202`](https://github.com/deis/deis/commit/7f6c20295d4b16ad9705bfeae2af1106f337e534) builder: properly parse config vars
+ - [`d63aa6d`](https://github.com/deis/deis/commit/d63aa6de73dde746a4f55b89a273ab03a1d7cd5f) controller: retrieve logs via GET request
+ - [`e310501`](https://github.com/deis/deis/commit/e310501ef0ea6426e2d5ac5078e150d90ea7302b) controller: properly serialize JSONField objects
+ - [`dac9161`](https://github.com/deis/deis/commit/dac91613ecb0bc7476650c91a5dad9386c4613f2) logger: the test is expecting the message "deis-logger running".
+ - [`d925056`](https://github.com/deis/deis/commit/d925056a83b573bc87c03b8467911aab0d605d36) controller/tests: add fleet socket to controller tests
+ - [`9bf5e8e`](https://github.com/deis/deis/commit/9bf5e8e5a5b3ced96e625b2a516ac212a1c9d5ff) registry: use YAML's nil type
+ - [`250e7cc`](https://github.com/deis/deis/commit/250e7cc9e0f0aa3513cdf1dae9002172a968b748) registry: make deis-cache mandatory
+ - [`1fd537b`](https://github.com/deis/deis/commit/1fd537b86324b9ad8e38d02f35dbff7ca8129bdc) README: update current version in badge
+ - [`b8c40a6`](https://github.com/deis/deis/commit/b8c40a64d7c247c693c8a1e5dbf0d27e4c52001b) deisctl: update `deisctl --version` string
+
+#### Documentation
+
+ - [`c2eb07d`](https://github.com/deis/deis/commit/c2eb07dd5936806f3a19b4267887419a01fd286a) README: add build status badge for CI test-master job
+ - [`1e7ce1d`](https://github.com/deis/deis/commit/1e7ce1df0451f0a4976ee06f9a04cfa3616fff0a) managing_deis: update controller_settings.
+
+#### Maintenance
+
+ - [`b9db46a`](https://github.com/deis/deis/commit/b9db46a53511f9a7f6f44d7bb5d5d44673ee528d) publisher: Add missing deploy target
+ - [`c1c66f9`](https://github.com/deis/deis/commit/c1c66f97afc3b99d6f20e07619dfa410d3cc81ac) deisctl: remove redundant CHANGELOG.md
+
 ### v0.12.0 -> v0.13.0
 
 #### Features
