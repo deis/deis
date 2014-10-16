@@ -23,19 +23,10 @@ RUN apt-get update && apt-get install -yq \
     aufs-tools iptables lxc \
     lxc-docker-1.2.0
 
-# install jq for parsing json
-RUN curl http://stedolan.github.io/jq/download/linux64/jq > /usr/bin/jq && chmod 755 /usr/bin/jq
-
 # configure ssh server
 RUN rm /etc/ssh/ssh_host_*
 RUN dpkg-reconfigure openssh-server
 RUN mkdir -p /var/run/sshd
-
-# install pip
-RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
-
-# install hook dependencies
-RUN pip install pyyaml==3.11 requests==2.4.1
 
 # install all i18n locales
 RUN ln -s /usr/share/i18n/SUPPORTED /var/lib/locales/supported.d/all && locale-gen
