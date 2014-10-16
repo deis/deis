@@ -269,7 +269,7 @@ class App(UuidAuditedModel):
 
     def deploy(self, user, release, initial=False):
         """Deploy a new release to this application"""
-        existing = self.container_set.all()
+        existing = self.container_set.exclude(type='run')
         new = []
         for e in existing:
             n = e.clone(release)
