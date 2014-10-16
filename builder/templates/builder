@@ -31,6 +31,14 @@ usage() {
     echo "Usage: $0 <user> <repo> <sha>"
 }
 
+parse-string(){
+    # helper to avoid the single quote escape 
+    # occurred in command substitution
+    local args=() idx=0 IFS=' ' c
+    for c; do printf -v args[idx++] '%s ' "$c"; done
+    printf "%s\n" "${args[*]}"
+}
+
 if [ $# -ne $ARGS ]; then
     usage
     exit 1
@@ -77,44 +85,44 @@ fi
 
 # pull config from controller to be used during build
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/config"
-RESPONSE=$(curl -s -XPOST \
-     -H "Content-Type: application/json" \
-     -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
-     --data "{\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\"}" \
-     $URL)
+RESPONSE=$(/app/bin/get-app-config -url="$URL" -key="{{ .deis_controller_builderKey }}" -user=$USER -app=$APP_NAME)
+CODE=$?
 
-# massage response for the environment variables in the form "-e HELLO=world"
-CONFIG=$(echo $RESPONSE | jq -r ".values|to_entries|map(\"-e \(.key)=\(.value|tostring)\")|.[]" | sed -e 's/^"//' -e 's/"$//' 2> /dev/null || echo $RESPONSE)
-
-if [ "$CONFIG" == "$RESPONSE" ];
-then
-    puts-warn "failed retrieving config from controller"
+if [ $CODE -ne 0 ]; then
     puts-warn $RESPONSE
     exit 1
 fi
 
+BUILD_OPTS=()
+BUILD_OPTS+='/usr/bin/docker'
+BUILD_OPTS+=' run '
+# get application configuration
+BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
+
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-
-    # build option string to send to slugbuilder
-    BUILD_OPTS=("$CONFIG")
-
-    # run in the background, we'll attach to it to retrieve logs
-    BUILD_OPTS+=" -d"
-    BUILD_OPTS+=" -v $TMP_DIR:/tmp/app"
-    BUILD_OPTS+=" -v $CACHE_DIR:/tmp/cache:rw"
-    # give non-root slugbuilder user R/W perms for docker volumes
-    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
-
     if [ -f /buildpacks ]; then
-        BUILD_OPTS+=" -v /buildpacks:/tmp/buildpacks:rw"
-        # give non-root slugbuilder user R/W perms for docker volumes
+        BUILD_OPTS+=' -v /buildpacks:/tmp/buildpacks:rw'
+        # give non-root slubuilder user R/W perms for docker volumes
         chown -R 2000:2000 /buildpacks
     fi
 
+    # run in the background, we'll attach to it to retrieve logs
+    BUILD_OPTS+=' -d'
+    BUILD_OPTS+=' -v '
+    BUILD_OPTS+=$(echo $TMP_DIR)
+    BUILD_OPTS+=':/tmp/app'
+    BUILD_OPTS+=' -v '
+    BUILD_OPTS+=$(echo $CACHE_DIR)
+    BUILD_OPTS+=':/tmp/cache:rw'
+    # give non-root slubuilder user R/W perms for docker volumes
+    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
+
+    BUILD_OPTS+=' deis/slugbuilder'
+
     # build the application and attach to the process
-    JOB=$(docker run $BUILD_OPTS deis/slugbuilder)
+    JOB=$(eval $(parse-string "${BUILD_OPTS[@]}") )
     docker attach $JOB
 
     # copy out the compiled slug
@@ -131,20 +139,19 @@ echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
 echo
 puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
-
 puts-step "Pushing image to private registry"
 docker push $TMP_IMAGE  &>/dev/null
 echo
 
 if [ -f $TMP_DIR/slug.tgz ]; then
-    RELEASE_INFO=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | python -c 'import sys,yaml,json;print json.dumps(yaml.safe_load(sys.stdin).get("default_process_types", {}))')
+    RELEASE_INFO=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | /app/bin/extract-types)
 else
     RELEASE_INFO="{}"
 fi
 
 if [ -f $TMP_DIR/Procfile ]; then
     # update release info with data from the Procfile
-    RELEASE_INFO=$(echo $RELEASE_INFO | python -c "import sys,json,os,yaml;obj=json.load(sys.stdin);procfile=open('Procfile').read();obj.update(yaml.safe_load(procfile));print json.dumps(obj)")
+    RELEASE_INFO=$(cat $TMP_DIR/Procfile | /app/bin/yaml2json-procfile)
 fi
 
 # safely escape double quotes
@@ -153,24 +160,17 @@ RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
 puts-step "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/build"
 DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\": $USING_DOCKERFILE}"
+PUBLISH_RELEASE=$(echo "$DATA" | /app/bin/publish-release-controller -url=$URL -key={{ .deis_controller_builderKey }})
 
-# notify the controller that the push was successful
-RESPONSE=$(curl -s -XPOST \
-     -H "Content-Type: application/json" \
-     -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
-     --data "$DATA" \
-     $URL)
-
-RELEASE=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["release"]["version"]' 2> /dev/null || echo $RESPONSE)
-
-if [ "$RELEASE" == "$RESPONSE" ];
-then
+CODE=$?
+if [ $CODE -ne 0 ]; then
     puts-warn "ERROR: Failed to launch container"
-    puts-warn $RESPONSE
+    puts-warn $PUBLISH_RELEASE
     exit 1
 fi
 
-DOMAIN=$(echo $RESPONSE | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["domains"][0]')
+RELEASE=$(echo $PUBLISH_RELEASE | /app/bin/extract-version)
+DOMAIN=$(echo $PUBLISH_RELEASE | /app/bin/extract-domain)
 indent "done, $APP_NAME:v$RELEASE deployed to Deis"
 echo
 indent "http://$DOMAIN"
