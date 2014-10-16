@@ -131,6 +131,9 @@ if [ ! -f Dockerfile ]; then
     cp $DOCKERFILE_SHIM ./Dockerfile
 fi
 
+# inject builder-specific environment variables into the application environment
+echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
+
 echo
 puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
