@@ -116,6 +116,23 @@ def encode(obj):
         return obj
 
 
+def recv_data(socket):
+    """
+    Receive data from a tcp socket
+    """
+    total_data = []
+    while 1:
+        try:
+            data = socket.recv(8192)
+            if len(data) > 0:
+                total_data.append(data)
+            else:
+                break
+        except:
+            pass
+    return ''.join(total_data)
+
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

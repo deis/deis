@@ -100,23 +100,35 @@ func publishContainer(client *etcd.Client, container *docker.APIContainers, ttl 
 
 	var publishableContainerName = regexp.MustCompile(`[a-z0-9-]+_v[1-9][0-9]*.(cmd|web).[1-9][0-9]*`)
 	var publishableContainerBaseName = regexp.MustCompile(`^[a-z0-9-]+`)
+	var ptyName = regexp.MustCompile(`pty_([a-z0-9-]+)_[a-z0-9-]+_v[1-9][0-9]*.run.[1-9][0-9]*`)
 
 	// this is where we publish to etcd
 	for _, name := range container.Names {
 		// HACK: remove slash from container name
 		// see https://github.com/docker/docker/issues/7519
 		containerName := name[1:]
-		if !publishableContainerName.MatchString(containerName) {
-			continue
+		// Publish web or cmd containers
+		if publishableContainerName.MatchString(containerName) {
+			containerBaseName := publishableContainerBaseName.FindString(containerName)
+			keyPath := "/deis/services/" + containerBaseName + "/" + containerName
+			for _, p := range container.Ports {
+				host := os.Getenv("HOST")
+				port := strconv.Itoa(int(p.PublicPort))
+				setEtcd(client, keyPath, host+":"+port, uint64(ttl.Seconds()))
+				// TODO: support multiple exposed ports
+				break
+			}
 		}
-		containerBaseName := publishableContainerBaseName.FindString(containerName)
-		keyPath := "/deis/services/" + containerBaseName + "/" + containerName
-		for _, p := range container.Ports {
-			host := os.Getenv("HOST")
-			port := strconv.Itoa(int(p.PublicPort))
-			setEtcd(client, keyPath, host+":"+port, uint64(ttl.Seconds()))
-			// TODO: support multiple exposed ports
-			break
+		// Publish on-off containers
+		if ptyName.MatchString(containerName) {
+			ptyRunID := ptyName.FindStringSubmatch(containerName)[1]
+			keyPath := "/deis/pty/" + ptyRunID
+			for _, p := range container.Ports {
+				host := os.Getenv("HOST")
+				port := strconv.Itoa(int(p.PublicPort))
+				setEtcd(client, keyPath, host+":"+port, uint64(ttl.Seconds()))
+				break
+			}
 		}
 	}
 }
