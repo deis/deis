@@ -8,8 +8,8 @@ type UnitManager interface {
 	Load(string, UnitFile) error
 	Unload(string)
 
-	Start(string)
-	Stop(string)
+	TriggerStart(string)
+	TriggerStop(string)
 
 	Units() ([]string, error)
 	GetUnitStates(pkg.Set) (map[string]*UnitState, error)

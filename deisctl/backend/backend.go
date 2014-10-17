@@ -1,11 +1,13 @@
 package backend
 
+import "sync"
+
 // Backend interface is used to interact with the cluster control plane
 type Backend interface {
-	Create([]string) error
-	Destroy([]string) error
-	Start([]string) error
-	Stop([]string) error
+	Create([]string, *sync.WaitGroup, chan string, chan error)
+	Destroy([]string, *sync.WaitGroup, chan string, chan error)
+	Start([]string, *sync.WaitGroup, chan string, chan error)
+	Stop([]string, *sync.WaitGroup, chan string, chan error)
 	Scale(string, int) error
 	ListUnits() error
 	ListUnitFiles() error

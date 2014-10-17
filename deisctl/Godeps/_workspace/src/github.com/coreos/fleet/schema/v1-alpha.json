@@ -26,15 +26,13 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "primaryIP": {
           "type": "string"
         },
         "metadata": {
           "type": "object",
-          "required": true,
           "properties": {},
           "additionalProperties": {
             "type": "string"
@@ -48,7 +46,6 @@
       "properties": {
         "machines": {
           "type": "array",
-          "required": true,
           "items": {
             "$ref": "Machine"
           }
@@ -63,16 +60,13 @@
       "type": "object",
       "properties": {
         "section": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "name": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "value": {
-          "type": "string",
-          "required": true
+          "type": "string"
         }
       }
     },
@@ -81,8 +75,7 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "options": {
           "type": "array",
@@ -92,7 +85,6 @@
         },
         "desiredState": {
           "type": "string",
-          "required": true,
           "enum": [
             "inactive",
             "loaded",
@@ -101,7 +93,6 @@
         },
         "currentState": {
           "type": "string",
-          "required": true,
           "enum": [
             "inactive",
             "loaded",
@@ -120,7 +111,6 @@
       "properties": {
         "units": {
           "type": "array",
-          "required": true,
           "items": {
             "$ref": "Unit"
           }
@@ -135,16 +125,13 @@
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "hash": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "machineID": {
-          "type": "string",
-          "required": true
+          "type": "string"
         },
         "systemdLoadState": {
           "type": "string"
@@ -163,7 +150,6 @@
       "properties": {
         "states": {
           "type": "array",
-          "required": true,
           "items": {
             "$ref": "UnitState"
           }
@@ -231,7 +217,7 @@
           }
         },
         "Delete": {
-          "id": "fleet.DesiredState.Delete",
+          "id": "fleet.Unit.Delete",
           "description": "Delete the referenced Unit object.",
           "httpMethod": "DELETE",
           "path": "units/{unitName}",

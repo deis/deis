@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -231,21 +232,22 @@ func (c *Client) Update() (err error) {
 			continue
 		}
 		localService := strings.Split(strings.Split(service, "-")[1], ".service")[0]
+
+		outchan := make(chan string)
+		errchan := make(chan error)
+		var wg sync.WaitGroup
+
 		fmt.Printf("destroying %v\n", localService)
-		err := deis.Destroy([]string{localService})
-		if err != nil {
-			return err
-		}
+		deis.Destroy([]string{localService}, &wg, outchan, errchan)
+		wg.Wait()
+
 		fmt.Printf("re-creating %v\n", localService)
-		err = deis.Create([]string{localService})
-		if err != nil {
-			return err
-		}
+		deis.Create([]string{localService}, &wg, outchan, errchan)
+		wg.Wait()
+
 		fmt.Printf("starting %v\n", localService)
-		err = deis.Start([]string{localService})
-		if err != nil {
-			return err
-		}
+		deis.Start([]string{localService}, &wg, outchan, errchan)
+		wg.Wait()
 	}
 	return nil
 }

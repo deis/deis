@@ -28,78 +28,78 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/go.crypto/ssh",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-semver/semver",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-systemd/unit",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/Godeps/_workspace/src/github.com/docker/libcontainer/netlink",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/client",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/etcd",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/job",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/log",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/machine",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/pkg",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/registry",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/schema",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/ssh",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/unit",
-			"Comment": "v0.3.2-710-gcb7668b",
-			"Rev": "cb7668b0f52ba89f88ece0b7b0c8bd44504ed8dd"
+			"Comment": "v0.3.2-912-g15df2c9",
+			"Rev": "15df2c98ab2e72f7bddecd841df1c80fd3062098"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",

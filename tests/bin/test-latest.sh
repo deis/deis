@@ -56,8 +56,6 @@ log_phase "Provisioning Deis"
 
 # provision deis from master using :latest
 deisctl install platform
-deisctl scale router=3
-deisctl start router@1 router@2 router@3
 time deisctl start platform
 
 log_phase "Running integration tests"

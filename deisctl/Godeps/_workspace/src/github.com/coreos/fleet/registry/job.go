@@ -248,34 +248,10 @@ func (r *EtcdRegistry) getUnitFromObjectNode(node *etcd.Node) (*job.Unit, error)
 
 	var unit *unit.UnitFile
 
-	// New-style Jobs should have a populated UnitHash, and the contents of the Unit are stored separately in the Registry
-	if !jm.UnitHash.Empty() {
-		unit = r.getUnitByHash(jm.UnitHash)
-		if unit == nil {
-			log.Warningf("No Unit found in Registry for Job(%s)", jm.Name)
-			return nil, nil
-		}
-	} else {
-		// Old-style Jobs had "Payloads" instead of Units, also stored separately in the Registry
-		unit, err = r.getUnitFromLegacyPayload(jm.Name)
-		if err != nil {
-			log.Errorf("Error retrieving legacy payload for Job(%s)", jm.Name)
-			return nil, nil
-		} else if unit == nil {
-			log.Warningf("No Payload found in Registry for Job(%s)", jm.Name)
-			return nil, nil
-		}
-
-		log.Infof("Migrating legacy Payload(%s)", jm.Name)
-		if err := r.storeOrGetUnitFile(*unit); err != nil {
-			log.Warningf("Unable to migrate legacy Payload: %v", err)
-		}
-
-		jm.UnitHash = unit.Hash()
-		log.Infof("Updating Job(%s) with legacy payload Hash(%s)", jm.Name, jm.UnitHash)
-		if err := r.updateJobObjectNode(&jm, node.ModifiedIndex); err != nil {
-			log.Warningf("Unable to update Job(%s) with legacy payload Hash(%s): %v", jm.Name, jm.UnitHash, err)
-		}
+	unit = r.getUnitByHash(jm.UnitHash)
+	if unit == nil {
+		log.Warningf("No Unit found in Registry for Job(%s)", jm.Name)
+		return nil, nil
 	}
 
 	ju := &job.Unit{
@@ -292,9 +268,8 @@ type jobModel struct {
 	UnitHash unit.Hash
 }
 
-// DestroyUnit removes a Job object from the repository, along with any legacy
-// associated Payload and SignatureSet. It does not yet remove underlying
-// Units from the repository.
+// DestroyUnit removes a Job object from the repository. It does not yet remove underlying
+// UnitFiles from the repository.
 func (r *EtcdRegistry) DestroyUnit(name string) error {
 	req := etcd.Delete{
 		Key:       path.Join(r.keyPrefix, jobPrefix, name),
@@ -311,18 +286,7 @@ func (r *EtcdRegistry) DestroyUnit(name string) error {
 	}
 
 	// TODO(jonboulle): add unit reference counting and actually destroying Units
-	r.destroyLegacyPayload(name)
-	// TODO(jonboulle): handle errors
-
 	return nil
-}
-
-// destroyLegacyPayload removes an old-style Payload from the registry
-func (r *EtcdRegistry) destroyLegacyPayload(payloadName string) {
-	req := etcd.Delete{
-		Key: path.Join(r.keyPrefix, payloadPrefix, payloadName),
-	}
-	r.etcd.Do(&req)
 }
 
 // CreateUnit attempts to store a Unit and its associated unit file in the registry
@@ -354,22 +318,6 @@ func (r *EtcdRegistry) CreateUnit(u *job.Unit) (err error) {
 	}
 
 	return r.SetUnitTargetState(u.Name, u.TargetState)
-}
-
-func (r *EtcdRegistry) updateJobObjectNode(jm *jobModel, idx uint64) (err error) {
-	json, err := marshal(jm)
-	if err != nil {
-		return
-	}
-
-	req := etcd.Set{
-		Key:           path.Join(r.keyPrefix, jobPrefix, jm.Name, "object"),
-		Value:         json,
-		PreviousIndex: idx,
-	}
-
-	_, err = r.etcd.Do(&req)
-	return
 }
 
 func (r *EtcdRegistry) SetUnitTargetState(name string, state job.JobState) error {

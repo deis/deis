@@ -26,6 +26,7 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&
     etcd_set_default size ${NUM_STORES}
     etcd_set_default minSize 1
     etcd_set_default pgNum ${PG_NUM}
+    etcd_set_default delayStart 15
 
     # Generate administrator key
     ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'

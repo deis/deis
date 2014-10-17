@@ -1,20 +1,27 @@
 package log
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync/atomic"
 )
 
-var (
-	verbosity = VLevel(0)
-
-	iLog = log.New(os.Stdout, "INFO ", log.Lshortfile)
-	eLog = log.New(os.Stdout, "ERROR ", log.Lshortfile)
-	wLog = log.New(os.Stdout, "WARN ", log.Lshortfile)
-	fLog = log.New(os.Stdout, "FATAL ", log.Lshortfile)
+const (
+	calldepth = 2
 )
+
+var (
+	logger    = log.New(os.Stderr, "", 0)
+	verbosity = VLevel(0)
+)
+
+func EnableTimestamps() {
+	logger.SetFlags(logger.Flags() | log.Ldate | log.Ltime)
+}
 
 func SetVerbosity(lvl int) {
 	verbosity.set(int32(lvl))
@@ -53,46 +60,65 @@ func V(level VLevel) VLogger {
 	return VLogger(verbosity.get() >= level)
 }
 
-func (v VLogger) Info(args ...interface{}) {
-	if v {
-		iLog.Print(args...)
+func (vl VLogger) Info(v ...interface{}) {
+	if vl {
+		logger.Output(calldepth, header("INFO", fmt.Sprint(v...)))
 	}
 }
 
-func (v VLogger) Infof(format string, args ...interface{}) {
-	if v {
-		iLog.Printf(format, args...)
+func (vl VLogger) Infof(format string, v ...interface{}) {
+	if vl {
+		logger.Output(calldepth, header("INFO", fmt.Sprintf(format, v...)))
 	}
 }
 
-func Info(args ...interface{}) {
-	iLog.Print(args...)
+func Info(v ...interface{}) {
+	logger.Output(calldepth, header("INFO", fmt.Sprint(v...)))
 }
 
-func Infof(fmt string, args ...interface{}) {
-	iLog.Printf(fmt, args...)
+func Infof(format string, v ...interface{}) {
+	logger.Output(calldepth, header("INFO", fmt.Sprintf(format, v...)))
 }
 
-func Error(args ...interface{}) {
-	eLog.Print(args...)
+func Error(v ...interface{}) {
+	logger.Output(calldepth, header("ERROR", fmt.Sprint(v...)))
 }
 
-func Errorf(fmt string, args ...interface{}) {
-	eLog.Printf(fmt, args...)
+func Errorf(format string, v ...interface{}) {
+	logger.Output(calldepth, header("ERROR", fmt.Sprintf(format, v...)))
 }
 
-func Warning(fmt string, args ...interface{}) {
-	wLog.Print(args...)
+func Warning(format string, v ...interface{}) {
+	logger.Output(calldepth, header("WARN", fmt.Sprint(v...)))
 }
 
-func Warningf(fmt string, args ...interface{}) {
-	wLog.Printf(fmt, args...)
+func Warningf(format string, v ...interface{}) {
+	logger.Output(calldepth, header("WARN", fmt.Sprintf(format, v...)))
 }
 
-func Fatal(args ...interface{}) {
-	fLog.Fatal(args...)
+func Fatal(v ...interface{}) {
+	logger.Output(calldepth, header("FATAL", fmt.Sprint(v...)))
+	os.Exit(1)
 }
 
-func Fatalf(fmt string, args ...interface{}) {
-	fLog.Fatalf(fmt, args...)
+func Fatalf(format string, v ...interface{}) {
+	logger.Output(calldepth, header("FATAL", fmt.Sprintf(format, v...)))
+	os.Exit(1)
+}
+
+func header(lvl, msg string) string {
+	_, file, line, ok := runtime.Caller(calldepth)
+	if ok {
+		file = filepath.Base(file)
+	}
+
+	if len(file) == 0 {
+		file = "???"
+	}
+
+	if line < 0 {
+		line = 0
+	}
+
+	return fmt.Sprintf("%s %s:%d: %s", lvl, file, line, msg)
 }

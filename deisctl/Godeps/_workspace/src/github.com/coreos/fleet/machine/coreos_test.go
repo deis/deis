@@ -2,6 +2,7 @@ package machine
 
 import (
 	"io/ioutil"
+	"net"
 	"os"
 	"path/filepath"
 	"testing"
@@ -47,5 +48,41 @@ func TestReadLocalMachineIDFound(t *testing.T) {
 	}
 	if machID != "pingpong" {
 		t.Fatalf("Received incorrect machID %q, expected 'pingpong'", machID)
+	}
+}
+
+func TestUsableAddress(t *testing.T) {
+	tests := []struct {
+		ip net.IP
+		ok bool
+	}{
+		// unicast IPv4 usable
+		{net.ParseIP("192.168.1.12"), true},
+
+		// unicast IPv6 unusable
+		{net.ParseIP("2001:DB8::3"), false},
+
+		// loopback IPv4/6 unusable
+		{net.ParseIP("127.0.0.12"), false},
+		{net.ParseIP("::1"), false},
+
+		// link-local IPv4/6 unusable
+		{net.ParseIP("169.254.4.87"), false},
+		{net.ParseIP("fe80::12"), false},
+
+		// unspecified (all zeros) IPv4/6 unusable
+		{net.ParseIP("0.0.0.0"), false},
+		{net.ParseIP("::"), false},
+
+		// multicast IPv4/6 unusable
+		{net.ParseIP("239.255.255.250"), false},
+		{net.ParseIP("ffx2::4"), false},
+	}
+
+	for i, tt := range tests {
+		ok := usableAddress(tt.ip)
+		if tt.ok != ok {
+			t.Errorf("case %d: expected %v usable %t, got %t", i, tt.ip, tt.ok, ok)
+		}
 	}
 }

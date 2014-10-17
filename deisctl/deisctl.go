@@ -64,7 +64,7 @@ Commands:
 
 Example Commands:
   deisctl install platform
-  deisctl uninstall builder@1
+  deisctl uninstall builder
   deisctl scale router=2
   deisctl start router@2
   deisctl stop router builder

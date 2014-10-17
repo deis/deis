@@ -159,9 +159,9 @@ ExecStop=echo "pong"
 # ignore me, too
 ExecStop=echo post
 
-[Fleet]
-X-ConditionMachineMetadata=foo=bar
-X-ConditionMachineMetadata=baz=qux
+[X-Fleet]
+MachineMetadata=foo=bar
+MachineMetadata=baz=qux
 `
 
 	expected := map[string]map[string][]string{
@@ -172,8 +172,8 @@ X-ConditionMachineMetadata=baz=qux
 			"ExecStart": {`echo "ping";`},
 			"ExecStop":  {`echo "pong"`, "echo post"},
 		},
-		"Fleet": {
-			"X-ConditionMachineMetadata": {"foo=bar", "baz=qux"},
+		"X-Fleet": {
+			"MachineMetadata": {"foo=bar", "baz=qux"},
 		},
 	}
 

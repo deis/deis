@@ -15,8 +15,7 @@ type EtcdRegistry struct {
 	keyPrefix string
 }
 
-// New creates a new EtcdRegistry with the given parameters
-func New(client etcd.Client, keyPrefix string) (registry Registry) {
+func NewEtcdRegistry(client etcd.Client, keyPrefix string) *EtcdRegistry {
 	return &EtcdRegistry{client, keyPrefix}
 }
 

@@ -44,20 +44,20 @@ full-clean: check-docker check-registry
 install: check-deisctl
 	deisctl install store-monitor
 	deisctl install store-daemon
-	deisctl scale store-gateway=1
+	deisctl install store-gateway
 
 uninstall: check-deisctl
-	deisctl scale store-gateway=0
+	deisctl uninstall store-gateway
 	deisctl uninstall store-daemon
 	deisctl uninstall store-monitor
 
 start: check-deisctl
 	deisctl start store-monitor
 	deisctl start store-daemon
-	deisctl start store-gateway@1
+	deisctl start store-gateway
 
 stop: check-deisctl
-	deisctl stop store-gateway@1
+	deisctl stop store-gateway
 	deisctl stop store-daemon
 	deisctl stop store-monitor
 

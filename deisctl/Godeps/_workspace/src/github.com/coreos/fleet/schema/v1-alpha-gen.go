@@ -299,7 +299,7 @@ func (c *UnitStateListCall) Do() (*UnitStatePage, error) {
 
 }
 
-// method id "fleet.DesiredState.Delete":
+// method id "fleet.Unit.Delete":
 
 type UnitsDeleteCall struct {
 	s        *Service
@@ -336,7 +336,7 @@ func (c *UnitsDeleteCall) Do() error {
 	// {
 	//   "description": "Delete the referenced Unit object.",
 	//   "httpMethod": "DELETE",
-	//   "id": "fleet.DesiredState.Delete",
+	//   "id": "fleet.Unit.Delete",
 	//   "parameterOrder": [
 	//     "unitName"
 	//   ],

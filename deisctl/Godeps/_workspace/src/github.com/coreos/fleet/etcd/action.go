@@ -120,6 +120,7 @@ type Set struct {
 	Value         string
 	TTL           time.Duration
 	PreviousIndex uint64
+	PreviousValue string
 }
 
 func (s *Set) String() string {
@@ -132,6 +133,9 @@ func (s *Set) HTTPRequest() (*http.Request, error) {
 	params := endpoint.Query()
 	if s.PreviousIndex != 0 {
 		params.Add("prevIndex", strconv.FormatInt(int64(s.PreviousIndex), 10))
+	}
+	if s.PreviousValue != "" {
+		params.Add("prevValue", s.PreviousValue)
 	}
 	endpoint.RawQuery = params.Encode()
 

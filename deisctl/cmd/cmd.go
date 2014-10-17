@@ -11,13 +11,16 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/deisctl/constant"
 	"github.com/deis/deis/deisctl/update"
 	"github.com/deis/deis/deisctl/utils"
-	"github.com/docopt/docopt-go"
+
+	docopt "github.com/docopt/docopt-go"
 )
 
 const (
@@ -58,104 +61,158 @@ func Scale(b backend.Backend, targets []string) error {
 }
 
 func Start(b backend.Backend, targets []string) error {
-	// if target is platform, start all services
+
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return StartPlatform(b)
 	}
-	return b.Start(targets)
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	b.Start(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
+	return nil
 }
 
 func StartPlatform(b backend.Backend) error {
-	fmt.Println(utils.DeisIfy("Starting Deis..."))
-	if err := startDataContainers(b); err != nil {
-		return err
-	}
-	if err := startDefaultServices(b); err != nil {
-		return err
-	}
-	fmt.Println("Deis started.")
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Starting Deis...")
+
+	startDataContainers(b, &wg, outchan, errchan)
+	startDefaultServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	fmt.Println()
+	fmt.Println("Please use `deis register` to setup an administrator account.")
 	return nil
 }
 
-func startDataContainers(b backend.Backend) error {
-	fmt.Println("Launching data containers...")
-	if err := b.Start(DefaultDataContainers); err != nil {
-		return err
-	}
-	fmt.Println("Data containers launched.")
-	return nil
+func startDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	outchan <- fmt.Sprintf("Data containers...")
+	b.Start(DefaultDataContainers, wg, outchan, errchan)
+	wg.Wait()
 }
 
-func startDefaultServices(b backend.Backend) error {
-	fmt.Println("Launching service containers...")
-	if err := Start(b, []string{"logger@1"}); err != nil {
-		return err
-	}
-	targets := []string{
-		"publisher",
-		"store-monitor",
-		"store-daemon",
-		"store-gateway@1",
-		"logspout",
-		"cache@1",
-		"router@1",
-		"database@1",
-		"controller@1",
-		"registry@1",
-		"builder@1",
-	}
-	if err := Start(b, targets); err != nil {
-		return err
-	}
-	fmt.Println("Service containers launched.")
-	return nil
+func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
+	// create separate channels for background tasks
+	_outchan := make(chan string)
+	_errchan := make(chan error)
+	var _wg sync.WaitGroup
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Start([]string{"logger"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	// start all services in the background
+	b.Start([]string{"cache", "database", "registry", "controller", "builder",
+		"publisher", "router@1", "router@2", "router@3"}, &_wg, _outchan, _errchan)
+
+	// wait for groups to come up
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Start([]string{"cache", "database", "registry", "controller"}, wg, outchan, errchan)
+	wg.Wait()
+
+	b.Start([]string{"builder"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Start([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Start([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Stop(b backend.Backend, targets []string) error {
-	// if target is platform, stop all services
+
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return StopPlatform(b)
 	}
-	return b.Stop(targets)
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	b.Stop(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
+	return nil
 }
 
 func StopPlatform(b backend.Backend) error {
-	fmt.Println("Stopping Deis...")
-	if err := stopDefaultServices(b); err != nil {
-		return err
-	}
-	fmt.Println("Deis stopped.")
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Stopping Deis...")
+
+	stopDefaultServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	fmt.Println()
+	fmt.Println("Please run `deisctl start platform` to restart Deis.")
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend) error {
-	fmt.Println("Stopping service containers...")
-	targets := []string{
-		"publisher",
-		"logspout",
-		"builder@1",
-		"registry@1",
-		"controller@1",
-		"database@1",
-		"store-gateway@1",
-		"store-daemon",
-		"store-monitor",
-		"cache@1",
-		"router@1",
-		"logger@1",
-	}
-	if err := Stop(b, targets); err != nil {
-		return err
-	}
-	fmt.Println("Service containers stopped.")
-	return nil
+func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Stop([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Stop([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Stop([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Restart(b backend.Backend, targets []string) error {
-	if err := b.Stop(targets); err != nil {
+	if err := Stop(b, targets); err != nil {
 		return err
 	}
-	return b.Start(targets)
+	return Start(b, targets)
 }
 
 func Status(b backend.Backend, targets []string) error {
@@ -177,92 +234,160 @@ func Journal(b backend.Backend, targets []string) error {
 }
 
 func Install(b backend.Backend, targets []string) error {
+
 	// if target is platform, install all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return InstallPlatform(b)
 	}
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
 	// otherwise create the specific targets
-	return b.Create(targets)
+	b.Create(targets, &wg, outchan, errchan)
+	wg.Wait()
+
+	close(outchan)
+	return nil
 }
 
 func InstallPlatform(b backend.Backend) error {
-	fmt.Println(utils.DeisIfy("Installing Deis..."))
-	if err := installDataContainers(b); err != nil {
-		return err
-	}
-	if err := installDefaultServices(b); err != nil {
-		return err
-	}
-	fmt.Println("Deis installed.")
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Installing Deis...")
+
+	installDataContainers(b, &wg, outchan, errchan)
+	installDefaultServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	fmt.Println()
 	fmt.Println("Please run `deisctl start platform` to boot up Deis.")
 	return nil
 }
 
-func installDataContainers(b backend.Backend) error {
-	fmt.Println("Scheduling data containers...")
-	if err := b.Create(DefaultDataContainers); err != nil {
-		return err
-	}
-	fmt.Println("Data containers scheduled.")
-	return nil
+func installDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	outchan <- fmt.Sprintf("Data containers...")
+	b.Create(DefaultDataContainers, wg, outchan, errchan)
+	wg.Wait()
 }
 
-func installDefaultServices(b backend.Backend) error {
-	// Install global units
-	if err := b.Create([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
-		return err
-	}
-	// start service containers
-	targets := []string{
-		"store-gateway=1",
-		"database=1",
-		"cache=1",
-		"logger=1",
-		"registry=1",
-		"controller=1",
-		"builder=1",
-		"router=1",
-	}
-	fmt.Println("Scheduling service containers...")
-	if err := Scale(b, targets); err != nil {
-		return err
-	}
-	fmt.Println("Service containers scheduled.")
-	return nil
+func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Create([]string{"cache", "database", "registry", "controller", "builder"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Create([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Uninstall(b backend.Backend, targets []string) error {
+
 	// if target is platform, uninstall all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		return uninstallAllServices(b)
+		return UninstallPlatform(b)
 	}
-	// uninstall the specific target
-	return b.Destroy(targets)
-}
 
-func uninstallAllServices(b backend.Backend) error {
-	targets := []string{
-		"store-gateway=0",
-		"database=0",
-		"cache=0",
-		"logger=0",
-		"registry=0",
-		"controller=0",
-		"builder=0",
-		"router=0",
-	}
-	fmt.Println("Destroying service containers...")
-	if err := Scale(b, targets); err != nil {
-		return err
-	}
-	// Uninstall global units
-	if err := b.Destroy([]string{"publisher", "logspout", "store-monitor", "store-daemon"}); err != nil {
-		return err
-	}
-	fmt.Println("Service containers destroyed.")
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	// uninstall the specific target
+	b.Destroy(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
 	return nil
 }
 
+func UninstallPlatform(b backend.Backend) error {
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Uninstalling Deis...")
+
+	uninstallAllServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	return nil
+}
+
+func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Destroy([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Destroy([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Destroy([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	return nil
+}
+
+func printState(outchan chan string, errchan chan error, interval time.Duration) error {
+	for {
+		select {
+		case out := <-outchan:
+			// done on closed channel
+			if out == "" {
+				return nil
+			}
+			fmt.Println(out)
+		case err := <-errchan:
+			if err != nil {
+				fmt.Println(err.Error())
+				return err
+			}
+		}
+		time.Sleep(interval)
+	}
+}
 func splitScaleTarget(target string) (c string, num int, err error) {
 	r := regexp.MustCompile(`([a-z-]+)=([\d]+)`)
 	match := r.FindStringSubmatch(target)

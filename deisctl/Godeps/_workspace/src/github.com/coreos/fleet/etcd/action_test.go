@@ -122,6 +122,12 @@ func TestSetHTTPRequest(t *testing.T) {
 			"/v2/keys/foo?prevIndex=13",
 			"value=bar",
 		},
+		{
+			&Set{Key: "/foo", Value: "bar", PreviousValue: "baz"},
+			"PUT",
+			"/v2/keys/foo?prevValue=baz",
+			"value=bar",
+		},
 	}
 
 	driveActionTestCases(t, tests)

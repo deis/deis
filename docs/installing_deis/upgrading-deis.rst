@@ -7,42 +7,84 @@
 Upgrading Deis
 ==============
 
-This guide provides some general information and considerations around upgrading a Deis cluster.
-Additional tooling around upgrading Deis is planned for a future Deis release
-(tracked in `#710`_). The upgrade strategies outlined below
-reflect the current state of the Deis platform - they are certainly not ideal, and significant work
-is planned to make upgrading Deis much less painful for future releases.
+There are currently two strategies for upgrading a Deis cluster:
 
-The current recommended upgrade paths for Deis are either to provision a new cluster and cut over
-DNS to point to new application endpoints, or to perform an in-place upgrade of Deis components.
+* In-place Upgrade (recommended)
+* Migration Upgrade
 
-Deploying a New Cluster
------------------------
+In-place Upgrade
+----------------
 
-This upgrade method provisions a new cluster running in parallel to the old one. Applications are
-pushed to this new cluster one-by-one, and DNS records are updated to cut over traffic on a
-per-application basis. This results in a no-downtime controlled upgrade, but has the caveat that no
-data from the old cluster (users, releases, etc.) is retained. Future upgrade tooling will have
-facilities to export and import cluster data.
+An in-place upgrade swaps out platform containers for newer versions on the same set of hosts,
+leaving your applications and platform data intact.  This is the easiest and least disruptive upgrade strategy.
+The general approach is to use ``deisctl`` to uninstall all platform components, update the platform version
+and then reinstall platform components.
 
-Provision servers
-^^^^^^^^^^^^^^^^^
-A new cluster can be provisioned by following the release's README or contrib/ directory tooling.
-Be sure to use a new etcd discovery URL so that the new cluster doesn't interfere with the running one.
+.. note::
 
-Upgrade Deis client and fleetctl
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The latest Deis client should be installed. You can either use pip or download a pre-compiled binary.
-See the release notes or the release's README for a link to the latest client.
+    In-place upgrades are supported starting from Deis version 0.14.0
 
-Also, new Deis releases frequently require upgrades to the fleetctl client. Again, see the release
-notes for the new release to see if an upgrade is necessary.
-
-Before upgrading the client, we should logout with the old client:
+Use the following steps to perform an in-place upgrade of your Deis cluster.
 
 .. code-block:: console
 
-    dev $ deis logout
+    $ deisctl uninstall platform
+    $ deisctl config platform set version=v0.14.0
+    $ deisctl install platform
+    $ deisctl start platform
+
+.. attention::
+
+    In-place upgrades incur approximately 10-30 minutes of downtime for deployed applications, the router mesh
+    and the platform control plane.  Please plan your maintenance windows accordingly.
+
+
+Migration Upgrade
+-----------------
+
+This upgrade method provisions a new cluster running in parallel to the old one. Applications are
+migrated to this new cluster one-by-one, and DNS records are updated to cut over traffic on a
+per-application basis. This results in a no-downtime controlled upgrade, but has the caveat that no
+data from the old cluster (users, releases, etc.) is retained. Future ``deisctl`` tooling will have
+facilities to export and import this platform data.
+
+.. note::
+
+    Migration upgrades are useful for moving Deis to a new set of hosts,
+    but should otherwise be avoided due to the amount of manual work involved.
+
+.. important::
+
+    In order to migrate applications, your new cluster must have network access
+    to the registry component on the old cluster
+
+Enumerate Existing Applications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Each application will need to be deployed to the new cluster manually.
+Log in to the existing cluster as an admin user and use the ``deis`` client to
+gather information about your deployed applications.
+
+List all applications with:
+
+.. code-block:: console
+
+    $ deis apps:list
+
+Gather each application's version with:
+
+.. code-block:: console
+
+    $ deis apps:info -a <app-name>
+
+Provision servers
+^^^^^^^^^^^^^^^^^
+Follow the Deis documentation to provision a new cluster using your desired target release.
+Be sure to use a new etcd discovery URL so that the new cluster doesn't interfere with the running one.
+
+Upgrade Deis clients
+^^^^^^^^^^^^^^^^^^^^
+If changing versions, make sure you upgrade your ``deis`` and ``deisctl`` clients
+to match the cluster's release.
 
 Register and login to the new controller
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -50,34 +92,34 @@ Register an account on the new controller and login.
 
 .. code-block:: console
 
-    dev $ deis register http://deis.newcluster.example.org
-    dev $ deis login http://deis.newcluster.example.org
-    dev $ deis keys:add
+    $ deis register http://deis.newcluster.example.org
+    $ deis login http://deis.newcluster.example.org
 
-Push apps to the new cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each application will need to be deployed to the new cluster. You can use ``deis apps:list`` to help
-enumerate all existing applications.
+Migrate applications
+^^^^^^^^^^^^^^^^^^^^
+The ``deis pull`` command makes it easy to migrate existing applications from
+one cluster to another.  However, you must have network access to the existing
+cluster's registry component.
 
-For each existing application, rename the existing deis remote, and create a new application.
+Migrate a single application with:
 
 .. code-block:: console
 
-    dev $ git remote rename deis deis-old
-    dev $ deis create
-    dev $ git push deis master
+    $ deis create <app-name>
+    $ deis pull registry.oldcluster.example.org:5000/<app-name>:<version>
 
-Note that you'll also need to ``deis config:set`` for each environment variable an application
-references - use ``deis config:list`` to enumerate these.
+This will move the application's Docker image across clusters, ensuring the application
+is migrated bit-for-bit with an identical build and configuration.
 
 Now each application is running on the new cluster, but they are still running (and serving traffic)
-on the old cluster.
-
-We need to tell Deis that this application can be accessed by its old name:
+on the old cluster.  Use ``deis domains:add`` to tell Deis that this application can be accessed
+by its old name:
 
 .. code-block:: console
 
-    dev $ deis domains:add oldappname.oldcluster.example.org
+    $ deis domains:add oldappname.oldcluster.example.org
+
+Repeat for each application.
 
 Test applications
 ^^^^^^^^^^^^^^^^^
@@ -99,72 +141,3 @@ new cluster, you would create a DNS record that looks like the following:
 Retire the old cluster
 ^^^^^^^^^^^^^^^^^^^^^^
 Once all applications have been validated, the old cluster can be retired.
-
-Deploying a new Cluster with External Components
-------------------------------------------------
-
-If you're upgrading from a cluster where you have outsourced your components outside of
-Deis (such as migrating deis-database onto Amazon Relational Database Services), you have
-the benefit of preserving existing data, but you still need to update DNS records and the
-like.
-
-Provision Servers
-^^^^^^^^^^^^^^^^^
-
-Provision the CoreOS cluster as you normally would with any release of Deis. However, do
-not install any components onto this cluster. We need to point etcd to the components
-which are running outside of the cluster.
-
-Export Etcd Keys
-^^^^^^^^^^^^^^^^
-
-To migrate over, start by pointing the new cluster at the old cluster's endpoints:
-
-.. code-block:: console
-
-    $ deisctl config database set host pqsl.example.org
-    $ deisctl config database set port 1234
-    ...
-
-Next, you'll also want to migrate over the application directories:
-
-    $ etcdctl mkdir /deis/services/appname
-
-Start new Components
-^^^^^^^^^^^^^^^^^^^^
-
-The Makefile takes care of this logic for us:
-
-.. code-block:: console
-
-    dev $ make run
-
-Re-deploy Apps to the new Cluster
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-With this process, re-deploying apps couldn't be easier. Just scale the processes down to
-0 for each application, then scale back up.
-
-.. code-block:: console
-
-    $ deis scale --app example web=0
-    $ deis scale --app example web=3
-
-.. note::
-
-    Support for ``deis ps:restart`` is being tracked in `#467`_.
-
-Test applications
-^^^^^^^^^^^^^^^^^
-
-Test to make sure applications work as expected on the new Deis cluster.
-
-Update DNS records
-^^^^^^^^^^^^^^^^^^
-
-Once you've finished migrating over to the new cluster, just update your wildcard DNS to
-point at your new load balancer. The application names are all the same, so no CNAME
-modification needs to occur.
-
-.. _`#710`: https://github.com/deis/deis/issues/710
-.. _`#467`: https://github.com/deis/deis/issues/467

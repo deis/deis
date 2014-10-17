@@ -3,6 +3,7 @@ package fleet
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/schema"
@@ -10,39 +11,50 @@ import (
 )
 
 // Create schedules a new unit for the given component
-// and blocks until the unit is loaded
-func (c *FleetClient) Create(targets []string) error {
+func (c *FleetClient) Create(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
 	units := make([]*schema.Unit, len(targets))
-	desiredState := string(job.JobStateLoaded)
+
 	for i, target := range targets {
 		unitName, unitFile, err := c.createUnitFile(target)
 		if err != nil {
-			return err
+			errchan <- err
+			return
 		}
 		units[i] = &schema.Unit{
 			Name:    unitName,
 			Options: schema.MapUnitFileToSchemaUnitOptions(unitFile),
 		}
 	}
+
 	for _, unit := range units {
-		// schedule unit
-		if err := c.Fleet.CreateUnit(unit); err != nil {
-			// ignore units that already exist
-			if err.Error() != "job already exists" {
-				return fmt.Errorf("failed creating job %s: %v", unit.Name, err)
-			}
-		}
-		if err := c.Fleet.SetUnitTargetState(unit.Name, desiredState); err != nil {
-			return err
+		wg.Add(1)
+		go doCreate(c, unit, wg, outchan, errchan)
+	}
+}
+
+func doCreate(c *FleetClient, unit *schema.Unit, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	defer wg.Done()
+
+	// create unit definition
+	if err := c.Fleet.CreateUnit(unit); err != nil {
+		// ignore units that already exist
+		if err.Error() != "job already exists" {
+			errchan <- err
+			return
 		}
 	}
-	for _, unit := range units {
-		outchan, errchan := waitForUnitStates([]string{unit.Name}, desiredState)
-		if err := printUnitState(unit.Name, outchan, errchan); err != nil {
-			return err
-		}
+
+	desiredState := string(job.JobStateLoaded)
+	out := fmt.Sprintf("\033[0;33m%v:\033[0m loaded                                 \r", unit.Name)
+
+	// schedule the unit
+	if err := c.Fleet.SetUnitTargetState(unit.Name, desiredState); err != nil {
+		errchan <- err
+		return
 	}
-	return nil
+
+	outchan <- out
 }
 
 func (c *FleetClient) createUnitFile(target string) (unitName string, uf *unit.UnitFile, err error) {

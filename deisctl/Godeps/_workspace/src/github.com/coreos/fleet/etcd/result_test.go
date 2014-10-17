@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestUnmarshalSuccessfulResponseNoNodes(t *testing.T) {
@@ -35,9 +36,9 @@ func TestUnmarshalSuccessfulResponseNoNodes(t *testing.T) {
 		// Node
 		{
 			http.Response{
-				Body: ioutil.NopCloser(strings.NewReader(`{"action":"get", "node": {"key": "/foo", "value": "bar", "modifiedIndex": 12, "createdIndex": 10}}`)),
+				Body: ioutil.NopCloser(strings.NewReader(`{"action":"get", "node": {"key": "/foo", "value": "bar", "modifiedIndex": 12, "createdIndex": 10, "ttl": 3}}`)),
 			},
-			&Result{Action: "get", Node: &Node{Key: "/foo", Value: "bar", ModifiedIndex: 12, CreatedIndex: 10}},
+			&Result{Action: "get", Node: &Node{Key: "/foo", Value: "bar", ModifiedIndex: 12, CreatedIndex: 10, TTL: 3}},
 			false,
 		},
 
@@ -88,6 +89,26 @@ func TestUnmarshalSuccessfulResponseNoNodes(t *testing.T) {
 
 		if !reflect.DeepEqual(res.Node, tt.res.Node) {
 			t.Errorf("case %d: Node=%v, expected %v", i, res.Node, tt.res.Node)
+		}
+	}
+}
+
+func TestNodeTTLDuration(t *testing.T) {
+	tests := []struct {
+		ttl  int
+		want time.Duration
+	}{
+		{3, 3 * time.Second},
+		{0, 0 * time.Second},
+		{-21, 0 * time.Second},
+	}
+
+	for i, tt := range tests {
+		n := &Node{TTL: tt.ttl}
+		got := n.TTLDuration()
+
+		if !reflect.DeepEqual(tt.want, got) {
+			t.Errorf("%d: TTLDuration() returned incorrect value: want=%v, got=%v", i, tt.want, got)
 		}
 	}
 }

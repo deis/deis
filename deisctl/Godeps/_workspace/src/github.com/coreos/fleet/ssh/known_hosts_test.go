@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"syscall"
 	"testing"
 
 	gossh "github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/go.crypto/ssh"
@@ -132,22 +133,34 @@ func TestHostKeyFile(t *testing.T) {
 	}
 }
 
-// TestHostKeyFile tests to read and write from wrong HostKeyFile
+// TestHostKeyFile tests that reading and writing the wrong host key file fails
 func TestWrongHostKeyFile(t *testing.T) {
+	// Non-existent host key file should fail
 	f := NewHostKeyFile(wrongHostFile)
 	_, err := f.GetHostKeys()
 	if err == nil {
 		t.Fatal("should fail to read wrong host file")
 	}
 	if _, ok := err.(*os.PathError); !ok {
-		t.Fatal("should fail to read wrong host file due to file miss")
+		t.Fatal("should fail to read wrong host file due to file miss, but got %v")
 	}
 
+	// Create a host key file we do not have permission to read
 	os.OpenFile(wrongHostFile, os.O_CREATE, 0000)
 	defer os.Remove(wrongHostFile)
+	// If run as root, drop privileges temporarily
+	if id := syscall.Geteuid(); id == 0 {
+		if err := syscall.Setuid(12345); err != nil {
+			t.Fatalf("error setting uid: %v", err)
+		}
+		defer syscall.Setuid(id)
+	}
 	err = f.PutHostKey("", nil)
 	if err == nil {
-		t.Fatal("append to wrong host file")
+		t.Fatal("should fail to write wrong host file")
+	}
+	if !os.IsPermission(err) {
+		t.Fatal("should fail to write wrong host file due to permission denied, but got %v", err)
 	}
 }
 

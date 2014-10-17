@@ -98,11 +98,11 @@ function dump_logs {
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
   set -x
   fleetctl -strict-host-key-checking=false list-units
-  fleetctl -strict-host-key-checking=false ssh deis-controller@1 etcdctl ls / --recursive
-  fleetctl -strict-host-key-checking=false ssh deis-controller@1 docker logs deis-controller
-  fleetctl -strict-host-key-checking=false ssh deis-registry@1 docker logs deis-registry
-  fleetctl -strict-host-key-checking=false ssh deis-builder@1 docker logs deis-builder
-  fleetctl -strict-host-key-checking=false ssh deis-logger@1 docker logs deis-logger
+  fleetctl -strict-host-key-checking=false ssh deis-controller etcdctl ls / --recursive
+  fleetctl -strict-host-key-checking=false ssh deis-controller docker logs deis-controller
+  fleetctl -strict-host-key-checking=false ssh deis-registry docker logs deis-registry
+  fleetctl -strict-host-key-checking=false ssh deis-builder docker logs deis-builder
+  fleetctl -strict-host-key-checking=false ssh deis-logger docker logs deis-logger
   set +x
   exit 1
 }
