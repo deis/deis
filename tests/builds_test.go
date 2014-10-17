@@ -41,11 +41,7 @@ func buildSetup(t *testing.T) *utils.DeisTestConfig {
 	}
 	utils.Execute(t, appsCreateCmd, cfg, false, "")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
-	if err := utils.CreateFile(cfg.ExampleApp); err != nil {
-		t.Fatal(err)
-	}
-	utils.Execute(t, gitAddCmd, cfg, false, "")
-	utils.Execute(t, gitCommitCmd, cfg, false, "")
+	utils.Execute(t, "git commit --allow-empty -m bump", cfg, false, "")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
