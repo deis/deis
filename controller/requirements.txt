@@ -7,7 +7,7 @@ Django==1.6.7
 # FIXME: switch to upstream pending merge of https://github.com/kmmbvnr/django-fsm/pull/59
 git+https://github.com/deis/django-fsm@propagate-false
 django-guardian==1.2.4
-django-json-field==0.5.5
+django-json-field==0.5.7
 djangorestframework==2.3.14
 docker-py==0.4.0
 gunicorn==19.1.1
