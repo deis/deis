@@ -3,10 +3,10 @@
 # Preps a Ubuntu 14.04 box with requirements to run as a Jenkins node to http://ci.deis.io/
 # Should be run as root.
 
-# install docker 1.2.0
+# install docker 1.3.0
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sh -c "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
-apt-get update && apt-get install -yq lxc-docker-1.2.0
+apt-get update && apt-get install -yq lxc-docker-1.3.0
 
 # install java
 apt-get install -yq openjdk-7-jre-headless
