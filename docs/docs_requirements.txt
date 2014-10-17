@@ -17,7 +17,7 @@ djangorestframework==2.3.14
 docker-py==0.4.0
 gunicorn==18.0
 paramiko==1.14.1
-psycopg2==2.5.2
+psycopg2==2.5.4
 python-etcd==0.3.0
 South==1.0
 
