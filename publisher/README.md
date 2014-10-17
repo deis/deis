@@ -10,7 +10,7 @@ service discovery.
 Set $ETCD_HOST to be the IP address/hostname of the etcd endpoint you wish to target, and
 $HOST to be the IP address of the host running this container:
 
-    ><> docker run -d -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=192.168.0.1 -e HOST=192.168.0.1 deis/publisher
+    $ docker run -d -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=192.168.0.1 -e HOST=192.168.0.1 deis/publisher
 
 ## Building from Source
 
@@ -28,6 +28,6 @@ Leveraging the build environment, this image pulls in the standalone binary comp
 the build environment and injects it into a minimal standalone container, minimizing the
 disk space footprint that this image takes up. In fact, this image is < 5MB:
 
-    ><> docker images | grep publisher
+    $ docker images | grep publisher
     deis/publisher                           master              7974d140b07d        11 minutes ago      4.678 MB
     deis/publisher-build                     master              75983660e714        11 minutes ago      1.091 GB
