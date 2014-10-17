@@ -39,7 +39,7 @@ Register a User
 Now that the client is installed, create a user account on the Deis :ref:`Controller`.
 
 .. important:: First User Gets Admin
-   The first user to register with Deis receives "superuser" priviledges.
+   The first user to register with Deis receives "superuser" privileges.
 
 .. code-block:: console
 
