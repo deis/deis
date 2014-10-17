@@ -11,7 +11,7 @@ docker rm `docker ps -a -q`
 docker rmi -f `docker images -q`
 
 # Pull Deis testing essentials
-docker pull ubuntu:14.04
+docker pull ubuntu-debootstrap:14.04
 docker pull deis/slugbuilder:latest
 docker pull deis/slugrunner:latest
 docker pull deis/test-etcd:latest

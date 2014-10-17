@@ -1,9 +1,9 @@
-FROM ubuntu:14.04
+FROM ubuntu-debootstrap:14.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
 # install common packages
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl net-tools sudo
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \

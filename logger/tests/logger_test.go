@@ -19,7 +19,7 @@ func TestLogger(t *testing.T) {
 	defer cli.CmdRm("-f", etcdName)
 	dataName := "deis-logger-data-" + tag
 	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/var/log/deis", "ubuntu:14.04", "/bin/true")
+		"-v", "/var/log/deis", "ubuntu-debootstrap:14.04", "/bin/true")
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/logger:%s at %s:%s\n", tag, host, port)
 	name := "deis-logger-" + tag
