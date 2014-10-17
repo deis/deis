@@ -54,9 +54,9 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.provider :virtualbox do |vb, override|
-    # Use AMD Lance nic which seems less problematic than Intel
-    vb.customize ["modifyvm", :id, "--nictype1", "Am79C973"]
-    vb.customize ["modifyvm", :id, "--nictype2", "Am79C973"]
+    # Use paravirtualized network adapters
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
   end
 
   config.vm.provider :virtualbox do |v|
