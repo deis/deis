@@ -114,13 +114,17 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	_errchan := make(chan error)
 	var _wg sync.WaitGroup
 
-	// background start a few services that take a while to download
-	b.Start([]string{"builder", "registry"}, &_wg, _outchan, _errchan)
-
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Start([]string{"logger", "logspout"}, wg, outchan, errchan)
+	b.Start([]string{"logger"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
+	// start all services in the background
+	b.Start([]string{"cache", "database", "registry", "controller", "builder",
+		"publisher", "router@1", "router@2", "router@3"}, &_wg, _outchan, _errchan)
+
+	// wait for groups to come up
 	outchan <- fmt.Sprintf("Storage subsystem...")
 	b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
@@ -130,13 +134,6 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	b.Start([]string{"builder"}, wg, outchan, errchan)
-
-	// FIXME: the store-gateway will often get hung for unknown reasons
-	// a restart of store-daemon seems to do the trick, so we add one here during provisioning
-	b.Stop([]string{"store-daemon"}, &_wg, _outchan, _errchan)
-	_wg.Wait()
-	b.Start([]string{"store-daemon"}, &_wg, _outchan, _errchan)
-
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
