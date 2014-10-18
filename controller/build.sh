@@ -34,9 +34,6 @@ mkdir -p /var/log/deis && chown -R deis:deis /var/log/deis
 # install dependencies
 pip install -r /app/requirements.txt
 
-# Create static resources
-/app/manage.py collectstatic --settings=deis.settings --noinput
-
 # cleanup. indicate that python, libpq and libyanl are required packages.
 apt-mark unmarkauto python python-openssl libpq5 libpython2.7 libyaml-0-2 && \
   apt-get remove -y --purge python-dev gcc cpp libpq-dev libyaml-dev git && \
