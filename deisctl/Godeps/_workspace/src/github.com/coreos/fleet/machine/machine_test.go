@@ -2,62 +2,61 @@ package machine
 
 import (
 	"testing"
+
+	"github.com/coreos/fleet/pkg"
 )
 
-func TestHasMetadataSimpleMatch(t *testing.T) {
-	metadata := map[string]string{
-		"region": "us-east-1",
+func TestHasMetadata(t *testing.T) {
+	testCases := []struct {
+		metadata map[string]string
+		match    map[string]pkg.Set
+		want     bool
+	}{
+		{
+			map[string]string{
+				"region": "us-east-1",
+			},
+			map[string]pkg.Set{
+				"region": pkg.NewUnsafeSet("us-east-1"),
+			},
+			true,
+		},
+		{
+			map[string]string{
+				"groups": "ping",
+			},
+			map[string]pkg.Set{
+				"groups": pkg.NewUnsafeSet("ping", "pong"),
+			},
+			true,
+		},
+		{
+			map[string]string{
+				"groups": "ping",
+			},
+			map[string]pkg.Set{
+				"groups": pkg.NewUnsafeSet("pong"),
+			},
+			false,
+		},
+		{
+			map[string]string{
+				"region": "us-east-1",
+				"groups": "ping",
+			},
+			map[string]pkg.Set{
+				"region": pkg.NewUnsafeSet("us-east-1"),
+				"groups": pkg.NewUnsafeSet("pong"),
+			},
+			false,
+		},
 	}
-	ms := &MachineState{Metadata: metadata}
 
-	match := map[string][]string{
-		"region": {"us-east-1"},
-	}
-	if !HasMetadata(ms, match) {
-		t.Errorf("Machine reported it did not have expected state")
-	}
-}
-
-func TestHasMetadataMultiMatch(t *testing.T) {
-	metadata := map[string]string{
-		"groups": "ping",
-	}
-	ms := &MachineState{Metadata: metadata}
-
-	match := map[string][]string{
-		"groups": {"ping", "pong"},
-	}
-	if !HasMetadata(ms, match) {
-		t.Errorf("Machine reported it did not have expected state")
-	}
-}
-
-func TestHasMetadataSingleMatchFail(t *testing.T) {
-	metadata := map[string]string{
-		"groups": "ping",
-	}
-	ms := &MachineState{Metadata: metadata}
-
-	match := map[string][]string{
-		"groups": {"pong"},
-	}
-	if HasMetadata(ms, match) {
-		t.Errorf("Machine reported a successful match for metadata which it does not have")
-	}
-}
-
-func TestHasMetadataPartialMatchFail(t *testing.T) {
-	metadata := map[string]string{
-		"region": "us-east-1",
-		"groups": "ping",
-	}
-	ms := &MachineState{Metadata: metadata}
-
-	match := map[string][]string{
-		"region": {"us-east-1"},
-		"groups": {"pong"},
-	}
-	if HasMetadata(ms, match) {
-		t.Errorf("Machine reported a successful match for metadata which it does not have")
+	for i, tt := range testCases {
+		ms := &MachineState{Metadata: tt.metadata}
+		got := HasMetadata(ms, tt.match)
+		if got != tt.want {
+			t.Errorf("case %d: HasMetadata returned %t, expected %t", i, got, tt.want)
+		}
 	}
 }

@@ -32,7 +32,7 @@ type transport interface {
 	CancelRequest(req *http.Request)
 }
 
-func NewClient(endpoints []string, transport http.Transport, actionTimeout time.Duration) (*client, error) {
+func NewClient(endpoints []string, transport *http.Transport, actionTimeout time.Duration) (*client, error) {
 	if len(endpoints) == 0 {
 		endpoints = []string{defaultEndpoint}
 	}
@@ -55,7 +55,7 @@ func NewClient(endpoints []string, transport http.Transport, actionTimeout time.
 
 	return &client{
 		endpoints:     parsed,
-		transport:     &transport,
+		transport:     transport,
 		actionTimeout: actionTimeout,
 	}, nil
 }
@@ -361,18 +361,21 @@ func (ar *actionResolver) one(req *http.Request, cancel <-chan struct{}) (resp *
 	return
 }
 
-func buildTLSClientConfig(ca, cert, key []byte) (*tls.Config, error) {
+type keypairFunc func(certPEMBlock, keyPEMBlock []byte) (cert tls.Certificate, err error)
+
+func buildTLSClientConfig(ca, cert, key []byte, parseKeyPair keypairFunc) (*tls.Config, error) {
 	if len(cert) == 0 && len(key) == 0 {
 		return &tls.Config{InsecureSkipVerify: true}, nil
 	}
 
-	tlsCert, err := tls.X509KeyPair(cert, key)
+	tlsCert, err := parseKeyPair(cert, key)
 	if err != nil {
 		return nil, err
 	}
 
 	cfg := tls.Config{
 		Certificates: []tls.Certificate{tlsCert},
+		MinVersion:   tls.VersionTLS10,
 	}
 
 	if len(ca) != 0 {
@@ -427,7 +430,7 @@ func ReadTLSConfigFiles(cafile, certfile, keyfile string) (cfg *tls.Config, err 
 		}
 	}
 
-	cfg, err = buildTLSClientConfig(ca, cert, key)
+	cfg, err = buildTLSClientConfig(ca, cert, key, tls.X509KeyPair)
 
 	return
 }

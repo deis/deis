@@ -30,8 +30,8 @@ func (fum *FakeUnitManager) Unload(name string) {
 	delete(fum.u, name)
 }
 
-func (fum *FakeUnitManager) Start(string) {}
-func (fum *FakeUnitManager) Stop(string)  {}
+func (fum *FakeUnitManager) TriggerStart(string) {}
+func (fum *FakeUnitManager) TriggerStop(string)  {}
 
 func (fum *FakeUnitManager) Units() ([]string, error) {
 	fum.RLock()

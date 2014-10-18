@@ -1,6 +1,7 @@
 package unit
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/coreos/fleet/log"
@@ -24,6 +25,16 @@ type UnitStateGenerator struct {
 
 	subscribed     pkg.Set
 	lastSubscribed pkg.Set
+}
+
+func (g *UnitStateGenerator) MarshalJSON() ([]byte, error) {
+	data := struct {
+		Subscribed []string
+	}{
+		Subscribed: g.subscribed.Values(),
+	}
+
+	return json.Marshal(data)
 }
 
 // Run periodically calls Generate and sends received *UnitStateHeartbeat
