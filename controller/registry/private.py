@@ -11,8 +11,6 @@ from docker.utils import utils
 
 from api.utils import encode
 
-requests.adapters.DEFAULT_RETRIES = 5
-
 
 def publish_release(source, config, target):
     """
