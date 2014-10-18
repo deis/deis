@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
@@ -59,120 +61,161 @@ func Scale(b backend.Backend, targets []string) error {
 }
 
 func Start(b backend.Backend, targets []string) error {
-	// if target is platform, start all services
+
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return StartPlatform(b)
 	}
-	return b.Start(targets)
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	b.Start(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
+	return nil
 }
 
 func StartPlatform(b backend.Backend) error {
-	fmt.Println(utils.DeisIfy("Starting Deis..."))
-	if err := startDataContainers(b); err != nil {
-		return err
-	}
-	if err := startDefaultServices(b); err != nil {
-		return err
-	}
-	return nil
-}
 
-func startDataContainers(b backend.Backend) error {
-	fmt.Println("Data containers...")
-	if err := b.Start(DefaultDataContainers); err != nil {
-		return err
-	}
-	return nil
-}
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
 
-func startDefaultServices(b backend.Backend) error {
+	go printState(outchan, errchan, 500*time.Millisecond)
 
-	fmt.Println("Logging subsystem...")
-	if err := b.Start([]string{"logger", "logspout"}); err != nil {
-		return err
-	}
+	outchan <- utils.DeisIfy("Starting Deis...")
 
-	fmt.Println("Storage subsystem...")
-	if err := b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}); err != nil {
-		return err
-	}
+	startDataContainers(b, &wg, outchan, errchan)
+	startDefaultServices(b, &wg, outchan, errchan)
 
-	fmt.Println("Control plane...")
-	if err := b.Start([]string{
-		"cache", "database", "registry",
-		"controller", "builder"}); err != nil {
-		return err
-	}
-
-	fmt.Println("Data plane...")
-	if err := b.Start([]string{"publisher"}); err != nil {
-		return err
-	}
-
-	fmt.Println("Routing mesh...")
-	if err := b.Start([]string{"router@1", "router@2", "router@3"}); err != nil {
-		return err
-	}
+	wg.Wait()
+	close(outchan)
 
 	fmt.Println("Done.")
+	fmt.Println()
+	fmt.Println("Please use `deis register` to setup an administrator account.")
 	return nil
+}
+
+func startDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	outchan <- fmt.Sprintf("Data containers...")
+	b.Start(DefaultDataContainers, wg, outchan, errchan)
+	wg.Wait()
+}
+
+func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
+	// create separate channels for background tasks
+	_outchan := make(chan string)
+	_errchan := make(chan error)
+	var _wg sync.WaitGroup
+
+	// background start a few services that take a while to download
+	b.Start([]string{"builder", "registry"}, &_wg, _outchan, _errchan)
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Start([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Start([]string{"cache", "database", "registry", "controller"}, wg, outchan, errchan)
+	wg.Wait()
+
+	b.Start([]string{"builder"}, wg, outchan, errchan)
+
+	// FIXME: the store-gateway will often get hung for unknown reasons
+	// a restart of store-daemon seems to do the trick, so we add one here during provisioning
+	b.Stop([]string{"store-daemon"}, &_wg, _outchan, _errchan)
+	_wg.Wait()
+	b.Start([]string{"store-daemon"}, &_wg, _outchan, _errchan)
+
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Start([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Start([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Stop(b backend.Backend, targets []string) error {
-	// if target is platform, stop all services
+
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return StopPlatform(b)
 	}
-	return b.Stop(targets)
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	b.Stop(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
+	return nil
 }
 
 func StopPlatform(b backend.Backend) error {
-	fmt.Println("Stopping Deis...")
-	if err := stopDefaultServices(b); err != nil {
-		return err
-	}
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Stopping Deis...")
+
+	stopDefaultServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	fmt.Println()
+	fmt.Println("Please run `deisctl start platform` to restart Deis.")
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend) error {
+func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
-	fmt.Println("Routing mesh...")
-	if err := b.Stop([]string{"router@1", "router@2", "router@3"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Stop([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Data plane...")
-	if err := b.Stop([]string{"publisher"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Stop([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Control plane...")
-	if err := b.Stop([]string{
-		"controller", "builder",
-		"cache", "database", "registry",
-	}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Stop([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Storage subsystem...")
-	if err := b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Logging subsystem...")
-	if err := b.Stop([]string{"logger", "logspout"}); err != nil {
-		return err
-	}
-
-	fmt.Println("Done.")
-	return nil
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Restart(b backend.Backend, targets []string) error {
-	if err := b.Stop(targets); err != nil {
+	if err := Stop(b, targets); err != nil {
 		return err
 	}
-	return b.Start(targets)
+	return Start(b, targets)
 }
 
 func Status(b backend.Backend, targets []string) error {
@@ -194,113 +237,160 @@ func Journal(b backend.Backend, targets []string) error {
 }
 
 func Install(b backend.Backend, targets []string) error {
+
 	// if target is platform, install all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
 		return InstallPlatform(b)
 	}
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
 	// otherwise create the specific targets
-	return b.Create(targets)
+	b.Create(targets, &wg, outchan, errchan)
+	wg.Wait()
+
+	close(outchan)
+	return nil
 }
 
 func InstallPlatform(b backend.Backend) error {
-	fmt.Println(utils.DeisIfy("Installing Deis..."))
-	if err := installDataContainers(b); err != nil {
-		return err
-	}
-	if err := installDefaultServices(b); err != nil {
-		return err
-	}
-	fmt.Println("Deis installed.")
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
+	outchan <- utils.DeisIfy("Installing Deis...")
+
+	installDataContainers(b, &wg, outchan, errchan)
+	installDefaultServices(b, &wg, outchan, errchan)
+
+	wg.Wait()
+	close(outchan)
+
+	fmt.Println("Done.")
+	fmt.Println()
 	fmt.Println("Please run `deisctl start platform` to boot up Deis.")
 	return nil
 }
 
-func installDataContainers(b backend.Backend) error {
-	fmt.Println("Data containers...")
-	if err := b.Create(DefaultDataContainers); err != nil {
-		return err
-	}
-	return nil
+func installDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	outchan <- fmt.Sprintf("Data containers...")
+	b.Create(DefaultDataContainers, wg, outchan, errchan)
+	wg.Wait()
 }
 
-func installDefaultServices(b backend.Backend) error {
+func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
-	fmt.Println("Logging subsystem...")
-	if err := b.Create([]string{"logger", "logspout"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Storage subsystem...")
-	if err := b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Control plane...")
-	if err := b.Create([]string{
-		"cache", "database", "registry",
-		"controller", "builder",
-	}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Create([]string{"cache", "database", "registry", "controller", "builder"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Data plane...")
-	if err := b.Create([]string{"publisher"}); err != nil {
-		return err
-	}
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Create([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
 
-	fmt.Println("Routing mesh...")
-	if err := b.Create([]string{"router@1", "router@2", "router@3"}); err != nil {
-		return err
-	}
-
-	fmt.Println("Done.")
-	return nil
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Uninstall(b backend.Backend, targets []string) error {
+
 	// if target is platform, uninstall all services
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
-		fmt.Println(utils.DeisIfy("Uninstalling Deis..."))
-		return uninstallAllServices(b)
+		return UninstallPlatform(b)
 	}
+
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
 	// uninstall the specific target
-	return b.Destroy(targets)
+	b.Destroy(targets, &wg, outchan, errchan)
+	wg.Wait()
+	close(outchan)
+
+	return nil
 }
 
-func uninstallAllServices(b backend.Backend) error {
+func UninstallPlatform(b backend.Backend) error {
 
-	fmt.Println("Routing mesh...")
-	if err := b.Destroy([]string{"router@1", "router@2", "router@3"}); err != nil {
-		return err
-	}
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
 
-	fmt.Println("Data plane...")
-	if err := b.Destroy([]string{"publisher"}); err != nil {
-		return err
-	}
+	go printState(outchan, errchan, 500*time.Millisecond)
 
-	fmt.Println("Control plane...")
-	if err := b.Destroy([]string{
-		"controller", "builder",
-		"cache", "database", "registry",
-	}); err != nil {
-		return err
-	}
+	outchan <- utils.DeisIfy("Uninstalling Deis...")
 
-	fmt.Println("Storage subsystem...")
-	if err := b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}); err != nil {
-		return err
-	}
+	uninstallAllServices(b, &wg, outchan, errchan)
 
-	fmt.Println("Logging subsystem...")
-	if err := b.Destroy([]string{"logger", "logspout"}); err != nil {
-		return err
-	}
+	wg.Wait()
+	close(outchan)
 
 	fmt.Println("Done.")
 	return nil
 }
 
+func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+
+	outchan <- fmt.Sprintf("Routing mesh...")
+	b.Destroy([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Data plane...")
+	b.Destroy([]string{"publisher"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Control plane...")
+	b.Destroy([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Logging subsystem...")
+	b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	return nil
+}
+
+func printState(outchan chan string, errchan chan error, interval time.Duration) error {
+	for {
+		select {
+		case out := <-outchan:
+			// done on closed channel
+			if out == "" {
+				return nil
+			}
+			fmt.Println(out)
+		case err := <-errchan:
+			if err != nil {
+				fmt.Println(err.Error())
+				return err
+			}
+		}
+		time.Sleep(interval)
+	}
+}
 func splitScaleTarget(target string) (c string, num int, err error) {
 	r := regexp.MustCompile(`([a-z-]+)=([\d]+)`)
 	match := r.FindStringSubmatch(target)
