@@ -20,6 +20,13 @@ EXPOSE 8000
 # define work environment
 WORKDIR /app
 
+ADD build.sh /app/tmp/build.sh
+
+ADD requirements.txt /app/requirements.txt
+
+RUN DOCKER_BUILD=true /app/tmp/build.sh
+
 ADD . /app
 
-RUN DOCKER_BUILD=true /app/build.sh
+# Create static resources
+RUN /app/manage.py collectstatic --settings=deis.settings --noinput
