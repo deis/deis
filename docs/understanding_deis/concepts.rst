@@ -7,7 +7,7 @@ Concepts
 ========
 Deis is a lightweight, flexible and powerful application platform that
 deploys and scales :ref:`concepts_twelve_factor` apps as
-:ref:`concepts_docker` containers across :ref:`concepts_clusters` of
+:ref:`concepts_docker` containers across a cluster of
 :ref:`concepts_coreos` machines.
 
 .. _concepts_twelve_factor:
@@ -54,23 +54,11 @@ high resilience.
 Yet Deis and CoreOS run identically in a Vagrant virtual machine on
 your laptop, for convenient testing and rapid development.
 
-.. _concepts_clusters:
-
-Clusters
---------
-A :ref:`cluster` is a named group of CoreOS machines, or hosts. A
-Deis cluster runs jobs on these hosts to distribute applications and
-services intelligently across its resources.
-
-Once a cluster is created with the Deis command-line client, developers
-can create applications and deploy them across the cluster with a simple
-``git push deis master`` command.
-
 .. _concepts_applications:
 
 Applications
 ------------
-An :ref:`application`, or app, lives on a :ref:`cluster`, where it uses
+An :ref:`application`, or app, lives on a cluster where it uses
 :ref:`Containers <container>` to process requests and run tasks for a
 deployed git repository.
 
@@ -98,10 +86,10 @@ changed, making it easy to rollback code and configuration.
 
 Run Stage
 ^^^^^^^^^
-The run stage shells out jobs to the scheduler. The scheduler is in control of balancing the
-processes evenly across the cluster, as well as the loggers for each application. The
-scheduler uses SSH to submit jobs to each node in the cluster and updates the proxy
-component between releases, making zero downtime deployments possible.
+The run stage dispatches containers to a scheduler and updates the router accordingly.
+The scheduler is in control of placing containers on hosts and balancing them evenly across the cluster.
+Containers are published to the router once they are healthy.  Old containers are only collected
+after the new containers are live and serving traffic -- providing zero-downtime deploys.
 
 .. _concepts_backing_services:
 

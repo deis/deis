@@ -1,7 +1,9 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	docopt "github.com/docopt/docopt-go"
@@ -65,16 +67,38 @@ func doConfig(args map[string]interface{}) error {
 
 func doConfigSet(client *etcdClient, root string, kvs []string) ([]string, error) {
 	var result []string
+
 	for _, kv := range kvs {
+
+		// split k/v from args
 		split := strings.Split(kv, "=")
 		if len(split) != 2 {
 			return result, fmt.Errorf("invalid argument: %v", kv)
 		}
-		val, err := client.Set(root+split[0], split[1])
+		k, v := split[0], split[1]
+
+		// prepare path and value
+		path := root + k
+		var val string
+
+		// special handling for sshKey
+		if path == "/deis/platform/sshPrivateKey" {
+			b64, err := readSSHPrivateKey(v)
+			if err != nil {
+				return result, err
+			}
+			val = b64
+		} else {
+			val = v
+		}
+
+		// set key/value in etcd
+		ret, err := client.Set(path, val)
 		if err != nil {
 			return result, err
 		}
-		result = append(result, val)
+		result = append(result, ret)
+
 	}
 	return result, nil
 }
@@ -89,4 +113,15 @@ func doConfigGet(client *etcdClient, root string, keys []string) ([]string, erro
 		result = append(result, val)
 	}
 	return result, nil
+}
+
+// readSSHPrivateKey reads the key file and returns a base64 encoded string
+func readSSHPrivateKey(path string) (string, error) {
+
+	bytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(bytes), nil
 }

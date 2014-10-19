@@ -31,21 +31,15 @@ class ReleaseTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_release(self):
         """
-        Test that a release is created when a cluster is created, and
+        Test that a release is created when an app is created, and
         that updating config or build or triggers a new release
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # check that updating config rolls a new release
@@ -113,8 +107,7 @@ class ReleaseTest(TransactionTestCase):
     @mock.patch('requests.post', mock_import_repository_task)
     def test_release_rollback(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # try to rollback with only 1 release extant, expecting 404
@@ -217,8 +210,7 @@ class ReleaseTest(TransactionTestCase):
         """If a non-user creates an app, an admin should be able to create releases."""
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         self.client.login(username='autotest', password='password')

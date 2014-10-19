@@ -14,8 +14,6 @@ test-full: test-style
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -v -run TestBuilds
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
-		go test -tags integration -v -run TestClusters
-	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -v -run TestConfig
 	GOPATH=$(CURDIR)/_vendor:$(GOPATH) \
 		go test -tags integration -v -run TestKeys

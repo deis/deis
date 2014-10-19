@@ -8,20 +8,11 @@ STOP_ERROR_RATE = 0
 
 class ChaosSchedulerClient(object):
 
-    def __init__(self, name, hosts, auth, domain, options):
-        self.name = name
-        self.hosts = hosts
+    def __init__(self, target, auth, options, pkey):
+        self.target = target
         self.auth = auth
-        self.domain = domain
         self.options = options
-
-    # scheduler setup / teardown
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+        self.pkey = pkey
 
     # job api
 

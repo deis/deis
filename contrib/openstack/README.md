@@ -89,8 +89,20 @@ $ deisctl install platform && deisctl start platform
 
 The installer will deploy Deis and make sure the services start properly.
 
-### Configure DNS
-You'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
+## Configure Deis
+Set the default domain used to anchor your applications:
+
+```console
+$ deisctl config platform set domain=mycluster.local
+```
+
+For this to work, you'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
+
+If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
+
+```console
+$ deisctl config platform set sshPrivateKey=<path-to-private-key>
+```
 
 ### Use Deis!
 After that, register with Deis!

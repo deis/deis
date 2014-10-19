@@ -37,9 +37,11 @@ etcd_set_default secretKey ${DEIS_SECRET_KEY:-`openssl rand -base64 64 | tr -d '
 etcd_set_default builderKey ${DEIS_BUILDER_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 etcd_set_default registrationEnabled 1
 etcd_set_default webEnabled 0
-# create path for application metadata
+
+# safely create required keyspaces
 etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
+etcd_safe_mkdir /deis/platform
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do

@@ -30,22 +30,13 @@ class UHTTPConnection(httplib.HTTPConnection):
 
 class FleetHTTPClient(object):
 
-    def __init__(self, cluster_name, hosts, auth, domain, options):
-        self.name = cluster_name
-        self.hosts = hosts
+    def __init__(self, target, auth, options, pkey):
+        self.target = target
         self.auth = auth
-        self.domain = domain
         self.options = options
+        self.pkey = pkey
         # single global connection
-        self.conn = UHTTPConnection('/var/run/fleet.sock')
-
-    # scheduler setup / teardown
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
+        self.conn = UHTTPConnection(self.target)
 
     # connection helpers
 
@@ -227,7 +218,7 @@ class FleetHTTPClient(object):
             raise RuntimeError('could not find host')
 
         # prepare ssh key
-        file_obj = cStringIO.StringIO(base64.b64decode(self.auth))
+        file_obj = cStringIO.StringIO(base64.b64decode(self.pkey))
         pkey = paramiko.RSAKey(file_obj=file_obj)
 
         # grab output via docker logs over SSH

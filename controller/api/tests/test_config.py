@@ -32,11 +32,6 @@ class ConfigTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config(self):
@@ -45,8 +40,7 @@ class ConfigTest(TransactionTestCase):
         config can be updated using a PATCH
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # check to see that an initial/empty config was created
@@ -109,8 +103,7 @@ class ConfigTest(TransactionTestCase):
         Test that config sets on the same key function properly
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = "/api/apps/{app_id}/config".format(**locals())
@@ -132,8 +125,7 @@ class ConfigTest(TransactionTestCase):
         Test that config sets with unicode values are accepted.
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = "/api/apps/{app_id}/config".format(**locals())
@@ -169,8 +161,7 @@ class ConfigTest(TransactionTestCase):
         """
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         self.client.login(username='autotest', password='password')
@@ -188,8 +179,7 @@ class ConfigTest(TransactionTestCase):
         limits can be updated using a PATCH
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = '/api/apps/{app_id}/config'.format(**locals())
@@ -268,8 +258,7 @@ class ConfigTest(TransactionTestCase):
         Test that CPU limits can be set
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = '/api/apps/{app_id}/config'.format(**locals())
@@ -333,8 +322,7 @@ class ConfigTest(TransactionTestCase):
         Test that tags can be set on an application
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = '/api/apps/{app_id}/config'.format(**locals())

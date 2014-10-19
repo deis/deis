@@ -2,26 +2,6 @@
 RESTful URL patterns and routing for the Deis API app.
 
 
-Clusters
-========
-
-.. http:get:: /api/clusters/(string:id)/
-
-  Retrieve a :class:`~api.models.Cluster` by its `id`.
-
-.. http:delete:: /api/clusters/(string:id)/
-
-  Destroy a :class:`~api.models.Cluster` by its `id`.
-
-.. http:get:: /api/clusters/
-
-  List all :class:`~api.models.Cluster`\s.
-
-.. http:post:: /api/clusters/
-
-  Create a new :class:`~api.models.Cluster`.
-
-
 Applications
 ============
 
@@ -240,12 +220,6 @@ router = routers.ApiRouter()
 urlpatterns = patterns(
     '',
     url(r'^', include(router.urls)),
-    # clusters
-    url(r'^clusters/(?P<id>[-_\w]+)/?',
-        views.ClusterViewSet.as_view({
-            'get': 'retrieve', 'patch': 'partial_update', 'delete': 'destroy'})),
-    url(r'^clusters/?',
-        views.ClusterViewSet.as_view({'get': 'list', 'post': 'create'})),
     # application release components
     url(r'^apps/(?P<id>{})/config/?'.format(settings.APP_URL_REGEX),
         views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),

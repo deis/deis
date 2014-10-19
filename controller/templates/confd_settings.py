@@ -2,6 +2,20 @@
 SECRET_KEY = '{{ .deis_controller_secretKey }}'
 BUILDER_KEY = '{{ .deis_controller_builderKey }}'
 
+# scheduler settings
+SCHEDULER_MODULE = '{{ or (.deis_controller_schedulerModule) "fleet" }}'
+SCHEDULER_TARGET = '{{ or (.deis_controller_schedulerTarget) "/var/run/fleet.sock" }}'
+try:
+    SCHEDULER_OPTIONS = dict('{{ or (.deis_controller_schedulerOptions) "{}" }}')
+except:
+    SCHEDULER_OPTIONS = {}
+
+# base64-encoded SSH private key to facilitate current version of "deis run"
+SSH_PRIVATE_KEY = """{{ or (.deis_platform_sshPrivateKey) "" }}"""
+
+# platform domain must be provided
+DEIS_DOMAIN = '{{ .deis_platform_domain }}'
+
 # use the private registry module
 REGISTRY_MODULE = 'registry.private'
 REGISTRY_URL = '{{ .deis_registry_protocol }}://{{ .deis_registry_host }}:{{ .deis_registry_port }}'  # noqa

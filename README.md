@@ -71,9 +71,25 @@ $ deisctl install platform
 $ deisctl start platform
 ```
 
-This can take some time - the **builder** and **registry** components must download and install the beefy Heroku cedar stack.  Grab some more coffee!
+This can take some time - the **builder** must download and install the beefy Heroku cedar stack.  Grab some more coffee!
 
 Your Deis platform should be accessible at `deis.local3.deisapp.com`.  For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+
+## Configure Deis
+
+Now that Deis is running there are a few administrative settings we need to provide.
+
+Set the default domain used to anchor your applications.  For a Vagrant environment, use `local3.deisapp.com` as it will resolve to your local routers:
+
+```console
+$ deisctl config platform set domain=local3.deisapp.com
+```
+
+If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
+
+```console
+$ deisctl config platform set sshPrivateKey=~/.vagrant.d/insecure_private_key
+```
 
 ## Install the Deis Client
 
@@ -99,22 +115,6 @@ $ deis keys:add
 ```
 
 Use `deis keys:add` to add your SSH public key for `git push` access -- normally `$HOME/.ssh/id_rsa.pub`.
-
-## Initialize a Cluster
-
-Initialize a `dev` cluster with a list of CoreOS hosts and your CoreOS private key.
-
-```console
-$ deis clusters:create dev local3.deisapp.com --hosts=172.17.8.100 --auth=~/.vagrant.d/insecure_private_key
-```
-
-The parameters to `deis clusters:create` are:
-* cluster name (`dev`) - the name used by Deis to reference the cluster
-* cluster hostname (`local.3deisapp.com`) - the hostname under which apps are created, like `balancing-giraffe.local3.deisapp.com`
-* cluster members (`--hosts`) - a comma-separated list of cluster members -- not necessarily all members, but at least one (for cloud providers, this is a list of the IPs like `--hosts=10.21.12.1,10.21.12.2,10.21.12.3`)
-* auth SSH key (`--auth`) - the SSH private key used to provision servers -- cannot have a password (for cloud providers, this key is likely `~/.ssh/deis`)
-
-The `dev` cluster will be used as the default cluster for future `deis` commands.
 
 # Usage
 

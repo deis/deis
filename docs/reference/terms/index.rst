@@ -12,8 +12,6 @@ Terms
 
     controller
 
-    cluster
-
     application
     container
     config

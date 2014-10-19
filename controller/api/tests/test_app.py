@@ -23,25 +23,24 @@ class AppTest(TestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
+        # provide mock authentication used for run commands
+        settings.SSH_PRIVATE_KEY = '<some-ssh-private-key>'
+
+    def tearDown(self):
+        # reset global vars for other tests
+        settings.SSH_PRIVATE_KEY = ''
 
     def test_app(self):
         """
         Test that a user can create, read, update and delete an application
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
-        self.assertIn('cluster', response.data)
         self.assertIn('id', response.data)
         self.assertIn('url', response.data)
-        self.assertEqual(response.data['url'], '{app_id}.autotest.local'.format(**locals()))
+        self.assertEqual(response.data['url'], '{app_id}.deisapp.local'.format(**locals()))
         response = self.client.get('/api/apps')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
@@ -55,11 +54,11 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 204)
 
     def test_app_override_id(self):
-        body = {'cluster': 'autotest', 'id': 'myid'}
+        body = {'id': 'myid'}
         response = self.client.post('/api/apps', json.dumps(body),
                                     content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        body = {'cluster': response.data['cluster'], 'id': response.data['id']}
+        body = {'id': response.data['id']}
         response = self.client.post('/api/apps', json.dumps(body),
                                     content_type='application/json')
         self.assertContains(response, 'App with this Id already exists.', status_code=400)
@@ -67,7 +66,7 @@ class AppTest(TestCase):
 
     def test_app_actions(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest', 'id': 'autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
@@ -101,7 +100,7 @@ class AppTest(TestCase):
     def test_app_release_notes_in_logs(self):
         """Verifies that an app's release summary is dumped into the logs."""
         url = '/api/apps'
-        body = {'cluster': 'autotest', 'id': 'autotest'}
+        body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
@@ -114,16 +113,16 @@ class AppTest(TestCase):
         os.remove(path)
 
     def test_app_errors(self):
-        cluster_id, app_id = 'autotest', 'autotest-errors'
+        app_id = 'autotest-errors'
         url = '/api/apps'
-        body = {'cluster': cluster_id, 'id': 'camelCase'}
+        body = {'id': 'camelCase'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, 'App IDs can only contain [a-z0-9-]', status_code=400)
         url = '/api/apps'
-        body = {'cluster': cluster_id, 'id': 'deis'}
+        body = {'id': 'deis'}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertContains(response, "App IDs cannot be 'deis'", status_code=400)
-        body = {'cluster': cluster_id, 'id': app_id}
+        body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
@@ -138,8 +137,7 @@ class AppTest(TestCase):
     def test_app_structure_is_valid_json(self):
         """Application structures should be valid JSON objects."""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         self.assertIn('structure', response.data)
@@ -160,7 +158,7 @@ class AppTest(TestCase):
             self.client.login(username='autotest2', password='password'))
         app_id = 'autotest'
         url = '/api/apps'
-        body = {'cluster': 'autotest', 'id': app_id}
+        body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         # log in as admin, check to see if they have access
         self.assertTrue(
@@ -193,13 +191,29 @@ class AppTest(TestCase):
             self.client.login(username='autotest2', password='password'))
         app_id = 'autotest'
         url = '/api/apps'
-        body = {'cluster': 'autotest', 'id': app_id}
+        body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json')
         # log in as admin
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
         response = self.client.get(url)
         self.assertEqual(response.data['count'], 1)
+
+    def test_run_without_auth(self):
+        """If the administrator has not provided SSH private key for run commands,
+        make sure a friendly error message is provided on run"""
+        settings.SSH_PRIVATE_KEY = ''
+        url = '/api/apps'
+        body = {'id': 'autotest'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']  # noqa
+        # test run
+        url = '/api/apps/{app_id}/run'.format(**locals())
+        body = {'command': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        self.assertEquals(response.status_code, 400)
+        self.assertEquals(response.data, 'Support for admin commands is not configured')
 
 
 FAKE_LOG_DATA = """

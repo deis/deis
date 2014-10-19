@@ -89,49 +89,6 @@ class UuidAuditedModel(AuditedModel):
 
 
 @python_2_unicode_compatible
-class Cluster(UuidAuditedModel):
-    """
-    Cluster used to run jobs
-    """
-
-    CLUSTER_TYPES = (('mock', 'Mock Cluster'),
-                     ('coreos', 'CoreOS Cluster'),
-                     ('chaos', 'Chaos Cluster'))
-
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.CharField(max_length=128, unique=True)
-    type = models.CharField(max_length=16, choices=CLUSTER_TYPES, default='coreos')
-
-    domain = models.CharField(max_length=128, validators=[validate_domain])
-    hosts = models.CharField(max_length=256, validators=[validate_comma_separated])
-    auth = models.TextField()
-    options = JSONField(default={}, blank=True)
-
-    def __str__(self):
-        return self.id
-
-    def _get_scheduler(self, *args, **kwargs):
-        module_name = 'scheduler.' + self.type
-        mod = importlib.import_module(module_name)
-        return mod.SchedulerClient(self.id, self.hosts, self.auth,
-                                   self.domain, self.options)
-
-    _scheduler = property(_get_scheduler)
-
-    def create(self):
-        """
-        Initialize a cluster's router and log aggregator
-        """
-        return self._scheduler.setUp()
-
-    def destroy(self):
-        """
-        Destroy a cluster's router and log aggregator
-        """
-        return self._scheduler.tearDown()
-
-
-@python_2_unicode_compatible
 class App(UuidAuditedModel):
     """
     Application used to service requests on behalf of end-users
@@ -139,7 +96,6 @@ class App(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.SlugField(max_length=64, unique=True)
-    cluster = models.ForeignKey('Cluster')
     structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
 
     class Meta:
@@ -148,9 +104,20 @@ class App(UuidAuditedModel):
     def __str__(self):
         return self.id
 
+    def _get_scheduler(self, *args, **kwargs):
+        module_name = 'scheduler.' + settings.SCHEDULER_MODULE
+        mod = importlib.import_module(module_name)
+
+        return mod.SchedulerClient(settings.SCHEDULER_TARGET,
+                                   settings.SCHEDULER_AUTH,
+                                   settings.SCHEDULER_OPTIONS,
+                                   settings.SSH_PRIVATE_KEY)
+
+    _scheduler = property(_get_scheduler)
+
     @property
     def url(self):
-        return self.id + '.' + self.cluster.domain
+        return self.id + '.' + settings.DEIS_DOMAIN
 
     def log(self, message):
         """Logs a message to the application's log file.
@@ -341,6 +308,12 @@ class App(UuidAuditedModel):
 
     def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""
+
+        # FIXME: remove the need for SSH private keys by using
+        # a scheduler that supports one-off admin tasks natively
+        if not settings.SSH_PRIVATE_KEY:
+            raise EnvironmentError('Support for admin commands is not configured')
+
         # TODO: add support for interactive shell
         msg = "{} runs '{}'".format(user.username, command)
         log_event(self, msg)
@@ -420,7 +393,7 @@ class Container(UuidAuditedModel):
     _job_id = property(_get_job_id)
 
     def _get_scheduler(self):
-        return self.app.cluster._scheduler
+        return self.app._scheduler
 
     _scheduler = property(_get_scheduler)
 

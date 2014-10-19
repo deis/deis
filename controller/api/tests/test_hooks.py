@@ -31,17 +31,11 @@ class HookTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     def test_push_hook(self):
         """Test creating a Push via the API"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # prepare a push body
@@ -69,8 +63,7 @@ class HookTest(TransactionTestCase):
         """Test a user pushing to an unauthorized application"""
         # create a legit app as "autotest"
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # register an evil user
@@ -106,8 +99,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook(self):
         """Test creating a Build via an API Hook"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -130,8 +122,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook_procfile(self):
         """Test creating a Procfile build via an API Hook"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -176,8 +167,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook_dockerfile(self):
         """Test creating a Dockerfile build via an API Hook"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -225,8 +215,7 @@ class HookTest(TransactionTestCase):
     def test_config_hook(self):
         """Test reading Config via an API Hook"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = '/api/apps/{app_id}/config'.format(**locals())
@@ -256,8 +245,7 @@ class HookTest(TransactionTestCase):
         """Test creating a Push via the API"""
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         self.client.login(username='autotest', password='password')

@@ -53,7 +53,11 @@ make dev-release
 
 log_phase "Provisioning Deis"
 
-deisctl install platform
+# configure platform settings
+deisctl config platform set domain=$DEIS_TEST_DOMAIN
+deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
+
+time deisctl install platform
 time deisctl start platform
 
 log_phase "Running integration suite"

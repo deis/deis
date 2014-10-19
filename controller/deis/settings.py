@@ -254,8 +254,16 @@ DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
 DEFAULT_BUILD = 'deis/helloworld'
+DEIS_DOMAIN = 'deisapp.local'
+
+# default scheduler settings
+SCHEDULER_MODULE = 'mock'
+SCHEDULER_TARGET = ''  # path to scheduler endpoint (e.g. /var/run/fleet.sock)
+SCHEDULER_AUTH = ''
+SCHEDULER_OPTIONS = {}
 
 # security keys and auth tokens
+SSH_PRIVATE_KEY = ''  # used for SSH connections to facilitate "deis run"
 SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 

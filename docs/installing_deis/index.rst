@@ -14,7 +14,6 @@ Installing Deis
 
     provision-controller
     register-admin-user
-    create-cluster
     configure-load-balancers
     configure-dns
     ssl-endpoints

@@ -37,17 +37,6 @@ deis builds
 .. automethod:: client.deis.DeisClient.builds_list
 .. automethod:: client.deis.DeisClient.builds_create
 
-.. _deis_clusters:
-
-deis clusters
--------------
-
-.. automethod:: client.deis.DeisClient.clusters_create
-.. automethod:: client.deis.DeisClient.clusters_list
-.. automethod:: client.deis.DeisClient.clusters_update
-.. automethod:: client.deis.DeisClient.clusters_info
-.. automethod:: client.deis.DeisClient.clusters_destroy
-
 .. _deis_config:
 
 deis config

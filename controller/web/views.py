@@ -5,7 +5,7 @@ View classes for presenting Deis web pages.
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from api.models import App, Cluster
+from api.models import App
 from deis import __version__
 
 
@@ -21,22 +21,10 @@ def account(request):
 def dashboard(request):
     """Return the user's dashboard web page."""
     apps = App.objects.filter(owner=request.user)
-    clusters = Cluster.objects.filter(owner=request.user)
     return render(request, 'web/dashboard.html', {
         'page': 'dashboard',
         'apps': apps,
-        'clusters': clusters,
         'version': __version__,
-    })
-
-
-@login_required
-def clusters(request):
-    """Return the user's clusters web page."""
-    clusters = Cluster.objects.filter(owner=request.user)
-    return render(request, 'web/clusters.html', {
-        'page': 'clusters',
-        'clusters': clusters,
     })
 
 
