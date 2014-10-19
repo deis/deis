@@ -3,12 +3,17 @@ include ../includes.mk
 COMPONENT = router
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BUILD_IMAGE = $(COMPONENT)-build
 
 build: check-docker
-	cd parent && docker build -t deis/binary-router .
-	docker cp `docker run -d deis/binary-router`:/nginx.tgz .
+	docker build -t $(BUILD_IMAGE) parent
+	@$(eval CID := $(shell docker run -d $(BUILD_IMAGE)))
+	docker cp $(CID):/nginx.tgz .
+	docker cp $(CID):/go/bin/boot bin/
 	docker build -t $(IMAGE) .
+	-docker kill $(CID)
 	rm nginx.tgz
+	rm bin/boot
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)
