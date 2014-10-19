@@ -96,8 +96,10 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 
 		time.Sleep(10 * time.Second)
 	}
-
+	defer response.Body.Close()
+	
 	if err != nil {
+		fmt.Println("status code: " + response.StatusCode)
 		t.Fatalf("not reachable:\n%v", err)
 	}
 
