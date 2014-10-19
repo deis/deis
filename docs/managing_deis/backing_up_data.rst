@@ -29,7 +29,7 @@ dump of the database.
 
 .. code-block:: console
 
-    dev $ fleetctl ssh deis-database@1.service
+    dev $ fleetctl ssh deis-database.service
     coreos $ nse deis-database
     coreos $ sudo -u postgres pg_dumpall > pg_dump.sql
 

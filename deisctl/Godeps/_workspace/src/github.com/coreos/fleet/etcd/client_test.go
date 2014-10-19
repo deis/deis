@@ -1,6 +1,7 @@
 package etcd
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -160,7 +161,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		_, err := NewClient(tt.endpoints, http.Transport{}, time.Second)
+		_, err := NewClient(tt.endpoints, &http.Transport{}, time.Second)
 		if tt.pass != (err == nil) {
 			t.Errorf("case %d %v: expected to pass=%t, err=%v", i, tt.endpoints, tt.pass, err)
 		}
@@ -257,7 +258,7 @@ func TestFilterURL(t *testing.T) {
 // Ensure the channel passed into c.resolve is actually wired up
 func TestClientCancel(t *testing.T) {
 	act := Get{Key: "/foo"}
-	c, err := NewClient(nil, http.Transport{}, time.Second)
+	c, err := NewClient(nil, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("Failed building Client: %v", err)
 	}
@@ -366,7 +367,7 @@ func TestClientRedirectsFollowed(t *testing.T) {
 		},
 	}
 
-	c, err := NewClient([]string{"http://192.0.2.1:4001"}, http.Transport{}, time.Second)
+	c, err := NewClient([]string{"http://192.0.2.1:4001"}, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
 	}
@@ -403,7 +404,7 @@ func TestClientRedirectsAndAlternateEndpoints(t *testing.T) {
 		},
 	}
 
-	c, err := NewClient([]string{"http://192.0.2.1:4001", "http://192.0.2.2:4002"}, http.Transport{}, time.Second)
+	c, err := NewClient([]string{"http://192.0.2.1:4001", "http://192.0.2.2:4002"}, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
 	}
@@ -542,7 +543,7 @@ func newTestingRequestAndClient(t *testing.T, handler http.Handler) (*client, *h
 	if err != nil {
 		t.Fatalf("error creating request: %v", err)
 	}
-	c, err := NewClient(nil, http.Transport{}, time.Second)
+	c, err := NewClient(nil, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("error creating client: %v", err)
 	}
@@ -594,10 +595,10 @@ func TestNilNilRequestHTTP(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 	if resp != nil {
-		t.Errorf("unexpected response: got %q, want %q", resp, nil)
+		t.Errorf("unexpected non-nil response: %v", resp)
 	}
 	if body != nil {
-		t.Errorf("unexpected body: got %q, want %q", body, nil)
+		t.Errorf("unexpected non-nil body: %q", body)
 	}
 }
 
@@ -628,10 +629,10 @@ func TestRespAndErrRequestHTTP(t *testing.T) {
 		t.Error("unexpected error, should not be cancelled")
 	}
 	if resp != nil {
-		t.Errorf("unexpected response: got %q, want %q", resp, nil)
+		t.Errorf("unexpected non-nil response: %v", resp)
 	}
 	if body != nil {
-		t.Errorf("unexpected body: got %q, want %q", body, nil)
+		t.Errorf("unexpected non-nil body: %q", body)
 	}
 }
 
@@ -651,15 +652,22 @@ func TestCancelledRequestHTTP(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 	if resp != nil {
-		t.Errorf("unexpected response: got %q, want %q", resp, nil)
+		t.Errorf("unexpected non-nil response: %v", resp)
 	}
 	if body != nil {
-		t.Errorf("unexpected body: got %q, want %q", body, nil)
+		t.Errorf("unexpected non-nil body: %q", body)
+	}
+}
+
+func newDummyKeyParser(cert tls.Certificate, err error) keypairFunc {
+	return func(certPEMBlock, keyPEMBlock []byte) (tls.Certificate, error) {
+		return cert, err
 	}
 }
 
 func TestBuildTLSClientConfigNoCertificate(t *testing.T) {
-	config, err := buildTLSClientConfig([]byte{}, []byte{}, []byte{})
+	parser := newDummyKeyParser(tls.Certificate{}, nil)
+	config, err := buildTLSClientConfig([]byte{}, []byte{}, []byte{}, parser)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -675,7 +683,8 @@ func TestBuildTLSClientConfigNoCertificate(t *testing.T) {
 }
 
 func TestBuildTLSClientConfigWithValidCertificateAndWithCA(t *testing.T) {
-	config, err := buildTLSClientConfig(validCA, validCert, validKey)
+	parser := newDummyKeyParser(tls.Certificate{}, nil)
+	config, err := buildTLSClientConfig(validCA, validCert, validKey, parser)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -691,7 +700,8 @@ func TestBuildTLSClientConfigWithValidCertificateAndWithCA(t *testing.T) {
 }
 
 func TestBuildTLSClientConfigWithValidCertificateAndWithoutCA(t *testing.T) {
-	config, err := buildTLSClientConfig([]byte{}, validCert, validKey)
+	parser := newDummyKeyParser(tls.Certificate{}, nil)
+	config, err := buildTLSClientConfig([]byte{}, validCert, validKey, parser)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -706,28 +716,9 @@ func TestBuildTLSClientConfigWithValidCertificateAndWithoutCA(t *testing.T) {
 	}
 }
 
-func TestBuildTLSClientConfigWithOnlyKeyfileIsAnError(t *testing.T) {
-	config, err := buildTLSClientConfig([]byte{}, []byte{}, corruptedKey)
-	if err == nil {
-		t.Errorf("error expected")
-	}
-	if config != nil {
-		t.Errorf("config should be nil")
-	}
-}
-
-func TestBuildTLSClientConfigWithOnlyCertfileIsAnError(t *testing.T) {
-	config, err := buildTLSClientConfig([]byte{}, validCert, []byte{})
-	if err == nil {
-		t.Errorf("error expected")
-	}
-	if config != nil {
-		t.Errorf("config should be nil")
-	}
-}
-
-func TestBuildTLSClientConfigWithCorruptedCertificate(t *testing.T) {
-	config, err := buildTLSClientConfig([]byte{}, corruptedCert, corruptedKey)
+func TestBuildTLSClientConfigWithInvalidParameters(t *testing.T) {
+	parser := newDummyKeyParser(tls.Certificate{}, errors.New("err"))
+	config, err := buildTLSClientConfig([]byte{}, validCert, validKey, parser)
 	if err == nil {
 		t.Errorf("error expected")
 	}

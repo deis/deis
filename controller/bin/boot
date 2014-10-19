@@ -39,6 +39,7 @@ etcd_set_default registrationEnabled 1
 etcd_set_default webEnabled 0
 # create path for application metadata
 etcd_safe_mkdir /deis/services
+etcd_safe_mkdir /deis/domains
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do

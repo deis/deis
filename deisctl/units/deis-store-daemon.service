@@ -4,9 +4,12 @@ Description=deis-store-daemon
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon-data >/dev/null 2>&1 || docker run --name deis-store-daemon-data -v /var/lib/ceph/osd ubuntu-debootstrap:14.04 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker start -a deis-store-daemon >/dev/null || docker run --name deis-store-daemon -e HOST=$COREOS_PRIVATE_IPV4 -p 6800 --net host $IMAGE"
-ExecStopPost=-/usr/bin/docker stop deis-store-daemon
+ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon >/dev/null 2>&1 && docker rm -f deis-store-daemon >/dev/null 2>&1 || true"
+ExecStartPre=/usr/bin/sleep 10
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker run --name deis-store-daemon --volumes-from=deis-store-daemon-data --rm -e HOST=$COREOS_PRIVATE_IPV4 -p 6800 --net host $IMAGE"
+ExecStopPost=-/usr/bin/docker rm -f deis-store-daemon
 Restart=on-failure
 RestartSec=5
 

@@ -82,25 +82,42 @@ func GetGlobalConfig() *DeisTestConfig {
 	return &envCfg
 }
 
+func doCurl(url string) ([]byte, error) {
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+
+	if !strings.Contains(string(body), "Powered by Deis") {
+		return nil, fmt.Errorf("App not started")
+	}
+
+	return body, nil
+}
+
 // Curl connects to a Deis endpoint to see if the example app is running.
 func Curl(t *testing.T, params *DeisTestConfig) {
 	url := "http://" + params.AppName + "." + params.Domain
-	// FIXME: make an initial request to nginx to remove stale worker
-	_, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("not reachable:\n%v", err)
+
+	// FIXME: try the curl a few times
+	for i := 0; i < 20; i++ {
+		body, err := doCurl(url)
+		if err == nil {
+			fmt.Println(string(body))
+			return
+		}
+		time.Sleep(1 * time.Second)
 	}
-	// FIXME: sleep a bit before curling
-	time.Sleep(5000 * time.Millisecond)
-	response, err := http.Get(url)
+
+	// once more to fail with an error
+	body, err := doCurl(url)
 	if err != nil {
-		t.Fatalf("not reachable:\n%v", err)
+		t.Fatal(err)
 	}
-	body, err := ioutil.ReadAll(response.Body)
 	fmt.Println(string(body))
-	if !strings.Contains(string(body), "Powered by Deis") {
-		t.Fatalf("App not started")
-	}
+
 }
 
 // AuthCancel tests whether `deis auth:cancel` destroys a user's account.

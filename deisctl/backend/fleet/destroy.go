@@ -3,69 +3,62 @@ package fleet
 import (
 	"fmt"
 	"strings"
-
-	"github.com/coreos/fleet/job"
+	"sync"
+	"time"
 )
 
 // Destroy units for a given target
-func (c *FleetClient) Destroy(targets []string) error {
+func (c *FleetClient) Destroy(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 	for _, target := range targets {
-		// check if the unit exists
-		_, err := c.Units(target)
-		if err != nil {
-			return err
-		}
-		component, num, err := splitTarget(target)
-		if err != nil {
-			return err
-		}
-		if strings.HasSuffix(component, "-data") {
-			err = c.destroyDataUnit(component)
-		} else {
-			err = c.destroyServiceUnit(component, num)
-		}
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go doDestroy(c, target, wg, outchan, errchan)
 	}
-	return nil
+	return
 }
 
-func (c *FleetClient) destroyServiceUnit(component string, num int) error {
+func doDestroy(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	defer wg.Done()
+
+	// prepare string representation
+	component, num, err := splitTarget(target)
+	if err != nil {
+		errchan <- err
+		return
+	}
 	name, err := formatUnitName(component, num)
 	if err != nil {
-		return err
+		errchan <- err
+		return
 	}
-	desiredState := string(job.JobStateInactive)
-	err = c.Fleet.SetUnitTargetState(name, desiredState)
-	if err != nil {
-		return err
-	}
-	outchan, errchan := waitForUnitStates([]string{name}, desiredState)
-	if err := printUnitState(name, outchan, errchan); err != nil {
-		return err
-	}
-	if err = c.Fleet.DestroyUnit(name); err != nil {
-		return fmt.Errorf("failed destroying job %s: %v", name, err)
-	}
-	return nil
-}
+	destroyed := fmt.Sprintf("\033[0;33m%v:\033[0m destroyed                                 \r", name)
 
-func (c *FleetClient) destroyDataUnit(component string) error {
-	name, err := formatUnitName(component, 0)
-	desiredState := string(job.JobStateInactive)
+	// bail early if unit doesn't exist
+	_, err = c.Units(name)
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "could not find unit") {
+			outchan <- destroyed
+		}
+		return
 	}
-	if err := c.Fleet.SetUnitTargetState(name, desiredState); err != nil {
-		return err
+
+	// otherwise destroy it
+	if err = c.Fleet.DestroyUnit(name); err != nil {
+		// ignore already destroyed units
+		if !strings.Contains(err.Error(), "could not find unit") {
+			errchan <- err
+			return
+		}
 	}
-	outchan, errchan := waitForUnitStates([]string{name}, desiredState)
-	if err := printUnitState(name, outchan, errchan); err != nil {
-		return err
+
+	// loop until actually destroyed
+	for {
+		_, err = c.Units(name)
+		if err != nil {
+			if strings.Contains(err.Error(), "could not find unit") {
+				outchan <- destroyed
+				return
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
 	}
-	if err := c.Fleet.DestroyUnit(name); err != nil {
-		return fmt.Errorf("failed destroying job %s: %v", name, err)
-	}
-	return nil
 }

@@ -79,18 +79,24 @@ $ deisctl install platform
 ■ ● ▴ Installing Deis...
 ▴ ■ ●
 
-Scheduling data containers...
+Data containers...
 deis-logger-data.service: loaded
-Data containers scheduled.
-Scheduling service containers...
-deis-database@1.service: loaded
-deis-cache@1.service: loaded
-deis-logger@1.service: loaded
-deis-registry@1.service: loaded
-deis-controller@1.service: loaded
-deis-builder@1.service: loaded
+Logging subsystem...
+deis-logger.service: loaded
+Storage subsystem...
+deis-store-gateway.service: loaded
+Control plane...
+deis-cache.service: loaded
+deis-database.service: loaded
+deis-registry.service: loaded
+deis-controller.service: loaded
+deis-builder.service: loaded
+Data plane...
+Routing mesh...
 deis-router@1.service: loaded
-Service containers scheduled.
+deis-router@2.service: loaded
+deis-router@3.service: loaded
+Done.
 Deis installed.
 Please run `deisctl start platform` to boot up Deis.
 
@@ -99,18 +105,28 @@ $ deisctl start platform
 ■ ● ▴ Starting Deis...
 ▴ ■ ●
 
-Launching data containers...
+Data containers...
 deis-logger-data.service: exited
-Data containers launched.
-Launching service containers...
-deis-logger@1.service: running
-deis-cache@1.service: running
+Logging subsystem...
+deis-logger.service: running
+deis-logspout.service: running
+Storage subsystem...
+deis-store-daemon.service: running
+deis-store-monitor.service: running
+deis-store-gateway.service: running
+Control plane...
+deis-cache.service: running
+deis-database.service: running
+deis-registry.service: running
+deis-controller.service: running
+deis-builder.service: running
+Data plane...
+deis-publisher.service: running
+Routing mesh...
 deis-router@1.service: running
-deis-database@1.service: running
-deis-controller@1.service: running
-deis-registry@1.service: running
-deis-builder@1.service: running
-Deis started.
+deis-router@2.service: running
+deis-router@3.service: running
+Done.
 ```
 
 Note that the default start command activates 1 of each component.
@@ -120,16 +136,25 @@ The router is the only component that _currently_ scales beyond 1 unit.
 You can also use the `deisctl uninstall` command to destroy platform units:
 
 ```console
-$ deisctl uninstall platform
+● ▴ ■
+■ ● ▴ Uninstalling Deis...
+▴ ■ ●
 
-Destroying service containers...
-deis-database@1.service: inactive
-deis-cache@1.service: inactive
-deis-logger@1.service: inactive
-deis-registry@1.service: inactive
-deis-controller@1.service: inactive
-deis-builder@1.service: inactive
+Routing mesh...
 deis-router@1.service: inactive
+deis-router@2.service: inactive
+deis-router@3.service: inactive
+Data plane...
+Control plane...
+deis-controller.service: inactive
+deis-builder.service: inactive
+deis-cache.service: inactive
+deis-database.service: inactive
+deis-registry.service: inactive
+Storage subsystem...
+deis-store-gateway.service: inactive
+Logging subsystem...
+deis-logger.service: inactive
 Done.
 ```
 
@@ -157,25 +182,25 @@ The `deisctl` tool provides a number of other commands, including:
 ```console
 $ deisctl list
 UNIT				MACHINE				LOAD	ACTIVE	SUB
-deis-builder@1.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-cache@1.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-controller@1.service	f936b7a5.../172.17.8.100	loaded	active	running
-deis-database@1.service		f936b7a5.../172.17.8.100	loaded	active	running
+deis-builder.service		f936b7a5.../172.17.8.100	loaded	active	running
+deis-cache.service  		f936b7a5.../172.17.8.100	loaded	active	running
+deis-controller.service	    f936b7a5.../172.17.8.100	loaded	active	running
+deis-database.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-logger-data.service	f936b7a5.../172.17.8.100	loaded	active	exited
-deis-logger@1.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-registry@1.service		f936b7a5.../172.17.8.100	loaded	active	running
+deis-logger.service	    	f936b7a5.../172.17.8.100	loaded	active	running
+deis-registry.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-router@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 ```
 
 ```console
 $ deisctl status controller
-● deis-controller@1.service - deis-controller
-   Loaded: loaded (/run/fleet/units/deis-controller@1.service; linked-runtime)
+● deis-controller.service - deis-controller
+   Loaded: loaded (/run/fleet/units/deis-controller.service; linked-runtime)
    Active: active (running) since Mon 2014-08-25 22:56:50 UTC; 15min ago
   Process: 22969 ExecStartPre=/bin/sh -c docker inspect deis-controller >/dev/null && docker rm -f deis-controller || true (code=exited, status=0/SUCCESS)
   Process: 22945 ExecStartPre=/bin/sh -c IMAGE=`/run/deis/bin/get_image /deis/controller`; docker history $IMAGE >/dev/null || docker pull $IMAGE (code=exited, status=0/SUCCESS)
  Main PID: 22979 (sh)
-   CGroup: /system.slice/system-deis\x2dcontroller.slice/deis-controller@1.service
+   CGroup: /system.slice/system-deis\x2dcontroller.slice/deis-controller.service
            ├─22979 /bin/sh -c IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e PUBLISH=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger $IMAGE
            └─22999 docker run --name deis-controller --rm -p 8000:8000 -e PUBLISH=8000 -e HOST=172.17.8.100 --volumes-from=deis-logger deis/controller:latest
 
@@ -202,12 +227,12 @@ Aug 25 22:57:08 deis-1 sh[22979]: [2014-08-25 16:57:08,997: WARNING/MainProcess]
 
 ```console
 $ deisctl stop controller
-deis-controller@1.service: loaded
+deis-controller.service: loaded
 ```
 
 ```console
 $ deisctl start controller
-deis-controller@1.service: launched
+deis-controller.service: launched
 ```
 
 ```console

@@ -318,13 +318,13 @@ Verify that all the units are active after the operation completes:
 ```console
 $ deisctl list
 UNIT                        MACHINE                     LOAD    ACTIVE  SUB
-deis-builder@1.service      dea53588.../172.17.8.100    loaded  active  running
-deis-cache@1.service        dea53588.../172.17.8.100    loaded  active  running
-deis-controller@1.service   dea53588.../172.17.8.100    loaded  active  running
-deis-database@1.service     dea53588.../172.17.8.100    loaded  active  running
+deis-builder.service        dea53588.../172.17.8.100    loaded  active  running
+deis-cache.service          dea53588.../172.17.8.100    loaded  active  running
+deis-controller.service     dea53588.../172.17.8.100    loaded  active  running
+deis-database.service       dea53588.../172.17.8.100    loaded  active  running
 deis-logger-data.service    dea53588.../172.17.8.100    loaded  active  exited
-deis-logger@1.service       dea53588.../172.17.8.100    loaded  active  running
-deis-registry@1.service     dea53588.../172.17.8.100    loaded  active  running
+deis-logger.service         dea53588.../172.17.8.100    loaded  active  running
+deis-registry.service       dea53588.../172.17.8.100    loaded  active  running
 deis-router@1.service       dea53588.../172.17.8.100    loaded  active  running
 ```
 

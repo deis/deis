@@ -119,27 +119,38 @@ func readLocalMachineID(root string) (string, error) {
 	return mID, nil
 }
 
-func getLocalIP() string {
+func getLocalIP() (got string) {
 	iface := getDefaultGatewayIface()
 	if iface == nil {
-		return ""
+		return
 	}
 
 	addrs, err := iface.Addrs()
 	if err != nil || len(addrs) == 0 {
-		return ""
+		return
 	}
 
 	for _, addr := range addrs {
 		// Attempt to parse the address in CIDR notation
-		// and assert it is IPv4
+		// and assert that it is IPv4 and global unicast
 		ip, _, err := net.ParseCIDR(addr.String())
-		if err == nil && ip.To4() != nil {
-			return ip.String()
+		if err != nil {
+			continue
 		}
+
+		if !usableAddress(ip) {
+			continue
+		}
+
+		got = ip.String()
+		break
 	}
 
-	return ""
+	return
+}
+
+func usableAddress(ip net.IP) bool {
+	return ip.To4() != nil && ip.IsGlobalUnicast()
 }
 
 func getDefaultGatewayIface() *net.Interface {

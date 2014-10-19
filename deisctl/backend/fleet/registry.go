@@ -96,12 +96,12 @@ func getRegistryClient() (client.API, error) {
 
 	timeout := time.Duration(Flags.RequestTimeout*1000) * time.Millisecond
 	machines := []string{Flags.Endpoint}
-	eClient, err := etcd.NewClient(machines, trans, timeout)
+	eClient, err := etcd.NewClient(machines, &trans, timeout)
 	if err != nil {
 		return nil, err
 	}
 
-	reg := registry.New(eClient, Flags.EtcdKeyPrefix)
+	reg := registry.NewEtcdRegistry(eClient, Flags.EtcdKeyPrefix)
 
 	// if msg, ok := checkVersion(reg); !ok {
 	// 	fmt.Fprint(os.Stderr, msg)

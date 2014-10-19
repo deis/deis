@@ -59,8 +59,6 @@ set_release controller ${OLD_TAG}
 set_release registry ${OLD_TAG}
 
 deisctl install platform
-deisctl scale router=3
-deisctl start router@1 router@2 router@3
 time deisctl start platform
 
 log_phase "Running smoke tests"
