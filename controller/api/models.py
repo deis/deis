@@ -134,10 +134,9 @@ class App(UuidAuditedModel):
             f.write(msg.encode('utf-8'))
 
     def create(self, *args, **kwargs):
-        """Create a new application with an initial release"""
+        """Create a new application with an initial config and release"""
         config = Config.objects.create(owner=self.owner, app=self)
-        build = Build.objects.create(owner=self.owner, app=self, image=settings.DEFAULT_BUILD)
-        Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=build)
+        Release.objects.create(version=1, owner=self.owner, app=self, config=config, build=None)
 
     def delete(self, *args, **kwargs):
         """Delete this application including all containers"""
@@ -154,6 +153,8 @@ class App(UuidAuditedModel):
 
     def scale(self, user, structure):  # noqa
         """Scale containers up or down to match requested structure."""
+        if self.release_set.latest().build is None:
+            raise EnvironmentError('No build associated with this release')
         requested_structure = structure.copy()
         release = self.release_set.latest()
         # test for available process types
@@ -310,12 +311,12 @@ class App(UuidAuditedModel):
 
     def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""
-
         # FIXME: remove the need for SSH private keys by using
         # a scheduler that supports one-off admin tasks natively
         if not settings.SSH_PRIVATE_KEY:
             raise EnvironmentError('Support for admin commands is not configured')
-
+        if self.release_set.latest().build is None:
+            raise EnvironmentError('No build associated with this release to run this command')
         # TODO: add support for interactive shell
         msg = "{} runs '{}'".format(user.username, command)
         log_event(self, msg)
@@ -327,7 +328,7 @@ class App(UuidAuditedModel):
                                      release=self.release_set.latest(),
                                      type='run',
                                      num=c_num)
-        image = c.release.image + ':v' + str(c.release.version)
+        image = c.release.image
 
         # check for backwards compatibility
         def _has_hostname(image):
@@ -374,7 +375,7 @@ class Container(UuidAuditedModel):
                      protected=True, propagate=False)
 
     def short_name(self):
-        return "{}.{}.{}".format(self.release.app.id, self.type, self.num)
+        return "{}.{}.{}".format(self.app.id, self.type, self.num)
     short_name.short_description = 'Name'
 
     def __str__(self):
@@ -418,7 +419,7 @@ class Container(UuidAuditedModel):
 
     @transition(field=state, source=INITIALIZED, target=CREATED, on_error=ERROR)
     def create(self):
-        image = self.release.image + ':v' + str(self.release.version)
+        image = self.release.image
         kwargs = {'memory': self.release.config.memory,
                   'cpu': self.release.config.cpu,
                   'tags': self.release.config.tags}
@@ -466,7 +467,10 @@ class Container(UuidAuditedModel):
 
     def run(self, command):
         """Run a one-off command"""
-        image = self.release.image + ':v' + str(self.release.version)
+        if self.release.build is None:
+            raise EnvironmentError('No build associated with this release '
+                                   'to run this command')
+        image = self.release.image
         job_id = self._job_id
         entrypoint = '/bin/bash'
         if self.release.build.procfile:
@@ -528,6 +532,23 @@ class Build(UuidAuditedModel):
         ordering = ['-created']
         unique_together = (('app', 'uuid'),)
 
+    def create(self, user, *args, **kwargs):
+        latest_release = self.app.release_set.latest()
+        source_version = 'latest'
+        if self.sha:
+            source_version = 'git-{}'.format(self.sha)
+        new_release = latest_release.new(user,
+                                         build=self,
+                                         config=latest_release.config,
+                                         source_version=source_version)
+        initial = True if self.app.structure == {} else False
+        try:
+            self.app.deploy(user, new_release, initial=initial)
+            return new_release
+        except RuntimeError:
+            new_release.delete()
+            raise
+
     def __str__(self):
         return "{0}-{1}".format(self.app.id, self.uuid[:7])
 
@@ -569,9 +590,7 @@ class Release(UuidAuditedModel):
     summary = models.TextField(blank=True, null=True)
 
     config = models.ForeignKey('Config')
-    build = models.ForeignKey('Build')
-    # NOTE: image contains combined build + config, ready to run
-    image = models.CharField(max_length=256, default=settings.DEFAULT_BUILD)
+    build = models.ForeignKey('Build', null=True)
 
     class Meta:
         get_latest_by = 'created'
@@ -581,36 +600,43 @@ class Release(UuidAuditedModel):
     def __str__(self):
         return "{0}-v{1}".format(self.app.id, self.version)
 
-    def new(self, user, config=None, build=None, summary=None, source_version='latest'):
+    @property
+    def image(self):
+        return '{}:v{}'.format(self.app.id, str(self.version))
+
+    def new(self, user, config, build, summary=None, source_version='latest'):
         """
         Create a new application release using the provided Build and Config
         on behalf of a user.
 
         Releases start at v1 and auto-increment.
         """
-        if not config:
-            config = self.config
-        if not build:
-            build = self.build
-        # always create a release off the latest image
-        source_tag = 'git-{}'.format(build.sha) if build.sha else source_version
-        source_image = '{}:{}'.format(build.image, source_tag)
         # construct fully-qualified target image
         new_version = self.version + 1
-        tag = 'v{}'.format(new_version)
-        release_image = '{}:{}'.format(self.app.id, tag)
-        target_image = '{}'.format(self.app.id)
         # create new release and auto-increment version
         release = Release.objects.create(
             owner=user, app=self.app, config=config,
-            build=build, version=new_version, image=target_image, summary=summary)
+            build=build, version=new_version, summary=summary)
+        try:
+            release.publish()
+        except EnvironmentError as e:
+            # If we cannot publish this app, just log and carry on
+            logger.info(e)
+            pass
+        return release
+
+    def publish(self, source_version='latest'):
+        if self.build is None:
+            raise EnvironmentError('No build associated with this release to publish')
+        source_tag = 'git-{}'.format(self.build.sha) if self.build.sha else source_version
+        source_image = '{}:{}'.format(self.build.image, source_tag)
         # IOW, this image did not come from the builder
         # FIXME: remove check for mock registry module
-        if not build.sha and 'mock' not in settings.REGISTRY_MODULE:
+        if not self.build.sha and 'mock' not in settings.REGISTRY_MODULE:
             # we assume that the image is not present on our registry,
             # so shell out a task to pull in the repository
             data = {
-                'src': build.image
+                'src': self.build.image
             }
             requests.post(
                 '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
@@ -620,14 +646,12 @@ class Release(UuidAuditedModel):
             # update the source image to the repository we just imported
             source_image = self.app.id
             # if the image imported had a tag specified, use that tag as the source
-            if ':' in build.image:
-                if '/' not in build.image[build.image.rfind(':') + 1:]:
-                    source_image += build.image[build.image.rfind(':'):]
-
+            if ':' in self.build.image:
+                if '/' not in self.build.image[self.build.image.rfind(':') + 1:]:
+                    source_image += self.build.image[self.build.image.rfind(':'):]
         publish_release(source_image,
-                        config.values,
-                        release_image,)
-        return release
+                        self.config.values,
+                        self.image)
 
     def previous(self):
         """
@@ -644,6 +668,24 @@ class Release(UuidAuditedModel):
         except Release.DoesNotExist:
             prev_release = None
         return prev_release
+
+    def rollback(self, user, version):
+        if version < 1:
+            raise EnvironmentError('version cannot be below 0')
+        summary = "{} rolled back to v{}".format(user, version)
+        prev = self.app.release_set.get(version=version)
+        new_release = self.new(
+            user,
+            build=prev.build,
+            config=prev.config,
+            summary=summary,
+            source_version='v{}'.format(version))
+        try:
+            self.app.deploy(user, new_release)
+            return new_release
+        except RuntimeError:
+            new_release.delete()
+            raise
 
     def save(self, *args, **kwargs):  # noqa
         if not self.summary:

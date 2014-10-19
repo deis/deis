@@ -58,7 +58,6 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        self.assertIn('x-deis-release', response._headers)
         config2 = response.data
         self.assertNotEqual(config1['uuid'], config2['uuid'])
         self.assertIn('NEW_URL1', response.data['values'])
@@ -214,7 +213,6 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        self.assertIn('x-deis-release', response._headers)
         limit1 = response.data
         # check memory limits
         response = self.client.get(url, content_type='application/json',
@@ -301,7 +299,6 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        self.assertIn('x-deis-release', response._headers)
         limit1 = response.data
         # check memory limits
         response = self.client.get(url, content_type='application/json',
@@ -371,7 +368,6 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        self.assertIn('x-deis-release', response._headers)
         tags1 = response.data
         # check tags again
         response = self.client.get(url, content_type='application/json',

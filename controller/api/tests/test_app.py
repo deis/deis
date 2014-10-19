@@ -7,7 +7,9 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
 import os.path
+import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -15,6 +17,13 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
 from api.models import App
+
+
+def mock_import_repository_task(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
 
 
 class AppTest(TestCase):
@@ -99,15 +108,7 @@ class AppTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
         os.remove(path)
-        # test run
-        url = '/api/apps/{app_id}/run'.format(**locals())
-        body = {'command': 'ls -al'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0], 0)
-        # delete file for future runs
-        os.remove(path)
+        # TODO: test run needs an initial build
 
     def test_app_release_notes_in_logs(self):
         """Verifies that an app's release summary is dumped into the logs."""
@@ -169,6 +170,7 @@ class AppTest(TestCase):
         self.assertIn('structure', response.data)
         self.assertEqual(response.data['structure'], {"web": 1})
 
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_admin_can_manage_other_apps(self):
         """Administrators of Deis should be able to manage all applications.
         """
@@ -180,6 +182,7 @@ class AppTest(TestCase):
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
+        app = App.objects.get(id=app_id)
         # log in as admin, check to see if they have access
         url = '/api/apps/{}'.format(app_id)
         response = self.client.get(url,
@@ -191,13 +194,7 @@ class AppTest(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('autotest2 created initial release', response.data)
-        # run one-off commands
-        url = '/api/apps/{app_id}/run'.format(**locals())
-        body = {'command': 'ls -al'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0], 0)
+        # TODO: test run needs an initial build
         # delete the app
         url = '/api/apps/{}'.format(app_id)
         response = self.client.delete(url,
@@ -237,6 +234,24 @@ class AppTest(TestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEquals(response.status_code, 400)
         self.assertEquals(response.data, 'Support for admin commands is not configured')
+
+    def test_run_without_release_should_error(self):
+        """
+        A user should not be able to run a one-off command unless a release
+        is present.
+        """
+        app_id = 'autotest'
+        url = '/api/apps'
+        body = {'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = '/api/apps/{}/run'.format(app_id)
+        body = {'command': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, "No build associated with this release "
+                                        "to run this command")
 
 
 FAKE_LOG_DATA = """

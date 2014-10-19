@@ -43,12 +43,12 @@ class BuildTest(TransactionTestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        # check to see that an initial build was created
+        # check to see that no initial build was created
         url = "/api/apps/{app_id}/builds".format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['count'], 0)
         # post a new build
         body = {'image': 'autotest/example'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
