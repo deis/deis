@@ -256,6 +256,9 @@ TEMPDIR = tempfile.mkdtemp(prefix='deis')
 DEFAULT_BUILD = 'deis/helloworld'
 DEIS_DOMAIN = 'deisapp.local'
 
+# standard datetime format used for logging, model timestamps, etc.
+DEIS_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 # default scheduler settings
 SCHEDULER_MODULE = 'mock'
 SCHEDULER_TARGET = ''  # path to scheduler endpoint (e.g. /var/run/fleet.sock)
