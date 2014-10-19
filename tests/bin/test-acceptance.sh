@@ -75,6 +75,9 @@ updateservicectl channel update --app-id=${APP_ID} --channel=${CHANNEL} --versio
 
 log_phase "Waiting for upgrade to complete"
 
+# configure platform settings
+deisctl config platform set domain=$DEIS_TEST_DOMAIN
+deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
 deisctl config platform channel=${CHANNEL} autoupdate=true
 
 function wait_for_update {

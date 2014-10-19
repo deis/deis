@@ -3,20 +3,11 @@ from cStringIO import StringIO
 
 class MockSchedulerClient(object):
 
-    def __init__(self, name, hosts, auth, domain, options):
-        self.name = name
-        self.hosts = hosts
+    def __init__(self, target, auth, options, pkey):
+        self.target = target
         self.auth = auth
-        self.domain = domain
         self.options = options
-
-    # scheduler setup / teardown
-
-    def setUp(self):
-        return None
-
-    def tearDown(self):
-        return None
+        self.pkey = pkey
 
     # container api
 

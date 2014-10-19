@@ -31,11 +31,6 @@ class BuildTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_build(self):
@@ -43,8 +38,7 @@ class BuildTest(TransactionTestCase):
         Test that a null build is created and that users can post new builds
         """
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # check to see that an initial build was created
@@ -82,8 +76,7 @@ class BuildTest(TransactionTestCase):
     @mock.patch('requests.post', mock_import_repository_task)
     def test_build_default_containers(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post an image as a build
@@ -100,8 +93,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(container['num'], 1)
         # start with a new app
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build with procfile
@@ -120,8 +112,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(container['num'], 1)
         # start with a new app
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build with procfile
@@ -141,8 +132,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(container['num'], 1)
         # start with a new app
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build with procfile
@@ -165,8 +155,7 @@ class BuildTest(TransactionTestCase):
     def test_build_str(self):
         """Test the text representation of a build."""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -186,8 +175,7 @@ class BuildTest(TransactionTestCase):
         # create app as non-admin
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build as admin

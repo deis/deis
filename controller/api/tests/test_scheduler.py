@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 
 import json
 
+from django.conf import settings
 from django.test import TransactionTestCase
 
 from scheduler import chaos
@@ -21,21 +22,24 @@ class SchedulerTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'chaos',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
         # start without any chaos
         chaos.CREATE_ERROR_RATE = 0
         chaos.DESTROY_ERROR_RATE = 0
         chaos.START_ERROR_RATE = 0
         chaos.STOP_ERROR_RATE = 0
+        # use chaos scheduler
+        settings.SCHEDULER_MODULE = 'chaos'
+        # provide mock authentication used for run commands
+        settings.SSH_PRIVATE_KEY = '<some-ssh-private-key>'
+
+    def tearDown(self):
+        # reset for subsequent tests
+        settings.SCHEDULER_MODULE = 'mock'
+        settings.SSH_PRIVATE_KEY = ''
 
     def test_create_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -71,8 +75,7 @@ class SchedulerTest(TransactionTestCase):
 
     def test_start_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -108,8 +111,7 @@ class SchedulerTest(TransactionTestCase):
 
     def test_destroy_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -162,8 +164,7 @@ class SchedulerTest(TransactionTestCase):
 
     def test_build_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -217,8 +218,7 @@ class SchedulerTest(TransactionTestCase):
 
     def test_config_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -265,8 +265,7 @@ class SchedulerTest(TransactionTestCase):
 
     def test_run_chaos(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build

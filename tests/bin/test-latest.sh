@@ -54,8 +54,12 @@ done
 
 log_phase "Provisioning Deis"
 
+# configure platform settings
+deisctl config platform set domain=$DEIS_TEST_DOMAIN
+deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
+
 # provision deis from master using :latest
-deisctl install platform
+time deisctl install platform
 time deisctl start platform
 
 log_phase "Running integration tests"

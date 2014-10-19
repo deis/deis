@@ -15,10 +15,11 @@ func TestController(t *testing.T) {
 	var err error
 	setkeys := []string{
 		"/deis/registry/protocol",
-		"deis/registry/host",
+		"/deis/registry/host",
 		"/deis/registry/port",
 		"/deis/cache/host",
 		"/deis/cache/port",
+		"/deis/platform/domain",
 	}
 	setdir := []string{
 		"/deis/controller",

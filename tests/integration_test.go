@@ -21,7 +21,6 @@ func TestGlobal(t *testing.T) {
 	cookieTest(t, params)
 	utils.Execute(t, authRegisterCmd, params, false, "")
 	utils.Execute(t, keysAddCmd, params, false, "")
-	utils.Execute(t, clustersCreateCmd, params, false, "")
 }
 
 func cookieTest(t *testing.T, params *utils.DeisTestConfig) {

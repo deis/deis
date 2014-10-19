@@ -5,6 +5,7 @@ RESTful view classes for presenting Deis API objects.
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.http import Http404
@@ -80,26 +81,6 @@ class OwnerViewSet(viewsets.ModelViewSet):
         """Filter all querysets by an `owner` attribute.
         """
         return self.model.objects.filter(owner=self.request.user)
-
-
-class ClusterViewSet(viewsets.ModelViewSet):
-    """RESTful views for :class:`~api.models.Cluster`."""
-
-    model = models.Cluster
-    serializer_class = serializers.ClusterSerializer
-    permission_classes = (permissions.IsAuthenticated, IsAdmin)
-    lookup_field = 'id'
-
-    def pre_save(self, obj):
-        if not hasattr(obj, 'owner'):
-            obj.owner = self.request.user
-
-    def post_save(self, cluster, created=False, **kwargs):
-        if created:
-            cluster.create()
-
-    def pre_delete(self, cluster):
-        cluster.destroy()
 
 
 class AppPermsViewSet(viewsets.ViewSet):
@@ -489,7 +470,7 @@ class BuildHookViewSet(BaseHookViewSet):
                 super(BuildHookViewSet, self).create(request, *args, **kwargs)
                 # return the application databag
                 response = {'release': {'version': app.release_set.latest().version},
-                            'domains': ['.'.join([app.id, app.cluster.domain])]}
+                            'domains': ['.'.join([app.id, settings.DEIS_DOMAIN])]}
                 return Response(response, status=status.HTTP_200_OK)
             except RuntimeError as e:
                 return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)

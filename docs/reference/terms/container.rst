@@ -8,7 +8,7 @@ Container
 Deis containers are instances of `Docker`_ containers used to run
 :ref:`Applications <application>`. Containers perform the actual work
 of an :ref:`application` by servicing requests or by running background
-tasks as part of the :ref:`Cluster`.
+tasks as part of the cluster.
 
 Ephemeral Filesystem
 --------------------

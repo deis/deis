@@ -11,7 +11,6 @@ from guardian.admin import GuardedModelAdmin
 
 from .models import App
 from .models import Build
-from .models import Cluster
 from .models import Config
 from .models import Container
 from .models import Domain
@@ -24,8 +23,8 @@ class AppAdmin(GuardedModelAdmin):
     in the Django admin.
     """
     date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'cluster')
-    list_filter = ('owner', 'cluster')
+    list_display = ('id', 'owner')
+    list_filter = ('owner',)
 admin.site.register(App, AppAdmin)
 
 
@@ -37,16 +36,6 @@ class BuildAdmin(admin.ModelAdmin):
     list_display = ('created', 'owner', 'app')
     list_filter = ('owner', 'app')
 admin.site.register(Build, BuildAdmin)
-
-
-class ClusterAdmin(admin.ModelAdmin):
-    """Set presentation options for :class:`~api.models.Cluster` models
-    in the Django admin.
-    """
-    date_hierarchy = 'created'
-    list_display = ('id', 'owner', 'domain')
-    list_filter = ('owner',)
-admin.site.register(Cluster, ClusterAdmin)
 
 
 class ConfigAdmin(admin.ModelAdmin):

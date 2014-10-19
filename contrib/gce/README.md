@@ -313,22 +313,21 @@ deisctl install platform && deisctl start platform
 
 This operation will take a while as all the Deis systemd units are loaded into the CoreOS cluster and the Docker images are pulled down. Grab some iced tea!
 
-Verify that all the units are active after the operation completes:
+Once the command completes and `deisctl list` shows services as running, you can set the default domain used to anchor your applications:
 
 ```console
-$ deisctl list
-UNIT                        MACHINE                     LOAD    ACTIVE  SUB
-deis-builder.service        dea53588.../172.17.8.100    loaded  active  running
-deis-cache.service          dea53588.../172.17.8.100    loaded  active  running
-deis-controller.service     dea53588.../172.17.8.100    loaded  active  running
-deis-database.service       dea53588.../172.17.8.100    loaded  active  running
-deis-logger-data.service    dea53588.../172.17.8.100    loaded  active  exited
-deis-logger.service         dea53588.../172.17.8.100    loaded  active  running
-deis-registry.service       dea53588.../172.17.8.100    loaded  active  running
-deis-router@1.service       dea53588.../172.17.8.100    loaded  active  running
+$ deisctl config platform set domain=mycluster.local
 ```
 
-Everything looks good! Register the admin user. The first user added to the system becomes the admin:
+For this to work, you'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
+
+If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
+
+```console
+$ deisctl config platform set sshPrivateKey=<path-to-private-key>
+```
+
+Register the admin user. The first user added to the system becomes the admin:
 
 ```console
 $ deis register http://deis.deisdemo.io

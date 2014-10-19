@@ -39,24 +39,8 @@
     "pk": 1,
     "model": "sites.site",
     "fields": {
-        "domain": "local.deisapp.com",
-        "name": "local.deisapp.com"
-    }
-},
-{
-    "pk": "8b196fb8-5774-4512-b3cc-569af8894a6c",
-    "model": "api.cluster",
-    "fields": {
-        "updated": "2014-01-27T23:32:51.173Z",
-        "created": "2014-01-27T23:32:02.148Z",
-        "domain": "local.deisapp.com",
-        "owner": [
-            "devuser"
-        ],
-	"hosts": "host1,host2,host3",
-	"auth": "base64string",
-	"options": "{}",
-        "id": "dev"
+        "domain": "local3.deisapp.com",
+        "name": "local3.deisapp.com"
     }
 }
 ]

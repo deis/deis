@@ -13,7 +13,6 @@ Auth commands::
 Subcommands, use ``deis help [subcommand]`` to learn more::
 
   apps          manage applications used to provide services
-  clusters      manage clusters used to host applications
   ps            manage processes inside an app container
   config        manage environment variables that define app config
   domains       manage and assign domain names to your applications
@@ -23,7 +22,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   releases      manage releases of an application
 
   keys          manage ssh keys used for `git push` deployments
-  perms         manage permissions for shared apps and clusters
+  perms         manage permissions for applications
 
 Developer shortcut commands::
 
@@ -431,7 +430,6 @@ class DeisClient(object):
         Creates a new application.
 
         - if no <id> is provided, one will be generated automatically.
-        - if no <cluster> is provided, a <cluster> named "dev" will be used.
 
         Usage: deis apps:create [<id>] [options]
 
@@ -441,8 +439,6 @@ class DeisClient(object):
             exist with this name.
 
         Options:
-          --cluster=<cluster>
-            target cluster to host application [default: dev].
           --no-remote
             do not create a `deis` git remote.
         """
@@ -455,9 +451,6 @@ class DeisClient(object):
             app_name = args.get('<id>')
         if app_name:
             body.update({'id': app_name})
-        cluster = args.get('--cluster')
-        if cluster:
-            body.update({'cluster': cluster})
         sys.stdout.write('Creating application... ')
         sys.stdout.flush()
         try:
@@ -908,200 +901,6 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 self._logger.info("{0[uuid]:<23} {0[created]}".format(item))
-        else:
-            raise ResponseError(response)
-
-    def clusters(self, args):
-        """
-        Valid commands for clusters:
-
-        clusters:create        create a new cluster
-        clusters:list          list accessible clusters
-        clusters:update        update cluster fields
-        clusters:info          print a represenation of the cluster
-        clusters:destroy       destroy a cluster
-
-        Use `deis help [command]` to learn more.
-        """
-        return self.clusters_list(args)
-
-    def clusters_create(self, args):
-        """
-        Creates a new cluster.
-
-        Usage: deis clusters:create <id> <domain> --hosts=<hosts> --auth=<auth> [options]
-
-        Arguments:
-          <id>
-            a uniquely identifiable name for the cluster, such as 'dev' or 'prod'.
-
-          <domain>
-            a domain under which app hostnames will live. This must be provided to support
-            multiple applications hosted on the cluster.
-            NOTE: this requires wildcard DNS configuration on the domain. For example, a
-            <domain> of `deisapp.com` requires that `*.deisapp.com` resolves to one of the
-            cluster's router endpoints or the load balancer in front of the routers.
-
-          --hosts=<hosts>
-            a comma-separated list of the cluster members' private IP addresses.
-
-          --auth=<auth>
-            a local file path to an SSH private key. This is the key used to provision and
-            connect to the cluster members. This key must not have a password.
-            NOTE: for EC2 and Rackspace, this key is likely `~/.ssh/deis`.
-
-        Options:
-          --type=<type>
-            cluster type [default: coreos].
-        """
-        body = {'id': args['<id>'], 'domain': args['<domain>'],
-                'hosts': args['--hosts'], 'type': args['--type']}
-        auth_path = os.path.expanduser(args['--auth'])
-        if not os.path.exists(auth_path):
-            self._logger.error('Path to authentication credentials does not exist: {}'.format(auth_path))
-            sys.exit(1)
-        with open(auth_path) as f:
-            data = f.read()
-        body.update({'auth': base64.b64encode(data)})
-        sys.stdout.write('Creating cluster... ')
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            response = self._dispatch('post', '/api/clusters', json.dumps(body))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
-            data = response.json()
-            cluster = data['id']
-            self._logger.info("done, created {}".format(cluster))
-        else:
-            raise ResponseError(response)
-
-    def clusters_info(self, args):
-        """
-        Prints information about a cluster.
-
-        Usage: deis clusters:info <id>
-
-        Arguments:
-          <id>
-            the uniquely identifiable name for the cluster.
-        """
-        cluster = args.get('<id>')
-        response = self._dispatch('get', "/api/clusters/{}".format(cluster))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            self._logger.info("=== {} Cluster".format(cluster))
-            self._logger.info(json.dumps(response.json(), indent=2) + '\n')
-        else:
-            raise ResponseError(response)
-
-    def clusters_list(self, args):
-        """
-        Lists available clusters.
-
-        Usage: deis clusters:list
-        """
-        response = self._dispatch('get', '/api/clusters')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            data = response.json()
-            self._logger.info("=== Clusters")
-            for item in data['results']:
-                self._logger.info("{id}".format(**item))
-        else:
-            raise ResponseError(response)
-
-    def clusters_destroy(self, args):
-        """
-        Destroys a cluster.
-
-        Usage: deis clusters:destroy <id> [options]
-
-        Arguments:
-          <id>
-            the uniquely identifiable name for the cluster.
-
-        Options:
-          --confirm=<id>
-            skips the prompt for the cluster name. <id> is the uniquely identifiable name
-            for the cluster.
-        """
-        cluster = args.get('<id>')
-        confirm = args.get('--confirm')
-        if confirm == cluster:
-            pass
-        else:
-            self._logger.warning("""
- !    WARNING: Potentially Destructive Action
- !    This command will destroy the cluster: {cluster}
- !    To proceed, type "{cluster}" or re-run this command with --confirm={cluster}
-""".format(**locals()))
-            confirm = raw_input('> ').strip('\n')
-            if confirm != cluster:
-                self._logger.info('Destroy aborted')
-                return
-        sys.stdout.write("Destroying cluster... ".format(cluster))
-        sys.stdout.flush()
-        try:
-            progress = TextProgress()
-            progress.start()
-            before = time.time()
-            response = self._dispatch('delete', "/api/clusters/{}".format(cluster))
-        finally:
-            progress.cancel()
-            progress.join()
-        if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
-                                    requests.codes.not_found):  # @UndefinedVariable
-            self._logger.info('done in {}s'.format(int(time.time() - before)))
-        else:
-            raise ResponseError(response)
-
-    def clusters_update(self, args):
-        """
-        Updates cluster fields.
-
-        Usage: deis clusters:update <id> [options]
-
-        Arguments:
-          <id>
-            the uniquely identifiable name for the cluster.
-
-        Options:
-          --domain=<domain>
-            a domain under which app hostnames will live. See `deis help clusters:create`
-            for more information.
-          --hosts=<hosts>
-            a comma-separated list of the cluster members' private IP addresses.
-          --auth=<auth>
-            a local file path to an SSH private key. This is the key used to provision and
-            connect to the cluster members. This key must not have a password.
-          --type=<type>
-            cluster type (default: coreos).
-          --id=<id>
-            the (new) uniquely identifiable name for the cluster.
-        """
-        cluster = args['<id>']
-        body = {}
-        for k, arg in (('domain', '--domain'), ('hosts', '--hosts'),
-                       ('auth', '--auth'), ('type', '--type'), ('id', '--id')):
-            if k == 'auth' and args.get('--auth') is not None:
-                auth_path = os.path.expanduser(args['--auth'])
-                if not os.path.exists(auth_path):
-                    self._logger.error(
-                        "Path to authentication credentials does not exist: {}".format(auth_path))
-                    sys.exit(1)
-                with open(auth_path) as f:
-                    data = f.read()
-                body.update({'auth': base64.b64encode(data)})
-            else:
-                v = args.get(arg)
-                if v:
-                    body.update({k: v})
-        response = self._dispatch('patch', '/api/clusters/{}'.format(cluster),
-                                  json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
-            self._logger.info(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
 
@@ -1899,13 +1698,12 @@ class DeisClient(object):
         """
         Valid commands for perms:
 
-        perms:list            list permissions granted on an app or cluster
+        perms:list            list permissions granted on an app
         perms:create          create a new permission for a user
         perms:delete          delete a permission for a user
 
         Use `deis help perms:[command]` to learn more.
         """
-        # perms:transfer        transfer ownership of an app or cluster
         sys.argv[1] = 'perms:list'
         args = docopt(self.perms_list.__doc__)
         return self.perms_list(args)
@@ -2132,7 +1930,6 @@ SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),
     ('destroy', 'apps:destroy'),
     ('info', 'apps:info'),
-    ('init', 'clusters:create'),
     ('login', 'auth:login'),
     ('logout', 'auth:logout'),
     ('logs', 'apps:logs'),

@@ -73,38 +73,30 @@ class AdminUserSerializer(serializers.ModelSerializer):
         read_only_fields = ('username',)
 
 
-class ClusterSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Cluster` model."""
+class AppSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.App` model."""
 
     owner = serializers.Field(source='owner.username')
-    options = JSONFieldSerializer(source='options', required=False)
+    id = serializers.SlugField(default=utils.generate_app_name)
+    url = serializers.Field(source='url')
+    structure = JSONFieldSerializer(source='structure', required=False)
 
     class Meta:
-        """Metadata options for a :class:`ClusterSerializer`."""
-        model = models.Cluster
+        """Metadata options for a :class:`AppSerializer`."""
+        model = models.App
         read_only_fields = ('created', 'updated')
 
-    def validate_domain(self, attrs, source):
+    def validate_id(self, attrs, source):
+        """
+        Check that the ID is all lowercase and not 'deis'
+        """
         value = attrs[source]
-        models.validate_domain(value)
+        match = re.match(r'^[a-z0-9-]+$', value)
+        if not match:
+            raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
+        if value == 'deis':
+            raise serializers.ValidationError("App IDs cannot be 'deis'")
         return attrs
-
-    def validate_hosts(self, attrs, source):
-        value = attrs[source]
-        models.validate_comma_separated(value)
-        return attrs
-
-
-class PushSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.Push` model."""
-
-    owner = serializers.Field(source='owner.username')
-    app = serializers.SlugRelatedField(slug_field='id')
-
-    class Meta:
-        """Metadata options for a :class:`PushSerializer`."""
-        model = models.Push
-        read_only_fields = ('uuid', 'created', 'updated')
 
 
 class BuildSerializer(serializers.ModelSerializer):
@@ -189,33 +181,6 @@ class ReleaseSerializer(serializers.ModelSerializer):
         read_only_fields = ('uuid', 'created', 'updated')
 
 
-class AppSerializer(serializers.ModelSerializer):
-    """Serialize a :class:`~api.models.App` model."""
-
-    owner = serializers.Field(source='owner.username')
-    id = serializers.SlugField(default=utils.generate_app_name)
-    cluster = serializers.SlugRelatedField(slug_field='id')
-    url = serializers.Field(source='url')
-    structure = JSONFieldSerializer(source='structure', required=False)
-
-    class Meta:
-        """Metadata options for a :class:`AppSerializer`."""
-        model = models.App
-        read_only_fields = ('created', 'updated')
-
-    def validate_id(self, attrs, source):
-        """
-        Check that the ID is all lowercase and not 'deis'
-        """
-        value = attrs[source]
-        match = re.match(r'^[a-z0-9-]+$', value)
-        if not match:
-            raise serializers.ValidationError("App IDs can only contain [a-z0-9-]")
-        if value == 'deis':
-            raise serializers.ValidationError("App IDs cannot be 'deis'")
-        return attrs
-
-
 class ContainerSerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Container` model."""
 
@@ -278,3 +243,15 @@ class DomainSerializer(serializers.ModelSerializer):
                 "Adding a wildcard subdomain is currently not supported".format(value))
 
         return attrs
+
+
+class PushSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Push` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+
+    class Meta:
+        """Metadata options for a :class:`PushSerializer`."""
+        model = models.Push
+        read_only_fields = ('uuid', 'created', 'updated')

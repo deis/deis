@@ -54,26 +54,11 @@
   }
 },
 {
-  "pk": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
-  "model": "api.cluster",
-  "fields": {
-    "updated": "2013-11-25T22:09:36.726Z",
-    "created": "2013-11-25T22:09:36.726Z",
-    "domain": "autotest.local",
-    "owner": 2,
-    "hosts": "host1,host2,host3",
-    "auth": "base64string",
-    "options": "{}",
-    "id": "autotest-1"
-  }
-},
-{
   "pk": "5a09a1e0-a27e-4839-928b-449310ed90f0",
   "model": "api.app",
   "fields": {
     "updated": "2013-11-25T22:09:36.726Z",
     "created": "2013-11-25T22:09:36.726Z",
-    "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
     "owner": 2,
     "id": "autotest-1-app"
   }
@@ -84,7 +69,6 @@
   "fields": {
     "updated": "2013-11-25T22:09:36.726Z",
     "created": "2013-11-25T22:09:36.726Z",
-    "cluster": "80e9db5a-d394-41c7-b153-3ea0314dc8ca",
     "owner": 3,
     "id": "autotest-2-app"
   }

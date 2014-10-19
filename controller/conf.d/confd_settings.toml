@@ -10,6 +10,7 @@ keys = [
   "/deis/database",
   "/deis/registry",
   "/deis/domains",
+  "/deis/platform",
 ]
 check_cmd = "/app/bin/check {{ .src }}"
 reload_cmd = "/app/bin/reload"

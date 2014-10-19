@@ -20,20 +20,8 @@ class DomainTest(TestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {
-            'id': 'autotest',
-            'domain': 'autotest.local',
-            'type': 'mock',
-            'hosts': 'host1,host2',
-            'auth': 'base64string',
-            'options': {},
-        }
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         self.app_id = response.data['id']  # noqa
 
@@ -99,8 +87,7 @@ class DomainTest(TestCase):
         """
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         self.client.login(username='autotest', password='password')
         url = '/api/apps/{}/domains'.format(self.app_id)

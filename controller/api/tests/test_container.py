@@ -33,17 +33,11 @@ class ContainerTest(TransactionTestCase):
     def setUp(self):
         self.assertTrue(
             self.client.login(username='autotest', password='password'))
-        body = {'id': 'autotest', 'domain': 'autotest.local', 'type': 'mock',
-                'hosts': 'host1,host2', 'auth': 'base64string', 'options': {}}
-        response = self.client.post('/api/clusters', json.dumps(body),
-                                    content_type='application/json')
-        self.assertEqual(response.status_code, 201)
 
     def test_container_state_good(self):
         """Test that the finite state machine transitions with a good scheduler"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # create a container
@@ -65,8 +59,7 @@ class ContainerTest(TransactionTestCase):
     def test_container_state_protected(self):
         """Test that you cannot directly modify the state"""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         c = Container.objects.create(owner=User.objects.get(username='autotest'),
@@ -78,8 +71,7 @@ class ContainerTest(TransactionTestCase):
 
     def test_container_api_heroku(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
@@ -144,8 +136,7 @@ class ContainerTest(TransactionTestCase):
     @mock.patch('requests.post', mock_import_repository_task)
     def test_container_api_docker(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
@@ -204,8 +195,7 @@ class ContainerTest(TransactionTestCase):
     @mock.patch('requests.post', mock_import_repository_task)
     def test_container_release(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
@@ -253,8 +243,7 @@ class ContainerTest(TransactionTestCase):
 
     def test_container_errors(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = "/api/apps/{app_id}/scale".format(**locals())
@@ -268,8 +257,7 @@ class ContainerTest(TransactionTestCase):
     def test_container_str(self):
         """Test the text representation of a container."""
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -298,8 +286,7 @@ class ContainerTest(TransactionTestCase):
     def test_container_command_format(self):
         # regression test for https://github.com/deis/deis/pull/1285
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
@@ -324,8 +311,7 @@ class ContainerTest(TransactionTestCase):
 
     def test_container_scale_errors(self):
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # should start with zero
@@ -366,8 +352,7 @@ class ContainerTest(TransactionTestCase):
         """
         self.client.login(username='autotest2', password='password')
         url = '/api/apps'
-        body = {'cluster': 'autotest'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url)
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build

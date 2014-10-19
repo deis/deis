@@ -3,14 +3,20 @@
 scheduler
 =========
 
-scheduler.coreos
-----------------
+scheduler.fleet
+---------------
 .. contents::
     :local:
-.. automodule:: scheduler.coreos
+.. automodule:: scheduler.fleet
 
 scheduler.mock
 --------------
 .. contents::
     :local:
 .. automodule:: scheduler.mock
+
+scheduler.chaos
+---------------
+.. contents::
+    :local:
+.. automodule:: scheduler.chaos
