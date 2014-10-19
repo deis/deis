@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+if [[ -z $DOCKER_BUILD ]]; then
+  echo
+  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the router locally"
+  echo
+  exit 1
+fi
+
 export VERSION_NGINX=nginx-1.6.2
 export VERSION_TCP_PROXY=0.4.5
 
