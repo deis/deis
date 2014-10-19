@@ -84,6 +84,7 @@ func GetGlobalConfig() *DeisTestConfig {
 
 func doCurl(url string) ([]byte, error) {
 	response, err := http.Get(url)
+	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func doCurl(url string) ([]byte, error) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if !strings.Contains(string(body), "Powered by Deis") {
-		return nil, fmt.Errorf("App not started")
+		return nil, fmt.Errorf("App not started (%d)", response.StatusCode)
 	}
 
 	return body, nil
@@ -117,7 +118,6 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 		t.Fatal(err)
 	}
 	fmt.Println(string(body))
-
 }
 
 // AuthCancel tests whether `deis auth:cancel` destroys a user's account.
