@@ -158,7 +158,7 @@ fi
 
 # safely escape double quotes
 RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
-DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g')
+DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g' -e 's/ \\/ /g')
 
 puts-step "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
