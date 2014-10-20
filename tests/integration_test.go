@@ -3,12 +3,16 @@
 package tests
 
 import (
-	"os"
+	"encoding/json"
+	"io/ioutil"
 	"os/user"
+	"path"
 	"testing"
 
 	"github.com/deis/deis/tests/utils"
 )
+
+const clientJsonFilePath string = ".deis/client.json"
 
 var (
 	gitCloneCmd  = "if [ ! -d {{.ExampleApp}} ] ; then git clone https://github.com/deis/{{.ExampleApp}}.git ; fi"
@@ -16,36 +20,38 @@ var (
 	gitPushCmd   = "git push deis master"
 )
 
+// Client represents the client data structure in ~/.deis/client.json
+type Client struct {
+	Controller string `json:"controller"`
+	Username   string `json:"username"`
+	Token      string `json:"token"`
+}
+
 func TestGlobal(t *testing.T) {
 	params := utils.GetGlobalConfig()
-	cookieTest(t, params)
 	utils.Execute(t, authRegisterCmd, params, false, "")
+	clientTest(t, params)
 	utils.Execute(t, keysAddCmd, params, false, "")
 }
 
-func cookieTest(t *testing.T, params *utils.DeisTestConfig) {
-	// Regression test for https://github.com/deis/deis/pull/1136
-	// Ensure that cookies are cleared on auth:register and auth:cancel
+func clientTest(t *testing.T, params *utils.DeisTestConfig) {
 	user, err := user.Current()
 	if err != nil {
 		t.Fatal(err)
 	}
-	cookieJar := user.HomeDir + "/.deis/cookies.txt"
-	utils.Execute(t, authRegisterCmd, params, false, "")
-	cmd := "cat " + cookieJar
-	utils.CheckList(t, cmd, params, "csrftoken", false)
-	utils.CheckList(t, cmd, params, "sessionid", false)
-	info, err := os.Stat(cookieJar)
+	data, err := ioutil.ReadFile(path.Join(user.HomeDir, clientJsonFilePath))
 	if err != nil {
 		t.Fatal(err)
 	}
-	mode := info.Mode().String()
-	expected := "-rw-------"
-	if mode != expected {
-		t.Fatalf("%s has wrong mode:\n   current: %s\n  expected: %s",
-			cookieJar, mode, expected)
+	client := &Client{}
+	json.Unmarshal(data, &client)
+	if client.Token == "" {
+		t.Error("token not present in client.json")
 	}
-	utils.AuthCancel(t, params)
-	utils.CheckList(t, cmd, params, "csrftoken", true)
-	utils.CheckList(t, cmd, params, "sessionid", true)
+	if client.Controller == "" {
+		t.Error("controller endpoint not present in client.json")
+	}
+	if client.Username == "" {
+		t.Error("username not present in client.json")
+	}
 }

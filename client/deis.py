@@ -41,7 +41,6 @@ Use ``git push deis master`` to deploy to an application.
 from __future__ import print_function
 from collections import namedtuple
 from collections import OrderedDict
-from cookielib import MozillaCookieJar
 from datetime import datetime
 from getpass import getpass
 from itertools import cycle
@@ -82,21 +81,14 @@ class Session(requests.Session):
     def __init__(self):
         super(Session, self).__init__()
         self.trust_env = False
-        cookie_file = os.path.expanduser('~/.deis/cookies.txt')
-        cookie_dir = os.path.dirname(cookie_file)
-        self.cookies = MozillaCookieJar(cookie_file)
+        config_dir = os.path.expanduser('~/.deis')
         self.proxies = {
             "http": os.getenv("http_proxy"),
             "https": os.getenv("https_proxy")
         }
         # Create the $HOME/.deis dir if it doesn't exist
-        if not os.path.isdir(cookie_dir):
-            os.mkdir(cookie_dir, 0700)
-        # Load existing cookies if the cookies.txt exists
-        if os.path.isfile(cookie_file):
-            self.cookies.load()
-            self.cookies.clear_expired_cookies()
-            self.cookies.save()
+        if not os.path.isdir(config_dir):
+            os.mkdir(config_dir, 0700)
 
     @property
     def app(self):
@@ -152,25 +144,14 @@ class Session(requests.Session):
 
     def request(self, *args, **kwargs):
         """
-        Issue an HTTP request with proper cookie handling including
-        `Django CSRF tokens <https://docs.djangoproject.com/en/dev/ref/contrib/csrf/>`
+        Issue an HTTP request
         """
-        for cookie in self.cookies:
-            if cookie.name == 'csrftoken':
-                if 'headers' in kwargs:
-                    kwargs['headers']['X-CSRFToken'] = cookie.value
-                else:
-                    kwargs['headers'] = {'X-CSRFToken': cookie.value}
-                break
         url = args[1]
         if 'headers' in kwargs:
             kwargs['headers']['Referer'] = url
         else:
             kwargs['headers'] = {'Referer': url}
         response = super(Session, self).request(*args, **kwargs)
-        self.cookies.save()
-        # set ~/.deis/cookies.txt readable only by its owner
-        os.chmod(self.cookies.filename, 0600)
         return response
 
 
@@ -395,16 +376,18 @@ class DeisClient(object):
         """
         Dispatch an API request to the active Deis controller
         """
+        func = getattr(self._session, method.lower())
+        controller = self._settings.get('controller')
+        token = self._settings.get('token')
+        if not token:
+            raise EnvironmentError(
+                'Could not find token. Use `deis login` or `deis register` to get started.')
+        url = urlparse.urljoin(controller, path, **kwargs)
         headers = {
             'content-type': 'application/json',
             'X-Deis-Version': __version__.rsplit('.', 1)[0],
+            'Authorization': 'token {}'.format(token)
         }
-        func = getattr(self._session, method.lower())
-        controller = self._settings.get('controller')
-        if not controller:
-            raise EnvironmentError(
-                'No active controller. Use `deis login` or `deis register` to get started.')
-        url = urlparse.urljoin(controller, path, **kwargs)
         response = func(url, data=body, headers=headers)
         return response
 
@@ -718,9 +701,6 @@ class DeisClient(object):
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/api/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
-        # Clear any existing cookies
-        self._session.cookies.clear()
-        self._session.cookies.save()
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._settings['controller'] = controller
@@ -751,9 +731,8 @@ class DeisClient(object):
             confirm = raw_input("Cancel account \"{}\" at {}? (y/n) ".format(username, controller))
             if confirm == 'y':
                 self._dispatch('delete', '/api/auth/cancel')
-                self._session.cookies.clear()
-                self._session.cookies.save()
                 self._settings['controller'] = None
+                self._settings['token'] = None
                 self._settings.save()
                 self._logger.info('Account cancelled')
             else:
@@ -787,16 +766,13 @@ class DeisClient(object):
             password = getpass('password: ')
         url = urlparse.urljoin(controller, '/api/auth/login/')
         payload = {'username': username, 'password': password}
-        # clear any existing cookies
-        self._session.cookies.clear()
-        self._session.cookies.save()
-        # prime cookies for login
-        self._session.get(url, headers=headers)
         # post credentials to the login URL
         response = self._session.post(url, data=payload, allow_redirects=False)
-        if response.status_code == requests.codes.found:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+            # retrieve and save the API token for future requests
             self._settings['controller'] = controller
             self._settings['username'] = username
+            self._settings['token'] = response.json()['token']
             self._settings.save()
             self._logger.info("Logged in as {}".format(username))
             return username
@@ -809,16 +785,9 @@ class DeisClient(object):
 
         Usage: deis auth:logout
         """
-        controller = self._settings.get('controller')
-        if controller:
-            try:
-                self._dispatch('get', '/api/auth/logout/')
-            except requests.exceptions.ConnectionError:
-                pass
-        self._session.cookies.clear()
-        self._session.cookies.save()
         self._settings['controller'] = None
         self._settings['username'] = None
+        self._settings['token'] = None
         self._settings.save()
         self._logger.info('Logged out')
 

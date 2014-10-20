@@ -9,7 +9,9 @@ from __future__ import unicode_literals
 import json
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+from rest_framework.authtoken.models import Token
 
 from scheduler import chaos
 
@@ -20,8 +22,8 @@ class SchedulerTest(TransactionTestCase):
     fixtures = ['tests.json']
 
     def setUp(self):
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
+        self.user = User.objects.get(username='autotest')
+        self.token = Token.objects.get(user=self.user).key
         # start without any chaos
         chaos.CREATE_ERROR_RATE = 0
         chaos.DESTROY_ERROR_RATE = 0
@@ -39,34 +41,37 @@ class SchedulerTest(TransactionTestCase):
 
     def test_create_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # scale to zero for consistency
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # let's get chaotic
         chaos.CREATE_ERROR_RATE = 0.5
         # scale up but expect a 503
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 20}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
         # inspect broken containers
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
         # make sure some failed
@@ -75,34 +80,37 @@ class SchedulerTest(TransactionTestCase):
 
     def test_start_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # scale to zero for consistency
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # let's get chaotic
         chaos.START_ERROR_RATE = 0.5
         # scale up, which will allow some crashed containers
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 20}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # inspect broken containers
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
         # make sure some failed
@@ -111,26 +119,28 @@ class SchedulerTest(TransactionTestCase):
 
     def test_destroy_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 20}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
         # let's get chaotic
@@ -138,11 +148,12 @@ class SchedulerTest(TransactionTestCase):
         # scale to zero but expect a 503
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 0}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
         # inspect broken containers
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         states = set([c['state'] for c in response.data['results']])
         self.assertEqual(states, set(['error']))
@@ -151,46 +162,49 @@ class SchedulerTest(TransactionTestCase):
         for _ in range(100):
             url = "/api/apps/{app_id}/scale".format(**locals())
             body = {'web': 0}
-            response = self.client.post(url, json.dumps(body), content_type='application/json')
+            response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
             # break if we destroyed successfully
             if response.status_code == 204:
                 break
             self.assertEquals(response.status_code, 503)
             # inspect broken containers
             url = "/api/apps/{app_id}/containers".format(**locals())
-            response = self.client.get(url)
+            response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEqual(response.status_code, 200)
             containers = len(response.data['results'])
 
     def test_build_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # inspect builds
         url = "/api/apps/{app_id}/builds".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 20}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # simulate failing to create containers
         chaos.CREATE_ERROR_RATE = 0.5
@@ -199,16 +213,17 @@ class SchedulerTest(TransactionTestCase):
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'b'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         # inspect containers
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
 
@@ -218,28 +233,30 @@ class SchedulerTest(TransactionTestCase):
 
     def test_config_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # scale up
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 20}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
         # simulate failing to create or start containers
         chaos.CREATE_ERROR_RATE = 0.5
@@ -247,16 +264,17 @@ class SchedulerTest(TransactionTestCase):
         # post a new config
         url = "/api/apps/{app_id}/config".format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         # inspect containers
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
         # make sure all old containers are still up
@@ -265,27 +283,28 @@ class SchedulerTest(TransactionTestCase):
 
     def test_run_chaos(self):
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # post a new build
         url = "/api/apps/{app_id}/builds".format(**locals())
         body = {'image': 'autotest/example', 'sha': 'a'*40,
                 'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         # inspect builds
         url = "/api/apps/{app_id}/builds".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         url = "/api/apps/{app_id}/containers".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         # block all create operations
@@ -293,5 +312,6 @@ class SchedulerTest(TransactionTestCase):
         # make sure the run fails with a 503
         url = '/api/apps/{app_id}/run'.format(**locals())
         body = {'command': 'ls -al'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)

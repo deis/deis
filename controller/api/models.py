@@ -15,18 +15,19 @@ import time
 import threading
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Max
-from django.db.models.signals import post_delete
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
 from django_fsm.signals import post_transition
 from docker.utils import utils
 from json_field.fields import JSONField
 import requests
+from rest_framework.authtoken.models import Token
 
 from api import fields
 from registry import publish_release
@@ -831,6 +832,13 @@ post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log
 post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
 
 
+# automatically generate a new token on creation
+@receiver(post_save, sender=get_user_model())
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+
+
 # save FSM transitions as they happen
 def _save_transition(**kwargs):
     kwargs['instance'].save()
@@ -852,7 +860,7 @@ except etcd.EtcdException:
 if _etcd_client:
     post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
-    post_delete.connect(_etcd_purge_user, sender=User, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_user, sender=get_user_model(), dispatch_uid='api.models')
     post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_domains, sender=Domain, dispatch_uid='api.models')
     post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')

@@ -10,9 +10,10 @@ import json
 import mock
 import requests
 
-from django.test import TransactionTestCase
-
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.test import TransactionTestCase
+from rest_framework.authtoken.models import Token
 
 
 def mock_import_repository_task(*args, **kwargs):
@@ -29,13 +30,13 @@ class HookTest(TransactionTestCase):
     fixtures = ['tests.json']
 
     def setUp(self):
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
+        self.user = User.objects.get(username='autotest')
+        self.token = Token.objects.get(user=self.user).key
 
     def test_push_hook(self):
         """Test creating a Push via the API"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # prepare a push body
@@ -49,7 +50,8 @@ class HookTest(TransactionTestCase):
         }
         # post a request without the auth header
         url = "/api/hooks/push".format(**locals())
-        response = self.client.post(url, json.dumps(body), content_type='application/json')
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 403)
         # now try with the builder key in the special auth header
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -63,7 +65,7 @@ class HookTest(TransactionTestCase):
         """Test a user pushing to an unauthorized application"""
         # create a legit app as "autotest"
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # register an evil user
@@ -99,7 +101,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook(self):
         """Test creating a Build via an API Hook"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -107,10 +109,9 @@ class HookTest(TransactionTestCase):
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id,
                 'image': '{app_id}:v2'.format(**locals())}
-        # post the build without a session
-        self.assertIsNone(self.client.logout())
+        # post the build without an auth token
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # post the build with the builder auth key
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
@@ -122,7 +123,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook_procfile(self):
         """Test creating a Procfile build via an API Hook"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -134,10 +135,9 @@ class HookTest(TransactionTestCase):
                 'image': '{app_id}:v2'.format(**locals()),
                 'sha': SHA,
                 'procfile': PROCFILE}
-        # post the build without a session
-        self.assertIsNone(self.client.logout())
+        # post the build without an auth token
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # post the build with the builder auth key
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
@@ -146,10 +146,8 @@ class HookTest(TransactionTestCase):
         self.assertIn('version', response.data['release'])
         self.assertIn('domains', response.data)
         # make sure build fields were populated
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
         url = '/api/apps/{app_id}/builds'.format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         build = response.data['results'][0]
@@ -157,7 +155,7 @@ class HookTest(TransactionTestCase):
         self.assertEqual(build['procfile'], PROCFILE)
         # test listing/retrieving container info
         url = "/api/apps/{app_id}/containers/web".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         container = response.data['results'][0]
@@ -167,7 +165,7 @@ class HookTest(TransactionTestCase):
     def test_build_hook_dockerfile(self):
         """Test creating a Dockerfile build via an API Hook"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         build = {'username': 'autotest', 'app': app_id}
@@ -182,10 +180,9 @@ class HookTest(TransactionTestCase):
                 'image': '{app_id}:v2'.format(**locals()),
                 'sha': SHA,
                 'dockerfile': DOCKERFILE}
-        # post the build without a session
-        self.assertIsNone(self.client.logout())
+        # post the build without an auth token
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # post the build with the builder auth key
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
@@ -194,10 +191,8 @@ class HookTest(TransactionTestCase):
         self.assertIn('version', response.data['release'])
         self.assertIn('domains', response.data)
         # make sure build fields were populated
-        self.assertTrue(
-            self.client.login(username='autotest', password='password'))
         url = '/api/apps/{app_id}/builds'.format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('results', response.data)
         build = response.data['results'][0]
@@ -205,7 +200,7 @@ class HookTest(TransactionTestCase):
         self.assertEqual(build['dockerfile'], DOCKERFILE)
         # test default container
         url = "/api/apps/{app_id}/containers/cmd".format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
         container = response.data['results'][0]
@@ -215,11 +210,11 @@ class HookTest(TransactionTestCase):
     def test_config_hook(self):
         """Test reading Config via an API Hook"""
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         url = '/api/apps/{app_id}/config'.format(**locals())
-        response = self.client.get(url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('values', response.data)
         values = response.data['values']
@@ -228,10 +223,9 @@ class HookTest(TransactionTestCase):
         url = '/api/hooks/config'.format(**locals())
         body = {'receive_user': 'autotest',
                 'receive_repo': app_id}
-        # post without a session
-        self.assertIsNone(self.client.logout())
+        # post without an auth token
         response = self.client.post(url, json.dumps(body), content_type='application/json')
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # post with the builder auth key
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
@@ -243,12 +237,12 @@ class HookTest(TransactionTestCase):
         """Administrator should be able to create build hooks on non-admin apps.
         """
         """Test creating a Push via the API"""
-        self.client.login(username='autotest2', password='password')
+        user = User.objects.get(username='autotest2')
+        token = Token.objects.get(user=user).key
         url = '/api/apps'
-        response = self.client.post(url)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        self.client.login(username='autotest', password='password')
         # prepare a push body
         DOCKERFILE = """
         FROM busybox

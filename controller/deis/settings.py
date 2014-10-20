@@ -104,7 +104,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'api.middleware.VersionMiddleware',
@@ -140,6 +139,7 @@ INSTALLED_APPS = (
     'json_field',
     'gunicorn',
     'rest_framework',
+    'rest_framework.authtoken',
     'south',
     # Deis apps
     'api',
@@ -168,7 +168,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
     'PAGINATE_BY': 100,
 }
