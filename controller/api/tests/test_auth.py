@@ -39,7 +39,7 @@ class AuthTest(TestCase):
             'is_superuser': True,
             'is_staff': True,
         }
-        url = '/api/auth/register'
+        url = '/v1/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['username'], username)
@@ -51,7 +51,7 @@ class AuthTest(TestCase):
         self.assertFalse(response.data['is_superuser'])
         self.assertFalse(response.data['is_staff'])
         # test login
-        url = '/api/auth/login/'
+        url = '/v1/auth/login/'
         payload = urllib.urlencode({'username': username, 'password': password})
         response = self.client.post(url, data=payload,
                                     content_type='application/x-www-form-urlencoded')
@@ -60,7 +60,7 @@ class AuthTest(TestCase):
     @override_settings(REGISTRATION_ENABLED=False)
     def test_auth_registration_disabled(self):
         """test that a new user cannot register when registration is disabled."""
-        url = '/api/auth/register'
+        url = '/v1/auth/register'
         submit = {
             'username': 'testuser',
             'password': 'password',
@@ -89,11 +89,11 @@ class AuthTest(TestCase):
             'is_superuser': True,
             'is_staff': True,
         }
-        url = '/api/auth/register'
+        url = '/v1/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
         # cancel the account
-        url = '/api/auth/cancel'
+        url = '/v1/auth/cancel'
         user = User.objects.get(username=username)
         token = Token.objects.get(user=user).key
         response = self.client.delete(url,

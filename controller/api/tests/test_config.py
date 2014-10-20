@@ -41,12 +41,12 @@ class ConfigTest(TransactionTestCase):
         Test that config is auto-created for a new app and that
         config can be updated using a PATCH
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
         # check to see that an initial/empty config was created
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/v1/apps/{app_id}/config".format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
@@ -112,11 +112,11 @@ class ConfigTest(TransactionTestCase):
         """
         Test that config sets on the same key function properly
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/v1/apps/{app_id}/config".format(**locals())
         # set an initial config value
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -136,11 +136,11 @@ class ConfigTest(TransactionTestCase):
         """
         Test that config sets with unicode values are accepted.
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/v1/apps/{app_id}/config".format(**locals())
         # set an initial config value
         body = {'values': json.dumps({'POWERED_BY': 'Деис'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -176,11 +176,11 @@ class ConfigTest(TransactionTestCase):
         """
         user = User.objects.get(username='autotest2')
         token = Token.objects.get(user=user).key
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = "/api/apps/{app_id}/config".format(**locals())
+        url = "/v1/apps/{app_id}/config".format(**locals())
         # set an initial config value
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -194,11 +194,11 @@ class ConfigTest(TransactionTestCase):
         Test that limit is auto-created for a new app and that
         limits can be updated using a PATCH
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        url = '/v1/apps/{app_id}/config'.format(**locals())
         # check default limit
         response = self.client.get(url, content_type='application/json',
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -281,11 +281,11 @@ class ConfigTest(TransactionTestCase):
         """
         Test that CPU limits can be set
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        url = '/v1/apps/{app_id}/config'.format(**locals())
         # check default limit
         response = self.client.get(url, content_type='application/json',
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -352,11 +352,11 @@ class ConfigTest(TransactionTestCase):
         """
         Test that tags can be set on an application
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        url = '/api/apps/{app_id}/config'.format(**locals())
+        url = '/v1/apps/{app_id}/config'.format(**locals())
         # check default
         response = self.client.get(url, content_type='application/json',
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))

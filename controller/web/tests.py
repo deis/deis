@@ -24,8 +24,6 @@ class WebViewsTest(TestCase):
         self.assertContains(response, '<title>Deis | Account</title>', html=True)
         self.assertContains(response, 'autotest-1')
         self.assertContains(response, '<img src="//www.gravatar.com/avatar')
-        self.assertContains(
-            response, '<form method="post" action="/api/auth/logout/">')
 
     def test_dashboard(self):
         response = self.client.get('/')

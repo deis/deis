@@ -17,7 +17,7 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^api/', include('api.urls')),
+    url(r'^v1/', include('api.urls')),
 )
 
 if settings.WEB_ENABLED:

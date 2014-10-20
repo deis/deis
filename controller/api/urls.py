@@ -5,19 +5,19 @@ RESTful URL patterns and routing for the Deis API app.
 Applications
 ============
 
-.. http:get:: /api/apps/(string:id)/
+.. http:get:: /v1/apps/(string:id)/
 
   Retrieve a :class:`~api.models.App` by its `id`.
 
-.. http:delete:: /api/apps/(string:id)/
+.. http:delete:: /v1/apps/(string:id)/
 
   Destroy a :class:`~api.models.App` by its `id`.
 
-.. http:get:: /api/apps/
+.. http:get:: /v1/apps/
 
   List all :class:`~api.models.App`\s.
 
-.. http:post:: /api/apps/
+.. http:post:: /v1/apps/
 
   Create a new :class:`~api.models.App`.
 
@@ -25,35 +25,35 @@ Applications
 Application Release Components
 ------------------------------
 
-.. http:get:: /api/apps/(string:id)/config/
+.. http:get:: /v1/apps/(string:id)/config/
 
   List all :class:`~api.models.Config`\s.
 
-.. http:post:: /api/apps/(string:id)/config/
+.. http:post:: /v1/apps/(string:id)/config/
 
   Create a new :class:`~api.models.Config`.
 
-.. http:get:: /api/apps/(string:id)/builds/(string:uuid)/
+.. http:get:: /v1/apps/(string:id)/builds/(string:uuid)/
 
   Retrieve a :class:`~api.models.Build` by its `uuid`.
 
-.. http:get:: /api/apps/(string:id)/builds/
+.. http:get:: /v1/apps/(string:id)/builds/
 
   List all :class:`~api.models.Build`\s.
 
-.. http:post:: /api/apps/(string:id)/builds/
+.. http:post:: /v1/apps/(string:id)/builds/
 
   Create a new :class:`~api.models.Build`.
 
-.. http:get:: /api/apps/(string:id)/releases/(int:version)/
+.. http:get:: /v1/apps/(string:id)/releases/(int:version)/
 
   Retrieve a :class:`~api.models.Release` by its `version`.
 
-.. http:get:: /api/apps/(string:id)/releases/
+.. http:get:: /v1/apps/(string:id)/releases/
 
   List all :class:`~api.models.Release`\s.
 
-.. http:post:: /api/apps/(string:id)/releases/rollback/
+.. http:post:: /v1/apps/(string:id)/releases/rollback/
 
   Rollback to a previous :class:`~api.models.Release`.
 
@@ -61,15 +61,15 @@ Application Release Components
 Application Infrastructure
 --------------------------
 
-.. http:get:: /api/apps/(string:id)/containers/(string:type)/(int:num)/
+.. http:get:: /v1/apps/(string:id)/containers/(string:type)/(int:num)/
 
   List all :class:`~api.models.Container`\s.
 
-.. http:get:: /api/apps/(string:id)/containers/(string:type)/
+.. http:get:: /v1/apps/(string:id)/containers/(string:type)/
 
   List all :class:`~api.models.Container`\s.
 
-.. http:get:: /api/apps/(string:id)/containers/
+.. http:get:: /v1/apps/(string:id)/containers/
 
   List all :class:`~api.models.Container`\s.
 
@@ -78,15 +78,15 @@ Application Domains
 -------------------
 
 
-.. http:delete:: /api/apps/(string:id)/domains/(string:hostname)
+.. http:delete:: /v1/apps/(string:id)/domains/(string:hostname)
 
   Destroy a :class:`~api.models.Domain` by its `hostname`
 
-.. http:get:: /api/apps/(string:id)/domains/
+.. http:get:: /v1/apps/(string:id)/domains/
 
   List all :class:`~api.models.Domain`\s.
 
-.. http:post:: /api/apps/(string:id)/domains/
+.. http:post:: /v1/apps/(string:id)/domains/
 
   Create a new :class:`~api.models.Domain`\s.
 
@@ -94,17 +94,17 @@ Application Domains
 Application Actions
 -------------------
 
-.. http:post:: /api/apps/(string:id)/scale/
+.. http:post:: /v1/apps/(string:id)/scale/
 
   See also
   :meth:`AppViewSet.scale() <api.views.AppViewSet.scale>`
 
-.. http:get:: /api/apps/(string:id)/logs/
+.. http:get:: /v1/apps/(string:id)/logs/
 
   See also
   :meth:`AppViewSet.logs() <api.views.AppViewSet.logs>`
 
-.. http:post:: /api/apps/(string:id)/run/
+.. http:post:: /v1/apps/(string:id)/run/
 
   See also
   :meth:`AppViewSet.run() <api.views.AppViewSet.run>`
@@ -113,15 +113,15 @@ Application Actions
 Application Sharing
 ===================
 
-.. http:delete:: /api/apps/(string:id)/perms/(string:username)/
+.. http:delete:: /v1/apps/(string:id)/perms/(string:username)/
 
   Destroy an app permission by its `username`.
 
-.. http:get:: /api/apps/(string:id)/perms/
+.. http:get:: /v1/apps/(string:id)/perms/
 
   List all permissions granted to this app.
 
-.. http:post:: /api/apps/(string:id)/perms/
+.. http:post:: /v1/apps/(string:id)/perms/
 
   Create a new app permission.
 
@@ -129,19 +129,19 @@ Application Sharing
 Keys
 ====
 
-.. http:get:: /api/keys/(string:id)/
+.. http:get:: /v1/keys/(string:id)/
 
   Retrieve a :class:`~api.models.Key` by its `id`.
 
-.. http:delete:: /api/keys/(string:id)/
+.. http:delete:: /v1/keys/(string:id)/
 
   Destroy a :class:`~api.models.Key` by its `id`.
 
-.. http:get:: /api/keys/
+.. http:get:: /v1/keys/
 
   List all :class:`~api.models.Key`\s.
 
-.. http:post:: /api/keys/
+.. http:post:: /v1/keys/
 
   Create a new :class:`~api.models.Key`.
 
@@ -149,15 +149,15 @@ Keys
 API Hooks
 =========
 
-.. http:post:: /api/hooks/push/
+.. http:post:: /v1/hooks/push/
 
   Create a new :class:`~api.models.Push`.
 
-.. http:post:: /api/hooks/build/
+.. http:post:: /v1/hooks/build/
 
   Create a new :class:`~api.models.Build`.
 
-.. http:post:: /api/hooks/config/
+.. http:post:: /v1/hooks/config/
 
   Retrieve latest application :class:`~api.models.Config`.
 
@@ -165,15 +165,15 @@ API Hooks
 Auth
 ====
 
-.. http:post:: /api/auth/register/
+.. http:post:: /v1/auth/register/
 
   Create a new User.
 
-.. http:delete:: /api/auth/register/
+.. http:delete:: /v1/auth/register/
 
   Destroy the logged-in User.
 
-.. http:get:: /api/auth/login/
+.. http:get:: /v1/auth/login/
 
   Generate an API key.
 
@@ -181,15 +181,15 @@ Auth
 Admin Sharing
 =============
 
-.. http:delete:: /api/admin/perms/(string:username)/
+.. http:delete:: /v1/admin/perms/(string:username)/
 
   Destroy an admin permission by its `username`.
 
-.. http:get:: /api/admin/perms/
+.. http:get:: /v1/admin/perms/
 
   List all admin permissions granted.
 
-.. http:post:: /api/admin/perms/
+.. http:post:: /v1/admin/perms/
 
   Create a new admin permission.
 

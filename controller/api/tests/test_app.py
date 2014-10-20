@@ -45,18 +45,18 @@ class AppTest(TestCase):
         """
         Test that a user can create, read, update and delete an application
         """
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
         self.assertIn('id', response.data)
         self.assertIn('url', response.data)
         self.assertEqual(response.data['url'], '{app_id}.deisapp.local'.format(**locals()))
-        response = self.client.get('/api/apps',
+        response = self.client.get('/v1/apps',
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 1)
-        url = '/api/apps/{app_id}'.format(**locals())
+        url = '/v1/apps/{app_id}'.format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
@@ -70,19 +70,19 @@ class AppTest(TestCase):
 
     def test_app_override_id(self):
         body = {'id': 'myid'}
-        response = self.client.post('/api/apps', json.dumps(body),
+        response = self.client.post('/v1/apps', json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         body = {'id': response.data['id']}
-        response = self.client.post('/api/apps', json.dumps(body),
+        response = self.client.post('/v1/apps', json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertContains(response, 'App with this Id already exists.', status_code=400)
         return response
 
     def test_app_actions(self):
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -95,7 +95,7 @@ class AppTest(TestCase):
         # HACK: remove app lifecycle logs
         if os.path.exists(path):
             os.remove(path)
-        url = '/api/apps/{app_id}/logs'.format(**locals())
+        url = '/v1/apps/{app_id}/logs'.format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
@@ -112,14 +112,14 @@ class AppTest(TestCase):
 
     def test_app_release_notes_in_logs(self):
         """Verifies that an app's release summary is dumped into the logs."""
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
         path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
-        url = '/api/apps/{app_id}/logs'.format(**locals())
+        url = '/v1/apps/{app_id}/logs'.format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertIn('autotest created initial release', response.data)
@@ -129,12 +129,12 @@ class AppTest(TestCase):
 
     def test_app_errors(self):
         app_id = 'autotest-errors'
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': 'camelCase'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertContains(response, 'App IDs can only contain [a-z0-9-]', status_code=400)
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': 'deis'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -144,19 +144,19 @@ class AppTest(TestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
-        url = '/api/apps/{app_id}'.format(**locals())
+        url = '/v1/apps/{app_id}'.format(**locals())
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEquals(response.status_code, 204)
         for endpoint in ('containers', 'config', 'releases', 'builds'):
-            url = '/api/apps/{app_id}/{endpoint}'.format(**locals())
+            url = '/v1/apps/{app_id}/{endpoint}'.format(**locals())
             response = self.client.get(url,
                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEquals(response.status_code, 404)
 
     def test_app_structure_is_valid_json(self):
         """Application structures should be valid JSON objects."""
-        url = '/api/apps'
+        url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -165,7 +165,7 @@ class AppTest(TestCase):
         app = App.objects.get(id=app_id)
         app.structure = {'web': 1}
         app.save()
-        url = '/api/apps/{}'.format(app_id)
+        url = '/v1/apps/{}'.format(app_id)
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertIn('structure', response.data)
         self.assertEqual(response.data['structure'], {"web": 1})
@@ -178,25 +178,25 @@ class AppTest(TestCase):
         user = User.objects.get(username='autotest2')
         token = Token.objects.get(user=user)
         app_id = 'autotest'
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
         app = App.objects.get(id=app_id)
         # log in as admin, check to see if they have access
-        url = '/api/apps/{}'.format(app_id)
+        url = '/v1/apps/{}'.format(app_id)
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # check app logs
-        url = '/api/apps/{app_id}/logs'.format(**locals())
+        url = '/v1/apps/{app_id}/logs'.format(**locals())
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertIn('autotest2 created initial release', response.data)
         # TODO: test run needs an initial build
         # delete the app
-        url = '/api/apps/{}'.format(app_id)
+        url = '/v1/apps/{}'.format(app_id)
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
@@ -209,7 +209,7 @@ class AppTest(TestCase):
         user = User.objects.get(username='autotest2')
         token = Token.objects.get(user=user)
         app_id = 'autotest'
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
@@ -221,14 +221,14 @@ class AppTest(TestCase):
         """If the administrator has not provided SSH private key for run commands,
         make sure a friendly error message is provided on run"""
         settings.SSH_PRIVATE_KEY = ''
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
         # test run
-        url = '/api/apps/{app_id}/run'.format(**locals())
+        url = '/v1/apps/{app_id}/run'.format(**locals())
         body = {'command': 'ls -al'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -241,11 +241,11 @@ class AppTest(TestCase):
         is present.
         """
         app_id = 'autotest'
-        url = '/api/apps'
+        url = '/v1/apps'
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        url = '/api/apps/{}/run'.format(app_id)
+        url = '/v1/apps/{}/run'.format(app_id)
         body = {'command': 'ls -al'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
