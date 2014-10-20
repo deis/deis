@@ -7,11 +7,10 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 
 build: check-docker
 	docker build -t $(BUILD_IMAGE) .
-	@$(eval CID := $(shell docker run -d $(BUILD_IMAGE)))
-	docker cp $(CID):/go/bin/logger image/bin/
+	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/logger image/bin/
 	docker build -t $(IMAGE) image
-	-docker kill $(CID)
 	rm -rf image/bin/logger
+	-docker rm -f `docker ps | grep logger-build | awk '{print $$1}'`
 
 clean: check-docker check-registry
 	docker rmi $(IMAGE)
