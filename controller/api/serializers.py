@@ -80,11 +80,12 @@ class AppSerializer(serializers.ModelSerializer):
     id = serializers.SlugField(default=utils.generate_app_name)
     url = serializers.Field(source='url')
     structure = JSONFieldSerializer(source='structure', required=False)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`AppSerializer`."""
         model = models.App
-        read_only_fields = ('created', 'updated')
 
     def validate_id(self, attrs, source):
         """
@@ -105,11 +106,13 @@ class BuildSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
     procfile = JSONFieldSerializer(source='procfile', required=False)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`BuildSerializer`."""
         model = models.Build
-        read_only_fields = ('uuid', 'created', 'updated')
+        read_only_fields = ('uuid',)
 
 
 class ConfigSerializer(serializers.ModelSerializer):
@@ -121,11 +124,13 @@ class ConfigSerializer(serializers.ModelSerializer):
     memory = JSONFieldSerializer(source='memory', required=False)
     cpu = JSONFieldSerializer(source='cpu', required=False)
     tags = JSONFieldSerializer(source='tags', required=False)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
         model = models.Config
-        read_only_fields = ('uuid', 'created', 'updated')
+        read_only_fields = ('uuid',)
 
     def validate_memory(self, attrs, source):
         for k, v in attrs.get(source, {}).items():
@@ -174,11 +179,13 @@ class ReleaseSerializer(serializers.ModelSerializer):
     app = serializers.SlugRelatedField(slug_field='id')
     config = serializers.SlugRelatedField(slug_field='uuid')
     build = serializers.SlugRelatedField(slug_field='uuid')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`ReleaseSerializer`."""
         model = models.Release
-        read_only_fields = ('uuid', 'created', 'updated')
+        read_only_fields = ('uuid',)
 
 
 class ContainerSerializer(serializers.ModelSerializer):
@@ -187,11 +194,12 @@ class ContainerSerializer(serializers.ModelSerializer):
     owner = serializers.Field(source='owner.username')
     app = OwnerSlugRelatedField(slug_field='id')
     release = serializers.SlugRelatedField(slug_field='uuid')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
-        read_only_fields = ('created', 'updated')
 
     def transform_release(self, obj, value):
         return "v{}".format(obj.release.version)
@@ -201,11 +209,12 @@ class KeySerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 
     owner = serializers.Field(source='owner.username')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a KeySerializer."""
         model = models.Key
-        read_only_fields = ('created', 'updated')
 
 
 class DomainSerializer(serializers.ModelSerializer):
@@ -213,12 +222,13 @@ class DomainSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`DomainSerializer`."""
         model = models.Domain
         fields = ('domain', 'owner', 'created', 'updated', 'app')
-        read_only_fields = ('created', 'updated')
 
     def validate_domain(self, attrs, source):
         """
@@ -250,8 +260,10 @@ class PushSerializer(serializers.ModelSerializer):
 
     owner = serializers.Field(source='owner.username')
     app = serializers.SlugRelatedField(slug_field='id')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
     class Meta:
         """Metadata options for a :class:`PushSerializer`."""
         model = models.Push
-        read_only_fields = ('uuid', 'created', 'updated')
+        read_only_fields = ('uuid',)
