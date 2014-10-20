@@ -190,7 +190,7 @@ class SchedulerTest(TransactionTestCase):
         url = "/api/apps/{app_id}/builds".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -297,7 +297,7 @@ class SchedulerTest(TransactionTestCase):
         url = "/api/apps/{app_id}/builds".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 1)
         # inspect releases
         url = "/api/apps/{app_id}/releases".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))

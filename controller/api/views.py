@@ -242,14 +242,7 @@ class AppBuildViewSet(BaseAppViewSet):
 
     def post_save(self, build, created=False):
         if created:
-            release = build.app.release_set.latest()
-            self.release = release.new(self.request.user, build=build)
-            initial = True if build.app.structure == {} else False
-            try:
-                build.app.deploy(self.request.user, self.release, initial=initial)
-            except RuntimeError:
-                self.release.delete()
-                raise
+            self.release = build.create(self.request.user)
 
     def get_success_headers(self, data):
         headers = super(AppBuildViewSet, self).get_success_headers(data)
@@ -307,7 +300,7 @@ class AppConfigViewSet(BaseAppViewSet):
     def post_save(self, config, created=False):
         if created:
             release = config.app.release_set.latest()
-            self.release = release.new(self.request.user, config=config)
+            self.release = release.new(self.request.user, config=config, build=release.build)
             try:
                 config.app.deploy(self.request.user, self.release)
             except RuntimeError:
@@ -338,33 +331,25 @@ class AppReleaseViewSet(BaseAppViewSet):
         """Get Release by version always."""
         return self.get_queryset(**kwargs).get(version=self.kwargs['version'])
 
-    # TODO: move logic into model
     def rollback(self, request, *args, **kwargs):
         """
         Create a new release as a copy of the state of the compiled slug and
         config vars of a previous release.
         """
-        app = get_object_or_404(models.App, id=self.kwargs['id'])
-        release = app.release_set.latest()
-        last_version = release.version
-        version = int(request.DATA.get('version', last_version - 1))
-        if version < 1:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        summary = "{} rolled back to v{}".format(request.user, version)
-        prev = app.release_set.get(version=version)
-        new_release = release.new(
-            request.user,
-            build=prev.build,
-            config=prev.config,
-            summary=summary,
-            source_version='v{}'.format(version))
         try:
-            app.deploy(request.user, new_release)
+            app = get_object_or_404(models.App, id=self.kwargs['id'])
+            release = app.release_set.latest()
+            version_to_rollback_to = release.version - 1
+            if request.DATA.get('version'):
+                version_to_rollback_to = int(request.DATA['version'])
+            new_release = release.rollback(request.user, version_to_rollback_to)
+            response = {'version': new_release.version}
+            return Response(response, status=status.HTTP_201_CREATED)
+        except EnvironmentError as e:
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
             new_release.delete()
             return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        response = {'version': new_release.version}
-        return Response(response, status=status.HTTP_201_CREATED)
 
 
 class AppContainerViewSet(BaseAppViewSet):
@@ -457,15 +442,15 @@ class BuildHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
-        user = get_object_or_404(
+        self.user = get_object_or_404(
             User, username=request.DATA['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or \
-           user in get_users_with_perms(app) or \
-           user.is_superuser:
+        if self.user == app.owner or \
+           self.user in get_users_with_perms(app) or \
+           self.user.is_superuser:
             request._data = request.DATA.copy()
             request.DATA['app'] = app
-            request.DATA['owner'] = user
+            request.DATA['owner'] = self.user
             try:
                 super(BuildHookViewSet, self).create(request, *args, **kwargs)
                 # return the application databag
@@ -478,17 +463,7 @@ class BuildHookViewSet(BaseHookViewSet):
 
     def post_save(self, build, created=False):
         if created:
-            release = build.app.release_set.latest()
-            source_version = 'latest'
-            if build.sha:
-                source_version = 'git-{}'.format(build.sha)
-            new_release = release.new(build.owner, build=build, source_version=source_version)
-            initial = True if build.app.structure == {} else False
-            try:
-                build.app.deploy(build.owner, new_release, initial=initial)
-            except RuntimeError:
-                new_release.delete()
-                raise
+            build.create(self.user)
 
 
 class ConfigHookViewSet(BaseHookViewSet):

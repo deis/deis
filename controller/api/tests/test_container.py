@@ -15,7 +15,7 @@ from django.test import TransactionTestCase
 from django_fsm import TransitionNotAllowed
 from rest_framework.authtoken.models import Token
 
-from api.models import Container, App
+from api.models import App, Build, Container, Release
 
 
 def mock_import_repository_task(*args, **kwargs):
@@ -40,10 +40,19 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        build = Build.objects.create(owner=user, app=app, image="qwerty")
+        # create an initial release
+        release = Release.objects.create(version=2,
+                                         owner=user,
+                                         app=app,
+                                         config=app.config_set.latest(),
+                                         build=build)
         # create a container
-        c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
+        c = Container.objects.create(owner=user,
+                                     app=app,
+                                     release=release,
                                      type='web',
                                      num=1)
         self.assertEqual(c.state, 'initialized')
@@ -62,9 +71,19 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        c = Container.objects.create(owner=User.objects.get(username='autotest'),
-                                     app=App.objects.get(id=app_id),
-                                     release=App.objects.get(id=app_id).release_set.latest(),
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        build = Build.objects.create(owner=user, app=app, image="qwerty")
+        # create an initial release
+        release = Release.objects.create(version=2,
+                                         owner=user,
+                                         app=app,
+                                         config=app.config_set.latest(),
+                                         build=build)
+        # create a container
+        c = Container.objects.create(owner=user,
+                                     app=app,
+                                     release=release,
                                      type='web',
                                      num=1)
         self.assertRaises(AttributeError, lambda: setattr(c, 'state', 'up'))
@@ -258,6 +277,16 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
+        # create a release so we can scale
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        build = Build.objects.create(owner=user, app=app, image="qwerty")
+        # create an initial release
+        Release.objects.create(version=2,
+                               owner=user,
+                               app=app,
+                               config=app.config_set.latest(),
+                               build=build)
         url = "/api/apps/{app_id}/scale".format(**locals())
         body = {'web': 'not_an_int'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -392,3 +421,17 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
+
+    def test_scale_without_build_should_error(self):
+        """A user should not be able to scale processes unless a build is present."""
+        app_id = 'autotest'
+        url = '/api/apps'
+        body = {'cluster': 'autotest', 'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = '/api/apps/{app_id}/scale'.format(**locals())
+        body = {'web': '1'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, "No build associated with this release")

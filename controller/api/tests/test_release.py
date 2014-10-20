@@ -65,7 +65,6 @@ class ReleaseTest(TransactionTestCase):
         self.assertIn('config', response.data)
         self.assertIn('build', response.data)
         self.assertEquals(release1['version'], 1)
-        self.assertEquals(release1['image'], 'deis/helloworld')
         # check to see that a new release was created
         url = '/api/apps/{app_id}/releases/v2'.format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -118,11 +117,11 @@ class ReleaseTest(TransactionTestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
-        # try to rollback with only 1 release extant, expecting 404
+        # try to rollback with only 1 release extant, expecting 400
         url = "/api/apps/{app_id}/releases/rollback/".format(**locals())
         response = self.client.post(url, content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         # update config to roll a new release
         url = '/api/apps/{app_id}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
@@ -132,7 +131,6 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         # update the build to roll a new release
         url = '/api/apps/{app_id}/builds'.format(**locals())
-        build_config = json.dumps({'PATH': 'bin:/usr/local/bin:/usr/bin:/bin'})
         body = {'image': 'autotest/example'}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json',
