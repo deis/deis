@@ -94,9 +94,9 @@ class Session(requests.Session):
     def app(self):
         """Retrieve the application's name."""
         try:
-            return self._get_name_from_git_remote(self.git_root())
+            return self._get_name_from_git_remote(self.git_root()).lower()
         except EnvironmentError:
-            return os.path.basename(os.getcwd())
+            return os.path.basename(os.getcwd()).lower()
 
     def is_git_app(self):
         """Determines if this app is a git repository. This is important in special cases
@@ -1941,6 +1941,8 @@ def parse_args(cmd):
 
 def _dispatch_cmd(method, args):
     logger = logging.getLogger(__name__)
+    if args.get('--app'):
+        args['--app'] = args['--app'].lower()
     try:
         method(args)
     except requests.exceptions.ConnectionError as err:
