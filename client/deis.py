@@ -296,8 +296,9 @@ def readable_datetime(datetime_str):
     Return a human-readable datetime string from an ECMA-262 (JavaScript)
     datetime string.
     """
-    dt = parser.parse(datetime_str)
-    now = datetime.now()
+    timezone = tz.tzlocal()
+    dt = parser.parse(datetime_str).astimezone(timezone)
+    now = datetime.now(timezone)
     delta = relativedelta.relativedelta(now, dt)
     # if it happened today, say "2 hours and 1 minute ago"
     if delta.days <= 1 and dt.day == now.day:
