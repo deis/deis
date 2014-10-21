@@ -39,7 +39,7 @@ fi
 regions_without_private_networking_or_metadata="nyc1 nyc2 ams1 ams2 sfo1"
 if listcontains "$regions_without_private_networking_or_metadata" "$REGION_SLUG";
 then
-    echo_red "Invalid region. Please supply a region with private networking & metdata support."
+    echo_red "Invalid region. Please supply a region with private networking & metadata support."
     echo_red "Valid regions are (use the name in brackets):"
     docl regions --private_networking --metadata
     exit 1
