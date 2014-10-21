@@ -438,7 +438,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', '/api/apps',
+            response = self._dispatch('post', '/v1/apps',
                                       json.dumps(body))
         finally:
             progress.cancel()
@@ -503,7 +503,7 @@ class DeisClient(object):
             progress = TextProgress()
             progress.start()
             before = time.time()
-            response = self._dispatch('delete', "/api/apps/{}".format(app))
+            response = self._dispatch('delete', "/v1/apps/{}".format(app))
         finally:
             progress.cancel()
             progress.join()
@@ -528,7 +528,7 @@ class DeisClient(object):
 
         Usage: deis apps:list
         """
-        response = self._dispatch('get', '/api/apps')
+        response = self._dispatch('get', '/v1/apps')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             self._logger.info('=== Apps')
@@ -550,7 +550,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}".format(app))
+        response = self._dispatch('get', "/v1/apps/{}".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._logger.info("=== {} Application".format(app))
             self._logger.info(json.dumps(response.json(), indent=2) + '\n')
@@ -574,7 +574,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         # TODO: replace with a single API call to apps endpoint
-        response = self._dispatch('get', "/api/apps/{}".format(app))
+        response = self._dispatch('get', "/v1/apps/{}".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             url = response.json()['url']
             # use the OS's default handler to open this URL
@@ -597,7 +597,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get',
-                                  "/api/apps/{}/logs".format(app))
+                                  "/v1/apps/{}/logs".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
@@ -641,7 +641,7 @@ class DeisClient(object):
             app = self._session.app
         body = {'command': command}
         response = self._dispatch('post',
-                                  "/api/apps/{}/run".format(app),
+                                  "/v1/apps/{}/run".format(app),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             rc, output = json.loads(response.content)
@@ -699,7 +699,7 @@ class DeisClient(object):
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
-        url = urlparse.urljoin(controller, '/api/auth/register')
+        url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
         if response.status_code == requests.codes.created:  # @UndefinedVariable
@@ -730,7 +730,7 @@ class DeisClient(object):
         if username:
             confirm = raw_input("Cancel account \"{}\" at {}? (y/n) ".format(username, controller))
             if confirm == 'y':
-                self._dispatch('delete', '/api/auth/cancel')
+                self._dispatch('delete', '/v1/auth/cancel')
                 self._settings['controller'] = None
                 self._settings['token'] = None
                 self._settings.save()
@@ -764,7 +764,7 @@ class DeisClient(object):
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
-        url = urlparse.urljoin(controller, '/api/auth/login/')
+        url = urlparse.urljoin(controller, '/v1/auth/login/')
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
         response = self._session.post(url, data=payload, allow_redirects=False)
@@ -840,7 +840,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/builds".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/builds".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -863,7 +863,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}/builds".format(app))
+        response = self._dispatch('get', "/v1/apps/{}/builds".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._logger.info("=== {} Builds".format(app))
             data = response.json()
@@ -905,7 +905,7 @@ class DeisClient(object):
             app = self._session.app
 
         oneline = args.get('--oneline')
-        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        response = self._dispatch('get', "/v1/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()
             values = config['values']
@@ -955,7 +955,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1001,7 +1001,7 @@ class DeisClient(object):
             progress = TextProgress()
             progress.start()
             response = self._dispatch(
-                'post', "/api/apps/{}/config".format(app), json.dumps(body))
+                'post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1051,7 +1051,7 @@ class DeisClient(object):
                         env_dict[k] = v
             except IOError:
                 pass
-        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        response = self._dispatch('get', "/v1/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             config = response.json()['values']
             for k, v in config.items():
@@ -1108,7 +1108,7 @@ class DeisClient(object):
             progress = TextProgress()
             progress.start()
             response = self._dispatch(
-                'post', "/api/apps/{app}/domains".format(app=app), json.dumps(body))
+                'post', "/v1/apps/{app}/domains".format(app=app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1141,7 +1141,7 @@ class DeisClient(object):
             progress = TextProgress()
             progress.start()
             response = self._dispatch(
-                'delete', "/api/apps/{app}/domains/{domain}".format(**locals()))
+                'delete', "/v1/apps/{app}/domains/{domain}".format(**locals()))
         finally:
             progress.cancel()
             progress.join()
@@ -1164,7 +1164,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch(
-            'get', "/api/apps/{app}/domains".format(app=app))
+            'get', "/v1/apps/{app}/domains".format(app=app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             domains = response.json()['results']
             self._logger.info("=== {} Domains".format(app))
@@ -1203,7 +1203,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        response = self._dispatch('get', "/v1/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._print_limits(app, response.json())
         else:
@@ -1256,7 +1256,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1302,7 +1302,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1360,7 +1360,7 @@ class DeisClient(object):
             if not app:
                 app = self._session.app
         response = self._dispatch('get',
-                                  "/api/apps/{}/containers".format(app))
+                                  "/v1/apps/{}/containers".format(app))
         if response.status_code != requests.codes.ok:  # @UndefinedVariable
             raise ResponseError(response)
         processes = response.json()
@@ -1405,7 +1405,7 @@ class DeisClient(object):
             progress.start()
             before = time.time()
             response = self._dispatch('post',
-                                      "/api/apps/{}/scale".format(app),
+                                      "/v1/apps/{}/scale".format(app),
                                       json.dumps(body))
         finally:
             progress.cancel()
@@ -1443,7 +1443,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{}/config".format(app))
+        response = self._dispatch('get', "/v1/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._print_tags(app, response.json())
         else:
@@ -1476,7 +1476,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1514,7 +1514,7 @@ class DeisClient(object):
         try:
             progress = TextProgress()
             progress.start()
-            response = self._dispatch('post', "/api/apps/{}/config".format(app), json.dumps(body))
+            response = self._dispatch('post', "/v1/apps/{}/config".format(app), json.dumps(body))
         finally:
             progress.cancel()
             progress.join()
@@ -1575,7 +1575,7 @@ class DeisClient(object):
         }
         sys.stdout.write("Uploading {} to Deis...".format(selected_key.id))
         sys.stdout.flush()
-        response = self._dispatch('post', '/api/keys', json.dumps(body))
+        response = self._dispatch('post', '/v1/keys', json.dumps(body))
         if response.status_code == requests.codes.created:  # @UndefinedVariable
             self._logger.info('done')
         else:
@@ -1629,7 +1629,7 @@ class DeisClient(object):
 
         Usage: deis keys:list
         """
-        response = self._dispatch('get', '/api/keys')
+        response = self._dispatch('get', '/v1/keys')
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             data = response.json()
             if data['count'] == 0:
@@ -1656,7 +1656,7 @@ class DeisClient(object):
         key = args.get('<key>')
         sys.stdout.write("Removing {} SSH Key... ".format(key))
         sys.stdout.flush()
-        response = self._dispatch('delete', "/api/keys/{}".format(key))
+        response = self._dispatch('delete', "/v1/keys/{}".format(key))
         if response.status_code == requests.codes.no_content:  # @UndefinedVariable
             self._logger.info('done')
         else:
@@ -1771,10 +1771,10 @@ class DeisClient(object):
         admin = args.get('--admin')
         if admin:
             app = None
-            url = '/api/admin/perms'
+            url = '/v1/admin/perms'
         else:
             app = app[0] or self._session.app
-            url = "/api/apps/{}/perms".format(app)
+            url = "/v1/apps/{}/perms".format(app)
         return app, url
 
     def releases(self, args):
@@ -1810,7 +1810,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch(
-            'get', "/api/apps/{app}/releases/{version}".format(**locals()))
+            'get', "/v1/apps/{app}/releases/{version}".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._logger.info(json.dumps(response.json(), indent=2))
         else:
@@ -1829,7 +1829,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get', "/api/apps/{app}/releases".format(**locals()))
+        response = self._dispatch('get', "/v1/apps/{app}/releases".format(**locals()))
         if response.status_code == requests.codes.ok:  # @UndefinedVariable
             self._logger.info("=== {} Releases".format(app))
             data = response.json()
@@ -1863,7 +1863,7 @@ class DeisClient(object):
             body = {'version': int(version)}
         else:
             body = {}
-        url = "/api/apps/{app}/releases/rollback".format(**locals())
+        url = "/v1/apps/{app}/releases/rollback".format(**locals())
         if version:
             sys.stdout.write('Rolling back to v{version}... '.format(**locals()))
         else:

@@ -85,7 +85,7 @@ if [ -f Procfile ]; then
 fi
 
 # pull config from controller to be used during build
-URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/config"
+URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/config"
 RESPONSE=$(curl -s -XPOST \
      -H "Content-Type: application/json" \
      -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
@@ -161,7 +161,7 @@ RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
 DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g' -e 's/ \\/ /g')
 
 puts-step "Launching... "
-URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/build"
+URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/build"
 DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
 
 # notify the controller that the push was successful

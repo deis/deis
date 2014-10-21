@@ -12,4 +12,4 @@ curl \
   -H 'Content-Type: application/json' \
   -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
   -d "{\"receive_user\": \"$username\", \"receive_repo\": \"$app\", \"sha\": \"$sha\", \"fingerprint\": \"$fingerprint\", \"ssh_connection\": \"$SSH_CONNECTION\", \"ssh_original_command\": \"$SSH_ORIGINAL_COMMAND\"}" \
-  --silent http://{{ .deis_controller_host }}:{{ .deis_controller_port }}/api/hooks/push >/dev/null
+  --silent http://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/push >/dev/null
