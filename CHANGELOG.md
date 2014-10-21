@@ -1,3 +1,66 @@
+### v0.13.1 -> v0.14.0
+
+#### Features
+
+ - [`85c4d07`](https://github.com/deis/deis/commit/85c4d070648f70c7d007e9ee1c1c3fc487923496) controller: bump API to v1
+ - [`0b21d49`](https://github.com/deis/deis/commit/0b21d49e961ed102c520956bb5d875ebe7d37631) Vagrantfile: use "virtio" network devices by default
+ - [`8881a7b`](https://github.com/deis/deis/commit/8881a7bafed270b21faeb83f5b3ed31b5652647c) client: add auth:whoami
+ - [`90fb6e1`](https://github.com/deis/deis/commit/90fb6e1045a6d93ed0d9a2accfe7a1d5f3d28ec1) registry: image without development libraries to reduce the size.
+
+#### Fixes
+
+ - [`e61082d`](https://github.com/deis/deis/commit/e61082df0b25c48e4739183f0a6b9d215dbf0917) client: search for tag
+ - [`3894f81`](https://github.com/deis/deis/commit/3894f81f344904e0ad79a9bcfa02c1603be74496) docs: update requirements in sync with controller
+ - [`bca8724`](https://github.com/deis/deis/commit/bca87240702de0eacf41cea3d2af12b75a12bcc4) controller: ISO8601 datetime compliance
+ - [`7bcf6f1`](https://github.com/deis/deis/commit/7bcf6f191037d797a5a0a7210873efe889600f10) logspout: add timezone to logs
+ - [`48c7635`](https://github.com/deis/deis/commit/48c763531437c8ce6d5e3348859c6d33ca3ac956) client: remove timezone parsing"
+ - [`87460b8`](https://github.com/deis/deis/commit/87460b869537f556d92d3ae9a7304739918a0909) controller: add timezone to datetime format
+ - [`7e658c4`](https://github.com/deis/deis/commit/7e658c406dbe4709cf05ccaea70d6ca23f9f6620) builder: work around 0-byte ADD layer by ignoring tar timestamps
+ - [`077b079`](https://github.com/deis/deis/commit/077b079bb606aa67c142c01dcfeeece2cc39db4c) tests: use streamOutput for test runs
+ - [`77c8c18`](https://github.com/deis/deis/commit/77c8c1832a7af569d3a13f0279fe2206a7155943) client: re-parse docopt
+ - [`822f1d8`](https://github.com/deis/deis/commit/822f1d83262513b4186b7d229fde530a19491343) logger: remove logger-build container after "docker cp"
+ - [`0b9bd3b`](https://github.com/deis/deis/commit/0b9bd3bce8b16206ea9a8cd7cca3610ad840600d) controller: deploy only when Build is present
+ - [`c69151a`](https://github.com/deis/deis/commit/c69151ab43b1d0c9711ff0e562d76abd979fea5e) builder: validate that properly formed slugs are added correctly
+ - [`f2a476d`](https://github.com/deis/deis/commit/f2a476dac87fc0129a526206cf0b72b3007f3c4f) client: remove timezone parsing
+ - [`0c81025`](https://github.com/deis/deis/commit/0c81025a3700aa0fa60a1c083868d0e0d5ec0ec4) controller: standardize API datetime field format
+ - [`f4776f8`](https://github.com/deis/deis/commit/f4776f8ea37fbb3c40578f06efd98ec289a25f6c) builder: escape to avoid errors in serialization of Dockerfile
+ - [`861b026`](https://github.com/deis/deis/commit/861b026ea28b67108bb6e524697c12aa9d08cc1c) tests: make curl loop a few times
+ - [`3af7364`](https://github.com/deis/deis/commit/3af7364d207b0840028ee1e49ed0c912d2ac02a2) registry: use docker cache
+ - [`4b536a7`](https://github.com/deis/deis/commit/4b536a7bd80bd8e12135f11efd521bb380222e61) controller: revert requests retry
+ - [`387dfa0`](https://github.com/deis/deis/commit/387dfa0f67990614bee54ceb32e0275a4c571bd8) deisctl: optimize platform start order
+ - [`8d647dc`](https://github.com/deis/deis/commit/8d647dca0658744f807c1ad9d23be32db271f439) controller: safe_mkdir /deis/domains as part of init
+ - [`14e0ad9`](https://github.com/deis/deis/commit/14e0ad9c771933031b010b93a5b060aeaac8705a) (all): remove deprecated @1 unit names
+ - [`dfcfba3`](https://github.com/deis/deis/commit/dfcfba3f4087699ead05394b203a535a300af87a) controller: add default retries to scheduler
+ - [`cdb75ed`](https://github.com/deis/deis/commit/cdb75ed2ab72ed41e08f3e3c5e63153fad43de02) database: reset permissions before initdb
+ - [`d5f922a`](https://github.com/deis/deis/commit/d5f922a266b34b9ebc3a1078542c20f19abf814b) controller: use deis-logger for requires
+ - [`143f3c6`](https://github.com/deis/deis/commit/143f3c68336c451548bba3447c0c986725d8623e) deisctl: force container removal in ExecStopPort
+ - [`d9367d1`](https://github.com/deis/deis/commit/d9367d105471e2eb4949967d41af75e085e6ab9a) deisctl: ignore units that dont exist on destroy
+ - [`702e9a7`](https://github.com/deis/deis/commit/702e9a773eed9d51bc1e628ef76890e623711633) database: initdb if not already initialized
+ - [`c3c019c`](https://github.com/deis/deis/commit/c3c019c34a9b0899b83033948eeea13262c43d22) deisctl: dont print newlines for global units
+ - [`bca8eb4`](https://github.com/deis/deis/commit/bca8eb480dfd45414bb6febed200bdc575715f60) controller: use docker cache
+ - [`5ac8e58`](https://github.com/deis/deis/commit/5ac8e587582fbe5928cac90fc14cafa22b9b5393) logger: kill temporary build container in "make build"
+ - [`f34b355`](https://github.com/deis/deis/commit/f34b3558544953f67bf3b89c56999dde8b351642) auth: use djangorestframework login/logout views
+ - [`5c8d9d3`](https://github.com/deis/deis/commit/5c8d9d3ff9796af70f6294d1cbd677eeb97ef664) builder: do not accept variables from the client
+
+#### Documentation
+
+ - [`6ca1293`](https://github.com/deis/deis/commit/6ca1293a97f738ac5ab85aa9c1e53ef6f26751f3) managing_deis: fix deisctl config set examples
+ - [`aee7c7c`](https://github.com/deis/deis/commit/aee7c7cc60a5426d83cb7b1aaac30824a97b028b) deisctl: update with new output
+ - [`486d55c`](https://github.com/deis/deis/commit/486d55c37f7858af66dc81c5a3ae77dd21a5307f) upgrade: add in-place upgrade docs, refactor migration upgrade docs
+
+#### Maintenance
+
+ - [`4cd4095`](https://github.com/deis/deis/commit/4cd40950d8b1cab8de3452f3c8a80bc4eeb914cb) release: update version to v0.14.0
+ - [`bb5bc9e`](https://github.com/deis/deis/commit/bb5bc9e1f778748745ab2657c37d2820033a68dd) (all): bump CoreOS to 472.0.0
+ - [`dadfd1b`](https://github.com/deis/deis/commit/dadfd1b9f4dfa405291af52903a6ac40287123eb) deisctl: switch data containers to ubuntu-debootstrap:14.04
+ - [`a564287`](https://github.com/deis/deis/commit/a564287d071b902f416e54755ebab4a9fda58f6c) deisctl: bump godeps for coreos/fleet
+ - [`d40b1b3`](https://github.com/deis/deis/commit/d40b1b31fb5496ec6ece26126dfd9116bd9f01c7) store: add start delay on OSD recovery
+ - [`6ea8d57`](https://github.com/deis/deis/commit/6ea8d5759b296c9d8454baedf73c42b09eff61a6) builder: update Docker engine to 1.3.0
+ - [`7ba9b17`](https://github.com/deis/deis/commit/7ba9b17a4880270660c7c9a3e0840c4e4be39aed) controller: update json-field to 0.5.7
+ - [`0394cf3`](https://github.com/deis/deis/commit/0394cf3eac3f410e8f2cc4f6a279388d16090090) controller: update psycopg to 2.5.4
+ - [`903721b`](https://github.com/deis/deis/commit/903721b5592054d0a4e456c6022fbbb98eeb5ed0) controller: remove unused django-allauth app
+ - [`d67179b`](https://github.com/deis/deis/commit/d67179b4fe716d540565bdc838416ca1b766b177) (all): bump CoreOS to 471.1.0
+
 ### v0.13.0 -> v0.13.1
 
 #### Features
