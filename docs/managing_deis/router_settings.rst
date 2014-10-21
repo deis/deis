@@ -19,12 +19,11 @@ Settings set by router
 --------------------------
 The following etcd keys are set by the router component, typically in its /bin/boot script.
 
-===========================              =================================================================================
+=============================            ===================================================================================
 setting                                  description
-===========================              =================================================================================
-/deis/router/$HOST/host                  IP address of the host running this router (there can be multiple routers)
-/deis/router/$HOST/port                  port used by this router service (there can be multiple routers) (default: 80)
-===========================              =================================================================================
+=============================            ===================================================================================
+/deis/router/hosts/$HOST                 IP address and port of the host running this router (there can be multiple routers)
+=============================            ===================================================================================
 
 Settings used by router
 ---------------------------
