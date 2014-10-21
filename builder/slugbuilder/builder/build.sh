@@ -106,9 +106,9 @@ fi
 ## Produce slug
 
 if [[ -f "$build_root/.slugignore" ]]; then
-	tar --exclude='.git' -X "$build_root/.slugignore" -C $build_root -cf $slug_file . | cat
+	tar -z --exclude='.git' -X "$build_root/.slugignore" -C $build_root -cf $slug_file . | cat
 else
-	tar --exclude='.git' -C $build_root -cf $slug_file . | cat
+	tar -z --exclude='.git' -C $build_root -cf $slug_file . | cat
 fi
 
 if [[ "$slug_file" != "-" ]]; then
