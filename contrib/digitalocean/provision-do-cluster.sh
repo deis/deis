@@ -49,7 +49,7 @@ fi
 $CONTRIB_DIR/util/check-user-data.sh
 
 # TODO: Make it follow a specific ID once circumstances allow us to do so.
-BASE_IMAGE_ID='coreos-alpha'
+BASE_IMAGE_ID=$(docl images -p | grep CoreOS | grep alpha | cut -d":" -f2)
 
 if [ -z "$BASE_IMAGE_ID" ]; then
 	echo_red "DigitalOcean Image not found..."
