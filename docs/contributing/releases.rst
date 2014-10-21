@@ -14,11 +14,12 @@ deis repo
 - Create the next `deis milestone`_
 - Move any `deis open issues`_ from the current release to the next milestone
 - Close the current `deis milestone`_
+- Create a branch for the release PR: ``git checkout -b release-X.Y.Z``
 - Update CHANGELOG.md using the `changelog script`_
-    * ``./contrib/util/generate-changelog.sh vU.V.W vX.Y.Z | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
-      substituting the previous release for vU.V.W and the current one for vX.Y.Z.
-    * proofread the new CHANGELOG.md to ensure it was generated correctly
-    * ``git add CHANGELOG.md && git commit -m "docs(CHANGELOG): update for v.X.Y.Z"``
+    * ``./contrib/util/generate-changelog.sh vU.V.W | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
+      substituting the previous release for vU.V.W.
+    * proofread the new CHANGELOG.md to ensure it was generated correctly and edit ``HEAD`` at the top
+      to vX.Y.Z (the current release)
 - Update version strings with the ``bumpver`` tool:
 
   .. code-block:: console
@@ -30,6 +31,7 @@ deis repo
         deisctl/deis-version \
         deisctl/deisctl.go \
         deisctl/README.md \
+        deisctl/cmd/cmd.go \
         contrib/coreos/user-data \
         controller/deis/__init__.py \
         README.md \
@@ -37,7 +39,9 @@ deis repo
 
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'chore(release): update version to vX.Y.Z'``
-    * ``git push origin master``
+    * ``git push origin release-X.Y.Z``
+- When the PR is approved and merged, tag it in master
+    * ``git checkout master && git pull``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
 - Publish CLI to pypi.python.org
