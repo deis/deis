@@ -20,6 +20,9 @@ ENV SETTINGS_FLAVOR deis
 WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5000
-ADD . /app
 
-RUN /app/build.sh
+ADD build.sh /app/build.sh
+
+RUN DOCKER_BUILD=true /app/build.sh
+
+ADD . /app
