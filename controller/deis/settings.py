@@ -102,6 +102,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -141,6 +142,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'south',
+    'corsheaders',
     # Deis apps
     'api',
     'web',
@@ -160,6 +162,20 @@ LOGIN_URL = '/v1/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 
 SOUTH_TESTS_MIGRATE = False
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_HEADERS = (
+    'content-type',
+    'accept',
+    'origin',
+    'Authentication',
+)
+
+CORS_EXPOSE_HEADERS = (
+    'X_DEIS_VERSION',
+    'X_DEIS_RELEASE',
+)
 
 REST_FRAMEWORK = {
     'DEFAULT_MODEL_SERIALIZER_CLASS':
