@@ -5,7 +5,13 @@ RUN curl -sSL https://raw.github.com/ceph/ceph/master/keys/autobuild.asc | apt-k
 RUN echo deb http://gitbuilder.ceph.com/apache2-deb-trusty-x86_64-basic/ref/master trusty main > /etc/apt/sources.list.d/ceph-apache.list
 RUN echo deb http://gitbuilder.ceph.com/libapache-mod-fastcgi-deb-trusty-x86_64-basic/ref/master trusty main > /etc/apt/sources.list.d/ceph-fastcgi.list
 
-RUN apt-get update && apt-get install -yq apache2 libapache2-mod-fastcgi radosgw radosgw-agent
+RUN apt-get update && \
+  apt-get install -yq apache2 libapache2-mod-fastcgi radosgw radosgw-agent && \
+  apt-get autoremove -y --purge && \
+  apt-get clean -y && \
+  rm -Rf /usr/share/man /usr/share/doc && \
+  rm -rf /tmp/* /var/tmp/* && \
+  rm -rf /var/lib/apt/lists/*
 
 # enable required Apache modules
 RUN a2enmod rewrite

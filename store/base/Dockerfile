@@ -15,7 +15,12 @@ RUN chmod +x /usr/local/bin/confd
 
 RUN curl -sSL 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
 RUN echo "deb http://ceph.com/debian-firefly trusty main" > /etc/apt/sources.list.d/ceph.list
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -yq ceph
+RUN apt-get update && apt-get install -yq ceph && \
+  apt-get autoremove -y --purge && \
+  apt-get clean -y && \
+  rm -Rf /usr/share/man /usr/share/doc && \
+  rm -rf /tmp/* /var/tmp/* && \
+  rm -rf /var/lib/apt/lists/*
 
 # Add shared confd configuration
 ADD . /app
