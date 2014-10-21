@@ -50,14 +50,6 @@ deis login http://deis.{{.Domain}} \
 	{"", `
 deis keys:add {{.AuthKey}}.pub || true
 `},
-	// Destroy the "dev" cluster if it exists.
-	{"", `
-deis clusters:destroy dev --confirm=dev || true
-`},
-	// Create a cluster named "dev".
-	{"", `
-deis init dev {{.Domain}} --hosts={{.Hosts}} --auth={{.SSHKey}}
-`},
 	// Clone the example app git repository locally.
 	{"", `
 if [ ! -d ./{{.ExampleApp}} ]; then
