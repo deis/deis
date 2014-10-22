@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/rand"
 	"fmt"
@@ -62,11 +63,16 @@ func HostAddress() string {
 // We infer the hostname because we don't necessarily know how to log in.
 func Hostname() string {
 	switch HostAddress() {
-		case "172.17.8.100": return "deis-1"
-		case "172.17.8.101": return "deis-2"
-		case "172.17.8.102": return "deis-3"
-		case "172.21.12.100": return "docker-registry"
-		default: return "boot2docker"
+	case "172.17.8.100":
+		return "deis-1"
+	case "172.17.8.101":
+		return "deis-2"
+	case "172.17.8.102":
+		return "deis-3"
+	case "172.21.12.100":
+		return "docker-registry"
+	default:
+		return "boot2docker"
 	}
 }
 
@@ -99,6 +105,34 @@ func Rmdir(app string) error {
 	return err
 }
 
+// streamOutput from a source to a destination buffer while also printing
+func streamOutput(src io.Reader, dst *bytes.Buffer, out io.Writer) error {
+
+	s := bufio.NewReader(src)
+
+	for {
+		var line []byte
+		line, err := s.ReadSlice('\n')
+		if err == io.EOF && len(line) == 0 {
+			break // done
+		}
+		if err == io.EOF {
+			return fmt.Errorf("Improper termination: %v", line)
+		}
+		if err != nil {
+			return err
+		}
+
+		// append to the buffer
+		dst.Write(line)
+
+		// write to stdout/stderr also
+		out.Write(line)
+	}
+
+	return nil
+}
+
 // RunCommandWithStdoutStderr execs a command and returns its output.
 func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, error) {
 	var stdout, stderr bytes.Buffer
@@ -116,12 +150,10 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 	}
 
 	go func() {
-		io.Copy(&stdout, stdoutPipe)
-		fmt.Println(stdout.String())
+		streamOutput(stdoutPipe, &stdout, os.Stdout)
 	}()
 	go func() {
-		io.Copy(&stderr, stderrPipe)
-		fmt.Println(stderr.String())
+		streamOutput(stderrPipe, &stderr, os.Stderr)
 	}()
 	time.Sleep(2000 * time.Millisecond)
 	err = cmd.Wait()
