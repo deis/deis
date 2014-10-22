@@ -605,7 +605,7 @@ class DeisClient(object):
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
                 # get the tag from the log
-                log_tag = line.split(': ')[0].split(' ')[2]
+                log_tag = line.split(': ')[0].split(' ')[1]
                 # colorize the log based on the tag
                 color = sum([ord(ch) for ch in log_tag]) % 6
                 def f(x):
