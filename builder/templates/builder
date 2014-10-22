@@ -71,7 +71,7 @@ TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
 
 cd $REPO_DIR
 # extract git branch
-git archive $BRANCH | tar -xC $TMP_DIR
+git archive $BRANCH | tar -xmC $TMP_DIR
 
 # switch to app context
 cd $TMP_DIR
@@ -105,8 +105,7 @@ fi
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    # FIXME: validate slugs were added correctly to the image
-    VALIDATE_IMAGE=1
+
     # build option string to send to slugbuilder
     BUILD_OPTS=("$CONFIG")
 
@@ -139,14 +138,6 @@ echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
 echo
 puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
-
-# FIXME: validate Docker image to ensure slug is not malformed
-if [[ $VALIDATE_IMAGE ]]; then
-    if [[ "$(docker history $TMP_IMAGE | grep ADD | head -n1 | awk {'print $11'})" == "0" ]]; then
-        puts-warn "Malformed Docker image, aborting build."
-        exit 1
-    fi
-fi
 
 puts-step "Pushing image to private registry"
 docker push $TMP_IMAGE  &>/dev/null
