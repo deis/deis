@@ -11,13 +11,6 @@ get_app_name() {
     echo $1 | awk -F"." '{print $1}'
 }
 
-get_git_sha() {
-    repo=$1
-    branch=$2
-    branch_file="${repo}/${branch}"
-    cat $branch_file
-}
-
 indent() {
     echo "       $@"
 }
@@ -35,7 +28,7 @@ puts-warn() {
 }
 
 usage() {
-    echo "Usage: $0 <user> <repo> <branch>"
+    echo "Usage: $0 <user> <repo> <sha>"
 }
 
 if [ $# -ne $ARGS ]; then
@@ -45,7 +38,8 @@ fi
 
 USER=$1
 REPO=$2
-BRANCH=$3
+GIT_SHA=$3
+SHORT_SHA=${GIT_SHA:0:8}
 APP_NAME=$(get_app_name $REPO)
 
 cd $(dirname $0) # ensure we are in the root dir
@@ -55,10 +49,6 @@ DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
 REPO_DIR="${ROOT_DIR}/${REPO}"
 BUILD_DIR="${REPO_DIR}/build"
 CACHE_DIR="${REPO_DIR}/cache"
-
-# get git sha of branch
-GIT_SHA=$(get_git_sha $REPO_DIR $BRANCH)
-SHORT_SHA=${GIT_SHA:0:8}
 
 # define image names
 IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
@@ -70,8 +60,7 @@ mkdir -p $BUILD_DIR $CACHE_DIR
 TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
 
 cd $REPO_DIR
-# extract git branch
-git archive $BRANCH | tar -xmC $TMP_DIR
+git archive $GIT_SHA | tar -xmC $TMP_DIR
 
 # switch to app context
 cd $TMP_DIR
