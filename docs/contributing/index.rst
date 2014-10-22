@@ -12,6 +12,7 @@ Contributing
 
     overview
     hacking
+    build-components
     standards
     community
     conduct
