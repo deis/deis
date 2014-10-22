@@ -68,7 +68,7 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 		// HACK: Go's syslog package hardcodes the log format, so let's send our own message
 		_, err = fmt.Fprintf(conn,
 			"%s %s[%s]: %s",
-			time.Now().Format("2006-01-02 15:04:05"),
+			time.Now().Format("2006-01-02T15:04:05MST"),
 			tag,
 			pid,
 			logline.Data)

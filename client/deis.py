@@ -296,8 +296,9 @@ def readable_datetime(datetime_str):
     Return a human-readable datetime string from an ECMA-262 (JavaScript)
     datetime string.
     """
-    dt = parser.parse(datetime_str)
-    now = datetime.now()
+    timezone = tz.tzlocal()
+    dt = parser.parse(datetime_str).astimezone(timezone)
+    now = datetime.now(timezone)
     delta = relativedelta.relativedelta(now, dt)
     # if it happened today, say "2 hours and 1 minute ago"
     if delta.days <= 1 and dt.day == now.day:
@@ -604,7 +605,7 @@ class DeisClient(object):
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
                 # get the tag from the log
-                log_tag = line.split(': ')[0].split(' ')[2]
+                log_tag = line.split(': ')[0].split(' ')[1]
                 # colorize the log based on the tag
                 color = sum([ord(ch) for ch in log_tag]) % 6
                 def f(x):
