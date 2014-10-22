@@ -120,6 +120,34 @@ and restart all components on the cluster.
    In order to cut a dev-release, you must commit changes using ``git`` to increment
    the SHA used when tagging Docker images
 
+Build from Master
+-----------------
+
+1. Pre-requisites:
+
+Install golang in your development environment. To build ``deisctl``, you will need to install these go libraries:
+
+.. code-block:: console
+
+    $ go get github.com/tools/godep
+    $ go get github.com/golang/lint
+    $ github.com/deis/deis/deisctl/backend/fleet
+    $ cd deisctl && make build
+
+2. Build components:
+
+.. code-block:: console
+
+    $ make build dev-release
+
+3. Install and start the platform:
+
+.. code-block:: console
+
+    $ export DEISCTL_UNITS="$GOPATH/src/github.com/deis/deis/deisctl/units"
+    $ deisctl install platform
+    $ deisctl start platform
+
 Test Your Changes
 -----------------
 
