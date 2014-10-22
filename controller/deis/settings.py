@@ -257,7 +257,7 @@ DEFAULT_BUILD = 'deis/helloworld'
 DEIS_DOMAIN = 'deisapp.local'
 
 # standard datetime format used for logging, model timestamps, etc.
-DEIS_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S %Z'
+DEIS_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S%Z'
 
 # default scheduler settings
 SCHEDULER_MODULE = 'mock'
