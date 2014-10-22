@@ -7,7 +7,6 @@
 # NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
 # ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [args]
 #
-celery==3.1.13
 Django==1.6.7
 # FIXME: switch to upstream pending merge of https://github.com/kmmbvnr/django-fsm/pull/59
 git+https://github.com/deis/django-fsm@propagate-false
@@ -15,7 +14,7 @@ django-guardian==1.2.4
 django-json-field==0.5.7
 djangorestframework==2.3.14
 docker-py==0.4.0
-gunicorn==18.0
+gunicorn==19.1.1
 paramiko==1.14.1
 psycopg2==2.5.4
 python-etcd==0.3.0
@@ -28,6 +27,6 @@ requests==2.3.0
 termcolor==1.1.0
 
 # Deis documentation requirements
-Sphinx>=1.2.2
+Sphinx>=1.2.3
 smartypants>=1.8.6
 sphinxcontrib-httpdomain>=1.3.0

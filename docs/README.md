@@ -16,11 +16,6 @@ Please add any issues you find with this documentation to the
     ```console
     $ virtualenv venv -q --prompt='(docs)' && . venv/bin/activate
     (docs)$ pip install -r docs_requirements.txt
-    Downloading/unpacking celery==3.1.8
-    ...
-    Successfully installed psycopg2 python-etcd PyYAML ...
-    Cleaning up...
-    (docs)$
     ```
 
     See comments at the top of the ``docs_requirements.txt`` file if you
@@ -32,7 +27,7 @@ Please add any issues you find with this documentation to the
     (docs)$ make server
     sphinx-build -b dirhtml -d _build/doctrees   . _build/dirhtml
     Making output directory...
-    Running Sphinx v1.2.2
+    Running Sphinx v1.2.3
     ...
     Build finished. The HTML pages are in _build/dirhtml.
     Serving HTTP on 0.0.0.0 port 8000 ...
