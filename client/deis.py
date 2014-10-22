@@ -405,6 +405,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more.
         """
+        sys.argv[1] = 'apps:list'
+        args = docopt(self.apps_list.__doc__)
         return self.apps_list(args)
 
     def apps_create(self, args):
@@ -813,6 +815,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more.
         """
+        sys.argv[1] = 'builds:list'
+        args = docopt(self.builds_list.__doc__)
         return self.builds_list(args)
 
     def builds_create(self, args):
@@ -1081,6 +1085,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more.
         """
+        sys.argv[1] = 'domains:list'
+        args = docopt(self.domains_list.__doc__)
         return self.domains_list(args)
 
     def domains_add(self, args):
@@ -1547,6 +1553,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more.
         """
+        sys.argv[1] = 'keys:list'
+        args = docopt(self.keys_list.__doc__)
         return self.keys_list(args)
 
     def keys_add(self, args):
@@ -1787,6 +1795,8 @@ class DeisClient(object):
 
         Use `deis help [command]` to learn more.
         """
+        sys.argv[1] = 'releases:list'
+        args = docopt(self.releases_list.__doc__)
         return self.releases_list(args)
 
     def releases_info(self, args):
