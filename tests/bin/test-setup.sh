@@ -96,6 +96,13 @@ function dump_logs {
   log_phase "Error detected, dumping logs"
   set +e
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
+  # check if vagrant is up
+  NC_IP_PORT=$(echo "$DEISCTL_TUNNEL" | sed -e 's/:/ /')
+  if [ nc -z -w5 $NC_IP_PORT >/dev/null 2>&1 ]; then
+    log_phase "Vagrant is not started. There is no logs to dump"
+    exit 1
+  fi
+  
   set -x
   fleetctl -strict-host-key-checking=false list-units
   fleetctl -strict-host-key-checking=false ssh deis-controller etcdctl ls / --recursive

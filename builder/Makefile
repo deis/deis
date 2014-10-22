@@ -7,16 +7,14 @@ BUILD_IMAGE := $(COMPONENT)-build
 
 build: check-docker
 	docker build -t $(BUILD_IMAGE) image
-	@$(eval CID := $(shell docker run -d $(BUILD_IMAGE)))
-	docker cp $(CID):/go/bin/extract-domain bin/
-	docker cp $(CID):/go/bin/extract-types bin/
-	docker cp $(CID):/go/bin/extract-version bin/
-	docker cp $(CID):/go/bin/get-app-config bin/
-	docker cp $(CID):/go/bin/get-app-values bin/
-	docker cp $(CID):/go/bin/publish-release-controller bin/
-	docker cp $(CID):/go/bin/yaml2json-procfile bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-domain bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-types bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-version bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/get-app-config bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/get-app-values bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/publish-release-controller bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/yaml2json-procfile bin/
 	docker build -t $(IMAGE) .	
-	-docker rm -f `docker ps | grep $(BUILD_IMAGE) | awk '{print $$1}'`
 
 clean: check-docker check-registry
 	rm -f deisctl
