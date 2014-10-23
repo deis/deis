@@ -15,6 +15,8 @@ On a multi-node cluster, however, there are probably multiple routers, and the c
 
 Note that the controller will eventually live behind the routers so that all external traffic will flow through the load balancer - configuring a DNS record which points to a service whose IP could change is less than ideal.
 
+.. _dns_records:
+
 Necessary DNS records
 ---------------------
 
@@ -25,6 +27,8 @@ Deis requires one wildcard DNS record. Assuming ``myapps.com`` is the top-level 
 Apps can then be accessed by browsers at ``appname.myapps.com``, and the controller will be available to the Deis client at ``deis.myapps.com``.
 
 This record is necessary for all deployments of Deis (EC2, Rackspace, DigitalOcean, Google Compute Engine, bare metal, etc.). Local clusters can use the domain ``local.deisapp.com``, ``local3.deisapp.com``, or ``local5.deiaspp.com``.
+
+.. _xip_io:
 
 Using xip.io
 ------------
