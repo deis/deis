@@ -1,3 +1,22 @@
+### v0.14.0 -> v0.14.1
+
+#### Features
+
+ - [`e693b00`](https://github.com/deis/deis/commit/e693b0065e2134fca9dcb9109b44e6a77dacad6a) deisctl: check for required configuration on platform install
+
+#### Fixes
+
+ - [`356967e`](https://github.com/deis/deis/commit/356967e859b1d0801a5c3438666c5b1806428968) tests: update smoke test for removal of clusters
+
+#### Documentation
+
+ - [`78518c0`](https://github.com/deis/deis/commit/78518c0106a1a31acb04dcef4662f1836b528409) (all): set required platform config before install/start
+
+#### Maintenance
+
+ - [`3e1d936`](https://github.com/deis/deis/commit/3e1d9362b6193df0d704199a264995db74c5191c) release: update version to v0.14.1
+ - [`a5459ed`](https://github.com/deis/deis/commit/a5459ed12174a68d69b2647687eab5249ced8832) release: update version in master to v0.14.0+git
+
 ### v0.13.1 -> v0.14.0
 
 #### Features
@@ -50,7 +69,7 @@
 
 #### Maintenance
 
- - [`4cd4095`](https://github.com/deis/deis/commit/4cd40950d8b1cab8de3452f3c8a80bc4eeb914cb) release: update version to v0.14.0
+ - [`920eaf5`](https://github.com/deis/deis/commit/920eaf5db0c1c9febc772931cdbae5ad6d27c3bf) release: update version to v0.14.0
  - [`bb5bc9e`](https://github.com/deis/deis/commit/bb5bc9e1f778748745ab2657c37d2820033a68dd) (all): bump CoreOS to 472.0.0
  - [`dadfd1b`](https://github.com/deis/deis/commit/dadfd1b9f4dfa405291af52903a6ac40287123eb) deisctl: switch data containers to ubuntu-debootstrap:14.04
  - [`a564287`](https://github.com/deis/deis/commit/a564287d071b902f416e54755ebab4a9fda58f6c) deisctl: bump godeps for coreos/fleet
