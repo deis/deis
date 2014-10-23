@@ -3,9 +3,18 @@ include ../includes.mk
 COMPONENT = builder
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BUILD_IMAGE := $(COMPONENT)-build
 
 build: check-docker
-	docker build -t $(IMAGE) .
+	docker build -t $(BUILD_IMAGE) image
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-domain bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-types bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-version bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/get-app-config bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/get-app-values bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/publish-release-controller bin/
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/yaml2json-procfile bin/
+	docker build -t $(IMAGE) .	
 
 clean: check-docker check-registry
 	rm -f deisctl
