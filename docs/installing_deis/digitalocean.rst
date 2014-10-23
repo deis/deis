@@ -82,6 +82,16 @@ Which will provision 3 CoreOS nodes for use.
 Configure DNS
 -------------
 
+.. note::
+
+    If you're using your own third-party DNS registrar, please refer to their documentation on this
+    setup, along with the :ref:`dns_records` required.
+
+.. note::
+
+    If you don't have an available domain for testing, you can refer to the :ref:`xip_io`
+    documentation on setting up a wildcard DNS for Deis.
+
 Deis requires a wildcard DNS record to function properly. If the top-level domain (TLD) that you
 are using is ``example.com``, your applications will exist at the ``*.example.com`` level. For example, an
 application called ``app`` would be accessible via ``app.example.com``.
