@@ -29,7 +29,6 @@ Managing Deis
     operational_tasks
     platform_logging
     platform_monitoring
-    register-admin-user
     security_considerations
     ssl-endpoints
     upgrading-deis

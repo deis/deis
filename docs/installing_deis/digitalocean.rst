@@ -218,7 +218,7 @@ of the Deis units are loaded and active by running the following command:
 
 All of the units should be active.
 
-Now that you've finished provisioning a cluster, please refer to :ref:`register-admin-user` to get
+Now that you've finished provisioning a cluster, please refer to :ref:`using_deis` to get
 started using the platform.
 
 
