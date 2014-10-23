@@ -1,6 +1,8 @@
 :title: Installing Deis on Rackspace
 :description: How to provision a multi-node Deis cluster on Rackspace
 
+.. _deis_on_rackspace:
+
 Rackspace
 =========
 

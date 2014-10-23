@@ -1,6 +1,8 @@
 :title: Installing Deis on Bare Metal
 :description: How to provision a multi-node Deis cluster on Bare Metal
 
+.. _deis_on_bare_metal:
+
 Bare Metal
 ----------
 

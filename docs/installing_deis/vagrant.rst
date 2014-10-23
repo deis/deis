@@ -1,6 +1,8 @@
 :title: Installing Deis on Vagrant
 :description: How to provision a multi-node Deis cluster on Vagrant
 
+.. _deis_on_vagrant:
+
 Vagrant
 -------
 

@@ -1,6 +1,8 @@
 :title: Installing Deis on Google Compute Engine
 :description: How to provision a multi-node Deis cluster on Google Compute Engine
 
+.. _deis_on_gce:
+
 Google Compute Engine
 ---------------------
 
