@@ -11,9 +11,10 @@ product release. Please keep this document up-to-date with any changes in this p
 
 deis repo
 ---------
-- Create the next `deis milestone`_
-- Move any `deis open issues`_ from the current release to the next milestone
-- Close the current `deis milestone`_
+- If this release was managed as a milestone in GitHub:
+    * Create the next `deis milestone`_
+    * Move any `deis open issues`_ from the current release to the next milestone
+    * Close the current `deis milestone`_
 - Create a branch for the release PR: ``git checkout -b release-X.Y.Z``
 - Update CHANGELOG.md using the `changelog script`_
     * ``./contrib/util/generate-changelog.sh vU.V.W | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
@@ -31,11 +32,14 @@ deis repo
         deisctl/deis-version \
         deisctl/deisctl.go \
         deisctl/README.md \
-        deisctl/cmd/cmd.go \
         contrib/coreos/user-data \
         controller/deis/__init__.py \
         README.md
 
+- Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
+  (near the bottom of the file) from ``[master]`` to ``[vX.Y.Z]``.
+- Examine the output of ``git grep vU.V.W`` to ensure that no old version strings
+  were missed
 - Commit and push the deis/deis release and tag
     * ``git commit -a -m 'chore(release): update version to vX.Y.Z'``
     * ``git push origin release-X.Y.Z``
@@ -74,13 +78,38 @@ Documentation
     * click "Settings" for each project (deis/controller, deis/cache, etc.)
     * paste the contents of each README.md into the "long description" field if
       there are discrepencies
-- Create release notes docs
+- For a milestone release, create release notes docs
     * follow the format of previous `release notes`_
     * summarize all work done since the previous release
     * visit all deis/* project issues to make sure we don't
       miss any contributors for the "Community Shout-Outs" section
     * include "what's next" and "future directions" sections
     * add Markdown version of release notes to `deis/deis.io`_ website project
+- For a patch release, paste the new CHANGELOG.md section as GitHub release notes
+
+Post-Release
+------------
+- Update the #deis IRC channel topic to reference the newly released version
+- For a milestone release, update HipChat channel topics to reference the
+  next planned version
+- Create a branch for the post-release PR: ``git checkout -b release-X.Y.Z+git``
+- Update version strings to vX.Y.Z+git with the ``bumpver`` tool:
+
+  .. code-block:: console
+
+    $ ./contrib/bumpver/bumpver X.Y.Z+git \
+        version/version.go \
+        client/deis.py \
+        deisctl/deis-version \
+        deisctl/deisctl.go \
+        controller/deis/__init__.py \
+        README.md
+
+- Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
+  (near the bottom of the file) from ``[vX.Y.Z]`` to ``[master]``.
+- Create a pull request for vX.Y.Z+git
+    * ``git commit -a -m 'chore(release): update version in master to vX.Y.Z+git'``
+- Ensure that this PR is merged before others are allowed to be merged!
 
 
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
