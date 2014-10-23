@@ -149,7 +149,38 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 		t.Fatalf("command executiuon failed\n%v", err)
 	}
 	child.Close()
+}
 
+// AuthPasswd tests whether `deis auth:passwd` updates a user's password.
+func AuthPasswd(t *testing.T, params *DeisTestConfig, password string) {
+	fmt.Println("deis auth:passwd")
+	child, err := gexpect.Spawn(Deis + " auth:passwd")
+	if err != nil {
+		t.Fatalf("command not started\n%v", err)
+	}
+	fmt.Println("current password:")
+	err = child.Expect("current password: ")
+	if err != nil {
+		t.Fatalf("expect password failed\n%v", err)
+	}
+	child.SendLine(params.Password)
+	fmt.Println("new password:")
+	err = child.Expect("new password: ")
+	if err != nil {
+		t.Fatalf("expect password failed\n%v", err)
+	}
+	child.SendLine(password)
+	fmt.Println("new password (confirm):")
+	err = child.Expect("new password (confirm): ")
+	if err != nil {
+		t.Fatalf("expect password failed\n%v", err)
+	}
+	child.SendLine(password)
+	err = child.Expect("Password change succeeded")
+	if err != nil {
+		t.Fatalf("command executiuon failed\n%v", err)
+	}
+	child.Close()
 }
 
 // CheckList executes a command and optionally tests whether its output does

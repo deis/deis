@@ -20,6 +20,7 @@ func TestAuth(t *testing.T) {
 	authLogoutTest(t, params)
 	authLoginTest(t, params)
 	authWhoamiTest(t, params)
+	authPasswdTest(t, params)
 	authCancel(t, params)
 }
 
@@ -42,6 +43,15 @@ func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func authLogoutTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, authLogoutCmd, params, false, "")
+}
+
+func authPasswdTest(t *testing.T, params *utils.DeisTestConfig) {
+	password := "aNewPassword"
+	utils.AuthPasswd(t, params, password)
+	cmd := authLoginCmd
+	utils.Execute(t, cmd, params, true, "400 BAD REQUEST")
+	params.Password = password
+	utils.Execute(t, cmd, params, false, "")
 }
 
 func authRegisterTest(t *testing.T, params *utils.DeisTestConfig) {
