@@ -4,7 +4,7 @@
 .. _managing_deis:
 
 Managing Deis
-================
+=============
 
 :Release: |version|
 :Date: |today|
@@ -15,6 +15,8 @@ Managing Deis
     backing_up_data
     builder_settings
     cache_settings
+    configure-dns
+    configure-load-balancers
     controller_settings
     database_settings
     logger_settings
@@ -27,4 +29,7 @@ Managing Deis
     operational_tasks
     platform_logging
     platform_monitoring
+    register-admin-user
     security_considerations
+    ssl-endpoints
+    upgrading-deis
