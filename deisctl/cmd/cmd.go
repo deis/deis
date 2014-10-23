@@ -79,6 +79,21 @@ func Start(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// checkRequiredKeys exist in etcd
+func checkRequiredKeys() error {
+	if err := config.CheckConfig("/deis/platform/", "domain"); err != nil {
+		return fmt.Errorf(`Missing platform domain, use:
+deisctl config platform set domain=<your-domain>`)
+	}
+
+	if err := config.CheckConfig("/deis/platform/", "sshPrivateKey"); err != nil {
+		fmt.Printf(`Warning: Missing sshPrivateKey, "deis run" will be unavailable. Use:
+deisctl config platform set sshPrivateKey=<path-to-key>
+`)
+	}
+	return nil
+}
+
 func StartPlatform(b backend.Backend) error {
 
 	outchan := make(chan string)
@@ -255,6 +270,10 @@ func Install(b backend.Backend, targets []string) error {
 }
 
 func InstallPlatform(b backend.Backend) error {
+
+	if err := checkRequiredKeys(); err != nil {
+		return err
+	}
 
 	outchan := make(chan string)
 	errchan := make(chan error)

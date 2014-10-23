@@ -32,6 +32,23 @@ func Config() error {
 	return doConfig(args)
 }
 
+// CheckConfig looks for a value at a keyspace path
+// and returns an error if a value is not found
+func CheckConfig(root string, k string) error {
+
+	client, err := getEtcdClient()
+	if err != nil {
+		return err
+	}
+
+	_, err = doConfigGet(client, root, []string{k})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Flags for config package
 var Flags struct {
 }
