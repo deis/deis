@@ -53,15 +53,6 @@ and specify that version by appending the `-V` parameter to the install command,
 
 After the installation has finished reboot your server. Once your machine is back up you should be able to log in as the `core` user using the `deis` ssh key.
 
-## Initialize the cluster
-Once your server(s) are all provisioned you can proceed to install Deis. Use the hostname of one of your machines in the next step.
-
-```console
-$ ssh-add ~/.ssh/deis
-$ export DEISCTL_TUNNEL=your.server.name.here
-$ deisctl install platform && deisctl start platform
-```
-
 ## Configure Deis
 Set the default domain used to anchor your applications:
 
@@ -75,6 +66,15 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 
 ```console
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
+```
+
+## Initialize the cluster
+Once your server(s) are all provisioned you can proceed to install Deis. Use the hostname of one of your machines in the next step.
+
+```console
+$ ssh-add ~/.ssh/deis
+$ export DEISCTL_TUNNEL=your.server.name.here
+$ deisctl install platform && deisctl start platform
 ```
 
 ## Use Deis!

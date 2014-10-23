@@ -50,6 +50,22 @@ This instructs Vagrant to spin up 3 VMs. To be able to connect to the VMs, you m
 $ ssh-add ~/.vagrant.d/insecure_private_key
 ```
 
+## Configure Deis
+
+Before Deis will start successfully, there are a few administrative settings we need to provide.
+
+Set the default domain used to anchor your applications.  For a Vagrant environment, use `local3.deisapp.com` as it will resolve to your local routers:
+
+```console
+$ deisctl config platform set domain=local3.deisapp.com
+```
+
+If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
+
+```console
+$ deisctl config platform set sshPrivateKey=~/.vagrant.d/insecure_private_key
+```
+
 ## Provision Deis
 
 Install the [deisctl utility](deisctl#installation) used to provision and operate Deis.
@@ -74,22 +90,6 @@ $ deisctl start platform
 This can take some time - the **builder** must download and install the beefy Heroku cedar stack.  Grab some more coffee!
 
 Your Deis platform should be accessible at `deis.local3.deisapp.com`.  For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
-
-## Configure Deis
-
-Now that Deis is running there are a few administrative settings we need to provide.
-
-Set the default domain used to anchor your applications.  For a Vagrant environment, use `local3.deisapp.com` as it will resolve to your local routers:
-
-```console
-$ deisctl config platform set domain=local3.deisapp.com
-```
-
-If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
-
-```console
-$ deisctl config platform set sshPrivateKey=~/.vagrant.d/insecure_private_key
-```
 
 ## Install the Deis Client
 
