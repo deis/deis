@@ -87,6 +87,8 @@ func StartPlatform(b backend.Backend) error {
 
 	go printState(outchan, errchan, 500*time.Millisecond)
 
+	outchan <- "Note: The platform will fail to start if you haven't configured the domain used to serve applications."
+	outchan <- "For example: `deisctl config platform set domain=local3.deisapp.com`\n"
 	outchan <- utils.DeisIfy("Starting Deis...")
 
 	startDataContainers(b, &wg, outchan, errchan)
