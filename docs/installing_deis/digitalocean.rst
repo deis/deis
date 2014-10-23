@@ -114,32 +114,12 @@ For convenience, you can also set up DNS records for each node:
 If you need help using the DNS control panel, check out `this tutorial`_ on DigitalOcean's
 community site.
 
-If you're using your own third-party DNS registrar, please refer to their documentation on this
-setup, along with the :ref:`dns_records` required.
-
-If you don't have an available domain for testing, you can refer to the :ref:`xip_io` documentation on
-setting up a wildcard DNS for Deis.
-
 Install Deis Control Utility
 ----------------------------
 
 Now that we have the CoreOS cluster set up, we will install the Deis Control Utility. This client
-will help us configure and install the platform on top of our CoreOS cluster.
-
-Change to the directory where you would like to install the deisctl binary. Then, install the Deis
-Control Utility by downloading and running the install script with the following command:
-
-.. code-block:: console
-
-    $ cd ~/bin
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 0.14.1
-
-This installs deisctl to the current directory, and refreshes the Deis systemd unit files used to
-schedule the components. Let's link it to /usr/local/bin, so it will be in our PATH:
-
-.. code-block:: console
-
-    $ sudo ln -fs $PWD/deisctl /usr/local/bin/deisctl
+will help us configure and install the platform on top of our CoreOS cluster. Please see
+:ref:`install_deisctl` for instructions.
 
 Install Deis Platform
 ---------------------

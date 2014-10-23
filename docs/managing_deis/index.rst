@@ -11,6 +11,7 @@ Managing Deis
 
 .. toctree::
 
+    install-deisctl
     add_remove_host
     backing_up_data
     builder_settings
