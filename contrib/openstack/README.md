@@ -76,19 +76,6 @@ By default, the Makefile will provision 1 router. You can override this by setti
 $ export DEIS_NUM_ROUTERS=2
 ```
 
-### Initialize the cluster
-Once the cluster is up:
-* **If required, allocate and associate floating IPs to any or all of your hosts**
-* Get the IP address of any of the machines from Openstack
-* set DEISCTL_TUNNEL and install the platform:
-
-```console
-$ export DEISCTL_TUNNEL=23.253.219.94
-$ deisctl install platform && deisctl start platform
-```
-
-The installer will deploy Deis and make sure the services start properly.
-
 ## Configure Deis
 Set the default domain used to anchor your applications:
 
@@ -103,6 +90,19 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 ```console
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
+
+### Initialize the cluster
+Once the cluster is up:
+* **If required, allocate and associate floating IPs to any or all of your hosts**
+* Get the IP address of any of the machines from Openstack
+* set DEISCTL_TUNNEL and install the platform:
+
+```console
+$ export DEISCTL_TUNNEL=23.253.219.94
+$ deisctl install platform && deisctl start platform
+```
+
+The installer will deploy Deis and make sure the services start properly.
 
 ### Use Deis!
 After that, register with Deis!

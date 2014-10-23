@@ -305,15 +305,7 @@ $ deisctl list
 MACHINE		IP		METADATA
 ```
 
-Now we can bootstrap the Deis containers:
-
-```shell
-deisctl install platform && deisctl start platform
-```
-
-This operation will take a while as all the Deis systemd units are loaded into the CoreOS cluster and the Docker images are pulled down. Grab some iced tea!
-
-Once the command completes and `deisctl list` shows services as running, you can set the default domain used to anchor your applications:
+Now set the default domain used to anchor your applications:
 
 ```console
 $ deisctl config platform set domain=mycluster.local
@@ -326,6 +318,14 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 ```console
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
+
+Now we can bootstrap the Deis containers:
+
+```shell
+deisctl install platform && deisctl start platform
+```
+
+This operation will take a while as all the Deis systemd units are loaded into the CoreOS cluster and the Docker images are pulled down. Grab some iced tea!
 
 Register the admin user. The first user added to the system becomes the admin:
 

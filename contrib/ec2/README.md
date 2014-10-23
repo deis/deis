@@ -112,16 +112,6 @@ Please wait for all instances to come up as "running" before continuing.
 Check the AWS EC2 web control panel and wait until "Status Checks" for all instances have passed.
 This will take several minutes.
 
-## Initialize the cluster
-Once the cluster is up, get the hostname of any of the machines from EC2, set
-DEISCTL_TUNNEL, and issue a `deisctl install`:
-```console
-$ ssh-add ~/.ssh/deis
-$ export DEISCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
-$ deisctl install platform && deisctl start platform
-```
-Deisctl will deploy Deis and make sure the services start properly.
-
 ## Configure Deis
 Set the default domain used to anchor your applications:
 
@@ -136,6 +126,16 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 ```console
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
+
+## Initialize the cluster
+Once the cluster is up, get the hostname of any of the machines from EC2, set
+DEISCTL_TUNNEL, and issue a `deisctl install`:
+```console
+$ ssh-add ~/.ssh/deis
+$ export DEISCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
+$ deisctl install platform && deisctl start platform
+```
+Deisctl will deploy Deis and make sure the services start properly.
 
 ## Configure load balancer
 The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis

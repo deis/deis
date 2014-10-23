@@ -54,16 +54,6 @@ Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
 $ ./provision-rackspace-cluster.sh deis-key
 ```
 
-### Initialize the cluster
-Once the cluster is up, get the hostname of any of the machines from Rackspace, set
-DEISCTL_TUNNEL and install the platform:
-```console
-$ export DEISCTL_TUNNEL=23.253.219.94
-$ deisctl install platform && deisctl start platform
-```
-
-The installer will deploy Deis and make sure the services start properly.
-
 ## Configure Deis
 Set the default domain used to anchor your applications:
 
@@ -78,6 +68,16 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 ```console
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
+
+### Initialize the cluster
+Once the cluster is up, get the hostname of any of the machines from Rackspace, set
+DEISCTL_TUNNEL and install the platform:
+```console
+$ export DEISCTL_TUNNEL=23.253.219.94
+$ deisctl install platform && deisctl start platform
+```
+
+The installer will deploy Deis and make sure the services start properly.
 
 ### Choose number of routers
 By default, `deisctl` will provision 1 router. You can override this by scaling up:
