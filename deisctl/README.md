@@ -17,8 +17,8 @@ to *$HOME/.deis/units* one time. You should move `deisctl` somewhere in your $PA
 
 To change installation options, save the installer directly from one of these links:
 
-[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.0-dev-linux-amd64.run)
-[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.0-dev-darwin-amd64.run)
+[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-linux-amd64.run)
+[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-darwin-amd64.run)
 
 Then run the downloaded file as a shell script. Append `--help` to see what options
 are available.
@@ -30,7 +30,7 @@ using a specific Deis release (not latest), you'll want to use the deisctl built
 
 Builds are hosted on an S3 bucket at this URL format: `https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run`
 
-The deisctl release for Deis version 0.14.0 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.0-linux-amd64.run)
+The deisctl release for Deis version 0.14.1 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-linux-amd64.run)
 
 ### Building from source
 

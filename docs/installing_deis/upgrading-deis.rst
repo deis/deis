@@ -29,7 +29,7 @@ Use the following steps to perform an in-place upgrade of your Deis cluster.
 .. code-block:: console
 
     $ deisctl uninstall platform
-    $ deisctl config platform set version=v0.14.0
+    $ deisctl config platform set version=v0.14.1
     $ deisctl install platform
     $ deisctl start platform
 
