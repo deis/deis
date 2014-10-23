@@ -142,7 +142,7 @@ $ cd example-ruby-sinatra
 $ deis create
 ```
 
-Use `deis create --cluster=prod` to place the app on a different cluster.  Don't like our name-generator?  Use `deis create myappname`.
+Don't like our name-generator?  Use `deis create myappname`.
 
 ## Deploy
 When you created the application, a git remote for Deis was added automatically.  Deploy with `git push`.
