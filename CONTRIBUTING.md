@@ -14,7 +14,11 @@ right to make the contribution.
 
 # Support Channels
 
+- GitHub issues: https://github.com/deis/deis/issues/new
 - IRC: #[deis](irc://irc.freenode.org:6667/#deis) IRC channel on freenode.org
+
+When opening an issue or asking for help on IRC, it's helpful to provide debug output from your cluster.
+Run `/opt/bin/deis-debug-logs` on one of your CoreOS machines and provide the output to us in a [gist](https://gist.github.com/).
 
 ## Getting Started
 

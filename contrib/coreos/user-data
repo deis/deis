@@ -85,3 +85,26 @@ write_files:
 
       # remove leading slash
       echo ${IMAGE#/}
+  - path: /opt/bin/deis-debug-logs
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+
+      echo '--- VERSIONS ---'
+      source /etc/os-release
+      echo $PRETTY_NAME
+      source /etc/deis-release
+      echo "Deis $DEIS_RELEASE"
+      etcd -version
+      fleet -version
+      printf "\n"
+
+      echo '--- SYSTEM STATUS ---'
+      journalctl -n 50 -u etcd --no-pager
+      journalctl -n 50 -u fleet --no-pager
+      printf "\n"
+
+      echo '--- DEIS STATUS ---'
+      deisctl list
+      etcdctl ls --recursive /deis
+      printf "\n"
