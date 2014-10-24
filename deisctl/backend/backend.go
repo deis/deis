@@ -8,7 +8,7 @@ type Backend interface {
 	Destroy([]string, *sync.WaitGroup, chan string, chan error)
 	Start([]string, *sync.WaitGroup, chan string, chan error)
 	Stop([]string, *sync.WaitGroup, chan string, chan error)
-	Scale(string, int) error
+	Scale(string, int, *sync.WaitGroup, chan string, chan error)
 	ListUnits() error
 	ListUnitFiles() error
 	Status(string) error
