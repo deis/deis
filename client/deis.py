@@ -446,7 +446,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             data = response.json()
             app_id = data['id']
             self._logger.info("done, created {}".format(app_id))
@@ -510,8 +510,8 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code in (requests.codes.no_content,  # @UndefinedVariable
-                                    requests.codes.not_found):  # @UndefinedVariable
+        if response.status_code in (requests.codes.no_content,
+                                    requests.codes.not_found):
             self._logger.info('done in {}s'.format(int(time.time() - before)))
             try:
                 # If the requested app is a heroku app, delete the git remote
@@ -532,7 +532,7 @@ class DeisClient(object):
         Usage: deis apps:list
         """
         response = self._dispatch('get', '/v1/apps')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             data = response.json()
             self._logger.info('=== Apps')
             for item in data['results']:
@@ -554,7 +554,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get', "/v1/apps/{}".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._logger.info("=== {} Application".format(app))
             self._logger.info(json.dumps(response.json(), indent=2) + '\n')
             self.ps_list(args)
@@ -578,7 +578,7 @@ class DeisClient(object):
             app = self._session.app
         # TODO: replace with a single API call to apps endpoint
         response = self._dispatch('get', "/v1/apps/{}".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             url = response.json()['url']
             # use the OS's default handler to open this URL
             webbrowser.open('http://{}/'.format(url))
@@ -601,7 +601,7 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch('get',
                                   "/v1/apps/{}/logs".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
                 # get the tag from the log
@@ -646,7 +646,7 @@ class DeisClient(object):
         response = self._dispatch('post',
                                   "/v1/apps/{}/run".format(app),
                                   json.dumps(body))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             rc, output = json.loads(response.content)
             sys.stdout.write(output)
             sys.stdout.flush()
@@ -705,7 +705,7 @@ class DeisClient(object):
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
         response = self._session.post(url, data=payload, allow_redirects=False)
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
             self._settings.save()
             self._logger.info("Registered {}".format(username))
@@ -771,7 +771,7 @@ class DeisClient(object):
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
         response = self._session.post(url, data=payload, allow_redirects=False)
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             # retrieve and save the API token for future requests
             self._settings['controller'] = controller
             self._settings['username'] = username
@@ -849,7 +849,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}".format(version))
         else:
@@ -869,7 +869,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get', "/v1/apps/{}/builds".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._logger.info("=== {} Builds".format(app))
             data = response.json()
             for item in data['results']:
@@ -911,7 +911,7 @@ class DeisClient(object):
 
         oneline = args.get('--oneline')
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             config = response.json()
             values = config['values']
             self._logger.info("=== {} Config".format(app))
@@ -964,7 +964,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
@@ -1010,7 +1010,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
@@ -1057,7 +1057,7 @@ class DeisClient(object):
             except IOError:
                 pass
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             config = response.json()['values']
             for k, v in config.items():
                 if interactive and raw_input("overwrite {} with {}? (y/N) ".format(k, v)) == 'y':
@@ -1119,7 +1119,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             self._logger.info("done")
         else:
             raise ResponseError(response)
@@ -1152,7 +1152,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+        if response.status_code == requests.codes.no_content:
             self._logger.info("done")
         else:
             raise ResponseError(response)
@@ -1172,7 +1172,7 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch(
             'get', "/v1/apps/{app}/domains".format(app=app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             domains = response.json()['results']
             self._logger.info("=== {} Domains".format(app))
             if len(domains) == 0:
@@ -1211,7 +1211,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._print_limits(app, response.json())
         else:
             raise ResponseError(response)
@@ -1267,7 +1267,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
 
@@ -1313,7 +1313,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             self._print_limits(app, response.json())
@@ -1368,7 +1368,7 @@ class DeisClient(object):
                 app = self._session.app
         response = self._dispatch('get',
                                   "/v1/apps/{}/containers".format(app))
-        if response.status_code != requests.codes.ok:  # @UndefinedVariable
+        if response.status_code != requests.codes.ok:
             raise ResponseError(response)
         processes = response.json()
         self._logger.info("=== {} Processes\n".format(app))
@@ -1417,7 +1417,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+        if response.status_code == requests.codes.no_content:
             self._logger.info('done in {}s'.format(int(time.time() - before)))
             self.ps_list({}, app)
         else:
@@ -1451,7 +1451,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._print_tags(app, response.json())
         else:
             raise ResponseError(response)
@@ -1487,7 +1487,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
 
@@ -1525,7 +1525,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             version = response.headers['x-deis-release']
             self._logger.info("done, v{}\n".format(version))
             self._print_tags(app, response.json())
@@ -1585,7 +1585,7 @@ class DeisClient(object):
         sys.stdout.write("Uploading {} to Deis...".format(selected_key.id))
         sys.stdout.flush()
         response = self._dispatch('post', '/v1/keys', json.dumps(body))
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             self._logger.info('done')
         else:
             raise ResponseError(response)
@@ -1639,7 +1639,7 @@ class DeisClient(object):
         Usage: deis keys:list
         """
         response = self._dispatch('get', '/v1/keys')
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             data = response.json()
             if data['count'] == 0:
                 self._logger.info('No keys found')
@@ -1666,7 +1666,7 @@ class DeisClient(object):
         sys.stdout.write("Removing {} SSH Key... ".format(key))
         sys.stdout.flush()
         response = self._dispatch('delete', "/v1/keys/{}".format(key))
-        if response.status_code == requests.codes.no_content:  # @UndefinedVariable
+        if response.status_code == requests.codes.no_content:
             self._logger.info('done')
         else:
             raise ResponseError(response)
@@ -1822,7 +1822,7 @@ class DeisClient(object):
             app = self._session.app
         response = self._dispatch(
             'get', "/v1/apps/{app}/releases/{version}".format(**locals()))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._logger.info(json.dumps(response.json(), indent=2))
         else:
             raise ResponseError(response)
@@ -1841,7 +1841,7 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         response = self._dispatch('get', "/v1/apps/{app}/releases".format(**locals()))
-        if response.status_code == requests.codes.ok:  # @UndefinedVariable
+        if response.status_code == requests.codes.ok:
             self._logger.info("=== {} Releases".format(app))
             data = response.json()
             for item in data['results']:
@@ -1887,7 +1887,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:  # @UndefinedVariable
+        if response.status_code == requests.codes.created:
             new_version = response.json()['version']
             self._logger.info("done, v{}".format(new_version))
         else:
