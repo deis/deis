@@ -44,19 +44,25 @@ func ListUnitFiles(b backend.Backend) error {
 }
 
 func Scale(b backend.Backend, targets []string) error {
+	outchan := make(chan string)
+	errchan := make(chan error)
+	var wg sync.WaitGroup
+
+	go printState(outchan, errchan, 500*time.Millisecond)
+
 	for _, target := range targets {
 		component, num, err := splitScaleTarget(target)
 		if err != nil {
 			return err
 		}
-		// the router is the only component that can scale past 1 at the moment
-		if num > 1 && !strings.Contains(component, "router") {
-			return fmt.Errorf("cannot scale %s past 1", component)
+		// the router is the only component that can scale at the moment
+		if !strings.Contains(component, "router") {
+			return fmt.Errorf("cannot scale %s components", component)
 		}
-		if err := b.Scale(component, num); err != nil {
-			return err
-		}
+		b.Scale(component, num, &wg, outchan, errchan)
+		wg.Wait()
 	}
+	close(outchan)
 	return nil
 }
 
