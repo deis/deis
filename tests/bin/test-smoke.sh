@@ -17,6 +17,11 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
+log_phase "Running documentation tests"
+
+# test building documentation
+make -C docs/ test
+
 log_phase "Building from current source tree"
 
 # build all docker images and client binaries
@@ -24,10 +29,6 @@ make build
 
 # use the built client binaries
 export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
-
-log_phase "Running test-smoke"
-
-make -C docs/ test
 
 log_phase "Running unit and functional tests"
 
