@@ -8,7 +8,7 @@ Django==1.6.8
 git+https://github.com/deis/django-fsm@propagate-false
 django-guardian==1.2.4
 django-json-field==0.5.7
-djangorestframework==2.3.14
+djangorestframework==2.4.3
 docker-py==0.4.0
 gunicorn==19.1.1
 paramiko==1.14.1
