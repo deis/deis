@@ -34,7 +34,7 @@ setup-gotools:
 
 test-style:
 	go vet -x ./...
-	-golint *.go dockercli etcdutils mock utils
+	-golint; golint dockercli; golint etcdutils; golint mock; golint utils
 
 nuke_from_orbit:
 	-docker kill `docker ps -q`

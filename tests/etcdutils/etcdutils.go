@@ -34,6 +34,7 @@ func InitEtcd(setdir, setkeys []string, port string) *EtcdHandle {
 	return controllerHandle
 }
 
+// SetSingle sets a key and value into a test etcd instance.
 func SetSingle(t *testing.T, key string, value string, port string) {
 	c := etcdClient(port)
 	_, err := c.Set(key, value, 0)
@@ -52,7 +53,7 @@ func SetEtcd(t *testing.T, keys []string, values []string, c *etcd.Client) {
 	}
 }
 
-// Verify an etcd key exists
+// VerifyEtcdKey verifies that an etcd key exists.
 func VerifyEtcdKey(t *testing.T, key string, port string) {
 	c := etcdClient(port)
 	_, err := c.Get(key, true, true)
@@ -61,15 +62,15 @@ func VerifyEtcdKey(t *testing.T, key string, port string) {
 	}
 }
 
-// Verify the value of an etcd key
-func VerifyEtcdValue(t *testing.T, key string, expected_value string, port string) {
+// VerifyEtcdValue verifies the value of an etcd key.
+func VerifyEtcdValue(t *testing.T, key string, expectedValue string, port string) {
 	c := etcdClient(port)
 	result, err := c.Get(key, true, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Node.Value != expected_value {
-		t.Errorf(key + ": expected '" + expected_value + "', got '" + result.Node.Value + "'.")
+	if result.Node.Value != expectedValue {
+		t.Errorf(key + ": expected '" + expectedValue + "', got '" + result.Node.Value + "'.")
 	}
 }
 
