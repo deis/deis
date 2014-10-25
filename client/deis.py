@@ -659,10 +659,11 @@ class DeisClient(object):
         Valid commands for auth:
 
         auth:register          register a new user
-        auth:cancel            remove the current account
         auth:login             authenticate against a controller
         auth:logout            clear the current user session
-        auth:whoami            display the authenticated user
+        auth:passwd            change the password for the current user
+        auth:whoami            display the current user
+        auth:cancel            remove the current user account
 
         Use `deis help [command]` to learn more.
         """
@@ -793,6 +794,40 @@ class DeisClient(object):
         self._settings['token'] = None
         self._settings.save()
         self._logger.info('Logged out')
+
+    def auth_passwd(self, args):
+        """
+        Changes the password for the current user.
+
+        Usage: deis auth:passwd [options]
+
+        Options:
+          --password=<password>
+            provide the current password for the account.
+          --new-password=<new-password>
+            provide a new password for the account.
+        """
+        if not self._settings.get('token'):
+            raise EnvironmentError(
+                'Could not find token. Use `deis login` or `deis register` to get started.')
+        password = args.get('--password')
+        if not password:
+            password = getpass('current password: ')
+        new_password = args.get('--new-password')
+        if not new_password:
+            new_password = getpass('new password: ')
+            confirm = getpass('new password (confirm): ')
+            if new_password != confirm:
+                self._logger.error('Password mismatch, not changing.')
+                sys.exit(1)
+        payload = {'password': password, 'new_password': new_password}
+        response = self._dispatch('post', "/v1/auth/passwd", json.dumps(payload))
+        if response.status_code == requests.codes.ok:
+            self._logger.info('Password change succeeded.')
+        else:
+            self._logger.info("Password change failed: {}".format(response.text))
+            sys.exit(1)
+        return True
 
     def auth_whoami(self, args):
         """
@@ -1913,6 +1948,7 @@ SHORTCUTS = OrderedDict([
     ('logout', 'auth:logout'),
     ('logs', 'apps:logs'),
     ('open', 'apps:open'),
+    ('passwd', 'auth:passwd'),
     ('pull', 'builds:create'),
     ('register', 'auth:register'),
     ('rollback', 'releases:rollback'),

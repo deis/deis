@@ -169,9 +169,13 @@ Auth
 
   Create a new User.
 
-.. http:delete:: /v1/auth/register/
+.. http:delete:: /v1/auth/cancel/
 
   Destroy the logged-in User.
+
+.. http:post:: /v1/auth/passwd/
+
+  Update the password of the logged-in User.
 
 .. http:get:: /v1/auth/login/
 
@@ -272,7 +276,9 @@ urlpatterns = patterns(
     url(r'^auth/register/?',
         views.UserRegistrationView.as_view({'post': 'create'})),
     url(r'^auth/cancel/?',
-        views.UserCancellationView.as_view({'delete': 'destroy'})),
+        views.UserManagementView.as_view({'delete': 'destroy'})),
+    url(r'^auth/passwd/?',
+        views.UserManagementView.as_view({'post': 'passwd'})),
     url(r'^auth/login/',
         'rest_framework.authtoken.views.obtain_auth_token'),
     # admin sharing

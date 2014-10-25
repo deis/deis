@@ -99,3 +99,49 @@ class AuthTest(TestCase):
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 204)
+
+    def test_passwd(self):
+        """Test that a registered user can change the password."""
+        # test registration workflow
+        username, password = 'newuser', 'password'
+        first_name, last_name = 'Otto', 'Test'
+        email = 'autotest@deis.io'
+        submit = {
+            'username': username,
+            'password': password,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+        }
+        url = '/v1/auth/register'
+        response = self.client.post(url, json.dumps(submit), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        # change password
+        url = '/v1/auth/passwd'
+        user = User.objects.get(username=username)
+        token = Token.objects.get(user=user).key
+        submit = {
+            'password': 'password2',
+            'new_password': password,
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 400)
+        submit = {
+            'password': password,
+            'new_password': 'password2',
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 200)
+        # test login with old password
+        url = '/v1/auth/login/'
+        payload = urllib.urlencode({'username': username, 'password': password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 400)
+        # test login with new password
+        payload = urllib.urlencode({'username': username, 'password': 'password2'})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 200)

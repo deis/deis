@@ -58,10 +58,19 @@ class UserRegistrationView(viewsets.GenericViewSet,
             obj.is_superuser = obj.is_staff = True
 
 
-class UserCancellationView(viewsets.GenericViewSet,
-                           viewsets.mixins.DestroyModelMixin):
+class UserManagementView(viewsets.GenericViewSet,
+                         viewsets.mixins.CreateModelMixin,
+                         viewsets.mixins.DestroyModelMixin):
     model = User
     permission_classes = (permissions.IsAuthenticated,)
+
+    def passwd(self, request, *args, **kwargs):
+        obj = self.request.user
+        if not obj.check_password(request.DATA['password']):
+            return Response("Current password did not match", status=status.HTTP_400_BAD_REQUEST)
+        obj.set_password(request.DATA['new_password'])
+        obj.save()
+        return Response({'status': 'password set'})
 
     def destroy(self, request, *args, **kwargs):
         obj = self.request.user
