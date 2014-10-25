@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/deis/deis/tests/utils"
-	"github.com/dotcloud/docker/api/client"
+	"github.com/docker/docker/api/client"
 )
 
 // CloseWrap ensures that an io.Writer is closed.
@@ -88,7 +88,7 @@ func NewClient() (
 	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	proto, addr, _ := DockerHost()
 	stdout, stdoutPipe = io.Pipe()
-	cli = client.NewDockerCli(nil, stdoutPipe, nil, proto, addr, nil)
+	cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, nil)
 	return
 }
 

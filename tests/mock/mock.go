@@ -11,7 +11,7 @@ import (
 	"github.com/deis/deis/tests/etcdutils"
 	"github.com/deis/deis/tests/utils"
 
-	"github.com/dotcloud/docker/api/client"
+	"github.com/docker/docker/api/client"
 )
 
 // RunMockDatabase starts a mock postgresql database for testing.
