@@ -62,7 +62,7 @@ setup-gotools:
 
 test-style:
 	go vet -x ./...
-	-golint .
+	-golint ./...
 
 test-unit: test-style
 	@echo no tests
