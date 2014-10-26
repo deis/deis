@@ -55,6 +55,8 @@ setting                                      description
 /deis/router/gzipVary                        nginx gzipVary setting (default: on)
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
+/deis/router/sslCert                         cluster-wide SSL certificate
+/deis/router/sslKey                          cluster-wide SSL private key
 /deis/services/*                             healthy application containers reported by deis/publisher
 /deis/store/gateway/host                     host of the store gateway component (set by store-gateway)
 /deis/store/gateway/port                     port of the store gateway component (set by store-gateway)
