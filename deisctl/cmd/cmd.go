@@ -56,6 +56,9 @@ func Scale(b backend.Backend, targets []string) error {
 		if err := b.Scale(component, num); err != nil {
 			return err
 		}
+		if err := b.Start([]string{component}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
