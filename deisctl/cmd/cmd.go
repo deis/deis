@@ -154,7 +154,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
-	b.Start([]string{"logspout", "publisher"}, wg, outchan, errchan)
+	b.Start([]string{"publisher"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Routing mesh...")
