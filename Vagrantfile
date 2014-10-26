@@ -123,6 +123,11 @@ Vagrant.configure("2") do |config|
           s.args = ["/tmp/vagrantfile-user-data", $num_instances]
         end
         config.vm.provision :shell, :inline => "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", :privileged => true
+      else
+        config.vm.provision :shell do |s|
+          s.inline = "echo \"File not found: #{CLOUD_CONFIG_PATH}\" &&" +
+            "echo \"Run 'make discovery-url' first to create user-data.\" && exit 1"
+        end
       end
 
     end
