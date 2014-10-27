@@ -42,6 +42,11 @@ func scaleUp(c *FleetClient, component string, numExistingContainers, numTimesTo
 		target := component + "@" + strconv.Itoa(numExistingContainers+i+1)
 		c.Create([]string{target}, wg, outchan, errchan)
 	}
+	wg.Wait()
+	for i := 0; i < numTimesToScale; i++ {
+		target := component + "@" + strconv.Itoa(numExistingContainers+i+1)
+		c.Start([]string{target}, wg, outchan, errchan)
+	}
 }
 
 func scaleDown(c *FleetClient, component string, numExistingContainers, numTimesToScale int,
