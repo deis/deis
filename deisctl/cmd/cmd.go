@@ -27,12 +27,6 @@ const (
 	PlatformInstallCommand string = "platform"
 )
 
-var (
-	DefaultDataContainers = []string{
-		"logger-data",
-	}
-)
-
 func ListUnits(b backend.Backend) error {
 	err := b.ListUnits()
 	return err
@@ -110,7 +104,6 @@ func StartPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Starting Deis...")
 
-	startDataContainers(b, &wg, outchan, errchan)
 	startDefaultServices(b, &wg, outchan, errchan)
 
 	wg.Wait()
@@ -122,12 +115,6 @@ func StartPlatform(b backend.Backend) error {
 	return nil
 }
 
-func startDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	outchan <- fmt.Sprintf("Data containers...")
-	b.Start(DefaultDataContainers, wg, outchan, errchan)
-	wg.Wait()
-}
-
 func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	// create separate channels for background tasks
@@ -135,25 +122,34 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	_errchan := make(chan error)
 	var _wg sync.WaitGroup
 
+	// wait for groups to come up
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+	wg.Wait()
+
+	b.Start([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+
+	// start logging subsystem first to collect logs from other components
 	outchan <- fmt.Sprintf("Logging subsystem...")
 	b.Start([]string{"logger"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
-	// start all services in the background
-	b.Start([]string{"cache", "database", "registry", "controller", "builder",
-		"publisher", "router@1", "router@2", "router@3"}, &_wg, _outchan, _errchan)
-
-	// wait for groups to come up
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Start([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
-	wg.Wait()
+	// optimization: start all remaining services in the background
+	b.Start([]string{
+		"cache", "database", "registry", "controller", "builder",
+		"publisher", "router@1", "router@2", "router@3"},
+		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
 	b.Start([]string{"cache", "database", "registry", "controller"}, wg, outchan, errchan)
 	wg.Wait()
-
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
 
@@ -220,13 +216,14 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	b.Stop([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-
 	outchan <- fmt.Sprintf("Logging subsystem...")
 	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
 	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Stop([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+
 }
 
 func Restart(b backend.Backend, targets []string) error {
@@ -289,7 +286,6 @@ func InstallPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Installing Deis...")
 
-	installDataContainers(b, &wg, outchan, errchan)
 	installDefaultServices(b, &wg, outchan, errchan)
 
 	wg.Wait()
@@ -301,20 +297,14 @@ func InstallPlatform(b backend.Backend) error {
 	return nil
 }
 
-func installDataContainers(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	outchan <- fmt.Sprintf("Data containers...")
-	b.Create(DefaultDataContainers, wg, outchan, errchan)
-	wg.Wait()
-}
-
 func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
 	b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
-	wg.Wait()
-
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Create([]string{"store-daemon", "store-monitor", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
@@ -384,12 +374,12 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Destroy([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-gateway", "store-monitor", "store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-
 	outchan <- fmt.Sprintf("Logging subsystem...")
 	b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("Storage subsystem...")
+	b.Destroy([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
 	wg.Wait()
 
 	return nil
@@ -490,14 +480,15 @@ Options:
 		"deis-controller.service",
 		"deis-database.service",
 		"deis-logger.service",
-		"deis-logger-data.service",
 		"deis-logspout.service",
 		"deis-publisher.service",
 		"deis-registry.service",
 		"deis-router.service",
 		"deis-store-daemon.service",
 		"deis-store-gateway.service",
+		"deis-store-metadata.service",
 		"deis-store-monitor.service",
+		"deis-store-volume.serviice",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit

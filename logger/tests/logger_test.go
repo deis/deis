@@ -13,13 +13,13 @@ import (
 func TestLogger(t *testing.T) {
 	var err error
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+
+	//start etcd container
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
-	dataName := "deis-logger-data-" + tag
-	dockercli.RunDeisDataTest(t, "--name", dataName,
-		"-v", "/var/log/deis", "ubuntu-debootstrap:14.04", "/bin/true")
+
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/logger:%s at %s:%s\n", tag, host, port)
 	name := "deis-logger-" + tag
@@ -33,7 +33,6 @@ func TestLogger(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"--volumes-from", dataName,
 			"deis/logger:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")

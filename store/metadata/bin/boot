@@ -1,0 +1,28 @@
+#!/bin/bash
+# Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
+
+ETCD_PORT=${ETCD_PORT:-4001}
+ETCD="$HOST:$ETCD_PORT"
+
+MDS_NAME=`hostname`
+
+until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1 ; do
+  echo "store-metadata: waiting for confd to write initial templates..."
+  sleep 5
+done
+
+# Check to see if we are a new MDS
+if [ ! -e /var/lib/ceph/mds/ceph-$MDS_NAME/keyring ]; then
+  mkdir -p /var/lib/ceph/mds/ceph-${MDS_NAME}
+
+  # See if we need to generate a key for the MDS
+  if [ -e /etc/ceph/ceph.mds.keyring ]; then
+    cp /etc/ceph/ceph.mds.keyring /var/lib/ceph/mds/ceph-${MDS_NAME}/keyring
+  else
+    # Generate the new MDS key
+    ceph auth get-or-create mds.$MDS_NAME mds 'allow' osd 'allow *' mon 'allow profile mds' > /var/lib/ceph/mds/ceph-${MDS_NAME}/keyring
+  fi
+fi
+
+echo "store-metadata: running..."
+exec /usr/bin/ceph-mds -d -i ${MDS_NAME}
