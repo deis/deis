@@ -55,8 +55,8 @@ func Scale(b backend.Backend, targets []string) error {
 		if err != nil {
 			return err
 		}
-		// the router is the only component that can scale at the moment
-		if !strings.Contains(component, "router") {
+		// the router and builder are the only components that can scale at the moment
+		if !strings.Contains(component, "router") && !strings.Contains(component, "builder") {
 			return fmt.Errorf("cannot scale %s components", component)
 		}
 		b.Scale(component, num, &wg, outchan, errchan)
