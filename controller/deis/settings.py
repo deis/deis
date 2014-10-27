@@ -322,7 +322,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # and production.
 # The local_settings.py file should *not* be checked in to version control.
 try:
-    from .local_settings import *  # @UnusedWildImport # noqa
+    from .local_settings import *  # noqa
 except ImportError:
     pass
 
