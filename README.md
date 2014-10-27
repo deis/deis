@@ -50,6 +50,20 @@ This instructs Vagrant to spin up 3 VMs. To be able to connect to the VMs, you m
 $ ssh-add ~/.vagrant.d/insecure_private_key
 ```
 
+## Install deisctl
+
+Install the [deisctl utility](deisctl#installation) used to provision and operate Deis.
+
+```console
+$ curl -sSL http://deis.io/deisctl/install.sh | sh
+```
+
+Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl` client on your workstation.
+
+```console
+$ export DEISCTL_TUNNEL=172.17.8.100
+```
+
 ## Configure Deis
 
 Before Deis will start successfully, there are a few administrative settings we need to provide.
@@ -67,18 +81,6 @@ $ deisctl config platform set sshPrivateKey=~/.vagrant.d/insecure_private_key
 ```
 
 ## Provision Deis
-
-Install the [deisctl utility](deisctl#installation) used to provision and operate Deis.
-
-```console
-$ curl -sSL http://deis.io/deisctl/install.sh | sh
-```
-
-Export `DEISCTL_TUNNEL` so you can connect to one of the VMs using the `deisctl` client on your workstation.
-
-```console
-$ export DEISCTL_TUNNEL=172.17.8.100
-```
 
 Use `deisctl install platform` to install all Deis components across the cluster, then `deisctl start platform` to start them.
 
