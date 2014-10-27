@@ -42,7 +42,6 @@ export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client:$PATH
 log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
-git checkout contrib/coreos/user-data
 make discovery-url
 vagrant up --provider virtualbox
 

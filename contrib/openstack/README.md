@@ -35,8 +35,15 @@ Choose an existing keypair or upload a new public key, if desired.
 $ nova keypair-add --pub-key ~/.ssh/deis.pub deis-key
 ```
 
-### Customize cloud-config.yml
-Edit [user-data](../coreos/user-data) and add a discovery URL. This URL will be used by all nodes in this Deis cluster. You can get a new discovery URL by sending a request to http://discovery.etcd.io/new.
+### Customize user-data
+
+Create a user-data file with a new discovery URL this way:
+
+```console
+$ make discovery-url
+```
+
+Or copy [`contrib/coreos/user-data.example`](../coreos/user-data.example) to `contrib/coreos/user-data` and follow the directions in the `etcd:` section to add a unique discovery URL.
 
 ### Choose number of instances
 By default, the provision script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:

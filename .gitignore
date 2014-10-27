@@ -57,12 +57,11 @@ Vagrantfile.local
 .bundle
 /__init__.py
 
+# Local user-data generated from user-data.example
+contrib/coreos/user-data
+
 # EC2 CloudFormation Setup
 contrib/ec2/cloudformation.json
 
 # GCE generated user-data
 contrib/gce/gce-user-data
-
-# user-data backup file
-contrib/coreos/user-data.orig
-

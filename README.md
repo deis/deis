@@ -25,15 +25,15 @@ Note for Ubuntu users: the VirtualBox package in Ubuntu (as of the last known re
 
 ## Configure Discovery
 
-Each time you spin up a new CoreOS cluster, you **must** provide a new [discovery service URL](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) in the [CoreOS user-data](https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/) file.  This URL allows hosts to find each other and perform leader election.
+Each time you spin up a new CoreOS cluster, you **must** provide a new [discovery service URL](https://coreos.com/docs/cluster-management/setup/cluster-discovery/) in the [CoreOS user-data](https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/) file. This unique discovery URL allows hosts to find each other and perform leader election.
 
-Automatically generate a fresh discovery URL with:
+Create a user-data file with a new discovery URL this way:
 
 ```console
 $ make discovery-url
 ```
 
-or manually edit [contrib/coreos/user-data](contrib/coreos/user-data) and add a unique discovery URL generated from <https://discovery.etcd.io/new>.
+Or copy [`contrib/coreos/user-data.example`](contrib/coreos/user-data.example) to `contrib/coreos/user-data` and follow the directions in the `etcd:` section to add a unique discovery URL.
 
 ## Boot CoreOS
 
@@ -201,7 +201,7 @@ Common issues that users have run into when provisioning Deis are detailed below
 Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
 
 #### When running a `deisctl` command - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
-The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in [contrib/coreos/user-data](contrib/coreos/user-data) before the cluster was launched. Each Deis cluster must have a unique discovery URL, else there will be entries for old hosts that etcd will try and fail to connect to. Try destroying and relaunching the cluster with a fresh discovery URL.
+The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in `contrib/coreos/user-data` before the cluster was launched. Each Deis cluster must have a unique discovery URL, or else `etcd` will try and fail to connect to old hosts. Try destroying the cluster and relaunching the cluster with a fresh discovery URL.
 
 #### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
 This usually means the controller failed to submit jobs to the scheduler. `deisctl journal controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
