@@ -5,27 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-
-	docopt "github.com/docopt/docopt-go"
 )
 
 // Config runs the config subcommand
-func Config() error {
-	usage := `Deis Cluster Configuration
-
-    Usage:
-    deisctl config <target> get [<key>...] [options]
-    deisctl config <target> set <key=val>... [options]
-
-    Options:
-    --verbose                   print out the request bodies [default: false]
-    `
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, nil, true, "", true)
-	if err != nil {
-		return err
-	}
-	err = setConfigFlags(args)
+func Config(args map[string]interface{}) error {
+	err := setConfigFlags(args)
 	if err != nil {
 		return err
 	}
