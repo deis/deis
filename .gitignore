@@ -25,6 +25,7 @@ pip-log.txt
 .tox
 nosetests.xml
 logger/coverage.out
+tests/example-*
 
 # Translations
 *.mo
@@ -45,6 +46,21 @@ controller/.secret_key
 # deis application logs
 logs/
 
+# local binaries and installers
+client/dist/
+client/makeself/
+contrib/bumpver/bumpver
+deisctl/deisctl
+deisctl/dist/
+deisctl/package/
+deisctl/makeself/
+docs/_build/
+docs/docs.zip
+logspout/build/
+
+# ctags index
+tags
+
 # Misc.
 Berksfile.lock
 .DS_Store
@@ -59,6 +75,9 @@ Vagrantfile.local
 
 # Local user-data generated from user-data.example
 contrib/coreos/user-data
+
+# Local controller settings file
+controller/deis/local_settings.py
 
 # EC2 CloudFormation Setup
 contrib/ec2/cloudformation.json
