@@ -113,7 +113,9 @@ Check the AWS EC2 web control panel and wait until "Status Checks" for all insta
 This will take several minutes.
 
 ## Configure Deis
-Set the default domain used to anchor your applications:
+Set the `DEISCTL_TUNNEL` environment variable as per the [deisctl documentation](https://github.com/deis/deis/tree/master/deisctl#remote-configuration).
+
+Next set the default domain used to anchor your applications:
 
 ```console
 $ deisctl config platform set domain=mycluster.local
@@ -128,14 +130,13 @@ $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
 
 ## Initialize the cluster
-Once the cluster is up, get the hostname of any of the machines from EC2, set
-DEISCTL_TUNNEL, and issue a `deisctl install`:
+Now issue a `deisctl install`:
 ```console
 $ ssh-add ~/.ssh/deis
 $ export DEISCTL_TUNNEL=ec2-12-345-678-90.us-west-1.compute.amazonaws.com
 $ deisctl install platform && deisctl start platform
 ```
-Deisctl will deploy Deis and make sure the services start properly.
+`deisctl` will deploy Deis and make sure the services start properly.
 
 ## Configure load balancer
 The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis
