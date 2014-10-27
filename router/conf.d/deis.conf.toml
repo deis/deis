@@ -1,0 +1,9 @@
+[template]
+src   = "deis.conf"
+dest  = "/opt/nginx/conf/deis.conf"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/router",
+]
