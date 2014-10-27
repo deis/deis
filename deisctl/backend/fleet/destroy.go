@@ -32,33 +32,23 @@ func doDestroy(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan s
 	}
 	destroyed := fmt.Sprintf("\033[0;33m%v:\033[0m destroyed                                 \r", name)
 
-	// bail early if unit doesn't exist
-	_, err = c.Units(name)
-	if err != nil {
-		if strings.Contains(err.Error(), "could not find unit") {
-			outchan <- destroyed
-		}
-		return
-	}
+	// tell fleet to destroy the unit
+	c.Fleet.DestroyUnit(name)
 
-	// otherwise destroy it
-	if err = c.Fleet.DestroyUnit(name); err != nil {
-		// ignore already destroyed units
-		if !strings.Contains(err.Error(), "could not find unit") {
-			errchan <- err
-			return
-		}
-	}
-
-	// loop until actually destroyed
+	// loop until the unit is actually gone from unit states
+outerLoop:
 	for {
-		_, err = c.Units(name)
+		time.Sleep(250 * time.Millisecond)
+		unitStates, err := cAPI.UnitStates()
 		if err != nil {
-			if strings.Contains(err.Error(), "could not find unit") {
-				outchan <- destroyed
-				return
+			errchan <- err
+		}
+		for _, us := range unitStates {
+			if strings.HasPrefix(us.Name, name) {
+				continue outerLoop
 			}
 		}
-		time.Sleep(250 * time.Millisecond)
+		outchan <- destroyed
+		return
 	}
 }

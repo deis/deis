@@ -2,7 +2,9 @@ package fleet
 
 import (
 	"fmt"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/schema"
@@ -10,7 +12,8 @@ import (
 )
 
 // Create schedules a new unit for the given component
-func (c *FleetClient) Create(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (c *FleetClient) Create(
+	targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	units := make([]*schema.Unit, len(targets))
 
@@ -51,6 +54,21 @@ func doCreate(c *FleetClient, unit *schema.Unit, wg *sync.WaitGroup, outchan cha
 	if err := c.Fleet.SetUnitTargetState(unit.Name, desiredState); err != nil {
 		errchan <- err
 		return
+	}
+
+	// loop until the unit actually exists in unit states
+outerLoop:
+	for {
+		time.Sleep(250 * time.Millisecond)
+		unitStates, err := cAPI.UnitStates()
+		if err != nil {
+			errchan <- err
+		}
+		for _, us := range unitStates {
+			if strings.HasPrefix(us.Name, unit.Name) {
+				break outerLoop
+			}
+		}
 	}
 
 	outchan <- out
