@@ -104,6 +104,9 @@ function dump_logs {
   fleetctl -strict-host-key-checking=false ssh deis-registry docker logs deis-registry
   fleetctl -strict-host-key-checking=false ssh deis-builder docker logs deis-builder
   fleetctl -strict-host-key-checking=false ssh deis-logger docker logs deis-logger
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-router
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-router
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-router  
   set +x
   exit 1
 }
