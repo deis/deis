@@ -488,7 +488,7 @@ Options:
 		"deis-store-gateway.service",
 		"deis-store-metadata.service",
 		"deis-store-monitor.service",
-		"deis-store-volume.serviice",
+		"deis-store-volume.service",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit
