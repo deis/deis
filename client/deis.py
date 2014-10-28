@@ -1495,8 +1495,8 @@ class DeisClient(object):
         """
         Sets tags for an application.
 
-        A tag is a key/value pair used to tag an application's containers.
-        This is often used to restrict workloads to specific hosts.
+        A tag is a key/value pair used to tag an application's containers and is passed to the scheduler.
+        This is often used to restrict workloads to specific hosts matching the scheduler-configured metadata.
 
         Usage: deis tags:set [options] <key>=<value>...
 
