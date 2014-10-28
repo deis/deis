@@ -53,7 +53,7 @@ MainRule "str:.." "msg:double dot" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TR
 MainRule "str:/etc/passwd" "msg:obvious probe" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1202;
 MainRule "str:c:\\" "msg:obvious windows path" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1203;
 MainRule "str:cmd.exe" "msg:obvious probe" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1204;
-MainRule "str:\\" "msg:backslash" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1205;
+#MainRule "str:\\" "msg:backslash" "mz:ARGS|URL|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:4" id:1205;
 #MainRule "str:/" "msg:slash in args" "mz:ARGS|BODY|$HEADERS_VAR:Cookie" "s:$TRAVERSAL:2" id:1206;
 
 ########################################
