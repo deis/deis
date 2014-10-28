@@ -75,6 +75,9 @@ test: clean
 	@echo
 	@echo "Test finished. The HTML pages are in $(BUILDDIR)/dirhtml."
 
+zipfile: dirhtml
+	cd $(BUILDDIR)/dirhtml; zip -r -D -o ../../docs.zip .
+
 singlehtml:
 	$(SPHINXBUILD) -b singlehtml $(ALLSPHINXOPTS) $(BUILDDIR)/singlehtml
 	@echo

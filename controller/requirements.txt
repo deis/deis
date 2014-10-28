@@ -6,6 +6,7 @@
 Django==1.6.8
 # FIXME: switch to upstream pending merge of https://github.com/kmmbvnr/django-fsm/pull/59
 git+https://github.com/deis/django-fsm@propagate-false
+django-cors-headers==0.13
 django-guardian==1.2.4
 django-json-field==0.5.7
 djangorestframework==2.4.3
@@ -18,4 +19,3 @@ PyYAML==3.11
 redis==2.9.1
 static==1.0.2
 South==1.0
-django-cors-headers==0.13
