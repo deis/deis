@@ -1,5 +1,5 @@
 :title: Contributing
-:description: TOOD
+:description: How to contribute to the Deis open source PaaS project
 
 Contributing
 ============
