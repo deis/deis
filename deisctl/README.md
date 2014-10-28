@@ -4,51 +4,8 @@
 
 ## Installation
 
-### Latest deisctl
-
-To install the latest `deisctl` on Linux or Mac OS X, run this command:
-
-```console
-$ curl -sSL http://deis.io/deisctl/install.sh | sh
-```
-
-The installer puts `deisctl` in your current directory and downloads current Deis unit files
-to *$HOME/.deis/units* one time. You should move `deisctl` somewhere in your $PATH.
-
-To change installation options, save the installer directly from one of these links:
-
-[![Download for Linux](http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.15.0-dev-linux-amd64.run)
-[![Download for Mac OS X](http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat)](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.15.0-dev-darwin-amd64.run)
-
-Then run the downloaded file as a shell script. Append `--help` to see what options
-are available.
-
-### Builds for a specific Deis release
-
-Note that this script will always give you the most freshly-built deisctl off master. If you are
-using a specific Deis release (not latest), you'll want to use the deisctl built for your release.
-
-Builds are hosted on an S3 bucket at this URL format: `https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run`
-
-The deisctl release for Deis version 0.15.0 can be downloaded here: [Mac OS X](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.15.0-darwin-amd64.run) | [Linux](https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.15.0-linux-amd64.run)
-
-### Building from source
-
-If you want to install from source, ensure you have [https://github.com/tools/godep](godep) installed, clone the repository and run
-
-```console
-$ godep get .
-```
-
-Then, export the `DEISCTL_UNITS` environment variable so deisctl can find the units:
-
-```console
-$ export DEISCTL_UNITS="$PATH_TO_DEISCTL/units"
-```
-
-This is also useful for specifying custom behavior on Deis units, such as using
-fleet metadata to lock the builder to a more powerful node, or keep application
-nodes free of control plane elements.
+Please refer to the installation docs at
+http://docs.deis.io/en/latest/managing_deis/install_deisctl/.
 
 ## Remote Configuration
 

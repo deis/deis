@@ -4,17 +4,20 @@
 .. _managing_deis:
 
 Managing Deis
-================
+=============
 
 :Release: |version|
 :Date: |today|
 
 .. toctree::
 
+    install-deisctl
     add_remove_host
     backing_up_data
     builder_settings
     cache_settings
+    configure-dns
+    configure-load-balancers
     controller_settings
     database_settings
     logger_settings
@@ -28,3 +31,5 @@ Managing Deis
     platform_logging
     platform_monitoring
     security_considerations
+    ssl-endpoints
+    upgrading-deis

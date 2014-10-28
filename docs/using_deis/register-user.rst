@@ -22,6 +22,10 @@ to create a new account.  You will be logged in automatically.
     Registered myuser
     Logged in as myuser
 
+.. important::
+
+    The first user to register with Deis receives "superuser" privileges.
+
 Upload Your SSH Public Key
 --------------------------
 If you plan on using ``git push`` to deploy applications to Deis, you must provide your SSH public key.  Use the ``deis keys:add`` command to upload your default SSH public key, usually one of:
