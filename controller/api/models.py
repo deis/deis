@@ -863,7 +863,12 @@ def _etcd_publish_domains(**kwargs):
 
 def _etcd_purge_domains(**kwargs):
     app = kwargs['instance'].app
-    _etcd_client.delete('/deis/domains/{}'.format(app))
+    app_domains = app.domain_set.all()
+    if app_domains:
+        _etcd_client.write('/deis/domains/{}'.format(app),
+                           ' '.join(str(d.domain) for d in app_domains))
+    else:
+        _etcd_client.delete('/deis/domains/{}'.format(app))
 
 
 # Log significant app-related events
