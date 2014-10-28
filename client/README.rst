@@ -1,6 +1,6 @@
 Deis Client
 ===========
-The Deis client is a Python CLI that issues API calls to a private
+The Deis client is a Python2 CLI that issues API calls to a private
 Deis controller, providing a Heroku-inspired PaaS workflow.
 
 .. image:: https://badge.fury.io/py/deis.png
@@ -80,7 +80,7 @@ you used to provision the server. You can make a symlink or shell alias for
     $ deis
     Usage: deis <command> [<args>...]
 
-If you don't have Python_, install the latest `deis` binary executable for
+If you don't have Python2_, install the latest `deis` binary executable for
 Linux or Mac OS X with this command:
 
 .. code-block:: console
@@ -140,7 +140,7 @@ somewhere in your $PATH.
 To learn more, use ``deis help`` or browse `the documentation`_.
 
 .. _`Install the Client`: http://docs.deis.io/en/latest/using_deis/install-client/
-.. _`Python`: http://www.python.org/
+.. _`Python2`: http://www.python.org/
 .. _`Register a User`: http://docs.deis.io/en/latest/using_deis/register-user/
 .. _`Deploy an Application`: http://docs.deis.io/en/latest/using_deis/deploy-application/
 .. _`Manage an Application`: http://docs.deis.io/en/latest/using_deis/manage-application/

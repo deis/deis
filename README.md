@@ -104,7 +104,7 @@ $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
 ```
 or
 ```console
-$ cd client && python setup.py install
+$ cd client && python2 setup.py install
 ```
 
 ## Register a User

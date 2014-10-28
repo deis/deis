@@ -22,7 +22,7 @@ you used to provision the server. You can make a symlink or shell alias for
     $ deis
     Usage: deis <command> [<args>...]
 
-If you don't have Python_, install the latest `deis` binary executable for
+If you don't have Python2_, install the latest `deis` binary executable for
 Linux or Mac OS X with this command:
 
 .. code-block:: console
@@ -80,4 +80,4 @@ To get help on subcommands, use ``deis help [subcommand]``:
     Use `deis help [command]` to learn more
 
 .. _pip: http://www.pip-installer.org/en/latest/installing.html
-.. _Python: https://www.python.org/
+.. _Python2: https://www.python.org/

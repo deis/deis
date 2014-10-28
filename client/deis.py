@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 The Deis command-line client issues API calls to a Deis controller.
 
