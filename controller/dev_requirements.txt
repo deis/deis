@@ -1,5 +1,6 @@
 # Deis client requirements
 docopt==0.6.2
+future==0.14.1
 python-dateutil==2.2
 requests==2.3.0
 

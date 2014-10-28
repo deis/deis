@@ -39,6 +39,9 @@ Use ``git push deis master`` to deploy to an application.
 """
 
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+
 from collections import namedtuple
 from collections import OrderedDict
 from datetime import datetime
@@ -56,7 +59,7 @@ import re
 import subprocess
 import sys
 import time
-import urlparse
+import urllib.parse as urlparse
 import webbrowser
 
 from dateutil import parser
@@ -88,7 +91,7 @@ class Session(requests.Session):
         }
         # Create the $HOME/.deis dir if it doesn't exist
         if not os.path.isdir(config_dir):
-            os.mkdir(config_dir, 0700)
+            os.mkdir(config_dir, 0o700)
 
     @property
     def app(self):
@@ -166,7 +169,7 @@ class Settings(dict):
         path = os.path.expanduser('~/.deis')
         # Create the $HOME/.deis dir if it doesn't exist
         if not os.path.isdir(path):
-            os.mkdir(path, 0700)
+            os.mkdir(path, 0o700)
         self._path = os.path.join(path, 'client.json')
         if not os.path.exists(self._path):
             settings = {}

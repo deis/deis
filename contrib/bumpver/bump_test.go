@@ -193,7 +193,7 @@ setup(name='deis',
           'Programming Language :: Python :: 2.7',
       ],
       install_requires=[
-          'docopt==0.6.2', 'python-dateutil==2.2', 'requests==2.3.0', 'termcolor==1.1.0'
+          'docopt==0.6.2', 'future==0.14.1', 'python-dateutil==2.2', 'requests==2.3.0', 'termcolor==1.1.0'
       ],
       **KWARGS)
 `
@@ -219,7 +219,7 @@ setup(name='deis',
           'Programming Language :: Python :: 2.7',
       ],
       install_requires=[
-          'docopt==0.6.2', 'python-dateutil==2.2', 'requests==2.3.0', 'termcolor==1.1.0'
+          'docopt==0.6.2', 'future==0.14.1', 'python-dateutil==2.2', 'requests==2.3.0', 'termcolor==1.1.0'
       ],
       **KWARGS)
 `
@@ -279,7 +279,7 @@ write_files:
 var rst = `
 .. code-block:: console
 
-    $ pip install docopt==0.6.2 python-dateutil==2.2 requests==2.3.0 termcolor==1.1.0
+    $ pip install docopt==0.6.2 future==0.14.1 python-dateutil==2.2 requests==2.3.0 termcolor==1.1.0
     $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
@@ -294,7 +294,7 @@ version of the Deis client for Mac OS X, Linux amd64, or Windows:
 var rstAfter = `
 .. code-block:: console
 
-    $ pip install docopt==0.6.2 python-dateutil==2.2 requests==2.3.0 termcolor==1.1.0
+    $ pip install docopt==0.6.2 future==0.14.1 python-dateutil==2.2 requests==2.3.0 termcolor==1.1.0
     $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
