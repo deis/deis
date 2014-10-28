@@ -1,3 +1,41 @@
+### v0.14.1 -> v0.15.0
+
+#### Features
+
+ - [`1f74eeb`](https://github.com/deis/deis/commit/1f74eebd99d043b41d6474088cb0045712733ea0) router: add X-Forwarded-Proto
+ - [`4f8bc3c`](https://github.com/deis/deis/commit/4f8bc3c2aa9be3576c9b0f0afc7f8640bb4f7df3) router: enable spdy
+ - [`fd54071`](https://github.com/deis/deis/commit/fd54071f89f001b7fc47ab84e7ca5e30dd370af4) router: add optional TLS support
+ - [`0cfe49a`](https://github.com/deis/deis/commit/0cfe49aea52d93a978f74ff115c61c77c963e6cb) store: add store-volume and store-metadata
+ - [`2389815`](https://github.com/deis/deis/commit/2389815e849af302558d52257ba9150be780bfaf) controller: add CORS headers to api
+ - [`87fe9d7`](https://github.com/deis/deis/commit/87fe9d79208445724cdd44714968ff6ff835eebc) controller: add "deis auth:passwd" to update password
+ - [`241204d`](https://github.com/deis/deis/commit/241204d69d719294f3126eb6532dc3dde27b2aaa) contrib/coreos: add debug log generator
+
+#### Fixes
+
+ - [`6289188`](https://github.com/deis/deis/commit/6289188091f032526617a3071accce0ab9ddb1d1) controller: handle partial deletion of domains
+ - [`40ead56`](https://github.com/deis/deis/commit/40ead565472dc8f61bec8a7e16e2cc4bcebab800) deisctl: "deisctl scale router=N" also starts units
+ - [`d2ad06c`](https://github.com/deis/deis/commit/d2ad06ccacb2c90c274309a435d200eac0673316) deisctl: remove logspout from data plane
+ - [`e4492f1`](https://github.com/deis/deis/commit/e4492f14a2f4d968eb2b61743a8d15d2fa11918a) deisctl: adjust start order for logger/store
+ - [`669893a`](https://github.com/deis/deis/commit/669893ad731cf03aa21661f705f3b3ec6098f1b8) Vagrantfile: require user-data when provisioning
+ - [`62ddd1c`](https://github.com/deis/deis/commit/62ddd1ca2b4621dc2e47aad7f469961504844438) tests: remove orphaned test containers in cleanup
+ - [`74afcea`](https://github.com/deis/deis/commit/74afcea9d53136234aacf3cea0e24e76132903fe) deisctl: "deisctl scale router=N" uses async interface
+ - [`d2d270e`](https://github.com/deis/deis/commit/d2d270e4c4eb206cec8040d3067fa6b3145da6d4) router: use string instead of JSON
+ - [`a7ea4a0`](https://github.com/deis/deis/commit/a7ea4a07b4e45284f333d177865cfc322fa8658a) router: dump host/port info into json object
+
+#### Documentation
+
+ - [`c385735`](https://github.com/deis/deis/commit/c3857350a3b7c3d831fb46d04e3935e6103aa9e0) router: add SSL documentation
+ - [`0b60803`](https://github.com/deis/deis/commit/0b608038ea9a235f586f70e41e88d07121c84ecc) releases: update with post-release "+git" procedures
+ - [`44bb502`](https://github.com/deis/deis/commit/44bb5028ecb222ee32dde0739a7d80aa35c847da) README.md: remove instructions for placing apps on a different cluster
+ - [`5a3bf5a`](https://github.com/deis/deis/commit/5a3bf5a54d7a018d1976e370954f04b61349e03e) router: update router's published keys
+
+#### Maintenance
+
+ - [`d339264`](https://github.com/deis/deis/commit/d339264bd2acee340511d8ec222a991a2d9ef33a) release: update version to v0.15.0
+ - [`9fa7c8a`](https://github.com/deis/deis/commit/9fa7c8ac81768739a0e8f3b230a1fc03aabdff76) controller: update djangorestframework to 2.4.3
+ - [`354ab28`](https://github.com/deis/deis/commit/354ab285ea3d9cc23ac7cd71950ed79ca5d1e94e) controller: update Django to 1.6.8 bugfix release
+ - [`1a9494d`](https://github.com/deis/deis/commit/1a9494dbd5874f28ae8c892b6bffd8ff6f6ff9d7) release: update version in master to v0.14.1+git
+ 
 ### v0.14.0 -> v0.14.1
 
 #### Features
@@ -14,7 +52,7 @@
 
 #### Maintenance
 
- - [`3e1d936`](https://github.com/deis/deis/commit/3e1d9362b6193df0d704199a264995db74c5191c) release: update version to v0.14.1
+ - [`43a1dd5`](https://github.com/deis/deis/commit/43a1dd5281c0b84fc0916de74eedf0492cb48db3) release: update version to v0.14.1
  - [`a5459ed`](https://github.com/deis/deis/commit/a5459ed12174a68d69b2647687eab5249ced8832) release: update version in master to v0.14.0+git
 
 ### v0.13.1 -> v0.14.0

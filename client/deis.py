@@ -67,7 +67,7 @@ from docopt import DocoptExit
 import requests
 from termcolor import colored
 
-__version__ = '0.14.1+git'
+__version__ = '0.15.0'
 
 
 locale.setlocale(locale.LC_ALL, '')
