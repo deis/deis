@@ -26,7 +26,13 @@ done
 sleep $(($ETCD_TTL+1))
 
 function etcd_safe_mkdir {
-  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1 || true
+	set +e
+	etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1
+	if [[ $? -ne 0 && $? -ne 4 ]]; then
+		echo "etcd_safe_mkdir: an etcd error occurred. aborting..."
+		exit 1
+	fi
+	set -e
 }
 
 etcd_safe_mkdir $ETCD_PATH/users
