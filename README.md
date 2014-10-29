@@ -205,9 +205,6 @@ Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list 
 #### When running a `deisctl` command - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
 The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in `contrib/coreos/user-data` before the cluster was launched. Each Deis cluster must have a unique discovery URL, or else `etcd` will try and fail to connect to old hosts. Try destroying the cluster and relaunching the cluster with a fresh discovery URL.
 
-#### Scaling an app doesn't work, and/or the app shows 'Welcome to nginx!'
-This usually means the controller failed to submit jobs to the scheduler. `deisctl journal controller` will show detailed error information, but the most common cause of this is that the cluster was created with the wrong SSH key for the `--auth` parameter. The key supplied with the `--auth` parameter must be the same key that was used to provision the Deis servers. If you suspect this to be the issue, you'll need to `clusters:destroy` the cluster and recreate it, along with the app.
-
 #### A Deis component fails to start
 Use `deisctl status <component>` to view the status of the component.  You can also use `deisctl journal <component>` to tail logs for a component, or `deisctl list` to list all components.
 
