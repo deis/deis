@@ -221,9 +221,14 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	b.Stop([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
-
+	b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
+	wg.Wait()
 }
 
 func Restart(b backend.Backend, targets []string) error {
@@ -379,7 +384,13 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-gateway", "store-volume", "store-metadata", "store-monitor", "store-daemon"}, wg, outchan, errchan)
+	b.Destroy([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
 	wg.Wait()
 
 	return nil
