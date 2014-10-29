@@ -35,7 +35,7 @@ RUN mkdir -p /var/run/sshd
 RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
 # install hook dependencies
-RUN pip install pyyaml==3.11 requests==2.4.1
+RUN pip install pyyaml==3.11 requests==2.4.3
 
 # configure locale
 RUN echo LANG="en_US.UTF-8" > /etc/default/locale && dpkg-reconfigure locales
