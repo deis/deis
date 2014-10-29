@@ -131,7 +131,10 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Start([]string{"store-metadata"}, wg, outchan, errchan)
 	wg.Wait()
 
-	b.Start([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
+	// we start gateway first to give metadata time to come up for volume
+	b.Start([]string{"store-gateway"}, wg, outchan, errchan)
+	wg.Wait()
+	b.Start([]string{"store-volume"}, wg, outchan, errchan)
 	wg.Wait()
 
 	// start logging subsystem first to collect logs from other components
