@@ -24,11 +24,17 @@ and then reinstall platform components.
 
     In-place upgrades are supported starting from Deis version 0.14.0
 
+.. note::
+
+    Occasionally, when upgrading Deis, we have seen deisctl stuck in a restart loop on ``deis-store`` components.
+    The workaround for this is to restart the store-daemons with ``deisctl restart store-daemon``. If run while
+    the original ``deisctl start platform`` command is still running, it should resume almost immediately.
+
 Use the following steps to perform an in-place upgrade of your Deis cluster.
 
 .. code-block:: console
 
-    $ deisctl uninstall platform
+    $ deisctl stop platform && deisctl uninstall platform
     $ deisctl config platform set version=v0.15.0
     $ deisctl install platform
     $ deisctl start platform
