@@ -9,6 +9,7 @@ RUN DOCKER_BUILD=true /go/src/github.com/deis/deis/router/build.sh
 RUN tar -C /opt/nginx -czf /nginx.tgz .
 
 ADD boot.go /go/src/github.com/deis/deis/router/boot.go
+ADD logger/stdout_formatter.go /go/src/github.com/deis/deis/router/logger/stdout_formatter.go
 
 RUN go get
 
