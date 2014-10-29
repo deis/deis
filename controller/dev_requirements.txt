@@ -1,13 +1,14 @@
 # Deis client requirements
 docopt==0.6.2
 python-dateutil==2.2
-requests==2.3.0
+requests==2.4.3
+termcolor==1.1.0
 
 # PyInstaller builds client binaries
 PyInstaller==2.1
 
 # Deis documentation requirements
-Sphinx>=1.2.2
+Sphinx>=1.2.3
 smartypants>=1.8.6
 sphinxcontrib-httpdomain>=1.3.0
 
