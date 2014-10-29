@@ -19,7 +19,7 @@ Please make sure your PR follows this checklist:
 
 
 Single Issue
-============
+------------
 
 When fixing or implementing a GitHub issue, resist the temptation to refactor
 nearby code or to fix that potential bug you noticed. Instead, open a new
@@ -39,7 +39,7 @@ will then be closed when your PR is merged.
 
 
 Include Tests
-=============
+-------------
 
 While working on local code changes, run Deis' tests:
 
@@ -68,7 +68,7 @@ See ``tests/README.md`` in the code for more information.
 
 
 Include Docs
-============
+------------
 
 Any change to Deis that could affect a user's experience also needs a change or
 addition to the relevant documentation. Deis generates the HTML documentation
@@ -79,7 +79,7 @@ See ``docs/README.md`` in the code for more information.
 
 
 Code Standards
-==============
+--------------
 
 Deis is a Go_ and Python_ project. For both languages, we agree with
 `The Zen of Python`_, which emphasizes simple over clever. Readability counts.
@@ -99,7 +99,7 @@ Deis does not enforce this.
 .. _commit_style_guide:
 
 Commit Style
-============
+------------
 
 ``git commit`` messages must follow this format::
 
@@ -164,7 +164,7 @@ for manual testing.
 
 
 Merge Approval
-==============
+--------------
 
 Deis maintainers add "**LGTM**" (Looks Good To Me) or an equivalent comment
 to indicate that a PR is acceptable. Any code change--other than
