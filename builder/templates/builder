@@ -65,8 +65,10 @@ git archive $GIT_SHA | tar -xmC $TMP_DIR
 # switch to app context
 cd $TMP_DIR
 
+USING_DOCKERFILE=false
+
 if [ -f Dockerfile ]; then
-    DOCKERFILE=$(cat Dockerfile)
+    USING_DOCKERFILE=true
 fi
 
 if [ -f Procfile ]; then
@@ -143,17 +145,12 @@ if [ -f $TMP_DIR/Procfile ]; then
     RELEASE_INFO=$(echo $RELEASE_INFO | python -c "import sys,json,os,yaml;obj=json.load(sys.stdin);procfile=open('Procfile').read();obj.update(yaml.safe_load(procfile));print json.dumps(obj)")
 fi
 
-if [ -f $TMP_DIR/Dockerfile ]; then
-    DOCKERFILE=$(cat $TMP_DIR/Dockerfile)
-fi
-
 # safely escape double quotes
 RELEASE_INFO=$(echo $RELEASE_INFO | sed -e 's/\"/\\\"/g')
-DOCKERFILE=$(echo $DOCKERFILE | sed -e 's/\"/\\\"/g' -e 's/ \\/ /g')
 
 puts-step "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/build"
-DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\":\"$DOCKERFILE\"}"
+DATA="{\"sha\":\"$SHORT_SHA\",\"receive_user\":\"$USER\",\"receive_repo\":\"$APP_NAME\",\"image\":\"$APP_NAME\",\"procfile\":\"$RELEASE_INFO\",\"dockerfile\": $USING_DOCKERFILE}"
 
 # notify the controller that the push was successful
 RESPONSE=$(curl -s -XPOST \
