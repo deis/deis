@@ -30,10 +30,10 @@ schedule the components. Link it to /usr/local/bin, so it will be in your PATH:
 
 To change installation options, save the installer directly:
 
-.. image:: http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat
+.. image:: download-linux-brightgreen.svg
    :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-linux-amd64.run
 
-.. image:: http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat
+.. image:: download-osx-brightgreen.svg
    :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-darwin-amd64.run
 
 Then run the downloaded file as a shell script. Append ``--help`` to see what options
@@ -48,10 +48,10 @@ Builds are hosted on an S3 bucket at this URL format:
 
 For example, the deisctl release for Deis version 0.14.1 can be downloaded here: 
 
-.. image:: http://img.shields.io/badge/download-Linux-brightgreen.svg?style=flat
+.. image:: download-linux-brightgreen.svg
    :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-linux-amd64.run
 
-.. image:: http://img.shields.io/badge/download-Mac%20OS%20X-brightgreen.svg?style=flat
+.. image:: download-osx-brightgreen.svg
    :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-0.14.1-dev-darwin-amd64.run
 
 Building from Source
