@@ -31,7 +31,13 @@ done
 sleep $(($ETCD_TTL+1))
 
 function etcd_set_default {
-  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+  set +e
+  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1
+  if [[ $? -ne 0 && $? -ne 4 ]]; then
+    echo "etcd_set_default: an etcd error occurred. aborting..."
+    exit 1
+  fi
+  set -e
 }
 
 etcd_set_default engine postgresql_psycopg2
