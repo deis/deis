@@ -16,7 +16,7 @@ export ETCD_PATH=${ETCD_PATH:-/deis/store/gateway}
 export ETCD_TTL=${ETCD_TTL:-10}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl -C $ETCD ls >/dev/null 2>&1; do
     echo "waiting for etcd at $ETCD..."
     sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -31,15 +31,15 @@ until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>/dev/
 done
 
 # we generate a key for the gateway. we can do this because we have the client key templated out
-if ! etcdctl --no-sync -C $ETCD get /deis/store/gatewayKeyring >/dev/null 2>&1 ; then
+if ! etcdctl -C $ETCD get /deis/store/gatewayKeyring >/dev/null 2>&1 ; then
   ceph-authtool --create-keyring /etc/ceph/ceph.client.radosgw.keyring
   chmod +r /etc/ceph/ceph.client.radosgw.keyring
   ceph-authtool /etc/ceph/ceph.client.radosgw.keyring -n client.radosgw.gateway --gen-key
   ceph-authtool -n client.radosgw.gateway --cap osd 'allow rwx' --cap mon 'allow rwx' /etc/ceph/ceph.client.radosgw.keyring
   ceph -k /etc/ceph/ceph.client.admin.keyring auth add client.radosgw.gateway -i /etc/ceph/ceph.client.radosgw.keyring
-  etcdctl --no-sync -C $ETCD set /deis/store/gatewayKeyring < /etc/ceph/ceph.client.radosgw.keyring >/dev/null
+  etcdctl -C $ETCD set /deis/store/gatewayKeyring < /etc/ceph/ceph.client.radosgw.keyring >/dev/null
 else
-  etcdctl --no-sync -C $ETCD get /deis/store/gatewayKeyring > /etc/ceph/ceph.client.radosgw.keyring
+  etcdctl -C $ETCD get /deis/store/gatewayKeyring > /etc/ceph/ceph.client.radosgw.keyring
   chmod +r /etc/ceph/ceph.client.radosgw.keyring
 fi
 
@@ -48,8 +48,8 @@ if ! radosgw-admin user info --uid=deis >/dev/null 2>&1 ; then
   # store the access key and secret key for consumption by other services
   ACCESS_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["access_key"]);' | tr -d '"'`
   SECRET_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["secret_key"]);' | tr -d '"'`
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/accessKey ${ACCESS_KEY} >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
+  etcdctl -C $ETCD set $ETCD_PATH/accessKey ${ACCESS_KEY} >/dev/null
+  etcdctl -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
 fi
 
 # spawn the service in the background
@@ -87,8 +87,8 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-    etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+    etcdctl -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+    etcdctl -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
     sleep $(($ETCD_TTL/2)) # sleep for half the TTL
   done
 

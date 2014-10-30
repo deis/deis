@@ -22,7 +22,7 @@ export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
 export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-2160}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl -C $ETCD ls >/dev/null 2>&1; do
 	echo "database: waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -31,7 +31,7 @@ done
 sleep $(($ETCD_TTL+1))
 
 function etcd_set_default {
-  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+  etcdctl -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
 etcd_set_default engine postgresql_psycopg2
@@ -127,8 +127,8 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		etcdctl -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
 
     # perform a backup whenever we hit BACKUP_FREQUENCY
     # we really need cron :(

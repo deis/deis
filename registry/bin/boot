@@ -21,7 +21,7 @@ export REGISTRY_PORT=${PORT:-5000}
 export BUCKET_NAME=${BUCKET_NAME:-registry}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -30,7 +30,7 @@ done
 sleep $(($ETCD_TTL+1))
 
 function etcd_set_default {
-  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+  etcdctl -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
 # seed initial service configuration if necessary
@@ -80,8 +80,8 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		etcdctl -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 

@@ -11,14 +11,14 @@ PG_NUM=${PG_NUM:-128} # default for 3 OSDs
 HOSTNAME=`hostname`
 
 function etcd_set_default {
-  etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
+  etcdctl -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1 || true
 }
 
-if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; then
+if ! etcdctl -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; then
   echo "store-monitor: Ceph hasn't yet been deployed. Trying to deploy..."
   # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
-  if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/monSetupLock $HOSTNAME >/dev/null 2>&1 \
-  || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupLock` == "$HOSTNAME" ]] ; then
+  if etcdctl -C $ETCD mk ${ETCD_PATH}/monSetupLock $HOSTNAME >/dev/null 2>&1 \
+  || [[ `etcdctl -C $ETCD get ${ETCD_PATH}/monSetupLock` == "$HOSTNAME" ]] ; then
     echo "store-monitor: obtained the lock to proceed with setting up."
 
     # set some defaults in etcd if they're not passed in as environment variables
@@ -35,19 +35,19 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&
     ceph-authtool /etc/ceph/ceph.mon.keyring --create-keyring --gen-key -n mon. --cap mon 'allow *'
 
     fsid=$(uuidgen)
-    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/fsid ${fsid} >/dev/null
+    etcdctl -C $ETCD set ${ETCD_PATH}/fsid ${fsid} >/dev/null
 
     # Generate initial monitor map
     monmaptool --create --add ${HOSTNAME} ${HOST} --fsid ${fsid} /etc/ceph/monmap
 
-    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
-    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
+    etcdctl -C $ETCD set ${ETCD_PATH}/monKeyring < /etc/ceph/ceph.mon.keyring >/dev/null
+    etcdctl -C $ETCD set ${ETCD_PATH}/adminKeyring < /etc/ceph/ceph.client.admin.keyring >/dev/null
 
     # mark setup as complete
     echo "store-monitor: setup complete."
-    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/monSetupComplete youBetcha >/dev/null
+    etcdctl -C $ETCD set ${ETCD_PATH}/monSetupComplete youBetcha >/dev/null
   else
-    until etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; do
+    until etcdctl -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; do
       echo "store-monitor: waiting for another monitor to complete setup..."
       sleep 5
     done
