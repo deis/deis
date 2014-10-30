@@ -88,7 +88,7 @@ target to spin up a quick, disposable registry inside a Docker container.
     To configure the registry for local Deis development:
         export DEV_REGISTRY=192.168.59.103:5000
 
-If you are developing elsewhere, you must setup the registry yourself.
+If you are developing elsewhere, you must set up a registry yourself.
 Make sure it meets the following requirements:
 
  #. You can push Docker images from your workstation
@@ -124,7 +124,7 @@ Test Your Changes
 -----------------
 
 Deis ships with a comprehensive suite of automated tests, most written in Go.
-You can find instructions for `running the tests`_ under the ``tests/`` directory.
+See :ref:`testing` for instructions on running the tests.
 
 Useful Commands
 ---------------
@@ -164,45 +164,11 @@ Django Shell
 
 Have commands other Deis developers might find useful? Send us a PR!
 
-Standards & Test Coverage
--------------------------
-
-When changing Python code in the Deis project, keep in mind our :ref:`standards`.
-Specifically, when you change local code, you must run ``make flake8 && make coverage``,
-then check the HTML report to see that test coverage has improved as a result of your
-changes and new unit tests.
-
-.. code-block:: console
-
-	$ make flake8
-	flake8
-	./api/models.py:17:1: F401 'Group' imported but unused
-	./api/models.py:81:1: F841 local variable 'result' is assigned to but never used
-	make: *** [flake8] Error 1
-	$
-	$ make coverage
-	coverage run manage.py test --noinput api web
-	WARNING Cannot synchronize with etcd cluster
-	Creating test database for alias 'default'...
-	...............................................
-	----------------------------------------------------------------------
-	Ran 47 tests in 47.768s
-
-	OK
-	Destroying test database for alias 'default'...
-	coverage html
-	$ head -n 25 htmlcov/index.html | grep pc_cov
-	            <span class='pc_cov'>81%</span>
-
 Pull Requests
 -------------
 
-Please create a GitHub `pull request`_ for any code changes that will benefit Deis users
-in general. This workflow helps changesets map well to discrete features.
-
-Creating a pull request on the Deis repository also runs an integration test on
-http://ci.deis.io to ensure the pull request doesn't break any tests or reduce code
-coverage.
+Please read :ref:`standards`. It contains a checklist of things you should do
+when proposing a change to Deis.
 
 .. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
 .. _`deisctl`: https://github.com/deis/deis/deisctl
