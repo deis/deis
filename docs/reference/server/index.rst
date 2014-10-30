@@ -10,14 +10,12 @@ Server Reference
 .. toctree::
 
 
-    rest-api
     api.admin
     api.exceptions
     api.fields
     api.models
     api.routers
     api.serializers
-    api.urls
     api.utils
     api.views
     registry
