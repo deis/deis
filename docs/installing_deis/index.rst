@@ -22,6 +22,7 @@ with CoreOS.
 
 .. toctree::
 
+    install-deisctl
     digitalocean
     aws
     vagrant

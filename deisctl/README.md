@@ -5,7 +5,7 @@
 ## Installation
 
 Please refer to the installation docs at
-http://docs.deis.io/en/latest/managing_deis/install_deisctl/.
+http://docs.deis.io/en/latest/installing_deis/install-deisctl/.
 
 ## Remote Configuration
 
