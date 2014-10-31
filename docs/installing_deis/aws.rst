@@ -8,7 +8,7 @@ Amazon AWS
 
 In this tutorial, we will show you how to set up your own 3-node cluster on Amazon Web Services.
 
-Please use `contrib/ec2`_ while following this documentation for details on using Deis on aws.
+Please refer to the scripts in `contrib/ec2`_ while following this documentation.
 
 
 Install the AWS Command Line Interface
