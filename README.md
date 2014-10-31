@@ -4,6 +4,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 [![Build Status](http://ci.deis.io/buildStatus/icon?job=test-master)](http://ci.deis.io/job/test-master/)
 [![Current Release](http://img.shields.io/badge/release-v0.15.0-blue.svg)](https://github.com/deis/deis/releases/tag/v0.15.0)
+[![Latest Docs](http://img.shields.io/badge/docs-latest-red.svg)](http://docs.deis.io/en/latest/)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
