@@ -124,92 +124,11 @@ For convenience, you can also set up DNS records for each node:
 If you need help using the DNS control panel, check out `this tutorial`_ on DigitalOcean's
 community site.
 
-Install Deis Control Utility
-----------------------------
-
-Now that we have the CoreOS cluster set up, we will install the Deis Control Utility. This client
-will help us configure and install the platform on top of our CoreOS cluster. Please see
-:ref:`install_deisctl` for instructions.
-
 Install Deis Platform
 ---------------------
 
-From the computer you installed the Deis tools on, we will provision the Deis platform. Ensure your
-SSH agent is running (and select the private key that corresponds to the SSH keys added to your
-CoreOS droplets):
-
-.. code-block:: console
-
-    $ eval `ssh-agent -s`
-    $ ssh-add ~/.ssh/deis
-
-Find the public IP address of one of your CoreOS droplets, and export it to the DEISCTL_TUNNEL
-environment variable (substitute your own IP address):
-
-.. code-block:: console
-
-    $ export DEISCTL_TUNNEL=104.131.93.162
-
-If you set up the "convenience" DNS records, you can just refer to them via
-
-.. code-block:: console
-
-    $ export DEISCTL_TUNNEL="deis-1.example.com"
-
-This is the IP address where deisctl will attempt to communicate with the cluster. You can test
-that it is working properly by running deisctl list. If you see a single line of output, the
-control utility is communicating with the CoreOS machines.
-
-Before provisioning the platform, we'll need to add the SSH key to deis so it can connect to remote
-hosts during ``deis run``:
-
-.. code-block:: console
-
-    $ deisctl config platform set sshPrivateKey=~/.ssh/deis
-
-We'll also need to tell the controller which domain name we are deploying applications under:
-
-.. code-block:: console
-
-    $ deisctl config platform set domain=example.com
-
-Once finished, run this command to provision the Deis platform:
-
-.. code-block:: console
-
-    $ deisctl install platform
-
-You will see output like the following, which indicates that the units required to run Deis have
-been loaded on the CoreOS cluster:
-
-.. code-block:: console
-
-    ● ▴ ■
-    ■ ● ▴ Installing Deis...
-    ▴ ■ ●
-
-    Scheduling data containers...
-    ...
-    Deis installed.
-    Please run `deisctl start platform` to boot up Deis.
-
-Run this command to start the Deis platform:
-
-.. code-block:: console
-
-    $ deisctl start platform
-
-Once you see "Deis started.", your Deis platform is running on a cluster! You may verify that all
-of the Deis units are loaded and active by running the following command:
-
-.. code-block:: console
-
-    $ deisctl list
-
-All of the units should be active.
-
-Now that you've finished provisioning a cluster, please refer to :ref:`using_deis` to get
-started using the platform.
+Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
+start installing the platform.
 
 
 .. _`Community site`: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-deis-cluster-on-digitalocean
