@@ -14,7 +14,7 @@ docker-py==0.4.0
 gunicorn==19.1.1
 paramiko==1.14.1
 psycopg2==2.5.4
-python-etcd==0.3.0
+python-etcd==0.3.2
 PyYAML==3.11
 redis==2.9.1
 static==1.0.2
