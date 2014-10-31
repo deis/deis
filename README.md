@@ -3,7 +3,8 @@
 Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
 [![Build Status](http://ci.deis.io/buildStatus/icon?job=test-master)](http://ci.deis.io/job/test-master/)
-[![Current Release](http://img.shields.io/badge/release-v0.15.0-blue.svg)](https://github.com/deis/deis/releases/tag/v0.15.0)
+[![Current Release](http://img.shields.io/badge/release-v0.15.0-1eb0fc.svg)](https://github.com/deis/deis/releases/tag/v0.15.0)
+[![Latest Docs](http://img.shields.io/badge/docs-latest-fc1e5e.svg)](http://docs.deis.io/en/latest/)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
 
