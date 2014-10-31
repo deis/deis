@@ -1995,10 +1995,10 @@ def _dispatch_cmd(method, args):
 correct and the server is running.")
         sys.exit(1)
     except EnvironmentError as err:
-        logger.error(err.message)
+        logger.error(err.args[0])
         sys.exit(1)
     except ResponseError as err:
-        resp = err.message
+        resp = err.args[0]
         logger.error('{} {}'.format(resp.status_code, resp.reason))
         try:
             msg = resp.json()
