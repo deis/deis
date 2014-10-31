@@ -15,8 +15,15 @@ build: check-docker
 	docker cp $(CID):/go/bin/get-app-values bin/
 	docker cp $(CID):/go/bin/publish-release-controller bin/
 	docker cp $(CID):/go/bin/yaml2json-procfile bin/
-	docker build -t $(IMAGE) .	
+	docker build -t $(IMAGE) .
 	-docker kill $(CID)
+	rm bin/extract-domain
+	rm bin/extract-types
+	rm bin/extract-version
+	rm bin/get-app-config
+	rm bin/get-app-values
+	rm bin/publish-release-controller
+	rm bin/yaml2json-procfile
 
 clean: check-docker check-registry
 	rm -f deisctl
