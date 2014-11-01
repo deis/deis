@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// SyslogMessage is a textual system log message.
 type SyslogMessage interface {
 	fmt.Stringer
 }
