@@ -11,7 +11,7 @@ import (
 	"github.com/coreos/fleet/unit"
 )
 
-// Create schedules a new unit for the given component
+// Create schedules unit files for the given components.
 func (c *FleetClient) Create(
 	targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
