@@ -61,7 +61,7 @@ write_files:
     permissions: '0755'
     content: |
       function nse() {
-        sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
+        docker exec -it $1 bash
       }
   - path: /run/deis/bin/get_image
     permissions: '0755'
