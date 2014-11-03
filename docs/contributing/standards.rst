@@ -41,30 +41,17 @@ will then be closed when your PR is merged.
 Include Tests
 -------------
 
-While working on local code changes, run Deis' tests:
+If you change or add functionality to any Deis code, your changes should include
+the necessary tests to prove that it works. Unit tests may be written with the
+component's implementation language (usually Go or Python), and functional and
+integration tests are written in Go. Test code can be found in the ``tests/``
+directory of the Deis project.
 
-.. code-block:: console
+While working on local code changes, always run the tests.  Be sure your
+proposed changes pass all of ``./tests/bin/test-integration`` on your
+workstation before submitting a PR.
 
-    $ export DEV_REGISTRY=192.168.59.103:5000 HOST_IPADDR=192.168.59.103
-    $ ./tests/bin/test-integration.sh
-
-    >>> Preparing test environment <<<
-
-    DEIS_ROOT=/Users/matt/Projects/src/github.com/deis/deis
-    DEIS_TEST_APP=example-go
-    ...
-
-You can run subsets of the tests:
-
-.. code-block:: console
-
-    $ make -C docs/ test
-    $ make -C controller/ test-unit
-
-Be sure your proposed changes pass all of ``./tests/bin/test-integration``
-on your workstation before submitting a PR.
-
-See ``tests/README.md`` in the code for more information.
+See :ref:`testing` for more information.
 
 
 Include Docs

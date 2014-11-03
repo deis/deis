@@ -2,7 +2,7 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -W
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
@@ -70,7 +70,7 @@ server: dirhtml
 test: clean
 	@if [ ! -d venv ]; then virtualenv venv; fi
 	venv/bin/pip install -q -r docs_requirements.txt
-	venv/bin/$(SPHINXBUILD) -b dirhtml -N -W $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
+	venv/bin/$(SPHINXBUILD) -b dirhtml -N $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	grep -q \<h1\>Welcome _build/dirhtml/index.html || exit 1
 	@echo
 	@echo "Test finished. The HTML pages are in $(BUILDDIR)/dirhtml."

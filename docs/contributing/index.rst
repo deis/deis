@@ -9,9 +9,9 @@ Contributing
 
 .. toctree::
 
-
     overview
     hacking
+    testing
     standards
     community
     conduct
