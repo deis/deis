@@ -123,6 +123,8 @@ if [ ! -f Dockerfile ]; then
     cp $DOCKERFILE_SHIM ./Dockerfile
 fi
 
+# force newline
+echo "" >> Dockerfile
 # inject builder-specific environment variables into the application environment
 echo "ENV GIT_SHA $GIT_SHA" >> Dockerfile
 
