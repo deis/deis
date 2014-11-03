@@ -74,7 +74,7 @@ Set the default domain used to anchor your applications:
 $ deisctl config platform set domain=mycluster.local
 ```
 
-For this to work, you'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/) for details.
+For this to work, you'll need to configure DNS records so you can access applications hosted on Deis. See [Configuring DNS](http://docs.deis.io/en/latest/managing_deis/configure-dns/#dns-records) for details.
 
 If you want to allow `deis run` for one-off admin commands, you must provide an SSH private key that allows Deis to gather container logs on CoreOS hosts:
 
