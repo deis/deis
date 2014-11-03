@@ -277,6 +277,5 @@ start installing the platform.
 It works! Enjoy your Deis cluster in Google Compute Engine!
 
 
-.. _`git`: http://git-scm.com/
 .. _`Google Cloud SDK`: https://developers.google.com/compute/docs/gcutil/#install
 .. _`Google Developer Console`: https://console.developers.google.com/project
