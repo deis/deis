@@ -31,5 +31,12 @@ func main() {
 
 	defaultType, err := cfg.Get("default_process_types")
 
+	// some buildpacks don't supply a default process type
+	// as Heroku does not make them mandatory
+	if err != nil {
+		fmt.Println("{}")
+		os.Exit(0)
+	}
+
 	fmt.Println(defaultType)
 }
