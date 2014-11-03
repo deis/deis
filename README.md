@@ -197,21 +197,8 @@ Learn how to [hack on Deis](http://docs.deis.io/en/latest/contributing/hacking/)
 
 ## Troubleshooting
 
-Common issues that users have run into when provisioning Deis are detailed below.
-
-#### When running a `deisctl` command - 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'
-Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list the key you used to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
-
-#### When running a `deisctl` command - 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'
-The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new) wasn't generated and updated in `contrib/coreos/user-data` before the cluster was launched. Each Deis cluster must have a unique discovery URL, or else `etcd` will try and fail to connect to old hosts. Try destroying the cluster and relaunching the cluster with a fresh discovery URL.
-
-#### A Deis component fails to start
-Use `deisctl status <component>` to view the status of the component.  You can also use `deisctl journal <component>` to tail logs for a component, or `deisctl list` to list all components.
-
-The most common cause of services failing to start are sporadic issues with Docker Hub.  We are exploring workarounds and are working with the Docker team to improve Docker Hub reliability. In the meantime, try starting the service again with `deisctl restart <component>`.
-
-### Any other issues
-Running into something not detailed here? Please [open an issue](https://github.com/deis/deis/issues/new) or hop into [#deis](https://botbot.me/freenode/deis/) and we'll help!
+See the [Troubleshooting Deis](http://docs.deis.io/en/latest/troubleshooting_deis/) documentation for
+assistance with common issues.
 
 ## License
 
