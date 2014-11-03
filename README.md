@@ -92,7 +92,7 @@ $ deisctl start platform
 
 This can take some time - the **builder** must download and install the beefy Heroku cedar stack.  Grab some more coffee!
 
-Your Deis platform should be accessible at `deis.local3.deisapp.com`.  For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/installing_deis/configure-dns/).
+Your Deis platform should be accessible at `deis.local3.deisapp.com`.  For clusters on other platforms see our guide to [Configuring DNS](http://docs.deis.io/en/latest/managing_deis/configure-dns/#dns-records).
 
 ## Install the Deis Client
 
