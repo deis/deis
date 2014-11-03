@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# fail on any command exiting non-zero
+set -eo pipefail
+
 if [[ -z $DOCKER_BUILD ]]; then
   echo
   echo "Note: this script is intended for use by the Dockerfile and not as a way to build the controller locally"
@@ -13,7 +16,7 @@ DEBIAN_FRONTEND=noninteractive
 # HACK: install git so we can install bacongobbler's fork of django-fsm
 # install openssh-client for temporary fleetctl wrapper
 apt-get update && \
-    apt-get install -yq python-dev libpq-dev libyaml-dev git
+    apt-get install -yq python-dev libffi-dev libpq-dev libyaml-dev git
 
 # install pip
 curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
@@ -32,8 +35,8 @@ mkdir -p /templates && chown -R deis:deis /templates
 pip install -r /app/requirements.txt
 
 # cleanup. indicate that python, libpq and libyanl are required packages.
-apt-mark unmarkauto python python-openssl libpq5 libpython2.7 libyaml-0-2 && \
-  apt-get remove -y --purge python-dev gcc cpp libpq-dev libyaml-dev git && \
+apt-mark unmarkauto python python-openssl libpq5 libpython2.7 libffi6 libyaml-0-2 && \
+  apt-get remove -y --purge python-dev gcc cpp libffi-dev libpq-dev libyaml-dev git && \
   apt-get autoremove -y --purge && \
   apt-get clean -y && \
   rm -Rf /usr/share/man /usr/share/doc && \
