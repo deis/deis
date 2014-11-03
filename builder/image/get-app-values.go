@@ -35,6 +35,6 @@ func main() {
 	values := release["values"].(map[string]interface{})
 
 	for k, v := range values {
-		fmt.Print(" -e " + k + "=\"" + v.(string) + "\"")
+		fmt.Printf(" -e %s=\"%v\"", k, v)
 	}
 }
