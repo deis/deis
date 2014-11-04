@@ -88,6 +88,15 @@ target to spin up a quick, disposable registry inside a Docker container.
     To configure the registry for local Deis development:
         export DEV_REGISTRY=192.168.59.103:5000
 
+.. note::
+
+	For Docker 1.3.1 and later, ``docker push`` to this development registry may fail
+	without SSL certificate support. Restart docker with an ``--insecure-registry`` flag.
+
+	For ``boot2docker`` 1.3.1 for example, add
+	``EXTRA_ARGS="--insecure-registry 192.168.59.103:5000"`` to
+	/var/lib/boot2docker/profile and restart docker with ``sudo /etc/init.d/docker restart``.
+
 If you are developing elsewhere, you must set up a registry yourself.
 Make sure it meets the following requirements:
 
