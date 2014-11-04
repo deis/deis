@@ -179,5 +179,5 @@ echo
 # cleanup
 cd $REPO_DIR
 git gc &>/dev/null
-docker rm -f $JOB &>/dev/null
+[ $JOB ] && docker rm -f $JOB &>/dev/null
 docker rmi -f $TMP_IMAGE &>/dev/null
