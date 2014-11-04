@@ -15,7 +15,8 @@ DEBIAN_FRONTEND=noninteractive
 sed -i 's/main$/main universe/' /etc/apt/sources.list
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
-apt-get install -y git-core build-essential python-dev \
+apt-get update && \
+    apt-get install -y git-core build-essential python-dev \
     libevent-dev python-openssl liblzma-dev
 
 # install pip
