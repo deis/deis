@@ -25,6 +25,9 @@ func TestStore(t *testing.T) {
 	// prep etcd with the monitor hostname -- this is done in an ExecStartPre in the monitor unit
 	etcdutils.SetSingle(t, "/deis/store/hosts/"+host, hostname, etcdPort)
 
+	// since we're only running one OSD, our default of 128 placement groups is too large
+	etcdutils.SetSingle(t, "/deis/store/pgNum", "64", etcdPort)
+
 	// test deis-store-monitor
 	fmt.Printf("--- Run deis/store-monitor:%s at %s\n", tag, host)
 	name := "deis-store-monitor-" + tag
