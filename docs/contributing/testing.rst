@@ -37,46 +37,6 @@ The tests assume that you have Deis' `source code`_ in your ``$GOPATH``:
     $ go get -u -v github.com/deis/deis
     $ cd $GOPATH/src/github.com/deis/deis
 
-Disable Docker TLS
-^^^^^^^^^^^^^^^^^^
-
-If you aren't using Linux, your Docker client probably talks to a Docker server
-over a TCP connection, as in boot2docker_. Since Docker 1.3.0, that connection
-is secured with TLS. Deis' tests use Docker client code directly, but don't yet
-incorporate TLS changes.
-
-For now, you must disable Docker TLS to run Deis' functional tests. Here is how
-to revert to plain TCP for boot2docker_ 1.3.0. You will add the line
-``DOCKER_TLS=""`` to line 24 of */etc/init.d/docker* in your boot2docker VM, so
-that section will look like this:
-
-.. code-block:: bash
-
-    start() {
-        DOCKER_TLS=""  # <- Add this line and save!
-        # Not enabling Docker daemon TLS by default.
-        if [ "$DOCKER_TLS" != "" ]; then
-
-Open a shell to the boot2docker VM, make the change, and restart docker:
-
-.. code-block:: console
-
-    $ boot2docker up && boot2docker ssh
-    $ sudo vi /etc/init.d/docker  # edit as above, and save
-    $ sudo /etc/init.d/docker restart
-    $ exit
-
-Back on your host machine, ensure your ``DOCKER_HOST`` environment variable
-uses port `2375`:
-
-.. code-block:: console
-
-    $ export DOCKER_HOST=tcp://192.168.59.103:2375
-    $ unset DOCKER_TLS_VERIFY
-    $ docker info
-    Containers: 34
-    ...
-
 Start a Docker Registry
 ^^^^^^^^^^^^^^^^^^^^^^^
 
