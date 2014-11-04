@@ -4,18 +4,26 @@ package dockercli
 
 import (
 	"bufio"
+	"crypto/tls"
+	"log"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/deis/deis/tests/utils"
 	"github.com/docker/docker/api/client"
+)
+
+const (
+	defaultKeyFile      = "key.pem"
+	defaultCertFile     = "cert.pem"
 )
 
 // CloseWrap ensures that an io.Writer is closed.
@@ -88,7 +96,33 @@ func NewClient() (
 	cli *client.DockerCli, stdout *io.PipeReader, stdoutPipe *io.PipeWriter) {
 	proto, addr, _ := DockerHost()
 	stdout, stdoutPipe = io.Pipe()
-	cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, nil)
+
+	dockerCertPath := os.Getenv("DOCKER_CERT_PATH")
+	// Boot2docker use TLS per default, Jenkins not
+	if dockerCertPath != "" {
+		var (
+			tlsConfig tls.Config
+		)
+		tlsConfig.InsecureSkipVerify = true
+
+		flCert := filepath.Join(dockerCertPath, defaultCertFile)
+		flKey := filepath.Join(dockerCertPath, defaultKeyFile)
+
+		_, errCert := os.Stat(flCert)
+		_, errKey := os.Stat(flKey)
+		if errCert == nil && errKey == nil {
+			cert, err := tls.LoadX509KeyPair(flCert, flKey)
+			if err != nil {
+				log.Fatalf("Couldn't load X509 key pair: %s. Key encrypted?", err)
+			}
+			tlsConfig.Certificates = []tls.Certificate{cert}
+		}
+		// Avoid fallback to SSL protocols < TLS1.0
+		tlsConfig.MinVersion = tls.VersionTLS10
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, &tlsConfig)
+	} else {
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, nil)
+	}
 	return
 }
 
