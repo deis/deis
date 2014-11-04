@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+# fail on any command exiting non-zero
+set -eo pipefail
+
 if [[ -z $DOCKER_BUILD ]]; then
-  echo 
+  echo
   echo "Note: this script is intended for use by the Dockerfile and not as a way to build the controller locally"
-  echo 
+  echo
   exit 1
 fi
 
