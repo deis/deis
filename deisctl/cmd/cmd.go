@@ -24,19 +24,23 @@ import (
 )
 
 const (
+	// PlatformInstallCommand is shorthand for "all the Deis components."
 	PlatformInstallCommand string = "platform"
 )
 
+// ListUnits prints a list of installed units.
 func ListUnits(b backend.Backend) error {
-	err := b.ListUnits()
-	return err
+	return b.ListUnits()
 }
 
+// ListUnitFiles prints the contents of all defined unit files.
 func ListUnitFiles(b backend.Backend) error {
 	err := b.ListUnitFiles()
 	return err
 }
 
+// Scale grows or shrinks the number of running components.
+// Currently "router" is the only type that can be scaled.
 func Scale(b backend.Backend, targets []string) error {
 	outchan := make(chan string)
 	errchan := make(chan error)
@@ -60,6 +64,7 @@ func Scale(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// Start activates the specified components.
 func Start(b backend.Backend, targets []string) error {
 
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
@@ -94,6 +99,7 @@ deisctl config platform set sshPrivateKey=<path-to-key>
 	return nil
 }
 
+// StartPlatform activates all components.
 func StartPlatform(b backend.Backend) error {
 
 	outchan := make(chan string)
@@ -165,6 +171,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 }
 
+// Stop deactivates the specified components.
 func Stop(b backend.Backend, targets []string) error {
 
 	if len(targets) == 1 && targets[0] == PlatformInstallCommand {
@@ -184,6 +191,7 @@ func Stop(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// StopPlatform deactivates all components.
 func StopPlatform(b backend.Backend) error {
 
 	outchan := make(chan string)
@@ -234,6 +242,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 }
 
+// Restart stops and then starts components.
 func Restart(b backend.Backend, targets []string) error {
 	if err := Stop(b, targets); err != nil {
 		return err
@@ -241,6 +250,7 @@ func Restart(b backend.Backend, targets []string) error {
 	return Start(b, targets)
 }
 
+// Status prints the current state of components.
 func Status(b backend.Backend, targets []string) error {
 	for _, target := range targets {
 		if err := b.Status(target); err != nil {
@@ -250,6 +260,7 @@ func Status(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// Journal prints log output for the specified components.
 func Journal(b backend.Backend, targets []string) error {
 	for _, target := range targets {
 		if err := b.Journal(target); err != nil {
@@ -259,6 +270,8 @@ func Journal(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// Install loads components' definitions from local unit files.
+// After Install, the components will be available to Start.
 func Install(b backend.Backend, targets []string) error {
 
 	// if target is platform, install all services
@@ -280,6 +293,8 @@ func Install(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// InstallPlatform loads all components' definitions from local unit files.
+// After InstallPlatform, all components will be available for StartPlatform.
 func InstallPlatform(b backend.Backend) error {
 
 	if err := checkRequiredKeys(); err != nil {
@@ -328,6 +343,8 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	wg.Wait()
 }
 
+// Uninstall unloads components' definitions.
+// After Uninstall, the component will be unavailable until Install is called.
 func Uninstall(b backend.Backend, targets []string) error {
 
 	// if target is platform, uninstall all services
@@ -349,6 +366,8 @@ func Uninstall(b backend.Backend, targets []string) error {
 	return nil
 }
 
+// UninstallPlatform unloads all components' definitions.
+// After UninstallPlatform, all components will be unavailable.
 func UninstallPlatform(b backend.Backend) error {
 
 	outchan := make(chan string)
@@ -432,6 +451,7 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 	return
 }
 
+// Config gets or sets a configuration value in the cluster.
 func Config() error {
 	if err := config.Config(); err != nil {
 		return err
@@ -439,6 +459,7 @@ func Config() error {
 	return nil
 }
 
+// Update changes the platform version on a cluster host.
 func Update() error {
 	if err := utils.Execute(constant.HooksDir + "pre-update"); err != nil {
 		fmt.Println("pre-updatehook failed")
@@ -455,6 +476,9 @@ func Update() error {
 	return nil
 }
 
+// RefreshUnits overwrites local unit files with those requested.
+// Downloading from the Deis project GitHub URL by tag or SHA is the only mechanism
+// currently supported.
 func RefreshUnits() error {
 	usage := `Refreshes local unit files from the master repository.
 

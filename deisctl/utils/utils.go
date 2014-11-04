@@ -37,6 +37,8 @@ func getetcdClient() *etcd.Client {
 	return c
 }
 
+// GetKey returns the value of an etcd key, or of an environment variable if etcd didn't have
+// a value.
 func GetKey(dir, key, perm string) string {
 	c := getetcdClient()
 	result, err := c.Get(dir+key, false, false)
@@ -55,7 +57,7 @@ func PullImage(args string) error {
 	return nil
 }
 
-// GetClientID returns the CoreOS Machine ID or an unknown UUID string
+// GetClientID returns the CoreOS Machine ID, or an unknown UUID string.
 func GetClientID() string {
 	machineID := GetMachineID("/")
 	if machineID == "" {
@@ -64,6 +66,7 @@ func GetClientID() string {
 	return machineID
 }
 
+// GetMachineID returns the CoreOS Machine ID.
 func GetMachineID(root string) string {
 	fullPath := filepath.Join(root, constant.MachineID)
 	id, err := ioutil.ReadFile(fullPath)
@@ -73,6 +76,7 @@ func GetMachineID(root string) string {
 	return strings.TrimSpace(string(id))
 }
 
+// GetVersion returns the package version from a text file resource.
 func GetVersion() string {
 	id, err := ioutil.ReadFile(constant.Version)
 	if err != nil {
@@ -106,6 +110,7 @@ func CreateFile(path string) error {
 	return nil
 }
 
+// Extract expands a .tar archive file into the specified directory.
 func Extract(file, dir string) (err error) {
 	var wd, _ = os.Getwd()
 	_ = os.Chdir(dir)
@@ -144,6 +149,7 @@ func GetHostIPAddress() string {
 	return IP
 }
 
+// PutVersion updates the package version to a local text file resource.
 func PutVersion(version string) error {
 	err := ioutil.WriteFile(constant.Version, []byte(version), 0644)
 	if err != nil {
@@ -217,6 +223,7 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 	return stdout, stderr, err
 }
 
+// Execute runs the given script in a shell.
 func Execute(script string) error {
 	cmdl := exec.Command("sh", "-c", script)
 	if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {

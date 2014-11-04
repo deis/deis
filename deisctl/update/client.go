@@ -21,6 +21,7 @@ import (
 	"github.com/deis/deis/deisctl/utils"
 )
 
+// Client handles locking, update server interactions, and node updates.
 type Client struct {
 	ID             string
 	SessionID      string
@@ -33,6 +34,7 @@ type Client struct {
 	lock           *lock.Lock
 }
 
+// Logf prints a log message prefixed by Client.ID.
 func (c *Client) Logf(format string, args ...interface{}) {
 	format = c.ID + ": " + format
 	fmt.Printf(format, args...)
@@ -47,6 +49,7 @@ func (c *Client) getCodebaseURL(uc *omaha.UpdateCheck) string {
 	return uc.Urls.Urls[0].CodeBase + uc.Manifest.Packages.Packages[0].Name
 }
 
+// RequestLock asks for a new etcd Lock.
 func (c *Client) RequestLock() {
 	elc, err := lock.NewEtcdLockClient(nil)
 	if err != nil {
@@ -60,7 +63,10 @@ func (c *Client) RequestLock() {
 	c.lock = lock.New(mID, elc)
 }
 
-func (c *Client) OmahaRequest(otype, result string, updateCheck, isPing bool) *omaha.Request {
+// OmahaRequest returns an update server Request of the specified type.
+func (c *Client) OmahaRequest(
+	otype, result string, updateCheck, isPing bool) *omaha.Request {
+
 	req := omaha.NewRequest("lsb", "CoreOS", "", "")
 	app := req.AddApp(c.AppID, c.Version)
 	app.MachineID = c.ID
@@ -92,6 +98,7 @@ func (c *Client) OmahaRequest(otype, result string, updateCheck, isPing bool) *o
 	return req
 }
 
+// MakeRequest queries the omaha update server and returns its Response.
 func (c *Client) MakeRequest(otype, result string, updateCheck, isPing bool) (*omaha.Response, error) {
 	client := &http.Client{}
 	req := c.OmahaRequest(otype, result, updateCheck, isPing)
@@ -122,7 +129,7 @@ func (c *Client) MakeRequest(otype, result string, updateCheck, isPing bool) (*o
 	return oresp, nil
 }
 
-// Loop between n and m seconds
+// Loop repeatedly makes a request, pausing a random amount between n and m seconds.
 func (c *Client) Loop(n, m int) {
 	interval := constant.InitialInterval
 	for {
@@ -178,6 +185,7 @@ func (c *Client) Loop(n, m int) {
 	}
 }
 
+// SetVersion specifies the particular platform version for update.
 func (c *Client) SetVersion(resp *omaha.Response) {
 	// A field can potentially be nil.
 	defer func() {
@@ -218,6 +226,7 @@ func (c *Client) SetVersion(resp *omaha.Response) {
 	c.SessionID = uuid.New()
 }
 
+// Update changes services on a node to match the requested version.
 func (c *Client) Update() (err error) {
 	deis, _ := fleet.NewClient()
 	localServices := deis.GetLocaljobs()
