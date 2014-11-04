@@ -27,19 +27,23 @@ health of the cluster like:
 
 .. code-block:: console
 
-    cluster 6506db0c-9eae-4bb6-a40a-95954dd3c4c3
-    health HEALTH_OK
-    monmap e3: 3 mons at {deis-1=172.17.8.100:6789/0,deis-2=172.17.8.101:6789/0,deis-3=172.17.8.102:6789/0}, election epoch 8, quorum 0,1,2 deis-1,deis-2,deis-3
-    osdmap e7: 3 osds: 3 up, 3 in
-    pgmap v14: 192 pgs, 3 pools, 0 bytes data, 0 objects
-    19378 MB used, 28944 MB / 49200 MB avail
-    192 active+clean
+    core@deis-1 ~ $ nse deis-store-monitor
+    root@deis-1:/# ceph -s
+        cluster 20038e38-4108-4e79-95d4-291d0eef2949
+         health HEALTH_OK
+         monmap e3: 3 mons at {deis-1=172.17.8.100:6789/0,deis-2=172.17.8.101:6789/0,deis-3=172.17.8.102:6789/0}, election epoch 16, quorum 0,1,2 deis-1,deis-2,deis-3
+         mdsmap e10: 1/1/1 up {0=deis-2=up:active}, 2 up:standby
+         osdmap e36: 3 osds: 3 up, 3 in
+          pgmap v2096: 1344 pgs, 12 pools, 369 MB data, 448 objects
+                24198 MB used, 23659 MB / 49206 MB avail
+                1344 active+clean
 
 If you see ``HEALTH_OK``, this means everything is working as it should.
 Note also ``monmap e3: 3 mons at...`` which means all three monitor containers are up and responding,
+``mdsmap e10: 1/1/1 up...`` which means all three metadata containers are up and responding,
 and ``osdmap e7: 3 osds: 3 up, 3 in`` which means all three daemon containers are up and running.
 
-We can also see from the ``pgmap`` that we have 192 placement groups, all of which are ``active+clean``.
+We can also see from the ``pgmap`` that we have 1344 placement groups, all of which are ``active+clean``.
 
 For additional information on troubleshooting Ceph, see `troubleshooting`_. Common issues with
 specific store components are detailed below.
