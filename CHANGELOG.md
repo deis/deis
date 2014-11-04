@@ -1,3 +1,49 @@
+### v0.15.0 -> v0.15.1
+
+#### Features
+
+ - [`62d317c`](https://github.com/deis/deis/commit/62d317c03aee1cd06ac170da1e750d1e303b0956) docs: add digitalocean guide
+
+#### Fixes
+
+ - [`1e5b048`](https://github.com/deis/deis/commit/1e5b048f004ac310609c13838d558e0f53a8af69) contrib/userdata: nse uses `docker exec`
+ - [`a5457ee`](https://github.com/deis/deis/commit/a5457ee249d8ddfd9ed48594fe1ec507c17b204f) deis/client: `Exception.message` is deprecated for >= python2.7
+ - [`a139fa3`](https://github.com/deis/deis/commit/a139fa376d2a0966f63e5674569a746ea1d5a6b7) (all): etcd_set_default and etcd_safe_mkdir raise some errors
+ - [`59f2bb5`](https://github.com/deis/deis/commit/59f2bb5f6c5c02219fe5ad3303c08d227f1a4152) deisctl: start gateway before volume
+ - [`0ee19ee`](https://github.com/deis/deis/commit/0ee19eec0e83df2daf67f7175179230b963731c3) docs: turn off "warnings as errors" for sphinx-build"
+ - [`e021b7d`](https://github.com/deis/deis/commit/e021b7df9fb76c63e5102dcf1d345be95f93a11e) deisctl/units: remove extra commands in store-volume Start-Pre
+ - [`90ec427`](https://github.com/deis/deis/commit/90ec427491fb224874599edc459b3d5fae0fe8d8) docs: move subheaders down a level for correct nav
+ - [`ad1c1cd`](https://github.com/deis/deis/commit/ad1c1cd0e61dac6cbdacf50c318f1a14242f7e47) docs: turn off "warnings as errors" for sphinx-build
+ - [`ebf59a8`](https://github.com/deis/deis/commit/ebf59a84ba69efebd50301fe71b0e6d38ca35637) deisctl: correct typo in store-volume unit name
+ - [`4dd596c`](https://github.com/deis/deis/commit/4dd596c0157eff9e31323d4232b8066424ae9aae) docs: restore "make zipfile" target for pypi docs
+ - [`5aac5a0`](https://github.com/deis/deis/commit/5aac5a044392f38067fcc613841cceeb336236cf) docs: add internal links for installation guides
+
+#### Documentation
+
+ - [`6d43571`](https://github.com/deis/deis/commit/6d4357196ba8a8891c799b0d2d6ec7987ac7a2d1) (all): add Troubleshooting Deis docs
+ - [`c0b7a32`](https://github.com/deis/deis/commit/c0b7a32c822c56afbd9a571f7853121f58bc0e8a) testing: add better instructions for contributors
+ - [`5b5deac`](https://github.com/deis/deis/commit/5b5deacc1a499329d80eeae0822b8c212f1c3d0f) contrib: refer to digitalocean guide
+ - [`9b36518`](https://github.com/deis/deis/commit/9b365183983fe7bd11705375ea5bd9f8857fab85) installing_deis: import baremetal docs
+ - [`1e0c1a5`](https://github.com/deis/deis/commit/1e0c1a5fd93b3cb722d78459530943fbe5e84320) contrib: replace moved DNS links
+ - [`4fad679`](https://github.com/deis/deis/commit/4fad679ddc61350b7229d12e3ea4a1e08f694bd5) README.md: replace moved DNS link
+ - [`1864451`](https://github.com/deis/deis/commit/1864451e974770759832b476ac6501485e6349c5) deisctl: reword comment
+ - [`7347ae9`](https://github.com/deis/deis/commit/7347ae9df314369476cde7bfe564d5336e282c56) README: add badge pointing to latest docs
+ - [`9a614e1`](https://github.com/deis/deis/commit/9a614e1fd434e0604088bd1b6c1e70b89a9d4046) installing_deis: refer to contrib/ec2
+ - [`8514a0e`](https://github.com/deis/deis/commit/8514a0ea4002d8df02a913c92dd55c565a283297) installing_deis: import AWS provisioning docs
+ - [`ff3bc66`](https://github.com/deis/deis/commit/ff3bc6660bf8d81c106d00399e3674b8365ec297) reference: add controller API documentation
+ - [`7517848`](https://github.com/deis/deis/commit/7517848634c2169eaead7cc64f851a5b8147ee03) (all): move installing deisctl guide to "Installing Deis"
+ - [`023b630`](https://github.com/deis/deis/commit/023b6301db3bb34b3149ddf3f157f85ce97e1e0a) README: remove deprecated clusters troubleshooting
+ - [`5fc3697`](https://github.com/deis/deis/commit/5fc369723c22bf6ccd00eb7134c18ae55d0fd647) install_deisctl: import shield badges
+ - [`163601e`](https://github.com/deis/deis/commit/163601e1800fa1e6e83d66f39e613399a192a5a7) managing_deis: add workaround for store component failures
+ - [`a8eb697`](https://github.com/deis/deis/commit/a8eb69795b442693eec340c4828314a7da370005) managing_deis: always stop platform before uninstalling
+
+#### Maintenance
+
+ - [`78c207f`](https://github.com/deis/deis/commit/78c207faf2625f366b5a9322b6ec024323439010) controller: update python-etcd to 0.3.2
+ - [`57e650a`](https://github.com/deis/deis/commit/57e650a1091aedd4ed3dda592f38ce111b3fafc5) builder: update requests to 2.4.3
+ - [`dab7a94`](https://github.com/deis/deis/commit/dab7a94461835d9b686824db72e61c08fe4dcf41) client: update requests to 2.4.3
+ - [`4e8cce3`](https://github.com/deis/deis/commit/4e8cce3d9421ef782635e36214d76c8d7d49148e) release: update version in master to v0.15.0+git
+
 ### v0.14.1 -> v0.15.0
 
 #### Features
@@ -31,11 +77,11 @@
 
 #### Maintenance
 
- - [`d339264`](https://github.com/deis/deis/commit/d339264bd2acee340511d8ec222a991a2d9ef33a) release: update version to v0.15.0
+ - [`84c0692`](https://github.com/deis/deis/commit/84c0692e795f91b0e40e2975eb212f96c5250e11) release: update version to v0.15.0
  - [`9fa7c8a`](https://github.com/deis/deis/commit/9fa7c8ac81768739a0e8f3b230a1fc03aabdff76) controller: update djangorestframework to 2.4.3
  - [`354ab28`](https://github.com/deis/deis/commit/354ab285ea3d9cc23ac7cd71950ed79ca5d1e94e) controller: update Django to 1.6.8 bugfix release
  - [`1a9494d`](https://github.com/deis/deis/commit/1a9494dbd5874f28ae8c892b6bffd8ff6f6ff9d7) release: update version in master to v0.14.1+git
- 
+
 ### v0.14.0 -> v0.14.1
 
 #### Features
