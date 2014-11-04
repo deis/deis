@@ -10,6 +10,10 @@ Deis clusters can be provisioned anywhere `CoreOS`_ can, including on your own h
 CoreOS running on raw hardware, you can boot with `PXE`_ or `iPXE`_ - this will boot a CoreOS
 machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
 
+.. important::
+
+    Deis requires CoreOS version 471.1.0 or more recent for Ceph FS support in the kernel.
+
 
 Generate SSH key
 ----------------
@@ -97,9 +101,8 @@ Start the installation
     coreos-install -C alpha -c /tmp/config -d /dev/sda
 
 
-This will install the current `CoreOS`_ release to disk. If you want to install the recommended
-`CoreOS`_ version, check the `Deis changelog`_ and specify that version by appending the ``-V``
-parameter to the install command, e.g. ``-V 472.0.0``.
+This will install the latest `CoreOS`_ alpha release to disk. To specify a specific CoreOS version,
+append the ``-V`` parameter to the install command, e.g. ``-V 472.0.0``.
 
 After the installation has finished, reboot your server. Once your machine is back up, you should
 be able to log in as the `core` user using the `deis` ssh key.
@@ -163,7 +166,6 @@ disk. Add the following block to the ``write_files`` section:
 
 .. _`cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _`CoreOS`: https://coreos.com/
-.. _`Deis changelog`: https://github.com/deis/deis/blob/master/CHANGELOG.md
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`install CoreOS to disk`: https://coreos.com/docs/running-coreos/bare-metal/installing-to-disk/
 .. _`iPXE`: https://coreos.com/docs/running-coreos/bare-metal/booting-with-ipxe/
