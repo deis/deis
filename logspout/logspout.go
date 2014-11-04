@@ -28,7 +28,7 @@ func debug(v ...interface{}) {
 
 func assert(err error, context string) {
 	if err != nil {
-		log.Fatal(context+": ", err)
+		log.Fatalf("%s: %v", context, err)
 	}
 }
 
@@ -65,6 +65,8 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 		tag, pid := getLogName(logline.Name)
 		conn, err := net.Dial("udp", target.Addr)
 		assert(err, "syslog")
+		// bump up the packet size for large log lines
+		assert(conn.SetWriteBuffer(1048576), "syslog")
 		// HACK: Go's syslog package hardcodes the log format, so let's send our own message
 		_, err = fmt.Fprintf(conn,
 			"%s %s[%s]: %s",
