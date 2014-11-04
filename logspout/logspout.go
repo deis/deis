@@ -63,7 +63,9 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 			continue
 		}
 		tag, pid := getLogName(logline.Name)
-		conn, err := net.Dial("udp", target.Addr)
+		addr, err := net.ResolveUDPAddr("udp", target.Addr)
+		assert(err, "syslog")
+		conn, err := net.DialUDP("udp", nil, addr)
 		assert(err, "syslog")
 		// bump up the packet size for large log lines
 		assert(conn.SetWriteBuffer(1048576), "syslog")
