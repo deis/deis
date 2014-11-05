@@ -265,7 +265,7 @@ Reminder: make sure you're logged into the machine you're removing from the clus
     deis-store-metadata
 
 This is actually all that's necessary. Ceph provides a ``ceph mds rm`` command, but has no
-documentation for it. See: http://docs.ceph.com/docs/firefly/rados/operations/control/#mds-subsystem
+documentation for it. See: http://docs.ceph.com/docs/giant/rados/operations/control/#mds-subsystem
 
 Removing the host from etcd
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -274,5 +274,5 @@ The etcd cluster still has an entry for the host we've removed, so we'll need to
 This can be achieved by making a request to the etcd API. See `remove machines`_ for details.
 
 .. _`remove machines`: https://coreos.com/docs/distributed-configuration/etcd-api/#remove-machines
-.. _`removing monitors`: http://ceph.com/docs/firefly/rados/operations/add-or-rm-mons/#removing-monitors
-.. _`removing OSDs`: http://docs.ceph.com/docs/firefly/rados/operations/add-or-rm-osds/#removing-osds-manual
+.. _`removing monitors`: http://ceph.com/docs/giant/rados/operations/add-or-rm-mons/#removing-monitors
+.. _`removing OSDs`: http://docs.ceph.com/docs/giant/rados/operations/add-or-rm-osds/#removing-osds-manual

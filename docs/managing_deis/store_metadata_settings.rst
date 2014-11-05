@@ -17,7 +17,13 @@ Considerations: none
 
 Settings set by store-metadata
 ------------------------------
-The store-metadata component sets no keys in etcd.
+The following etcd keys are set by the store-metadata component, typically in its /bin/boot script.
+
+===================================       ==============================================
+setting                                   description
+===================================       ==============================================
+/deis/store/filesystemSetupComplete       Set when the Ceph filesystem setup is complete
+===================================       ==============================================
 
 Settings used by store-metadata
 -------------------------------

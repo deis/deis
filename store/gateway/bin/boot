@@ -35,21 +35,28 @@ if ! etcdctl --no-sync -C $ETCD get /deis/store/defaultPoolsConfigured >/dev/nul
   echo "store-gateway: setting pg_num values for default pools..."
   function set_until_success {
     set +e
-    ceph osd pool set $1 pg_num $2 2>/dev/null
-    PG_SET=$?
-    until [[ $PG_SET -eq 0 ]]; do
-      sleep 5
+
+    echo "store-gateway: checking pool $1..."
+    if ! ceph osd pool get $1 pg_num | grep "pg_num: $2" ; then
       ceph osd pool set $1 pg_num $2 2>/dev/null
       PG_SET=$?
-    done
+      until [[ $PG_SET -eq 0 ]]; do
+        sleep 5
+        ceph osd pool set $1 pg_num $2 2>/dev/null
+        PG_SET=$?
+      done
+    fi
 
-    ceph osd pool set $1 pgp_num $2 2>/dev/null
-    PGP_SET=$?
-    until [[ $PGP_SET -eq 0 ]]; do
-      sleep 5
+    if ! ceph osd pool get $1 pgp_num | grep "pgp_num: $2" ; then
       ceph osd pool set $1 pgp_num $2 2>/dev/null
       PGP_SET=$?
-    done
+      until [[ $PGP_SET -eq 0 ]]; do
+        sleep 5
+        ceph osd pool set $1 pgp_num $2 2>/dev/null
+        PGP_SET=$?
+      done
+    fi
+
     set -e
   }
 
