@@ -1445,7 +1445,9 @@ class DeisClient(object):
         for type_num in args.get('<type>=<num>'):
             typ, count = type_num.split('=')
             body.update({typ: int(count)})
-        sys.stdout.write('Scaling processes... but first, coffee!\n')
+        scaling_cmd = 'Scaling processes... but first, {}!\n'.format(
+            os.environ.get('DEIS_DRINK_OF_CHOICE', 'coffee'))
+        sys.stdout.write(scaling_cmd)
         sys.stdout.flush()
         try:
             progress = TextProgress()
