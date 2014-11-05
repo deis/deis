@@ -96,6 +96,25 @@ Configure DNS
 See :ref:`configure-dns` for more information on properly setting up your DNS records with Deis.
 
 
+Configure Load Balancer
+-----------------------
+
+You'll need to create two load balancers on Rackspace to handle your cluster:
+
+.. code-block:: console
+
+    Load Balancer 1
+    Port 80
+    Protocol HTTP
+    Health Monitoring -
+      Monitor Type HTTP
+      HTTP Path /health-check
+
+    Load Balancer 2
+    Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
+    Port 2222
+    Protocol TCP
+
 Install Deis Platform
 ---------------------
 
