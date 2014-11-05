@@ -76,6 +76,11 @@ If you want to allow `deis run` for one-off admin commands, you must provide an 
 $ deisctl config platform set sshPrivateKey=<path-to-private-key>
 ```
 
+If you're having issues with deisctl not being able to authenticate itself, try adding your private key like so:
+```console
+$ ssh-add ~/.ssh/yourkey
+```
+
 ### Initialize the cluster
 Once the cluster is up, get the hostname of any of the machines from Rackspace, set
 DEISCTL_TUNNEL and install the platform:
