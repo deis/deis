@@ -152,8 +152,9 @@ Once all applications have been validated, the old cluster can be retired.
 Upgrading CoreOS
 ----------------
 
-Sometimes you may need to update CoreOS manually in order to get Deis to work. You can do this by
-running the following commands:
+Sometimes you may need to update CoreOS manually in order to get Deis to work. For example, Deis
+requires a minimum of CoreOS v471.1.0 for Ceph FS support. To update CoreOS, run the following
+commands:
 
 .. code-block:: console
 
