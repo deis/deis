@@ -90,6 +90,7 @@ func (h *handler) mainLoop() {
 	h.End()
 }
 
+// Listen starts a new syslog server which runs until it receives a signal.
 func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
 	fmt.Println("Starting syslog...")
 	// Create a server with one handler and run one listen gorutine
