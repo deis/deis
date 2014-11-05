@@ -58,6 +58,9 @@ func RunMockCeph(t *testing.T, name string, cli *client.DockerCli, etcdPort stri
 
 	etcdutils.SetSingle(t, "/deis/store/hosts/"+utils.HostAddress(), utils.HostAddress(), etcdPort)
 
+	// since we're only running one OSD, our default of 128 placement groups is too large
+	etcdutils.SetSingle(t, "/deis/store/pgNum", "64", etcdPort)
+
 	monitorName := name + "-monitor"
 	RunMockCephMonitor(t, monitorName, etcdPort)
 
