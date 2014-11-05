@@ -97,8 +97,8 @@ func (s *Server) passToHandlers(m SyslogMessage) {
 }
 
 func (s *Server) receiver(c net.PacketConn) {
-	//q := (chan<- Message)(s.q)
-	buf := make([]byte, 1024)
+	// make packet buffer the same size as logspout
+	buf := make([]byte, 1048576)
 	for {
 		n, _, err := c.ReadFrom(buf)
 		if err != nil {

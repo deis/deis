@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"math/rand"
 	"os"
 	"testing"
 
@@ -19,6 +20,15 @@ var (
 	appsInfoCmd           = "apps:info --app={{.AppName}}"
 	appsDestroyCmd        = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 )
+
+func randomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
 
 func TestApps(t *testing.T) {
 	params := appsSetup(t)
@@ -99,6 +109,9 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 	}
 	utils.Execute(t, cmd, params, false, "hello")
 	utils.Execute(t, "apps:run env", params, true, "GIT_SHA")
+	// run a REALLY large command to test https://github.com/deis/deis/issues/2046
+	largeString := randomString(1024)
+	utils.Execute(t, "apps:run echo "+largeString, params, false, largeString)
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
