@@ -5,9 +5,9 @@ package dockercli
 import (
 	"bufio"
 	"crypto/tls"
-	"log"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	defaultKeyFile      = "key.pem"
-	defaultCertFile     = "cert.pem"
+	defaultKeyFile  = "key.pem"
+	defaultCertFile = "cert.pem"
 )
 
 // CloseWrap ensures that an io.Writer is closed.
