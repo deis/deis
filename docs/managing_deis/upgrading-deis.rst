@@ -147,3 +147,24 @@ new cluster, you would create a DNS record that looks like the following:
 Retire the old cluster
 ^^^^^^^^^^^^^^^^^^^^^^
 Once all applications have been validated, the old cluster can be retired.
+
+
+Upgrading CoreOS
+----------------
+
+Sometimes you may need to update CoreOS manually in order to get Deis to work. You can do this by ssh'ing onto your servers and running the following commands:
+
+    sudo /usr/bin/systemctl unmask update-engine.service
+    sudo /usr/bin/systemctl start update-engine.service
+    sudo update_engine_client -update
+    sudo /usr/bin/systemctl stop update-engine.service
+    sudo /usr/bin/systemctl mask update-engine.service
+    sudo reboot
+
+You can check the CoreOS version by running the following command on the CoreOS machine:
+
+    cat /etc/os-release
+
+Or from your local machine:
+
+    ssh core@<server ip> 'cat /etc/os-release'
