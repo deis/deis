@@ -201,8 +201,13 @@ class Settings(dict):
         Serialize and save settings to the filesystem
         """
         data = json.dumps(dict(self))
-        with open(self._path, 'w') as f:
-            f.write(data)
+        try:
+            with open(self._path, 'w') as f:
+                f.write(data)
+        except IOError:
+            self._logger.error("Could not write to settings file at '~/.deis/client.json'. \
+Do you have the right file permissions?")
+            sys.exit(1)
         return data
 
 
