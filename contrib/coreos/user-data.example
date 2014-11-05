@@ -108,3 +108,9 @@ write_files:
       deisctl list
       etcdctl ls --recursive /deis
       printf "\n"
+  - path: /home/core/.toolboxrc
+    owner: core
+    content: |
+      TOOLBOX_DOCKER_IMAGE=ubuntu-debootstrap
+      TOOLBOX_DOCKER_TAG=14.04
+      TOOLBOX_USER=root
