@@ -8,7 +8,7 @@ import (
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/fsouza/go-dockerclient"
 
-	"github.com/deis/deis/publisher/publisher"
+	"github.com/deis/deis/publisher/server"
 )
 
 const (
@@ -34,7 +34,7 @@ func main() {
 	}
 	etcdClient := etcd.NewClient([]string{"http://" + etcdHost + ":4001"})
 
-	server := &publisher.Server{client, etcdClient}
+	server := &server.Server{client, etcdClient}
 
 	go server.Listen(etcdTTL)
 

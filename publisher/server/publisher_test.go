@@ -1,4 +1,4 @@
-package publisher
+package server
 
 import (
 	"testing"
@@ -14,17 +14,16 @@ func TestIsPublishableApp(t *testing.T) {
 	if s.IsPublishableApp(badAppName) {
 		t.Errorf("%s should not be publishable", badAppName)
 	}
-	// publisher assumes that an app name of "test" with a null etcd client
-	// has v3 running
-	oldVersion := "test_v2.web.1"
+	// publisher assumes that an app name of "test" with a null etcd client has v3 running
+	oldVersion := "ceci-nest-pas-une-app_v2.web.1"
 	if s.IsPublishableApp(oldVersion) {
 		t.Errorf("%s should not be publishable", oldVersion)
 	}
-	currentVersion := "test_v3.web.1"
+	currentVersion := "ceci-nest-pas-une-app_v3.web.1"
 	if !s.IsPublishableApp(currentVersion) {
 		t.Errorf("%s should be publishable", currentVersion)
 	}
-	futureVersion := "test_v4.web.1"
+	futureVersion := "ceci-nest-pas-une-app_v4.web.1"
 	if !s.IsPublishableApp(futureVersion) {
 		t.Errorf("%s should be publishable", futureVersion)
 	}

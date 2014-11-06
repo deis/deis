@@ -1,4 +1,4 @@
-package publisher
+package server
 
 import (
 	"errors"
@@ -17,35 +17,38 @@ const (
 	appNameRegex string = `([a-z0-9-]+)_v([1-9][0-9]*).(cmd|web).([1-9][0-9])*`
 )
 
+// Server is the main entrypoint for a publisher. It listens on a docker client for events
+// and publishes their host:port to the etcd client.
 type Server struct {
 	DockerClient *docker.Client
 	EtcdClient   *etcd.Client
 }
 
+// Listen adds an event listener to the docker client and publishes containers that were started.
 func (s *Server) Listen(ttl time.Duration) {
 	listener := make(chan *docker.APIEvents)
 	// TODO: figure out why we need to sleep for 10 milliseconds
 	// https://github.com/fsouza/go-dockerclient/blob/0236a64c6c4bd563ec277ba00e370cc753e1677c/event_test.go#L43
 	defer func() { time.Sleep(10 * time.Millisecond); s.DockerClient.RemoveEventListener(listener) }()
-	err := s.DockerClient.AddEventListener(listener)
-	if err != nil {
+	if err := s.DockerClient.AddEventListener(listener); err != nil {
 		log.Fatal(err)
 	}
 	for {
 		select {
 		case event := <-listener:
 			if event.Status == "start" {
-				container, err := s.GetContainer(event.ID)
+				container, err := s.getContainer(event.ID)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				s.PublishContainer(container, ttl)
+				s.publishContainer(container, ttl)
 			}
 		}
 	}
 }
 
+// Poll lists all containers from the docker client every time the TTL comes up and publishes them to etcd
 func (s *Server) Poll(ttl time.Duration) {
 	containers, err := s.DockerClient.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
@@ -53,11 +56,12 @@ func (s *Server) Poll(ttl time.Duration) {
 	}
 	for _, container := range containers {
 		// send container to channel for processing
-		s.PublishContainer(&container, ttl)
+		s.publishContainer(&container, ttl)
 	}
 }
 
-func (s *Server) GetContainer(id string) (*docker.APIContainers, error) {
+// getContainer retrieves a container from the docker client based on id
+func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 	containers, err := s.DockerClient.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
 		return nil, err
@@ -71,8 +75,10 @@ func (s *Server) GetContainer(id string) (*docker.APIContainers, error) {
 	return nil, errors.New("could not find container")
 }
 
-func (s *Server) PublishContainer(container *docker.APIContainers, ttl time.Duration) {
+// publishContainer publishes the docker container to etcd.
+func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Duration) {
 	r := regexp.MustCompile(appNameRegex)
+	host := os.Getenv("HOST")
 	for _, name := range container.Names {
 		// HACK: remove slash from container name
 		// see https://github.com/docker/docker/issues/7519
@@ -84,7 +90,6 @@ func (s *Server) PublishContainer(container *docker.APIContainers, ttl time.Dura
 		appName := match[1]
 		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
 		for _, p := range container.Ports {
-			host := os.Getenv("HOST")
 			port := strconv.Itoa(int(p.PublicPort))
 			if s.IsPublishableApp(containerName) {
 				s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
@@ -103,7 +108,11 @@ func (s *Server) IsPublishableApp(name string) bool {
 		return false
 	}
 	appName := match[1]
-	version, _ := strconv.Atoi(match[2])
+	version, err := strconv.Atoi(match[2])
+	if err != nil {
+		log.Println(err)
+		return false
+	}
 	if version >= latestRunningVersion(s.EtcdClient, appName) {
 		return true
 	} else {
@@ -116,8 +125,8 @@ func (s *Server) IsPublishableApp(name string) bool {
 func latestRunningVersion(client *etcd.Client, appName string) int {
 	r := regexp.MustCompile(appNameRegex)
 	if client == nil {
-		// TODO: refactor for tests
-		if appName == "test" {
+		// FIXME: client should only be nil during tests. This should be properly refactored.
+		if appName == "ceci-nest-pas-une-app" {
 			return 3
 		}
 		return 0
@@ -134,12 +143,17 @@ func latestRunningVersion(client *etcd.Client, appName string) int {
 		if match == nil {
 			continue
 		}
-		version, _ := strconv.Atoi(match[2])
+		version, err := strconv.Atoi(match[2])
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
 		versions = append(versions, version)
 	}
 	return max(versions)
 }
 
+// max returns the maximum value in n
 func max(n []int) int {
 	val := 0
 	for _, i := range n {
@@ -150,9 +164,9 @@ func max(n []int) int {
 	return val
 }
 
+// setEtcd sets the corresponding etcd key with the value and ttl
 func (s *Server) setEtcd(key, value string, ttl uint64) {
-	_, err := s.EtcdClient.Set(key, value, ttl)
-	if err != nil {
+	if _, err := s.EtcdClient.Set(key, value, ttl); err != nil {
 		log.Println(err)
 	}
 	log.Println("set", key, "->", value)
