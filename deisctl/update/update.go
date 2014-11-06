@@ -10,7 +10,6 @@ import (
 	update "github.com/coreos/updateservicectl/client/update/v1"
 	"github.com/deis/deis/deisctl/constant"
 	"github.com/deis/deis/deisctl/utils"
-	docopt "github.com/docopt/docopt-go"
 )
 
 const (
@@ -102,26 +101,8 @@ func setUpdateFlags(args map[string]interface{}) error {
 }
 
 // Update runs the Deis update engine daemon
-func Update() error {
-	usage := `Deis Update Daemon
-
-	Usage:
-	deisctl update [options]
-
-	Options:
-	--verbose                   print out the request bodies [default: false]
-	--min-sleep=<sec>           minimum time between update checks [default: 10]
-	--max-sleep=<sec>           maximum time between update checks [default: 30]
-	--server=<server>           alternate update server URL (optional)
-	`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, nil, true, "", true)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("args: %v\n", args)
-	err = setUpdateFlags(args)
-	if err != nil {
+func Update(args map[string]interface{}) error {
+	if err := setUpdateFlags(args); err != nil {
 		return err
 	}
 	fmt.Printf("flags: %v\n", Flags)
