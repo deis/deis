@@ -80,13 +80,13 @@ Run the Provision Script
 ------------------------
 
 Run the Rackspace provision script to spawn a new CoreOS cluster. You'll need to provide the name
-of the key pair you just added. Optionally, you can also specify a flavor name.
+of the key pair you just added. Optionally, you can also specify a flavor name, as well as the supernova environment to use. The environment will default to `production`, and the flavor to `performance1-2`.
 
 .. code-block:: console
 
     $ cd contrib/rackspace
     $ ./provision-rackspace-cluster.sh
-    Usage: provision-rackspace-cluster.sh <key pair name> [flavor]
+    Usage: provision-rackspace-cluster.sh <key pair name> [flavor] [environment]
     $ ./provision-rackspace-cluster.sh deis-key
 
 
