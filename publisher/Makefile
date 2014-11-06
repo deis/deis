@@ -45,8 +45,10 @@ start: check-deisctl
 stop: check-deisctl
 	deisctl stop publisher
 
-test:
-	@echo no unit tests
+test: test-unit
+
+test-unit:
+	godep go test -v ./...
 
 uninstall: check-deisctl
 	deisctl uninstall publisher
