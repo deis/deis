@@ -13,12 +13,13 @@ This guide demonstrates how you can stand up a Deis cluster for development purp
 Install Prerequisites
 ---------------------
 
-Please install [Vagrant v1.6.5+](http://www.vagrantup.com/downloads.html) and
-[VirtualBox](https://www.virtualbox.org/wiki/Downloads).
+Please install `Vagrant`_ v1.6.5+ and `VirtualBox`_.
 
 .. note::
 
-    For Ubuntu users: the VirtualBox package in Ubuntu has some issues when running in RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's website.
+    For Ubuntu users: the VirtualBox package in Ubuntu has some issues when running in
+    RAM-constrained environments. Please install the latest version of VirtualBox from Oracle's
+    website.
 
 
 Generate a New Discovery URL
@@ -72,4 +73,5 @@ start installing the platform.
 
 
 .. _Vagrant: http://www.vagrantup.com/
+.. _VirtualBox: https://www.virtualbox.org/wiki/Downloads
 .. _etcd: https://github.com/coreos/etcd
