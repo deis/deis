@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-rackspace-cluster.sh <key pair name> [flavor]
+# Usage: ./provision-rackspace-cluster.sh <key pair name> [flavor] [environment]
 #
 
 set -e
@@ -11,7 +11,7 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 source $CONTRIB_DIR/utils.sh
 
 if [ -z "$1" ]; then
-  echo_red 'Usage: provision-rackspace-cluster.sh <key pair name> [flavor]'
+  echo_red 'Usage: provision-rackspace-cluster.sh <key pair name> [flavor] [environment]'
   exit 1
 fi
 
@@ -21,17 +21,23 @@ else
   FLAVOR=$2
 fi
 
+if [ -z "$3" ]; then
+  ENV="production"
+else
+  ENV=$3
+fi
+
 if ! which supernova > /dev/null; then
   echo_red 'Please install the dependencies listed in the README and ensure they are in your $PATH.'
   exit 1
 fi
 
-if ! supernova production network-list|grep -q deis &>/dev/null; then
+if ! supernova $ENV network-list|grep -q deis &>/dev/null; then
   echo_yellow "Creating deis private network..."
-  supernova production network-create deis 10.21.12.0/24
+  supernova $ENV network-create deis 10.21.12.0/24
 fi
 
-NETWORK_ID=`supernova production network-list|grep deis|awk -F"|" '{print $2}'|sed 's/^ *//g'`
+NETWORK_ID=`supernova $ENV network-list|grep deis|awk -F"|" '{print $2}'|sed 's/^ *//g'`
 
 if [ -z "$DEIS_NUM_INSTANCES" ]; then
     DEIS_NUM_INSTANCES=3
@@ -42,9 +48,8 @@ $CONTRIB_DIR/util/check-user-data.sh
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    # This image is CoreOS 459.0.0, the most recent provided by Rackspace
-    # Deis requires at least CoreOS 471.1.0
-    supernova production boot --image 325a1c78-78e1-4367-be7a-1334b088018a --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
+    # this image is CoreOS 452.0.0
+    supernova $ENV boot --image 7f116bdd-9b17-410c-b049-eb1bca1b7087 --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 
