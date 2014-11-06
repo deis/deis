@@ -64,11 +64,14 @@ running the following from the root of the repository:
     $ make discovery-url
 
 
-### Choose number of instances
+Choose number of instances
+--------------------------
+
 By default, the provision script will provision 3 servers. You can override this by setting `DEIS_NUM_INSTANCES`:
-```console
-$ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
-```
+
+.. code-block:: console
+
+    $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
 For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
