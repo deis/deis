@@ -296,17 +296,17 @@ Usage:
   deisctl restart [<target>...] [options]
 `
 	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
 		return err
 	}
 
-	// if target is platform, install all services
-	targets := args["<target>"].([]string)
-	if err := Stop(targets, b); err != nil {
+	// act as if the user called "stop" and then "start"
+	argv[0] = "stop"
+	if err := Stop(argv, b); err != nil {
 		return err
 	}
-	return Start(targets, b)
+	argv[0] = "start"
+	return Start(argv, b)
 }
 
 // Status prints the current status of components.
