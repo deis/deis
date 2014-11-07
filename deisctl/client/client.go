@@ -21,7 +21,6 @@ type DeisCtlClient interface {
 	Status(argv []string) error
 	Stop(argv []string) error
 	Uninstall(argv []string) error
-	Update(argv []string) error
 }
 
 // Client uses a backend to implement the DeisCtlClient interface.
@@ -110,9 +109,4 @@ func (c *Client) Stop(argv []string) error {
 // After Uninstall, the components will be unavailable until Install is called.
 func (c *Client) Uninstall(argv []string) error {
 	return cmd.Uninstall(argv, c.Backend)
-}
-
-// Update changes the platform version on a cluster host.
-func (c *Client) Update(argv []string) error {
-	return cmd.Update(argv)
 }

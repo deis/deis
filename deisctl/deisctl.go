@@ -40,7 +40,6 @@ Commands, use "deisctl help <command>" to learn more:
   scale             grow or shrink the number of routers
   journal           print the log output of a component
   config            set platform or component values
-  update            run the update engine
   refresh-units     refresh unit files from GitHub
   help              show the help screen for a command
 
@@ -107,8 +106,6 @@ Options:
 		err = c.Uninstall(argv)
 	case "config":
 		err = c.Config(argv)
-	case "update":
-		err = c.Update(argv)
 	case "refresh-units":
 		err = c.RefreshUnits(argv)
 	case "help":
