@@ -12,6 +12,8 @@ There are currently two strategies for upgrading a Deis cluster:
 * In-place Upgrade (recommended)
 * Migration Upgrade
 
+Before attempting an upgrade, it is strongly recommended to :ref:`backup your data <backing_up_data>`.
+
 In-place Upgrade
 ----------------
 
