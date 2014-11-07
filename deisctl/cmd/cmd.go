@@ -16,8 +16,6 @@ import (
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
-	"github.com/deis/deis/deisctl/constant"
-	"github.com/deis/deis/deisctl/update"
 	"github.com/deis/deis/deisctl/utils"
 
 	docopt "github.com/docopt/docopt-go"
@@ -594,40 +592,6 @@ Options:
 		return err
 	}
 	if err := config.Config(args); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Update changes the platform version on a cluster host.
-func Update(argv []string) error {
-	usage := `Changes the platform version on a cluster host.
-
-Usage:
-  deisctl update [options]
-
-Options:
-  --verbose                   print out the request bodies [default: false]
-  --min-sleep=<sec>           minimum time between update checks [default: 10]
-  --max-sleep=<sec>           maximum time between update checks [default: 30]
-  --server=<server>           alternate update server URL (optional)
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	if err := utils.Execute(constant.HooksDir + "pre-update"); err != nil {
-		fmt.Println("pre-updatehook failed")
-		return err
-	}
-	if err := update.Update(args); err != nil {
-		fmt.Println("update engine failed")
-		return err
-	}
-	if err := utils.Execute(constant.HooksDir + "post-update"); err != nil {
-		fmt.Println("post-updatehook failed")
 		return err
 	}
 	return nil

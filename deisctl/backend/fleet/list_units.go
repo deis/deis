@@ -3,13 +3,11 @@ package fleet
 import (
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
-	"github.com/deis/deis/deisctl/utils"
 )
 
 // initialize tabwriter on stdout
@@ -90,20 +88,6 @@ func (c *FleetClient) ListUnits() (err error) {
 	}
 	printUnits(states)
 	return
-}
-
-func (c *FleetClient) GetLocaljobs() sort.StringSlice {
-	var sortable sort.StringSlice
-	unitStates, err := c.Fleet.UnitStates()
-	if err != nil {
-		return sortable
-	}
-	for _, us := range unitStates {
-		if strings.HasPrefix(us.Name, "deis-") && us.MachineID == utils.GetMachineID("/") {
-			sortable = append(sortable, us.Name)
-		}
-	}
-	return sortable
 }
 
 // printUnits writes units to stdout using a tabwriter
