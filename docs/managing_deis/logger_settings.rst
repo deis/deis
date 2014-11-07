@@ -22,8 +22,8 @@ The following etcd keys are set by the database component, typically in its /bin
 ===========================              =================================================================================
 setting                                  description
 ===========================              =================================================================================
-/deis/logger/host                        IP address of the host running logger
-/deis/logger/port                        port used by the logger service (default: 514)
+/deis/logs/host                          IP address of the host running logger
+/deis/logs/port                          port used by the logger service (default: 514)
 ===========================              =================================================================================
 
 Settings used by logger
