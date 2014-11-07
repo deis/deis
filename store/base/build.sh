@@ -24,7 +24,7 @@ curl -sSL https://s3-us-west-2.amazonaws.com/opdemand/confd-git-0e563e5 -o /usr/
 chmod +x /usr/local/bin/confd
 
 curl -sSL 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
-echo "deb http://ceph.com/debian-firefly trusty main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://ceph.com/debian-giant trusty main" > /etc/apt/sources.list.d/ceph.list
 
 apt-get update && apt-get install -yq ceph
 

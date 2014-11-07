@@ -67,6 +67,9 @@ func RunMockCeph(t *testing.T, name string, cli *client.DockerCli, etcdPort stri
 	daemonName := name + "-daemon"
 	RunMockCephDaemon(t, daemonName, etcdPort)
 
+	metadataName := name + "-metadata"
+	RunMockCephMetadata(t, metadataName, etcdPort)
+
 	gatewayName := name + "-gateway"
 	RunMockCephGateway(t, gatewayName, utils.RandomPort(), etcdPort)
 }
@@ -117,6 +120,31 @@ func RunMockCephDaemon(t *testing.T, name string, etcdPort string) {
 			cephImage)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "journal close /var/lib/ceph/osd/ceph-0/journal")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// RunMockCephMetadata starts a mock Ceph MDS
+func RunMockCephMetadata(t *testing.T, name string, etcdPort string) {
+	var err error
+	cli, stdout, stdoutPipe := dockercli.NewClient()
+	cephImage := "deis/store-metadata:" + utils.BuildTag()
+	ipaddr := utils.HostAddress()
+	fmt.Printf("--- Running deis/mock-ceph-metadata at %s\n", ipaddr)
+	done2 := make(chan bool, 1)
+	go func() {
+		done2 <- true
+		_ = cli.CmdRm("-f", name)
+		err = dockercli.RunContainer(cli,
+			"--name", name,
+			"--rm",
+			"-e", "ETCD_PORT="+etcdPort,
+			"-e", "HOST="+ipaddr,
+			"--net=host",
+			cephImage)
+	}()
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "mds.0.1 active_start")
 	if err != nil {
 		t.Fatal(err)
 	}
