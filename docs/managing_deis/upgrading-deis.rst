@@ -20,6 +20,11 @@ leaving your applications and platform data intact.  This is the easiest and lea
 The general approach is to use ``deisctl`` to uninstall all platform components, update the platform version
 and then reinstall platform components.
 
+.. important::
+
+    Always use a version of ``deisctl`` that matches the Deis release.
+    Verify this with ``deisctl --version``.
+
 .. note::
 
     In-place upgrades are supported starting from Deis version 0.14.0

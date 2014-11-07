@@ -39,8 +39,10 @@ To change installation options, save the installer directly:
 Then run the downloaded file as a shell script. Append ``--help`` to see what options
 are available.
 
-If you are using a specific Deis release (not latest), you'll want to use the deisctl built for
-your release.
+.. important::
+
+    Always use a version of ``deisctl`` that matches the Deis release.
+    Verify this with ``deisctl --version``.
 
 Builds are hosted on an S3 bucket at this URL format:
 
