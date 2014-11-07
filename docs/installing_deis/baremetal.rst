@@ -12,7 +12,7 @@ machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
 
 .. important::
 
-    Deis requires CoreOS version 471.1.0 or more recent for Ceph FS support in the kernel.
+    Deis requires CoreOS version 472.0.0 or more recent.
 
 
 Generate SSH key
