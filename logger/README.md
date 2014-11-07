@@ -19,7 +19,7 @@ install, and start **deis/logger**.
 * **ETCD_PORT** sets the TCP port on which to connect to the local etcd
   daemon (default: *4001*)
 * **ETCD_PATH** sets the etcd directory where the logger announces
-  its configuration (default: */deis/logger*)
+  its configuration (default: */deis/logs*)
 * **ETCD_TTL** sets the time-to-live before etcd purges a configuration
   value, in seconds (default: *10*)
 * **PORT** sets the TCP port on which the logger listens (default: *514*)
