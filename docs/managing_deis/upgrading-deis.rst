@@ -153,7 +153,7 @@ Upgrading CoreOS
 ----------------
 
 Sometimes you may need to update CoreOS manually in order to get Deis to work. For example, Deis
-requires a minimum of CoreOS v471.1.0 for Ceph FS support. To update CoreOS, run the following
+requires a minimum of CoreOS v472.0.0. To update CoreOS, run the following
 commands:
 
 .. code-block:: console
