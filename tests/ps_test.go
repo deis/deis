@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -22,6 +23,12 @@ func TestPs(t *testing.T) {
 	psListTest(t, params, false)
 	utils.AppsDestroyTest(t, params)
 	utils.Execute(t, psScaleCmd, params, true, "404 NOT FOUND")
+	// ensure we can choose our preferred beverage
+	utils.Execute(t, psScaleCmd, params, true, "but first, coffee!")
+	if err := os.Setenv("DEIS_DRINK_OF_CHOICE", "tea"); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, psScaleCmd, params, true, "but first, tea!")
 }
 
 func psSetup(t *testing.T) *utils.DeisTestConfig {
