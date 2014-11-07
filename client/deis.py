@@ -610,19 +610,22 @@ class DeisClient(object):
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
                 # get the tag from the log
-                log_tag = line.split(': ')[0].split(' ')[1]
-                # colorize the log based on the tag
-                color = sum([ord(ch) for ch in log_tag]) % 6
-                def f(x):
-                    return {
-                        0: 'green',
-                        1: 'cyan',
-                        2: 'red',
-                        3: 'yellow',
-                        4: 'blue',
-                        5: 'magenta',
-                    }.get(x, 'magenta')
-                self._logger.info(colored(line, f(color)))
+                try:
+                    log_tag = line.split(': ')[0].split(' ')[1]
+                    # colorize the log based on the tag
+                    color = sum([ord(ch) for ch in log_tag]) % 6
+                    def f(x):
+                        return {
+                            0: 'green',
+                            1: 'cyan',
+                            2: 'red',
+                            3: 'yellow',
+                            4: 'blue',
+                            5: 'magenta',
+                        }.get(x, 'magenta')
+                    self._logger.info(colored(line, f(color)))
+                except IndexError:
+                    self._logger.info(line)
         else:
             raise ResponseError(response)
 
