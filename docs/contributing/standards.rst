@@ -150,6 +150,8 @@ changes cannot be tested by Deis' test scripts, include specific instructions
 for manual testing.
 
 
+.. _merge_approval:
+
 Merge Approval
 --------------
 

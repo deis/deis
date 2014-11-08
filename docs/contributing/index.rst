@@ -16,3 +16,4 @@ Contributing
     community
     conduct
     releases
+    test_plan
