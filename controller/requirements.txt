@@ -18,4 +18,4 @@ python-etcd==0.3.2
 PyYAML==3.11
 redis==2.9.1
 static==1.0.2
-South==1.0
+South==1.0.1
