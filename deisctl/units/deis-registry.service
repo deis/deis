@@ -13,3 +13,6 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=deis-registry@*.service

@@ -43,7 +43,7 @@ deis-store-gateway.service: loaded
 Control plane...
 deis-cache.service: loaded
 deis-database.service: loaded
-deis-registry.service: loaded
+deis-registry@1.service: loaded
 deis-controller.service: loaded
 deis-builder.service: loaded
 Data plane...
@@ -70,7 +70,7 @@ deis-store-gateway.service: running
 Control plane...
 deis-cache.service: running
 deis-database.service: running
-deis-registry.service: running
+deis-registry@1.service: running
 deis-controller.service: running
 deis-builder.service: running
 Data plane...
@@ -84,7 +84,7 @@ Done.
 
 Note that the default start command activates 1 of each component.
 You can scale components with `deisctl scale router=3`, for example.
-The router is the only component that _currently_ scales beyond 1 unit.
+The router and the registry are the only component that _currently_ scales beyond 1 unit.
 
 You can also use the `deisctl uninstall` command to destroy platform units:
 
@@ -103,7 +103,7 @@ deis-controller.service: inactive
 deis-builder.service: inactive
 deis-cache.service: inactive
 deis-database.service: inactive
-deis-registry.service: inactive
+deis-registry@1.service: inactive
 Storage subsystem...
 deis-store-gateway.service: inactive
 Logging subsystem...
@@ -140,7 +140,7 @@ deis-cache.service  		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller.service	    f936b7a5.../172.17.8.100	loaded	active	running
 deis-database.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-logger.service	    	f936b7a5.../172.17.8.100	loaded	active	running
-deis-registry.service		f936b7a5.../172.17.8.100	loaded	active	running
+deis-registry@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-router@1.service		f936b7a5.../172.17.8.100	loaded	active	running
 ```
 
