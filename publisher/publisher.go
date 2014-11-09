@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path"
 	"regexp"
 	"strconv"
 	"time"
@@ -15,6 +16,7 @@ import (
 const (
 	timeout time.Duration = 10 * time.Second
 	etcdTTL time.Duration = timeout * 2
+	baseKey               = "/deis/services/"
 )
 
 func getopt(name, dfault string) string {
@@ -97,9 +99,9 @@ func pollContainers(client *docker.Client, etcdClient *etcd.Client, ttl time.Dur
 }
 
 func publishContainer(client *etcd.Client, container *docker.APIContainers, ttl time.Duration) {
-
 	var publishableContainerName = regexp.MustCompile(`[a-z0-9-]+_v[1-9][0-9]*.(cmd|web).[1-9][0-9]*`)
 	var publishableContainerBaseName = regexp.MustCompile(`^[a-z0-9-]+`)
+	host := os.Getenv("HOST")
 
 	// this is where we publish to etcd
 	for _, name := range container.Names {
@@ -110,13 +112,10 @@ func publishContainer(client *etcd.Client, container *docker.APIContainers, ttl 
 			continue
 		}
 		containerBaseName := publishableContainerBaseName.FindString(containerName)
-		keyPath := "/deis/services/" + containerBaseName + "/" + containerName
+		keyPath := path.Join(baseKey, containerBaseName, containerName)
 		for _, p := range container.Ports {
-			host := os.Getenv("HOST")
 			port := strconv.Itoa(int(p.PublicPort))
-			setEtcd(client, keyPath, host+":"+port, uint64(ttl.Seconds()))
-			// TODO: support multiple exposed ports
-			break
+			setEtcd(client, path.Join(keyPath, strconv.Itoa(int(p.PrivatePort))), host+":"+port, uint64(ttl.Seconds()))
 		}
 	}
 }
