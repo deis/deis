@@ -72,7 +72,7 @@ By default, the provision script will provision 3 servers. You can override this
     $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
-For more information, see [optimal etcd cluster size](https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md).
+For more information, see `optimal etcd cluster size`_.
 
 Deis clusters of less than 3 nodes are unsupported.
 
@@ -125,5 +125,6 @@ start installing the platform.
 
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
 .. _`CoreOS on Rackspace`: https://coreos.com/docs/running-coreos/cloud-providers/rackspace/
+.. _`optimal etcd cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _Rackspace: https://github.com/deis/deis/tree/master/contrib/rackspace#readme
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
