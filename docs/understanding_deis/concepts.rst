@@ -5,25 +5,23 @@
 
 Concepts
 ========
-Deis is a lightweight, flexible and powerful application platform that
-deploys and scales :ref:`concepts_twelve_factor` apps as
-:ref:`concepts_docker` containers across a cluster of
-:ref:`concepts_coreos` machines.
+Deis is a lightweight application platform that deploys and scales
+:ref:`concepts_twelve_factor` apps as :ref:`concepts_docker` containers
+across a cluster of :ref:`concepts_coreos` machines.
 
 .. _concepts_twelve_factor:
 
 Twelve-Factor
 -------------
-The `Twelve-Factor App`_ is a DevOps manifesto for building and
-deploying scalable, modern applications and services.
+The `Twelve-Factor App`_ is a methodology for building modern
+applications that can be scaled across a distributed system.
 
 We consider it an invaluable synthesis of much experience with
 software-as-a-service apps in the wild, especially on the
 Heroku platform.
 
-Deis works best with applications in a `Twelve-Factor App`_ style.
-Following the twelve-factor model, Deis enforces a strict separation of
-the :ref:`Build and Run <concepts_build_release_run>` stages.
+Deis is designed to run applications that adhere to `Twelve-Factor App`_
+methodology and best practices.
 
 .. _concepts_docker:
 
@@ -32,9 +30,8 @@ Docker
 `Docker`_ is an open source project to pack, ship and run any
 application as a lightweight, portable, self-sufficient container.
 
-When you deploy an app with ``git push deis master``, Deis builds and
-packages it as a Docker image, then distributes it as Docker containers
-across your cluster.
+Deis curates your applications as Docker images, which are then
+distributed across your cluster as Docker containers.
 
 (Deis itself is also a set of coordinated Docker containers.)
 
@@ -42,47 +39,45 @@ across your cluster.
 
 CoreOS
 ------
-`CoreOS`_ is a lean new Linux distribution, rearchitected for features
-needed by modern infrastructure stacks and targeted at massive
-server deployments.
+`CoreOS`_ is a new, minimal Linux distribution, rearchitected for
+running modern, containerized infrastructure stacks.
 
-Deis applications are processes running on CoreOS machines, which can
-be private or public cloud instances, or bare metal. CoreOS clusters
-allow Deis to host applications and services at scale with
-high resilience.
+Deis runs on CoreOS machines that be hosted anywhere -- public cloud,
+private cloud, bare metal or even your workstation.
 
-Yet Deis and CoreOS run identically in a Vagrant virtual machine on
-your laptop, for convenient testing and rapid development.
+CoreOS allows Deis to host applications and services at scale with
+high resilience, in a way that is simple to operate.
 
 .. _concepts_applications:
 
 Applications
 ------------
-An :ref:`application`, or app, lives on a cluster where it uses
-:ref:`Containers <container>` to process requests and run tasks for a
-deployed git repository.
+Deis is designed around the concept of an :ref:`application`, or app.
+Applications live on a cluster where they use :ref:`Containers <container>`
+to service requests.
 
-Developers use :ref:`Applications <application>` to push code, change
-configuration, scale processes, view logs, or run admin commands --
-regardless of the cluster's underlying infrastructure.
+Developers use applications to push code, change configuration, scale processes,
+view logs, run admin commands and much more.
 
 .. _concepts_build_release_run:
 
 Build, Release, Run
 -------------------
 
+.. image:: DeisGitPushWorkflow.png
+    :alt: Deis Git Push Workflow
+
 Build Stage
 ^^^^^^^^^^^
-The :ref:`Controller` includes a *gitreceive* hook that receives incoming git push requests over
-SSH and builds applications inside ephemeral Docker containers. Tarballs of the /app directory are
-extracted into a slug and is injected into another container, which will create the app image. The
-image is then pushed to a private registry for later execution.
+The :ref:`builder` processes incoming ``git push`` requests builds applications
+inside ephemeral Docker containers, creating a new Docker image.
 
 Release Stage
 ^^^^^^^^^^^^^
 During the release stage, a :ref:`build` is combined with :ref:`config` to create a new numbered
-:ref:`release`. The release stage is triggered any time a new build is created or config is
-changed, making it easy to rollback code and configuration.
+:ref:`release`. This release is then pushed to a Docker registry for later execution.
+The release stage is triggered any time a new build is created or config is
+changed, making it easy to rollback code and configuration changes.
 
 Run Stage
 ^^^^^^^^^
@@ -99,14 +94,13 @@ Deis treats databases, caches, storage, messaging systems, and other
 `backing services`_ as attached resources, in keeping with Twelve-Factor
 best practices.
 
-Applications can be decoupled this way, using simple
-`environment variables`_ to configure and attach to any services needed.
-Apps are then free to scale up independently, to use services provided
-by other apps, or to switch easily to external or third-party vendor
-services.
+Applications are attached to backing services using `environment variables`_.
+Because applications are decoupled from backing services, apps are free to scale up independently,
+to swap services provided by other apps, or to switch to external or third-party vendor services.
 
 See Also
 --------
+* :ref:`Architecture`
 * :ref:`Using Deis <using_deis>`
 * :ref:`Managing Deis <managing_deis>`
 * The `Twelve-Factor App`_
