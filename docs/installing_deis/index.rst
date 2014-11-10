@@ -20,6 +20,7 @@ with CoreOS.
 
 .. toctree::
 
+    quick-start
     install-deisctl
     install-platform
     digitalocean

@@ -14,8 +14,6 @@ Prerequisites
 
 To complete this guide, you must have the following:
 
- - An SSH key for running operator's commands against the cluster using ``deisctl``
- - An SSH key for authorizing yourself against Deis' builder
  - A domain to point to the cluster
  - The ability to provision at least 3 DigitalOcean Droplets that are 2GB or greater
 
@@ -24,21 +22,16 @@ In order to provision the cluster, we will need to install a couple of administr
 `Deis Control Utility`_, which will assist us with installing, configuring and managing the Deis
 platform.
 
+Generate SSH Key
+----------------
+
+Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+
 Generate a New Discovery URL
 ----------------------------
 
-To get started with provisioning the Droplets, we will need to generate a new Discovery URL.
-Discovery URLs help connect `etcd`_ instances together by storing a list of peer addresses and
-metadata under a unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
+Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
 
-.. code-block:: console
-
-    $ make discovery-url
-
-This will write a new discovery URL to the user-data file. This file is used by DigitalOcean's v2
-metadata API to create and customize each machine in our cluster to our liking. Some convenience
-scripts are supplied in this user-data file, so it is mandatory for provisioning Deis.
 
 Create CoreOS Droplets
 ----------------------
@@ -135,5 +128,4 @@ start installing the platform.
 .. _`docl`: https://github.com/nathansamson/docl#readme
 .. _`Deis Control Utility`: https://github.com/deis/deis/tree/master/deisctl#readme
 .. _`DNS control panel`: https://cloud.digitalocean.com/domains
-.. _`etcd`: https://github.com/coreos/etcd
 .. _`this tutorial`: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-host-name-with-digitalocean

@@ -15,16 +15,10 @@ machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
     Deis requires CoreOS version 472.0.0 or more recent.
 
 
-Generate SSH key
+Generate SSH Key
 ----------------
 
-To avoid problems deploying/launching apps later on it is necessary to install `CoreOS`_ to disk
-with a SSH key without a passphrase. The following command will generate a new keypair named
-"deis":
-
-.. code-block:: console
-
-    $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
 
 
 Customize user-data
@@ -34,17 +28,7 @@ Customize user-data
 Generate a New Discovery URL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To get started with provisioning Deis, we will need to generate a new Discovery URL. Discovery URLs
-help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
-unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
-
-.. code-block:: console
-
-    $ make discovery-url
-
-This will write a new discovery URL to the user-data file. Some convenience scripts are supplied in
-this user-data file, so it is mandatory for provisioning Deis.
+Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
 
 
 SSH Key
@@ -166,7 +150,6 @@ disk. Add the following block to the ``write_files`` section:
 
 .. _`cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _`CoreOS`: https://coreos.com/
-.. _`etcd`: https://github.com/coreos/etcd
 .. _`install CoreOS to disk`: https://coreos.com/docs/running-coreos/bare-metal/installing-to-disk/
 .. _`iPXE`: https://coreos.com/docs/running-coreos/bare-metal/booting-with-ipxe/
 .. _`PXE`: https://coreos.com/docs/running-coreos/bare-metal/booting-with-pxe/
