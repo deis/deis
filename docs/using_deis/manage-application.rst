@@ -20,15 +20,15 @@ Use ``deis scale`` to control the number of :ref:`Containers <container>` that p
 
     === peachy-waxworks Processes
 
-    --- web: `java -cp target/classes:target/dependency/* HelloWorld`
-    web.1 up 2013-12-03T00:00:25.836Z (dev-runtime-1)
-    web.2 up 2013-12-03T00:30:10.934Z (dev-runtime-1)
-    web.3 up 2013-12-03T00:30:10.950Z (dev-runtime-1)
-    web.4 up 2013-12-03T00:30:10.963Z (dev-runtime-1)
-    web.5 up 2013-12-03T00:30:10.978Z (dev-runtime-1)
-    web.6 up 2013-12-03T00:30:10.993Z (dev-runtime-1)
-    web.7 up 2013-12-03T00:30:11.010Z (dev-runtime-1)
-    web.8 up 2013-12-03T00:30:11.027Z (dev-runtime-1)
+    --- web:
+    web.1 up (v2)
+    web.2 up (v2)
+    web.3 up (v2)
+    web.4 up (v2)
+    web.5 up (v2)
+    web.6 up (v2)
+    web.7 up (v2)
+    web.8 up (v2)
 
 Scaling is managed by process types like ``web`` or ``worker`` defined in a
 `Procfile`_ in the root of your application repository.
@@ -102,9 +102,58 @@ Use ``deis logs`` to view the log output from your deployed application.
     Dec  3 00:30:31 ip-10-250-15-201 peachy-waxworks[web.7]: INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:10007
     Dec  3 00:30:31 ip-10-250-15-201 peachy-waxworks[web.8]: INFO:oejs.AbstractConnector:Started SelectChannelConnector@0.0.0.0:10008
 
+Limit the Application
+---------------------
+Deis supports restricting memory and CPU shares of each :ref:`Container`.
+
+Use ``deis limits:set`` to restrict memory by process type:
+
+.. code-block:: console
+
+    $ deis limits:set web=512M
+    Applying limits... done, v3
+
+    === peachy-waxworks Limits
+
+    --- Memory
+    web      512M
+
+    --- CPU
+    Unlimited
+
+You can also use ``deis limits:set -c`` to restrict CPU shares.
+CPU shares are on a scale of 0 to 1024, with 1024 being all CPU resources on the host.
+
+.. important::
+
+    If you restrict resources to the point where containers do not start,
+    the limits:set command will hang.  If this happens, use CTRL-C
+    to break out of limits:set and use limits:unset to revert.
+
+Isolate the Application
+-----------------------
+Deis supports isolating applications onto a set of hosts using ``tags``.
+
+.. note::
+
+    In order to use tags, you must first launch your hosts with
+    the proper key/value tag information.  If you do not, tag commands will fail.
+    Learn more by reading the `machine metadata`_ section of Fleet documentation.
+
+Once your hosts are configured with appropriate key/value metadata, use
+``deis tags:set`` to restrict the application to those hosts:
+
+.. code-block:: console
+
+    $ deis tags:set environ=prod
+    Applying tags...  done, v4
+
+    environ  prod
+
 .. _`store config in environment variables`: http://12factor.net/config
 .. _`decoupled from the application`: http://12factor.net/backing-services
 .. _`scale out via the process model`: http://12factor.net/concurrency
 .. _`treat logs as event streams`: http://12factor.net/logs
 .. _`use one-off processes for admin tasks`: http://12factor.net/admin-processes
 .. _`Procfile`: http://ddollar.github.io/foreman/#PROCFILE
+.. _`machine metadata`: https://coreos.com/docs/launching-containers/launching/fleet-unit-files/#user-defined-requirements
