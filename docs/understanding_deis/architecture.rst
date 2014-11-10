@@ -6,103 +6,70 @@
 Architecture
 ============
 
-.. image:: DeisArchitecturalDiagram.png
-    :alt: Draft Architectural Diagram
+Deis uses a service oriented architecture with :ref:`components`
+grouped into a Control Plane, Data Plane and Router Mesh.
 
-.. TODO: Need a caption for the Deis architectural diagram
+.. _system-diagram:
 
-Deis consists of 7 components that combine to create a distributed PaaS.
-Each Deis component is deployed as a :ref:`Container`.
+System Diagram
+--------------
 
-.. _arch_controller:
+.. image:: DeisSystemDiagram.png
+    :alt: Deis System Diagram
 
-Controller
+End-users of the platform interact with the Control Plane using the ``Deis API``.
+Operators use the ``Deisctl API`` to stand up the cluster's Control Plane, Data Plane
+and Router Mesh.
+
+The Control Plane dispatches work to the Data Plane via a scheduler.
+The Router Mesh is used to route traffic to both the Control Plane and Data Plane.
+Because the router mesh is usually connected to the public Internet,
+it is often connected to a front-end load balancer.
+
+.. _control-plane:
+
+Control Plane
+-------------
+
+.. image:: DeisControlPlane.png
+    :alt: Deis Control Plane Architecture
+
+The Control Plane performs management functions for the platform.
+Control plane components (in blue) are all implemented as Docker containers.
+
+The :ref:`store` component consists of a number of smaller components that represent a
+containerized Ceph cluster which provides a blob storage API and POSIX filesystem API
+for control plane's stateful components:
+
+ * :ref:`registry` - a Docker registry used to hold images and configuration data
+ * :ref:`database` - a Postgres database used to store platform state
+ * :ref:`logger` - a syslog log server that holds aggregated logs from the data plane
+
+End-users interact primarily with the :ref:`comp_controller` which exposes an
+HTTP API. They can also interact with the :ref:`builder` via ``git push``.
+
+.. _data-plane:
+
+Data Plane
 ----------
-The :ref:`controller <Controller>` component is a RESTful API server
-written with `Django`_ and `Celery`_. Command-line clients interact with
-this component.
 
-.. _database:
+.. image:: DeisDataPlane.png
+    :alt: Deis Data Plane Architecture
 
-Database
---------
-The database component is a `PostgreSQL`_ server used to store durable
-platform state. Backups and WAL logs are pushed to :ref:`Store`.
+The Data Plane is where :ref:`Containers <container>` (in blue) are run on behalf of end-users.
 
-.. _cache:
+The platform scheduler is charge of placing containers on hosts in the data plane.
+Deis also requires a few lightweight components on these hosts:
 
-Cache
------
-The cache component uses `Redis`_ to:
+ * :ref:`publisher` - publishes end-user containers to the :ref:`router`
+ * :ref:`logspout` - feeds log data to the Control Plane :ref:`logger`
 
- * Store work queue data for `Celery`_
- * Cache sessions and synchronize locks for `Django`_
- * Store recent log data for the :ref:`Controller`
+.. _topologies:
 
-.. _builder:
-
-Builder
--------
-The builder component uses a `Git`_ server to process
-:ref:`Application` builds. The builder:
-
- #. Receives incoming ``git push`` requests over SSH
- #. Authenticates the user via SSH key fingerprint
- #. Authorizes the user's access to write to the Git repository
- #. Builds a new `Docker` image from the updated git repository
- #. Adds the latest :ref:`Config` to the resulting Docker image
- #. Pushes the new Docker image to the platform's :ref:`Registry`
- #. Creates a new :ref:`Release` on the :ref:`Controller`
-
-Once a new :ref:`Release` is generated, a new set of containers
-is deployed across the platform automatically.
-
-.. _registry:
-
-Registry
---------
-The registry component hosts `Docker`_ images on behalf of the platform.
-Image data is stored by :ref:`Store`.
-
-.. _logspout:
-
-Logspout
---------
-The logspout component is a customized version of `progrium's logspout`_ that runs
-on all CoreOS hosts in the cluster and collects logs from running containers. It sends the logs
-to the :ref:`logger` component.
-
-.. _logger:
-
-Log Server
+Topologies
 ----------
-The log server component collects logs from the :ref:`logspout` component.
-This data can then be queried by the :ref:`Controller`.
 
-.. _router:
-
-Router
-------
-The router component uses `Nginx`_ to route traffic to
-application containers.
-
-.. _store:
-
-Store
-------
-The store component uses `Ceph`_ to store data for Deis components
-which need to store state (namely :ref:`Registry` and :ref:`Database`).
-
-.. _`Amazon S3`: http://aws.amazon.com/s3/
-.. _`Celery`: http://www.celeryproject.org/
-.. _`Ceph`: http://ceph.com
-.. _`Django`: https://www.djangoproject.com/
-.. _`Docker`: http://docker.io/
-.. _`etcd`: https://github.com/coreos/etcd
-.. _`Git`: http://git-scm.com/
-.. _`Nginx`: http://nginx.org/
-.. _`OpenStack Storage`: http://www.openstack.org/software/openstack-storage/
-.. _`PostgreSQL`: http://www.postgresql.org/
-.. _`progrium's logspout`: https://github.com/progrium/logspout
-.. _`Redis`: http://redis.io/
-.. _`rsyslog`: http://www.rsyslog.com/
+For small deployments you can run the entire platform
+-- Control Plane, Data Plane and Router Mesh -- on just 3 servers.
+For larger deployments, you'll want to isolate the Control Plane and Router Mesh,
+then scale your data plane out to as many servers as you need.

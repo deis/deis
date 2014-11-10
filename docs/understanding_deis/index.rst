@@ -10,3 +10,4 @@ Understanding Deis
 
     concepts
     architecture
+    components
