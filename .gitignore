@@ -69,6 +69,7 @@ htmlcov/
 venv/
 .vagrant
 Vagrantfile.local
+config.rb
 *.swp
 .bundle
 /__init__.py
