@@ -64,12 +64,19 @@ Registry
 The registry component hosts `Docker`_ images on behalf of the platform.
 Image data is stored by :ref:`Store`.
 
+.. _logspout:
+
+Logspout
+--------
+The logspout component is a customized version of `progrium's logspout`_ that runs
+on all CoreOS hosts in the cluster and collects logs from running containers. It sends the logs
+to the :ref:`logger` component.
+
 .. _logger:
 
 Log Server
 ----------
-The log server component uses `rsyslog`_ to aggregate log data from
-across the platform.
+The log server component collects logs from the :ref:`logspout` component.
 This data can then be queried by the :ref:`Controller`.
 
 .. _router:
@@ -96,5 +103,6 @@ which need to store state (namely :ref:`Registry` and :ref:`Database`).
 .. _`Nginx`: http://nginx.org/
 .. _`OpenStack Storage`: http://www.openstack.org/software/openstack-storage/
 .. _`PostgreSQL`: http://www.postgresql.org/
+.. _`progrium's logspout`: https://github.com/progrium/logspout
 .. _`Redis`: http://redis.io/
 .. _`rsyslog`: http://www.rsyslog.com/

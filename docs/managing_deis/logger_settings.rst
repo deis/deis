@@ -13,7 +13,7 @@ Requires: none
 
 Required by: :ref:`controller <controller_settings>`
 
-Considerations: must live on the same host as controller (see `#985`_)
+Considerations: none
 
 Settings set by logger
 ------------------------
@@ -32,6 +32,12 @@ The logger component uses no keys from etcd.
 
 Using a custom logger image
 ---------------------------
+
+.. note::
+
+  Instead of using a custom logger image, it is possible to redirect Deis logs to an external location.
+  For more details, see :ref:`platform_logging`.
+
 You can use a custom Docker image for the logger component instead of the image
 supplied with Deis:
 
@@ -50,4 +56,3 @@ Be sure that your custom image functions in the same way as the `stock logger im
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock logger image`: https://github.com/deis/deis/tree/master/logger
-.. _`#985`: https://github.com/deis/deis/issues/985
