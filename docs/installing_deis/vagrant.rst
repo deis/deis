@@ -22,20 +22,16 @@ Please install `Vagrant`_ v1.6.5+ and `VirtualBox`_.
     website.
 
 
+Generate SSH Key
+----------------
+
+Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+
+
 Generate a New Discovery URL
 ----------------------------
 
-To get started with provisioning Deis, we will need to generate a new Discovery URL. Discovery URLs
-help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
-unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
-
-.. code-block:: console
-
-    $ make discovery-url
-
-This will write a new discovery URL to the user-data file. Some convenience scripts are supplied in
-this user-data file, so it is mandatory for provisioning Deis.
+Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
 
 
 Boot CoreOS
@@ -74,4 +70,3 @@ start installing the platform.
 
 .. _Vagrant: http://www.vagrantup.com/
 .. _VirtualBox: https://www.virtualbox.org/wiki/Downloads
-.. _etcd: https://github.com/coreos/etcd

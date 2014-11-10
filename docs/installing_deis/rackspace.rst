@@ -40,11 +40,16 @@ Your account ID is displayed in the upper right-hand corner of the cloud control
 API key can be found on the Account Settings page.
 
 
+Generate SSH Key
+----------------
+
+Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+
+
 Set up your keys
 ----------------
 
-Choose an existing keypair or generate a new one, if desired. Tell supernova about the key pair and
-give it an identifiable name:
+Tell supernova about the key pair and give it an identifiable name:
 
 .. code-block:: console
 
@@ -54,14 +59,7 @@ give it an identifiable name:
 Generate a New Discovery URL
 ----------------------------
 
-To get started with provisioning the nodes, we will need to generate a new Discovery URL.
-Discovery URLs help connect `etcd`_ instances together by storing a list of peer addresses and
-metadata under a unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
-
-.. code-block:: console
-
-    $ make discovery-url
+Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
 
 
 Choose number of instances
@@ -127,6 +125,5 @@ start installing the platform.
 
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
 .. _`CoreOS on Rackspace`: https://coreos.com/docs/running-coreos/cloud-providers/rackspace/
-.. _etcd: https://github.com/coreos/etcd
 .. _Rackspace: https://github.com/deis/deis/tree/master/contrib/rackspace#readme
 .. _`contrib/rackspace`: https://github.com/deis/deis/tree/master/contrib/rackspace
