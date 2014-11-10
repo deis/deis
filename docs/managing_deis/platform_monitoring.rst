@@ -4,17 +4,120 @@
 .. _platform_monitoring:
 
 Platform monitoring
-=========================
+===================
 
-Comprehensive platform monitoring is a goal for Deis 1.0. We are currently investigating solutions
-for this, and progress can be tracked in GitHub issue `#981`_.
+While Deis itself doesn't have a built-in monitoring platform, Deis components and deployed
+applications alike run entirely within Docker containers. This means that monitoring tools and
+services which support Docker containers should work with Deis. A few tools and monitoring services
+which support Docker integrations are detailed below.
 
-A requirement for this monitoring system would be to:
+Tools
+-----
 
-* Track system metrics (CPU, memory, etc.)
-* Report Deis component failure
-* Track deployed application container states and metrics
+cadvisor
+~~~~~~~~
 
-Platform monitoring is an ongoing discussion, and feedback is much appreciated in issue `#981`_.
+Google's Container Advisor (`cadvisor`_) runs inside a Docker container and shows memory and CPU
+usage for all containers running on the host. To run cAdvisor:
 
-.. _`#981`: https://github.com/deis/deis/issues/981
+.. code-block:: console
+
+    sudo docker run \
+    --volume=/:/rootfs:ro \
+    --volume=/var/run:/var/run:rw \
+    --volume=/sys:/sys:ro \
+    --volume=/var/lib/docker/:/var/lib/docker:ro \
+    --publish=8080:8080 \
+    --detach=true \
+    --name=cadvisor \
+    google/cadvisor:latest
+
+To run cAdvisor on all hosts in the cluster, you can submit and start a fleet service:
+
+.. code-block:: console
+
+    [Unit]
+    Description=Google Container Advisor
+    Requires=docker.socket
+    After=docker.socket
+
+    [Service]
+    ExecStartPre=/bin/sh -c "docker history google/cadvisor:latest >/dev/null || docker pull google/cadvisor:latest"
+    ExecStart=/usr/bin/docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=8080:8080 --name=cadvisor google/cadvisor:latest
+
+    [Install]
+    WantedBy=multi-user.target
+
+    [X-Fleet]
+    Global=true
+
+Save the file as ``cadvisor.service``. Load and start the service with
+``fleetctl load cadvisor.service && fleetctl start cadvisor.service``.
+
+The web interface will be accessible at port 8080 on each host.
+
+In addition to starting a cAdvisor instance on each CoreOS host, there's also a project called
+`heapster`_ from the Google Cloud Platform team, which seems to be a cluster-aware cAdvisor.
+
+Monitoring services
+-------------------
+
+These are a few monitoring services which are known to provide Docker integrations.
+Additions to this reference guide are much appreciated!
+
+Datadog
+~~~~~~~
+
+The `Datadog`_ cloud monitoring service provides a monitor agent which runs on the host and provides
+metrics for all Docker containers (which is functionally similar to cAdvisor's implementation).
+See `this blog post`_ for details. The `Datadog agent`_ for Docker can be run on a single host as
+follows:
+
+.. code-block:: console
+
+    docker run -d --privileged --name dd-agent -h `hostname` -v /var/run/docker.sock:/var/run/docker.sock -v /proc/mounts:/host/proc/mounts:ro -v /sys/fs/cgroup/:/host/sys/fs/cgroup:ro -e API_KEY=YOUR_REAL_API_KEY datadog/docker-dd-agent
+
+Be sure to substitute ``YOUR_REAL_API_KEY`` for your Datadog API key.
+
+To run Datadog for the entire cluster, you can submit and start a fleet service (again, substitute ``YOUR_REAL_API_KEY``):
+
+.. code-block:: console
+
+    [Unit]
+    Description=Datadog
+    Requires=docker.socket
+    After=docker.socket
+
+    [Service]
+    ExecStartPre=/bin/sh -c "docker history datadog/docker-dd-agent:latest >/dev/null || docker pull datadog/docker-dd-agent:latest"
+    ExecStart=/usr/bin/docker run --privileged --name dd-agent -h %H -v /var/run/docker.sock:/var/run/docker.sock -v /proc/mounts:/host/proc/mounts:ro -v /sys/fs/cgroup/:/host/sys/fs/cgroup:ro -e API_KEY=YOUR_REAL_API_KEY datadog/docker-dd-agent
+
+    [Install]
+    WantedBy=multi-user.target
+
+    [X-Fleet]
+    Global=true
+
+Save the file as ``datadog.service``. Load and start the service with
+``fleetctl load datadog.service && fleetctl start datadog.service``.
+
+Shortly thereafter, you should start to see metrics from your Deis cluster appear in your Datadog dashboard.
+
+New Relic
+~~~~~~~~~
+
+The `New Relic`_ monitoring service's agent will run on the CoreOS host and report metrics to New Relic.
+
+Unlike Datadog, however, the agent running on the host doesn't send metrics for individual containers
+unless those containers have been built with a Dockerfile that installs their own instance of the agent.
+
+The Deis community's own Johannes Würbach has developed a fleet service for New Relic in his
+`newrelic-sysmond`_ repository.
+
+.. _`cadvisor`: https://github.com/google/cadvisor
+.. _`Datadog`: https://www.datadoghq.com
+.. _`Datadog agent`: https://github.com/DataDog/docker-dd-agent
+.. _`heapster`: https://github.com/GoogleCloudPlatform/heapster/blob/master/clusters/coreos/README.md
+.. _`this blog post`: https://www.datadoghq.com/2014/06/monitor-docker-datadog/
+.. _`New Relic`: http://newrelic.com/
+.. _`newrelic-sysmond`: https://github.com/johanneswuerbach/newrelic-sysmond-service
