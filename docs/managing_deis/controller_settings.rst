@@ -13,7 +13,7 @@ Requires: :ref:`cache <cache_settings>`, :ref:`database <database_settings>`, :r
 
 Required by: :ref:`router <router_settings>`
 
-Considerations: must live on the same host as logger (see `#985`_)
+Considerations: none
 
 Settings set by controller
 --------------------------
@@ -73,4 +73,3 @@ Be sure that your custom image functions in the same way as the `stock controlle
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock controller image`: https://github.com/deis/deis/tree/master/controller
-.. _`#985`: https://github.com/deis/deis/issues/985
