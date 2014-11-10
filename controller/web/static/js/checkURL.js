@@ -19,6 +19,9 @@ switch(cleanedPath[cleanedPath.length-2]) {
   case 'managing_deis':
     $('.toctree-l1 > a:contains("Managing Deis")').attr('state', 'open');
     break;
+  case 'customizing_deis':
+    $('.toctree-l1 > a:contains("Customizing Deis")').attr('state', 'open');
+    break;
   case 'contributing':
     $('.toctree-l1 > a:contains("Contributing")').attr('state', 'open');
     break;
