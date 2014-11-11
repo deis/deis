@@ -57,5 +57,5 @@ Learn how to use deploy applications on Deis :ref:`using-docker-images`.
 
 .. _`twelve-factor methodology`: http://12factor.net/
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
-.. _`Dockerfiles`: http://docs.docker.io/en/latest/use/builder/
-.. _`Docker Images`: http://docs.docker.io/introduction/understanding-docker/
+.. _`Dockerfiles`: https://docs.docker.com/reference/builder/
+.. _`Docker Images`: https://docs.docker.com/introduction/understanding-docker/

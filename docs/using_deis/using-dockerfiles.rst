@@ -124,8 +124,8 @@ Deis also supports scaling other process types as defined in a `Procfile`_.  To 
 2. Include a ``start`` executable that can be called with: ``start <process-type>``
 
 
-.. _`Dockerfile`: http://docs.docker.io/en/latest/use/builder/
-.. _`Docker Image`: http://docs.docker.io/introduction/understanding-docker/
-.. _`CMD instruction`: http://docs.docker.io/reference/builder/#cmd
+.. _`Dockerfile`: https://docs.docker.com/reference/builder/
+.. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
+.. _`CMD instruction`:  https://docs.docker.com/reference/builder/#cmd
 .. _`issue 1156`: https://github.com/deis/deis/issues/1156
 .. _`Procfile`: https://devcenter.heroku.com/articles/procfile
