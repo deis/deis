@@ -38,10 +38,6 @@ In order to deploy Docker images, they must conform to the following requirement
 
     Docker images which expose more than one port will hit `issue 1156`_.
 
-.. attention::
-
-    Support for non-HTTP services is coming soon
-
 Create an Application
 ---------------------
 Use ``deis create`` to create an application on the :ref:`controller`.

@@ -1,19 +1,17 @@
-:title: Configure load balancers
+:title: Configure Load Balancers
 :description: Configure load balancers for your Deis Cluster
 
 .. _configure-load-balancers:
 
-Configure load balancers
+Configure Load Balancers
 ------------------------
 
 .. image:: DeisLoadBalancerDiagram.png
     :alt: Deis Load Balancer Diagram
 
-For a one-node Deis cluster, there is one router and one controller, so load balancing is unnecessary.
-You can proceed with the next section: :ref:`configure-dns`.
-
-On a multi-node cluster, however, there are probably multiple routers scheduled to the cluster, and
-these can potentially move hosts. Therefore, it is recommended that you configure a load balancer
+Deis includes multiple routers scheduled to the cluster as part of the router mesh.
+In the event of a host failure, these routers can move hosts.
+Therefore, it is recommended that you configure a load balancer
 to operate in front of the Deis cluster to serve application traffic.
 
 These ports need to be open on the load balancers:

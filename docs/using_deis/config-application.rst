@@ -41,8 +41,8 @@ the application to an external PostgreSQL database.
 
 Detachments can be performed with ``deis config:unset``.
 
-Add Custom Domains to the Application
--------------------------------------
+Custom Domains
+--------------
 
 You can use ``deis domains`` to add or remove custom domains to your application:
 

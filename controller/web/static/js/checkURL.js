@@ -6,7 +6,14 @@ var path = window.location.pathname.split('/');
 var cleanedPath = $.grep(path,function(n){ return(n) });
 
 // the second to last path segment is the section
-switch(cleanedPath[cleanedPath.length-2]) {
+// unless there's only 1 segment
+if (cleanedPath.length == 1) {
+    path = cleanedPath[0];
+} else {
+    path = cleanedPath[cleanedPath.length-2];
+}
+
+switch(path) {
   case 'understanding_deis':
     $('.toctree-l1 > a:contains("Understanding Deis")').attr('state', 'open');
     break;
@@ -18,6 +25,9 @@ switch(cleanedPath[cleanedPath.length-2]) {
     break;
   case 'managing_deis':
     $('.toctree-l1 > a:contains("Managing Deis")').attr('state', 'open');
+    break;
+  case 'troubleshooting_deis':
+    $('.toctree-l1 > a:contains("Troubleshooting Deis")').attr('state', 'open');
     break;
   case 'customizing_deis':
     $('.toctree-l1 > a:contains("Customizing Deis")').attr('state', 'open');

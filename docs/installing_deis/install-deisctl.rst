@@ -3,8 +3,8 @@
 
 .. _install_deisctl:
 
-Installing the Deis Control Utility
-===================================
+Install deisctl
+===============
 
 The Deis Control Utility, or ``deisctl`` for short, is a command-line client used to configure and
 manage the Deis Platform.

@@ -69,8 +69,8 @@ Build, Release, Run
 
 Build Stage
 ^^^^^^^^^^^
-The :ref:`builder` processes incoming ``git push`` requests builds applications
-inside ephemeral Docker containers, creating a new Docker image.
+The :ref:`builder` processes incoming ``git push`` requests and builds applications
+inside ephemeral Docker containers, resulting in a new Docker image.
 
 Release Stage
 ^^^^^^^^^^^^^

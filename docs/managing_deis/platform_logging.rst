@@ -9,9 +9,8 @@ Platform logging
 Logging for Deis components and deployed applications is handled by two components:
 :ref:`logger` and :ref:`logspout`.
 
-``deis-logspout`` is based on progrium's `logspout`_ project and runs on all CoreOS hosts. It
-collects logs from running containers and sends their logs to ``/deis/logs/host`` and
-``/deis/logs/port``.
+``deis-logspout`` runs on all CoreOS hosts, collects logs from running containers
+and sends their logs to ``/deis/logs/host`` and ``/deis/logs/port``.
 
 ``deis-logger`` collects the logs sent by logspout and archives them for use by :ref:`Controller`
 when a client runs ``deis logs``. This component publishes its host and port to ``/deis/logs/host``

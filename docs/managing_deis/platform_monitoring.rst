@@ -6,7 +6,7 @@
 Platform monitoring
 ===================
 
-While Deis itself doesn't have a built-in monitoring platform, Deis components and deployed
+While Deis itself doesn't have a built-in monitoring system, Deis components and deployed
 applications alike run entirely within Docker containers. This means that monitoring tools and
 services which support Docker containers should work with Deis. A few tools and monitoring services
 which support Docker integrations are detailed below.

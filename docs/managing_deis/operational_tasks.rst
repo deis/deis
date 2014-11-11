@@ -15,7 +15,7 @@ Managing users
 There are two classes of Deis users: normal users and administrators.
 
 * Users can use most of the features of Deis - creating and deploying applications, adding/removing domains, etc.
-* Administrators can perform all the actions that users can, but they can also create, edit, and destroy clusters.
+* Administrators can perform all the actions that users can, but they also have owner access to all applications.
 
 The first user created on a Deis installation is automatically an administrator.
 

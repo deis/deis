@@ -5,7 +5,7 @@
 .. _provision-controller:
 
 Installing Deis
-================
+===============
 
 Provisioning Deis is a matter of creating one or more :ref:`concepts_coreos`
 machines and using :ref:`install_deisctl` to install and start Deis.
@@ -21,14 +21,14 @@ with CoreOS.
 .. toctree::
 
     quick-start
-    install-deisctl
-    install-platform
-    digitalocean
+
     aws
-    vagrant
+    digitalocean
     gce
     rackspace
+    vagrant
     baremetal
-
+    install-deisctl
+    install-platform
 
 .. _`CoreOS Documentation`: https://coreos.com/docs/

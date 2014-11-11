@@ -6,9 +6,15 @@
 Security considerations
 ========================
 
+.. important::
+
+    Deis is not suitable for multi-tenant environments
+    or hosting untrusted code.
+
 A major goal of Deis is to be operationally secure and trusted by operations engineers in every deployed
 environment. There are, however, two notable security-related considerations to be aware of
 when deploying Deis.
+
 
 Access to etcd
 --------------
