@@ -21,7 +21,7 @@ with CoreOS.
 .. toctree::
 
     quick-start
-
+    system-requirements
     aws
     digitalocean
     gce

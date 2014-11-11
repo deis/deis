@@ -81,7 +81,6 @@ Finally, create the ``gce-user-data`` file:
 
 We should have a ``gce-user-data`` file ready to launch CoreOS nodes with.
 
-
 Launch Instances
 ----------------
 
@@ -131,6 +130,11 @@ Launch 3 instances. You can choose another starting CoreOS image from the listin
     | core3 | 10.240.28.163 | 108.59.85.85 | us-central1-a | RUNNING |
     +-------+---------------+--------------+---------------+---------+
 
+.. note::
+
+    The provision script will by default provision ``n1-standard-2`` instances. Choosing a smaller
+    instance size is not recommended. Please refer to :ref:`system-requirements` for resource
+    considerations when choosing an instance size to run Deis.
 
 Load Balancing
 --------------
