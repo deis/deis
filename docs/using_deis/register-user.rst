@@ -5,7 +5,6 @@
 Register a User
 ===============
 To use Deis, you must first register a user on the :ref:`Controller`.
-To ``git push`` you must provide your SSH public key for authentication.
 
 Register with a Controller
 --------------------------

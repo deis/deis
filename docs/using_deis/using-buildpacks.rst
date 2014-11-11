@@ -105,15 +105,11 @@ For convenience, a number of buildpacks come bundled with Deis:
  * `Grails Buildpack`_
  * `Play Buildpack`_
  * `Python Buildpack`_
- * `Clojure Buildpack`_
  * `PHP Buildpack`_
- * `Go Buildpack`_
- * `Meteorite Buildpack`_
- * `Perl Buildpack`_
+ * `Clojure Buildpack`_
  * `Scala Buildpack`_
- * `Dart Buildpack`_
- * `Nginx Buildpack`_
- * `Apache Buildpack`_
+ * `Go Buildpack`_
+ * `Multi Buildpack`_
 
 Deis will cycle through the ``bin/detect`` script of each buildpack to match the code you
 are pushing.
@@ -140,13 +136,9 @@ On your next ``git push``, the custom buildpack will be used.
 .. _`Grails Buildpack`: https://github.com/heroku/heroku-buildpack-grails
 .. _`Play Buildpack`: https://github.com/heroku/heroku-buildpack-play
 .. _`Python Buildpack`: https://github.com/heroku/heroku-buildpack-python
-.. _`Clojure Buildpack`: https://github.com/heroku/heroku-buildpack-clojure
 .. _`PHP Buildpack`: https://github.com/deis/heroku-buildpack-php
-.. _`Go Buildpack`: https://github.com/kr/heroku-buildpack-go
-.. _`Meteorite Buildpack`: https://github.com/oortcloud/heroku-buildpack-meteorite
-.. _`Perl Buildpack`: https://github.com/miyagawa/heroku-buildpack-perl
+.. _`Clojure Buildpack`: https://github.com/heroku/heroku-buildpack-clojure
 .. _`Scala Buildpack`: https://github.com/heroku/heroku-buildpack-scala
-.. _`Dart Buildpack`: https://github.com/igrigorik/heroku-buildpack-dart
-.. _`Nginx Buildpack`: https://github.com/rhy-jot/buildpack-nginx
-.. _`Apache Buildpack`: https://github.com/Kloadut/heroku-buildpack-static-apache
+.. _`Go Buildpack`: https://github.com/kr/heroku-buildpack-go
+.. _`Multi Buildpack`: https://github.com/heroku/heroku-buildpack-multi
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks

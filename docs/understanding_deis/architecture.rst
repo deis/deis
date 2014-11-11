@@ -17,9 +17,8 @@ System Diagram
 .. image:: DeisSystemDiagram.png
     :alt: Deis System Diagram
 
+Operators use the ``Deisctl API`` to stand up the cluster's Control Plane, Data Plane and Router Mesh.
 End-users of the platform interact with the Control Plane using the ``Deis API``.
-Operators use the ``Deisctl API`` to stand up the cluster's Control Plane, Data Plane
-and Router Mesh.
 
 The Control Plane dispatches work to the Data Plane via a scheduler.
 The Router Mesh is used to route traffic to both the Control Plane and Data Plane.
@@ -39,7 +38,7 @@ Control plane components (in blue) are all implemented as Docker containers.
 
 The :ref:`store` component consists of a number of smaller components that represent a
 containerized Ceph cluster which provides a blob storage API and POSIX filesystem API
-for control plane's stateful components:
+for the control plane's stateful components:
 
  * :ref:`registry` - a Docker registry used to hold images and configuration data
  * :ref:`database` - a Postgres database used to store platform state
@@ -58,7 +57,7 @@ Data Plane
 
 The Data Plane is where :ref:`Containers <container>` (in blue) are run on behalf of end-users.
 
-The platform scheduler is charge of placing containers on hosts in the data plane.
+The platform scheduler is in charge of placing containers on hosts in the data plane.
 Deis also requires a few lightweight components on these hosts:
 
  * :ref:`publisher` - publishes end-user containers to the :ref:`router`

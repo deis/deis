@@ -4,7 +4,7 @@
 Quick Start
 ===========
 
-These steps will help you get started with deploying a multi-node Deis cluster.
+These steps will help you provision a Deis cluster.
 
 
 .. _generate_ssh_key:
@@ -12,9 +12,9 @@ These steps will help you get started with deploying a multi-node Deis cluster.
 Generate an SSH key
 -------------------
 
-To avoid problems deploying/launching apps later on, it is necessary to install `CoreOS`_ to disk
-with an SSH key without a passphrase. The following command will generate a new keypair named
-"deis":
+The ``deisctl`` utility communicates with remote machines over an SSH tunnel.
+If you don't already have an SSH key, the following command will generate
+a new keypair named "deis":
 
 .. code-block:: console
 
@@ -26,8 +26,7 @@ with an SSH key without a passphrase. The following command will generate a new 
 Generate a New Discovery URL
 ----------------------------
 
-To get started with provisioning Deis, we will need to generate a new Discovery URL. Discovery URLs
-help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
+Discovery URLs help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
 unique address. You can generate a new discovery URL for use in your platform by
 running the following from the root of the repository:
 
@@ -44,11 +43,11 @@ Choose a Provider
 
 Choose one of the following providers and deploy a new cluster:
 
-- :ref:`deis_on_digitalocean`
 - :ref:`deis_on_aws`
-- :ref:`deis_on_vagrant`
+- :ref:`deis_on_digitalocean`
 - :ref:`deis_on_gce`
 - :ref:`deis_on_rackspace`
+- :ref:`deis_on_vagrant`
 - :ref:`deis_on_bare_metal`
 
 
@@ -61,8 +60,8 @@ See :ref:`configure-dns` for more information on properly setting up your DNS re
 Install Deis Platform
 ---------------------
 
-Now that you've finished provisioning a cluster, please refer to :ref:`install_deisctl` and :ref:`install_deis_platform` to
-start the platform.
+Now that you've finished provisioning a CoreOS cluster,
+please refer to :ref:`install_deisctl` and :ref:`install_deis_platform`.
 
 
 .. _`CoreOS`: https://coreos.com/

@@ -6,8 +6,7 @@
 DigitalOcean
 ============
 
-In this tutorial, we will show you how to set up your own 3-node cluster on DigitalOcean. This
-guide is also available in DigitalOcean's `Community site`_, so check out their guide as well!
+In this tutorial, we will show you how to set up your own 3-node cluster on DigitalOcean.
 
 Prerequisites
 -------------
@@ -49,7 +48,7 @@ that, create at least three Droplets with the following specifications:
  - Select your SSH key from the list
 
 If private networking is not available in your region, swap out ``$private_ipv4`` with
-``$public_ipv4`` in the user-data file. 
+``$public_ipv4`` in the user-data file.
 
 If you want to use the script:
 
@@ -124,7 +123,6 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
-.. _`Community site`: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-deis-cluster-on-digitalocean
 .. _`docl`: https://github.com/nathansamson/docl#readme
 .. _`Deis Control Utility`: https://github.com/deis/deis/tree/master/deisctl#readme
 .. _`DNS control panel`: https://cloud.digitalocean.com/domains

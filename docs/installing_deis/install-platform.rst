@@ -3,12 +3,12 @@
 
 .. _install_deis_platform:
 
-Installing the Deis Platform
-============================
+Install the Deis Platform
+=========================
 
 .. important::
 
-    Before installing the platform, please see :ref:`install_deisctl` first.
+    Before installing the platform, please see :ref:`install_deisctl`.
 
 From the computer you installed the Deis Control Utility, we will provision the Deis platform.
 Ensure your SSH agent is running and select the private key that corresponds to the SSH key added
