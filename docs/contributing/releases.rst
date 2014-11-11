@@ -26,6 +26,7 @@ deis repo
   .. code-block:: console
 
     $ ./contrib/bumpver/bumpver X.Y.Z \
+        version/version.go \
         README.md \
         client/deis.py \
         client/setup.py \
@@ -33,9 +34,9 @@ deis repo
         controller/deis/__init__.py \
         deisctl/deis-version \
         deisctl/deisctl.go \
+        docs/contributing/test_plan.rst \
         docs/installing_deis/install-deisctl.rst \
-        docs/managing_deis/upgrading-deis.rst \
-        version/version.go
+        docs/managing_deis/upgrading-deis.rst
 
 - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
   (near the bottom of the file) from ``[master]`` to ``[vX.Y.Z]``.

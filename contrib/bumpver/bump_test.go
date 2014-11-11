@@ -314,8 +314,6 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 [![Current Release](http://img.shields.io/badge/release-v0.12.0-blue.svg)](https://github.com/deis/deis/releases/tag/v0.12.0)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
-
-Deis is pre-release software. The current release is [v0.12.0](https://github.com/deis/deis/tree/v0.12.0). Until there is a stable release, we recommend you check out the latest ["master" branch](https://github.com/deis/deis) code and refer to the [latest documentation](http://docs.deis.io/en/latest/).  Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
 `
 
 var mdAfter = `
@@ -326,6 +324,4 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 [![Current Release](http://img.shields.io/badge/release-v0.15.1-blue.svg)](https://github.com/deis/deis/releases/tag/v0.15.1)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
-
-Deis is pre-release software. The current release is [v0.15.1](https://github.com/deis/deis/tree/v0.15.1). Until there is a stable release, we recommend you check out the latest ["master" branch](https://github.com/deis/deis) code and refer to the [latest documentation](http://docs.deis.io/en/latest/).  Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/installing_deis/upgrading-deis/) for additional information.
 `

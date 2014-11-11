@@ -16,8 +16,8 @@ any significant revision to the document.
 References
 ----------
 
-- "Testing Deis": http://docs.deis.io/en/v0.15.1/contributing/testing/
-- "Changes Must Include Tests": http://docs.deis.io/en/v0.15.1/contributing/standards/#include-tests
+- "Testing Deis": http://docs.deis.io/en/v1.0.0/contributing/testing/
+- "Changes Must Include Tests": http://docs.deis.io/en/v1.0.0/contributing/standards/#include-tests
 
 
 Introduction
