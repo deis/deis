@@ -13,7 +13,7 @@ New to Deis?  Learn more about Deis [Concepts](http://docs.deis.io/en/latest/und
 
 # Installing Deis
 
-Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the [provider-specific documentation](http://docs.deis.io/en/latest/installing_deis/) for provisioning. Want to see a particular platform supported? Please open an [issue](https://github.com/deis/deis/issues/new).
+Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the [provider-specific documentation](http://docs.deis.io/en/latest/installing_deis/) for provisioning.
 
 Trying out Deis? Please follow the documentation on [getting set up with Vagrant](http://docs.deis.io/en/latest/installing_deis/vagrant/).
 Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/managing_deis/upgrading-deis/) for additional information.
