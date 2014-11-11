@@ -37,6 +37,12 @@ running the following from the root of the repository:
 This will write a new discovery URL to the user-data file. Some essential scripts are supplied in
 this user-data file, so it is mandatory for provisioning Deis.
 
+Check System Requirements
+-------------------------
+
+The Deis provision scripts default to a machine size which should be adequate to run Deis, but this
+can be customized. Please refer to :ref:`system-requirements` for resource considerations when
+choosing a machine size to run Deis.
 
 Choose a Provider
 -----------------

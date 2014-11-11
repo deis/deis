@@ -15,6 +15,12 @@ machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
     Deis requires CoreOS version 472.0.0 or more recent.
 
 
+Check System Requirements
+-------------------------
+
+Please refer to :ref:`system-requirements` for resource considerations when choosing a
+machine size to run Deis.
+
 Generate SSH Key
 ----------------
 
@@ -103,14 +109,6 @@ Install Deis Platform
 
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
-
-
-Considerations when deploying Deis
-----------------------------------
-
-* Use machines with ample disk space and RAM (for comparison, we use m3.large instances on EC2)
-* Choose an appropriate `cluster size`_
-
 
 Known Problems
 --------------

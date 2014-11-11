@@ -76,7 +76,6 @@ For more information, see `optimal etcd cluster size`_.
 
 Deis clusters of less than 3 nodes are unsupported.
 
-
 Run the Provision Script
 ------------------------
 
@@ -90,6 +89,11 @@ of the key pair you just added. Optionally, you can also specify a flavor name, 
     Usage: provision-rackspace-cluster.sh <key pair name> [flavor] [environment]
     $ ./provision-rackspace-cluster.sh deis-key
 
+.. note::
+
+    The provision script will by default provision ``performance1-2`` servers. Choosing a smaller
+    server size is not recommended. Please refer to :ref:`system-requirements` for resource
+    considerations when choosing a server size to run Deis.
 
 Configure DNS
 -------------

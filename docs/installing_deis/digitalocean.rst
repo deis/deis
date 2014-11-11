@@ -21,6 +21,12 @@ In order to provision the cluster, we will need to install a couple of administr
 `Deis Control Utility`_, which will assist us with installing, configuring and managing the Deis
 platform.
 
+Check System Requirements
+-------------------------
+
+Please refer to :ref:`system-requirements` for resource considerations when choosing a droplet
+size to run Deis.
+
 Generate SSH Key
 ----------------
 
@@ -40,7 +46,6 @@ by supplying a script that does all the heavy lifting for you. If you want to pr
 however, start by uploading the SSH key you wish to use to log into each of these servers. After
 that, create at least three Droplets with the following specifications:
 
- - At least 2GB -- more is recommended
  - All Droplets deployed in the same region
  - Region must have private networking enabled
  - Region must have User Data enabled. Supply the user-data file here
