@@ -1,3 +1,79 @@
+### v0.15.1 -> v1.0.0
+
+#### Features
+
+ - [`afaeb82`](https://github.com/deis/deis/commit/afaeb8218423779fd083c501c9f05d07a37f8322) (all): Do not commit a local vagrant settings
+ - [`d34146a`](https://github.com/deis/deis/commit/d34146a980c3da00a29c94625fb5182041beaf43) provision-rackspace: added optional parameter to specify environment
+ - [`97ce5b2`](https://github.com/deis/deis/commit/97ce5b25ca17eb1e90a5a3e4c21745b1c22c7ca5) client: optional drink of choice
+ - [`270375d`](https://github.com/deis/deis/commit/270375d3d75f048f6497d0ca86c8c5c08ad6f6a5) client: Add error message when writing settings fails.
+ - [`7125060`](https://github.com/deis/deis/commit/7125060e2fc1bb898c165ed6bacd57531397475f) coreos: use custom image in toolbox
+ - [`47432c3`](https://github.com/deis/deis/commit/47432c3e647d4f300376a186772f508a777258ef) publisher: use godep
+ - [`dd1a3e1`](https://github.com/deis/deis/commit/dd1a3e100cb04fb8b4933f27c5401638b3941fbd) logspout: use godep.
+
+#### Fixes
+
+ - [`42a7465`](https://github.com/deis/deis/commit/42a746557907483ad0eb7a3265fc2ef37d392a38) builder: avoid return an error if is not possible remove an image
+ - [`50eb2e7`](https://github.com/deis/deis/commit/50eb2e7a868f068fdc48904242e9bd8de49bf1cb) docs: fixup markdown
+ - [`62c628f`](https://github.com/deis/deis/commit/62c628f81443dc0ac2050575814b7fbe9314ee91) publisher: do not publish older app versions
+ - [`b794191`](https://github.com/deis/deis/commit/b794191b21ba5e0a62536f59510a18c66c7e0f2b) docs: use /deis/logs/host|port, not /deis/logger/
+ - [`dd1e3f3`](https://github.com/deis/deis/commit/dd1e3f3753564a0f2f9ba9b1bfffc8e8c6d56ee7) (all): Corrected required cores version
+ - [`f26c973`](https://github.com/deis/deis/commit/f26c973779cc5999158085b3f041bbe047bdd749) router: only add x-forwarded-proto on https
+ - [`2c622b5`](https://github.com/deis/deis/commit/2c622b506c7b30ed6500a7325e4a86999c4d71a8) deisctl: make restart call start and stop properly
+ - [`3763748`](https://github.com/deis/deis/commit/37637487e70d7141d26186fe5a9df76e817c321e) router: remove store gateway body limit
+ - [`d80ea91`](https://github.com/deis/deis/commit/d80ea91712c6afc2c9903a03e19c6d62ba22742c) client: dump log line if we fail to parse tag
+ - [`c6224cc`](https://github.com/deis/deis/commit/c6224cc7ade854aac2b46ec96d41b1173baa4b50) docs: fixup links
+ - [`2ed4a84`](https://github.com/deis/deis/commit/2ed4a84f5870e27c4ecc80ef2991cd49c5145f8d) builder: force newline
+ - [`c0cbde8`](https://github.com/deis/deis/commit/c0cbde8bbe53df5ce04b690d60379948a8d01b60) deisctl: handle "deisctl help <command>" consistently
+ - [`1da3d19`](https://github.com/deis/deis/commit/1da3d19a9c961efa13837ac5e5dde0ef196fdbad) logspout: bump packet size to 1048576
+ - [`69117bd`](https://github.com/deis/deis/commit/69117bdd5fe5da5831a8f3b4878e332ab392313b) builder: remove container only if $JOB is defined
+ - [`cbf38e5`](https://github.com/deis/deis/commit/cbf38e500b66716438a1954a4e7e1f528d842e04) deisctl/units: mount deis-store only if it isn't mounted
+ - [`2d1fd03`](https://github.com/deis/deis/commit/2d1fd0363f60b8a463bc2837e02081974dfbd3c4) store: remove pg_num reconfiguration"
+ - [`833bfd7`](https://github.com/deis/deis/commit/833bfd75a21ebd0bc4ad3b20193a62372e8c8d36) registry: prefix "apt-get install" with "apt-get update"
+ - [`3056cd9`](https://github.com/deis/deis/commit/3056cd94f747178aae3f0590768f02feeb98d18a) build.sh: fail on errors in Dockerfile two-tier builds
+ - [`7a4ac38`](https://github.com/deis/deis/commit/7a4ac3836f1e93fb884a0cd6f2252c3ecd21dc6a) tests: Allow TLS
+ - [`dbcb2a6`](https://github.com/deis/deis/commit/dbcb2a64bae65713c727c865828516089aadd67d) logspout: remove binary from git
+ - [`8c6c37b`](https://github.com/deis/deis/commit/8c6c37b509feeb0a0da73a9388cfd66fbae3e1a6) client: return lowercase app name
+
+#### Documentation
+
+ - [`2af6c3e`](https://github.com/deis/deis/commit/2af6c3e8449aff00a921c3e44539c951db3421e2) (all): add Deis resource requirements
+ - [`fdbabb3`](https://github.com/deis/deis/commit/fdbabb33567476c2d8e583ea2a061d9f025a0ad5) README: remove "open an issue for new providers" language
+ - [`3812b30`](https://github.com/deis/deis/commit/3812b30dcce1355aa7467fe7528dd31eafe6588d) readme: update readme in prep for stable
+ - [`1d08e5a`](https://github.com/deis/deis/commit/1d08e5a7910f4f806d876c7d62caa38a54786a44) (all): doc edits for stable release
+ - [`5e05482`](https://github.com/deis/deis/commit/5e05482dfb2dab66c7118f39ac9eb7a1c8128f47) managing_deis: add store to backup/restore docs
+ - [`6efb5ef`](https://github.com/deis/deis/commit/6efb5efa8ac4854c92a9dd9c50d338afca22f609) customizing_deis: create new section for customization
+ - [`cbc8bf4`](https://github.com/deis/deis/commit/cbc8bf414a97c66caa5336535a31a9c8d7282719) understanding_deis: refactor architecture, concepts, components
+ - [`205f7a6`](https://github.com/deis/deis/commit/205f7a6d4ee969fce1716fd7a13bdfa3d9ea9fe9) installing_deis: add quick start guide
+ - [`021e732`](https://github.com/deis/deis/commit/021e73252b3cd261cef84c4c81b29be2d5b6b497) using-deis: add missing sections on limits and tags
+ - [`3ad8f9b`](https://github.com/deis/deis/commit/3ad8f9b4c69643515ba15a9f27d9607f33bc4868) test_plan: add a formal doc describing QA strategy & scope
+ - [`797d3ae`](https://github.com/deis/deis/commit/797d3ae33820905df3860b42aea55341aa66d5eb) (all): flesh out platform logging docs; add logspout docs
+ - [`c0228e5`](https://github.com/deis/deis/commit/c0228e5170885a22db88ec4e00d3cceeb03bb44d) managing_deis: flesh out platform monitoring docs
+ - [`b87a7ae`](https://github.com/deis/deis/commit/b87a7ae9e56873dc5b712bdc57c302f2933fb481) install/upgrade: highlight that deisctl must match Deis' version
+ - [`05991be`](https://github.com/deis/deis/commit/05991be548def382f3b7375e984fc62ba52113f7) installing_deis: added reference to optional environment parameter
+ - [`15c4a94`](https://github.com/deis/deis/commit/15c4a94d97e502975323c15631637b6e7b6d1dd0) installing_deis: fixed formatting issue
+ - [`fe4ce5b`](https://github.com/deis/deis/commit/fe4ce5bb57b8cfa07755884aa90ec676a79dd27a) upgrading: mention CoreOS minimum requirement
+ - [`8434d05`](https://github.com/deis/deis/commit/8434d054d5269c44fe24c95d60c1dc951ef8759d) installing_deis: import vagrant documentation
+ - [`f1264ac`](https://github.com/deis/deis/commit/f1264acaf4fdd7c9764d7d08b18796354125f8c3) troubleshooting: added instructions on manually updating CoreOS
+ - [`596ec95`](https://github.com/deis/deis/commit/596ec95b3fb7bb0016d8a873be14129062a21b4a) installing_deis: add load balancer docs
+ - [`3513370`](https://github.com/deis/deis/commit/35133703d02f06e94c6e437aaad35a036deddf61) installing_deis: import rackspace provisioning docs
+ - [`d188ecc`](https://github.com/deis/deis/commit/d188ecc19ee44f6ff4a50cbfe79f06da4b4c07be) hacking: note that Docker 1.3.1 may need --insecure-registry
+ - [`7c05e78`](https://github.com/deis/deis/commit/7c05e7817004392f8bb07802a3692e1028ce1326) testing: remove section about disabling TLS in boot2docker
+ - [`9e266cb`](https://github.com/deis/deis/commit/9e266cb2bc9174c8ff4ced4e6ea181e3f52d9329) managing_deis: re-issuing auth tokens
+ - [`c45348b`](https://github.com/deis/deis/commit/c45348b835ab00face8c43b04f79f7e2aca8840d) (all): specify required CoreOS version
+ - [`e3d97ea`](https://github.com/deis/deis/commit/e3d97ea04ee1b19f8b57521c5d08ef47bb3e6918) managing_deis: add MDS removal instructions
+ - [`32735f0`](https://github.com/deis/deis/commit/32735f01970cb1edad4c3db25c5a53c8bc9980f5) installing_deis: import gce provisioning docs
+
+#### Maintenance
+
+ - [`0fd83c1`](https://github.com/deis/deis/commit/0fd83c1714231cc745abbd71fd99f4f77753b2cc) (all): update CoreOS to 494.0.0
+ - [`33b27d9`](https://github.com/deis/deis/commit/33b27d94e16da80ad2218823a623fc7681280a12) controller: update South to 1.0.1
+ - [`4c63670`](https://github.com/deis/deis/commit/4c63670b3355e2c20ae89eab736003e0d7868fa8) controller: update djangorestframework to 2.4.4
+ - [`08f5bf1`](https://github.com/deis/deis/commit/08f5bf1d0336cbed3bc84fc89f615dea7c7fd7a3) contrib/rackspace: bump CoreOS to 490.0.0
+ - [`793a880`](https://github.com/deis/deis/commit/793a880163d0d0506614ef951bba04fd3fcfc640) provision-rackspace: bumped coreos image version
+ - [`9fc6637`](https://github.com/deis/deis/commit/9fc663722420f289446dbab275592b9f68f10716) store: bump Ceph to "giant" release
+ - [`38185c3`](https://github.com/deis/deis/commit/38185c3cb5c4058c2625d77777e29567e3ee5e6a) (all): bump CoreOS to 490.0.0
+ - [`217261f`](https://github.com/deis/deis/commit/217261f969016033c905dccdf3e270c036f7e365) release: update version in master to v0.15.1+git
+
 ### v0.15.0 -> v0.15.1
 
 #### Features
@@ -39,6 +115,7 @@
 
 #### Maintenance
 
+ - [`b7dd0d4`](https://github.com/deis/deis/commit/b7dd0d4fc45925de209ac01bebe3b54c220ae915) release: update version to v0.15.1
  - [`78c207f`](https://github.com/deis/deis/commit/78c207faf2625f366b5a9322b6ec024323439010) controller: update python-etcd to 0.3.2
  - [`57e650a`](https://github.com/deis/deis/commit/57e650a1091aedd4ed3dda592f38ce111b3fafc5) builder: update requests to 2.4.3
  - [`dab7a94`](https://github.com/deis/deis/commit/dab7a94461835d9b686824db72e61c08fe4dcf41) client: update requests to 2.4.3
