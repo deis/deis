@@ -50,6 +50,7 @@ func TestRegistry(t *testing.T) {
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
+			"--net", "host",
 			"-p", port+":5000",
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
