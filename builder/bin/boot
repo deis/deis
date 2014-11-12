@@ -15,6 +15,7 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-10}
 export STORAGE_DRIVER=${STORAGE_DRIVER:-btrfs}
+export HOST=${HOST:0.0.0.0}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
@@ -73,7 +74,7 @@ docker build -t deis/slugbuilder /app/slugbuilder/
 docker build -t deis/slugrunner /app/slugrunner/
 
 # start an SSH daemon to process `git push` requests
-/usr/sbin/sshd -D -e &
+/usr/sbin/sshd -D -e -o ListenAddress=$HOST &
 SSHD_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
