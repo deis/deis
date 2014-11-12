@@ -14,6 +14,7 @@ export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/registry}
 export ETCD_TTL=${ETCD_TTL:-10}
+export REGISTRY_HOST=${HOST:-0.0.0.0}
 
 # run.sh requires $REGISTRY_PORT
 export REGISTRY_PORT=${PORT:-5000}
