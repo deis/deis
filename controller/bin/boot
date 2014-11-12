@@ -14,6 +14,7 @@ export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-10}
+export CONTROLLER_HOST=${HOST:-0.0.0.0}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
@@ -70,7 +71,7 @@ chmod 777 /data/logs
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
 # spawn a gunicorn server in the background
-sudo -E -u deis gunicorn deis.wsgi -b 0.0.0.0 -w 8 -n deis --timeout=1200 --pid=/tmp/gunicorn.pid \
+sudo -E -u deis gunicorn deis.wsgi -b $CONTROLLER_HOST -w 8 -n deis --timeout=1200 --pid=/tmp/gunicorn.pid \
                          --log-level info --error-logfile - --access-logfile - \
                          --access-logformat '%(h)s "%(r)s" %(s)s %(b)s "%(a)s"' &
 
