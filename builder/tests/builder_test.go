@@ -47,6 +47,7 @@ func TestBuilder(t *testing.T) {
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
+			"--net", "host",
 			"-p", port+":22",
 			"-e", "PORT=22",
 			"-e", "STORAGE_DRIVER=aufs",
