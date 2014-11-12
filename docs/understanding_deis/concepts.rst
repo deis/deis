@@ -42,7 +42,7 @@ CoreOS
 `CoreOS`_ is a new, minimal Linux distribution, rearchitected for
 running modern, containerized infrastructure stacks.
 
-Deis runs on CoreOS machines that be hosted anywhere -- public cloud,
+Deis runs on CoreOS machines that can be hosted anywhere -- public cloud,
 private cloud, bare metal or even your workstation.
 
 CoreOS allows Deis to host applications and services at scale with
