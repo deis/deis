@@ -37,7 +37,6 @@ Generate a New Discovery URL
 
 Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
 
-
 Create CoreOS Droplets
 ----------------------
 
@@ -120,6 +119,19 @@ For convenience, you can also set up DNS records for each node:
 
 If you need help using the DNS control panel, check out `this tutorial`_ on DigitalOcean's
 community site.
+
+Apply Security Group Settings
+-----------------------------
+
+Because DigitalOcean does not have a security group feature, we'll need to add some custom
+``iptables`` rules so our components are not accessible from the outside world. To do this, there
+is a script in ``contrib/`` which will help us with that. To run it, use:
+
+.. code-block:: console
+
+    $ for i in 1 2 3; do ssh core@deis-$i.example.com 'bash -s' < contrib/util/custom-firewall.sh; done
+
+Our components should now be locked down from external sources.
 
 Install Deis Platform
 ---------------------

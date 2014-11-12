@@ -98,6 +98,11 @@ We're back in a ``HEALTH_OK``, and note the following:
 
 We have 4 monitors, OSDs, and metadata servers. Hooray!
 
+.. note::
+
+    If you have applied the `custom firewall script`_ to your cluster, you will have to run this
+    script again and reboot your nodes for iptables to remove the duplicate rules.
+
 Removing a node
 ---------------
 
@@ -273,6 +278,7 @@ Removing the host from etcd
 The etcd cluster still has an entry for the host we've removed, so we'll need to remove this entry.
 This can be achieved by making a request to the etcd API. See `remove machines`_ for details.
 
+.. _`custom firewall script`: https://github.com/deis/deis/blob/master/contrib/util/custom-firewall.sh
 .. _`remove machines`: https://coreos.com/docs/distributed-configuration/etcd-api/#remove-machines
 .. _`removing monitors`: http://ceph.com/docs/giant/rados/operations/add-or-rm-mons/#removing-monitors
 .. _`removing OSDs`: http://docs.ceph.com/docs/giant/rados/operations/add-or-rm-osds/#removing-osds-manual
