@@ -52,7 +52,9 @@ $ ./contrib/bumpver/bumpver 0.14.0 \
 ```
 
 Of course, you should **always** check the changes with `git diff` before committing
-anything to version control.
+anything to version control. You can also check the
+[Release Checklist](http://docs.deis.io/en/latest/contributing/releases/) for the
+most up-to-date list of files to bump.
 
 Please add any issues you find with this software to the
 [Deis project](https://github.com/deis/deis/issues).
