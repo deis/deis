@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
-	"strings"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -58,13 +57,8 @@ Options:
 				continue
 			}
 		}
-		// replace the first occurrence in source files
-		count := 1
-		if strings.HasSuffix(name, ".md") || strings.HasSuffix(name, ".rst") {
-			// replace all occurrences in docs
-			count = -1
-		}
-		data = bytes.Replace(src, from, []byte(version), count)
+		// replace all occurrences in source and doc files
+		data = bytes.Replace(src, from, []byte(version), -1)
 		f, err := os.Create(name)
 		if err != nil {
 			return onError(err)

@@ -238,16 +238,21 @@ coreos:
     peer-election-timeout: 2000
     # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
     peer-heartbeat-interval: 500
+  units:
+  - name: install-deisctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install deisctl utility
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 2.22.0'
 write_files:
   - path: /etc/deis-release
     content: |
-      DEIS_RELEASE=2.22.0
-  - path: /etc/profile.d/nse-function.sh
-    permissions: '0755'
-    content: |
-      function nse() {
-        sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
-      }
+      DEIS_RELEASE=v2.22.0
+  - path: /etc/motd
 `
 
 var userdataAfter = `
@@ -264,16 +269,21 @@ coreos:
     peer-election-timeout: 2000
     # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
     peer-heartbeat-interval: 500
+  units:
+  - name: install-deisctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install deisctl utility
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 2.22.1'
 write_files:
   - path: /etc/deis-release
     content: |
-      DEIS_RELEASE=2.22.1
-  - path: /etc/profile.d/nse-function.sh
-    permissions: '0755'
-    content: |
-      function nse() {
-        sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
-      }
+      DEIS_RELEASE=v2.22.1
+  - path: /etc/motd
 `
 
 var rst = `
