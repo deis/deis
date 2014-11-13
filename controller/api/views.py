@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, SuspiciousOperation
 from django.http import Http404
 from django.utils import timezone
 from guardian.shortcuts import assign_perm
@@ -21,6 +21,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from OpenSSL import crypto
 
 from api import models, serializers
 from api.permissions import IsAnonymous, IsOwner, IsAppUser, \
@@ -379,6 +380,65 @@ class AppContainerViewSet(BaseAppViewSet):
         qs = self.get_queryset(**kwargs)
         obj = qs.get(num=self.kwargs['num'])
         return obj
+
+
+class AppCertViewSet(BaseAppViewSet):
+    """RESTful views for :class:`~api.models.Cert`."""
+
+    model = models.Cert
+    permission_classes = (permissions.IsAuthenticated, IsOwner)
+    serializer_class = serializers.CertSerializer
+
+    def get_app(self, **kwargs):
+        return get_object_or_404(models.App, id=self.kwargs['id'])
+
+    def check_perms(self, app, **kwargs):
+        user = self.request.user
+        if user != app.owner and not user.is_superuser:
+            raise PermissionDenied()
+
+    def get_queryset(self, **kwargs):
+        app = self.get_app()
+        self.check_perms(app)
+        return self.model.objects.filter(app=app)
+
+    def get_object(self, *args, **kwargs):
+        try:
+            obj = self.get_queryset().get(common_name=self.kwargs['cn'])
+            return obj
+        except (models.Cert.DoesNotExist):
+            raise Http404()
+
+    def get_common_name(self, **kwargs):
+        try:
+            return crypto.load_certificate(
+                crypto.FILETYPE_PEM, self.request.DATA['cert']).get_subject().CN
+        except (crypto.Error):
+            raise SuspiciousOperation()
+
+    def create(self, request, *args, **kwargs):
+        app = self.get_app()
+        self.check_perms(app)
+        common_name = self.get_common_name()
+        request._data = request.DATA.copy()
+        request.DATA['app'] = app
+        request.DATA['common_name'] = common_name
+        return super(AppCertViewSet, self).create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        common_name = self.get_common_name()
+        cert = self.get_object()
+        if common_name != cert.common_name:
+            return Response('Common Name does not match',
+                            status=status.HTTP_400_BAD_REQUEST)
+        cert.cert = request.DATA['cert']
+        cert.key = request.DATA['key']
+        cert.save
+        return Response({'status': '{} updated'.format(common_name)})
+
+    def destroy(self, request, *args, **kwargs):
+        self.get_object().delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class KeyViewSet(OwnerViewSet):

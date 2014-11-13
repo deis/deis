@@ -16,6 +16,7 @@ from .models import Container
 from .models import Domain
 from .models import Key
 from .models import Release
+from .models import Cert
 
 
 class AppAdmin(GuardedModelAdmin):
@@ -87,3 +88,13 @@ class ReleaseAdmin(admin.ModelAdmin):
     list_display_links = ('created', 'version')
     list_filter = ('owner', 'app')
 admin.site.register(Release, ReleaseAdmin)
+
+
+class CertAdmin(admin.ModelAdmin):
+    """Set presentation options for :class:`~api.models.Release` models
+    in the Django admin.
+    """
+    date_hierarchy = 'created'
+    list_display = ('app', 'cn')
+    list_filter = ('app')
+admin.site.register(Cert, CertAdmin)
