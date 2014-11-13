@@ -1,3 +1,28 @@
+### v1.0.0 -> v1.0.1
+
+#### Features
+
+ - [`90f6ef5`](https://github.com/deis/deis/commit/90f6ef518e039cf1d86884bbb7f7ec885bf8682e) security: add custom firewall in platforms without security
+
+#### Fixes
+
+ - [`ff9f507`](https://github.com/deis/deis/commit/ff9f5077ff3c4e22e725c67b3f78f470c0d1a31e) client: _logger doesn't exist for settings
+ - [`b475c50`](https://github.com/deis/deis/commit/b475c507d15569c6330613c38e6f7f73aa915ea6) docs: update links to Docker documentation
+ - [`9e2bc36`](https://github.com/deis/deis/commit/9e2bc363f65a37439b866e0dd18afd47b1920a7a) controller: change timezone data to UTC
+ - [`83afc3f`](https://github.com/deis/deis/commit/83afc3f5ac20904a5ad6dc9f3d871992b9a6340d) router: Increased connect timeout
+
+#### Documentation
+
+ - [`efa5f31`](https://github.com/deis/deis/commit/efa5f31c9f6d7647d0cb68b783943f4d61677c24) managing_deis: add note for public cloud environments
+ - [`f396344`](https://github.com/deis/deis/commit/f3963443e5ca1690d8cadd5c2e41b5c42d96eb6f) database: add BUCKET_NAME Environment Var
+ - [`9b43534`](https://github.com/deis/deis/commit/9b435346e5edbd21423505176c857db2e4ffbf88) concepts: add missing word
+ - [`6ad1f08`](https://github.com/deis/deis/commit/6ad1f08c84e10403d292c820cbe30e23a6723654) installing_deis: add deisctl version check
+ - [`1940eaa`](https://github.com/deis/deis/commit/1940eaaafbe247b37bbae5f5a829b8f0c9870e4e) installing_docs: add cluster size to system requirements
+
+#### Maintenance
+
+ - [`8932a0b`](https://github.com/deis/deis/commit/8932a0bd6e16177e82808625b579fb9bdfb95b7b) release: update version in master to v1.0.0+git
+
 ### v0.15.1 -> v1.0.0
 
 #### Features

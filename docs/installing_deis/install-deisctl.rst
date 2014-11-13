@@ -19,7 +19,7 @@ with the following command:
 .. code-block:: console
 
     $ cd ~/bin
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.0.0
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.0.1
 
 This installs deisctl to the current directory, and refreshes the Deis systemd unit files used to
 schedule the components. Link it to /usr/local/bin, so it will be in your PATH:
@@ -31,10 +31,10 @@ schedule the components. Link it to /usr/local/bin, so it will be in your PATH:
 To change installation options, save the installer directly:
 
 .. image:: download-linux-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.0-linux-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.1-linux-amd64.run
 
 .. image:: download-osx-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.0-darwin-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.1-darwin-amd64.run
 
 Then run the downloaded file as a shell script. Append ``--help`` to see what options
 are available.
@@ -48,13 +48,13 @@ Builds are hosted on an S3 bucket at this URL format:
 
 ``https://s3-us-west-2.amazonaws.com/opdemand/deisctl-<VERSION>-<darwin|linux>-amd64.run``
 
-For example, the deisctl release for Deis version 1.0.0 can be downloaded here:
+For example, the deisctl release for Deis version 1.0.1 can be downloaded here:
 
 .. image:: download-linux-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.0-linux-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.1-linux-amd64.run
 
 .. image:: download-osx-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.0-darwin-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/opdemand/deisctl-1.0.1-darwin-amd64.run
 
 Building from Source
 --------------------
