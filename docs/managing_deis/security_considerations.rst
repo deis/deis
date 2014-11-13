@@ -51,4 +51,21 @@ environment by using ```deis tags set environment=production```. Deis will pass 
 along to the scheduler, and your applications in different environments on running on separate
 hardware.
 
+.. _deis_on_public_clouds:
+
+Running Deis on Public Clouds
+-----------------------------
+If you are running on a public cloud without security group features, you will have to set up
+security groups yourself through either ``iptables`` or a similar tool. The only ports that should
+be exposed to the public are:
+
+ - 22: for remote SSH
+ - 80: for the routers
+ - 443: (optional) routers w/ SSL enabled
+ - 2222: for the builder
+
+For providers that do not supply a security group feature, please try
+`contrib/util/custom-firewall.sh`_.
+
 .. _`#986`: https://github.com/deis/deis/issues/986
+.. _`contrib/util/custom-firewall.sh`: https://github.com/deis/deis/blob/master/contrib/util/custom-firewall.sh
