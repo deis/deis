@@ -6,8 +6,12 @@
 Bare Metal
 ==========
 
-Deis clusters can be provisioned anywhere `CoreOS`_ can, including on your own hardware. To get
-CoreOS running on raw hardware, you can boot with `PXE`_ or `iPXE`_ - this will boot a CoreOS
+Deis clusters can be provisioned anywhere `CoreOS`_ can, including on your own hardware.
+
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/bare-metal`_
+while following this documentation.
+
+To get CoreOS running on raw hardware, you can boot with `PXE`_ or `iPXE`_ - this will boot a CoreOS
 machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
 
 .. important::
@@ -146,6 +150,7 @@ disk. Add the following block to the ``write_files`` section:
           options single-request
 
 
+.. _`contrib/bare-metal`: https://github.com/deis/deis/tree/master/contrib/bare-metal
 .. _`cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _`CoreOS`: https://coreos.com/
 .. _`install CoreOS to disk`: https://coreos.com/docs/running-coreos/bare-metal/installing-to-disk/

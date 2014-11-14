@@ -8,6 +8,10 @@ DigitalOcean
 
 In this tutorial, we will show you how to set up your own 3-node cluster on DigitalOcean.
 
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/digitalocean`_
+while following this documentation.
+
+
 Prerequisites
 -------------
 
@@ -140,6 +144,7 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
+.. _`contrib/digitalocean`: https://github.com/deis/deis/tree/master/contrib/digitalocean
 .. _`docl`: https://github.com/nathansamson/docl#readme
 .. _`Deis Control Utility`: https://github.com/deis/deis/tree/master/deisctl#readme
 .. _`DNS control panel`: https://cloud.digitalocean.com/domains

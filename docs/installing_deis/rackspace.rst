@@ -7,8 +7,10 @@ Rackspace
 =========
 
 We'll mostly be following the `CoreOS on Rackspace`_ guide. You'll need to have a sane python
-environment with ``pip`` already installed (``sudo easy_install pip``). Please refer to the scripts
-in `contrib/rackspace`_ while following this documentation.
+environment with ``pip`` already installed (``sudo easy_install pip``).
+
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/rackspace`_
+while following this documentation.
 
 
 Install supernova
