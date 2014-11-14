@@ -12,6 +12,7 @@ var (
 	configListCmd  = "config:list --app={{.AppName}}"
 	configSetCmd   = "config:set FOO=讲台 --app={{.AppName}}"
 	configSet2Cmd  = "config:set FOO=10 --app={{.AppName}}"
+	configSet3Cmd  = "config:set HELLO=\"from the Deis team\" --app={{.AppName}}"
 	configUnsetCmd = "config:unset FOO --app={{.AppName}}"
 )
 
@@ -40,6 +41,9 @@ func configSetup(t *testing.T) *utils.DeisTestConfig {
 		t.Fatal(err)
 	}
 	utils.Execute(t, appsCreateCmd, cfg, false, "")
+	// ensure envvars with spaces work fine on `git push`
+	// https://github.com/deis/deis/issues/2477
+	utils.Execute(t, configSet3Cmd, cfg, false, "from the Deis team")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
@@ -54,13 +58,13 @@ func configListTest(
 
 func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configSetCmd, params, false, "讲台")
-	utils.CheckList(t, appsInfoCmd, params, "(v3)", false)
-	utils.Execute(t, configSet2Cmd, params, false, "10")
 	utils.CheckList(t, appsInfoCmd, params, "(v4)", false)
+	utils.Execute(t, configSet2Cmd, params, false, "10")
+	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
 }
 
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
-	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v6)", false)
 	utils.CheckList(t, "run env --app={{.AppName}}", params, "FOO", true)
 }
