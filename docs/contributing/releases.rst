@@ -36,6 +36,7 @@ deis repo
         deisctl/deisctl.go \
         docs/contributing/test_plan.rst \
         docs/installing_deis/install-deisctl.rst \
+        docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst
 
 - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
