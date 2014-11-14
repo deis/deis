@@ -8,7 +8,8 @@ Amazon AWS
 
 In this tutorial, we will show you how to set up your own 3-node cluster on Amazon Web Services.
 
-Please refer to the scripts in `contrib/ec2`_ while following this documentation.
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/ec2`_
+while following this documentation.
 
 
 Install the AWS Command Line Interface

@@ -7,6 +7,11 @@ Quick Start
 These steps will help you provision a Deis cluster.
 
 
+.. _get_the_source:
+
+.. include:: ../_includes/_get-the-source.rst
+
+
 .. _generate_ssh_key:
 
 Generate an SSH key

@@ -8,6 +8,9 @@ Google Compute Engine
 
 Let's build a Deis cluster in Google's Compute Engine!
 
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/gce`_
+while following this documentation.
+
 
 Prerequisites
 -------------
@@ -280,6 +283,6 @@ start installing the platform.
 
 It works! Enjoy your Deis cluster in Google Compute Engine!
 
-
+.. _`contrib/gce`: https://github.com/deis/deis/tree/master/contrib/gce
 .. _`Google Cloud SDK`: https://developers.google.com/compute/docs/gcutil/#install
 .. _`Google Developer Console`: https://console.developers.google.com/project

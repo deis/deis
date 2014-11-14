@@ -9,6 +9,9 @@ Vagrant
 `Vagrant`_ is a tool for building complete development environments with a focus on automation.
 This guide demonstrates how you can stand up a Deis cluster for development purposes using Vagrant.
 
+Please :ref:`get the source <get_the_source>` and refer to the ``Vagrantfile``
+while following this documentation.
+
 
 Install Prerequisites
 ---------------------
