@@ -50,11 +50,13 @@ deis repo
     * ``git checkout master && git pull``
     * ``git tag vX.Y.Z``
     * ``git push --tags origin vX.Y.Z``
+- Trigger all deis-cli and deisctl builder jobs at ci.deis.io. When they finish, verify that
+  the current binary installers are publicly downloadable from the opdemand S3 bucket.
+- Trigger the test-master job, supplying vX.Y.Z as the version
+- When test-master completes, double-check images at Docker Hub to verify tags are published
 - Publish CLI to pypi.python.org
     - ``cd client && python setup.py sdist upload``
     - use testpypi.python.org first to ensure there aren't any problems
-- Continuous delivery jobs at ci.deis.io will update the deis CLI. Double-check that the
-  current binary installers are publicly downloadable from the opdemand S3 bucket.
 
 deis.io repo
 ------------
