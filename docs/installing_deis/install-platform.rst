@@ -26,6 +26,10 @@ to your CoreOS nodes:
     $ eval `ssh-agent -s`
     $ ssh-add ~/.ssh/deis
 
+.. note::
+
+    For Vagrant clusters: ``ssh-add ~/.vagrant.d/insecure_private_key``
+
 Find the public IP address of one of your nodes, and export it to the DEISCTL_TUNNEL environment
 variable (substituting your own IP address):
 
@@ -38,6 +42,10 @@ If you set up the "convenience" DNS records, you can just refer to them via
 .. code-block:: console
 
     $ export DEISCTL_TUNNEL="deis-1.example.com"
+
+.. note::
+
+    For Vagrant clusters: ``export DEISCTL_TUNNEL=172.17.8.100``
 
 This is the IP address where deisctl will attempt to communicate with the cluster. You can test
 that it is working properly by running ``deisctl list``. If you see a single line of output, the
@@ -55,6 +63,10 @@ We'll also need to tell the controller which domain name we are deploying applic
 .. code-block:: console
 
     $ deisctl config platform set domain=example.com
+
+.. note::
+
+    For Vagrant clusters: ``deisctl config platform set domain=local3.deisapp.com``
 
 Once finished, run this command to provision the Deis platform:
 
