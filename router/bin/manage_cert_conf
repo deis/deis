@@ -1,0 +1,138 @@
+#!/bin/bash
+#
+# Write confd templates and template resources for application ssl certs
+#
+
+CONFD_DIR=/app/conf.d
+TEMPLATE_DIR=/app/templates
+CERT_DIR=/etc/ssl
+NAME_PREFIX=appcert_
+CERTAPPS=()
+
+# name generator functions
+#-------------------------------------------------------------------------------
+CertFilename()
+{
+  echo "${NAME_PREFIX}$1.cert"
+}
+
+KeyFilename()
+{
+  echo "${NAME_PREFIX}$1.key"
+}
+
+CertPath()
+{
+  echo "${CERT_DIR}/$(CertFilename $1)"
+}
+
+KeyPath()
+{
+  echo "${CERT_DIR}/$(KeyFilename $1)"
+}
+
+CertResourceFilename()
+{
+  echo "$(CertFilename $1).toml"
+}
+
+KeyResourceFilename()
+{
+  echo "$(KeyFilename $1).toml"
+}
+
+CertResourcePath()
+{
+  echo "${CONFD_DIR}/$(CertResourceFilename $1)"
+}
+
+KeyResourcePath()
+{
+  echo "${CONFD_DIR}/$(KeyResourceFilename $1)"
+}
+
+CertTemplateFilename()
+{
+  echo "$(CertFilename $1)"
+}
+
+KeyTemplateFilename()
+{
+  echo "$(KeyFilename $1)"
+}
+
+CertTemplatePath()
+{
+  echo "${TEMPLATE_DIR}/$(CertTemplateFilename $1)"
+}
+
+KeyTemplatePath()
+{
+  echo "${TEMPLATE_DIR}/$(KeyTemplateFilename $1)"
+}
+
+# additional functions
+#-------------------------------------------------------------------------------
+
+Clean()
+{
+  # for every file in search_dir that starts with NAME_PREFIX
+  # check to see if the file name matches any of the keep_names generated
+  # by given name_generators for each CERTAPP if not, delete it.
+  local search_dir=$1
+  local name_generators=${@:2}
+  
+  local keep_names
+  for app in ${CERTAPPS[@]}; do
+    for gen in $name_generators; do
+      keep_names+=($($gen $app))
+    done
+  done
+
+  local file
+  for file in $(ls $search_dir | grep ^$NAME_PREFIX); do 
+    local keep=false
+    local name
+    for name in ${keep_names[@]}; do
+      [[ $file == $name ]] && keep=true
+    done
+    [[ $keep == false ]] && rm -f "$search_dir/$file"
+  done
+}
+
+# main
+#-------------------------------------------------------------------------------
+
+# Write new templates and resources
+while read line; do
+
+  if [[ ! -z $line ]]; then
+
+    ETCD_PATH=$line
+    ETCD_SLUG=".$(echo $ETCD_PATH | sed s/\\/// | sed s/\\//_/g)"
+    ETCD_CERT_SLUG="${ETCD_SLUG}_cert"
+    ETCD_KEY_SLUG="${ETCD_SLUG}_key"
+    APP_NAME="$(echo $ETCD_PATH | awk -F \/ 'NF { print ( $(NF) ) }')"
+
+    CERTAPPS+=($APP_NAME)
+
+    # cert template
+    printf "{{ $ETCD_CERT_SLUG }}\n" > $(CertTemplatePath $APP_NAME)
+
+    # key template
+    printf "{{ $ETCD_KEY_SLUG }}\n" > $(KeyTemplatePath $APP_NAME)
+
+    # cert template resource
+    printf "[template]\nsrc = \"$(CertFilename $APP_NAME)\"\ndest = \"$(CertPath $APP_NAME)\"\nuid = 0\ngid = 0\nmode = \"0644\"\nkeys = [ \"$ETCD_PATH\" ]\n" > $(CertResourcePath $APP_NAME)
+
+    # cert template resource
+    printf "[template]\nsrc = \"$(KeyFilename $APP_NAME)\"\ndest = \"$(KeyPath $APP_NAME)\"\nuid = 0\ngid = 0\nmode = \"0644\"\nkeys = [ \"$ETCD_PATH\" ]\n" > $(KeyResourcePath $APP_NAME)
+
+  fi
+
+done < /etc/ssl/app_certs
+
+# Clean up orphaned templates, resources and certs
+Clean $TEMPLATE_DIR CertTemplateFilename KeyTemplateFilename 
+Clean $CONFD_DIR    CertResourceFilename KeyResourceFilename
+Clean $CERT_DIR     CertFilename         KeyFilename
