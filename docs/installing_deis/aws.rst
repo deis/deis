@@ -151,6 +151,9 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
 
 .. code-block:: console
 
+    # Usage: ./provision-ec2-cluster.sh [id]
+    # Where id is internal reference id to the ELB, defaults to 'deis'
+
     $ cd contrib/ec2
     $ ./provision-ec2-cluster.sh
     {
