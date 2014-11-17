@@ -22,16 +22,6 @@ coreos:
     command: start
   - name: fleet.service
     command: start
-  - name: fleet.socket
-    command: start
-    content: |
-      [Socket]
-      # Talk to the API over a Unix domain socket (default)
-      ListenStream=/var/run/fleet.sock
-      Service=fleet.service
-
-      [Install]
-      WantedBy=sockets.target
   - name: stop-update-engine.service
     command: start
     content: |
