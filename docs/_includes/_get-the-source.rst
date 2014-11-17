@@ -1,6 +1,3 @@
-Get the Source
---------------
-
 The `source code`_ for Deis must be on your workstation to run the commands in
 this documentation. Download an archive file from the `releases page`_, or use
 ``git`` to clone the repository:

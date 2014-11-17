@@ -71,17 +71,7 @@ Deis clusters of less than 3 nodes are unsupported.
 Generate a New Discovery URL
 ----------------------------
 
-To get started with provisioning Deis, we will need to generate a new Discovery URL. Discovery URLs
-help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
-unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
-
-.. code-block:: console
-
-    $ make discovery-url
-
-This will write a new discovery URL to the user-data file. Some convenience scripts are supplied in
-this user-data file, so it is mandatory for provisioning Deis.
+.. include:: ../_includes/_generate-discovery-url.rst
 
 
 Customize cloudformation.json

@@ -31,15 +31,18 @@ Check System Requirements
 Please refer to :ref:`system-requirements` for resource considerations when choosing a droplet
 size to run Deis.
 
+
 Generate SSH Key
 ----------------
 
-Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+.. include:: ../_includes/_generate-ssh-key.rst
+
 
 Generate a New Discovery URL
 ----------------------------
 
-Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
+.. include:: ../_includes/_generate-discovery-url.rst
+
 
 Create CoreOS Droplets
 ----------------------
