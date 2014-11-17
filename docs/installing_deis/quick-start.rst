@@ -9,7 +9,9 @@ These steps will help you provision a Deis cluster.
 
 .. _get_the_source:
 
-.. "Get the Source" section
+Get the Source
+--------------
+
 .. include:: ../_includes/_get-the-source.rst
 
 
