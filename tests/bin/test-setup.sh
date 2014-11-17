@@ -45,6 +45,18 @@ echo "DEISCTL_UNITS=$DEISCTL_UNITS"
 export HOST_IPADDR=${HOST_IPADDR?}
 echo "HOST_IPADDR=$HOST_IPADDR"
 
+# SSL cert name used for testing
+export DEIS_TEST_SSL_CERT=${DEIS_TEST_SSL_CERT:-~/deis-test.cer}
+echo "DEIS_TEST_SSL_CERT=$DEIS_TEST_SSL_CERT"
+
+# SSL key name used for testing
+export DEIS_TEST_SSL_KEY=${DEIS_TEST_SSL_KEY:-~/deis-test.key}
+echo "DEIS_TEST_SSL_KEY=$DEIS_TEST_SSL_KEY"
+
+# SSL common name used for testing
+export DEIS_TEST_SSL_CN=${DEIS_TEST_SSL_CN:-test.cert.com}
+echo "DEIS_TEST_SSL_CN=$DEIS_TEST_SSL_CN"
+
 # the registry used to host dev-release images
 # must be accessible to local Docker engine and Deis cluster
 export DEV_REGISTRY=${DEV_REGISTRY?}
@@ -69,6 +81,41 @@ rm -rf $DEIS_ROOT/tests/example-*
 
 # generate ssh key if it doesn't already exist
 test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUTH_KEY -N ''
+
+test -e $DEIS_TEST_SSL_CERT || echo "
+-----BEGIN CERTIFICATE-----
+MIICOzCCAaQCCQDSGuK9K1QGAjANBgkqhkiG9w0BAQsFADBiMQswCQYDVQQGEwJV
+UzETMBEGA1UECAwKQ2FsaWZvcm5pYTEUMBIGA1UEBwwLTG9zIEFuZ2VsZXMxEDAO
+BgNVBAoMB0RlaXMuaW8xFjAUBgNVBAMMDXRlc3QuY2VydC5jb20wHhcNMTQxMjA1
+MDAwMTQ5WhcNMTUxMjA1MDAwMTQ5WjBiMQswCQYDVQQGEwJVUzETMBEGA1UECAwK
+Q2FsaWZvcm5pYTEUMBIGA1UEBwwLTG9zIEFuZ2VsZXMxEDAOBgNVBAoMB0RlaXMu
+aW8xFjAUBgNVBAMMDXRlc3QuY2VydC5jb20wgZ8wDQYJKoZIhvcNAQEBBQADgY0A
+MIGJAoGBALJwp3PEI4c0sV8h/J6v99iIdtw62ZdhDPSFUNd5mZ4l+6jFQ8M8HND4
+kmbtsnWIoaX9Pry4wK0WzCIUqP+iAIFQAG4X5bTdWaPcmAz+5lBCxJRfYiOJpbZr
+vk+Gdl6JJ/emyXRHI3MfaRV1Wdwcjp4eZ9RCzpLw/Dnkf+nOjEKNAgMBAAEwDQYJ
+KoZIhvcNAQELBQADgYEAOeUDV1JNug8RW+l9tzSpM/cZ43QNJyUNW8aIDFmxSK4H
+UMKZn5TPoi8JM6BC4G9CUwEbAcykWIKgs4x9Dl4ZnvEMx7C4ZMo8oOHUME16NhQQ
+kckSxuWXfSJ9kHqT9ZPYMz9HklUGPwVlmRctgRMz0CJmsxg39mgGoEEa2Gk4g8I=
+-----END CERTIFICATE-----
+" > $DEIS_TEST_SSL_CERT
+
+test -e $DEIS_TEST_SSL_KEY || echo "
+-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQCycKdzxCOHNLFfIfyer/fYiHbcOtmXYQz0hVDXeZmeJfuoxUPD
+PBzQ+JJm7bJ1iKGl/T68uMCtFswiFKj/ogCBUABuF+W03Vmj3JgM/uZQQsSUX2Ij
+iaW2a75PhnZeiSf3psl0RyNzH2kVdVncHI6eHmfUQs6S8Pw55H/pzoxCjQIDAQAB
+AoGANQXInFvB+uEre4tL15OOYCdcumA6XAMYqGgc94pInXfH6gSD+DWaknXqeu9S
+wh4RepNf2xBDIKvPiKj+9scawtLrh4yksDXezb5c+rIVktW+dsiMVR59HAIpF7KX
+nvA0w6FDeTz2xz6cYEFZJNHVqmNEEEnik7lHwcvVMv6eIwECQQDgE1t+tFfLYCaP
+G6D69aYnCebDZBoEL7aikt1o3pdPYjaGP00lp/djIXDrlQEXtmp9PUqSPyQs4urC
+ZTnHoUYhAkEAy9zYOqVFeruUAM+D7TiByUMY/yYpj1E1+2ytP86aI1mKd39Qbc5n
+ZNbkvtv9ZTJF+AA9oRAv562ULhR/jEeW7QJBAKutqRg2zF1B2ckjff9JXnfimi9x
+7ozukZuVspW6lWt48BWDQnRrcJs+7+lPTHsChCxYXV4Xinvpj7xJGi/dXIECQGxk
+ylu0UJMHdZRQwha5uthmYr4XbnWTep5qlFue4Hn3PBZ5jSw1WOhXEl0g30SVTHqm
+th4TW0VWF7nAkGjoD6kCQBSQdxtrRyQKtFd1SvjDsuNnPZZrBsM61Bd4Y0ppyn5C
+era8PE+kBg7keazqwoKOFVY/1FMBrur6g2FBh7FwF/o=
+-----END RSA PRIVATE KEY-----
+" > $DEIS_TEST_SSL_KEY
 
 # prepare the SSH agent
 ssh-add -D || eval $(ssh-agent) && ssh-add -D

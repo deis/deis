@@ -13,6 +13,7 @@ test-full: test-style
 	godep go test -tags integration -v -run TestPerms
 	godep go test -tags integration -v -run TestPs
 	godep go test -tags integration -v -run TestReleases
+	godep go test -tags integration -v -run TestCerts
 
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover

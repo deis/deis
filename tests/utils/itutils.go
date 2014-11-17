@@ -22,20 +22,23 @@ var Deis = "deis "
 // DeisTestConfig allows tests to be repeated against different
 // targets, with different example apps, using specific credentials, and so on.
 type DeisTestConfig struct {
-	AuthKey     string
-	Hosts       string
-	Domain      string
-	SSHKey      string
-	ClusterName string
-	UserName    string
-	Password    string
-	Email       string
-	ExampleApp  string
-	AppName     string
-	ProcessNum  string
-	ImageID     string
-	Version     string
-	AppUser     string
+	AuthKey		string
+	Hosts		string
+	Domain		string
+	SSHKey		string
+	ClusterName	string
+	UserName	string
+	Password	string
+	Email		string
+	ExampleApp	string
+	AppName		string
+	ProcessNum	string
+	ImageID		string
+	Version		string
+	AppUser		string
+	AppCertCn	string
+	AppCertPath	string
+	AppCertKeyPath	string
 }
 
 // randomApp is used for the test run if DEIS_TEST_APP isn't set
@@ -63,21 +66,36 @@ func GetGlobalConfig() *DeisTestConfig {
 	if exampleApp == "" {
 		exampleApp = randomApp
 	}
+	appCertPath := os.Getenv("DEIS_TEST_SSL_CERT")
+	if appCertPath == "" {
+		appCertPath = "~/deis-test.cer"
+	}
+	appCertKeyPath := os.Getenv("DEIS_TEST_SSL_KEY")
+	if appCertKeyPath == "" {
+		appCertKeyPath = "~/deis-test.key"
+	}
+	appCertCn := os.Getenv("DEIS_TEST_SSL_CN")
+	if appCertCn == "" {
+		appCertCn = "test.cert.com"
+	}
 	var envCfg = DeisTestConfig{
-		AuthKey:     authKey,
-		Hosts:       hosts,
-		Domain:      domain,
-		SSHKey:      sshKey,
-		ClusterName: "dev",
-		UserName:    "test",
-		Password:    "asdf1234",
-		Email:       "test@test.co.nz",
-		ExampleApp:  exampleApp,
-		AppName:     "sample",
-		ProcessNum:  "2",
-		ImageID:     "buildtest",
-		Version:     "2",
-		AppUser:     "test1",
+		AuthKey:	authKey,
+		Hosts:		hosts,
+		Domain:		domain,
+		SSHKey:		sshKey,
+		ClusterName:	"dev",
+		UserName:	"test",
+		Password:	"asdf1234",
+		Email:		"test@test.co.nz",
+		ExampleApp:	exampleApp,
+		AppName:	"sample",
+		ProcessNum:	"2",
+		ImageID:	"buildtest",
+		Version:	"2",
+		AppUser:	"test1",
+		AppCertCn:	appCertCn,
+		AppCertPath:	appCertPath,
+		AppCertKeyPath:	appCertKeyPath,
 	}
 	return &envCfg
 }
