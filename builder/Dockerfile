@@ -57,6 +57,6 @@ EXPOSE 22
 RUN addgroup --quiet --gid 2000 slug && useradd slug --uid=2000 --gid=2000
 
 ADD templates/shim.dockerfile /home/git/
+ADD etc /etc
 ADD . /app
-ADD sshd_config /etc/ssh/sshd_config
 RUN chown -R root:root /app
