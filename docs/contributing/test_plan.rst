@@ -9,15 +9,16 @@ Test Plan
 Identifier
 ----------
 
-This document's identifier is **OPD-MTP-0.16.0**. The identifier changes with
+This document's identifier is **OPD-MTP-1.0.1**. The identifier changes with
 any significant revision to the document.
 
 
 References
 ----------
 
-- "Testing Deis": http://docs.deis.io/en/v1.0.0/contributing/testing/
-- "Changes Must Include Tests": http://docs.deis.io/en/v1.0.0/contributing/standards/#include-tests
+- "Testing Deis": http://docs.deis.io/en/v1.0.1/contributing/testing/
+- "Changes Must Include Tests": http://docs.deis.io/en/v1.0.1/contributing/standards/#include-tests
+- "Release Schedule": http://docs.deis.io/en/v1.0.1/contributing/schedule/
 
 
 Introduction
@@ -48,6 +49,8 @@ Within the scope of this master test plan are these items:
 - Hosted HTML documentation updates at http://docs.deis.io/
 - Docker images hosted at https://registry.hub.docker.com/repos/deis/
 
+
+.. _features_to_be_tested:
 
 Features to be Tested
 ---------------------
