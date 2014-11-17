@@ -45,7 +45,7 @@ API key can be found on the Account Settings page.
 Generate SSH Key
 ----------------
 
-Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+.. include:: ../_includes/_generate-ssh-key.rst
 
 
 Set up your keys

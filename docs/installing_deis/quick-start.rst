@@ -9,21 +9,16 @@ These steps will help you provision a Deis cluster.
 
 .. _get_the_source:
 
+.. "Get the Source" section
 .. include:: ../_includes/_get-the-source.rst
 
 
 .. _generate_ssh_key:
 
-Generate an SSH key
--------------------
+Generate SSH Key
+----------------
 
-The ``deisctl`` utility communicates with remote machines over an SSH tunnel.
-If you don't already have an SSH key, the following command will generate
-a new keypair named "deis":
-
-.. code-block:: console
-
-    $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+.. include:: ../_includes/_generate-ssh-key.rst
 
 
 .. _generate_discovery_url:

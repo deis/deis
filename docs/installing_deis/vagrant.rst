@@ -28,7 +28,7 @@ Please install `Vagrant`_ v1.6.5+ and `VirtualBox`_.
 Generate SSH Key
 ----------------
 
-Please refer to :ref:`generate_ssh_key` for generating a new SSH key.
+.. include:: ../_includes/_generate-ssh-key.rst
 
 
 Generate a New Discovery URL
