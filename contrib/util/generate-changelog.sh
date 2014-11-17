@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # vim: et tw=0 sw=4 ts=4
 
 usage() {
