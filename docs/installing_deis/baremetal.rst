@@ -39,7 +39,7 @@ Customize user-data
 Generate a New Discovery URL
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Please refer to :ref:`generate_discovery_url` for generating a new Discovery URL.
+.. include:: ../_includes/_generate-discovery-url.rst
 
 
 SSH Key

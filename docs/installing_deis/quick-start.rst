@@ -26,16 +26,8 @@ Generate SSH Key
 Generate a New Discovery URL
 ----------------------------
 
-Discovery URLs help connect `etcd`_ instances together by storing a list of peer addresses and metadata under a
-unique address. You can generate a new discovery URL for use in your platform by
-running the following from the root of the repository:
+.. include:: ../_includes/_generate-discovery-url.rst
 
-.. code-block:: console
-
-    $ make discovery-url
-
-This will write a new discovery URL to the user-data file. Some essential scripts are supplied in
-this user-data file, so it is mandatory for provisioning Deis.
 
 Check System Requirements
 -------------------------
@@ -71,4 +63,3 @@ please refer to :ref:`install_deisctl` and :ref:`install_deis_platform`.
 
 
 .. _`CoreOS`: https://coreos.com/
-.. _`etcd`: https://github.com/coreos/etcd
