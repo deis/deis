@@ -180,7 +180,7 @@ Please read :ref:`standards`. It contains a checklist of things you should do
 when proposing a change to Deis.
 
 .. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
-.. _`deisctl`: https://github.com/deis/deis/deisctl
+.. _`deisctl`: https://github.com/deis/deis/tree/master/deisctl
 .. _`fork the Deis repository`: https://github.com/deis/deis/fork
 .. _`running the tests`: https://github.com/deis/deis/tree/master/tests#readme
 .. _`pull request`: https://github.com/deis/deis/pulls
