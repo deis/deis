@@ -18,7 +18,7 @@ Prerequisites
 To complete this guide, you must have the following:
 
  - A domain to point to the cluster
- - The ability to provision at least 3 DigitalOcean Droplets that are 2GB or greater
+ - The ability to provision at least 3 DigitalOcean Droplets that are 4GB or greater
 
 In order to provision the cluster, we will need to install a couple of administrative tools.
 `docl`_ is a convenience tool to help provision DigitalOcean Droplets. We will also require the
