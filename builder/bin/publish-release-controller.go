@@ -5,11 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/franela/goreq"
 )
 
 const (
@@ -54,50 +53,56 @@ func main() {
 	postBody := strings.Replace(string(bytes), "'", "", -1)
 
 	// Check for a variable trying to exploit Shellshock.
-	potencialExploit := regexp.MustCompile(`\(\)\s+\{[^\}]+\};\s+(.*)`)
-	if potencialExploit.MatchString(postBody) {
+	potentialExploit := regexp.MustCompile(`\(\)\s+\{[^\}]+\};\s+(.*)`)
+	if potentialExploit.MatchString(postBody) {
 		fmt.Println("")
 		fmt.Println("ATTENTION: an environment variable in the app is trying to exploit Shellshock. Aborting...")
 		fmt.Println("")
 		os.Exit(1)
 	}
 
-	req := goreq.Request{
-		Method:      "POST",
-		Uri:         *url,
-		Body:        postBody,
-		ContentType: contentType,
-		Accept:      contentType,
-		UserAgent:   userAgent,
+	b := strings.NewReader(postBody)
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", *url, b)
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	req.AddHeader("X-Deis-Builder-Auth", *builderKey)
+	req.Header.Add("Content-Type", contentType)
+	req.Header.Add("Accept", contentType)
+	req.Header.Add("User-Agent", userAgent)
+	req.Header.Add("X-Deis-Builder-Auth", *builderKey)
 
-	res, err := req.Do()
+	res, err := client.Do(req)
 
-	// Read json response from body
-	body, _ := res.Body.ToString()
-	var response map[string]interface{}
-	jsonErr := json.Unmarshal([]byte(body), &response)
-
-	if jsonErr != nil {
-		fmt.Println("invalid controller json response")
-		fmt.Println(body)
+	if res.StatusCode == 404 {
+		fmt.Println("Check the Controller. Is it running?")
 		os.Exit(1)
 	}
 
 	if err != nil || res.StatusCode != 200 {
 		fmt.Println("failed retrieving config from controller")
-		fmt.Println(response["detail"].(string))
+		fmt.Println(res.Body)
 		os.Exit(1)
 	}
 
-	if res.StatusCode == 404 {
-		fmt.Println("check the deis-controller. Is not running")
-		os.Exit(2)
+	defer res.Body.Close()
+	// Read json response from body
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	var response map[string]interface{}
+	if err := json.Unmarshal(body, &response); err != nil {
+		fmt.Println("invalid controller json response")
+		fmt.Println(string(body))
+		os.Exit(1)
 	}
 
-	toSring, _ := json.Marshal(response)
-	fmt.Println(string(toSring))
+	toString, _ := json.Marshal(response)
+	fmt.Println(string(toString))
 	os.Exit(0)
 }

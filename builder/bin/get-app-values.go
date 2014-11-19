@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"github.com/deis/deis/builder"
 )
 
 func main() {
@@ -19,19 +20,14 @@ func main() {
 		panic(err)
 	}
 
-	var input map[string]interface{}
-	err = json.Unmarshal(bytes, &input)
+	values, err := builder.ParseControllerConfig(bytes)
 
 	if err != nil {
-		fmt.Println("invalid application json configuration")
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	if input["release"] == nil {
-		fmt.Println("invalid application version")
-		os.Exit(1)
+	for _, value := range values {
+		fmt.Println(value)
 	}
-
-	release := input["release"].(map[string]interface{})
-	fmt.Println(release["version"])
 }

@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 
-	"github.com/moraes/config"
+	"github.com/deis/deis/builder"
 )
 
 func main() {
@@ -17,19 +16,16 @@ func main() {
 	}
 
 	bytes, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+
+	version, err := builder.ParseReleaseVersion(bytes)
 
 	if err != nil {
-		fmt.Println("invalid input")
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	cfg, err := config.ParseYaml(string(bytes))
-
-	if err != nil {
-		fmt.Println("the procfile does not contains a valid yaml structure")
-		os.Exit(1)
-	}
-
-	toSring, _ := json.Marshal(cfg.Root)
-	fmt.Println(string(toSring))
+	fmt.Println(version)
 }

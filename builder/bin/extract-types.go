@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/moraes/config"
+	"github.com/deis/deis/builder"
 )
 
 func main() {
@@ -22,20 +22,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	cfg, err := config.ParseYaml(string(bytes))
+	defaultType, err := builder.GetDefaultType(bytes)
 
 	if err != nil {
-		fmt.Println("the procfile does not contains a valid yaml structure")
+		fmt.Println(err)
 		os.Exit(1)
-	}
-
-	defaultType, err := cfg.Get("default_process_types")
-
-	// some buildpacks don't supply a default process type
-	// as Heroku does not make them mandatory
-	if err != nil {
-		fmt.Println("{}")
-		os.Exit(0)
 	}
 
 	fmt.Println(defaultType)
