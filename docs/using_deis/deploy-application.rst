@@ -26,6 +26,10 @@ Before deploying an application, users must first authenticate against the Deis 
     password:
     Logged in as deis
 
+.. note::
+
+    For Vagrant clusters: ``deis login http://deis.local3.deisapp.com``
+
 Select a Build Process
 ----------------------
 Deis supports three different ways of building applications:
