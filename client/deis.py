@@ -33,6 +33,7 @@ Developer shortcut commands::
   logs          view aggregated log info for the app
   run           run a command in an ephemeral app container
   destroy       destroy an application
+  pull          imports an image and deploys as a new release
 
 Use ``git push deis master`` to deploy to an application.
 
