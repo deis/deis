@@ -70,6 +70,9 @@ from termcolor import colored
 
 __version__ = '1.1.0-dev'
 
+# what version of the API is this client compatible with?
+__api_version__ = '1.0'
+
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -392,10 +395,18 @@ class DeisClient(object):
         url = urlparse.urljoin(controller, path, **kwargs)
         headers = {
             'content-type': 'application/json',
-            'X-Deis-Version': __version__.rsplit('.', 1)[0],
+            'X-Deis-Version': __api_version__.rsplit('.', 1)[0],
             'Authorization': 'token {}'.format(token)
         }
         response = func(url, data=body, headers=headers)
+        # check for version mismatch
+        server_api_version = response.headers.get('X_DEIS_API_VERSION')
+        if server_api_version is not None and server_api_version != __api_version__:
+            self._logger.warning("""
+ !    WARNING: Client and server API versions do not match. Please consider upgrading.
+ !    Client version: {}
+ !    Server version: {}
+""".format(__api_version__, server_api_version))
         return response
 
     def apps(self, args):
