@@ -43,6 +43,8 @@ coreos:
       ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.0.1'
   - name: ntpd.service
     command: start
+  - name: ntpdate.service
+    command: start
   - name: enable-ntp-synchronization.service
     command: start
     content: |
@@ -53,7 +55,6 @@ coreos:
       [Service]
       ExecStart=/usr/bin/timedatectl set-timezone UTC
       ExecStart=/usr/bin/timedatectl set-ntp true
-      ExecStart=/usr/bin/ntpd -q -g -x
       ExecStart=/sbin/hwclock --systohc
       RemainAfterExit=yes
       Type=oneshot
