@@ -34,11 +34,11 @@ common: &common
     # Enabling LRU cache for small files
     # This speeds up read/write on small files
     # when using a remote storage backend (like S3).
-    # cache_lru:
-    #     host: _env:CACHE_LRU_REDIS_HOST:localhost
-    #     port: _env:CACHE_LRU_REDIS_PORT:6379
-    #     db: 0
-    #     password: _env:CACHE_LRU_REDIS_PASSWORD
+    cache_lru:
+        host: {{ or (.deis_cache_host) "~" }}
+        port: {{ or (.deis_cache_port) "~" }}
+        password: _env:CACHE_LRU_REDIS_PASSWORD
+        db: 2
 
     # Enabling these options makes the Registry send an email on each code Exception
     {{ if .deis_registry_smtpHost }}
