@@ -108,24 +108,24 @@ Note that store-volume requires CoreOS >= 471.1.0 for the CephFS kernel module.
 Any component fails to start
 ----------------------------
 
-Use `deisctl status <component>` to view the status of the component.
-You can also use `deisctl journal <component>` to tail logs for a component, or `deisctl list`
+Use ``deisctl status <component>`` to view the status of the component.
+You can also use ``deisctl journal <component>`` to tail logs for a component, or ``deisctl list``
 to list all components.
 
 Failed initializing SSH client
 ------------------------------
 
-A `deisctl` command fails with: 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'.
-Did you remember to add your SSH key to the ssh-agent? `ssh-add -L` should list the key you used
-to provision the servers. If it's not there, `ssh-add -K /path/to/your/key`.
+A ``deisctl`` command fails with: 'Failed initializing SSH client: ssh: handshake failed: ssh: unable to authenticate'.
+Did you remember to add your SSH key to the ssh-agent? ``ssh-add -L`` should list the key you used
+to provision the servers. If it's not there, ``ssh-add -K /path/to/your/key``.
 
 All the given peers are not reachable
 -------------------------------------
 
-A `deisctl` command fails with: 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'.
+A ``deisctl`` command fails with: 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'.
 The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new)
-wasn't generated and updated in `contrib/coreos/user-data` before the cluster was launched.
-Each Deis cluster must have a unique discovery URL, or else `etcd` will try and fail to connect to old hosts.
+wasn't generated and updated in ``contrib/coreos/user-data`` before the cluster was launched.
+Each Deis cluster must have a unique discovery URL, or else ``etcd`` will try and fail to connect to old hosts.
 Try destroying the cluster and relaunching the cluster with a fresh discovery URL.
 
 You can use ``make discovery-url`` to automatically fetch a new discovery URL.
@@ -138,4 +138,3 @@ Running into something not detailed here? Please `open an issue`_ or hop into #d
 .. _`Ceph FS`: https://ceph.com/docs/giant/cephfs/
 .. _`open an issue`: https://github.com/deis/deis/issues/new
 .. _`troubleshooting`: http://docs.ceph.com/docs/giant/rados/troubleshooting/
-
