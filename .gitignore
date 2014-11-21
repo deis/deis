@@ -1,8 +1,5 @@
 *.py[cod]
 
-# C extensions
-*.so
-
 # Packages
 *.egg
 *.egg-info
@@ -17,33 +14,11 @@ develop-eggs
 lib
 lib64
 
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
-logger/coverage.out
-tests/example-*
-
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-# Sublime Text droppings
-*.sublime-project
-*.sublime-workspace
-
 # Deis' config file
 controller/deis/local_settings.py
 controller/.secret_key
 
-# deis application logs
+# application logs
 logs/
 
 # local binaries and installers
@@ -58,21 +33,19 @@ docs/_build/
 docs/docs.zip
 logspout/build/
 
-# ctags index
-tags
-
-# Misc.
-Berksfile.lock
-.DS_Store
+# coverage reports
+.coverage
+coverage.out
 htmlcov/
-.ruby-version
-venv/
-.vagrant
-Vagrantfile.local
-config.rb
-*.swp
-.bundle
+
+# integration test droppings
+tests/example-*
+
+# extra .py droppings from building docs
 /__init__.py
+
+# python virtual environments for testing
+venv
 
 # Local user-data generated from user-data.example
 contrib/coreos/user-data
@@ -85,3 +58,6 @@ contrib/ec2/cloudformation.json
 
 # GCE generated user-data
 contrib/gce/gce-user-data
+
+# vagrant being vagrant
+.vagrant
