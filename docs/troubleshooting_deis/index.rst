@@ -123,12 +123,29 @@ All the given peers are not reachable
 -------------------------------------
 
 A ``deisctl`` command fails with: 'All the given peers are not reachable (Tried to connect to each peer twice and failed)'.
-The most common cause of this issue is that a [new discovery URL](https://discovery.etcd.io/new)
-wasn't generated and updated in ``contrib/coreos/user-data`` before the cluster was launched.
-Each Deis cluster must have a unique discovery URL, or else ``etcd`` will try and fail to connect to old hosts.
-Try destroying the cluster and relaunching the cluster with a fresh discovery URL.
+The most common cause of this issue is that a new discovery URL wasn't generated and updated in
+``contrib/coreos/user-data`` before the cluster was launched. Each Deis cluster must have a unique
+discovery URL, or else ``etcd`` will try and fail to connect to old hosts. Try destroying the cluster
+and relaunching the cluster with a fresh discovery URL.
 
 You can use ``make discovery-url`` to automatically fetch a new discovery URL.
+
+Could not find unit template...
+-------------------------------
+
+If you built ``deisctl`` locally or didn't use its installer, you may see an error like this:
+
+    .. code-block:: console
+
+        $ deisctl install platform
+
+        Storage subsystem...
+        Could not find unit template for store-daemon
+
+This is because ``deisctl`` could not find unit files for Deis locally. Run
+``deisctl help refresh-units`` to see where ``deisctl`` searches, and then run a command such as
+``deisctl refresh-units --tag=v1.0.1``, or set the ``$DEISCTL_UNITS`` environment variable to a directory
+containing the unit files.
 
 Other issues
 ------------
