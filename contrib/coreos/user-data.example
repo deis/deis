@@ -41,6 +41,26 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.0.2'
+  - name: ntpd.service
+    command: start
+  - name: ntpdate.service
+    command: start
+  - name: enable-ntp-synchronization.service
+    command: start
+    content: |
+      [Unit]
+      Description=Synchronize system clock
+      Before=ntpd.service
+
+      [Service]
+      ExecStart=/usr/bin/timedatectl set-timezone UTC
+      ExecStart=/usr/bin/timedatectl set-ntp true
+      ExecStart=/sbin/hwclock --systohc
+      RemainAfterExit=yes
+      Type=oneshot
+
+      [Install]
+      WantedBy=multi-user.target
 write_files:
   - path: /etc/deis-release
     content: |
