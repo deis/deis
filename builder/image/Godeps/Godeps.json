@@ -1,0 +1,46 @@
+{
+	"ImportPath": "github.com/deis/deis/boot",
+	"GoVersion": "go1.3.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.5.1-35-g2e36101",
+			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v0.2.0-rc1-127-g6fe04d5",
+			"Rev": "6fe04d580dfb71c9e34cbce2f4df9eefd1e1241e"
+		},
+		{
+			"ImportPath": "github.com/crowdmob/goamz/aws",
+			"Rev": "45790410a7ffed8e97d6d7b7f44bbd1962a21db8"
+		},
+		{
+			"ImportPath": "github.com/crowdmob/goamz/s3",
+			"Rev": "45790410a7ffed8e97d6d7b7f44bbd1962a21db8"
+		},
+		{
+			"ImportPath": "github.com/franela/goreq",
+			"Rev": "af1fa234b970dcb632d037e5d40217bd3d0ed741"
+		},
+		{
+			"ImportPath": "github.com/fsouza/go-dockerclient",
+			"Comment": "0.2.1-274-g4b6c75c",
+			"Rev": "4b6c75c1d58fbbbaae680348f56fd61b35d2f3ee"
+		},
+		{
+			"ImportPath": "github.com/moraes/config",
+			"Rev": "e73ff799f5d131b1f796223040e95330aea77325"
+		},
+		{
+			"ImportPath": "github.com/walle/targz",
+			"Rev": "57fe4206da5abf7dd3901b4af3891ec2f08c7b08"
+		},
+		{
+			"ImportPath": "launchpad.net/~niemeyer/goyaml/beta",
+			"Comment": "64",
+			"Rev": "gustavo@niemeyer.net-20130430212904-4m1axrjcdy0eg2he"
+		}
+	]
+}

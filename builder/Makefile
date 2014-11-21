@@ -3,9 +3,13 @@ include ../includes.mk
 COMPONENT = builder
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BUILD_IMAGE := $(COMPONENT)-build
 
 build: check-docker
+	docker build -t $(BUILD_IMAGE) image	
+	docker cp `docker create $(BUILD_IMAGE)`:/tmp/boot bin/
 	docker build -t $(IMAGE) .
+	rm -rf bin/boot
 
 clean: check-docker check-registry
 	rm -f deisctl
