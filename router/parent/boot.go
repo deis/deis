@@ -13,6 +13,8 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
+
+	"github.com/deis/deis/router/logger"
 )
 
 var log = logrus.New()
@@ -26,6 +28,8 @@ const (
 )
 
 func main() {
+	log.Formatter = new(logger.StdOutFormatter)
+
 	logLevel := getopt("LOG", "info")
 	if level, err := logrus.ParseLevel(logLevel); err == nil {
 		log.Level = level
