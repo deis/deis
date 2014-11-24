@@ -63,6 +63,10 @@ write_files:
       function nse() {
         docker exec -it $1 bash
       }
+  - path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
+    content: |
+        [Service]
+        Environment=DOCKER_OPTS='--insecure-registry="10.0.0.0/8"'
   - path: /run/deis/bin/get_image
     permissions: '0755'
     content: |

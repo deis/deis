@@ -103,6 +103,11 @@ Make sure it meets the following requirements:
  #. You can push Docker images from your workstation
  #. Hosts in the cluster can pull images with the same URL
 
+.. note::
+
+    If the development registry is insecure, you'll have to modify contrib/coreos/user-data.example
+    and whitelist your development registry so the daemons can pull your custom components.
+
 Development Workflow
 --------------------
 
