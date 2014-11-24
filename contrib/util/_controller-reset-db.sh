@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash -e
 
 # This code is kept in a separate file from `reste-db.sh` for no other reason than to not have to deal
 # with the nightmare of double escaping all these commands through `vagrant ssh -c "\\\\\\\\\AGH!"`

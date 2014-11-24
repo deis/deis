@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 cd /vagrant/contrib/vagrant/util/
 
 # Use the `coverage' command to signal whether the container has the dev dependencies
