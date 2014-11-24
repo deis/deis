@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-ec2-cluster.sh
-#
+# Usage: ./update-ec2-cluster.sh [name]
+# The [name] is the CloudFormation stack name, and defaults to 'deis'
+
+if [ -z "$1" ]
+  then
+    NAME=deis
+  else
+    NAME=$1
+fi
 
 set -e
 
@@ -22,7 +29,7 @@ $CONTRIB_DIR/util/check-user-data.sh
 # update the deis EC2 cloudformation
 aws cloudformation update-stack \
     --template-body "$(./gen-json.py)" \
-    --stack-name deis \
+    --stack-name $NAME \
     --parameters "$(<cloudformation.json)"
 
 echo_green "Your Deis cluster CloudFormation has been successfully updated."

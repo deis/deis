@@ -149,6 +149,11 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
     Your Deis cluster has successfully deployed.
     Please wait for all instances to come up as "running" before continuing.
 
+.. note::
+
+    The default name of the CloudFormation stack will be ``deis``. You can specify a different name
+    with ``./provision-ec2-cluster.sh <name>``.
+
 Check the AWS EC2 web control panel and wait until "Status Checks" for all instances have passed.
 This will take several minutes.
 
