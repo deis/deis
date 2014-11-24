@@ -24,7 +24,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
 
-Developer shortcut commands::
+Shortcut commands, use ``deis shortcuts`` to see all::
 
   create        create a new application
   scale         scale processes by type (web=2, worker=1)
