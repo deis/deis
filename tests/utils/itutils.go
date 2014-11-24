@@ -92,7 +92,7 @@ func doCurl(url string) ([]byte, error) {
 	body, err := ioutil.ReadAll(response.Body)
 
 	if !strings.Contains(string(body), "Powered by Deis") {
-		return nil, fmt.Errorf("App not started (%d)", response.StatusCode)
+		return nil, fmt.Errorf("App not started (%d)\nBody: (%s)", response.StatusCode, string(body))
 	}
 
 	return body, nil
@@ -100,6 +100,11 @@ func doCurl(url string) ([]byte, error) {
 
 // Curl connects to a Deis endpoint to see if the example app is running.
 func Curl(t *testing.T, params *DeisTestConfig) {
+	CurlWithFail(t, params, false, "")
+}
+
+// Curl connects to a Deis endpoint to see if the example app is running.
+func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect string) {
 	url := "http://" + params.AppName + "." + params.Domain
 
 	// FIXME: try the curl a few times
@@ -114,10 +119,29 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 
 	// once more to fail with an error
 	body, err := doCurl(url)
-	if err != nil {
-		t.Fatal(err)
+
+	switch failFlag {
+	case true:
+		if err != nil {
+			if strings.Contains(string(err.Error()), expect) {
+				fmt.Println("(Error expected...ok) " + expect)
+			} else {
+				t.Fatal(err)
+			}
+		} else {
+			if strings.Contains(string(body), expect) {
+				fmt.Println("(Error expected...ok) " + expect)
+			} else {
+				t.Fatal(err)
+			}
+		}
+	case false:
+		if err != nil {
+			t.Fatal(err)
+		} else {
+			fmt.Println(string(body))
+		}
 	}
-	fmt.Println(string(body))
 }
 
 // AuthCancel tests whether `deis auth:cancel` destroys a user's account.
