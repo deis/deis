@@ -78,7 +78,7 @@ If you want to use the script:
     London 1 (lon1)
     New York 3 (nyc3)
     Singapore 1 (sgp1)
-    $ ./contrib/digitalocean/provision-do-cluster nyc3 12345 4GB
+    $ ./contrib/digitalocean/provision-do-cluster.sh nyc3 12345 4GB
 
 Which will provision 3 CoreOS nodes for use.
 
