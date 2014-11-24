@@ -23,6 +23,10 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+def mock_go_introspection(*args, **kwargs):
+    return '{ "cmd":1 }'
+
+
 class HookTest(TransactionTestCase):
 
     """Tests API hooks used to trigger actions from external components"""
@@ -98,6 +102,7 @@ class HookTest(TransactionTestCase):
         self.assertEqual(response.status_code, 403)
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_build_hook(self):
         """Test creating a Build via an API Hook"""
         url = '/v1/apps'
@@ -162,6 +167,7 @@ class HookTest(TransactionTestCase):
         self.assertEqual(container['type'], 'web')
         self.assertEqual(container['num'], 1)
 
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_build_hook_dockerfile(self):
         """Test creating a Dockerfile build via an API Hook"""
         url = '/v1/apps'
@@ -233,6 +239,7 @@ class HookTest(TransactionTestCase):
         self.assertIn('values', response.data)
         self.assertEqual(values, response.data['values'])
 
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_admin_can_hook(self):
         """Administrator should be able to create build hooks on non-admin apps.
         """

@@ -38,6 +38,13 @@ In order to deploy Docker images, they must conform to the following requirement
 
     Docker images which expose more than one port will hit `issue 1156`_.
 
+Alternative Docker Image Requirements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+It is possible to deploy Docker images that contains a Procfile file inside the ``WORKDIR`` 
+directory. This allows the use of existing Docker images previously generated in Deis or a
+standart Docker image.
+
+
 Create an Application
 ---------------------
 Use ``deis create`` to create an application on the :ref:`controller`.
@@ -66,8 +73,6 @@ a private registry.
     $ curl -s http://example-go.local3.deisapp.com
     Powered by Deis
 
-Because you are deploying a Docker image, the ``cmd`` process type is automatically scaled to 1 on first deploy.
-
 .. attention::
 
     Support for Docker registry authentication is coming soon
@@ -77,10 +82,15 @@ Define Process Types
 Docker containers have a default command usually specified by a `CMD instruction`_.
 Deis uses the ``cmd`` process type to refer to this default command.
 
-Process types other than ``cmd`` are not supported when using Docker images.
+If the Docker image contains a `Procfile`_ file inside the directory defined by a `WORKDIR instruction`_ this 
+file will be inspected to extract the process types. In case that the file is invalid (invalid yaml) 
+it will return ``cmd`` as process type.
+In case the image does not contains a Procfile file it will return ``cmd`` as process type.
 
 
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
 .. _`DockerHub`: https://registry.hub.docker.com/
 .. _`CMD instruction`: https://docs.docker.com/reference/builder/#cmd
 .. _`issue 1156`: https://github.com/deis/deis/issues/1156
+.. _`WORKDIR instruction`: https://docs.docker.com/reference/builder/#workdir
+.. _`Procfile`: https://devcenter.heroku.com/articles/procfile

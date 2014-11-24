@@ -7,8 +7,11 @@ all: build run
 COMPONENT = controller
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BUILD_IMAGE := $(COMPONENT)-build
 
 build: check-docker
+	docker build -t $(BUILD_IMAGE) image
+	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/procfile-introspection bin
 	docker build -t $(IMAGE) .
 
 clean: check-docker check-registry

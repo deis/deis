@@ -32,6 +32,7 @@ from rest_framework.authtoken.models import Token
 from api import fields
 from registry import publish_release
 from utils import dict_diff, fingerprint
+from ast import literal_eval
 
 
 logger = logging.getLogger(__name__)
@@ -542,6 +543,17 @@ class Build(UuidAuditedModel):
                                          config=latest_release.config,
                                          source_version=source_version)
         initial = True if self.app.structure == {} else False
+        if self.image and not self.procfile:
+            newImage = '{}:{}/{}'.format(settings.REGISTRY_HOST,
+                                         settings.REGISTRY_PORT,
+                                         new_release.image)
+            cmd = "sudo /app/bin/procfile-introspection --image " + newImage
+            output = subprocess.check_output(cmd, shell=True)
+            logger.log(logging.INFO, "Procfile structure: {}".format(output))
+            imageStructure = literal_eval(output)
+            self.app.structure = imageStructure
+            self.procfile = imageStructure
+            self.save()
         try:
             self.app.deploy(user, new_release, initial=initial)
             return new_release

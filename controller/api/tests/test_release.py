@@ -24,6 +24,10 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+def mock_go_introspection(*args, **kwargs):
+    return '{ "cmd":1 }'
+
+
 class ReleaseTest(TransactionTestCase):
 
     """Tests push notification from build system"""
@@ -35,6 +39,7 @@ class ReleaseTest(TransactionTestCase):
         self.token = Token.objects.get(user=self.user).key
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_release(self):
         """
         Test that a release is created when an app is created, and
@@ -112,6 +117,7 @@ class ReleaseTest(TransactionTestCase):
         return release3
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_release_rollback(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -207,6 +213,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual('http://localhost:8080/', values['NEW_URL1'])
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_release_str(self):
         """Test the text representation of a release."""
         release3 = self.test_release()
@@ -214,6 +221,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(str(release), "{}-v3".format(release3['app']))
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_release_summary(self):
         """Test the text summary of a release."""
         release3 = self.test_release()

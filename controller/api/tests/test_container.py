@@ -25,6 +25,10 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+def mock_go_introspection(*args, **kwargs):
+    return '{ "cmd":1 }'
+
+
 class ContainerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 
@@ -157,6 +161,7 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_container_api_docker(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -220,6 +225,7 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
     @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('subprocess.check_output', mock_go_introspection)
     def test_container_release(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))

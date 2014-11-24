@@ -50,6 +50,7 @@ func TestController(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-v", "/var/run/fleet.sock:/var/run/fleet.sock",
+			"-v", "/var/run/docker.sock:/var/run/docker.sock",
 			"-p", port+":8000",
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
