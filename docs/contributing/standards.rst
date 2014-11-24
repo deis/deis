@@ -83,6 +83,17 @@ tests are required for all public methods, although the flake8_ tool used by
 Deis does not enforce this.
 
 
+Design Proposals
+----------------
+
+When considering a design proposal, we are looking for:
+
+- A description of the problem this design proposal solves
+- A pull request that modifies the documentation, describing the feature you are proposing
+- Prefix your pull request with ``Proposal:`` in the title
+- Please review the existing Proposals before reporting a new one.
+
+
 .. _commit_style_guide:
 
 Commit Style
