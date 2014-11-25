@@ -6,7 +6,7 @@ from rest_framework import status
 from api import __version__
 
 
-class VersionMiddleware:
+class APIVersionMiddleware:
 
     def process_request(self, request):
         try:
