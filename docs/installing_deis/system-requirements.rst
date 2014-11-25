@@ -44,6 +44,11 @@ If running multiple (at least three) machines of an adequate size is unreasonabl
 investigate the `Dokku`_ project instead. Dokku is `sponsored`_ by Deis and is ideal for environments
 where a highly-available distributed system is not necessary (i.e. local development, testing, etc.).
 
+Network
+-------
+
+.. include:: ../_includes/_private-network.rst
+
 .. _`dokku`: https://github.com/progrium/dokku
 .. _`optimal etcd cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
 .. _`sponsored`: http://deis.io/deis-sponsors-dokku/
