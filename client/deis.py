@@ -71,7 +71,7 @@ from termcolor import colored
 __version__ = '1.1.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.0'
+__api_version__ = '1.1'
 
 
 locale.setlocale(locale.LC_ALL, '')

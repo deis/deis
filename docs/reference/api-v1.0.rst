@@ -1,7 +1,5 @@
 :title: Controller API v1.0
-:description: The v1 REST API for Deis' Controller
-
-.. _controller_api_v1:
+:description: The v1.0 REST API for Deis' Controller
 
 Controller API v1.0
 ===================
@@ -764,7 +762,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     Content-Type: application/json
-    
+
     {"version": 5}
 
 
