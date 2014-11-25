@@ -155,14 +155,16 @@ Additionally, because Deis customizes the CoreOS cloud-config file, upgrading th
 a new version without accounting for changes in the cloud-config file could cause Deis to stop
 functioning properly.
 
-While not recommended, it is possible to trigger an update of a CoreOS machine.
-
 .. important::
 
   Enabling updates for CoreOS will result in the machine upgrading to the latest CoreOS release
   available in a particular channel. Sometimes, new CoreOS releases make changes that will break
   Deis. It is always recommended to provision a Deis release with the CoreOS version specified
   in that release's provision scripts or documentation.
+
+While typically not recommended, it is possible to trigger an update of a CoreOS machine. Some
+Deis releases may recommend a CoreOS upgrade - in these cases, the release notes for a Deis release
+will point to this documentation.
 
 To update CoreOS, run the following commands:
 
@@ -176,6 +178,12 @@ To update CoreOS, run the following commands:
     $ systemctl stop update-engine.service
     $ systemctl mask update-engine.service
     $ reboot
+
+.. warning::
+
+  You should only upgrade one host at a time. Removing multiple hosts from the cluster
+  simultaneously can result in failure of the etcd cluster. Ensure the recently-rebooted host
+  has returned to the cluster with ``fleetctl list-machines`` before moving on to the next host.
 
 You can check the CoreOS version by running the following command on the CoreOS machine:
 
