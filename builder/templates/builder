@@ -118,7 +118,7 @@ if [ ! -f Dockerfile ]; then
     docker attach $JOB
 
     # copy out the compiled slug
-    docker cp $JOB:/tmp/slug.tgz .
+    docker cp $JOB:/tmp/slug.tgz $TMP_DIR
     # copy over the Dockerfile shim to the build dir
     cp $DOCKERFILE_SHIM ./Dockerfile
 fi
