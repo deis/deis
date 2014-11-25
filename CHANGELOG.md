@@ -1,3 +1,23 @@
+### v1.0.1 -> v1.0.2
+
+#### Fixes
+
+ - [`02dacee`](https://github.com/deis/deis/commit/02dacee1e49c88e1497e5b7c62672743414a7dc7) builder: explicitly call out $TMP_DIR on `docker cp`
+ - [`3502595`](https://github.com/deis/deis/commit/3502595c3310e982f81f0914fe04b6ee0d96e0d1) contrib/coreos: fix usage of --insecure-registry
+ - [`c3cede8`](https://github.com/deis/deis/commit/c3cede829ea4256c22130d08d7b3a22cfc402676) contrib: add other RFC1918 private addresses
+ - [`eb70b77`](https://github.com/deis/deis/commit/eb70b772825f597bff73455ed6cb88e5a1fd580f) contrib: add --insecure-registry flag for docker 1.3.2
+
+#### Documentation
+
+ - [`3f1b7f4`](https://github.com/deis/deis/commit/3f1b7f475f4bbfe50c625b744c32715d39fbf8d0) managing_deis: add warning to CoreOS upgrade
+ - [`67c1dfb`](https://github.com/deis/deis/commit/67c1dfb29fcb4cb1725a196f0a3a91b6a84ee599) contributing: clean up insecure-registry language
+ - [`10af173`](https://github.com/deis/deis/commit/10af1737f1acc3702d04141e10093f0ba5654583) installing_deis: add private network address requirement
+
+#### Maintenance
+
+ - [`df93f71`](https://github.com/deis/deis/commit/df93f7150501dcee1ca82057de010d039fe7207a) builder: bump Docker to 1.3.2
+ - [`bdc1d72`](https://github.com/deis/deis/commit/bdc1d722016bd42a0a1fae932b175296348987fa) (all): bump CoreOS to 509.1.0 for Docker vulnerability
+
 ### v1.0.0 -> v1.0.1
 
 #### Features
