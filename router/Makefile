@@ -7,7 +7,7 @@ BUILD_IMAGE = $(COMPONENT)-build
 
 build: check-docker
 	docker build -t $(BUILD_IMAGE) parent
-	docker cp `docker run -d $(BUILD_IMAGE)`:/nginx.tgz .
+	docker cp `docker run -d $(BUILD_IMAGE)`:/nginx.tgz `pwd`
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/boot bin/
 	docker build -t $(IMAGE) .
 	rm nginx.tgz
