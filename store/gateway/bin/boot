@@ -83,7 +83,7 @@ else
 fi
 
 if ! radosgw-admin user info --uid=deis >/dev/null 2>&1 ; then
-  radosgw-admin user create --uid=deis --display-name="Deis"
+  radosgw-admin user create --uid=deis --display-name="Deis" >/dev/null
 fi
 
 radosgw-admin user info --uid=deis >/etc/ceph/user.json
