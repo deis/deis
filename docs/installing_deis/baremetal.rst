@@ -55,6 +55,8 @@ Update $private_ipv4
 the user-data with the (private) IP address of the node.
 
 
+.. include:: ../_includes/_private-network.rst
+
 Add Environment
 ^^^^^^^^^^^^^^^
 
