@@ -105,7 +105,8 @@ Make sure it meets the following requirements:
 
 .. note::
 
-    If the development registry is insecure, you'll have to modify contrib/coreos/user-data.example
+    If the development registry is insecure and has an IP address in a range other than ``10.0.0.0/8``,
+    ``172.16.0.0/12``, or ``192.168.0.0/16``, you'll have to modify ``contrib/coreos/user-data.example``
     and whitelist your development registry so the daemons can pull your custom components.
 
 Development Workflow
