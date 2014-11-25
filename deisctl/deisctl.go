@@ -15,7 +15,7 @@ import (
 
 const (
 	// Version of deisctl client
-	Version string = "1.0.1+git"
+	Version string = "1.1.0-dev"
 )
 
 // main exits with the return value of Command(os.Args[1:]), deferring all logic to
