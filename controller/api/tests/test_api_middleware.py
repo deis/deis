@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
-from deis import __version__
+from api import __version__
 
 
 class APIMiddlewareTest(TestCase):
@@ -28,10 +28,12 @@ class APIMiddlewareTest(TestCase):
         """
         response = self.client.get(
             '/v1/apps',
-            HTTP_X_DEIS_VERSION=__version__.rsplit('.', 1)[0],
+            HTTP_X_DEIS_VERSION=__version__.rsplit('.', 2)[0],
             HTTP_AUTHORIZATION='token {}'.format(self.token),
         )
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.has_header('X_DEIS_API_VERSION'), True)
+        self.assertEqual(response['X_DEIS_API_VERSION'], __version__.rsplit('.', 1)[0])
 
     def test_x_deis_version_header_bad(self):
         """

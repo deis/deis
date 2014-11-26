@@ -3,16 +3,16 @@ import json
 from django.http import HttpResponse
 from rest_framework import status
 
-from deis import __version__
+from api import __version__
 
 
-class VersionMiddleware:
+class APIVersionMiddleware:
 
     def process_request(self, request):
         try:
-            # server and client version must match "x.y"
+            # server and client version must match the major release point
             client_version = request.META['HTTP_X_DEIS_VERSION']
-            server_version = __version__.rsplit('.', 1)[0]
+            server_version = __version__.rsplit('.', 2)[0]
             if client_version != server_version:
                 message = {
                     'error': 'Client and server versions do not match. ' +
@@ -26,3 +26,8 @@ class VersionMiddleware:
                 )
         except KeyError:
             pass
+
+    def process_response(self, request, response):
+        # clients shouldn't care about the patch release
+        response['X_DEIS_API_VERSION'] = __version__.rsplit('.', 1)[0]
+        return response

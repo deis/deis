@@ -13,4 +13,5 @@ Reference Guide
     terms/index
     client
     server/index
-    api-v1
+    api-v1.0
+    api-v1.1
