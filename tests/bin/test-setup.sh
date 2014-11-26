@@ -99,14 +99,40 @@ function dump_logs {
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
   set -x
   fleetctl -strict-host-key-checking=false list-units
+  # application unit logs
+  fleetctl -strict-host-key-checking=false ssh appssample_v2.web.1 docker logs appssample_v2.web.1
+  fleetctl -strict-host-key-checking=false ssh appssample_v2.run.1 docker logs appssample_v2.run.1
+  fleetctl -strict-host-key-checking=false ssh buildsample_v2.web.1 docker logs buildsample_v2.web.1
+  fleetctl -strict-host-key-checking=false ssh buildsample_v3.cmd.1 docker logs buildsample_v3.cmd.1
+  fleetctl -strict-host-key-checking=false ssh deispullsample_v2.cmd.1 docker logs deispullsample_v2.cmd.1
+  fleetctl -strict-host-key-checking=false ssh deispullsample_v2.worker.1 docker logs deispullsample_v2.worker.1
+  fleetctl -strict-host-key-checking=false ssh pssample_v2.worker.1 docker logs pssample_v2.worker.1
+  fleetctl -strict-host-key-checking=false ssh pssample_v2.worker.2 docker logs pssample_v2.worker.2
+  # etcd keyspace
   fleetctl -strict-host-key-checking=false ssh deis-controller etcdctl ls / --recursive
-  fleetctl -strict-host-key-checking=false ssh deis-controller docker logs deis-controller
-  fleetctl -strict-host-key-checking=false ssh deis-registry docker logs deis-registry
+  # component logs
   fleetctl -strict-host-key-checking=false ssh deis-builder docker logs deis-builder
+  fleetctl -strict-host-key-checking=false ssh deis-controller docker logs deis-controller
+  fleetctl -strict-host-key-checking=false ssh deis-database docker logs deis-database
   fleetctl -strict-host-key-checking=false ssh deis-logger docker logs deis-logger
+  fleetctl -strict-host-key-checking=false ssh deis-registry docker logs deis-registry
   fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-router
   fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-router
-  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-router  
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-router
+  # deis-store logs
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-store-monitor
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-store-daemon
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-store-metadata
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-store-volume
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-store-monitor
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-store-daemon
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-store-metadata
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-store-volume
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-store-monitor
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-store-daemon
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-store-metadata
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-store-volume
+  fleetctl -strict-host-key-checking=false ssh deis-store-gateway docker logs deis-store-gateway
   set +x
   exit 1
 }
