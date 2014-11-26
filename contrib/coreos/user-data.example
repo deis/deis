@@ -48,14 +48,18 @@ coreos:
     content: |
       [Unit]
       Description=Synchronize system clock
-      After=ntpd.service
+      Before=ntpd.service
 
       [Service]
-      ExecStartPre=/sbin/ntpdate -u 127.0.0.1
-      ExecStartPre=/usr/bin/timedatectl set-timezone UTC
+      ExecStart=/usr/bin/timedatectl set-timezone UTC
       ExecStart=/usr/bin/timedatectl set-ntp true
+      ExecStart=/usr/bin/ntpd -q -g -x
+      ExecStart=/sbin/hwclock --systohc
       RemainAfterExit=yes
-      Type=oneshot      
+      Type=oneshot
+
+      [Install]
+      WantedBy=multi-user.target
 write_files:
   - path: /etc/deis-release
     content: |
