@@ -50,11 +50,6 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 # let the git user run `sudo /home/git/builder` (not writeable)
 RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 
-# HACK: import progrium/cedarish as a tarball
-# see https://github.com/deis/deis/issues/1027
-RUN curl -#SL -o /progrium_cedarish.tar \
-    https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014_10_01.tar
-
 # define the execution environment
 # use VOLUME to remove /var/lib/docker from copy-on-write for performance
 # we don't want to stack overlay filesystems
