@@ -5,6 +5,10 @@ require 'fileutils'
 
 Vagrant.require_version ">= 1.6.5"
 
+unless Vagrant.has_plugin?("vagrant-triggers")
+  raise Vagrant::Errors::VagrantError.new, "Please install the vagrant-triggers plugin running 'vagrant plugin install vagrant-triggers'"
+end
+
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "contrib", "coreos", "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
@@ -64,6 +68,12 @@ Vagrant.configure("2") do |config|
   # plugin conflict
   if Vagrant.has_plugin?("vagrant-vbguest") then
     config.vbguest.auto_update = false
+  end
+
+  config.trigger.before :up do
+    if !File.exists?(CLOUD_CONFIG_PATH) || File.readlines(CLOUD_CONFIG_PATH).grep(/#\s*discovery:/).any?
+      raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
+    end
   end
 
   (1..$num_instances).each do |i|

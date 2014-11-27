@@ -18,6 +18,12 @@ Install Prerequisites
 
 Please install `Vagrant`_ v1.6.5+ and `VirtualBox`_.
 
+The ``Vagrantfile`` requires the plugin `vagrant-triggers`_. To install the plugin run:
+
+.. code-block:: console
+
+    $ vagrant plugin install vagrant-triggers
+
 .. note::
 
     For Ubuntu users: the VirtualBox package in Ubuntu has some issues when running in
@@ -78,3 +84,4 @@ start installing the platform.
 
 .. _Vagrant: http://www.vagrantup.com/
 .. _VirtualBox: https://www.virtualbox.org/wiki/Downloads
+.. _vagrant-triggers: https://github.com/emyl/vagrant-triggers
