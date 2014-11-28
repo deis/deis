@@ -9,8 +9,7 @@ import (
 )
 
 func main() {
-	fi, _ := os.Stdin.Stat()
-	if fi.Mode()&os.ModeNamedPipe == 0 {
+	if fi, _ := os.Stdin.Stat(); fi.Mode()&os.ModeNamedPipe == 0 {
 		fmt.Println("this app only works using the stdout of another process")
 		os.Exit(1)
 	}
