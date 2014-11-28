@@ -435,3 +435,36 @@ class ContainerTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data, "No build associated with this release")
+
+    def test_command_good(self):
+        """Test the default command for each container workflow"""
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        build = Build.objects.create(owner=user,
+                                     app=app,
+                                     image="qwerty",
+                                     procfile={'web': 'node server.js',
+                                               'worker': 'node worker.js'})
+        # create an initial release
+        release = Release.objects.create(version=2,
+                                         owner=user,
+                                         app=app,
+                                         config=app.config_set.latest(),
+                                         build=build)
+        # create a container
+        c = Container.objects.create(owner=user,
+                                     app=app,
+                                     release=release,
+                                     type='web',
+                                     num=1)
+        self.assertEqual(c._command, "bash -c 'node server.js'")
+        c.type = 'worker'
+        self.assertEqual(c._command, "bash -c 'node worker.js'")
+        c.release.build.procfile = None
+        self.assertEqual(c._command, 'start worker')
+        c.type = 'cmd'
+        self.assertEqual(c._command, '')

@@ -404,7 +404,11 @@ class Container(UuidAuditedModel):
         # handle special case for Dockerfile deployments
         if self.type == 'cmd':
             return ''
-        else:
+        try:
+            # ensure they cannot break out and run commands on the host
+            return "bash -c '{}'".format(self.release.build.procfile[self.type])
+        # if the key is not present or if a parent attribute is None
+        except (KeyError, TypeError):
             return 'start {}'.format(self.type)
 
     _command = property(_get_command)
