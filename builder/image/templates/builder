@@ -104,7 +104,7 @@ BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
 if [ ! -f Dockerfile ]; then
     if [ -f /buildpacks ]; then
         BUILD_OPTS+=' -v /buildpacks:/tmp/buildpacks:rw'
-        # give non-root slubuilder user R/W perms for docker volumes
+        # give non-root slugbuilder user R/W perms for docker volumes
         chown -R 2000:2000 /buildpacks
     fi
 
@@ -116,7 +116,7 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=' -v '
     BUILD_OPTS+=$(echo $CACHE_DIR)
     BUILD_OPTS+=':/tmp/cache:rw'
-    # give non-root slubuilder user R/W perms for docker volumes
+    # give non-root slugbuilder user R/W perms for docker volumes
     chown -R 2000:2000 $TMP_DIR $CACHE_DIR
 
     BUILD_OPTS+=' deis/slugbuilder'
