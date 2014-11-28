@@ -38,22 +38,22 @@ func main() {
 
 	if *url == "" {
 		fmt.Println("invalid url")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	if *builderKey == "" {
 		fmt.Println("invalid builder key")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	if *user == "" {
 		fmt.Println("invalid user")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	if *app == "" {
 		fmt.Println("invalid app")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	data, err := json.Marshal(&builder.ConfigHook{ReceiveUser: *user, ReceiveRepo: *app})

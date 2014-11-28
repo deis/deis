@@ -36,18 +36,18 @@ func main() {
 
 	if *url == "" {
 		fmt.Println("invalid url")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	if *builderKey == "" {
 		fmt.Println("invalid builder key")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		fmt.Println("invalid json payload")
-		os.Exit(64)
+		os.Exit(1)
 	}
 
 	postBody := strings.Replace(string(bytes), "'", "", -1)
