@@ -47,11 +47,11 @@ func ListUnitFiles(argv []string, b backend.Backend) error {
 }
 
 // Scale grows or shrinks the number of running components.
-// Currently "router" is the only type that can be scaled.
+// Currently "router" and "registry" are the only types that can be scaled.
 func Scale(argv []string, b backend.Backend) error {
 	usage := `Grows or shrinks the number of running components.
 
-Currently "router" is the only type that can be scaled.
+Currently "router" and "registry" are the only types that can be scaled.
 
 Usage:
   deisctl scale [<target>...] [options]
@@ -75,7 +75,7 @@ Usage:
 			return err
 		}
 		// the router is the only component that can scale at the moment
-		if !strings.Contains(component, "router") {
+		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") {
 			return fmt.Errorf("cannot scale %s components", component)
 		}
 		b.Scale(component, num, &wg, outchan, errchan)
@@ -186,12 +186,12 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 
 	// optimization: start all remaining services in the background
 	b.Start([]string{
-		"cache", "database", "registry", "controller", "builder",
+		"cache", "database", "registry@1", "controller", "builder",
 		"publisher", "router@1", "router@2", "router@3"},
 		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Start([]string{"cache", "database", "registry", "controller"}, wg, outchan, errchan)
+	b.Start([]string{"cache", "database", "registry@1", "controller"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
@@ -270,7 +270,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Stop([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	b.Stop([]string{"controller", "builder", "cache", "database", "registry@1"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -432,7 +432,7 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Create([]string{"cache", "database", "registry", "controller", "builder"}, wg, outchan, errchan)
+	b.Create([]string{"cache", "database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
@@ -512,7 +512,7 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Destroy([]string{"controller", "builder", "cache", "database", "registry"}, wg, outchan, errchan)
+	b.Destroy([]string{"controller", "builder", "cache", "database", "registry@1"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")

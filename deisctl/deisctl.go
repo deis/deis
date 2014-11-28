@@ -37,7 +37,7 @@ Commands, use "deisctl help <command>" to learn more:
   start             start compnents
   stop              stop components
   restart           stop, then start components
-  scale             grow or shrink the number of routers
+  scale             grow or shrink the number of routers or registries
   journal           print the log output of a component
   config            set platform or component values
   refresh-units     refresh unit files from GitHub

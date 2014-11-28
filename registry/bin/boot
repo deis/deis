@@ -13,6 +13,7 @@ set -eo pipefail
 export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/registry}
+export HOST_ETCD_PATH=${HOST_ETCD_PATH:-/deis/registry/hosts/$HOST}
 export ETCD_TTL=${ETCD_TTL:-10}
 
 # run.sh requires $REGISTRY_PORT
@@ -86,8 +87,15 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/masterLock $HOSTNAME --ttl $ETCD_TTL >/dev/null 2>&1 \
+		|| [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/masterLock` == "$HOSTNAME" ]] ; then
+			etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+			etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+			etcdctl --no-sync -C $ETCD update ${ETCD_PATH}/masterLock $HOSTNAME --ttl $ETCD_TTL >/dev/null 
+		fi
+		etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 
