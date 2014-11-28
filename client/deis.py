@@ -59,6 +59,7 @@ import sys
 import time
 import urlparse
 import webbrowser
+import yaml
 
 from dateutil import parser
 from dateutil import relativedelta
@@ -867,7 +868,8 @@ class DeisClient(object):
     def builds_create(self, args):
         """
         Creates a new build of an application. Imports an <image> and deploys it to Deis
-        as a new release.
+        as a new release. If a Procfile is present in the current directory, it will be used
+        as the default process types for this application.
 
         Usage: deis builds:create <image> [options]
 
@@ -879,11 +881,28 @@ class DeisClient(object):
         Options:
           -a --app=<app>
             The uniquely identifiable name for the application.
+          -p --procfile=<procfile>
+            A string parse-able by PYYaml to supply a Procfile to the application.
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
         body = {'image': args['<image>']}
+        procfile = args.get('--procfile')
+        if procfile:
+            try:
+                body['procfile'] = yaml.load(procfile)
+            except yaml.YAMLError:
+                self._logger.error('could not parse --procfile')
+                sys.exit(1)
+        else:
+            # read in Procfile for default process types
+            if os.path.exists('Procfile'):
+                try:
+                    body['procfile'] = yaml.load(open('Procfile'))
+                except yaml.YAMLError:
+                    self._logger.error('could not parse Procfile')
+                    sys.exit(1)
         sys.stdout.write('Creating build... ')
         sys.stdout.flush()
         try:
