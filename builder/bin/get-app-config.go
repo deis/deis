@@ -57,13 +57,13 @@ func main() {
 	}
 
 	data, err := json.Marshal(&builder.ConfigHook{ReceiveUser: *user, ReceiveRepo: *app})
-	b := bytes.NewReader(data)
 
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
+	b := bytes.NewReader(data)
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", *url, b)
 
