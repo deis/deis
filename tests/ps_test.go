@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/deis/deis/tests/utils"
 )
@@ -23,6 +24,13 @@ func TestPs(t *testing.T) {
 	appsOpenTest(t, params)
 	psListTest(t, params, false)
 	psScaleTest(t, params, psDownScaleCmd)
+
+	// FIXME if we don't wait here, some of the routers may give us a 502 before
+	// the app is removed from the config.
+	// we wait 7 seconds since confd reloads every 5 seconds
+	time.Sleep(time.Millisecond * 7000)
+
+	// test for a 503 response
 	utils.CurlWithFail(t, params, true, "503")
 
 	utils.AppsDestroyTest(t, params)
