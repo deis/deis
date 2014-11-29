@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	fleetEtcd "github.com/coreos/fleet/etcd"
+	"github.com/coreos/fleet/pkg"
 	"github.com/coreos/fleet/ssh"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/deis/deis/deisctl/backend/fleet"
@@ -52,9 +52,10 @@ func (c *etcdClient) Set(key string, value string) (string, error) {
 
 func getEtcdClient() (*etcdClient, error) {
 	var dial func(string, string) (net.Conn, error)
+	sshTimeout := time.Duration(fleet.Flags.SSHTimeout*1000) * time.Millisecond
 	tun := getTunnelFlag()
 	if tun != "" {
-		sshClient, err := ssh.NewSSHClient("core", tun, getChecker(), false)
+		sshClient, err := ssh.NewSSHClient("core", tun, getChecker(), false, sshTimeout)
 		if err != nil {
 			return nil, fmt.Errorf("failed initializing SSH client: %v", err)
 		}
@@ -68,7 +69,7 @@ func getEtcdClient() (*etcdClient, error) {
 		}
 	}
 
-	tlsConfig, err := fleetEtcd.ReadTLSConfigFiles(fleet.Flags.EtcdCAFile,
+	tlsConfig, err := pkg.ReadTLSConfigFiles(fleet.Flags.EtcdCAFile,
 		fleet.Flags.EtcdCertFile, fleet.Flags.EtcdKeyFile)
 	if err != nil {
 		return nil, err
