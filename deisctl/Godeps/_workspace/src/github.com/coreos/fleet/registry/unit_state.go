@@ -1,3 +1,19 @@
+/*
+   Copyright 2014 CoreOS, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 package registry
 
 import (
@@ -79,39 +95,11 @@ func (mk MUSKeys) Swap(i, j int) { mk[i], mk[j] = mk[j], mk[i] }
 // statesByMUSKey returns a map of all UnitStates stored in the registry indexed by MUSKey
 func (r *EtcdRegistry) statesByMUSKey() (map[MUSKey]*unit.UnitState, error) {
 	mus := make(map[MUSKey]*unit.UnitState)
-
-	// For backwards compatibility, first retrieve any states stored in the
-	// old format
 	req := etcd.Get{
-		Key:       path.Join(r.keyPrefix, statePrefix),
-		Recursive: true,
-	}
-	res, err := r.etcd.Do(&req)
-	if err != nil && !isKeyNotFound(err) {
-		return nil, err
-	}
-	if res != nil {
-		for _, node := range res.Node.Nodes {
-			_, name := path.Split(node.Key)
-			var usm unitStateModel
-			if err := unmarshal(node.Value, &usm); err != nil {
-				log.Errorf("Error unmarshalling UnitState(%s): %v", name, err)
-				continue
-			}
-			us := modelToUnitState(&usm, name)
-			if us != nil {
-				key := MUSKey{name, us.MachineID}
-				mus[key] = us
-			}
-		}
-	}
-
-	// Now retrieve states stored in the new format and overlay them
-	req = etcd.Get{
 		Key:       path.Join(r.keyPrefix, statesPrefix),
 		Recursive: true,
 	}
-	res, err = r.etcd.Do(&req)
+	res, err := r.etcd.Do(&req)
 	if err != nil && !isKeyNotFound(err) {
 		return nil, err
 	}
@@ -136,29 +124,27 @@ func (r *EtcdRegistry) statesByMUSKey() (map[MUSKey]*unit.UnitState, error) {
 	return mus, nil
 }
 
-// getUnitState retrieves the current UnitState of the provided Job's Unit
-func (r *EtcdRegistry) getUnitState(jobName string) *unit.UnitState {
-	legacyKey := r.legacyUnitStatePath(jobName)
+// getUnitState retrieves the current UnitState, if any exists, for the
+// given unit that originates from the indicated machine
+func (r *EtcdRegistry) getUnitState(uName, machID string) (*unit.UnitState, error) {
 	req := etcd.Get{
-		Key:       legacyKey,
-		Recursive: true,
+		Key: r.unitStatePath(machID, uName),
 	}
 	res, err := r.etcd.Do(&req)
 
 	if err != nil {
-		if !isKeyNotFound(err) {
-			log.Errorf("Error retrieving UnitState(%s): %v", jobName, err)
+		if isKeyNotFound(err) {
+			err = nil
 		}
-		return nil
+		return nil, err
 	}
 
 	var usm unitStateModel
 	if err := unmarshal(res.Node.Value, &usm); err != nil {
-		log.Errorf("Error unmarshalling UnitState(%s): %v", jobName, err)
-		return nil
+		return nil, err
 	}
 
-	return modelToUnitState(&usm, jobName)
+	return modelToUnitState(&usm, uName), nil
 }
 
 // SaveUnitState persists the given UnitState to the Registry

@@ -1,7 +1,25 @@
+/*
+   Copyright 2014 CoreOS, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 package pkg
 
 import (
 	"time"
+
+	"github.com/jonboulle/clockwork"
 
 	"github.com/coreos/fleet/log"
 )
@@ -26,7 +44,7 @@ func NewPeriodicReconciler(interval time.Duration, recFunc func(), eStream Event
 		ival:    interval,
 		rFunc:   recFunc,
 		eStream: eStream,
-		clock:   NewRealClock(),
+		clock:   clockwork.NewRealClock(),
 	}
 }
 
@@ -34,7 +52,7 @@ type reconciler struct {
 	ival    time.Duration
 	rFunc   func()
 	eStream EventStream
-	clock   Clock
+	clock   clockwork.Clock
 }
 
 func (r *reconciler) Run(stop chan bool) {

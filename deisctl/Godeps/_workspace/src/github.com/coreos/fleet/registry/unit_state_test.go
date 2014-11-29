@@ -1,3 +1,19 @@
+/*
+   Copyright 2014 CoreOS, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 package registry
 
 import (
@@ -168,17 +184,56 @@ func TestUnitStateToModel(t *testing.T) {
 		{
 			// Unit state with no hash and no machineID is OK
 			// See https://github.com/coreos/fleet/issues/720
-			in:   &unit.UnitState{"foo", "bar", "baz", "", "", "name"},
-			want: &unitStateModel{"foo", "bar", "baz", nil, ""},
+			in: &unit.UnitState{
+				LoadState:   "foo",
+				ActiveState: "bar",
+				SubState:    "baz",
+				MachineID:   "",
+				UnitHash:    "",
+				UnitName:    "name",
+			},
+			want: &unitStateModel{
+				LoadState:    "foo",
+				ActiveState:  "bar",
+				SubState:     "baz",
+				MachineState: nil,
+				UnitHash:     "",
+			},
 		},
 		{
 			// Unit state with hash but no machineID is OK
-			in:   &unit.UnitState{"foo", "bar", "baz", "", "heh", "name"},
-			want: &unitStateModel{"foo", "bar", "baz", nil, "heh"},
+			in: &unit.UnitState{
+				LoadState:   "foo",
+				ActiveState: "bar",
+				SubState:    "baz",
+				MachineID:   "",
+				UnitHash:    "heh",
+				UnitName:    "name",
+			},
+			want: &unitStateModel{
+				LoadState:    "foo",
+				ActiveState:  "bar",
+				SubState:     "baz",
+				MachineState: nil,
+				UnitHash:     "heh",
+			},
 		},
 		{
-			in:   &unit.UnitState{"foo", "bar", "baz", "woof", "miaow", "name"},
-			want: &unitStateModel{"foo", "bar", "baz", &machine.MachineState{ID: "woof"}, "miaow"},
+			in: &unit.UnitState{
+				LoadState:   "foo",
+				ActiveState: "bar",
+				SubState:    "baz",
+				MachineID:   "woof",
+				UnitHash:    "miaow",
+				UnitName:    "name",
+			},
+			want: &unitStateModel{
+				LoadState:    "foo",
+				ActiveState:  "bar",
+				SubState:     "baz",
+				MachineState: &machine.MachineState{ID: "woof"},
+				UnitHash:     "miaow",
+			},
 		},
 	} {
 		got := unitStateToModel(tt.in)
@@ -236,64 +291,96 @@ func makeResult(val string) *etcd.Result {
 }
 
 func TestGetUnitState(t *testing.T) {
-	for i, tt := range []struct {
-		res *etcd.Result // result returned from etcd
-		err error        // error returned from etcd
-		us  *unit.UnitState
+	tests := []struct {
+		res     *etcd.Result // result returned from etcd
+		err     error        // error returned from etcd
+		wantUS  *unit.UnitState
+		wantErr bool
 	}{
 		{
 			// Unit state with no UnitHash should be OK
 			res: makeResult(`{"loadState":"abc","activeState":"def","subState":"ghi","machineState":{"ID":"mymachine","PublicIP":"","Metadata":null,"Version":"","TotalResources":{"Cores":0,"Memory":0,"Disk":0},"FreeResources":{"Cores":0,"Memory":0,"Disk":0}}}`),
 			err: nil,
-			us:  &unit.UnitState{"abc", "def", "ghi", "mymachine", "", "foo.service"},
+			wantUS: &unit.UnitState{
+				LoadState:   "abc",
+				ActiveState: "def",
+				SubState:    "ghi",
+				MachineID:   "mymachine",
+				UnitHash:    "",
+				UnitName:    "foo.service",
+			},
 		},
 		{
 			// Unit state with UnitHash should be OK
 			res: makeResult(`{"loadState":"abc","activeState":"def","subState":"ghi","machineState":{"ID":"mymachine","PublicIP":"","Metadata":null,"Version":"","TotalResources":{"Cores":0,"Memory":0,"Disk":0},"FreeResources":{"Cores":0,"Memory":0,"Disk":0}},"unitHash":"quickbrownfox"}`),
 			err: nil,
-			us:  &unit.UnitState{"abc", "def", "ghi", "mymachine", "quickbrownfox", "foo.service"},
+			wantUS: &unit.UnitState{
+				LoadState:   "abc",
+				ActiveState: "def",
+				SubState:    "ghi",
+				MachineID:   "mymachine",
+				UnitHash:    "quickbrownfox",
+				UnitName:    "foo.service",
+			},
 		},
 		{
 			// Unit state with no MachineState should be OK
 			res: makeResult(`{"loadState":"abc","activeState":"def","subState":"ghi"}`),
 			err: nil,
-			us:  &unit.UnitState{"abc", "def", "ghi", "", "", "foo.service"},
+			wantUS: &unit.UnitState{
+				LoadState:   "abc",
+				ActiveState: "def",
+				SubState:    "ghi",
+				MachineID:   "",
+				UnitHash:    "",
+				UnitName:    "foo.service",
+			},
 		},
 		{
 			// Bad unit state object should simply result in nil returned
-			res: makeResult(`garbage, not good proper json`),
-			err: nil,
-			us:  nil,
+			res:     makeResult(`garbage, not good proper json`),
+			err:     nil,
+			wantUS:  nil,
+			wantErr: true,
 		},
 		{
 			// Unknown errors should result in nil returned
-			res: nil,
-			err: errors.New("some random error from etcd"),
-			us:  nil,
+			res:     nil,
+			err:     errors.New("some random error from etcd"),
+			wantUS:  nil,
+			wantErr: true,
 		},
 		{
 			// KeyNotFound should result in nil returned
-			res: nil,
-			err: etcd.Error{ErrorCode: etcd.ErrorKeyNotFound},
-			us:  nil,
+			res:     nil,
+			err:     etcd.Error{ErrorCode: etcd.ErrorKeyNotFound},
+			wantUS:  nil,
+			wantErr: false,
 		},
-	} {
+	}
+
+	for i, tt := range tests {
 		e := &testEtcdClient{
 			res: []*etcd.Result{tt.res},
 			err: []error{tt.err},
 		}
 		r := &EtcdRegistry{e, "/fleet/"}
 		j := "foo.service"
-		us := r.getUnitState(j)
+		us, err := r.getUnitState(j, "XXX")
+		if tt.wantErr != (err != nil) {
+			t.Errorf("case %d: unexpected error %t, got %v", i, tt.wantErr, err)
+			continue
+		}
+
 		want := []action{
-			action{key: "/fleet/state/foo.service", rec: true},
+			action{key: "/fleet/states/foo.service/XXX", rec: false},
 		}
 		got := e.gets
 		if !reflect.DeepEqual(got, want) {
 			t.Errorf("case %d: bad result from GetUnitState:\ngot\n%#v\nwant\n%#v", i, got, want)
 		}
-		if !reflect.DeepEqual(us, tt.us) {
-			t.Errorf("case %d: bad UnitState:\ngot\n%#v\nwant\n%#v", i, us, tt.us)
+		if !reflect.DeepEqual(us, tt.wantUS) {
+			t.Errorf("case %d: bad UnitState:\ngot\n%#v\nwant\n%#v", i, us, tt.wantUS)
 		}
 	}
 }
@@ -307,8 +394,22 @@ func usToJson(t *testing.T, us *unit.UnitState) string {
 }
 
 func TestUnitStates(t *testing.T) {
-	fus1 := unit.UnitState{"abc", "def", "ghi", "mID1", "zzz", "foo"}
-	fus2 := unit.UnitState{"cat", "dog", "cow", "mID2", "xxx", "foo"}
+	fus1 := unit.UnitState{
+		LoadState:   "abc",
+		ActiveState: "def",
+		SubState:    "ghi",
+		MachineID:   "mID1",
+		UnitHash:    "zzz",
+		UnitName:    "foo",
+	}
+	fus2 := unit.UnitState{
+		LoadState:   "cat",
+		ActiveState: "dog",
+		SubState:    "cow",
+		MachineID:   "mID2",
+		UnitHash:    "xxx",
+		UnitName:    "foo",
+	}
 	// Multiple new unit states reported for the same unit
 	foo := etcd.Node{
 		Key: "/fleet/states/foo",
@@ -333,27 +434,6 @@ func TestUnitStates(t *testing.T) {
 			},
 		},
 	}
-	// Legacy unit state which we expect to be overridden by fus1 (from the
-	// same machine ID)
-	fus3 := unit.UnitState{"cba", "fed", "ihg", "mID1", "zzz", "foo"}
-	bfoo := etcd.Node{
-		Key:   "/fleet/state/foo",
-		Value: usToJson(t, &fus3),
-	}
-	// Legacy unit state which we expect to see in the results
-	bus := unit.UnitState{"111", "222", "333", "mID3", "aaa", "bar"}
-	baz := etcd.Node{
-		Key:   "/fleet/state/bar",
-		Value: usToJson(t, &bus),
-	}
-
-	// Result from crawling the legacy "state" namespace
-	res1 := &etcd.Result{
-		Node: &etcd.Node{
-			Key:   "/fleet/state",
-			Nodes: []etcd.Node{bfoo, baz},
-		},
-	}
 	// Result from crawling the new "states" namespace
 	res2 := &etcd.Result{
 		Node: &etcd.Node{
@@ -362,7 +442,7 @@ func TestUnitStates(t *testing.T) {
 		},
 	}
 	e := &testEtcdClient{
-		res: []*etcd.Result{res1, res2},
+		res: []*etcd.Result{res2},
 	}
 	r := &EtcdRegistry{e, "/fleet/"}
 
@@ -372,7 +452,6 @@ func TestUnitStates(t *testing.T) {
 	}
 
 	want := []*unit.UnitState{
-		&bus,
 		&fus1,
 		&fus2,
 	}
@@ -394,10 +473,10 @@ func TestUnitStates(t *testing.T) {
 		fail bool
 	}{
 		{[]error{etcd.Error{ErrorCode: etcd.ErrorKeyNotFound}}, false},
-		{[]error{nil, etcd.Error{ErrorCode: etcd.ErrorKeyNotFound}}, false},
-		{[]error{nil, nil}, false}, // No errors, no responses should succeed
+		{[]error{etcd.Error{ErrorCode: etcd.ErrorKeyNotFound}}, false},
+		{[]error{nil}, false}, // No errors, no responses should succeed
 		{[]error{errors.New("ur registry don't work")}, true},
-		{[]error{nil, errors.New("ur registry don't work")}, true},
+		{[]error{errors.New("ur registry don't work")}, true},
 	} {
 		e = &testEtcdClient{err: tt.errs}
 		r = &EtcdRegistry{e, "/fleet"}

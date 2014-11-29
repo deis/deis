@@ -7,7 +7,7 @@ Package docopt parses command-line arguments based on a help message.
 ⚠ Use the alias “docopt-go”:
 	import "github.com/docopt/docopt-go"
 or
-	$ go get github.com/github/docopt-go
+	$ go get github.com/docopt/docopt-go
 */
 package docopt
 

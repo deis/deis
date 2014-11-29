@@ -1,7 +1,7 @@
 package schema
 
 import (
-	gsunit "github.com/coreos/fleet/Godeps/_workspace/src/github.com/coreos/go-systemd/unit"
+	gsunit "github.com/coreos/go-systemd/unit"
 
 	"github.com/coreos/fleet/job"
 	"github.com/coreos/fleet/machine"
