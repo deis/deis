@@ -102,7 +102,7 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 	CurlWithFail(t, params, false, "")
 }
 
-// Curl connects to a Deis endpoint to see if the example app is running.
+// CurlWithFail connects to a Deis endpoint to see if the example app is running.
 func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect string) {
 	url := "http://" + params.AppName + "." + params.Domain
 
