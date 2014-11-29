@@ -72,13 +72,6 @@ Because you are deploying a Docker image, the ``cmd`` process type is automatica
 
     Support for Docker registry authentication is coming soon
 
-Define Process Types
---------------------
-Docker containers have a default command usually specified by a `CMD instruction`_.
-Deis uses the ``cmd`` process type to refer to this default command.
-
-Process types other than ``cmd`` are not supported when using Docker images.
-
 
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
 .. _`DockerHub`: https://registry.hub.docker.com/
