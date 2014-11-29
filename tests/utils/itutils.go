@@ -84,11 +84,10 @@ func GetGlobalConfig() *DeisTestConfig {
 
 func doCurl(url string) ([]byte, error) {
 	response, err := http.Get(url)
-	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-
+	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 
 	if !strings.Contains(string(body), "Powered by Deis") {
