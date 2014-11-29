@@ -10,7 +10,7 @@ CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
-$update_channel = "alpha"
+$update_channel = "beta"
 $enable_serial_logging = false
 $vb_gui = false
 $vb_memory = 1024
@@ -35,28 +35,23 @@ else
   $vb_cpus = 1
 end
 
-COREOS_VERSION = "509.1.0"
-
 if File.exist?(CONFIG)
   require CONFIG
 end
 
 Vagrant.configure("2") do |config|
-  # config.vm.box = "coreos-%s" % $update_channel
-  # config.vm.box_version = ">= 308.0.1"
-  # config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
-  config.vm.box = "coreos-#{COREOS_VERSION}"
-  config.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/#{COREOS_VERSION}/coreos_production_vagrant.box"
-
-  config.vm.provider :vmware_fusion do |vb, override|
-    # override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
-    override.vm.box_url = "http://storage.core-os.net/coreos/amd64-usr/#{COREOS_VERSION}/coreos_production_vagrant_vmware_fusion.box"
-  end
+  config.vm.box = "coreos-%s" % $update_channel
+  config.vm.box_version = ">= 494.1.0"
+  config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
 
   config.vm.provider :virtualbox do |vb, override|
     # Use paravirtualized network adapters
     vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
     vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
+
+  config.vm.provider :vmware_fusion do |vb, override|
+    override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
   end
 
   config.vm.provider :virtualbox do |v|

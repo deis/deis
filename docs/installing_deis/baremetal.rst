@@ -16,7 +16,7 @@ machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
 
 .. important::
 
-    Deis requires CoreOS version 472.0.0 or more recent.
+    Deis requires CoreOS version 494.1.0 or more recent.
 
 
 Check System Requirements
@@ -95,12 +95,12 @@ Start the installation
 
 .. code-block:: console
 
-    coreos-install -C alpha -c /tmp/config -d /dev/sda
+    coreos-install -C beta -c /tmp/config -d /dev/sda
 
 
-This will install the latest `CoreOS`_ alpha release to disk. The Deis provision scripts for other
-platforms typically specify a CoreOS version - currently, ``509.1.0``. To specify a specific CoreOS
-version, append the ``-V`` parameter to the install command, e.g. ``-V 509.1.0``.
+This will install the latest `CoreOS`_ beta release to disk. The Deis provision scripts for other
+platforms typically specify a CoreOS version - currently, ``494.1.0``. To specify a CoreOS
+version, append the ``-V`` parameter to the install command, e.g. ``-V 494.1.0``.
 
 After the installation has finished, reboot your server. Once your machine is back up, you should
 be able to log in as the `core` user using the `deis` ssh key.
