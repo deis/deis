@@ -45,7 +45,9 @@ Use ``deis run`` to execute commands on the deployed application.
 
 .. code-block:: console
 
-    $ deis run ls -l
+    $ deis run 'ls -l'
+    Running `ls -l`...
+    
     total 28
     -rw-r--r-- 1 root root  553 Dec  2 23:59 LICENSE
     -rw-r--r-- 1 root root   60 Dec  2 23:59 Procfile
