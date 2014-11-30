@@ -85,7 +85,7 @@ For Deis to use your Procfile, add the Procfile to the root of your application,
     -----> unisex-huntress deployed to Deis
            http://unisex-huntress.example.com
 
-For docker image deployments, a Procfile in the current directory or via the ``--procfile`` option
-flag will be used as the default process types for the application.
+For Docker image deployments, a Procfile in the current directory or specified by
+``deis push --procfile`` will define the default process types for the application.
 
 .. _`process model`: https://devcenter.heroku.com/articles/process-model
