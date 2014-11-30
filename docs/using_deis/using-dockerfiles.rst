@@ -5,11 +5,13 @@
 
 Using Dockerfiles
 =================
+
 Deis supports deploying applications via Dockerfiles.  A `Dockerfile`_ automates the steps for crafting a `Docker Image`_.
 Dockerfiles are incredibly powerful but require some extra work to define your exact application runtime environment.
 
 Prepare an Application
 ----------------------
+
 If you do not have an existing application, you can clone an example application that demonstrates the Dockerfile workflow.
 
 .. code-block:: console
@@ -19,6 +21,7 @@ If you do not have an existing application, you can clone an example application
 
 Dockerfile Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^
+
 In order to deploy Dockerfile applications, they must conform to the following requirements:
 
  * The Dockerfile must EXPOSE only one port
@@ -31,6 +34,7 @@ In order to deploy Dockerfile applications, they must conform to the following r
 
 Create an Application
 ---------------------
+
 Use ``deis create`` to create an application on the :ref:`controller`.
 
 .. code-block:: console
@@ -41,6 +45,7 @@ Use ``deis create`` to create an application on the :ref:`controller`.
 
 Push to Deploy
 --------------
+
 Use ``git push deis master`` to deploy your application.
 
 .. code-block:: console
@@ -115,17 +120,17 @@ Because a Dockerfile application is detected, the ``cmd`` process type is automa
 
 Define Process Types
 --------------------
-Docker containers have a default command usually specified by a `CMD instruction`_.
-Deis uses the ``cmd`` process type to refer to this default command.
 
-Deis also supports scaling other process types as defined in a `Procfile`_.  To use this functionality, you must:
-
-1. Define process types with a `Procfile`_ in the root of your repository
-2. Include a ``start`` executable that can be called with: ``start <process-type>``
+Deis supports scaling other process types as defined in a `Procfile`_.  To use this functionality,
+you must define process types with a `Procfile`_ in your working directory (see `WORKDIR`_). Deis
+will then handle scaling process types by injecting a binary into your final Docker image and
+inject its own `ENTRYPOINT`_ into the docker image.
 
 
+.. _`CMD instruction`:  https://docs.docker.com/reference/builder/#cmd
 .. _`Dockerfile`: https://docs.docker.com/reference/builder/
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
-.. _`CMD instruction`:  https://docs.docker.com/reference/builder/#cmd
+.. _`ENTRYPOINT`: https://docs.docker.com/reference/builder/#entrypoint
 .. _`issue 1156`: https://github.com/deis/deis/issues/1156
 .. _`Procfile`: https://devcenter.heroku.com/articles/procfile
+.. _`WORKDIR`: https://docs.docker.com/reference/builder/#workdir
