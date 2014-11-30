@@ -56,6 +56,7 @@ import os.path
 import re
 import subprocess
 import sys
+import thread
 import time
 import urlparse
 import webbrowser
@@ -67,6 +68,7 @@ from docopt import docopt
 from docopt import DocoptExit
 import requests
 from termcolor import colored
+from ws4py.client.threadedclient import WebSocketClient
 
 __version__ = '1.1.0-dev'
 
@@ -372,6 +374,26 @@ class ResponseError(Exception):
     pass
 
 
+class RunClient(WebSocketClient):
+    def opened(self):
+        def run(ws):
+            while True:
+                line = sys.stdin.readline()
+                if line:
+                    ws.send(line)
+        thread.start_new_thread(run, (self, ))
+
+    def closed(self, code, reason=None):
+        if code == 1000 and reason != None:
+            self.exitCode = int(reason)
+        else:
+            self.exitCode = 1
+
+    def received_message(self, m):
+        sys.stdout.write(str(m))
+        sys.stdout.flush()
+
+
 class DeisClient(object):
     """
     A client which interacts with a Deis controller.
@@ -643,8 +665,7 @@ class DeisClient(object):
 
     def apps_run(self, args):
         """
-        Runs a command inside an ephemeral app container. Default environment is
-        /bin/bash.
+        Runs a command inside an ephemeral app container.
 
         Usage: deis apps:run [options] [--] <command>...
 
@@ -667,10 +688,18 @@ class DeisClient(object):
                                   "/v1/apps/{}/run".format(app),
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:
-            rc, output = json.loads(response.content)
-            sys.stdout.write(output)
-            sys.stdout.flush()
-            sys.exit(rc)
+            data = response.json()
+            run_id = data['run_id']
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            pty_hostname = hostname.replace("deis.", "deis-run.", 1);
+            try:
+                ws = RunClient("ws://{pty_hostname}:5309/{run_id}".format(**locals()))
+                ws.connect()
+                ws.run_forever()
+                sys.exit(ws.exitCode)
+            except KeyboardInterrupt:
+                ws.close()
+                sys.exit(1)
         else:
             raise ResponseError(response)
 

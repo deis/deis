@@ -37,7 +37,7 @@ on the router and application unit files.
 Rackspace
 =========
 
-You'll need to create two load balancers on Rackspace, as follows:
+You'll need to create three load balancers on Rackspace, as follows:
 
 .. code-block:: text
 
@@ -52,6 +52,12 @@ You'll need to create two load balancers on Rackspace, as follows:
       Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
       Port 2222
       Protocol TCP
+
+    Load Balancer 3
+      Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
+      Port 5309
+      Protocol TCP
+
 
 .. _`increase this timeout`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/config-idle-timeout.html
 

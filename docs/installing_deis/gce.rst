@@ -162,7 +162,7 @@ Note the forwarding rule external IP address. We will use it as the Deis login e
 
 .. code-block:: console
 
-    $ gcutil addfirewall deis-router --target_tags deis --allowed "tcp:80,tcp:2222"
+    $ gcutil addfirewall deis-router --target_tags deis --allowed "tcp:80,tcp:2222,tcp:5309"
 
 
 Configure DNS

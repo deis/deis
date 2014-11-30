@@ -1,12 +1,10 @@
-import cStringIO
-import base64
 import copy
 import json
 import httplib
-import paramiko
 import socket
 import re
 import time
+import uuid
 
 
 MATCH = re.compile(
@@ -116,6 +114,10 @@ class FleetHTTPClient(object):
         entrypoint = kwargs.get('entrypoint')
         if entrypoint:
             l.update({'entrypoint': '{}'.format(entrypoint)})
+        # run id for an on-off command
+        run_id = kwargs.get('run_id')
+        if run_id:
+            l.update({'run_id': '{}'.format(run_id)})
         # construct unit from template
         for f in unit:
             f['value'] = f['value'].format(**l)
@@ -188,95 +190,17 @@ class FleetHTTPClient(object):
                 if attempt == (RETRIES - 1):  # account for 0 indexing
                     raise
 
-    def run(self, name, image, entrypoint, command):  # noqa
-        """Run a one-off command"""
+    def run(self, name, image, entrypoint, command):
+        """Run an one-off command"""
+        run_id = str(uuid.uuid4())
+
         self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE),
-                               entrypoint=entrypoint)
+                               entrypoint=entrypoint, run_id=run_id)
+        self._wait_for_container(name)
 
-        # wait for the container to get scheduled
-        for _ in range(30):
-            states = self._get_state(name)
-            if states and len(states.get('states', [])) == 1:
-                state = states.get('states')[0]
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container did not report state')
-        machineID = state.get('machineID')
-
-        # find the machine
-        machines = self._get_machines()
-        if not machines:
-            raise RuntimeError('no available hosts to run command')
-
-        # find the machine's primaryIP
-        primaryIP = None
-        for m in machines.get('machines', []):
-            if m['id'] == machineID:
-                primaryIP = m['primaryIP']
-        if not primaryIP:
-            raise RuntimeError('could not find host')
-
-        # prepare ssh key
-        file_obj = cStringIO.StringIO(base64.b64decode(self.pkey))
-        pkey = paramiko.RSAKey(file_obj=file_obj)
-
-        # grab output via docker logs over SSH
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(primaryIP, username="core", pkey=pkey)
-        # share a transport
-        tran = ssh.get_transport()
-
-        def _do_ssh(cmd):
-            chan = tran.open_session()
-            # get a pty so stdout/stderr look right
-            chan.get_pty()
-            out = chan.makefile()
-            chan.exec_command(cmd)
-            rc, output = chan.recv_exit_status(), out.read()
-            return rc, output
-
-        # wait for container to start
-        for _ in range(1200):
-            rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
-            if rc == 0:
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container failed to start on host')
-
-        # wait for container to complete
-        for _ in range(1200):
-            _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
-            if _rc != 0:
-                raise RuntimeError('failed to inspect container')
-            _container = json.loads(_output)
-            finished_at = _container[0]["State"]["FinishedAt"]
-            if not finished_at.startswith('0001'):
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container timed out')
-
-        # gather container output
-        _rc, output = _do_ssh('docker logs {name}'.format(**locals()))
-        if _rc != 0:
-            raise RuntimeError('could not attach to container')
-
-        # determine container exit code
-        _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
-        if _rc != 0:
-            raise RuntimeError('could not determine exit code')
-        container = json.loads(_output)
-        rc = container[0]["State"]["ExitCode"]
-
-        # cleanup
-        self._destroy_container(name)
-        self._wait_for_destroy(name)
-
-        # return rc and output
-        return rc, output
+        # FIXME: wait until publisher announced the container and nginx found it
+        time.sleep(10)
+        return run_id
 
     def attach(self, name):
         """
@@ -301,8 +225,10 @@ CONTAINER_TEMPLATE = [
 
 RUN_TEMPLATE = [
     {"section": "Unit", "name": "Description", "value": "{name} admin command"},
-    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
-    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker run --name {name} --entrypoint={entrypoint} -a stdout -a stderr $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "PTY_IMAGE=`/run/deis/bin/get_image /deis/pty`; docker pull $PTY_IMAGE; IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
+    {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect pty_{run_id}_{name} >/dev/null 2>&1 && docker rm -f pty_{run_id}_{name} || true && docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "PTY_IMAGE=`/run/deis/bin/get_image /deis/pty`; IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker run --name pty_{run_id}_{name} -v /usr/bin/docker:/bin/docker -v /var/run/docker.sock:/tmp/docker.sock -e DOCKER_HOST=unix:///tmp/docker.sock -P -e COMMAND=\\"docker run --name {name} --entrypoint={entrypoint} -i -t $IMAGE {command}\\" $PTY_IMAGE"'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f pty_{run_id}_{name}'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/fleetctl destroy {name}'''},
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
 ]

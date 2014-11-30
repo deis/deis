@@ -207,13 +207,13 @@ class AppViewSet(OwnerViewSet):
         app = self.get_object()
         command = request.DATA['command']
         try:
-            output_and_rc = app.run(self.request.user, command)
+            run_id = app.run(self.request.user, command)
         except EnvironmentError as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
             return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        return Response(output_and_rc, status=status.HTTP_200_OK,
-                        content_type='text/plain')
+        return Response({'run_id': run_id}, status=status.HTTP_200_OK,
+                        content_type='application/json')
 
     def destroy(self, request, **kwargs):
         obj = get_object_or_404(self.model, id=kwargs['id'])

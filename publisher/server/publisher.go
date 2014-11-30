@@ -13,9 +13,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
-const (
-	appNameRegex string = `([a-z0-9-]+)_v([1-9][0-9]*).(cmd|web).([1-9][0-9])*`
-)
+var appNameRegex = regexp.MustCompile(`([a-z0-9-]+)_v([1-9][0-9]*).(cmd|web).([1-9][0-9])*`)
+var ptyNameRegex = regexp.MustCompile(`pty_([a-z0-9-]+)_[a-z0-9-]+_v[1-9][0-9]*.run.[1-9][0-9]*`)
 
 // Server is the main entrypoint for a publisher. It listens on a docker client for events
 // and publishes their host:port to the etcd client.
@@ -77,33 +76,42 @@ func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 
 // publishContainer publishes the docker container to etcd.
 func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Duration) {
-	r := regexp.MustCompile(appNameRegex)
 	host := os.Getenv("HOST")
 	for _, name := range container.Names {
 		// HACK: remove slash from container name
 		// see https://github.com/docker/docker/issues/7519
 		containerName := name[1:]
-		match := r.FindStringSubmatch(containerName)
-		if match == nil {
-			continue
-		}
-		appName := match[1]
-		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
-		for _, p := range container.Ports {
-			port := strconv.Itoa(int(p.PublicPort))
-			if s.IsPublishableApp(containerName) {
-				s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
+		match := appNameRegex.FindStringSubmatch(containerName)
+		if match != nil {
+			appName := match[1]
+			keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
+			for _, p := range container.Ports {
+				port := strconv.Itoa(int(p.PublicPort))
+				if s.IsPublishableApp(containerName) {
+					s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
+				}
+				// TODO: support multiple exposed ports
+				break
 			}
-			// TODO: support multiple exposed ports
-			break
+		}
+
+		// Publish on-off containers
+		ptyMatch := ptyNameRegex.FindStringSubmatch(containerName)
+		if ptyMatch != nil {
+			ptyRunID := ptyMatch[1]
+			keyPath := fmt.Sprintf("/deis/runs/%s", ptyRunID)
+			for _, p := range container.Ports {
+				port := strconv.Itoa(int(p.PublicPort))
+				s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
+				break
+			}
 		}
 	}
 }
 
 // isPublishableApp determines if the application should be published to etcd.
 func (s *Server) IsPublishableApp(name string) bool {
-	r := regexp.MustCompile(appNameRegex)
-	match := r.FindStringSubmatch(name)
+	match := appNameRegex.FindStringSubmatch(name)
 	if match == nil {
 		return false
 	}
@@ -123,7 +131,6 @@ func (s *Server) IsPublishableApp(name string) bool {
 // latestRunningVersion retrieves the highest version of the application published
 // to etcd. If no app has been published, returns 0.
 func latestRunningVersion(client *etcd.Client, appName string) int {
-	r := regexp.MustCompile(appNameRegex)
 	if client == nil {
 		// FIXME: client should only be nil during tests. This should be properly refactored.
 		if appName == "ceci-nest-pas-une-app" {
@@ -138,7 +145,7 @@ func latestRunningVersion(client *etcd.Client, appName string) int {
 	}
 	var versions []int
 	for _, node := range resp.Node.Nodes {
-		match := r.FindStringSubmatch(node.Key)
+		match := appNameRegex.FindStringSubmatch(node.Key)
 		// account for keys that may not be an application container
 		if match == nil {
 			continue

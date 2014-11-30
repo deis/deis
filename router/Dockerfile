@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y libgeoip1
 
 WORKDIR /app
 
-EXPOSE 80 2222
+EXPOSE 80 2222 5309
 
 CMD ["/app/bin/boot"]
 

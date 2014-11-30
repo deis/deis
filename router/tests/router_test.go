@@ -27,6 +27,7 @@ func TestRouter(t *testing.T) {
 		"/deis/services",
 		"/deis/builder",
 		"/deis/domains",
+		"/deis/runs",
 		"/deis/store",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()

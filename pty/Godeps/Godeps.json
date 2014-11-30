@@ -1,0 +1,15 @@
+{
+	"ImportPath": "github.com/deis/deis/pty",
+	"GoVersion": "go1.3.3",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "87f6f6a22ebfbc3f89b9ccdc7fddd1b914c095f9"
+		},
+		{
+			"ImportPath": "github.com/kr/pty",
+			"Comment": "release.r56-19-g67e2db2",
+			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
+		}
+	]
+}

@@ -479,8 +479,8 @@ class Container(UuidAuditedModel):
         else:
             command = "-c '{}'".format(command)
         try:
-            rc, output = self._scheduler.run(job_id, image, entrypoint, command)
-            return rc, output
+            run_id = self._scheduler.run(job_id, image, entrypoint, command)
+            return run_id
         except Exception as e:
             err = '{} (run): {}'.format(job_id, e)
             log_event(self.app, err, logging.ERROR)

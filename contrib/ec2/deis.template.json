@@ -260,6 +260,12 @@
             "InstanceProtocol": "TCP",
             "LoadBalancerPort": "2222",
             "Protocol": "TCP"
+          },
+          {
+            "InstancePort": "5309",
+            "InstanceProtocol": "TCP",
+            "LoadBalancerPort": "5309",
+            "Protocol": "TCP"
           }
         ],
         "SecurityGroups": [
@@ -275,7 +281,8 @@
         "GroupDescription": "Deis Web ELB SecurityGroup",
         "SecurityGroupIngress": [
           {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"}
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "5309", "ToPort": "5309", "CidrIp": "0.0.0.0/0"}
         ],
         "VpcId": { "Ref" : "VPC" }
       }
@@ -287,7 +294,8 @@
         "SecurityGroupIngress" : [
           {"IpProtocol": "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHFrom" }},
           {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } },
-          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } }
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } },
+          {"IpProtocol": "tcp", "FromPort": "5309", "ToPort": "5309", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } }
         ],
         "VpcId" : { "Ref" : "VPC" }
       }

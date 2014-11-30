@@ -106,7 +106,7 @@ See :ref:`configure-dns` for more information on properly setting up your DNS re
 Configure Load Balancer
 -----------------------
 
-You'll need to create two load balancers on Rackspace to handle your cluster:
+You'll need to create three load balancers on Rackspace to handle your cluster:
 
 .. code-block:: console
 
@@ -120,6 +120,11 @@ You'll need to create two load balancers on Rackspace to handle your cluster:
     Load Balancer 2
     Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
     Port 2222
+    Protocol TCP
+
+    Load Balancer 3
+    Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
+    Port 5309
     Protocol TCP
 
 Install Deis Platform
