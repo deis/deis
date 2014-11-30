@@ -882,7 +882,7 @@ class DeisClient(object):
           -a --app=<app>
             The uniquely identifiable name for the application.
           -p --procfile=<procfile>
-            A string parse-able by PYYaml to supply a Procfile to the application.
+            A YAML string used to supply a Procfile to the application.
         """
         app = args.get('--app')
         if not app:
