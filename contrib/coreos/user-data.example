@@ -56,6 +56,39 @@ coreos:
       ExecStart=/sbin/hwclock --systohc --utc
       RemainAfterExit=yes
       Type=oneshot
+  - name: install-etcd-backup.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install etcd backup
+
+      [Service]
+      Type=oneshot
+      EnvironmentFile=/etc/environment
+      ExecStart=/usr/bin/mkdir -p /opt/bin
+      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://gobuild3.qiniudn.com/github.com/fanhattan/etcd-backup/branch-v-master/etcd-backup-linux-amd64.tar.gz | tar zx -C /opt/bin'
+      ExecStart=/usr/bin/mkdir -p /home/core/etcd-backup
+      ExecStart=/usr/bin/sh -c '[ ! -f /home/core/etcd-backup/backup-configuration.json ] && echo \'{ "backupStrategy": { "keys": ["/deis"], "recursive": true } }\' > /home/core/etcd-backup/backup-configuration.json'
+  - name: backup-etcd.timer
+    command: start
+    content: |
+      [Unit]
+      Description=etcd backup service
+
+      [Timer]
+      OnCalendar=1h
+      Persistent=true
+      Unit=backup-etcd.service
+
+      [Install]
+      WantedBy=basic.target
+  - name: backup-etcd.service
+    content: |
+      [Unit]
+      Description=Backup etcd every hour
+
+      [Service]
+      ExecStart=/opt/bin/backup-etcd.sh
 write_files:
   - path: /etc/deis-release
     content: |
@@ -123,3 +156,58 @@ write_files:
       TOOLBOX_DOCKER_IMAGE=ubuntu-debootstrap
       TOOLBOX_DOCKER_TAG=14.04
       TOOLBOX_USER=root
+  - path: /opt/bin/install-etcd-backup.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -eo pipefail
+      source /etc/environment
+      /usr/bin/mkdir -p /opt/bin
+      curl -sSL --retry 5 --retry-delay 2 http://gobuild3.qiniudn.com/github.com/fanhattan/etcd-backup/branch-v-master/etcd-backup-linux-amd64.tar.gz | tar zx -C /opt/bin
+      mkdir -p /home/core/etcd-backup
+
+      if [ ! -f /home/core/etcd-backup/backup-configuration.json ]; then
+        echo '{ "backupStrategy": { "keys": ["/deis"], "recursive": true } }' > /home/core/etcd-backup/backup-configuration.json'
+      fi
+  - path: /opt/bin/backup-etcd.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -eo pipefail
+
+      source /etc/environment
+
+      TIMESTAMP=$(date +"%Y%m%d%H%M")
+      LATEST=/home/core/etcd-backup/latest
+      BACKUP=/home/core/etcd-backup/$TIMESTAMP
+      CONFIGURATION=/home/core/etcd-backup/backup-configuration.json
+      ETCD_CONFIGURATION=/home/core/etcd-backup/etcd-configuration.json
+
+      LEADER=$(curl -sSL http://$COREOS_PRIVATE_IPV4:4001/v2/leader)
+      MACHINES=$(curl -sSL http://$COREOS_PRIVATE_IPV4:4001/v2/machines | tr -d " \t\n\r" | sed -e 's/^\|$/"/g' -e 's/,/","/g')
+
+      TEMPLATE=$(cat <<EOF
+      {
+        "cluster": {
+          "leader": "$LEADER",
+          "machines": [
+            $MACHINES
+          ]
+        },
+        "config": {
+          "certFile": "",
+          "keyFile": "",
+          "caCertFiles": [],
+          "timeout": 10000000000000,
+          "consistency": "STRONG"
+        }
+      }
+      EOF
+        )
+
+      echo "$TEMPLATE" > $ETCD_CONFIGURATION
+
+      /opt/bin/etcd-backup -config=$CONFIGURATION -file=$BACKUP -etcd-config=$ETCD_CONFIGURATION dump
+      gzip $BACKUP
+      rm $LATEST || true
+      ln -s $BACKUP.gz $LATEST
