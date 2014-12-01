@@ -16,7 +16,7 @@ import (
 
 var (
 	buildsListCmd   = "builds:list --app={{.AppName}}"
-	buildsCreateCmd = "builds:create {{.ImageID}} --app={{.AppName}}"
+	buildsCreateCmd = `builds:create {{.ImageID}} --app={{.AppName}} --procfile="worker: while true; do echo hi; sleep 3; done"`
 )
 
 func TestBuilds(t *testing.T) {
@@ -28,6 +28,7 @@ func TestBuilds(t *testing.T) {
 	// TODO: router needs a few seconds to wake up here--fixme!
 	time.Sleep(5000 * time.Millisecond)
 	appsOpenTest(t, params)
+	buildsScaleTest(t, params)
 	utils.AppsDestroyTest(t, params)
 }
 
@@ -80,6 +81,18 @@ func buildsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	}
 	utils.Execute(t, appsCreateCmdNoRemote, params, false, "")
 	utils.Execute(t, buildsCreateCmd, params, false, "")
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// buildsScaleTest ensures that we can use a Procfile-based workflow for `deis pull`.
+func buildsScaleTest(t *testing.T, params *utils.DeisTestConfig) {
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, "scale worker=1 --app={{.AppName}}", params, false, "")
+	utils.Execute(t, "logs --app={{.AppName}}", params, false, "hi")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}

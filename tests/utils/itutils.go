@@ -84,11 +84,10 @@ func GetGlobalConfig() *DeisTestConfig {
 
 func doCurl(url string) ([]byte, error) {
 	response, err := http.Get(url)
-	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-
+	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 
 	if !strings.Contains(string(body), "Powered by Deis") {
@@ -103,7 +102,7 @@ func Curl(t *testing.T, params *DeisTestConfig) {
 	CurlWithFail(t, params, false, "")
 }
 
-// Curl connects to a Deis endpoint to see if the example app is running.
+// CurlWithFail connects to a Deis endpoint to see if the example app is running.
 func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect string) {
 	url := "http://" + params.AppName + "." + params.Domain
 
