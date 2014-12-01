@@ -95,18 +95,70 @@ function cleanup {
 
 function dump_logs {
   log_phase "Error detected, dumping logs"
+  TIMESTAMP=`date +%Y-%m-%d-%H%M%S`
+  FAILED_LOGS_DIR=$HOME/jenkins-$TIMESTAMP
+  mkdir -p $FAILED_LOGS_DIR
   set +e
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
-  set -x
   fleetctl -strict-host-key-checking=false list-units
-  fleetctl -strict-host-key-checking=false ssh deis-controller etcdctl ls / --recursive
-  fleetctl -strict-host-key-checking=false ssh deis-controller docker logs deis-controller
-  fleetctl -strict-host-key-checking=false ssh deis-registry docker logs deis-registry
-  fleetctl -strict-host-key-checking=false ssh deis-builder docker logs deis-builder
-  fleetctl -strict-host-key-checking=false ssh deis-logger docker logs deis-logger
-  fleetctl -strict-host-key-checking=false ssh deis-router@1 docker logs deis-router
-  fleetctl -strict-host-key-checking=false ssh deis-router@2 docker logs deis-router
-  fleetctl -strict-host-key-checking=false ssh deis-router@3 docker logs deis-router  
-  set +x
+  # application unit logs
+  get_logs appssample_v2.web.1
+  get_logs appssample_v2.run.1
+  get_logs buildsample_v2.web.1
+  get_logs buildsample_v3.cmd.1
+  get_logs deispullsample_v2.cmd.1
+  get_logs deispullsample_v2.worker.1
+  get_logs pssample_v2.worker.1
+  get_logs pssample_v2.worker.2
+  # etcd keyspace
+  get_logs deis-controller "etcdctl ls / --recursive" etcdctl-dump
+  # component logs
+  get_logs deis-builder
+  get_logs deis-controller
+  get_logs deis-database
+  get_logs deis-logger
+  get_logs deis-registry
+  get_logs deis-router@1 deis-router deis-router-1
+  get_logs deis-router@2 deis-router deis-router-2
+  get_logs deis-router@3 deis-router deis-router-3
+  # deis-store logs
+  get_logs deis-router@1 deis-store-monitor deis-store-monitor-1
+  get_logs deis-router@1 deis-store-daemon deis-store-daemon-1
+  get_logs deis-router@1 deis-store-metadata deis-store-metadata-1
+  get_logs deis-router@1 deis-store-volume deis-store-volume-1
+  get_logs deis-router@2 deis-store-monitor deis-store-monitor-2
+  get_logs deis-router@2 deis-store-daemon deis-store-daemon-2
+  get_logs deis-router@2 deis-store-metadata deis-store-metadata-2
+  get_logs deis-router@2 deis-store-volume deis-store-volume-2
+  get_logs deis-router@3 deis-store-monitor deis-store-monitor-3
+  get_logs deis-router@3 deis-store-daemon deis-store-daemon-3
+  get_logs deis-router@3 deis-store-metadata deis-store-metadata-3
+  get_logs deis-router@3 deis-store-volume deis-store-volume-3
+  get_logs deis-store-gateway
+
+  # tarball logs
+  BUCKET=jenkins-failure-logs
+  FILENAME=$BUCKET-$TIMESTAMP.tar.gz
+  cd $FAILED_LOGS_DIR && tar -czf $FILENAME *.log && mv $FILENAME .. && cd ..
+  rm -rf $FAILED_LOGS_DIR
+  if [ `which s3cmd` ] && [ -f $HOME/.s3cfg ]; then
+    echo "configured s3cmd found in path. Attempting to upload logs to S3"
+    s3cmd put $HOME/$FILENAME s3://$BUCKET
+    rm $HOME/$FILENAME
+    echo "Logs can be viewed here: https://s3.amazonaws.com/$BUCKET/$FILENAME"
+  fi
   exit 1
+}
+
+function get_logs {
+  TARGET="$1"
+  CONTAINER="$2"
+  FILENAME="$3"
+  if [ -z "$CONTAINER" ]; then
+    CONTAINER=$TARGET
+  fi
+  if [ -z "$FILENAME" ]; then
+    FILENAME=$TARGET
+  fi
+  fleetctl -strict-host-key-checking=false ssh "$TARGET" docker logs "$CONTAINER" > $FAILED_LOGS_DIR/$FILENAME.log
 }
