@@ -45,6 +45,7 @@ to CoreOS 494.1.0 or later, and configuring Docker to access deis-registry. See
 
     $ ssh deis-1.example.com  # repeat these steps for each node
     $ sudo -i
+    $ mkdir -p /etc/systemd/system/docker.service.d
     $ cat <<EOF > /etc/systemd/system/docker.service.d/50-insecure-registry.conf
     [Service]
     Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16"
@@ -200,7 +201,7 @@ To update CoreOS, run the following commands:
 
     $ ssh core@<server ip>
     $ sudo su
-    $ echo GROUP=beta > /etc/coreos/update.conf
+    $ echo GROUP=stable > /etc/coreos/update.conf
     $ systemctl unmask update-engine.service
     $ systemctl start update-engine.service
     $ update_engine_client -update
