@@ -25,6 +25,22 @@ install, and start **deis/router**.
 * **PORT** sets the TCP port on which the router listens (default: *80*)
 
 
+## Firewall
+
+[Shellshock](https://shellshocker.net) exposed that some apps (mostly CGI based) inside a web server can be exploited, allowing the arbitrary execution of commands.
+
+To reduce the contact surface of this attack and others (like SQL injection and cross site scripting), it's possible to enable the naxsi firewall (which is disabled by default). [**NAXSI**](https://github.com/nbs-system/naxsi) is an open-source, high performance, low rules maintenance WAF for NGINX.
+The rules included are from this project [doxi-rules](https://bitbucket.org/lazy_dogtown/doxi-rules)
+
+Only these modules are enabled:
+
+|--|--|
+|File| |
+|web_app.rules       |detect exploit/misuse-attempts againts web-applications
+|web_server.rules    |generic rules to protect a webserver from misconfiguration and known mistakes / exploit-vectors
+|active-mode.rules   |rules to configure active-mode (block)
+|naxsi_core          |core naxsi rules
+
 ## License
 
 © 2014 OpDemand LLC

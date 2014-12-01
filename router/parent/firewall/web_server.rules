@@ -1,0 +1,900 @@
+
+##########################################################################
+#
+# doxi_rulesets - rules fo nginx+naxsi
+# desc      : WEB_SERVER
+# file      : web_server.rules
+# created   : 2014-09-28 - 12:29
+# by        : nginx-goodies
+# download  : https://bitbucket.org/lazy_dogtown/doxi-rules
+#
+###########################################################################
+
+#
+# sid: 42000397 | date: 2014-09-27 - 17:26 
+#
+# http://security.stackexchange.com/questions/68408/how-does-this-shellshock-scan-work
+#
+MainRule "str:/dev/udp/" "msg:possible UDP-Bind-Attempt (/dev/udp/)" "mz:BODY|ARGS|HEADERS" "s:$ATTACK:8" id:42000397  ;
+      
+       
+#
+# sid: 42000396 | date: 2014-09-27 - 17:23 
+#
+# http://security.stackexchange.com/questions/68408/how-does-this-shellshock-scan-work
+#
+MainRule "str:/dev/tcp/" "msg:possible TCP-Bind-Attempt (/dev/tcp)" "mz:BODY|URL|ARGS|HEADERS" "s:$ATTACK:8" id:42000396  ;
+      
+       
+#
+# sid: 42000393 | date: 2014-09-25 - 02:18 
+#
+# http://seclists.org/oss-sec/2014/q3/649# https://securityblog.redhat.com/2014/09/24/bash-specially-crafted-environment-variables-code-injection-attack/# http://seclists.org/oss-sec/2014/q3/650# http://www.reddit.com/r/netsec/comments/2hbxtc/cve20146271_remote_code_execution_through_bash/
+#
+MainRule "str:() {" "msg:Possible Remote code execution through Bash CVE-2014-6271" "mz:BODY|HEADERS" "s:$ATTACK:8" id:42000393  ;
+      
+       
+#
+# sid: 42000392 | date: 2014-09-24 - 16:42 
+#
+# known_hosts - access
+#
+MainRule "str:/known_hosts" "msg:known_hosts Access" "mz:URL" "s:$UWA:8" id:42000392  ;
+      
+       
+#
+# sid: 42000391 | date: 2014-09-24 - 16:41 
+#
+# ssh authorized_keys - access
+#
+MainRule "str:/authorized_keys" "msg:authorized_keys - Access" "mz:URL" "s:$UWA:8" id:42000391  ;
+      
+       
+#
+# sid: 42000386 | date: 2014-09-02 - 08:40 
+#
+# http://security.stackexchange.com/questions/66414/getting-null-byte-injection-attacks-to-work-with-php-5-2-17
+#
+MainRule "str:\0" "msg:Nullbyte - Termination \0" "mz:BODY|URL|ARGS" "s:$ATTACK:8" id:42000386  ;
+      
+       
+#
+# sid: 42000382 | date: 2014-05-21 - 23:38 
+#
+# http://vsecurity.com/download/papers/XMLDTDEntityAttacks.pdf
+#
+MainRule "str:file://" "msg:local File access via file://" "mz:BODY|ARGS" "s:$UWA:8" id:42000382  ;
+      
+       
+#
+# sid: 42000381 | date: 2014-05-08 - 15:28 
+#
+# 
+#
+MainRule "str:meterpreter" "msg:Meterpreter-UA detected" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000381  ;
+      
+       
+#
+# sid: 42000368 | date: 2014-04-27 - 08:03 
+#
+# http://chr13.com/2014/04/20/using-facebook-notes-to-ddos-any-website/# https://www.mare-system.de/news/mare/1398410520/
+#
+MainRule "str:facebookexternalhit" "msg:Facebook External Hit" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:7" id:42000368  ;
+      
+       
+#
+# sid: 42000345 | date: 2014-03-18 - 13:50 
+#
+# 
+#
+MainRule "str:roulette" "msg:Possible Casino-Spam  (roulette in URL)" "mz:URL" "s:$UWA:8" id:42000345  ;
+      
+       
+#
+# sid: 42000344 | date: 2014-03-18 - 13:49 
+#
+# http://www.heise.de/security/meldung/Hunderte-Typo3-Webseiten-gehackt-2148372.html
+#
+MainRule "str:casino" "msg:Possible Casino-Spam  (casino in URL)" "mz:URL" "s:$UWA:8" id:42000344  ;
+      
+       
+#
+# sid: 42000343 | date: 2014-03-23 - 17:13 
+#
+# multiple vulns found lately # http://karmainsecurity.com/analysis-of-the-joomla-php-object-injection-vulnerability# https://www.mare-system.de/news/secbulletin/1392018237/# http://vagosec.org/2013/09/wordpress-php-object-injection/# http://blog.sucuri.net/2014/03/security-exploit-patched-on-vbulletin-php-object-injection.html# http://www.exploit-db.com/exploits/32439/# http://www.php.net/manual/de/function.serialize.php
+#
+MainRule "rx:O:\d+:.*:\d+:{(s|S):\d+:.*;.*}" "msg:possible PHP Object Injection" "mz:BODY|ARGS" "s:$ATTACK:8" id:42000343  ;
+      
+       
+#
+# sid: 42000341 | date: 2014-03-16 - 00:07 
+#
+# credits: # - sensepost.com for a nice generic vuln- analysis #   http://sensepost.com/blog/10178.html# - Reginaldo Silva for his blogpost about a sever facebook-vuln#   http://www.ubercomp.com/posts/2014-01-16_facebook_remote_code_execution
+#
+MainRule "rx:<!ENTITY(\s+)(%*\s*)([a-zA-Z1-9_-]*)(\s+)SYSTEM" "msg:possible XML/XXE-Exploitation atempt" "mz:BODY" "s:$UWA:8" id:42000341  ;
+      
+       
+#
+# sid: 42000337 | date: 2013-11-28 - 12:06 
+#
+# http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2012-1823
+#
+MainRule "str:/cgi-bin/php" "msg:PHP-CGI-Scan" "mz:URL" "s:$ATTACK:8" id:42000337  ;
+      
+       
+#
+# sid: 42000334 | date: 2013-10-31 - 16:09 
+#
+# http://seclists.org/fulldisclosure/2013/Oct/279# http://www.exploit-db.com/exploits/29290/
+#
+MainRule "str:/cgi-bin/" "msg:CGI-BIN - Scan" "mz:URL" "s:$UWA:8" id:42000334  ;
+      
+       
+#
+# sid: 42000333 | date: 2013-10-30 - 09:05 
+#
+# http://www.exploit-db.com/exploits/29290/
+#
+MainRule "str:<?" "msg:PHP-Opener ( <? ) found" "mz:URL|HEADERS|BODY|ARGS|$HEADERS_VAR:User-Agent|$HEADERS_VAR:Cookie" "s:$UWA:8" id:42000333  ;
+      
+       
+#
+# sid: 42000331 | date: 2013-10-28 - 23:09 
+#
+# http://www.exploit-db.com/exploits/25980/
+#
+MainRule "str:/struts2-blank/" "msg:ApacheStruts - Exploit-Scan" "mz:URL" "s:$UWA:8" id:42000331  ;
+      
+       
+#
+# sid: 42000330 | date: 2013-10-28 - 19:42 
+#
+# 
+#
+MainRule "rx:^connect" "msg:CONNECT-Request Attempt " "mz:URL" "s:$UWA:8" id:42000330  ;
+      
+       
+#
+# sid: 42000329 | date: 2013-10-21 - 09:09 
+#
+# http://www.exploit-db.com/google-dorks/
+#
+MainRule "str:/.ssh/" "msg:SSH-Homedir-Access" "mz:URL" "s:$ATTACK:8" id:42000329  ;
+      
+       
+#
+# sid: 42000325 | date: 2013-10-17 - 09:11 
+#
+# http://www.devttys0.com/2013/10/reverse-engineering-a-d-link-backdoor/# et: 2017590# http://blog.erratasec.com/2013/10/that-dlink-bug-masscan.html
+#
+MainRule "str:xmlset_roodkcableoj28840ybtide" "msg:Dlink-Router Backdoor-Scan" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000325  ;
+      
+       
+#
+# sid: 42000318 | date: 2013-10-04 - 21:25 
+#
+# http://localhost.re/p/whmcs-527-vulnerability
+#
+MainRule "str:aes_encrypt" "msg:Possible WHMCS Exploit" "mz:BODY|ARGS" "s:$ATTACK:8" id:42000318  ;
+      
+       
+#
+# sid: 42000308 | date: 2013-08-14 - 08:43 
+#
+# http://ddecode.com/phpdecoder/?results=0db52ac37807e6646a3617ff4e33533d
+#
+MainRule "str:cghwaw5mbygpoyag" "msg:Base64Encoded phpinfo" "mz:URL|BODY|ARGS|HEADERS" "s:$UWA:8" id:42000308  ;
+      
+       
+#
+# sid: 42000303 | date: 2013-08-05 - 15:29 
+#
+# 
+#
+MainRule "str:stats/agent" "msg:AWSTATS - Access (2)" "mz:URL" "s:$UWA:8" id:42000303  ;
+      
+       
+#
+# sid: 42000302 | date: 2013-08-05 - 15:29 
+#
+# 
+#
+MainRule "str:/awstats/data" "msg:AWSTATS - Access" "mz:URL" "s:$UWA:8" id:42000302  ;
+      
+       
+#
+# sid: 42000301 | date: 2013-08-04 - 22:41 
+#
+# et: 2009044
+#
+MainRule "str:exec%20master%2e%2exp%5fcmdshell" "msg:SQLNinja Attempt To Create xp_cmdshell Session" "mz:URL|ARGS" "s:$UWA:8" id:42000301  ;
+      
+       
+#
+# sid: 42000299 | date: 2013-08-04 - 22:36 
+#
+# et: 2009823
+#
+MainRule "str:xp_ntsec_enumdomains" "msg:Attempt To Access MSSQL xp_ntsec_enumdomains Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000299  ;
+      
+       
+#
+# sid: 42000298 | date: 2013-08-04 - 22:35 
+#
+# et: 2009823
+#
+MainRule "str:xp_enumgroups" "msg:Attempt To Access MSSQLxp_enumgroups  Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000298  ;
+      
+       
+#
+# sid: 42000297 | date: 2013-08-04 - 22:34 
+#
+# et: 2009823
+#
+MainRule "str:xp_enumdsn" "msg:Attempt To Access MSSQL xp_enumdsn Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000297  ;
+      
+       
+#
+# sid: 42000296 | date: 2013-08-04 - 22:33 
+#
+# 
+#
+MainRule "str:xp_readerrorlogs" "msg:Attempt To Access MSSQL xp_readerrorlogs Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000296  ;
+      
+       
+#
+# sid: 42000295 | date: 2013-08-04 - 22:32 
+#
+# et: 2009820
+#
+MainRule "str:xp_enumerrorlogs" "msg:Attempt To Access MSSQL xp_enumerrorlogs Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000295  ;
+      
+       
+#
+# sid: 42000294 | date: 2013-08-04 - 22:31 
+#
+# et: 2009819
+#
+MainRule "str:xp_fileexist" "msg:Attempt To Access MSSQL xp_fileexist Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000294  ;
+      
+       
+#
+# sid: 42000293 | date: 2013-08-04 - 22:30 
+#
+# et: 2009818
+#
+MainRule "str:xp_regdeletekey" "msg:Attempt To Access MSSQL xp_regdeletekey Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000293  ;
+      
+       
+#
+# sid: 42000292 | date: 2013-08-04 - 22:28 
+#
+# et: 2009818
+#
+MainRule "str:xp_regdeletevalue" "msg:Attempt To Access MSSQL xp_regdeletevalue Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000292  ;
+      
+       
+#
+# sid: 42000291 | date: 2013-08-04 - 22:27 
+#
+# et: 2009818
+#
+MainRule "str:xp_regwrite" "msg:Attempt To Access MSSQL xp_regwrite  Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000291  ;
+      
+       
+#
+# sid: 42000290 | date: 2013-08-04 - 22:26 
+#
+# et: 2009818
+#
+MainRule "str:xp_regread" "msg:Attempt To Access MSSQL xp_regread Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000290  ;
+      
+       
+#
+# sid: 42000289 | date: 2013-08-04 - 22:24 
+#
+# et: 2009816
+#
+MainRule "str:xp_servicecontrol" "msg:Attempt To Access MSSQL xp_servicecontrol Stored Procedure Via URI" "mz:URL|ARGS" "s:$UWA:8" id:42000289  ;
+      
+       
+#
+# sid: 42000285 | date: 2013-08-04 - 18:51 
+#
+# http://pastebin.com/5HXNY6Pq# http://www.exploit-db.com/exploits/17734/
+#
+MainRule "str:/images/stories/" "msg:Joomla JCE-Exploit-Scan" "mz:URL" "s:$ATTACK:8" id:42000285  ;
+      
+       
+#
+# sid: 42000284 | date: 2013-07-28 - 09:48 
+#
+# possible scan fpor open proxies, generic
+#
+MainRule "rx:^http" "msg:Open-Proxy-Scan" "mz:URL" "s:$UWA:8" id:42000284  ;
+      
+       
+#
+# sid: 42000282 | date: 2013-07-21 - 10:36 
+#
+# https://github.com/SpiderLabs/owasp-modsecurity-crs/blob/master/base_rules/modsecurity_crs_40_generic_attacks.conf
+#
+MainRule "str:," "msg:HTTP Request Smuggling -  Multiple Values in Transfer-Encoding" "mz:$HEADERS_VAR:Transfer-Encoding" "s:$EVADE:8" id:42000282  ;
+      
+       
+#
+# sid: 42000280 | date: 2013-07-21 - 10:30 
+#
+# https://github.com/SpiderLabs/owasp-modsecurity-crs/blob/master/base_rules/modsecurity_crs_40_generic_attacks.conf
+#
+MainRule "str:" "msg:HTTP Request Smuggling -  Comma in Content-Length" "mz:$HEADERS_VAR:Content-Length" "s:$EVADE:8" id:42000280  ;
+      
+       
+#
+# sid: 42000279 | date: 2013-07-21 - 10:29 
+#
+# https://github.com/SpiderLabs/owasp-modsecurity-crs/blob/master/base_rules/modsecurity_crs_40_generic_attacks.conf
+#
+MainRule "str:," "msg:HTTP Request Smuggling -  Comma in Content-Type" "mz:$HEADERS_VAR:Content-Type" "s:$EVADE:8" id:42000279  ;
+      
+       
+#
+# sid: 42000278 | date: 2013-07-21 - 10:26 
+#
+# https://www.owasp.org/index.php/HTTP_Request_Smuggling
+#
+MainRule "str:\n\r" "msg:HTTP - Smuggling-Attempt (NewLine in URI)" "mz:URL" "s:$EVADE:8" id:42000278  ;
+      
+       
+#
+# sid: 42000277 | date: 2013-07-21 - 10:20 
+#
+# https://www.owasp.org/index.php/HTTP_Request_Smuggling
+#
+MainRule "str:post http" "msg:HTTP - Smuggling-Attempt (Proxy-POST in Headers)" "mz:HEADERS" "s:$EVADE:8" id:42000277  ;
+      
+       
+#
+# sid: 42000275 | date: 2013-07-21 - 09:59 
+#
+# https://www.owasp.org/index.php/HTTP_Request_Smuggling
+#
+MainRule "str:post /" "msg:HTTP - Smuggling-Attempt (POST in Headers)" "mz:HEADERS" "s:$EVADE:8" id:42000275  ;
+      
+       
+#
+# sid: 42000274 | date: 2013-07-21 - 09:48 
+#
+# et: # https://www.owasp.org/index.php/HTTP_Request_Smuggling
+#
+MainRule "str:get /" "msg:HTTP - Smuggling-Attempt (GET in Headers)" "mz:HEADERS" "s:$EVADE:8" id:42000274  ;
+      
+       
+#
+# sid: 42000271 | date: 2013-07-08 - 09:31 
+#
+# http://www.projecthoneypot.org/ip_95.168.162.43# http://security.stackexchange.com/questions/8153/what-on-earth-is-this-log-entry-in-apache
+#
+MainRule "str:++++++++result" "msg:ForumSpammer Access " "mz:URL" "s:$UWA:8" id:42000271  ;
+      
+       
+#
+# sid: 42000270 | date: 2013-06-25 - 12:16 
+#
+# https://lists.emergingthreats.net/pipermail/emerging-sigs/2010-June/007990.html
+#
+MainRule "str:pymills-spider/" "msg:Possible Fast-Track Tool Spidering User-Agent Detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000270  ;
+      
+       
+#
+# sid: 42000269 | date: 2013-06-24 - 07:50 
+#
+# http://localhost.re/p/solusvm-whmcs-module-316-vulnerability
+#
+MainRule "str:/rootpassword.php" "msg:Possible Scan for SolusVM WHMCS Module 3.16 Vulnerability" "mz:URL" "s:$ATTACK:8" id:42000269  ;
+      
+       
+#
+# sid: 42000268 | date: 2013-06-17 - 20:07 
+#
+# http://localhost.re/p/solusvm-11303-vulnerabilities# blog.soluslabs.com/2013/06/16/important-security-alert-new-update/# http://www.lowendbox.com/blog/a-days-recap-solusvm-exploit-released-ramnode-downtime-and-robert-clarke/
+#
+MainRule "str:/centralbackup.php" "msg:Possible SolusVM - Exploit-attempt" "mz:URL" "s:$ATTACK:8" id:42000268  ;
+      
+       
+#
+# sid: 42000267 | date: 2013-06-10 - 13:55 
+#
+# in case developers forgot to exlucde .idea/ from repos, checkouts or deployments; i wouldd opt-in for a htaccess-rule to prevent access (apache) or location-denied  (nginx)
+#
+MainRule "str:/.idea/" "msg:JetBrains IDE - Workspace-Scan" "mz:URL" "s:$UWA:8" id:42000267  ;
+      
+       
+#
+# sid: 42000265 | date: 2013-06-05 - 21:44 
+#
+# http://seclists.org/fulldisclosure/2013/Jun/21# # http://www.reddit.com/r/netsec/comments/1fqe4g/plesk_apache_remote_0_day_king_cope/
+#
+MainRule "str:/phppath/" "msg:Plesk Apache Zeroday Remote Exploit - possible scan" "mz:URL" "s:$UWA:8" id:42000265  ;
+      
+       
+#
+# sid: 42000264 | date: 2013-04-24 - 20:48 
+#
+# 
+#
+MainRule "str:/.htpasswd" "msg:.htpasswd - Access" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000264  ;
+      
+       
+#
+# sid: 42000263 | date: 2013-04-24 - 20:48 
+#
+# 
+#
+MainRule "str:/.htaccess" "msg:.htaccess - Access" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000263  ;
+      
+       
+#
+# sid: 42000262 | date: 2013-04-13 - 11:31 
+#
+# http://krebsonsecurity.com/2013/04/brute-force-attacks-build-wordpress-botnet/# http://blog.sucuri.net/2013/04/mass-wordpress-brute-force-attacks-myth-or-reality.html# http://blog.sucuri.net/2013/04/protecting-against-wordpress-brute-force-attacks.html
+#
+MainRule "str:/wp-admin" "msg:possible WP-Scan (wp-admin)" "mz:URL" "s:$UWA:8" id:42000262  ;
+      
+       
+#
+# sid: 42000261 | date: 2013-04-13 - 11:31 
+#
+# http://krebsonsecurity.com/2013/04/brute-force-attacks-build-wordpress-botnet/# http://blog.sucuri.net/2013/04/mass-wordpress-brute-force-attacks-myth-or-reality.html# http://blog.sucuri.net/2013/04/protecting-against-wordpress-brute-force-attacks.html
+#
+MainRule "str:/wp-login.php" "msg:possible WP-Scan (wp-login)" "mz:URL" "s:$UWA:8" id:42000261  ;
+      
+       
+#
+# sid: 42000259 | date: 2013-02-23 - 11:26 
+#
+# 
+#
+MainRule "str:gzinflate(" "msg:gzinflate in URI" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000259  ;
+      
+       
+#
+# sid: 42000257 | date: 2013-02-23 - 11:15 
+#
+# 
+#
+MainRule "str:/bin/sh" "msg:/bin/sh in URI" "mz:URL|BODY|ARGS|$HEADERS_VAR:User-Agent|$HEADERS_VAR:Cookie" "s:$UWA:8" id:42000257  ;
+      
+       
+#
+# sid: 42000254 | date: 2013-02-23 - 11:08 
+#
+# 
+#
+MainRule "str:.ini" "msg:possible INI - File - Access" "mz:URL" "s:$UWA:8" id:42000254  ;
+      
+       
+#
+# sid: 42000253 | date: 2013-02-23 - 11:08 
+#
+# 
+#
+MainRule "str:.inc" "msg:possible INC - File - Access" "mz:URL" "s:$UWA:8" id:42000253  ;
+      
+       
+#
+# sid: 42000252 | date: 2013-02-23 - 11:07 
+#
+# 
+#
+MainRule "str:.conf" "msg:possible CONF-File - Access" "mz:URL" "s:$UWA:8" id:42000252  ;
+      
+       
+#
+# sid: 42000247 | date: 2013-02-17 - 17:55 
+#
+# http://blog.spiderlabs.com/2013/02/honeypot-alert-user-agent-field-php-injection-attacks.html?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+SpiderlabsAnterior+%28SpiderLabs+Anterior%29
+#
+MainRule "str:<?php" "msg:UA-PHP-Injection-Attack" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000247  ;
+      
+       
+#
+# sid: 42000246 | date: 2013-02-17 - 17:55 
+#
+# http://blog.spiderlabs.com/2013/02/honeypot-alert-user-agent-field-php-injection-attacks.html?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+SpiderlabsAnterior+%28SpiderLabs+Anterior%29
+#
+MainRule "str:<?php" "msg:UA-PHP-Injection-Attack" "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000246  ;
+      
+       
+#
+# sid: 42000245 | date: 2013-02-12 - 19:21 
+#
+# http://freecode.com/projects/phpshell# # sciddos forget to remove the request to css
+#
+MainRule "str:/phpshell.css" "msg:PHPShell - Access detected" "mz:URL" "s:$ATTACK:8" id:42000245  ;
+      
+       
+#
+# sid: 42000236 | date: 2013-01-15 - 10:41 
+#
+# in opposite to core-rule 1200; this detects directory traversal only
+#
+MainRule "str:../" "msg:DoubleDot in URL" "mz:URL" "s:$UWA:8" id:42000236  ;
+      
+       
+#
+# sid: 42000228 | date: 2013-01-08 - 15:52 
+#
+# 
+#
+MainRule "str:l2v0yy9wyxnzd2q=" "msg:/etc/passwd encoded as Base64 " "mz:URL|BODY|ARGS|$HEADERS_VAR:Cookie" "s:$UWA:8" id:42000228  ;
+      
+       
+#
+# sid: 42000121 | date: 2012-12-21 - 13:47 
+#
+# 
+#
+MainRule "str:gzinflate" "msg:GZINFALTE in URL" "mz:URL|ARGS" "s:$ATTACK:8" id:42000121  ;
+      
+       
+#
+# sid: 42000114 | date: 2012-12-18 - 22:29 
+#
+# 
+#
+MainRule "str:php.ini" "msg:PHPINI in URL" "mz:URL|ARGS" "s:$ATTACK:8,$UWA:8" id:42000114  ;
+      
+       
+#
+# sid: 42000090 | date: 2012-12-18 - 16:18 
+#
+# http://www.exploit-db.com/exploits/17299/
+#
+MainRule "str:passthru" "msg:PHP - Command Passthru detected" "mz:URL|BODY|ARGS" "s:$ATTACK:8" id:42000090  ;
+      
+       
+#
+# sid: 42000084 | date: 2012-11-25 - 11:36 
+#
+# http://blog.sucuri.net/2012/11/psa-sftpftp-password-exposure-via-sftp-config-json.html
+#
+MainRule "str:/sftp-config.json" "msg:SFTP-config-file access" "mz:URL|BODY" "s:$ATTACK:8,$UWA:8" id:42000084  ;
+      
+       
+#
+# sid: 42000082 | date: 2012-11-01 - 00:51 
+#
+# 
+#
+MainRule "str:/manager" "msg:Tomcat - Manager - Access" "mz:URL" "s:$UWA:8" id:42000082  ;
+      
+       
+#
+# sid: 42000081 | date: 2012-11-01 - 00:49 
+#
+# 
+#
+MainRule "str:/balancer-manager" "msg:Apache BalancerManager - Access" "mz:URL" "s:$UWA:8" id:42000081  ;
+      
+       
+#
+# sid: 42000080 | date: 2012-11-01 - 00:48 
+#
+# 
+#
+MainRule "str:/server-status" "msg:Apache ServerStatus - Access" "mz:URL" "s:$UWA:8" id:42000080  ;
+      
+       
+#
+# sid: 42000079 | date: 2012-10-22 - 05:38 
+#
+# http://msdn.microsoft.com/en-us/library/bb862916(v=office.12).aspx# http://social.technet.microsoft.com/Forums/en-US/sharepointadmin/thread/9d496bd1-170f-4b87-b4b3-5f9ec760921f/
+#
+MainRule "str:/_vti_rpc" "msg:VTI_RPC - Access" "mz:URL|BODY" "s:$UWA:8" id:42000079  ;
+      
+       
+#
+# sid: 42000078 | date: 2012-10-22 - 05:35 
+#
+# http://msdn.microsoft.com/en-us/library/bb862916(v=office.12).aspx
+#
+MainRule "str:/_vti_adm/" "msg:VTI_ADM - Access" "mz:URL" "s:$UWA:8" id:42000078  ;
+      
+       
+#
+# sid: 42000077 | date: 2012-10-20 - 11:30 
+#
+# 
+#
+MainRule "str:libwww-perl/" "msg:LIBWWW_perl-UA detected" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:4" id:42000077  ;
+      
+       
+#
+# sid: 42000075 | date: 2012-10-20 - 11:25 
+#
+# et 2011402# http://ddos.arbornetworks.com/2010/08/yoyoddos-a-new-family-of-ddos-bots/
+#
+MainRule "str:keep-alivf" "msg:Yoyo-DDOS-Bot detected (Keep-Alivf))" "mz:$HEADERS_VAR:Connection" "s:$ATTACK:8" id:42000075  ;
+      
+       
+#
+# sid: 42000074 | date: 2012-10-20 - 11:24 
+#
+# http://ddos.arbornetworks.com/2010/08/yoyoddos-a-new-family-of-ddos-bots/
+#
+MainRule "str:g{ip;" "msg:Yoyo-DDOS-Bot detected" "mz:$HEADERS_VAR:Accept-Encoding" "s:$ATTACK:8" id:42000074  ;
+      
+       
+#
+# sid: 42000072 | date: 2012-10-18 - 09:39 
+#
+# 
+#
+MainRule "str:globals[" "msg:Generic GLOBALS[] in Request" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000072  ;
+      
+       
+#
+# sid: 42000070 | date: 2012-10-18 - 09:35 
+#
+# 
+#
+MainRule "str:cast(" "msg:possible sql-injection (CAST())" "mz:URL|BODY|ARGS" "s:$SQL:8" id:42000070  ;
+      
+       
+#
+# sid: 42000069 | date: 2012-10-18 - 09:34 
+#
+# see dt - sigs 16000129 - 16000134
+#
+MainRule "str:ddos" "msg:misc DDOS-UAs " "mz:$HEADERS_VAR:User-Agent" "s:$ATTACK:8" id:42000069  ;
+      
+       
+#
+# sid: 42000068 | date: 2012-10-18 - 09:31 
+#
+# 
+#
+MainRule "str:.jar" "msg:JAR - Download Request" "mz:URL" "s:$UWA:8" id:42000068  ;
+      
+       
+#
+# sid: 42000067 | date: 2012-10-18 - 09:29 
+#
+# http://www.contextis.com/research/blog/reverseproxybypass/
+#
+MainRule "rx:^@" "msg:Apache mod_proxy Reverse Proxy Exposure (v1)" "mz:URL" "s:$UWA:8" id:42000067  ;
+      
+       
+#
+# sid: 42000066 | date: 2012-10-18 - 09:25 
+#
+# http://www.contextis.com/research/blog/reverseproxybypass/
+#
+MainRule "str::@" "msg:Apache mod_proxy Reverse Proxy Exposure " "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000066  ;
+      
+       
+#
+# sid: 42000062 | date: 2012-10-18 - 08:40 
+#
+# 
+#
+MainRule "str:com_" "msg:Generic JOOMLA-Exploit-Attempt (option=com_)" "mz:$ARGS_VAR:option" "s:$ATTACK:8,$UWA:8" id:42000062  ;
+      
+       
+#
+# sid: 42000061 | date: 2012-10-18 - 08:39 
+#
+# http://exploitsdownload.com/search/Arbitrary%20File%20Upload/27
+#
+MainRule "str:.php.pjpg" "msg: Possible Remote PHP Code Execution (php.pjpg)" "mz:URL|BODY" "s:$ATTACK:8" id:42000061  ;
+      
+       
+#
+# sid: 42000054 | date: 2012-10-12 - 16:05 
+#
+# 
+#
+MainRule "str:hex(" "msg:HEX_string found" "mz:URL|BODY|ARGS" "s:$ATTACK:8,$SQL:8,$UWA:8" id:42000054  ;
+      
+       
+#
+# sid: 42000053 | date: 2012-10-11 - 22:40 
+#
+# in case some webdevs have unclean deployments
+#
+MainRule "str:.git/" "msg:GIT_Repo-Access" "mz:URL" "s:$UWA:8" id:42000053  ;
+      
+       
+#
+# sid: 42000052 | date: 2012-10-11 - 22:39 
+#
+# in case some webdevs have unclean deployments :)
+#
+MainRule "str:.svn/" "msg:SVN_Repo-Access" "mz:URL" "s:$UWA:8" id:42000052  ;
+      
+       
+#
+# sid: 42000050 | date: 2012-10-11 - 16:03 
+#
+# 
+#
+MainRule "str:exec(" "msg:PHP_EXEC_COMAND" "mz:URL|BODY|ARGS" "s:$ATTACK:8,$UWA:8" id:42000050  ;
+      
+       
+#
+# sid: 42000049 | date: 2012-10-11 - 16:02 
+#
+# 
+#
+MainRule "str:system(" "msg:PHP_SYSTEM_CMD" "mz:URL|BODY|ARGS" "s:$ATTACK:8,$UWA:8" id:42000049  ;
+      
+       
+#
+# sid: 42000048 | date: 2014-04-14 - 21:07 
+#
+# attempt to execute phpinfo()
+#
+MainRule "str:phpinfo" "msg:PHPINFO - in URL/ARGS" "mz:URL|ARGS" "s:$UWA:8" id:42000048  ;
+      
+       
+#
+# sid: 42000047 | date: 2012-10-11 - 15:30 
+#
+# 
+#
+MainRule "str:/scripts/setup.php" "msg:PHPMyAdmin - Scripts/Setup-Request" "mz:URL" "s:$ATTACK:8,$UWA:8" id:42000047  ;
+      
+       
+#
+# sid: 42000033 | date: 2012-10-11 - 14:38 
+#
+# 
+#
+MainRule "str:base64" "msg:Base64Decode in URI" "mz:URL|BODY|ARGS" "s:$ATTACK:8" id:42000033  ;
+      
+       
+#
+# sid: 42000032 | date: 2012-10-11 - 14:38 
+#
+# 
+#
+MainRule "str:eval(" "msg:PHP-EVAL - Attempt " "mz:URL|BODY|ARGS" "s:$ATTACK:8" id:42000032  ;
+      
+       
+#
+# sid: 42000030 | date: 2012-10-11 - 14:34 
+#
+# 
+#
+MainRule "str:/proc/self/" "msg:/proc/self - Access in URI" "mz:URL|BODY|ARGS" "s:$UWA:8" id:42000030  ;
+      
+       
+#
+# sid: 42000029 | date: 2012-10-11 - 14:18 
+#
+# 
+#
+MainRule "str:/bin/sh" "msg:/bin/sh in URI Possible Shell Command Execution Attempt" "mz:URL|ARGS" "s:$ATTACK:8" id:42000029  ;
+      
+       
+#
+# sid: 42000028 | date: 2012-10-11 - 14:17 
+#
+# 
+#
+MainRule "str:/bin/bash" "msg:/bin/bash in URI Possible Shell Command Execution Attempt" "mz:URL|ARGS" "s:$ATTACK:8" id:42000028  ;
+      
+       
+#
+# sid: 42000027 | date: 2012-10-11 - 14:14 
+#
+# emerging sid:2010820
+#
+MainRule "str:.cgi~" "msg:Tilde in URI, potential .cgi source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000027  ;
+      
+       
+#
+# sid: 42000026 | date: 2012-10-11 - 14:14 
+#
+# emerging sid:2009953
+#
+MainRule "str:.aspx~" "msg:Tilde in URI, potential .aspx source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000026  ;
+      
+       
+#
+# sid: 42000025 | date: 2012-10-11 - 14:13 
+#
+# emerging sid:2009952
+#
+MainRule "str:.asp~" "msg:Tilde in URI, potential .asp source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000025  ;
+      
+       
+#
+# sid: 42000024 | date: 2012-10-11 - 14:12 
+#
+# emerging sid:2009951
+#
+MainRule "str:.conf~" "msg:Tilde in URI, potential .conf source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000024  ;
+      
+       
+#
+# sid: 42000023 | date: 2012-10-11 - 14:11 
+#
+# emerging sid:2009950
+#
+MainRule "str:.inc~" "msg:Tilde in URI, potential .inc source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000023  ;
+      
+       
+#
+# sid: 42000022 | date: 2012-10-11 - 14:11 
+#
+# emerging sid:2009949
+#
+MainRule "str:.pl~" "msg:Tilde in URI, potential .pl source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000022  ;
+      
+       
+#
+# sid: 42000021 | date: 2012-10-11 - 14:10 
+#
+# emerging sid:2009955
+#
+MainRule "str:.php~" "msg:Tilde in URI, potential .php source disclosure vulnerability" "mz:URL" "s:$UWA:8" id:42000021  ;
+      
+       
+#
+# sid: 42000018 | date: 2012-10-11 - 12:49 
+#
+# emerging sid:2011144# www.0php.com/php_easter_egg.php
+#
+MainRule "str:phpe9568f36-d428-11d2-a769-00aa001acf42" "msg:PHP Easteregg Information-Disclosure (funny-logo)" "mz:ARGS" "s:$UWA:8" id:42000018  ;
+      
+       
+#
+# sid: 42000017 | date: 2012-10-11 - 12:48 
+#
+# emerging sid:2011143# www.0php.com/php_easter_egg.php
+#
+MainRule "str:phpe9568f35-d428-11d2-a769-00aa001acf42" "msg:PHP Easteregg Information-Disclosure (zend-logo)" "mz:ARGS" "s:$UWA:8" id:42000017  ;
+      
+       
+#
+# sid: 42000016 | date: 2012-10-11 - 12:47 
+#
+# emerging sid:2011142# www.0php.com/php_easter_egg.php
+#
+MainRule "str:phpe9568f34-d428-11d2-a769-00aa001acf42" "msg:PHP Easteregg Information-Disclosure (php-logo)" "mz:ARGS" "s:$UWA:8" id:42000016  ;
+      
+       
+#
+# sid: 42000015 | date: 2012-10-11 - 12:46 
+#
+# emerging sid:2011141# www.0php.com/php_easter_egg.php
+#
+MainRule "str:phpb8b5f2a0-3c92-11d3-a3a9-4c7b08c10000" "msg:PHP Easteregg Information-Disclosure (phpinfo)" "mz:ARGS" "s:$UWA:8" id:42000015  ;
+      
+       
+#
+# sid: 42000007 | date: 2012-10-11 - 12:20 
+#
+# emerging  sid:2009362
+#
+MainRule "str:/system32/" "msg:/system32/ in Uri - Possible Protected Directory Access Attempt" "mz:URL" "s:$UWA:8" id:42000007  ;
+      
+       
+#
+# sid: 42000006 | date: 2012-10-11 - 12:17 
+#
+# emerging sid:2009361
+#
+MainRule "str:/cmd.exe" "msg:cmd.exe In URI" "mz:URL" "s:$UWA:8" id:42000006  ;
+      
+       
+#
+# sid: 42000005 | date: 2012-10-11 - 12:10 
+#
+# emerging sid:2010119
+#
+MainRule "str:xp_cmdshell" "msg:xp_cmdshell Attempt in Cookie" "mz:$HEADERS_VAR:Cookie|BODY|URL" "s:$ATTACK:8" id:42000005  ;
+      
+       

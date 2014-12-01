@@ -31,7 +31,6 @@ containers. Some requirements include:
 * Containers must be able to access other containers
 * Containers cannot access the CoreOS host (SSH, etcd, etc)
 
-In practice, this is really only a concern when clusters are running untrusted applications.
 Further discussion about this approach is appreciated in GitHub issue `#986`_.
 
 Application runtime segregation
@@ -67,5 +66,12 @@ be exposed to the public are:
 For providers that do not supply a security group feature, please try
 `contrib/util/custom-firewall.sh`_.
 
+Router firewall
+---------------
+The :ref:`Router` component includes a firewall to help thwart attacks. It can be enabled by running:
+``deisctl config router set firewall/enabled true``. For more information, see the `router README`_
+and :ref:`router_settings`.
+
 .. _`#986`: https://github.com/deis/deis/issues/986
 .. _`contrib/util/custom-firewall.sh`: https://github.com/deis/deis/blob/master/contrib/util/custom-firewall.sh
+.. _`router README`: https://github.com/deis/deis/blob/master/router/README.md
