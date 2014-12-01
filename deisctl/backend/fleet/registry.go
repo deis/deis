@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/fleet/client"
 	"github.com/coreos/fleet/etcd"
 	"github.com/coreos/fleet/machine"
+	"github.com/coreos/fleet/pkg"
 	"github.com/coreos/fleet/registry"
 	"github.com/coreos/fleet/ssh"
 )
@@ -28,6 +29,7 @@ var Flags = struct {
 	StrictHostKeyChecking bool
 	Tunnel                string
 	RequestTimeout        float64
+	SSHTimeout            float64
 }{}
 
 const (
@@ -68,9 +70,10 @@ func getFakeClient() (*registry.FakeRegistry, error) {
 
 func getRegistryClient() (client.API, error) {
 	var dial func(string, string) (net.Conn, error)
+	sshTimeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
 	tun := getTunnelFlag()
 	if tun != "" {
-		sshClient, err := ssh.NewSSHClient("core", tun, getChecker(), false)
+		sshClient, err := ssh.NewSSHClient("core", tun, getChecker(), false, sshTimeout)
 		if err != nil {
 			return nil, fmt.Errorf("failed initializing SSH client: %v", err)
 		}
@@ -84,19 +87,19 @@ func getRegistryClient() (client.API, error) {
 		}
 	}
 
-	tlsConfig, err := etcd.ReadTLSConfigFiles(Flags.EtcdCAFile, Flags.EtcdCertFile, Flags.EtcdKeyFile)
+	tlsConfig, err := pkg.ReadTLSConfigFiles(Flags.EtcdCAFile, Flags.EtcdCertFile, Flags.EtcdKeyFile)
 	if err != nil {
 		return nil, err
 	}
 
-	trans := http.Transport{
+	trans := &http.Transport{
 		Dial:            dial,
 		TLSClientConfig: tlsConfig,
 	}
 
 	timeout := time.Duration(Flags.RequestTimeout*1000) * time.Millisecond
 	machines := []string{Flags.Endpoint}
-	eClient, err := etcd.NewClient(machines, &trans, timeout)
+	eClient, err := etcd.NewClient(machines, trans, timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +107,7 @@ func getRegistryClient() (client.API, error) {
 	reg := registry.NewEtcdRegistry(eClient, Flags.EtcdKeyPrefix)
 
 	// if msg, ok := checkVersion(reg); !ok {
-	// 	fmt.Fprint(os.Stderr, msg)
+	// 	stderr(msg)
 	// }
 
 	return &client.RegistryClient{Registry: reg}, nil

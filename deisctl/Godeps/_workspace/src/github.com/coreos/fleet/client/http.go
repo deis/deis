@@ -1,3 +1,19 @@
+/*
+   Copyright 2014 CoreOS, Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
 package client
 
 import (
@@ -5,25 +21,20 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/google-api-go-client/googleapi"
+	"code.google.com/p/google-api-go-client/googleapi"
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
 )
 
-func NewHTTPClient(c *http.Client, endpoint string) (API, error) {
+func NewHTTPClient(c *http.Client, ep url.URL) (API, error) {
 	svc, err := schema.New(c)
 	if err != nil {
 		return nil, err
 	}
 
-	ep, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, err
-	}
-
 	// append a slash so the schema.Service knows this is the root path
-	ep.Path = path.Join(ep.Path, "v1-alpha") + "/"
+	ep.Path = path.Join(ep.Path, "fleet", "v1") + "/"
 	svc.BasePath = ep.String()
 
 	return &HTTPClient{svc: svc}, nil

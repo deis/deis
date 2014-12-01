@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/ssh"
@@ -25,7 +26,8 @@ func runCommand(cmd string, machID string) (retcode int) {
 		if err != nil || ms == nil {
 			fmt.Printf("Error getting machine IP: %v\n", err)
 		} else {
-			err, retcode = runRemoteCommand(cmd, ms.PublicIP)
+			sshTimeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
+			err, retcode = runRemoteCommand(cmd, ms.PublicIP, sshTimeout)
 			if err != nil {
 				fmt.Printf("Error running remote command: %v\n", err)
 			}
@@ -57,12 +59,12 @@ func runLocalCommand(cmd string) (error, int) {
 
 // runRemoteCommand runs the given command over SSH on the given IP, and returns
 // any error encountered and the exit status of the command
-func runRemoteCommand(cmd string, addr string) (err error, exit int) {
+func runRemoteCommand(cmd string, addr string, timeout time.Duration) (err error, exit int) {
 	var sshClient *ssh.SSHForwardingClient
 	if tun := getTunnelFlag(); tun != "" {
-		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false)
+		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
 	} else {
-		sshClient, err = ssh.NewSSHClient("core", addr, getChecker(), false)
+		sshClient, err = ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
 	}
 	if err != nil {
 		return err, -1
