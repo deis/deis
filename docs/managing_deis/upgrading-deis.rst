@@ -29,10 +29,36 @@ and then reinstall platform components.
 
 Use the following steps to perform an in-place upgrade of your Deis cluster.
 
+First, use the current ``deisctl`` to stop and uninstall the Deis platform.
+
 .. code-block:: console
 
+    $ deisctl --version  # should match the installed platform
+    1.0.2
     $ deisctl stop platform && deisctl uninstall platform
-    $ deisctl config platform set version=v1.0.2
+
+There are important security fixes since Deis 1.0.2 that require upgrading
+to CoreOS 494.1.0 or later, and configuring Docker to access deis-registry. See
+:ref:`upgrading-coreos` first, then open a shell to each node:
+
+.. code-block:: console
+
+    $ ssh deis-1.example.com  # repeat these steps for each node
+    $ sudo -i
+    $ cat <<EOF > /etc/systemd/system/docker.service.d/50-insecure-registry.conf
+    [Service]
+    Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16"
+    EOF
+    $ reboot  # one node at a time, to avoid etcd failures
+
+Finally, update ``deisctl`` to the new version and reinstall:
+
+.. code-block:: console
+
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.1.0
+    $ deisctl --version  # should match the desired platform
+    1.1.0
+    $ deisctl config platform set version=v1.1.0
     $ deisctl install platform
     $ deisctl start platform
 
@@ -146,6 +172,8 @@ Retire the old cluster
 Once all applications have been validated, the old cluster can be retired.
 
 
+.. _upgrading-coreos:
+
 Upgrading CoreOS
 ----------------
 
@@ -172,6 +200,7 @@ To update CoreOS, run the following commands:
 
     $ ssh core@<server ip>
     $ sudo su
+    $ echo GROUP=beta > /etc/coreos/update.conf
     $ systemctl unmask update-engine.service
     $ systemctl start update-engine.service
     $ update_engine_client -update
