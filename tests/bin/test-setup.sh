@@ -18,7 +18,7 @@ echo "DEIS_ROOT=$DEIS_ROOT"
 export PATH=${GOPATH}/bin:$PATH
 
 # the application under test
-export DEIS_TEST_APP=${DEIS_TEST_APP:-example-go}
+export DEIS_TEST_APP=${DEIS_TEST_APP:-example-dockerfile-http}
 echo "DEIS_TEST_APP=$DEIS_TEST_APP"
 
 # SSH key name used for testing

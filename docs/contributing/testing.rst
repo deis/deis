@@ -96,7 +96,7 @@ test-integration.sh
     >>> Preparing test environment <<<
 
     DEIS_ROOT=/Users/matt/Projects/src/github.com/deis/deis
-    DEIS_TEST_APP=example-go
+    DEIS_TEST_APP=example-dockerfile-http
     ...
     >>> Running integration suite <<<
 
