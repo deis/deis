@@ -18,11 +18,16 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 REGION_SLUG=$1
 SSH_ID=$2
 SIZE=$3
+PREFIX=$4
+
+if [ -z "$PREFIX" ]; then
+  PREFIX="deis"
+fi
 
 source $CONTRIB_DIR/utils.sh
 
 if [ -z "$3" ]; then
-  echo_red 'Usage: provision-do-cluster.sh <REGION_SLUG> <SSH_ID> <SIZE>'
+  echo_red 'Usage: provision-do-cluster.sh <REGION_SLUG> <SSH_ID> <SIZE> [PREFIX]'
   exit 1
 fi
 
@@ -58,7 +63,7 @@ fi
 
 # launch the Deis cluster on DigitalOcean
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
-    NAME=deis-$i
+    NAME="$PREFIX-$i"
     echo_yellow "Provisioning ${NAME}..."
     docl create $NAME $BASE_IMAGE_ID $SIZE $REGION_SLUG --key=$SSH_ID --private-networking --user-data=$CONTRIB_DIR/coreos/user-data --wait
     ((i = i + 1)) ; \
