@@ -17,6 +17,10 @@
       "Description": "Number of nodes in cluster (3-12).",
       "Type": "Number"
     },
+    "IamRole" : {
+      "Description" : "Set IAM permissions for Deis hosts",
+      "Type" : "String"
+    },
     "SSHFrom" : {
       "Description" : "Lockdown SSH access to the Deis hosts (default: can be accessed from anywhere)",
       "Type" : "String",
@@ -221,6 +225,7 @@
       "Properties": {
         "ImageId" : { "Fn::FindInMap" : [ "CoreOSAMIs", { "Ref" : "AWS::Region" }, { "Ref" : "EC2VirtualizationType" }]},
         "InstanceType": {"Ref": "InstanceType"},
+        "IamInstanceProfile" : {"Ref": "IamRole"},
         "KeyName": {"Ref": "KeyPair"},
         "UserData" : { "Fn::Base64": { "Fn::Join": [ "", [ ] ] } },
         "AssociatePublicIpAddress": {"Ref": "AssociatePublicIP"},
