@@ -115,7 +115,7 @@ You'll need to create two load balancers on Rackspace to handle your cluster:
     Protocol HTTP
     Health Monitoring -
       Monitor Type HTTP
-      HTTP Path /health-check
+      HTTP Path /deis-router-health-check
 
     Load Balancer 2
     Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
