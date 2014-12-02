@@ -461,9 +461,9 @@ class ContainerTest(TransactionTestCase):
                                      release=release,
                                      type='web',
                                      num=1)
-        self.assertEqual(c._command, "bash -c 'node server.js'")
+        self.assertEqual(c._command, "env 'node server.js'")
         c.type = 'worker'
-        self.assertEqual(c._command, "bash -c 'node worker.js'")
+        self.assertEqual(c._command, "env 'node worker.js'")
         c.release.build.procfile = None
         self.assertEqual(c._command, 'start worker')
         c.type = 'cmd'

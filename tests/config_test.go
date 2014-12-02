@@ -12,7 +12,7 @@ var (
 	configListCmd  = "config:list --app={{.AppName}}"
 	configSetCmd   = "config:set FOO=讲台 --app={{.AppName}}"
 	configSet2Cmd  = "config:set FOO=10 --app={{.AppName}}"
-	configSet3Cmd  = "config:set HELLO=\"from the Deis team\" --app={{.AppName}}"
+	configSet3Cmd  = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
 	configUnsetCmd = "config:unset FOO --app={{.AppName}}"
 )
 
@@ -43,8 +43,9 @@ func configSetup(t *testing.T) *utils.DeisTestConfig {
 	utils.Execute(t, appsCreateCmd, cfg, false, "")
 	// ensure envvars with spaces work fine on `git push`
 	// https://github.com/deis/deis/issues/2477
-	utils.Execute(t, configSet3Cmd, cfg, false, "from the Deis team")
+	utils.Execute(t, configSet3Cmd, cfg, false, "the Deis team")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
+	utils.CurlWithFail(t, cfg, false, "the Deis team")
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
