@@ -90,7 +90,7 @@ func doCurl(url string) ([]byte, error) {
 	defer response.Body.Close()
 	body, err := ioutil.ReadAll(response.Body)
 
-	if !strings.Contains(string(body), "Powered by Deis") {
+	if !strings.Contains(string(body), "Powered by") {
 		return nil, fmt.Errorf("App not started (%d)\nBody: (%s)", response.StatusCode, string(body))
 	}
 
