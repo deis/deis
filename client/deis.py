@@ -2034,8 +2034,8 @@ def _dispatch_cmd(method, args):
     try:
         method(args)
     except requests.exceptions.ConnectionError as err:
-        logger.error("Couldn't connect to the Deis Controller. Make sure that the Controller URI is \
-correct and the server is running.")
+        logger.error("Couldn't connect to the Deis Controller:\n{}\nMake sure that the Controller URI is \
+correct and the server is running.".format(err))
         sys.exit(1)
     except EnvironmentError as err:
         logger.error(err.args[0])
