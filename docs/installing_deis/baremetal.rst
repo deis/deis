@@ -80,7 +80,7 @@ get written on boot. Add it to the `write_files` section of the user-data file:
 Install CoreOS to disk
 ----------------------
 
-Assuming you have booted your bare metal server into `CoreOS`_, you can perform now perform the
+Assuming you have booted your bare metal server into `CoreOS`_, you can now perform the
 installation to disk.
 
 Provide the config file to the installer
