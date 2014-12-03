@@ -55,7 +55,7 @@ that, create at least three Droplets with the following specifications:
  - All Droplets deployed in the same region
  - Region must have private networking enabled
  - Region must have User Data enabled. Supply the user-data file here
- - Select CoreOS Beta channel
+ - Select CoreOS Stable channel
  - Select your SSH key from the list
 
 If private networking is not available in your region, swap out ``$private_ipv4`` with
