@@ -7,3 +7,4 @@ mode  = "0644"
 keys = [
   "/deis/router",
 ]
+reload_cmd = "/opt/nginx/sbin/nginx -s reload"
