@@ -14,7 +14,7 @@ CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
-$update_channel = "stable"
+$update_channel = ENV["COREOS_CHANNEL"] || "stable"
 $enable_serial_logging = false
 $vb_gui = false
 $vb_memory = 1024
