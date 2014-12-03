@@ -50,7 +50,7 @@ i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
     # TODO: update to CoreOS 494.1.0 when it is available in beta channel at Rackspace
     # This image is CoreOS 494.0.0 in their alpha channel
-    supernova $ENV boot --image 1c423602-ea76-4263-b56b-0a2fa3e8c663 --flavor $FLAVOR --key-name $1 --user-data ../coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
+    supernova $ENV boot --image 1c423602-ea76-4263-b56b-0a2fa3e8c663 --flavor $FLAVOR --key-name $1 --user-data $CONTRIB_DIR/coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 
