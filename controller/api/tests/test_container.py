@@ -499,12 +499,12 @@ class ContainerTest(TransactionTestCase):
                                      num=1)
         rc, output = c.run('echo hi')
         self.assertEqual(rc, 0)
-        self.assertEqual(json.loads(output)['entrypoint'], '/bin/bash')
+        self.assertEqual(json.loads(output)['entrypoint'], '/bin/sh')
         # docker image workflow
         build.dockerfile = None
         build.sha = None
         rc, output = c.run('echo hi')
-        self.assertEqual(json.loads(output)['entrypoint'], '/bin/bash')
+        self.assertEqual(json.loads(output)['entrypoint'], '/bin/sh')
         # procfile workflow
         build.sha = 'somereallylongsha'
         rc, output = c.run('echo hi')
