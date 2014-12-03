@@ -477,7 +477,11 @@ class Container(UuidAuditedModel):
         image = self.release.image
         job_id = self._job_id
         entrypoint = '/bin/bash'
-        if self.release.build.procfile:
+        # if this is a procfile-based app, switch the entrypoint to slugrunner's default
+        # FIXME: remove slugrunner's hardcoded entrypoint
+        if self.release.build.procfile and \
+           self.release.build.sha and not \
+           self.release.build.dockerfile:
             entrypoint = '/runner/init'
             command = "'{}'".format(command)
         else:
