@@ -8,6 +8,20 @@ Troubleshooting Deis
 
 Common issues that users have run into when provisioning Deis are detailed below.
 
+Logging in to the cluster
+-------------------------
+
+Deis runs on CoreOS so connecting is as simple as connecting to CoreOS via SSH.
+
+CoreOS's default username is ``core``. Use the SSH key you provisioned the cluster with.
+
+Find the public IP address of one of your nodes (or use "convenience" DNS records if you've set them up).
+
+.. code-block:: console
+
+    $ ssh core@104.131.93.162 -i ~/.ssh/deis.pub
+
+
 A deis-store component fails to start
 -------------------------------------
 
