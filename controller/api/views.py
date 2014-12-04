@@ -289,7 +289,6 @@ class AppConfigViewSet(BaseAppViewSet):
         previous_config = config.app.config_set.latest()
         config.owner = self.request.user
         if previous_config:
-            config.owner = previous_config.owner
             for attr in ['cpu', 'memory', 'tags', 'values']:
                 # Guard against migrations from older apps without fixes to
                 # JSONField encoding.
