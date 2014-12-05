@@ -20,13 +20,15 @@ Note that the controller will eventually live behind the routers so that all ext
 Necessary DNS records
 ---------------------
 
-Deis requires one wildcard DNS record. Assuming ``myapps.com`` is the top-level domain apps will live under:
+Deis requires a wildcard DNS record. Assuming ``myapps.com`` is the top-level domain apps will live under:
 
-* ``*.myapps.com`` should have A-record entries for each of the load balancer IP addresses
+* ``*.myapps.com`` should have "A" record entries for each of the load balancer IP addresses
 
 Apps can then be accessed by browsers at ``appname.myapps.com``, and the controller will be available to the Deis client at ``deis.myapps.com``.
 
-This record is necessary for all deployments of Deis (EC2, Rackspace, DigitalOcean, Google Compute Engine, bare metal, etc.). Vagrant clusters can use the domain ``local.deisapp.com``, ``local3.deisapp.com``, or ``local5.deiaspp.com``.
+`EC2 recommends`_ against creating "A" record entries; instead, create a wildcard "CNAME" record entry for the load balancer's DNS name, or use Amazon `Route 53`_.
+
+These records are necessary for all deployments of Deis (EC2, Rackspace, DigitalOcean, Google Compute Engine, bare metal, etc.). Vagrant clusters can use the domain ``local.deisapp.com``, ``local3.deisapp.com``, or ``local5.deiaspp.com``.
 
 .. _xip_io:
 
@@ -42,4 +44,6 @@ You would then create the cluster with ``10.21.12.2.xip.io`` as the cluster doma
 
 Note that xip does not seem to work for EC2 ELBs - you will have to use an actual DNS record.
 
+.. _`EC2 recommends`: https://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/using-domain-names-with-elb.html
+.. _`Route 53`: http://aws.amazon.com/route53/
 .. _`xip`: http://xip.io/
