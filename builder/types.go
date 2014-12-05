@@ -27,7 +27,7 @@ type BuildHook struct {
 	ReceiveRepo string      `json:"receive_repo"`
 	Image       string      `json:"image"`
 	Procfile    ProcessType `json:"procfile"`
-	Dockerfile  bool        `json:"dockerfile"`
+	Dockerfile  string      `json:"dockerfile"`
 }
 
 // BuildHookResponse represents a controller's build-hook response object.
