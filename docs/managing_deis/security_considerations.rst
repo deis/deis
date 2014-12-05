@@ -66,6 +66,15 @@ be exposed to the public are:
 For providers that do not supply a security group feature, please try
 `contrib/util/custom-firewall.sh`_.
 
+.. note::
+    If you need to add a new node to the cluster and you are using the custom firewall 
+    `contrib/util/custom-firewall.sh`_ you must allow the access to the cluster running
+    the next command in each existing node:
+
+.. code-block:: console
+
+    $ NEW_NODE="IP address" contrib/util/custom-firewall.sh
+
 Router firewall
 ---------------
 The :ref:`Router` component includes a firewall to help thwart attacks. It can be enabled by running:
