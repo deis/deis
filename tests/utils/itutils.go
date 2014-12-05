@@ -312,7 +312,6 @@ func GetRandomApp() string {
 		"example-python-flask",
 		"example-ruby-sinatra",
 		"example-scala",
-		"example-dockerfile-http",
 	}
 	return apps[rand.Intn(len(apps))]
 }
