@@ -406,7 +406,7 @@ class Container(UuidAuditedModel):
             return ''
         try:
             # ensure they cannot break out and run commands on the host
-            return "env '{}'".format(self.release.build.procfile[self.type])
+            return "bash -c '{}'".format(self.release.build.procfile[self.type])
         # if the key is not present or if a parent attribute is None
         except (KeyError, TypeError):
             return 'start {}'.format(self.type)
