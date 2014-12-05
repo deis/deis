@@ -401,15 +401,13 @@ class Container(UuidAuditedModel):
     _scheduler = property(_get_scheduler)
 
     def _get_command(self):
-        # handle special case for Dockerfile deployments
-        if self.type == 'cmd':
-            return ''
         try:
             # ensure they cannot break out and run commands on the host
             return "bash -c '{}'".format(self.release.build.procfile[self.type])
         # if the key is not present or if a parent attribute is None
-        except (KeyError, TypeError):
-            return 'start {}'.format(self.type)
+        except (KeyError, TypeError, AttributeError):
+            # handle special case for Dockerfile deployments
+            return '' if self.type == 'cmd' else 'start {}'.format(self.type)
 
     _command = property(_get_command)
 
