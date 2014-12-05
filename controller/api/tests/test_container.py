@@ -107,7 +107,12 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/v1/apps/{app_id}/scale".format(**locals())
-        body = {'web': 4, 'worker': 2}
+        # test setting one proc type at a time
+        body = {'web': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        body = {'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
@@ -118,6 +123,9 @@ class ContainerTest(TransactionTestCase):
         url = "/v1/apps/{app_id}".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
+        # ensure the structure field is up-to-date
+        self.assertEqual(response.data['structure']['web'], 4)
+        self.assertEqual(response.data['structure']['worker'], 2)
         # test listing/retrieving container info
         url = "/v1/apps/{app_id}/containers/web".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -130,6 +138,7 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.data['num'], num)
         # scale down
         url = "/v1/apps/{app_id}/scale".format(**locals())
+        # test setting two proc types at a time
         body = {'web': 2, 'worker': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -142,6 +151,9 @@ class ContainerTest(TransactionTestCase):
         url = "/v1/apps/{app_id}".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
+        # ensure the structure field is up-to-date
+        self.assertEqual(response.data['structure']['web'], 2)
+        self.assertEqual(response.data['structure']['worker'], 1)
         # scale down to 0
         url = "/v1/apps/{app_id}/scale".format(**locals())
         body = {'web': 0, 'worker': 0}

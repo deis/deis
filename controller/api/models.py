@@ -18,6 +18,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Count
 from django.db.models import Max
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -201,7 +202,8 @@ class App(UuidAuditedModel):
             if to_remove:
                 self._destroy_containers(to_remove)
         # save new structure to the database
-        self.structure = structure
+        vals = self.container_set.values('type').annotate(Count('pk')).order_by()
+        self.structure = {v['type']: v['pk__count'] for v in vals}
         self.save()
         return changed
 
