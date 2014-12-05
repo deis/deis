@@ -444,11 +444,14 @@ class ContainerTest(TransactionTestCase):
         app_id = response.data['id']
         app = App.objects.get(id=app_id)
         user = User.objects.get(username='autotest')
+        # Heroku Buildpack app
         build = Build.objects.create(owner=user,
                                      app=app,
                                      image="qwerty",
                                      procfile={'web': 'node server.js',
-                                               'worker': 'node worker.js'})
+                                               'worker': 'node worker.js'},
+                                     sha='african-swallow',
+                                     dockerfile='')
         # create an initial release
         release = Release.objects.create(version=2,
                                          owner=user,
@@ -461,10 +464,22 @@ class ContainerTest(TransactionTestCase):
                                      release=release,
                                      type='web',
                                      num=1)
+        # use `start web` for backwards compatibility with slugrunner
+        self.assertEqual(c._command, 'start web')
+        c.type = 'worker'
+        self.assertEqual(c._command, 'start worker')
+        # switch to docker image app
+        build.sha = None
+        c.type = 'web'
+        self.assertEqual(c._command, "bash -c 'node server.js'")
+        # switch to dockerfile app
+        build.sha = 'european-swallow'
+        build.dockerfile = 'dockerdockerdocker'
         self.assertEqual(c._command, "bash -c 'node server.js'")
         c.type = 'worker'
         self.assertEqual(c._command, "bash -c 'node worker.js'")
         c.release.build.procfile = None
+        # for backwards compatibility if no Procfile is supplied
         self.assertEqual(c._command, 'start worker')
         c.type = 'cmd'
         self.assertEqual(c._command, '')
