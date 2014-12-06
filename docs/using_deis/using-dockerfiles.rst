@@ -113,6 +113,10 @@ Use ``git push deis master`` to deploy your application.
 
 Because a Dockerfile application is detected, the ``cmd`` process type is automatically scaled to 1 on first deploy.
 
+Use ``deis scale cmd=3`` to increase ``cmd`` processes to 3, for example. Scaling a
+process type directly changes the number of :ref:`Containers <container>`
+running that process.
+
 
 .. _`Dockerfile`: https://docs.docker.com/reference/builder/
 .. _`Docker Image`: https://docs.docker.com/introduction/understanding-docker/
