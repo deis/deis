@@ -71,7 +71,7 @@ func ParseReleaseVersion(bytes []byte) (int, error) {
 
 func GetDefaultType(bytes []byte) (string, error) {
 	type YamlTypeMap struct {
-		DefaultProcessTypes ProcessType
+		DefaultProcessTypes ProcessType `default_process_types`
 	}
 
 	var p YamlTypeMap
@@ -80,7 +80,7 @@ func GetDefaultType(bytes []byte) (string, error) {
 		return "", err
 	}
 
-	retVal, err := json.Marshal(&p)
+	retVal, err := json.Marshal(&p.DefaultProcessTypes)
 
 	if err != nil {
 		return "", err
