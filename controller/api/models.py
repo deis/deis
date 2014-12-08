@@ -407,8 +407,13 @@ class Container(UuidAuditedModel):
         if self.type == 'cmd':
             return ''
         try:
-            # ensure they cannot break out and run commands on the host
-            return "bash -c '{}'".format(self.release.build.procfile[self.type])
+            # if this is not procfile-based app, ensure they cannot break out
+            # and run arbitrary commands on the host
+            # FIXME: remove slugrunner's hardcoded entrypoint
+            if self.release.build.dockerfile or not self.release.build.sha:
+                return "bash -c '{}'".format(self.release.build.procfile[self.type])
+            else:
+                return 'start {}'.format(self.type)
         # if the key is not present or if a parent attribute is None
         except (KeyError, TypeError):
             return 'start {}'.format(self.type)

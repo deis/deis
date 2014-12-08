@@ -121,8 +121,11 @@ default_process_types:
 		if err != nil {
 			t.Error(err)
 		}
-		if defaultType == "" {
-			t.Error("default type cannot be empty")
+		if defaultType != `{"web":"while true; do echo hello; sleep 1; done"}` && string(data) != "" {
+			t.Errorf("incorrect default type, got %s", defaultType)
+		}
+		if string(data) == "" && defaultType != "{}" {
+			t.Errorf("incorrect default type, got %s", defaultType)
 		}
 	}
 }

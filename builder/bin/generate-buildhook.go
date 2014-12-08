@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/deis/deis/builder"
 )
@@ -29,8 +28,10 @@ func main() {
 	var procfile builder.ProcessType
 	assert(json.Unmarshal([]byte(os.Args[5]), &procfile))
 
-	dockerfile, err := strconv.ParseBool(os.Args[6])
-	assert(err)
+	var dockerfile string = os.Args[6]
+	if dockerfile == "false" {
+		dockerfile = ""
+	}
 
 	buildHook := builder.BuildHook{
 		Sha:         os.Args[1],
