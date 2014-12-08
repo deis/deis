@@ -488,13 +488,16 @@ class ContainerTest(TransactionTestCase):
         build.sha = 'european-swallow'
         build.dockerfile = 'dockerdockerdocker'
         self.assertEqual(c._command, "bash -c 'node server.js'")
+        c.type = 'cmd'
+        self.assertEqual(c._command, '')
+        # ensure we can override the cmd process type in a Procfile
+        build.procfile['cmd'] = 'node server.js'
+        self.assertEqual(c._command, "bash -c 'node server.js'")
         c.type = 'worker'
         self.assertEqual(c._command, "bash -c 'node worker.js'")
         c.release.build.procfile = None
         # for backwards compatibility if no Procfile is supplied
         self.assertEqual(c._command, 'start worker')
-        c.type = 'cmd'
-        self.assertEqual(c._command, '')
 
     def test_run_command_good(self):
         """Test the run command for each container workflow"""
