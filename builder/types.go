@@ -38,15 +38,15 @@ type BuildHookResponse struct {
 
 // Config represents a Deis application's configuration.
 type Config struct {
-	Owner   string            `json:"owner"`
-	App     string            `json:"app"`
-	Values  map[string]string `json:"values"`
-	Memory  map[string]string `json:"memory"`
-	CPU     map[string]string `json:"cpu"`
-	Tags    map[string]string `json:"tags"`
-	UUID    string            `json:"uuid"`
-	Created DeisTime          `json:"created"`
-	Updated DeisTime          `json:"updated"`
+	Owner   string                 `json:"owner"`
+	App     string                 `json:"app"`
+	Values  map[string]interface{} `json:"values"`
+	Memory  map[string]string      `json:"memory"`
+	CPU     map[string]int         `json:"cpu"`
+	Tags    map[string]string      `json:"tags"`
+	UUID    string                 `json:"uuid"`
+	Created DeisTime               `json:"created"`
+	Updated DeisTime               `json:"updated"`
 }
 
 // DeisTime represents the standard datetime format used across the platform.

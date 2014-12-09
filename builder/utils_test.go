@@ -59,7 +59,7 @@ func TestParseConfigGood(t *testing.T) {
 	resp := &http.Response{
 		Body: &ClosingBuffer{bytes.NewBufferString(`{"owner": "test",
 			"app": "example-go",
-			"values": {"FOO": "bar"},
+			"values": {"FOO": "bar", "CAR": 1234},
 			"memory": {},
 			"cpu": {},
 			"tags": {},
@@ -76,7 +76,15 @@ func TestParseConfigGood(t *testing.T) {
 	}
 
 	if config.Values["FOO"] != "bar" {
-		t.Errorf("expected FOO='bar', got FOO='%s'", config.Values["FOO"])
+		t.Errorf("expected FOO='bar', got FOO='%v'", config.Values["FOO"])
+	}
+
+	if car, ok := config.Values["CAR"].(float64); ok {
+		if car != 1234 {
+			t.Errorf("expected CAR=1234, got CAR=%d", config.Values["CAR"])
+		}
+	} else {
+		t.Error("expected CAR to be of type float64")
 	}
 }
 
