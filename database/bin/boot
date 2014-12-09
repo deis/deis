@@ -72,9 +72,6 @@ if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
   if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
     echo "database: restoring from backup..."
     rm -rf /var/lib/postgresql/9.3/main
-    mkdir -p /var/lib/postgresql/9.3/main
-    # disable copy-on-write
-    chattr -R +C /var/lib/postgresql/9.3/main
     sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
     chown -R postgres:postgres /var/lib/postgresql/9.3/main
     chmod 0700 /var/lib/postgresql/9.3/main
