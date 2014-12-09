@@ -36,7 +36,7 @@ cd /tmp
 git clone https://github.com/wal-e/wal-e.git
 
 cd /tmp/wal-e
-git checkout dbf9783
+git checkout c6f0d02
 
 pip install .
 
