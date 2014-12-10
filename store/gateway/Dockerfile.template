@@ -24,6 +24,8 @@ ADD rgw.conf /etc/apache2/sites-available/rgw.conf
 RUN a2ensite rgw.conf
 RUN a2dissite 000-default.conf
 
+ADD templates/ceph.conf /app/templates/ceph.conf
+
 WORKDIR /app
 EXPOSE 8888
 CMD ["/app/bin/boot"]
