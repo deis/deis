@@ -444,6 +444,7 @@ class DeisClient(object):
         Options:
           --no-remote
             do not create a `deis` git remote.
+
           -b --buildpack BUILDPACK
             a buildpack url to use for this app
         """
