@@ -18,7 +18,11 @@ Install the latest ``deis`` client for Linux or Mac OS X with:
     $ curl -sSL http://deis.io/deis-cli/install.sh | sh
 
 The installer puts ``deis`` in your current directory, but you should move it
-somewhere in your $PATH.
+somewhere in your $PATH:
+
+.. code-block:: console
+
+    $ sudo ln -fs $PWD/deis /usr/local/bin/deis
 
 Proxy Support
 -------------
