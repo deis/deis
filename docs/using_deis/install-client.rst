@@ -22,7 +22,7 @@ somewhere in your $PATH:
 
 .. code-block:: console
 
-    $ sudo ln -fs $PWD/deis /usr/local/bin/deis
+    $ ln -fs $PWD/deis /usr/local/bin/deis
 
 Proxy Support
 -------------
