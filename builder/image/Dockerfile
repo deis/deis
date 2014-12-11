@@ -21,7 +21,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F9
 RUN apt-get update && apt-get install -yq \
     openssh-server git \
     aufs-tools iptables lxc \
-    lxc-docker-1.3.2
+    lxc-docker-1.3.3
 
 # configure ssh server
 RUN rm /etc/ssh/ssh_host_*
