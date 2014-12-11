@@ -452,7 +452,7 @@ Example Request:
     Content-Type: application/json
     Authorization: token abc123
 
-    {"values": {"HELLO": "world","PLATFOFM":"deis"}}
+    {"values": {"HELLO": "world", "PLATFORM: "deis"}}
 
 Example Response:
 
@@ -471,7 +471,7 @@ Example Response:
             "DEIS_APP": "example-go",
             "DEIS_RELEASE": "v3",
             "HELLO": "world",
-            "PLATFORM":"deis"
+            "PLATFORM": "deis"
 
         },
         "memory": {},
