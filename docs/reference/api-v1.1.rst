@@ -452,7 +452,7 @@ Example Request:
     Content-Type: application/json
     Authorization: token abc123
 
-    {"values": {"HELLO": "world"}}
+    {"values": {"HELLO": "world","PLATFOFM":"deis"}}
 
 Example Response:
 
