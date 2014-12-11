@@ -513,7 +513,7 @@ Example Response:
         "values": {
             "DEIS_APP": "example-go",
             "DEIS_RELEASE": "v4", 
-            "PLATFORM":"deis"
+            "PLATFORM": "deis"
        },
         "memory": {},
         "cpu": {},
