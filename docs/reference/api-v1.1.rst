@@ -470,7 +470,9 @@ Example Response:
         "values": {
             "DEIS_APP": "example-go",
             "DEIS_RELEASE": "v3",
-            "HELLO": "world"
+            "HELLO": "world",
+            "PLATFORM":"deis"
+
         },
         "memory": {},
         "cpu": {},
@@ -510,8 +512,9 @@ Example Response:
         "app": "example-go",
         "values": {
             "DEIS_APP": "example-go",
-            "DEIS_RELEASE": "v4"
-        },
+            "DEIS_RELEASE": "v4", 
+            "PLATFORM":"deis"
+       },
         "memory": {},
         "cpu": {},
         "tags": {},
