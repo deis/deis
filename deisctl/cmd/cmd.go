@@ -661,7 +661,7 @@ Options:
 	rootURL := "https://raw.githubusercontent.com/deis/deis/"
 	tag := args["--tag"].(string)
 	units := []string{
-    "deis-skydns.service",
+		"deis-skydns.service",
 		"deis-builder.service",
 		"deis-cache.service",
 		"deis-controller.service",
