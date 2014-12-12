@@ -187,6 +187,7 @@ class ConfigTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         self.assertIn('PORT', response.data['values'])
+        return response
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_limit_memory(self):
@@ -423,3 +424,11 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 405)
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 405)
+
+    def test_config_owner_is_requesting_user(self):
+        """
+        Ensure that setting the config value is owned by the requesting user
+        See https://github.com/deis/deis/issues/2650
+        """
+        response = self.test_admin_can_create_config_on_other_apps()
+        self.assertEqual(response.data['owner'], self.user.username)
