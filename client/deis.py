@@ -444,6 +444,9 @@ class DeisClient(object):
         Options:
           --no-remote
             do not create a `deis` git remote.
+
+          -b --buildpack BUILDPACK
+            a buildpack url to use for this app
         """
         body = {}
         app_name = None
@@ -464,30 +467,35 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code == requests.codes.created:
-            data = response.json()
-            app_id = data['id']
-            self._logger.info("done, created {}".format(app_id))
-            # set a git remote if necessary
-            try:
-                self._session.git_root()
-            except EnvironmentError:
-                return
-            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
-            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
-            if args.get('--no-remote'):
-                self._logger.info('remote available at {}'.format(git_remote))
-            else:
-                try:
-                    subprocess.check_call(
-                        ['git', 'remote', 'add', '-f', 'deis', git_remote],
-                        stdout=subprocess.PIPE)
-                    self._logger.info('Git remote deis added')
-                except subprocess.CalledProcessError:
-                    self._logger.error('Could not create Deis remote')
-                    sys.exit(1)
-        else:
+        if response.status_code != requests.codes.created:
             raise ResponseError(response)
+
+        data = response.json()
+        app_id = data['id']
+        self._logger.info("done, created {}".format(app_id))
+
+        buildpack = args.get('--buildpack')
+        if buildpack:
+            self._config_set(app_id, {'BUILDPACK_URL': buildpack})
+
+        # set a git remote if necessary
+        try:
+            self._session.git_root()
+        except EnvironmentError:
+            return
+        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+        git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
+        if args.get('--no-remote'):
+            self._logger.info('remote available at {}'.format(git_remote))
+        else:
+            try:
+                subprocess.check_call(
+                    ['git', 'remote', 'add', '-f', 'deis', git_remote],
+                    stdout=subprocess.PIPE)
+                self._logger.info('Git remote deis added')
+            except subprocess.CalledProcessError:
+                self._logger.error('Could not create Deis remote')
+                sys.exit(1)
 
     def apps_destroy(self, args):
         """
@@ -1031,7 +1039,14 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
-        body = {'values': json.dumps(dictify(args['<var>=<value>']))}
+        values = dictify(args['<var>=<value>'])
+        self._config_set(app, values)
+
+    def _config_set(self, app, values):
+        """
+        Internal logic to set environment variables for an application.
+        """
+        body = {'values': json.dumps(values)}
         sys.stdout.write('Creating config... ')
         sys.stdout.flush()
         try:

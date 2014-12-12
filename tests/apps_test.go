@@ -11,14 +11,15 @@ import (
 )
 
 var (
-	appsCreateCmd         = "apps:create {{.AppName}}"
-	appsCreateCmdNoRemote = "apps:create {{.AppName}} --no-remote"
-	appsListCmd           = "apps:list"
-	appsRunCmd            = "apps:run echo hello"
-	appsOpenCmd           = "apps:open --app={{.AppName}}"
-	appsLogsCmd           = "apps:logs --app={{.AppName}}"
-	appsInfoCmd           = "apps:info --app={{.AppName}}"
-	appsDestroyCmd        = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+	appsCreateCmd          = "apps:create {{.AppName}}"
+	appsCreateCmdNoRemote  = "apps:create {{.AppName}} --no-remote"
+	appsCreateCmdBuildpack = "apps:create {{.AppName}} --buildpack https://example.com"
+	appsListCmd            = "apps:list"
+	appsRunCmd             = "apps:run echo hello"
+	appsOpenCmd            = "apps:open --app={{.AppName}}"
+	appsLogsCmd            = "apps:logs --app={{.AppName}}"
+	appsInfoCmd            = "apps:info --app={{.AppName}}"
+	appsDestroyCmd         = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 )
 
 func randomString(n int) string {
@@ -56,9 +57,11 @@ func appsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	cmd := appsCreateCmd
-	utils.Execute(t, cmd, params, false, "")
-	utils.Execute(t, cmd, params, true, "App with this Id already exists")
+	// TODO: move --buildpack to client unit tests
+	utils.Execute(t, appsCreateCmdBuildpack, params, false, "BUILDPACK_URL")
+	utils.Execute(t, appsDestroyCmd, params, false, "")
+	utils.Execute(t, appsCreateCmd, params, false, "")
+	utils.Execute(t, appsCreateCmd, params, true, "App with this Id already exists")
 }
 
 func appsDestroyTest(t *testing.T, params *utils.DeisTestConfig) {
