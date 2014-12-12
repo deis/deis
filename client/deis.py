@@ -504,8 +504,10 @@ class DeisClient(object):
             name for the application.
         """
         app = args.get('--app')
+        delete_remote = False
         if not app:
             app = self._session.app
+            delete_remote = True
         confirm = args.get('--confirm')
         if confirm == app:
             pass
@@ -532,8 +534,9 @@ class DeisClient(object):
                                     requests.codes.not_found):
             self._logger.info('done in {}s'.format(int(time.time() - before)))
             try:
-                # If the requested app is a heroku app, delete the git remote
-                if self._session.is_git_app():
+                # If the requested app is a heroku app and the app
+                # was inferred from session, delete the git remote
+                if self._session.is_git_app() and delete_remote:
                     subprocess.check_call(
                         ['git', 'remote', 'rm', 'deis'],
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
