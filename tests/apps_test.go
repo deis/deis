@@ -20,6 +20,7 @@ var (
 	appsLogsCmd            = "apps:logs --app={{.AppName}}"
 	appsInfoCmd            = "apps:info --app={{.AppName}}"
 	appsDestroyCmd         = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
+	appsDestroyCmdNoApp    = "apps:destroy --confirm={{.AppName}}"
 )
 
 func randomString(n int) string {
@@ -59,7 +60,7 @@ func appsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	}
 	// TODO: move --buildpack to client unit tests
 	utils.Execute(t, appsCreateCmdBuildpack, params, false, "BUILDPACK_URL")
-	utils.Execute(t, appsDestroyCmd, params, false, "")
+	utils.Execute(t, appsDestroyCmdNoApp, params, false, "")
 	utils.Execute(t, appsCreateCmd, params, false, "")
 	utils.Execute(t, appsCreateCmd, params, true, "App with this Id already exists")
 }
