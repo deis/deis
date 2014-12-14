@@ -6,6 +6,7 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
 
 build: check-docker
+	cp -pR ../Godeps parent/
 	docker build -t $(BUILD_IMAGE) parent
 	docker cp `docker run -d $(BUILD_IMAGE)`:/nginx.tgz `pwd`
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/boot bin/
@@ -14,6 +15,7 @@ build: check-docker
 	rm bin/boot
 
 clean: check-docker check-registry
+	rm -rf parent/Godeps
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry

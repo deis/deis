@@ -21,7 +21,16 @@ controller/.secret_key
 # application logs
 logs/
 
-# local binaries and installers
+# local binaries, installers, and artifacts
+builder/Godeps/
+builder/image/bin/extract-domain
+builder/image/bin/extract-types
+builder/image/bin/extract-version
+builder/image/bin/generate-buildhook
+builder/image/bin/get-app-config
+builder/image/bin/get-app-values
+builder/image/bin/publish-release-controller
+builder/image/bin/yaml2json-procfile
 client/dist/
 client/makeself/
 contrib/bumpver/bumpver
@@ -32,6 +41,9 @@ deisctl/makeself/
 docs/_build/
 docs/docs.zip
 logspout/build/
+logspout/Godeps/
+publisher/Godeps/
+router/parent/Godeps/
 
 # coverage reports
 .coverage
