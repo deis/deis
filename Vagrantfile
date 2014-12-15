@@ -44,6 +44,9 @@ if File.exist?(CONFIG)
 end
 
 Vagrant.configure("2") do |config|
+  # always use Vagrants insecure key
+  config.ssh.insert_key = false
+
   config.vm.box = "coreos-%s" % $update_channel
   config.vm.box_version = ">= 494.4.0"
   config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
