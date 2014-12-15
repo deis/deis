@@ -67,7 +67,7 @@ test-unit: test-style
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
-	GOPATH=$(CURDIR)/../tests/_vendor:$(GOPATH) go test -v ./tests/...
+	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 coverage:
 	go test -coverprofile coverage.out ./syslog
