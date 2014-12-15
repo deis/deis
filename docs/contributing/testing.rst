@@ -16,7 +16,7 @@ clients, and one contains the documentation. Components have source-code level
 verify the behavior of the components together as a system.
 
 GitHub pull requests for Deis are tested automatically by a Jenkins
-`continuous integration`_ (CI) system at http://ci.deis.io. Contributors should
+`continuous integration`_ (CI) system at https://ci.deis.io. Contributors should
 run the same tests locally before proposing any changes to the Deis codebase.
 
 
