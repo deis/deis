@@ -7,10 +7,6 @@ set -e
 
 ARGS=3
 
-get_app_name() {
-    echo $1 | awk -F"." '{print $1}'
-}
-
 indent() {
     echo "       $@"
 }
@@ -48,7 +44,7 @@ USER=$1
 REPO=$2
 GIT_SHA=$3
 SHORT_SHA=${GIT_SHA:0:8}
-APP_NAME=$(get_app_name $REPO)
+APP_NAME="${REPO%.*}"
 
 cd $(dirname $0) # ensure we are in the root dir
 
