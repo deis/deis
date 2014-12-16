@@ -7,6 +7,7 @@ BUILD_IMAGE := $(COMPONENT)-build
 BINARY_DEST_DIR := image/bin
 
 build: check-docker
+	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-domain $(BINARY_DEST_DIR)/
 	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/extract-types $(BINARY_DEST_DIR)/
@@ -17,17 +18,17 @@ build: check-docker
 	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/publish-release-controller $(BINARY_DEST_DIR)/
 	docker cp `docker create $(BUILD_IMAGE)`:/go/bin/yaml2json-procfile $(BINARY_DEST_DIR)/
 	docker build -t $(IMAGE) image
-	rm $(BINARY_DEST_DIR)/extract-domain
-	rm $(BINARY_DEST_DIR)/extract-types
-	rm $(BINARY_DEST_DIR)/extract-version
-	rm $(BINARY_DEST_DIR)/generate-buildhook
-	rm $(BINARY_DEST_DIR)/get-app-config
-	rm $(BINARY_DEST_DIR)/get-app-values
-	rm $(BINARY_DEST_DIR)/publish-release-controller
-	rm $(BINARY_DEST_DIR)/yaml2json-procfile
 
 clean: check-docker check-registry
-	rm -f deisctl
+	rm -rf Godeps
+	rm -f $(BINARY_DEST_DIR)/extract-domain
+	rm -f $(BINARY_DEST_DIR)/extract-types
+	rm -f $(BINARY_DEST_DIR)/extract-version
+	rm -f $(BINARY_DEST_DIR)/generate-buildhook
+	rm -f $(BINARY_DEST_DIR)/get-app-config
+	rm -f $(BINARY_DEST_DIR)/get-app-values
+	rm -f $(BINARY_DEST_DIR)/publish-release-controller
+	rm -f $(BINARY_DEST_DIR)/yaml2json-procfile
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry clean
