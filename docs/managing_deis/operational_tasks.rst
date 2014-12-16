@@ -29,6 +29,15 @@ You can use the ``deis perms`` command to promote a user to an administrator:
 
     $ deis perms:create john --admin
 
+Disabling user registration
+---------------------------
+
+You can disallow all users from registering with the Deis cluster using the following command:
+
+.. code-block:: console
+
+    $ deisctl config controller set registrationEnabled=0
+
 
 Re-issuing User Authentication Tokens
 -------------------------------------
