@@ -1,3 +1,16 @@
+### v1.1.0 -> v1.1.1
+
+#### Fixes
+
+ - [`fe56989`](https://github.com/deis/deis/commit/fe56989b2a2df5143a81137bffc751b3728e389c) deisctl: remove unimplemented --verbose flag from "deisctl config"
+ - [`430edbe`](https://github.com/deis/deis/commit/430edbeebea436c2d1ef726a479b92fa9020cf78) deisctl: parse global and command-specific options correctly
+ - [`962a181`](https://github.com/deis/deis/commit/962a1814c6aed02ce8c1166126e244918efb10ad) builder: the value could be a number
+
+#### Maintenance
+
+ - [`6fcb278`](https://github.com/deis/deis/commit/6fcb2789a93361c59ebb446d69941e7ec43cd954) (all): update base CoreOS to 494.5.0
+ - [`3075405`](https://github.com/deis/deis/commit/3075405d66d347c4e132f5ac48897a43b7ef78eb) builder: update Docker to 1.3.3
+
 ### v1.0.2 -> v1.1.0
 
 #### Features
