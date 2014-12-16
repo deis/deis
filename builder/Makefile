@@ -72,3 +72,8 @@ test-unit:
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
+
+cedarish/build:
+	mkdir -p build
+	docker pull progrium/cedarish:latest
+	docker save progrium/cedarish:latest | gzip -9 > build/progrium_cedarish_$(shell date "+%Y_%m_%d").tar.gz
