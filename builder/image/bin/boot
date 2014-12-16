@@ -63,7 +63,7 @@ done
 # see https://github.com/deis/deis/issues/1027
 if ! docker history progrium/cedarish >/dev/null 2>/dev/null ; then
     echo "Loading cedarish..."
-    docker load -i /progrium_cedarish.tar
+    gzip -dc /progrium_cedarish.tar.gz | docker load
 else
     echo "Cedarish already loaded"
 fi
