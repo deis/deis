@@ -583,11 +583,8 @@ Note: "deisctl config platform set sshPrivateKey=" expects a path
 to a private key.
 
 Usage:
-  deisctl config <target> get [<key>...] [options]
-  deisctl config <target> set <key=val>... [options]
-
-Options:
-  --verbose		print out the request bodies [default: false]
+  deisctl config <target> get [<key>...]
+  deisctl config <target> set <key=val>...
 
 Examples:
   deisctl config platform set domain=mydomain.com
