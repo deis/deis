@@ -21,10 +21,13 @@ These ports need to be open on the load balancers:
 
 If you want to configure SSL termination on your load balancer, see :ref:`ssl-endpoints`.
 
-A health check should be configured on the load balancer to send an HTTP request to /deis-router-health-check at
+A health check should be configured on the load balancer to send an HTTP request to /health-check at
 port 80 on all nodes in the Deis cluster. The health check endpoint returns an HTTP 200. This enables
 the load balancer to serve traffic to whichever hosts happen to be running the deis-router component
 at any moment.
+If you like you can set `deisctl config router set healthEndpoint="/any-endpoint-you-want"`, this is
+useful if you have an app that already has a /health-check endpoint as without setting this config option
+deis will win in the routing and your app would then return just a status 200 and nothing else.
 
 EC2
 ===
@@ -46,7 +49,7 @@ You'll need to create two load balancers on Rackspace, as follows:
       Protocol HTTP
     Health Monitoring -
       Monitor Type HTTP
-      HTTP Path /deis-router-health-check
+      HTTP Path /health-check
 
     Load Balancer 2
       Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)

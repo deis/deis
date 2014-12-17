@@ -146,7 +146,7 @@ We will need to load balance the Deis routers so we can get to Deis services (co
 
 .. code-block:: console
 
-    $ gcutil addhttphealthcheck basic-check --request_path /deis-router-health-check
+    $ gcutil addhttphealthcheck basic-check --request_path /health-check
     $ gcutil addtargetpool deis --health_checks basic-check --region us-central1 --instances core1,core2,core3
     $ gcutil addforwardingrule deisapp --region us-central1 --target_pool deis
 

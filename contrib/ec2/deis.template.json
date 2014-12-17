@@ -240,7 +240,7 @@
         "HealthCheck": {
           "HealthyThreshold": "4",
           "Interval": "15",
-          "Target": "HTTP:80/deis-router-health-check",
+          "Target": "HTTP:80/health-check",
           "Timeout": "5",
           "UnhealthyThreshold": "2"
         },
