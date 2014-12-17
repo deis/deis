@@ -34,20 +34,19 @@ then clone your fork of the repository:
 
 	$ git clone git@github.com:<username>/deis.git
 	$ cd deis
-	$ export DEIS_DIR=`pwd`  # to use in future commands
 
 Install the Client
 ------------------
 
-In a development environment you'll want to use the latest version of the client. Install
-its dependencies by using the Makefile and symlinking ``client/deis.py`` to ``deis`` on
-your local workstation.
+Your Deis client should match your server's version. For developers, one way
+to ensure this is to use `Python 2.7`_ to install requirements and then run
+``client/deis.py`` in the Deis code repository. Then make a symlink or shell
+alias for ``deis`` to ensure it is found in your ``$PATH``:
 
 .. code-block:: console
 
-    $ cd $DEIS_DIR/client
-    $ make install
-    $ sudo ln -fs $DEIS_DIR/client/deis.py /usr/local/bin/deis
+    $ make -C client/ install
+    $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
 
@@ -190,5 +189,6 @@ when proposing a change to Deis.
 .. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
 .. _`deisctl`: https://github.com/deis/deis/tree/master/deisctl
 .. _`fork the Deis repository`: https://github.com/deis/deis/fork
+.. _`Python 2.7`: https://www.python.org/downloads/release/python-279/
 .. _`running the tests`: https://github.com/deis/deis/tree/master/tests#readme
 .. _`pull request`: https://github.com/deis/deis/pulls
