@@ -162,6 +162,9 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	_errchan := make(chan error)
 	var _wg sync.WaitGroup
 
+	outchan <- fmt.Sprintf("DNS Discovery Service...")
+	b.Start([]string{"skdyns"}, wg, outchan, errchan)
+	wg.Wait()
 	// wait for groups to come up
 	outchan <- fmt.Sprintf("Storage subsystem...")
 	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
@@ -286,6 +289,11 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 	b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
 	wg.Wait()
+  
+	outchan <- fmt.Sprintf("DNS Discovery Service...")
+	b.Stop([]string{"skdyns"}, wg, outchan, errchan)
+	wg.Wait()
+  
 }
 
 // Restart stops and then starts the specified components.
@@ -423,6 +431,10 @@ func InstallPlatform(b backend.Backend) error {
 
 func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
+	outchan <- fmt.Sprintf("DNS Discovery Service...")
+	b.Create([]string{"skdyns"}, wg, outchan, errchan)
+	wg.Wait()
+
 	outchan <- fmt.Sprintf("Storage subsystem...")
 	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
@@ -527,6 +539,10 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+	wg.Wait()
+  
+	outchan <- fmt.Sprintf("DNS Discovery Service...")
+	b.Destroy([]string{"skdyns"}, wg, outchan, errchan)
 	wg.Wait()
 
 	return nil
@@ -642,6 +658,7 @@ Options:
 	rootURL := "https://raw.githubusercontent.com/deis/deis/"
 	tag := args["--tag"].(string)
 	units := []string{
+		"deis-skydns.service",
 		"deis-builder.service",
 		"deis-cache.service",
 		"deis-controller.service",
