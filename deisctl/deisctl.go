@@ -67,9 +67,8 @@ Options:
 		if helpFlag {
 			fmt.Print(usage)
 			return 0
-		} else {
-			return 1
 		}
+		return 1
 	}
 	command := args["<command>"]
 	setTunnel := true
@@ -185,7 +184,7 @@ func parseArgs(argv []string) ([]string, bool) {
 // removeGlobalArgs returns the given args without any global option flags, to make
 // re-parsing by subcommands easier.
 func removeGlobalArgs(argv []string) []string {
-	v := make([]string, 0)
+	var v []string
 	for _, a := range argv {
 		if !isGlobalArg(a) {
 			v = append(v, a)

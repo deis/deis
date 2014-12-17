@@ -17,7 +17,7 @@ import (
 func runCommand(cmd string, machID string) (retcode int) {
 	var err error
 	if machine.IsLocalMachineID(machID) {
-		err, retcode = runLocalCommand(cmd)
+		retcode, err = runLocalCommand(cmd)
 		if err != nil {
 			fmt.Printf("Error running local command: %v\n", err)
 		}
@@ -27,7 +27,7 @@ func runCommand(cmd string, machID string) (retcode int) {
 			fmt.Printf("Error getting machine IP: %v\n", err)
 		} else {
 			sshTimeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
-			err, retcode = runRemoteCommand(cmd, ms.PublicIP, sshTimeout)
+			retcode, err = runRemoteCommand(cmd, ms.PublicIP, sshTimeout)
 			if err != nil {
 				fmt.Printf("Error running remote command: %v\n", err)
 			}
@@ -37,7 +37,7 @@ func runCommand(cmd string, machID string) (retcode int) {
 }
 
 // runLocalCommand runs the given command locally and returns any error encountered and the exit code of the command
-func runLocalCommand(cmd string) (error, int) {
+func runLocalCommand(cmd string) (int, error) {
 	cmdSlice := strings.Split(cmd, " ")
 	osCmd := exec.Command(cmdSlice[0], cmdSlice[1:]...)
 	osCmd.Stderr = os.Stderr
@@ -48,18 +48,18 @@ func runLocalCommand(cmd string) (error, int) {
 		// Get the command's exit status if we can
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				return nil, status.ExitStatus()
+				return status.ExitStatus(), nil
 			}
 		}
 		// Otherwise, generic command error
-		return err, -1
+		return -1, err
 	}
-	return nil, 0
+	return 0, nil
 }
 
 // runRemoteCommand runs the given command over SSH on the given IP, and returns
 // any error encountered and the exit status of the command
-func runRemoteCommand(cmd string, addr string, timeout time.Duration) (err error, exit int) {
+func runRemoteCommand(cmd string, addr string, timeout time.Duration) (exit int, err error) {
 	var sshClient *ssh.SSHForwardingClient
 	if tun := getTunnelFlag(); tun != "" {
 		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
@@ -67,12 +67,13 @@ func runRemoteCommand(cmd string, addr string, timeout time.Duration) (err error
 		sshClient, err = ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
 	}
 	if err != nil {
-		return err, -1
+		return -1, err
 	}
 
 	defer sshClient.Close()
 
-	return ssh.Execute(sshClient, cmd)
+	err, exit = ssh.Execute(sshClient, cmd)
+	return 
 }
 
 func machineState(machID string) (*machine.MachineState, error) {
