@@ -16,15 +16,15 @@ download_buildpack() {
 
 mkdir -p $BUILDPACK_INSTALL_PATH
 
-download_buildpack https://github.com/ddollar/heroku-buildpack-multi.git         9350571
-download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v127
-download_buildpack https://github.com/heroku/heroku-buildpack-nodejs.git         v60
-download_buildpack https://github.com/heroku/heroku-buildpack-java.git           v28
-download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         743f73c
+download_buildpack https://github.com/ddollar/heroku-buildpack-multi.git         6e79094
+download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v129
+download_buildpack https://github.com/heroku/heroku-buildpack-nodejs.git         v62
+download_buildpack https://github.com/heroku/heroku-buildpack-java.git           v32
+download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         24a8ebe
 download_buildpack https://github.com/heroku/heroku-buildpack-grails.git         1ef927d
-download_buildpack https://github.com/heroku/heroku-buildpack-play.git           ceede86
-download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v52
-download_buildpack https://github.com/heroku/heroku-buildpack-php.git            v43
-download_buildpack https://github.com/heroku/heroku-buildpack-clojure.git        bc2bfd8
-download_buildpack https://github.com/heroku/heroku-buildpack-scala.git          v41
-download_buildpack https://github.com/heroku/heroku-buildpack-go.git             b261aab
+download_buildpack https://github.com/heroku/heroku-buildpack-play.git           9c137b4
+download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v53
+download_buildpack https://github.com/heroku/heroku-buildpack-php.git            v50
+download_buildpack https://github.com/heroku/heroku-buildpack-clojure.git        v63
+download_buildpack https://github.com/heroku/heroku-buildpack-scala.git          v43
+download_buildpack https://github.com/heroku/heroku-buildpack-go.git             0e20030
