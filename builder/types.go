@@ -1,11 +1,7 @@
 package builder
 
 import (
-	"time"
-)
-
-const (
-	DEIS_DATETIME string = "2006-01-02T15:04:05MST"
+	"github.com/deis/deis/pkg/time"
 )
 
 // ProcessType represents the key/value mappings of a process type to a process inside
@@ -45,38 +41,6 @@ type Config struct {
 	CPU     map[string]int         `json:"cpu"`
 	Tags    map[string]string      `json:"tags"`
 	UUID    string                 `json:"uuid"`
-	Created DeisTime               `json:"created"`
-	Updated DeisTime               `json:"updated"`
-}
-
-// DeisTime represents the standard datetime format used across the platform.
-type DeisTime struct {
-	time.Time
-}
-
-func (t *DeisTime) format() string {
-	return t.Time.Format(DEIS_DATETIME)
-}
-
-// MarshalJSON implements the json.Marshaler interface.
-// The time is a quoted string in Deis' datetime format.
-func (t *DeisTime) MarshalJSON() ([]byte, error) {
-	return []byte(t.Time.Format(`"` + DEIS_DATETIME + `"`)), nil
-}
-
-// UnmarshalText implements the encoding.TextUnmarshaler interface.
-// The time is expected to be in Deis' datetime format.
-func (t *DeisTime) UnmarshalText(data []byte) (err error) {
-	tt, err := time.Parse(DEIS_DATETIME, string(data))
-	*t = DeisTime{tt}
-	return
-}
-
-// UnmarshalJSON implements the json.Unmarshaler interface.
-// The time is expected to be a quoted string in Deis' datetime format.
-func (t *DeisTime) UnmarshalJSON(data []byte) (err error) {
-	// Fractional seconds are handled implicitly by Parse.
-	tt, err := time.Parse(`"`+DEIS_DATETIME+`"`, string(data))
-	*t = DeisTime{tt}
-	return
+	Created time.Time              `json:"created"`
+	Updated time.Time              `json:"updated"`
 }

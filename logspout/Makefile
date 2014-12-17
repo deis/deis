@@ -7,14 +7,11 @@ RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
 
 build: check-docker
-	cp -pR ../Godeps .
-	docker build -t $(BUILD_IMAGE) .
-	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/logspout image/
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o image/logspout
 	docker build -t $(RELEASE_IMAGE) image
-	rm -rf image/logspout
 
 clean: check-docker check-registry
-	rm -rf Godeps
+	rm -rf image/logspout
 	docker rmi $(RELEASE_IMAGE) $(BUILD_IMAGE)
 
 full-clean: check-docker check-registry
