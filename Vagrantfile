@@ -5,12 +5,16 @@ require 'fileutils'
 
 Vagrant.require_version ">= 1.6.5"
 
+unless Vagrant.has_plugin?("vagrant-triggers")
+  raise Vagrant::Errors::VagrantError.new, "Please install the vagrant-triggers plugin running 'vagrant plugin install vagrant-triggers'"
+end
+
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "contrib", "coreos", "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
-$update_channel = "beta"
+$update_channel = ENV["COREOS_CHANNEL"] || "stable"
 $enable_serial_logging = false
 $vb_gui = false
 $vb_memory = 1024
@@ -41,7 +45,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.box = "coreos-%s" % $update_channel
-  config.vm.box_version = ">= 494.1.0"
+  config.vm.box_version = ">= 494.5.0"
   config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
 
   config.vm.provider :virtualbox do |vb, override|
@@ -64,6 +68,12 @@ Vagrant.configure("2") do |config|
   # plugin conflict
   if Vagrant.has_plugin?("vagrant-vbguest") then
     config.vbguest.auto_update = false
+  end
+
+  config.trigger.before :up do
+    if !File.exists?(CLOUD_CONFIG_PATH) || File.readlines(CLOUD_CONFIG_PATH).grep(/#\s*discovery:/).any?
+      raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
+    end
   end
 
   (1..$num_instances).each do |i|

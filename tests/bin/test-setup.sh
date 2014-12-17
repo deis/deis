@@ -96,7 +96,7 @@ function cleanup {
 function dump_logs {
   log_phase "Error detected, dumping logs"
   TIMESTAMP=`date +%Y-%m-%d-%H%M%S`
-  FAILED_LOGS_DIR=$HOME/jenkins-$TIMESTAMP
+  FAILED_LOGS_DIR=$HOME/deis-test-failure-$TIMESTAMP
   mkdir -p $FAILED_LOGS_DIR
   set +e
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
@@ -138,14 +138,16 @@ function dump_logs {
 
   # tarball logs
   BUCKET=jenkins-failure-logs
-  FILENAME=$BUCKET-$TIMESTAMP.tar.gz
+  FILENAME=deis-test-failure-$TIMESTAMP.tar.gz
   cd $FAILED_LOGS_DIR && tar -czf $FILENAME *.log && mv $FILENAME .. && cd ..
   rm -rf $FAILED_LOGS_DIR
   if [ `which s3cmd` ] && [ -f $HOME/.s3cfg ]; then
     echo "configured s3cmd found in path. Attempting to upload logs to S3"
     s3cmd put $HOME/$FILENAME s3://$BUCKET
     rm $HOME/$FILENAME
-    echo "Logs can be viewed here: https://s3.amazonaws.com/$BUCKET/$FILENAME"
+    echo "Logs are accessible at https://s3.amazonaws.com/$BUCKET/$FILENAME"
+  else
+    echo "Logs are accessible at $HOME/$FILENAME"
   fi
   exit 1
 }

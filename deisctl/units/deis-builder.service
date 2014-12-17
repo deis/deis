@@ -7,7 +7,7 @@ TimeoutStartSec=30m
 ExecStartPre=/bin/sh -c "docker inspect deis-builder-data >/dev/null 2>&1 || docker run --name deis-builder-data -v /var/lib/docker ubuntu-debootstrap:14.04 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-builder >/dev/null && docker rm -f deis-builder || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:22 --volumes-from=deis-builder-data -e EXTERNAL_PORT=2223 -e HOST=$COREOS_PRIVATE_IPV4 --privileged $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:22 --volumes-from=deis-builder-data -c 800 -e EXTERNAL_PORT=2223 -e HOST=$COREOS_PRIVATE_IPV4 --privileged $IMAGE"
 ExecStartPost=/bin/sh -c "echo 'Waiting for builder on 2223/tcp...' && until echo 'dummy-value' | ncat $COREOS_PRIVATE_IPV4 2223 >/dev/null 2>&1; do sleep 1; done"
 ExecStartPost=/usr/bin/docker exec deis-builder /usr/local/bin/push-images
 ExecStopPost=-/usr/bin/docker rm -f deis-builder

@@ -579,12 +579,17 @@ A configuration value is stored and retrieved from a key/value store
 values are typically used for component-level configuration, such as
 enabling TLS for the routers.
 
-Usage:
-  deisctl config <target> get [<key>...] [options]
-  deisctl config <target> set <key=val>... [options]
+Note: "deisctl config platform set sshPrivateKey=" expects a path
+to a private key.
 
-Options:
-  --verbose		print out the request bodies [default: false]
+Usage:
+  deisctl config <target> get [<key>...]
+  deisctl config <target> set <key=val>...
+
+Examples:
+  deisctl config platform set domain=mydomain.com
+  deisctl config platform set sshPrivateKey=$HOME/.ssh/deis
+  deisctl config controller get webEnabled
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)

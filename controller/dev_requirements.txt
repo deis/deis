@@ -5,7 +5,7 @@ requests==2.4.3
 termcolor==1.1.0
 
 # PyInstaller builds client binaries
-PyInstaller==2.1
+git+https://github.com/pyinstaller/pyinstaller@7413317
 
 # Deis documentation requirements
 Sphinx>=1.2.3

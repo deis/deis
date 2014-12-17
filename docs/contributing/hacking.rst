@@ -80,6 +80,8 @@ Configure a Docker Registry
 The development workflow requires Docker Registry set at the ``DEV_REGISTRY``
 environment variable.  If you're developing locally you can use the ``dev-registry``
 target to spin up a quick, disposable registry inside a Docker container.
+The target ``dev-registry`` prints the registry's address and port when using ``boot2docker``;
+otherwise, use your host's IP address as returned by ``ifconfig`` with port 5000 for ``DEV_REGISTRY``.
 
 .. code-block:: console
 

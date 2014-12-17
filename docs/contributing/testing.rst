@@ -16,7 +16,7 @@ clients, and one contains the documentation. Components have source-code level
 verify the behavior of the components together as a system.
 
 GitHub pull requests for Deis are tested automatically by a Jenkins
-`continuous integration`_ (CI) system at http://ci.deis.io. Contributors should
+`continuous integration`_ (CI) system at https://ci.deis.io. Contributors should
 run the same tests locally before proposing any changes to the Deis codebase.
 
 
@@ -68,6 +68,14 @@ Scripts in the ``tests/bin`` directory are the best place to start. These test
 individual pieces of Deis, then bring up a Vagrant cluster and test all of them
 as a system. They call ``tests/bin/test-setup.sh`` to test for important
 environment variables and will exit with a helpful message if any are missing.
+
+The ``test-setup.sh`` script also prepares the testing environment, as well as
+tears it down after testing is complete. If there is a test failure, the script
+collects verbose component logs, compresses them, and places them in ``$HOME``.
+If `s3cmd`_ is installed and configured on the test machine, the script will
+instead upload the logs to Amazon S3. This is how the Jenkins CI infrastructure
+is configured, so that contributors have access to the logs to see how their
+PR failed.
 
 test-integration.sh
 ^^^^^^^^^^^^^^^^^^^
@@ -155,3 +163,4 @@ variables that can affect the tests' behavior. Here are some important ones:
 .. _`source code`: https://github.com/deis/deis
 .. _`Docker registry`: https://github.com/docker/docker-registry
 .. _`Deis example app`: https://github.com/deis?query=example-
+.. _`s3cmd`: http://s3tools.org/s3cmd

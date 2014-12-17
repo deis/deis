@@ -18,6 +18,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Count
 from django.db.models import Max
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
@@ -201,7 +202,8 @@ class App(UuidAuditedModel):
             if to_remove:
                 self._destroy_containers(to_remove)
         # save new structure to the database
-        self.structure = structure
+        vals = self.container_set.values('type').annotate(Count('pk')).order_by()
+        self.structure = {v['type']: v['pk__count'] for v in vals}
         self.save()
         return changed
 
@@ -401,15 +403,18 @@ class Container(UuidAuditedModel):
     _scheduler = property(_get_scheduler)
 
     def _get_command(self):
-        # handle special case for Dockerfile deployments
-        if self.type == 'cmd':
-            return ''
         try:
-            # ensure they cannot break out and run commands on the host
-            return "env '{}'".format(self.release.build.procfile[self.type])
+            # if this is not procfile-based app, ensure they cannot break out
+            # and run arbitrary commands on the host
+            # FIXME: remove slugrunner's hardcoded entrypoint
+            if self.release.build.dockerfile or not self.release.build.sha:
+                return "bash -c '{}'".format(self.release.build.procfile[self.type])
+            else:
+                return 'start {}'.format(self.type)
         # if the key is not present or if a parent attribute is None
-        except (KeyError, TypeError):
-            return 'start {}'.format(self.type)
+        except (KeyError, TypeError, AttributeError):
+            # handle special case for Dockerfile deployments
+            return '' if self.type == 'cmd' else 'start {}'.format(self.type)
 
     _command = property(_get_command)
 
@@ -477,7 +482,11 @@ class Container(UuidAuditedModel):
         image = self.release.image
         job_id = self._job_id
         entrypoint = '/bin/bash'
-        if self.release.build.procfile:
+        # if this is a procfile-based app, switch the entrypoint to slugrunner's default
+        # FIXME: remove slugrunner's hardcoded entrypoint
+        if self.release.build.procfile and \
+           self.release.build.sha and not \
+           self.release.build.dockerfile:
             entrypoint = '/runner/init'
             command = "'{}'".format(command)
         else:

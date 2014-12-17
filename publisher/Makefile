@@ -6,12 +6,14 @@ RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 REMOTE_IMAGE := $(REGISTRY)/$(RELEASE_IMAGE)
 
 build: check-docker
+	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/publisher image/
 	docker build -t $(RELEASE_IMAGE) image
 	rm -rf image/publisher
 
 clean: check-docker check-registry
+	rm -rf Godeps
 	docker rmi $(RELEASE_IMAGE) $(REMOTE_IMAGE)
 
 full-clean: check-docker check-registry
@@ -32,7 +34,7 @@ set-image: check-deisctl
 
 release: check-docker
 	docker push $(DOCKER_IMAGE)
-	
+
 deploy: build dev-release restart
 
 restart: stop start

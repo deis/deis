@@ -107,7 +107,12 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         # scale up
         url = "/v1/apps/{app_id}/scale".format(**locals())
-        body = {'web': 4, 'worker': 2}
+        # test setting one proc type at a time
+        body = {'web': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        body = {'worker': 2}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
@@ -118,6 +123,9 @@ class ContainerTest(TransactionTestCase):
         url = "/v1/apps/{app_id}".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
+        # ensure the structure field is up-to-date
+        self.assertEqual(response.data['structure']['web'], 4)
+        self.assertEqual(response.data['structure']['worker'], 2)
         # test listing/retrieving container info
         url = "/v1/apps/{app_id}/containers/web".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -130,6 +138,7 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.data['num'], num)
         # scale down
         url = "/v1/apps/{app_id}/scale".format(**locals())
+        # test setting two proc types at a time
         body = {'web': 2, 'worker': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -142,6 +151,9 @@ class ContainerTest(TransactionTestCase):
         url = "/v1/apps/{app_id}".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
+        # ensure the structure field is up-to-date
+        self.assertEqual(response.data['structure']['web'], 2)
+        self.assertEqual(response.data['structure']['worker'], 1)
         # scale down to 0
         url = "/v1/apps/{app_id}/scale".format(**locals())
         body = {'web': 0, 'worker': 0}
@@ -444,11 +456,14 @@ class ContainerTest(TransactionTestCase):
         app_id = response.data['id']
         app = App.objects.get(id=app_id)
         user = User.objects.get(username='autotest')
+        # Heroku Buildpack app
         build = Build.objects.create(owner=user,
                                      app=app,
                                      image="qwerty",
                                      procfile={'web': 'node server.js',
-                                               'worker': 'node worker.js'})
+                                               'worker': 'node worker.js'},
+                                     sha='african-swallow',
+                                     dockerfile='')
         # create an initial release
         release = Release.objects.create(version=2,
                                          owner=user,
@@ -461,10 +476,66 @@ class ContainerTest(TransactionTestCase):
                                      release=release,
                                      type='web',
                                      num=1)
-        self.assertEqual(c._command, "env 'node server.js'")
+        # use `start web` for backwards compatibility with slugrunner
+        self.assertEqual(c._command, 'start web')
         c.type = 'worker'
-        self.assertEqual(c._command, "env 'node worker.js'")
-        c.release.build.procfile = None
         self.assertEqual(c._command, 'start worker')
+        # switch to docker image app
+        build.sha = None
+        c.type = 'web'
+        self.assertEqual(c._command, "bash -c 'node server.js'")
+        # switch to dockerfile app
+        build.sha = 'european-swallow'
+        build.dockerfile = 'dockerdockerdocker'
+        self.assertEqual(c._command, "bash -c 'node server.js'")
         c.type = 'cmd'
         self.assertEqual(c._command, '')
+        # ensure we can override the cmd process type in a Procfile
+        build.procfile['cmd'] = 'node server.js'
+        self.assertEqual(c._command, "bash -c 'node server.js'")
+        c.type = 'worker'
+        self.assertEqual(c._command, "bash -c 'node worker.js'")
+        c.release.build.procfile = None
+        # for backwards compatibility if no Procfile is supplied
+        self.assertEqual(c._command, 'start worker')
+
+    def test_run_command_good(self):
+        """Test the run command for each container workflow"""
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        # dockerfile + procfile worflow
+        build = Build.objects.create(owner=user,
+                                     app=app,
+                                     image="qwerty",
+                                     procfile={'web': 'node server.js',
+                                               'worker': 'node worker.js'},
+                                     dockerfile='foo',
+                                     sha='somereallylongsha')
+        # create an initial release
+        release = Release.objects.create(version=2,
+                                         owner=user,
+                                         app=app,
+                                         config=app.config_set.latest(),
+                                         build=build)
+        # create a container
+        c = Container.objects.create(owner=user,
+                                     app=app,
+                                     release=release,
+                                     type='web',
+                                     num=1)
+        rc, output = c.run('echo hi')
+        self.assertEqual(rc, 0)
+        self.assertEqual(json.loads(output)['entrypoint'], '/bin/bash')
+        # docker image workflow
+        build.dockerfile = None
+        build.sha = None
+        rc, output = c.run('echo hi')
+        self.assertEqual(json.loads(output)['entrypoint'], '/bin/bash')
+        # procfile workflow
+        build.sha = 'somereallylongsha'
+        rc, output = c.run('echo hi')
+        self.assertEqual(json.loads(output)['entrypoint'], '/runner/init')

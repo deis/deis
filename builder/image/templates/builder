@@ -149,9 +149,12 @@ else
     RELEASE_INFO="{}"
 fi
 
-if [ -f $TMP_DIR/Procfile ]; then
-    # update release info with data from the Procfile
-    RELEASE_INFO=$(cat $TMP_DIR/Procfile | /app/bin/yaml2json-procfile)
+if [ "$RELEASE_INFO" == "{}" ]; then
+    if [ -f $TMP_DIR/Procfile ]; then
+        # fall back to Procfile if there's no default process types
+        # FIXME: refactor into slugbuilder
+        RELEASE_INFO=$(cat $TMP_DIR/Procfile | /app/bin/yaml2json-procfile)
+    fi
 fi
 
 puts-step "Launching... "

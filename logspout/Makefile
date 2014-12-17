@@ -7,12 +7,14 @@ RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
 
 build: check-docker
+	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/logspout image/
 	docker build -t $(RELEASE_IMAGE) image
 	rm -rf image/logspout
 
 clean: check-docker check-registry
+	rm -rf Godeps
 	docker rmi $(RELEASE_IMAGE) $(BUILD_IMAGE)
 
 full-clean: check-docker check-registry

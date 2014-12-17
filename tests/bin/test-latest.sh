@@ -1,12 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Preps a test environment and runs `make test-integration`
 # using the latest published artifacts available on Docker Hub
 # and the deis.io website.
 #
+# Usage: ./test-latest.sh [COREOS_CHANNEL]
+#
 
 # fail on any command exiting non-zero
 set -eo pipefail
+
+export COREOS_CHANNEL=${1:-stable}
 
 # absolute path to current directory
 export THIS_DIR=$(cd $(dirname $0); pwd)

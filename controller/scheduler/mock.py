@@ -1,3 +1,5 @@
+
+import json
 from cStringIO import StringIO
 
 
@@ -39,7 +41,11 @@ class MockSchedulerClient(object):
         """
         Run a one-off command
         """
-        return 0, ''
+        # dump input into a json object for testing purposes
+        return 0, json.dumps({'name': name,
+                              'image': image,
+                              'entrypoint': entrypoint,
+                              'command': command})
 
     def attach(self, name):
         """

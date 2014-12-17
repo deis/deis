@@ -1,3 +1,5 @@
+// +build !windows
+
 package main
 
 import (
@@ -15,7 +17,7 @@ import (
 
 const (
 	// Version of deisctl client
-	Version string = "1.1.0-dev"
+	Version string = "1.2.0-dev"
 )
 
 // main exits with the return value of Command(os.Args[1:]), deferring all logic to
@@ -28,7 +30,7 @@ func main() {
 func Command(argv []string) int {
 	deisctlMotd := utils.DeisIfy("Deis Control Utility")
 	usage := deisctlMotd + `
-Usage: deisctl <command> [<args>...] [options]
+Usage: deisctl [options] <command> [<args>...]
 
 Commands, use "deisctl help <command>" to learn more:
   install           install components, or the entire platform
@@ -60,7 +62,7 @@ Options:
 	// pre-parse command-line arguments
 	argv, helpFlag := parseArgs(argv)
 	// give docopt an optional final false arg so it doesn't call os.Exit()
-	args, err := docopt.Parse(usage, argv, false, Version, false, false)
+	args, err := docopt.Parse(usage, argv, false, Version, true, false)
 	if err != nil || len(args) == 0 {
 		if helpFlag {
 			fmt.Print(usage)
