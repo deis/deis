@@ -16,6 +16,13 @@ dev-registry: check-docker
 	@echo "To use local boot2docker registry for Deis development:"
 	@echo "    export DEV_REGISTRY=`boot2docker ip 2>/dev/null`:5000"
 
+dev-cluster: discovery-url
+	vagrant up
+	ssh-add ~/.vagrant.d/insecure_private_key
+	deisctl config platform set sshPrivateKey=$(HOME)/.vagrant.d/insecure_private_key
+	deisctl config platform set domain=local3.deisapp.com
+	deisctl install platform
+
 discovery-url:
 	sed -e "s,# discovery:,discovery:," -e "s,discovery: https://discovery.etcd.io/.*,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data.example > contrib/coreos/user-data
 

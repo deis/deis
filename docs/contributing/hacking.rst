@@ -74,6 +74,16 @@ Test connectivity using ``deisctl list``:
 
     $ deisctl list
 
+Start Up a Development Cluster
+------------------------------
+
+To start up and configure a local vagrant cluster for development, you can use the ``dev-cluster`` target.
+This requires that ``deisctl`` and ``vagrant`` are installed.
+
+.. code-block:: console
+
+    $ make dev-cluster
+
 Configure a Docker Registry
 ---------------------------
 
