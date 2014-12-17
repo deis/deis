@@ -1,11 +1,13 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -13,9 +15,12 @@ import (
 )
 
 const (
-	timeout   time.Duration = 10 * time.Second
-	ttl       time.Duration = timeout * 2
-	redisWait time.Duration = 5 * time.Second
+	timeout         time.Duration = 10 * time.Second
+	ttl             time.Duration = timeout * 2
+	redisWait       time.Duration = 5 * time.Second
+	redisConf       string        = "/app/redis.conf"
+	ectdKeyNotFound int           = 100
+	defaultMemory   string        = "50mb"
 )
 
 func main() {
@@ -28,6 +33,19 @@ func main() {
 
 	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
 
+	var maxmemory string
+	result, err := client.Get("/deis/cache/maxmemory", false, false)
+	if err != nil {
+		if e, ok := err.(*etcd.EtcdError); ok && e.ErrorCode == ectdKeyNotFound {
+			maxmemory = defaultMemory
+		} else {
+			log.Fatalln(err)
+		}
+	} else {
+		maxmemory = result.Node.Key
+	}
+	replaceMaxmemoryInConfig(maxmemory)
+
 	go launchRedis()
 
 	go publishService(client, host, etcdPath, externalPort, uint64(ttl.Seconds()))
@@ -38,8 +56,20 @@ func main() {
 	<-exitChan
 }
 
+func replaceMaxmemoryInConfig(maxmemory string) {
+	input, err := ioutil.ReadFile(redisConf)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	output := strings.Replace(string(input), "# maxmemory <bytes>", "maxmemory "+maxmemory, 1)
+	err = ioutil.WriteFile(redisConf, []byte(output), 0644)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func launchRedis() {
-	cmd := exec.Command("/app/bin/redis-server", "/app/redis.conf")
+	cmd := exec.Command("/app/bin/redis-server", redisConf)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
