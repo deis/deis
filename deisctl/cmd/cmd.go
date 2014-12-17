@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -631,9 +630,7 @@ Options:
 		os.Exit(2)
 	}
 	dir := args["--path"].(string)
-	if dir == "$HOME/.deis/units" || dir == "~/.deis/units" {
-		dir = path.Join(os.Getenv("HOME"), ".deis", "units")
-	}
+	dir = utils.ResolvePath(dir)
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
