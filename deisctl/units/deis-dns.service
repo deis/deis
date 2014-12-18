@@ -1,0 +1,35 @@
+[Unit]
+Description=deis-dns
+After=docker.service
+Requires=docker.service
+[Service]
+TimeoutStartSec=0
+ExecStartPre=/usr/bin/docker pull planitar/skydns
+ExecStartPre=-/usr/bin/docker rm -f skydns
+ExecStart=/bin/bash -c ' \
+DOCKER_IP=`ifconfig docker0 | sed -n "s/^ *inet \([0-9.]*\) .*$/\1/p"`; \
+/usr/bin/docker run --name skydns -p $DOCKER_IP:53:53/udp \
+planitar/skydns -addr 0.0.0.0:53 -nameservers 8.8.8.8:53,8.8.4.4:53 \
+-machines "http://$DOCKER_IP:4001" -domain deis.local. -verbose; \
+'
+ExecStartPost=/bin/bash -c ' \
+PUBLIC_IP=`ifconfig eth1 | sed -n "s/^ *inet \([0-9.]*\) .*$/\1/p"`; \
+DOCKER_IP=`ifconfig docker0 | sed -n "s/^ *inet \([0-9.]*\) .*$/\1/p"`; \
+etcdctl set /skydns/local/deis/dns/ns "{\\"host\\":\\"8.8.8.8\\"}"; \
+etcdctl set /skydns/local/deis/dns/ns2 "{\\"host\\":\\"8.8.4.4\\"}"; \
+etcdctl set /skydns/local/deis/host/%H "{\\"host\\":\\"$PUBLIC_IP\\"}"; \
+{ \
+echo "search deis.local"; \
+echo "nameserver $DOCKER_IP"; \
+} >/tmp/skydns.resolv.conf; \
+sudo mv -b -S "~orig" /tmp/skydns.resolv.conf /etc/resolv.conf; \
+'
+ExecStop=/usr/bin/docker rm -f skydns
+ExecStopPost=/bin/bash -c 'sudo mv /etc/resolv.conf~orig /etc/resolv.conf'
+Restart=always
+
+
+ExecStopPost=/usr/bin/etcdctl rm /skydns/local/deis/hosts/%m
+
+[X-Fleet]
+Global=true

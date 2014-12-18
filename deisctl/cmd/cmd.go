@@ -162,6 +162,11 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	var _wg sync.WaitGroup
 
 	// wait for groups to come up
+  
+	outchan <- fmt.Sprintf("DNS subsystem...")
+	b.Start([]string{"dns"}, wg, outchan, errchan)
+	wg.Wait()
+
 	outchan <- fmt.Sprintf("Storage subsystem...")
 	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
 	wg.Wait()
@@ -285,6 +290,11 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 	b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
 	wg.Wait()
+
+	outchan <- fmt.Sprintf("DNS subsystem...")
+	b.Stop([]string{"dns"}, wg, outchan, errchan)
+	wg.Wait()
+
 }
 
 // Restart stops and then starts the specified components.
@@ -422,6 +432,10 @@ func InstallPlatform(b backend.Backend) error {
 
 func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
+	outchan <- fmt.Sprintf("DNS subsystem...")
+	b.Create([]string{"dns"}, wg, outchan, errchan)
+	wg.Wait()
+  
 	outchan <- fmt.Sprintf("Storage subsystem...")
 	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway"}, wg, outchan, errchan)
 	wg.Wait()
@@ -526,6 +540,10 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+	wg.Wait()
+
+	outchan <- fmt.Sprintf("DNS subsystem...")
+	b.Destroy([]string{"dns"}, wg, outchan, errchan)
 	wg.Wait()
 
 	return nil
@@ -653,6 +671,7 @@ Options:
 		"deis-store-metadata.service",
 		"deis-store-monitor.service",
 		"deis-store-volume.service",
+		"deis-dns.service",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit
