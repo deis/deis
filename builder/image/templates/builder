@@ -28,7 +28,7 @@ usage() {
 }
 
 parse-string(){
-    # helper to avoid the single quote escape 
+    # helper to avoid the single quote escape
     # occurred in command substitution
     local args=() idx=0 IFS=' ' c
     for c; do printf -v args[idx++] '%s ' "$c"; done
@@ -177,5 +177,6 @@ echo
 # cleanup
 cd $REPO_DIR
 git gc &>/dev/null
-[ $JOB ] && docker rm -f $JOB &>/dev/null
-docker rmi -f $TMP_IMAGE &>/dev/null || true
+if [ -n "$JOB" ]; then
+  docker rm -f $JOB &>/dev/null
+fi

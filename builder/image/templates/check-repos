@@ -12,8 +12,12 @@ cd $(dirname $0) # absolute path
 for repo in *.git;
 do
     reponame="${repo%.*}"
+    appname="{{ .deis_registry_host }}:{{ .deis_registry_port }}/$reponame"
     if ! listcontains "{{ range $services := .deis_services }}{{ Base $services.Key }} {{ end }}" "$reponame";
     then
         rm -rf "$repo"
+        docker images | grep $appname | awk '{ print $3 }' | xargs docker rmi -f
+        # remove any dangling images left over from the cleanup
+        docker images --filter "dangling=true" | awk '{ print $3 }' | xargs docker rmi -f
     fi
 done
