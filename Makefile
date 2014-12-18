@@ -67,10 +67,14 @@ release: check-registry
 
 deploy: build dev-release restart
 
-test: test-components push test-integration
+test: test-unit test-functional push test-integration
 
-test-components:
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test &&) echo done
+test-functional:
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-functional &&) echo done
+
+test-unit:
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-unit &&) echo done
+	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) test-unit &&) echo done
 
 test-integration:
 	$(MAKE) -C tests/ test-full
