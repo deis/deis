@@ -14,21 +14,15 @@ class Migration(SchemaMigration):
             ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
             ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('app', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'app_cert', to=orm['api.App'])),
+            ('app', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.App'], unique=True)),
             ('cert', self.gf('django.db.models.fields.TextField')()),
             ('key', self.gf('django.db.models.fields.TextField')()),
-            ('cn', self.gf('django.db.models.fields.TextField')()),
+            ('common_name', self.gf('django.db.models.fields.TextField')()),
         ))
         db.send_create_signal(u'api', ['Cert'])
 
-        # Adding unique constraint on 'Cert', fields ['app', 'cn']
-        db.create_unique(u'api_cert', ['app_id', 'cn'])
-
 
     def backwards(self, orm):
-        # Removing unique constraint on 'Cert', fields ['app', 'cn']
-        db.delete_unique(u'api_cert', ['app_id', 'cn'])
-
         # Deleting model 'Cert'
         db.delete_table(u'api_cert')
 
@@ -56,10 +50,10 @@ class Migration(SchemaMigration):
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
         },
         u'api.cert': {
-            'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'app', u'cn'),)", 'object_name': 'Cert'},
-            'app': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'app_cert'", 'to': u"orm['api.App']"}),
+            'Meta': {'object_name': 'Cert'},
+            'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']", 'unique': 'True'}),
             'cert': ('django.db.models.fields.TextField', [], {}),
-            'cn': ('django.db.models.fields.TextField', [], {}),
+            'common_name': ('django.db.models.fields.TextField', [], {}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'key': ('django.db.models.fields.TextField', [], {}),
