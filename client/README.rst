@@ -68,19 +68,19 @@ Get Started
 
 1. `Install the Client`_:
 
-Your Deis client should match your server's version. For development, an
-easy way to ensure this is to run `client/deis.py` in the code repository
-you used to provision the server. You can make a symlink or shell alias for
-`deis` to that file:
+Your Deis client should match your server's version. For developers, one way
+to ensure this is to use `Python 2.7`_ to install requirements and then run
+``client/deis.py`` in the Deis code repository. Then make a symlink or shell
+alias for ``deis`` to ensure it is found in your ``$PATH``:
 
 .. code-block:: console
 
-    $ pip install docopt==0.6.2 python-dateutil==2.2 PyYAML==3.11 requests==2.4.3 termcolor==1.1.0
+    $ make -C client/ install
     $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
     $ deis
     Usage: deis <command> [<args>...]
 
-If you don't have Python_, install the latest `deis` binary executable for
+If you don't have Python 2.7, install the latest `deis` binary executable for
 Linux or Mac OS X with this command:
 
 .. code-block:: console
@@ -140,7 +140,7 @@ somewhere in your $PATH.
 To learn more, use ``deis help`` or browse `the documentation`_.
 
 .. _`Install the Client`: http://docs.deis.io/en/latest/using_deis/install-client/
-.. _`Python`: http://www.python.org/
+.. _`Python 2.7`: https://www.python.org/downloads/release/python-279/
 .. _`Register a User`: http://docs.deis.io/en/latest/using_deis/register-user/
 .. _`Deploy an Application`: http://docs.deis.io/en/latest/using_deis/deploy-application/
 .. _`Manage an Application`: http://docs.deis.io/en/latest/using_deis/manage-application/
