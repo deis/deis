@@ -64,7 +64,6 @@ set-image:
 
 release: check-registry
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) release &&) echo done
-	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) release &&) echo done
 
 deploy: build dev-release restart
 
