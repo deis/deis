@@ -11,13 +11,9 @@ import (
 	"github.com/deis/deis/deisctl/backend/fleet"
 	"github.com/deis/deis/deisctl/client"
 	"github.com/deis/deis/deisctl/utils"
+	"github.com/deis/deis/version"
 
 	docopt "github.com/docopt/docopt-go"
-)
-
-const (
-	// Version of deisctl client
-	Version string = "1.2.0-dev"
 )
 
 // main exits with the return value of Command(os.Args[1:]), deferring all logic to
@@ -62,7 +58,7 @@ Options:
 	// pre-parse command-line arguments
 	argv, helpFlag := parseArgs(argv)
 	// give docopt an optional final false arg so it doesn't call os.Exit()
-	args, err := docopt.Parse(usage, argv, false, Version, true, false)
+	args, err := docopt.Parse(usage, argv, false, version.Version, true, false)
 	if err != nil || len(args) == 0 {
 		if helpFlag {
 			fmt.Print(usage)
