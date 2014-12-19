@@ -49,6 +49,9 @@ stop: check-deisctl
 
 test: test-unit
 
+test-functional:
+	@echo no functional tests
+
 test-unit:
 	godep go test -v ./...
 

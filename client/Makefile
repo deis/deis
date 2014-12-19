@@ -36,3 +36,6 @@ setup-venv:
 
 test-style: setup-venv
 	venv/bin/flake8
+
+test-unit:
+	@echo no unit tests
