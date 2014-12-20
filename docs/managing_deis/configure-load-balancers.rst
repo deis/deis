@@ -25,6 +25,9 @@ A health check should be configured on the load balancer to send an HTTP request
 port 80 on all nodes in the Deis cluster. The health check endpoint returns an HTTP 200. This enables
 the load balancer to serve traffic to whichever hosts happen to be running the deis-router component
 at any moment.
+If you like you can set `deisctl config router set healthEndpoint="/any-endpoint-you-want"`, this is
+useful if you have an app that already has a /health-check endpoint as without setting this config option
+deis will win in the routing and your app would then return just a status 200 and nothing else.
 
 EC2
 ===
