@@ -1,7 +1,7 @@
 # Deis client requirements
 docopt==0.6.2
 python-dateutil==2.2
-requests==2.4.3
+requests==2.5.1
 termcolor==1.1.0
 
 # PyInstaller builds client binaries
