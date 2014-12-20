@@ -69,5 +69,19 @@ See your vendor's specific instructions on installing SSL on your load balancer.
 documentation on `installing an SSL cert for load balancing`_. For Rackspace, see their
 `Product FAQ`_.
 
+For those who are using a cloud-based provider that does not support installing a SSL certificate
+onto the load balancer, you can do the following:
+
+.. code-block:: console
+
+    $ deisctl config router set sslCert="<your SSL cert>"
+    $ deisctl config router set sslKey="<your SSL key"
+
+You can also optionaly run the following command to re-route all http traffic to https
+
+ .. code-block:: console
+
+    $ deisctl config router set redirectAppHTTPToHTTPS/enabled=true
+
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
 .. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers
