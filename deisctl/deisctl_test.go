@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/deis/deis/version"
 )
 
 // commandOutput returns stdout for a deisctl command line as a string.
@@ -54,7 +56,7 @@ func TestUsage(t *testing.T) {
 func TestVersion(t *testing.T) {
 	args := []string{"--version"}
 	out := commandOutput(args)
-	if !strings.HasPrefix(out, Version) {
+	if !strings.HasPrefix(out, version.Version) {
 		t.Error(out)
 	}
 }
