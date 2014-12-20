@@ -28,6 +28,7 @@ with CoreOS.
     rackspace
     vagrant
     baremetal
+    openstack
     install-deisctl
     install-platform
 

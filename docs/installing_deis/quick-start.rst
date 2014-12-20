@@ -49,6 +49,7 @@ Choose one of the following providers and deploy a new cluster:
 - :ref:`deis_on_rackspace`
 - :ref:`deis_on_vagrant`
 - :ref:`deis_on_bare_metal`
+- :ref:`deis_on_openstack`
 
 
 Configure DNS
