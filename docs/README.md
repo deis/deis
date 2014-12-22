@@ -14,8 +14,8 @@ Please add any issues you find with this documentation to the
 1. Install Sphinx and other requirements:
 
     ```console
-    $ virtualenv venv -q --prompt='(docs)' && . venv/bin/activate
-    (docs)$ pip install -r docs_requirements.txt
+    $ virtualenv venv -q --prompt='(docs)' && . env/bin/activate
+    (docs)$ pip install -r docs/docs_requirements.txt
     ```
 
     See comments at the top of the ``docs_requirements.txt`` file if you

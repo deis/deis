@@ -47,6 +47,18 @@ If you plan on using ``git push`` to deploy applications to Deis, you must provi
     Which would you like to use with Deis? 1
     Uploading /Users/myuser/.ssh/id_rsa.pub to Deis... done
 
+And then, you have to add your private key to current ssh session, usually one of:
+
+  * ~/.ssh/id_rsa
+  * ~/.ssh/id_dsa
+
+.. code-block:: console
+
+    $ eval $(ssh-agent -s)
+    Agent pid 2097
+    $ ssh-add ~/.ssh/id_rsa
+    Identity added: /Users/myuser/.ssh/id_rsa (/Users/myuser/.ssh/id_rsa)
+
 Logout from a Controller
 ------------------------
 Logout of an existing controller session using ``deis logout``.
