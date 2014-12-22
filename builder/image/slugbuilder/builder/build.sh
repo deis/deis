@@ -1,7 +1,17 @@
 #!/bin/bash
 set -eo pipefail
 
-slug_file=/tmp/slug.tgz
+
+if [[ "$1" == "-" ]]; then
+	slug_file="$1"
+else
+	slug_file=/tmp/slug.tgz
+	if [[ "$1" ]]; then
+		put_url="$1"
+	fi
+fi
+
+
 app_dir=/app
 build_root=/tmp/build
 cache_root=/tmp/cache
@@ -114,4 +124,8 @@ fi
 if [[ "$slug_file" != "-" ]]; then
 	slug_size=$(du -Sh "$slug_file" | cut -f1)
 	echo_title "Compiled slug size is $slug_size"
+
+	if [[ $put_url ]]; then
+		curl -0 -s -o /dev/null -X PUT -T $slug_file "$put_url"
+	fi
 fi
