@@ -26,7 +26,7 @@ and port provided to me by Papertrail:
 
 .. code-block:: console
 
-    $ journalctl -o short -f | ncat --udp logs2.papertrailapp.com 23654
+    $ journalctl -o short -f | ncat --ssl logs2.papertrailapp.com 23654
 
 This is really only useful when shipped as a service that we don't have to run ourselves in
 a shell. We can use a fleet service for this:
@@ -37,7 +37,7 @@ a shell. We can use a fleet service for this:
     Description=Log forwarder
 
     [Service]
-    ExecStart=/bin/sh -c "journalctl -o short -f | ncat --udp logs2.papertrailapp.com 23654"
+    ExecStart=/bin/sh -c "journalctl -o short -f | ncat --ssl logs2.papertrailapp.com 23654"
 
     [Install]
     WantedBy=multi-user.target
