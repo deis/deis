@@ -35,8 +35,8 @@ if $num_instances == 1
   $vb_memory = 4096
   $vb_cpus = 2
 else
-  $vb_memory = 2048
-  $vb_cpus = 1
+  $vb_memory = 4096
+  $vb_cpus = 2
 end
 
 if File.exist?(CONFIG)
