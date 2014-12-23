@@ -1,25 +1,19 @@
-FROM ubuntu-debootstrap:14.04
+FROM golang:1.3
 
-ENV DEBIAN_FRONTEND noninteractive
+ADD firewall /tmp/firewall
 
-# install common packages
-RUN apt-get update && apt-get install -y curl net-tools sudo
+ADD build.sh /go/src/github.com/deis/deis/router/build.sh
 
-# install confd
-RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-b8e693c \
-    && chmod +x /usr/local/bin/confd
+WORKDIR /go/src/github.com/deis/deis/router
 
-# install common packages
-RUN apt-get update && apt-get install -y libgeoip1
+RUN DOCKER_BUILD=true /go/src/github.com/deis/deis/router/build.sh
 
-WORKDIR /app
+RUN tar -C /opt/nginx -czf /nginx.tgz .
 
-EXPOSE 80 2222
+RUN go get github.com/tools/godep
 
-CMD ["/app/bin/boot"]
+ADD . /go/src/github.com/deis/deis/router/
 
-ADD . /app
+RUN CGO_ENABLED=0 godep go build -a -ldflags '-s' boot.go
 
-ADD nginx.tgz /opt/nginx
-
-RUN rm nginx.tgz
+RUN cp /go/src/github.com/deis/deis/router/boot /go/bin/boot

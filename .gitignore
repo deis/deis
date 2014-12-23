@@ -43,7 +43,7 @@ docs/docs.zip
 logspout/build/
 logspout/Godeps/
 publisher/Godeps/
-router/parent/Godeps/
+router/Godeps/
 
 # coverage reports
 .coverage
