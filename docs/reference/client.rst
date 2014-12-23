@@ -47,6 +47,16 @@ deis config
 .. automethod:: client.deis.DeisClient.config_unset
 .. automethod:: client.deis.DeisClient.config_pull
 
+.. _deis_certs:
+
+deis certs
+-----------
+
+.. automethod:: client.deis.DeisClient.certs_list
+.. automethod:: client.deis.DeisClient.certs_add
+.. automethod:: client.deis.DeisClient.certs_update
+.. automethod:: client.deis.DeisClient.certs_remove
+
 .. _deis_domains:
 
 deis domains

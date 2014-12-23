@@ -1,0 +1,5 @@
+This is the SSL keys used for Deis' integration tests. The self-signed certificate was
+generated on 2014/12/23 and is valid for 10 years. These keys are considered insecure and should
+only be used strictly for testing purposes.
+
+The password for the SSL key is 'deis'.
