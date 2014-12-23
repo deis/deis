@@ -71,5 +71,6 @@ contrib/ec2/cloudformation.json
 # GCE generated user-data
 contrib/gce/gce-user-data
 
-# vagrant being vagrant
+# vagrant local config and droppings
+/config.rb
 .vagrant
