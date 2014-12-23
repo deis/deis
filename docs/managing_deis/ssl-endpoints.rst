@@ -69,5 +69,22 @@ See your vendor's specific instructions on installing SSL on your load balancer.
 documentation on `installing an SSL cert for load balancing`_. For Rackspace, see their
 `Product FAQ`_.
 
+For those who are using a cloud-based provider that does not support installing an SSL certificate
+onto the load balancer, you can configure the ``sslCert`` and ``sslKey`` router settings to terminate
+SSL at the Deis router:
+
+.. code-block:: console
+
+    $ deisctl config router set sslCert="<your SSL cert>"
+    $ deisctl config router set sslKey="<your SSL key"
+
+It's also possible to instruct the routers to redirect all HTTP traffic to HTTPS:
+
+ .. code-block:: console
+
+    $ deisctl config router set redirectAllHTTPToHTTPS=true
+
+For more information on these and other router settings, see :ref:`router_settings`.
+
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
 .. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers
