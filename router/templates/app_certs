@@ -1,0 +1,2 @@
+{{ range $cert := .deis_certs }}{{ $cert.Key }}
+{{ end }}

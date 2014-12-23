@@ -205,6 +205,19 @@ class ContainerSerializer(serializers.ModelSerializer):
         return "v{}".format(obj.release.version)
 
 
+class CertSerializer(serializers.ModelSerializer):
+    """Serialize a :class:`~api.models.Cert` model."""
+
+    owner = serializers.Field(source='owner.username')
+    app = serializers.SlugRelatedField(slug_field='id')
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a CertSerializer."""
+        model = models.Cert
+
+
 class KeySerializer(serializers.ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 

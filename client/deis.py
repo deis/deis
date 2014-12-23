@@ -20,6 +20,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   limits        manage resource limits for your application
   tags          manage tags for application containers
   releases      manage releases of an application
+  certs         manage ssl endpoints for an app
 
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
@@ -959,6 +960,144 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 self._logger.info("{0[uuid]:<23} {0[created]}".format(item))
+        else:
+            raise ResponseError(response)
+
+    def certs(self, args):
+        """
+        Valid commands for certs:
+
+        certs:list            list ssl certificates for an app
+        certs:add             add an ssl certificate to an app
+        certs:update          update an existing certifcate for an app
+        certs:remove          remove an ssl certificate from an app
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'certs:list'
+        args = docopt(self.certs_list.__doc__)
+        return self.certs_list(args)
+
+    def certs_list(self, args):
+        """
+        Show certificate information for an ssl application.
+
+        Usage: deis certs:list [options]
+
+        Options:
+         -a --app=<app>
+           the uniquely identifiable name of the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+
+        response = self._dispatch('get', "/v1/apps/{}/certs".format(app))
+        if response.status_code == requests.codes.ok:
+            self._logger.info("=== {} Certs".format(app))
+            data = response.json()
+            if not data['results']:
+                self._logger.info("no certificates configured")
+            for item in data['results']:
+                item['created'] = readable_datetime(item['created'])
+                self._logger.info("{created:<24} {common_name}".format(**item))
+        else:
+            raise ResponseError(response)
+
+    def certs_add(self, args):
+        """
+        Binds a certificate/key pair to an application.
+
+        Usage: deis certs:add <cert> <key> [options]
+
+        Arguments:
+          <cert>
+            The public key of the SSL certificate.
+          <key>
+            The private key of the SSL certificate.
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        cert = args.get('<cert>')
+        key = args.get('<key>')
+        body = {'cert': file(cert).read(), 'key': file(key).read()}
+        if not app:
+            app = self._session.app
+
+        response = self._dispatch('post', "/v1/apps/{}/certs".format(app), json.dumps(body))
+        if response.status_code == requests.codes.created:
+            data = response.json()
+            self._logger.info("{common_name}".format(**data))
+        else:
+            raise ResponseError(response)
+
+    def certs_update(self, args):
+        """
+        Updates a certificate/key pair to an application.
+
+        Usage: deis certs:update <cn> <cert> <key> [options]
+
+        Arguments:
+          <cn>
+            The common name of the certificate.
+          <cert>
+            The public key of the SSL certificate.
+          <key>
+            The private key of the SSL certificate.
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        cn = args.get('<cn>')
+        cert = args.get('<cert>')
+        key = args.get('<key>')
+        body = {}
+
+        try:
+            file_type = 'cert'
+            body['cert'] = file(cert).read()
+            file_type = 'key'
+            body['key'] = file(key).read()
+        except IOError:
+            self._logger.error('could not load {} file'.format(file_type))
+            sys.exit(1)
+
+        if not app:
+            app = self._session.app
+
+        response = self._dispatch('put', "/v1/apps/{}/certs/{}".format(app, cn), json.dumps(body))
+        if response.status_code == requests.codes.ok:
+            data = response.json()
+            self._logger.info("{status}".format(**data))
+        else:
+            raise ResponseError(response)
+
+    def certs_remove(self, args):
+        """
+        removes a certificate/key pair from the application.
+
+        Usage: deis certs:remove <cn> [options]
+
+        Arguments:
+          <cn>
+            the common name of the cert to remove from the app.
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+
+        cn = args.get('<cn>')
+        sys.stdout.write("Removing {}... ".format(cn))
+        sys.stdout.flush()
+        response = self._dispatch('delete', "/v1/apps/{}/certs/{}".format(app, cn))
+        if response.status_code == requests.codes.no_content:
+            self._logger.info('done')
         else:
             raise ResponseError(response)
 

@@ -590,6 +590,21 @@ class Config(UuidAuditedModel):
 
 
 @python_2_unicode_compatible
+class Cert(AuditedModel):
+    """
+    Public and private key pair used to secure application traffic at the router
+    """
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL)
+    app = models.ForeignKey('App', unique=True)
+    cert = models.TextField()
+    key = models.TextField()
+    common_name = models.TextField()
+
+    def __str__(self):
+        return "{}-{}".format(self.app.id, self.cn)
+
+
+@python_2_unicode_compatible
 class Release(UuidAuditedModel):
     """
     Software release deployed by the application platform
@@ -833,6 +848,22 @@ def _log_domain_removed(**kwargs):
     domain.app.log(msg)
 
 
+def _log_cert_added(**kwargs):
+    cert = kwargs['instance']
+    msg = "cert {} added".format(cert.cn)
+    log_event(cert.app, msg)
+    # adding a cert does not create a release, so we have to log here
+    cert.app.log(msg)
+
+
+def _log_cert_removed(**kwargs):
+    cert = kwargs['instance']
+    msg = "cert {} removed".format(cert)
+    log_event(cert.app, msg)
+    # removing a cert does not create a release, so we have to log here
+    cert.app.log(msg)
+
+
 def _etcd_publish_key(**kwargs):
     key = kwargs['instance']
     _etcd_client.write('/deis/builder/users/{}/{}'.format(
@@ -866,6 +897,20 @@ def _etcd_purge_app(**kwargs):
     _etcd_client.delete('/deis/services/{}'.format(appname), dir=True, recursive=True)
 
 
+def _etcd_publish_cert(**kwargs):
+    cert = kwargs['instance']
+    if kwargs['created']:
+        _etcd_client.write('/deis/certs/{}'.format(cert.app), None, dir=True)
+        _etcd_client.write('/deis/certs/{}/key'.format(cert.app), cert.key)
+        _etcd_client.write('/deis/certs/{}/cert'.format(cert.app), cert.cert)
+
+
+def _etcd_purge_cert(**kwargs):
+    cert = kwargs['instance']
+    _etcd_client.delete('/deis/certs/{}'.format(cert.app),
+                        prevExist=True, dir=True, recursive=True)
+
+
 def _etcd_publish_domains(**kwargs):
     app = kwargs['instance'].app
     app_domains = app.domain_set.all()
@@ -889,7 +934,9 @@ post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models.log
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models.log')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models.log')
 post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log')
+post_save.connect(_log_cert_added, sender=Domain, dispatch_uid='api.models.log')
 post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
+post_delete.connect(_log_cert_removed, sender=Domain, dispatch_uid='api.models.log')
 
 
 # automatically generate a new token on creation
@@ -925,3 +972,7 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_domains, sender=Domain, dispatch_uid='api.models')
     post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_cert, sender=Cert, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_cert, sender=Cert, dispatch_uid='api.models')

@@ -55,8 +55,8 @@ To generate a temporary certificate which is good for 365 days, issue the follow
     See your vendor's documentation for more information.
 
 
-Installing the SSL Certificate
-------------------------------
+Installing the SSL Certificate to Load Balancers
+------------------------------------------------
 
 On most cloud-based load balancers, you can install a SSL certificate onto the load balancer
 itself. This is the recommended way of enabling SSL onto a cluster, as any communication inbound to
@@ -71,3 +71,17 @@ documentation on `installing an SSL cert for load balancing`_. For Rackspace, se
 
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
 .. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers
+
+
+Installing the SSL Certificate to Deis
+------------------------------------------------
+Alternatively, if your load balancers do not support SSL offloading you may upload a cluster-wide certificate 
+directly to Deis.
+
+.. code-block:: console
+
+    $ deisctl config router set sslCert="$(cat deis.cert)"
+    $ deisctl config router set sslKey="$(cat deis.key)"
+
+Application specific certificates can also be added directly to Deis if necessary.
+See :ref:`config-application`.

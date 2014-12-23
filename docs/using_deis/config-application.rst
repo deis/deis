@@ -70,6 +70,28 @@ appname to the old one:
     an application, however you can work around this by pointing the @ record to the
     address of the load balancer (if any).
 
+
+Application Certificates
+--------------------------------------
+If your application requires SSL you may add certificates to your application.
+
+.. note::
+
+    If your cloud load balancers support SSL offloading it might be preferrable to 
+    upload your certificates to your load balancer instead. See  :ref:`ssl-endpoints`
+
+If you chose to add application certs directly to deis you can use ``deis certs`` to upload
+the x509 certificate and corresponding private key
+
+.. code-block:: console
+
+    $ deis certs:add hello.bacongobbler.com.cer hello.bacongobbler.com.key
+    hello.bacongobbler.com
+
+This creates an additional listener for your application on port 443 that will be secured by
+the certificate.
+
+
 Track Changes
 -------------
 Each time a build or config change is made to your application, a new :ref:`release` is created.

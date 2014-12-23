@@ -1,0 +1,10 @@
+[template]
+src   = "app_certs"
+dest  = "/etc/ssl/app_certs"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/certs"
+]
+reload_cmd = "/app/bin/manage_cert_conf"

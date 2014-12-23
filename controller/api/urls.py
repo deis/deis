@@ -53,6 +53,11 @@ urlpatterns = patterns(
         views.AppPermsViewSet.as_view({'delete': 'destroy'})),
     url(r'^apps/(?P<id>{})/perms/?'.format(settings.APP_URL_REGEX),
         views.AppPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # apps certs
+    url(r'^apps/(?P<id>{})/certs/(?P<cn>[\*-\._\w]+)/?'.format(settings.APP_URL_REGEX),
+        views.AppCertViewSet.as_view({'delete': 'destroy', 'put': 'update'})),
+    url(r'^apps/(?P<id>{})/certs/?'.format(settings.APP_URL_REGEX),
+        views.AppCertViewSet.as_view({'post': 'create', 'get': 'list'})),
     # apps base endpoint
     url(r'^apps/(?P<id>{})/?'.format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
