@@ -118,6 +118,11 @@ For convenience, a number of buildpacks come bundled with Deis:
 Deis will cycle through the ``bin/detect`` script of each buildpack to match the code you
 are pushing.
 
+.. note::
+
+    If you're testing against the `Scala Buildpack`_, the :ref:`Builder` requires at least
+    512MB of free memory to execute the Scala Build Tool.
+
 Using a Custom Buildpack
 ------------------------
 To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
