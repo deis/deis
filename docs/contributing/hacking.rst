@@ -19,6 +19,25 @@ Prerequisites
 You can develop on any supported platform including your laptop, cloud providers or
 on bare metal.  We strongly recommend a minimum 3-node cluster.
 
+Deis is written in both python and Go, so you will need to install both Python 2.7 and
+the latest version of Go.
+
+If your local workstation does not support the linux/amd64 target environment, you will
+have to install Go from source with cross-compile support for that environment. This is
+because some of the components are built on your local machine and then injected into a
+docker container. To do that, run
+
+.. code-block:: console
+
+    $ sudo su
+    $ curl -sSL https://golang.org/dl/go1.4.src.tar.gz | tar -v -C /usr/local -xz
+    $ cd /usr/local/go/src
+    $ # compile Go for our default platform first, then add cross-compile support
+    $ ./make.bash --no-clean
+    $ GOOS=linux GOARCH=amd64 ./make.bash --no-clean
+
+After that, you should be able to compile Deis' components as normal.
+
 The development workflow requires a Docker Registry that is accessible to you
 (the developer) and to all of the hosts in your cluster.
 

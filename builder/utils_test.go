@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	dtime "github.com/deis/deis/pkg/time"
 )
 
 type ClosingBuffer struct {
@@ -167,7 +168,7 @@ func TestParseControllerConfigGood(t *testing.T) {
 }
 
 func TestTimeSerialize(t *testing.T) {
-	time, err := json.Marshal(&DeisTime{time.Now().UTC()})
+	time, err := json.Marshal(&dtime.Time{time.Now().UTC()})
 
 	if err != nil {
 		t.Errorf("expected to be able to serialize time as json, got '%v'", err)
