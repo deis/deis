@@ -279,7 +279,7 @@
             "Protocol": "HTTP"
           },
           {
-            "InstancePort": "2222",
+            "InstancePort": "22",
             "InstanceProtocol": "TCP",
             "LoadBalancerPort": "2222",
             "Protocol": "TCP"
