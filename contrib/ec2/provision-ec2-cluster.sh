@@ -40,9 +40,9 @@ $CONTRIB_DIR/util/check-user-data.sh
 
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
-    --template-body "$(./gen-json.py)" \
+    --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $NAME \
-    --parameters "$(<cloudformation.json)"
+    --parameters "$(<$THIS_DIR/cloudformation.json)"
 
 echo_green "Your Deis cluster has successfully deployed to AWS CloudFormation."
 echo_green "Please continue to follow the instructions in the README."

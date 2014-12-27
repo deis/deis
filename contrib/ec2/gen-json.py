@@ -3,7 +3,7 @@ import json
 import os
 import yaml
 
-template = json.load(open("deis.template.json",'r'))
+CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Add EC2-specific units to the shared user-data
 FORMAT_EPHEMERAL = '''
@@ -29,12 +29,14 @@ DOCKER_MOUNT = '''
   Type=btrfs
 '''
 
-data = yaml.load(file('../coreos/user-data', 'r'))
+data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
 data['coreos']['units'].append(dict({'name': 'format-ephemeral.service', 'command': 'start', 'content': FORMAT_EPHEMERAL}))
 data['coreos']['units'].append(dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': DOCKER_MOUNT}))
 
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
+
+template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'),'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = [ "\n", header + dump.split("\n") ]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
