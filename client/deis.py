@@ -680,7 +680,7 @@ class DeisClient(object):
                                   json.dumps(body))
         if response.status_code == requests.codes.ok:
             rc, output = json.loads(response.content)
-            sys.stdout.write(output)
+            sys.stdout.write(encode(output))
             sys.stdout.flush()
             sys.exit(rc)
         else:

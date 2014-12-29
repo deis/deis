@@ -15,7 +15,7 @@ var (
 	appsCreateCmdNoRemote  = "apps:create {{.AppName}} --no-remote"
 	appsCreateCmdBuildpack = "apps:create {{.AppName}} --buildpack https://example.com"
 	appsListCmd            = "apps:list"
-	appsRunCmd             = "apps:run echo hello"
+	appsRunCmd             = "apps:run echo Hello, 世界"
 	appsOpenCmd            = "apps:open --app={{.AppName}}"
 	appsLogsCmd            = "apps:logs --app={{.AppName}}"
 	appsInfoCmd            = "apps:info --app={{.AppName}}"
@@ -111,7 +111,7 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err := utils.Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)
 	}
-	utils.Execute(t, cmd, params, false, "hello")
+	utils.CheckList(t, cmd, params, "Hello, 世界", false)
 	utils.Execute(t, "apps:run env", params, true, "GIT_SHA")
 	// run a REALLY large command to test https://github.com/deis/deis/issues/2046
 	largeString := randomString(1024)
