@@ -56,6 +56,16 @@ coreos:
       ExecStart=/sbin/hwclock --systohc --utc
       RemainAfterExit=yes
       Type=oneshot
+  - name: debug-etcd.service
+    command: enable
+    content: |
+      [Unit]
+      Description=etcd debugging service
+
+      [Service]
+      ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
+      ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
+      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
 write_files:
   - path: /etc/deis-release
     content: |

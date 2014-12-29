@@ -22,6 +22,18 @@ Connect to the public IP address of one of your nodes (or use "convenience" DNS 
     $ ssh core@deis-1.example.com -i ~/.ssh/deis.pub
 
 
+Troubleshooting etcd
+--------------------
+
+Sometimes issues with Deis are caused by latency between CoreOS hosts. A telltale sign of this is
+if all of the Deis components on a single machine crash. To aid in debugging etcd, we've created
+a system service that is installed but not started when you deploy CoreOS using our provision scripts.
+
+To start this service, run ``sudo systemctl start debug-etcd`` on a CoreOS machine in your cluster.
+This starts a service which queries etcd's state once per second. Watching this output with
+``journalctl -fu debug-etcd`` makes it easy to spot heartbeat timeouts or other abnormalities
+which will lead to issues running Deis successfully.
+
 A deis-store component fails to start
 -------------------------------------
 
