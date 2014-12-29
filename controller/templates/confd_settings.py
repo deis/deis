@@ -34,9 +34,6 @@ DATABASES = {
     }
 }
 
-# configure cache
-CACHE_URL = 'redis://{{ .deis_cache_host }}:{{ .deis_cache_port }}/0'
-
 # move log directory out of /app/deis
 DEIS_LOG_DIR = '/data/logs'
 

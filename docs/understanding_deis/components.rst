@@ -27,8 +27,7 @@ platform state. Backups and WAL logs are pushed to :ref:`Store`.
 
 Cache
 -----
-The cache is an instance of `Redis`_ used by the controller
-and registry.
+The cache is an instance of `Redis`_ used by the registry.
 
 .. _builder:
 

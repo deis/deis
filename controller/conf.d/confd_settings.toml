@@ -6,7 +6,6 @@ gid = 1000
 mode  = "0640"
 keys = [
   "/deis/controller",
-  "/deis/cache",
   "/deis/database",
   "/deis/registry",
   "/deis/domains",

@@ -17,13 +17,10 @@ func TestController(t *testing.T) {
 		"/deis/registry/protocol",
 		"/deis/registry/host",
 		"/deis/registry/port",
-		"/deis/cache/host",
-		"/deis/cache/port",
 		"/deis/platform/domain",
 	}
 	setdir := []string{
 		"/deis/controller",
-		"/deis/cache",
 		"/deis/database",
 		"/deis/registry",
 		"/deis/domains",
