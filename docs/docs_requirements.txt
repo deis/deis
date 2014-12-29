@@ -20,7 +20,7 @@ paramiko==1.14.1
 psycopg2==2.5.4
 python-etcd==0.3.2
 PyYAML==3.11
-South==1.0.1
+South==1.0.2
 
 # Deis client requirements
 docopt==0.6.2
