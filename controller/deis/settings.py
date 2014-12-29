@@ -155,10 +155,6 @@ AUTHENTICATION_BACKENDS = (
 )
 
 ANONYMOUS_USER_ID = -1
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
-ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_USERNAME_BLACKLIST = ['system']
 LOGIN_URL = '/v1/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 
@@ -270,7 +266,6 @@ ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].sp
 DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
-DEFAULT_BUILD = 'deis/helloworld'
 DEIS_DOMAIN = 'deisapp.local'
 
 # standard datetime format used for logging, model timestamps, etc.
