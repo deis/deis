@@ -116,6 +116,9 @@ class FleetHTTPClient(object):
         entrypoint = kwargs.get('entrypoint')
         if entrypoint:
             l.update({'entrypoint': '{}'.format(entrypoint)})
+        # encode command as utf-8
+        if isinstance(l.get('command'), basestring):
+            l['command'] = l['command'].encode('utf-8')
         # construct unit from template
         for f in unit:
             f['value'] = f['value'].format(**l)
