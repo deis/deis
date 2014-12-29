@@ -11,8 +11,8 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 # redis to use
-REDIS=2.8.17
-SHA=913479f9d2a283bfaadd1444e17e7bab560e5d1e
+REDIS=2.8.19
+SHA=3e362f4770ac2fdbdce58a5aa951c1967e0facc8
 
 cd /tmp
 
