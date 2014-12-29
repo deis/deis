@@ -56,6 +56,32 @@ coreos:
       ExecStart=/sbin/hwclock --systohc --utc
       RemainAfterExit=yes
       Type=oneshot
+  - name: format-ceph.service
+    command: start
+    content: |
+      [Unit]
+      Description=Formats the ceph drive
+      ConditionPathExists=!/var/lib/ceph-format-done
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/sbin/wipefs -f /dev/sdb
+      ExecStart=/usr/sbin/mkfs.btrfs -f /dev/sdb
+      ExecStartPost=/usr/bin/touch /var/lib/ceph-format-done
+  - name: media-ceph.mount
+    command: start
+    content: |
+      [Mount]
+      What=/dev/sdb
+      Where=/media/ceph
+      Type=btrfs
+      Options=defaults,noatime,nodatacow
+  - name: ceph-mkdir.service
+    command: start
+    content: |
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/mkdir -p /media/ceph/etc /media/ceph/mon /media/ceph/osd
 write_files:
   - path: /etc/deis-release
     content: |

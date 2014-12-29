@@ -106,6 +106,12 @@ Vagrant.configure("2") do |config|
         vb.gui = $vb_gui
         vb.memory = $vb_memory
         vb.cpus = $vb_cpus
+
+        file_to_disk = File.join(File.dirname(__FILE__), ".vagrant", "machines", "ceph-deis-%d.vdi" % i)
+        if !File.exist?(file_to_disk)
+          vb.customize [ "createhd", "--filename", file_to_disk, "--format", "VDI", "--size", 40 * 1024 * 1024 ]
+          vb.customize [ "storageattach", :id, "--storagectl", "IDE Controller", "--port", 1, "--device", 0, "--type", "hdd", "--medium", file_to_disk ]
+        end
       end
 
       ip = "172.17.8.#{i+99}"
