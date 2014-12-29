@@ -20,10 +20,12 @@ In order to start working with Amazon's API, let's install `awscli`_:
 .. code-block:: console
 
     $ pip install awscli
-    Downloading/unpacking awscli
-      Downloading awscli-1.5.0.tar.gz (248kB): 248kB downloaded
-    ...
-    Successfully installed awscli
+
+We'll also need `PyYAML`_ for the Deis EC2 provision script to run:
+
+.. code-block:: console
+
+    $ pip install pyyaml
 
 
 Configure aws-cli
@@ -177,3 +179,4 @@ start installing the platform.
 .. _`cloudformation.json`: https://github.com/deis/deis/blob/master/contrib/ec2/cloudformation.json
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`optimal etcd cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
+.. _`PyYAML`: http://pyyaml.org/
