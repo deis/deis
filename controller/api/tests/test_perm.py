@@ -159,7 +159,7 @@ class TestAppPerms(TestCase):
         self.assertEqual(len(response.data['results']), 1)
         # check that user 2 can't see any of the app's builds, configs,
         # containers, limits, or releases
-        for model in ['builds', 'config', 'containers', 'limits', 'releases']:
+        for model in ['builds', 'config', 'containers', 'releases']:
             response = self.client.get("/v1/apps/{}/{}/".format(app_id, model),
                                        HTTP_AUTHORIZATION='token {}'.format(self.token2))
             self.assertEqual(response.data['detail'], 'Not found')
@@ -192,7 +192,7 @@ class TestAppPerms(TestCase):
         body = {'username': 'autotest-2'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
     def test_delete(self):
         # give user 2 permission to user 1's app
@@ -211,7 +211,7 @@ class TestAppPerms(TestCase):
         url = "/v1/apps/{}/perms/{}".format(app_id, 'autotest-2')
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
         self.assertIsNone(response.data)
         # delete permission to user 1's app
         response = self.client.delete(url, content_type='application/json',
@@ -257,4 +257,24 @@ class TestAppPerms(TestCase):
         response = self.client.get(
             "/v1/apps/{}/perms".format(app_id), content_type='application/json',
             HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
+
+    def test_unauthorized_user_cannot_modify_perms(self):
+        """
+        An unauthorized user should not be able to modify other apps' permissions.
+
+        Since an unauthorized user should not know about the application at all, these
+        requests should return a 404.
+        """
+        app_id = 'autotest'
+        url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = self.user2
+        unauthorized_token = self.token2
+        url = '{}/{}/perms'.format(url, app_id)
+        body = {'username': unauthorized_user.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)

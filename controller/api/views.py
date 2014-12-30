@@ -104,7 +104,7 @@ class AppPermsViewSet(viewsets.ViewSet):
         if request.user != app.owner and \
                 not request.user.has_perm(perm_name, app) and \
                 not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_404_NOT_FOUND)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
         return Response({'users': usernames})
@@ -112,7 +112,7 @@ class AppPermsViewSet(viewsets.ViewSet):
     def create(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
         if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_404_NOT_FOUND)
         user = get_object_or_404(User, username=request.DATA['username'])
         assign_perm(self.perm, user, app)
         models.log_event(app, "User {} was granted access to {}".format(user, app))
@@ -121,7 +121,7 @@ class AppPermsViewSet(viewsets.ViewSet):
     def destroy(self, request, **kwargs):
         app = get_object_or_404(self.model, id=kwargs['id'])
         if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_404_NOT_FOUND)
         user = get_object_or_404(User, username=kwargs['username'])
         if user.has_perm(self.perm, app):
             remove_perm(self.perm, user, app)
@@ -138,7 +138,22 @@ class AdminPermsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AdminUserSerializer
     permission_classes = (IsAdmin,)
 
+    def check_obj_permissions(self, obj):
+        """
+        Small wrapper around check_object_permissions().
+
+        If the user is denied permission to the object, then
+        it should return a 404 so the user is not aware of the
+        application resource.
+        """
+        try:
+            self.check_object_permissions(self.request, obj)
+        except PermissionDenied:
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
+
     def get_queryset(self, **kwargs):
+        self.check_obj_permissions(self.request.user)
         return self.model.objects.filter(is_active=True, is_superuser=True)
 
     def create(self, request, **kwargs):
@@ -225,21 +240,31 @@ class BaseAppViewSet(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticated, IsAppUser)
 
+    def check_obj_permissions(self, obj):
+        """
+        Small wrapper around check_object_permissions().
+
+        If the user is denied permission to the object, then
+        it should return a 404 so the user is not aware of the
+        application resource.
+        """
+        try:
+            self.check_object_permissions(self.request, obj)
+        except PermissionDenied:
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
+
     def pre_save(self, obj):
         obj.owner = self.request.user
 
     def get_queryset(self, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        try:
-            self.check_object_permissions(self.request, app)
-        except PermissionDenied:
-            raise Http404("No {} matches the given query.".format(
-                self.model._meta.object_name))
+        self.check_obj_permissions(app)
         return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
         obj = self.get_queryset().latest('created')
-        self.check_object_permissions(self.request, obj)
+        self.check_obj_permissions(obj)
         return obj
 
 
@@ -260,7 +285,7 @@ class AppBuildViewSet(BaseAppViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        self.check_object_permissions(self.request, app)
+        self.check_obj_permissions(app)
         request._data = request.DATA.copy()
         request.DATA['app'] = app
         try:
@@ -278,12 +303,8 @@ class AppConfigViewSet(BaseAppViewSet):
     def get_object(self, *args, **kwargs):
         """Return the Config associated with the App's latest Release."""
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        try:
-            self.check_object_permissions(self.request, app)
-            return app.release_set.latest().config
-        except (PermissionDenied, models.Release.DoesNotExist):
-            raise Http404("No {} matches the given query.".format(
-                self.model._meta.object_name))
+        self.check_obj_permissions(app)
+        return app.release_set.latest().config
 
     def pre_save(self, config):
         """merge the old config with the new"""
@@ -396,20 +417,35 @@ class DomainViewSet(OwnerViewSet):
     model = models.Domain
     serializer_class = serializers.DomainSerializer
 
+    def check_obj_permissions(self, obj):
+        """
+        Small wrapper around check_object_permissions().
+
+        If the user is denied permission to the object, then
+        it should return a 404 so the user is not aware of the
+        application resource.
+        """
+        try:
+            self.check_object_permissions(self.request, obj)
+        except PermissionDenied:
+            raise Http404("No {} matches the given query.".format(
+                self.model._meta.object_name))
+
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
+        self.check_obj_permissions(app)
         request._data = request.DATA.copy()
         request.DATA['app'] = app
         return super(DomainViewSet, self).create(request, *args, **kwargs)
 
     def get_queryset(self, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
-        qs = self.model.objects.filter(app=app)
-        return qs
+        self.check_obj_permissions(app)
+        return self.model.objects.filter(app=app)
 
     def get_object(self, *args, **kwargs):
-        qs = self.get_queryset(**kwargs)
-        obj = qs.get(domain=self.kwargs['domain'])
+        obj = self.get_queryset().get(domain=self.kwargs['domain'])
+        self.check_obj_permissions(obj)
         return obj
 
 
