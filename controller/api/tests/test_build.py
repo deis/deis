@@ -172,7 +172,6 @@ class BuildTest(TransactionTestCase):
     def test_build_str(self):
         """Test the text representation of a build."""
         url = '/v1/apps'
-        response = self.client.post(url)
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']
@@ -207,3 +206,18 @@ class BuildTest(TransactionTestCase):
         build = Build.objects.get(uuid=response.data['uuid'])
         self.assertEqual(str(build), "{}-{}".format(
                          response.data['app'], response.data['uuid'][:7]))
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_unauthorized_user_cannot_create_build(self):
+        """An unauthorized user should not be able to create builds for other apps."""
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        app_id = response.data['id']
+        # attempt to create a build as a malicious user
+        evil_user = User.objects.get(username='autotest2')
+        evil_token = Token.objects.get(user=evil_user).key
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'eeeeeevillllll'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(evil_token))
+        self.assertEqual(response.status_code, 403)

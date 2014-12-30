@@ -260,6 +260,7 @@ class AppBuildViewSet(BaseAppViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=self.kwargs['id'])
+        self.check_object_permissions(self.request, app)
         request._data = request.DATA.copy()
         request.DATA['app'] = app
         try:
