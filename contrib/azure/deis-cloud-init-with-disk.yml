@@ -1,0 +1,157 @@
+#cloud-config
+---
+coreos:
+  etcd:
+    # generate a new token for each unique cluster from https://discovery.etcd.io/new
+    # uncomment the following line and replace it with your discovery URL
+    #discovery: https://discovery.etcd.io/1c40c8d7ee390d53994441ba8f4211f5
+    addr: $private_ipv4:4001
+    peer-addr: $private_ipv4:7001
+    # give etcd more time if it's under heavy load - prevent leader election thrashing
+    peer-election-timeout: 2000
+    # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
+    peer-heartbeat-interval: 500
+  fleet:
+    # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
+    # will all publish the same private IP. This is harmless for cloud providers.
+    public-ip: $private_ipv4
+    # allow etcd to slow down at times
+    etcd_request_timeout: 3
+  units:
+  - name: format-ephemeral.service
+    command: start
+    content: |
+      [Unit]
+      Description=Formats the ephemeral drive
+      [Service]
+      Type=oneshot
+      RemainAfterExit=yes
+      ExecStart=/usr/sbin/wipefs -f /dev/sdc
+      ExecStart=/usr/sbin/mkfs.btrfs -f /dev/sdc
+  - name: var-lib-docker.mount
+    command: start
+    content: |
+      [Unit]
+      Description=Mount ephemeral to /var/lib/docker
+      Requires=format-ephemeral.service
+      After=format-ephemeral.service
+      Before=docker.service
+      [Mount]
+      What=/dev/sdc
+      Where=/var/lib/docker
+      Type=btrfs
+  - name: etcd.service
+    command: start
+  - name: fleet.service
+    command: start
+  - name: stop-update-engine.service
+    command: start
+    content: |
+      [Unit]
+      Description=stop update-engine
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
+      ExecStartPost=/usr/bin/systemctl mask update-engine.service
+  - name: install-deisctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install deisctl utility
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.1.1'
+  - name: ntpdate.service
+    command: start
+  - name: timedate-ntp-synchronization.service
+    command: start
+    content: |
+      [Unit]
+      Description=Synchronize system clock
+      After=ntpdate.service
+
+      [Service]
+      ExecStart=/usr/bin/timedatectl set-timezone UTC
+      ExecStart=/usr/bin/timedatectl set-ntp true
+      ExecStart=/sbin/hwclock --systohc --utc
+      RemainAfterExit=yes
+      Type=oneshot
+  - name: debug-etcd.service
+    command: enable
+    content: |
+      [Unit]
+      Description=etcd debugging service
+
+      [Service]
+      ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
+      ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
+      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
+write_files:
+  - path: /etc/deis-release
+    content: |
+      DEIS_RELEASE=v1.1.1
+  - path: /etc/motd
+    content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
+  - path: /etc/profile.d/nse-function.sh
+    permissions: '0755'
+    content: |
+      function nse() {
+        docker exec -it $1 bash
+      }
+  - path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
+    content: |
+        [Service]
+        Environment="DOCKER_OPTS=--insecure-registry 0.0.0.0/0"
+  - path: /run/deis/bin/get_image
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # usage: get_image <component_path>
+      IMAGE=`etcdctl get $1/image 2>/dev/null`
+
+      # if no image was set in etcd, we use the default plus the release string
+      if [ $? -ne 0 ]; then
+        RELEASE=`etcdctl get /deis/platform/version 2>/dev/null`
+
+        # if no release was set in etcd, use the default provisioned with the server
+        if [ $? -ne 0 ]; then
+          source /etc/deis-release
+          RELEASE=$DEIS_RELEASE
+        fi
+
+        IMAGE=$1:$RELEASE
+      fi
+
+      # remove leading slash
+      echo ${IMAGE#/}
+  - path: /opt/bin/deis-debug-logs
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+
+      echo '--- VERSIONS ---'
+      source /etc/os-release
+      echo $PRETTY_NAME
+      source /etc/deis-release
+      echo "Deis $DEIS_RELEASE"
+      etcd -version
+      fleet -version
+      printf "\n"
+
+      echo '--- SYSTEM STATUS ---'
+      journalctl -n 50 -u etcd --no-pager
+      journalctl -n 50 -u fleet --no-pager
+      printf "\n"
+
+      echo '--- DEIS STATUS ---'
+      deisctl list
+      etcdctl ls --recursive /deis
+      printf "\n"
+  - path: /home/core/.toolboxrc
+    owner: core
+    content: |
+      TOOLBOX_DOCKER_IMAGE=ubuntu-debootstrap
+      TOOLBOX_DOCKER_TAG=14.04
+      TOOLBOX_USER=root
