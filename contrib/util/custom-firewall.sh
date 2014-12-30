@@ -2,6 +2,11 @@
 
 echo "Obtaining IP addresses of the nodes in the cluster..."
 MACHINES_IP=$(fleetctl list-machines --fields=ip --no-legend | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/')
+
+if [ -n "$NEW_NODE" ]; then
+  MACHINES_IP+=,$NEW_NODE
+fi
+
 echo "Cluster IPs: $MACHINES_IP"
 
 echo "Creating firewall Rules..."
@@ -52,6 +57,9 @@ echo "$template" | sudo tee /var/lib/iptables/rules-save > /dev/null
 
 echo "Enabling iptables service"
 sudo systemctl enable iptables-restore.service
+
+# Flush custom rules before the restore (so this script is idempotent)
+sudo /usr/sbin/iptables -F Firewall-INPUT
 
 echo "Loading custom iptables firewall"
 sudo /sbin/iptables-restore --noflush /var/lib/iptables/rules-save
