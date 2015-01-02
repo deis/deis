@@ -1,3 +1,94 @@
+### v1.1.1 -> v1.2.0
+
+#### Features
+
+ - [`73f2eda`](https://github.com/deis/deis/commit/73f2eda31c758fab0893b24a1cda92134dd352ac) contrib/ec2: use ephemeral drive for etcd journal
+ - [`6db1e50`](https://github.com/deis/deis/commit/6db1e50edef6cc7802988250643f9649955bbadb) contrib/ec2: use absolute path names for scripts
+ - [`41d1cc9`](https://github.com/deis/deis/commit/41d1cc9b9a81528a74cfdd6f173826224abc554d) contrib/ec2: use separate volume for /var/lib/docker
+ - [`275ef40`](https://github.com/deis/deis/commit/275ef40d15baf4554521055b41fe6857dbcaec92) pkg: add pkg time
+ - [`331e4b4`](https://github.com/deis/deis/commit/331e4b466c68c8dd53bce7fc341946bb0a4f0425) contrib/coreos: add etcd debug unit
+ - [`16003d9`](https://github.com/deis/deis/commit/16003d9736669aa46359b4151b3c11743f1dbb43) builder: add cedarish/build target
+ - [`c360729`](https://github.com/deis/deis/commit/c3607298c3a837160a9d9c4e58f800b4fee09da8) Makefile: add dev-cluster command
+ - [`e8b61f8`](https://github.com/deis/deis/commit/e8b61f89b4ea4d8a122aa3229c50c9a9fdfc0d3f) registry: deis-cache for saving meta data
+ - [`828bca9`](https://github.com/deis/deis/commit/828bca9fa88959769e92ded8637658a3114ecddb) client: add "--buildpack" option to "deis create"
+ - [`f6d121e`](https://github.com/deis/deis/commit/f6d121e202ecff96c89807fb1deec4e5d8e2caf4) vagrant: check for discovery url
+ - [`997bd50`](https://github.com/deis/deis/commit/997bd50b8a2fc8446cf32176e5571e12d56b9d69) builder: do not lookup the remote host in ssh connections
+ - [`17f9ee6`](https://github.com/deis/deis/commit/17f9ee66ff3e06ea10e400d777e85b2646e6282a) security: allow the access to new nodes if we are using the custom firewall
+ - [`28828a7`](https://github.com/deis/deis/commit/28828a7c3f216a46e8e39587324d300a349169a5) contrib/ec2: add optional support for IAM instance profiles
+
+#### Fixes
+
+ - [`a6b7d86`](https://github.com/deis/deis/commit/a6b7d86903f3ed0f207d6d600dfdfe4ccfdc80df) contrib/ec2: prepare etcd before starting etcd
+ - [`7fa8358`](https://github.com/deis/deis/commit/7fa83584227d3df76cb8128e14aee5af503849fe) controller: update tests to check for 403
+ - [`a130937`](https://github.com/deis/deis/commit/a130937c45f37727c559e61a2c189a33ff78ba03) controller: disallow unauthorized users from rolling back releases
+ - [`33f6e6a`](https://github.com/deis/deis/commit/33f6e6af551e12067d203228cc346ed896cdd1af) controller: disallow unauthorized users from deleting apps
+ - [`a9cc25c`](https://github.com/deis/deis/commit/a9cc25cd670b2fecd33cbd761fe09fedc4a4404a) contrib/coreos: fix debug-etcd command
+ - [`70e92f2`](https://github.com/deis/deis/commit/70e92f26c8556b1c17fac92c0dd4087f9f2876c4) registry: use empty strings and not nil in config
+ - [`14353e1`](https://github.com/deis/deis/commit/14353e1cdad518526a4cee3e1b726615a84e2070) controller: disallow unauthorized users from modifying apps
+ - [`42966f5`](https://github.com/deis/deis/commit/42966f528dc369f03d2fd9227fd20d18cc384fc9) controller: adds migration to get rid of dockerfile's u'False' values (upgrade fix
+ - [`ba5a3aa`](https://github.com/deis/deis/commit/ba5a3aa9a1d846bf7494c2456844f2b9cf71f3c9) controller: disallow evil users from creating builds
+ - [`d3526aa`](https://github.com/deis/deis/commit/d3526aad495d03371b478f74238c744431d457db) client: encode unicode properly for apps:run
+ - [`4c1bd3f`](https://github.com/deis/deis/commit/4c1bd3f31a78e3bb91a3304f8966d5dcd820bf97) .gitignore: hide local vagrant config.rb from version control
+ - [`d4e45ce`](https://github.com/deis/deis/commit/d4e45ceae6b06358d661d63fbcb9425349a12912) slugbuilder: allow users to cat slugfile
+ - [`5395fe7`](https://github.com/deis/deis/commit/5395fe71a25c1e18454900778a954439194decd8) router: fix deploy Makefile target
+ - [`37b5f78`](https://github.com/deis/deis/commit/37b5f78ec8b1c1f28707f40ca266d374d2858f34) setup-node.sh: create database role for controller unit tests
+ - [`3a6f145`](https://github.com/deis/deis/commit/3a6f14561384aa6f93d803adc286bf0d940720a1) router: missing check file in git ignored by .gitignore
+ - [`2ca5f35`](https://github.com/deis/deis/commit/2ca5f353a6a4f9588d300c7d48e277ec73a0f591) deisctl: unit test should also use main version package
+ - [`a997083`](https://github.com/deis/deis/commit/a9970836514ed742eb743ffb7d4912e5127094f5) deisctl: fixup most of `go vet` errors
+ - [`1a0dc0b`](https://github.com/deis/deis/commit/1a0dc0bf89b1d4518db374e2ba8bf88c8319b200) deisctl: fixup unit tests
+ - [`fbc6b39`](https://github.com/deis/deis/commit/fbc6b3989eb10cba7d687e9fad9f9f6b754c6869) deisctl: hook up unit tests
+ - [`b1fff20`](https://github.com/deis/deis/commit/b1fff20872bd33b9058ad2e7c39a5dce130e6274) contrib: use tab indents for Makefiles
+ - [`dff278c`](https://github.com/deis/deis/commit/dff278cdc0e3f240328b5a24e8d0381bfd979c12) Makefile: remove CLIENTS from release task
+ - [`f5a8ffb`](https://github.com/deis/deis/commit/f5a8ffbaed3384eadaea404ba1065fd5d31e7653) deisctl: properly resolve ~ in path
+ - [`026ebbc`](https://github.com/deis/deis/commit/026ebbc1b8c5a8aab051a5d7921054c9bf3588b9) builder: delete images on destroy
+ - [`d09e3f6`](https://github.com/deis/deis/commit/d09e3f62387de6e1548e5d884fbde2875a7ea05a) deisctl: remove unimplemented --verbose flag from "deisctl config"
+ - [`d9de0e4`](https://github.com/deis/deis/commit/d9de0e4ebd284da5ece63110cebc1fc543c3803f) deisctl: parse global and command-specific options correctly
+ - [`10f80cf`](https://github.com/deis/deis/commit/10f80cf8528cb669780bf686bafdd7108ec5e83a) contrib: use 1GB per VM
+ - [`a55c123`](https://github.com/deis/deis/commit/a55c12397981fd3d96c21a5af2a935230aa6fa4f) Vagrantfile: disable replacing of default insecure key
+ - [`695e53e`](https://github.com/deis/deis/commit/695e53e168088c3c45e5c348adeaff9c444e3378) tests: destroy without --app flag to remove git remote
+ - [`2358fcd`](https://github.com/deis/deis/commit/2358fcd2f497166312783c55aa6f5029f0d541c8) store-gateway: don't log to stdout
+ - [`690b380`](https://github.com/deis/deis/commit/690b3807763e40cc6f93d30763a5f532c8db4cd0) store: list all monitors in [global] section of config
+ - [`932a251`](https://github.com/deis/deis/commit/932a2519a51a2823efc55a76dba3b41961793ce9) client: update PyInstaller to package requests lib properly
+ - [`6a2be87`](https://github.com/deis/deis/commit/6a2be872dc0a595797d65fa657ac49ba74e1a2f9) controller: set config as the issuing user
+ - [`239f79d`](https://github.com/deis/deis/commit/239f79d677c0f7246626b73ab4b7868e0dc818f6) builder: the value could be a number
+ - [`56e4cec`](https://github.com/deis/deis/commit/56e4cec4763e96843af611d47373193091d5a6e0) gateway: wait until radosgw is accessible
+ - [`46a2159`](https://github.com/deis/deis/commit/46a2159aade14e8dde80b9c520d6b8c0a2b0c1b2) deisctl: prevent build on windows
+ - [`68ab344`](https://github.com/deis/deis/commit/68ab344bfce754b08a31798c05da83ffcc13a4da) client: avoid git remote deletion for apps specified by -a
+
+#### Documentation
+
+ - [`0df3128`](https://github.com/deis/deis/commit/0df3128dcb041d29a7688b68906553645b94b878) releases: update with major/minor and patch procedures
+ - [`eb113c9`](https://github.com/deis/deis/commit/eb113c978f1efd8986845df39c7cfd5498807399) using_buildpacks: add sidenote on Scala buildpack
+ - [`6799be0`](https://github.com/deis/deis/commit/6799be025cb90f6f12bde1bac75e5e5076fc88ab) customizing_deis: remove slugbuilder/slugrunner settings
+ - [`8b582d4`](https://github.com/deis/deis/commit/8b582d4c42c827e272bcab1ef82108a35437a6a4) docs/managing_deis/platform_logging: change example to prefer tcp/tls
+ - [`08602f1`](https://github.com/deis/deis/commit/08602f1a29522daf3494c6cd99a64f42bd2066cf) troubleshooting_deis: document debug-etcd service
+ - [`38c9379`](https://github.com/deis/deis/commit/38c937933a1a9d8daad28038a9f35d97021304bc) disable-registration: adds documentation on how to disable user registration
+ - [`240e0b7`](https://github.com/deis/deis/commit/240e0b7922f01914f8a55de6919c6c7d65573f7e) openstack: move OpenStack docs to docs site
+ - [`0351b99`](https://github.com/deis/deis/commit/0351b993bddec6af9331fff23681a83729707938) openstack: fix instructions
+ - [`7ba347f`](https://github.com/deis/deis/commit/7ba347f3cb4dddb08e9e59460b7e581aef742308) hacking+README: clarify that deis CLI requires python 2.7
+ - [`b471c36`](https://github.com/deis/deis/commit/b471c3653b617a4483398a39709dab7525312eed) (all): use https:// URL for ci.deis.io
+ - [`3b772fa`](https://github.com/deis/deis/commit/3b772fa00b4e2e2006b67511c5b18a6e78267b20) contrib: Clarify source of DEV_REGISTRY IP Address
+ - [`344f892`](https://github.com/deis/deis/commit/344f892030d85c2a32162a3176b415ffab55b058) using_deis/(all): add scale example and clarify process == container
+
+#### Maintenance
+
+ - [`170effe`](https://github.com/deis/deis/commit/170effe7045f377084f51f370a7df09efced565b) release: update version to v1.2.0
+ - [`49ed8f8`](https://github.com/deis/deis/commit/49ed8f8bfb4ed629768d5ef77b14d90a415f2cf0) controller: Fix typo on README.md
+ - [`64d735d`](https://github.com/deis/deis/commit/64d735d3ba4d3368dad0cb8e49d9f69dc22fe007) registry: bump registry to eb62607
+ - [`2e94e9d`](https://github.com/deis/deis/commit/2e94e9d2f4d4d028fe405d896317e599feb5fd68) cache: update Redis to 2.8.19
+ - [`d3efd3d`](https://github.com/deis/deis/commit/d3efd3d10fe19611b2cb497c828a22e61bba8b89) controller: update South to 1.0.2 bugfix release
+ - [`9968c23`](https://github.com/deis/deis/commit/9968c2356d8feb84393af2fd95e0015da9aab788) contrib/rackspace: bump to CoreOS 494.5.0
+ - [`1c6e55f`](https://github.com/deis/deis/commit/1c6e55fe9f48c2a172b597566f29b6a2fd8d7e14) slugbuilder: bump heroku buildpacks
+ - [`c706fb4`](https://github.com/deis/deis/commit/c706fb4eb326b4561bb8bc2b3e17179571833f7d) client+controller: update python requests lib to 2.5.1
+ - [`6a1ec31`](https://github.com/deis/deis/commit/6a1ec31c74015604070f1cf42b9c4e8cd6f6e044) controller: update django-cors-headers to 1.0.0
+ - [`8f8a226`](https://github.com/deis/deis/commit/8f8a226267a13e0af7a20ec2ada89bd594797e09) builder: bump cedarish
+ - [`799c32b`](https://github.com/deis/deis/commit/799c32b32cb35dea89486b7ef6dedbebaab62846) store: remove redundant Makefile task
+ - [`65b39eb`](https://github.com/deis/deis/commit/65b39ebb5cfa8490d5541407d4b20341597c1efc) release: update release version in master to v1.1.1
+ - [`8174622`](https://github.com/deis/deis/commit/8174622bb3db9e45a983f0e0bb902360c3b3cb79) (all): update base CoreOS to 494.5.0
+ - [`5ebf3f2`](https://github.com/deis/deis/commit/5ebf3f2dcd5009ed49c82538237801ed81cdb5de) (all): Allow testing against CoreOS alpha
+ - [`be9d842`](https://github.com/deis/deis/commit/be9d842605410ffe97812d997da2086a7f04c595) builder: update Docker to 1.3.3
+ - [`f21159f`](https://github.com/deis/deis/commit/f21159fc1a9c440f8a29e1862b4a1764f4dfcea2) release: update version in master to 1.2.0-dev
+
 ### v1.1.0 -> v1.1.1
 
 #### Fixes
