@@ -59,15 +59,6 @@ class DomainTest(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 404)
 
-    def test_manage_domain_perms_on_app(self):
-        user = User.objects.get(username='autotest2')
-        token = Token.objects.get(user=user).key
-        url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
-        body = {'domain': 'test-domain2.example.com'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
-        self.assertEqual(response.status_code, 201)
-
     def test_manage_domain_invalid_domain(self):
         url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': 'this_is_an.invalid.domain'}
@@ -107,3 +98,23 @@ class DomainTest(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
+
+    def test_unauthorized_user_cannot_modify_domain(self):
+        """
+        An unauthorized user should not be able to modify other domains.
+
+        Since an unauthorized user should not know about the application at all, these
+        requests should return a 404.
+        """
+        app_id = 'autotest'
+        url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = User.objects.get(username='autotest2')
+        unauthorized_token = Token.objects.get(user=unauthorized_user).key
+        url = '{}/{}/domains'.format(url, app_id)
+        body = {'domain': 'example.com'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)

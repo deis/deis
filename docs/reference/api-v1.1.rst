@@ -6,7 +6,7 @@
 Controller API v1.1
 ===================
 
-This is the v1.0 REST API for the :ref:`Controller`.
+This is the v1.1 REST API for the :ref:`Controller`.
 
 
 What's New
@@ -15,6 +15,8 @@ What's New
 **New!** All controller responses now return the ``X_DEIS_API_VERSION`` header.
 
 **New!** All controller responses now return the ``X_DEIS_PLATFORM_VERSION`` header.
+
+**New!** Users see a 404 response when modifying applications they are unauthorized to see.
 
 
 Authentication

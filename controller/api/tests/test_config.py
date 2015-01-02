@@ -432,3 +432,23 @@ class ConfigTest(TransactionTestCase):
         """
         response = self.test_admin_can_create_config_on_other_apps()
         self.assertEqual(response.data['owner'], self.user.username)
+
+    def test_unauthorized_user_cannot_modify_config(self):
+        """
+        An unauthorized user should not be able to modify other config.
+
+        Since an unauthorized user should not know about the application at all, these
+        requests should return a 404.
+        """
+        app_id = 'autotest'
+        base_url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(base_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = User.objects.get(username='autotest2')
+        unauthorized_token = Token.objects.get(user=unauthorized_user).key
+        url = '{}/{}/config'.format(base_url, app_id)
+        body = {'values': {'FOO': 'bar'}}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)

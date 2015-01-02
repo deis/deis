@@ -253,6 +253,39 @@ class AppTest(TestCase):
         self.assertEqual(response.data, "No build associated with this release "
                                         "to run this command")
 
+    def test_unauthorized_user_cannot_see_app(self):
+        """
+        An unauthorized user should not be able to access an app's resources.
+
+        Since an unauthorized user should not know about the application at all, these
+        requests should return a 404.
+        """
+        app_id = 'autotest'
+        base_url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(base_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = User.objects.get(username='autotest2')
+        unauthorized_token = Token.objects.get(user=unauthorized_user).key
+        url = '{}/{}/run'.format(base_url, app_id)
+        body = {'command': 'foo'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)
+        url = '{}/{}/logs'.format(base_url, app_id)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)
+
+    def test_app_info_not_showing_wrong_app(self):
+        app_id = 'autotest'
+        base_url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(base_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = '{}/foo'.format(base_url)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 404)
+
 
 FAKE_LOG_DATA = """
 2013-08-15 12:41:25 [33454] [INFO] Starting gunicorn 17.5

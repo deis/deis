@@ -244,3 +244,29 @@ class ReleaseTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         # account for the config release as well
         self.assertEqual(response.data['count'], 2)
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_unauthorized_user_cannot_modify_release(self):
+        """
+        An unauthorized user should not be able to modify other releases.
+
+        Since an unauthorized user should not know about the application at all, these
+        requests should return a 404.
+        """
+        app_id = 'autotest'
+        url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # update config to roll a new release
+        url = '/v1/apps/{app_id}/config'.format(**locals())
+        body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json',
+            HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = User.objects.get(username='autotest2')
+        unauthorized_token = Token.objects.get(user=unauthorized_user).key
+        # try to rollback
+        url = '{}/{}/releases/rollback'.format(url, app_id)
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 404)
