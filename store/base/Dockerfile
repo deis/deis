@@ -8,3 +8,6 @@ RUN DOCKER_BUILD=true /tmp/build.sh
 
 # Add shared confd configuration
 ADD . /app
+
+ENV DEIS_RELEASE 1.2.0-dev
+

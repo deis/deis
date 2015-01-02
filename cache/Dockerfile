@@ -6,3 +6,6 @@ EXPOSE 6379
 
 WORKDIR /app
 CMD ["/app/bin/boot"]
+
+ENV DEIS_RELEASE 1.2.0-dev
+

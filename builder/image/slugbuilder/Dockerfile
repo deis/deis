@@ -11,3 +11,6 @@ ENV HOME /app
 ADD ./builder/ /tmp/builder
 RUN /tmp/builder/install-buildpacks
 ENTRYPOINT ["/tmp/builder/build.sh"]
+
+ENV DEIS_RELEASE 1.2.0-dev
+

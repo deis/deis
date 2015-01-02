@@ -17,3 +17,6 @@ RUN chown slug:slug /runner/init
 USER slug
 ENV HOME /app
 ENTRYPOINT ["/runner/init"]
+
+ENV DEIS_RELEASE 1.2.0-dev
+
