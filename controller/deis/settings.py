@@ -308,6 +308,13 @@ APP_URL_REGEX = '[a-z0-9-]+'
 # see https://docs.djangoproject.com/en/1.6/ref/settings/#secure-proxy-ssl-header
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Unit Hostname handling.
+# Supports:
+#  default      - Docker generated hostname
+#  application  - Hostname based on application unit name (i.e. my-application.v2.web.1)
+#  server       - Hostname based on CoreOS server hostname
+UNIT_HOSTNAME = 'default'
+
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development

@@ -7,6 +7,7 @@ import paramiko
 import socket
 import re
 import time
+from django.conf import settings
 
 
 MATCH = re.compile(
@@ -112,6 +113,8 @@ class FleetHTTPClient(object):
             l.update({'cpu': '-c {}'.format(cpu)})
         else:
             l.update({'cpu': ''})
+        # set unit hostname
+        l.update({'hostname': self._get_hostname(name)})
         # should a special entrypoint be used
         entrypoint = kwargs.get('entrypoint')
         if entrypoint:
@@ -136,6 +139,19 @@ class FleetHTTPClient(object):
             except:
                 if attempt == (RETRIES - 1):  # account for 0 indexing
                     raise
+
+    def _get_hostname(self, application_name):
+        hostname = settings.UNIT_HOSTNAME
+        if hostname == "default":
+            return ''
+        elif hostname == "application":
+            # replace underscore with dots, since underscore is not valid in DNS hostnames
+            dns_name = application_name.replace("_", ".")
+            return '-h ' + dns_name
+        elif hostname == "server":
+            return '-h %H'
+        else:
+            raise RuntimeError('Unsupported hostname: ' + hostname)
 
     def start(self, name):
         """Start a container"""
@@ -294,7 +310,7 @@ CONTAINER_TEMPLATE = [
     {"section": "Unit", "name": "Description", "value": "{name}"},
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
-    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} -P -e PORT=$port $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} {hostname} -P -e PORT=$port $IMAGE {command}"'''},  # noqa
     {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f {name}'''},
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
     {"section": "Service", "name": "RestartSec", "value": "5"},
