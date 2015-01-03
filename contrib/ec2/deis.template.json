@@ -293,7 +293,10 @@
           {
             "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"]
           }
-        ]
+        ],
+        "ConnectionSettings": {
+          "IdleTimeout": 1200
+        }
       }
     },
     "DeisWebELBSecurityGroup": {
