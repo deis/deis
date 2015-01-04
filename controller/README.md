@@ -12,7 +12,7 @@ the [Deis Project](https://github.com/deis/deis).
 ## Usage
 
 Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
-install, and start **deis/logger**.
+install, and start **deis/controller**.
 
 ## Environment Variables
 
