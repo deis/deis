@@ -1,0 +1,26 @@
+#FROM is generated dynamically by the Makefile
+
+ADD build.sh /tmp/build.sh
+RUN DOCKER_BUILD=true /tmp/build.sh
+
+# enable required Apache modules
+RUN a2enmod rewrite
+RUN a2enmod wsgi
+
+# change the default port
+RUN sed -i 's/80/9999/' /etc/apache2/ports.conf
+
+# set the ServerName
+RUN echo "ServerName deis-store-dashboard" > /etc/apache2/conf-available/servername.conf
+RUN a2enconf servername.conf
+
+# create dashboard site, and disable the default site
+ADD dashboard.conf /etc/apache2/sites-available/dashboard.conf
+RUN a2ensite dashboard.conf
+RUN a2dissite 000-default.conf
+
+WORKDIR /app
+EXPOSE 9999
+CMD ["/app/bin/boot"]
+ADD bin/boot /app/bin/boot
+
