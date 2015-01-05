@@ -19,6 +19,7 @@ Customizing Deis
     registry_settings
     router_settings
     store_daemon_settings
+    store_dashboard_settings
     store_gateway_settings
     store_metadata_settings
     store_monitor_settings
