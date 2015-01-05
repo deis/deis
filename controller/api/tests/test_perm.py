@@ -162,7 +162,9 @@ class TestAppPerms(TestCase):
         for model in ['builds', 'config', 'containers', 'releases']:
             response = self.client.get("/v1/apps/{}/{}/".format(app_id, model),
                                        HTTP_AUTHORIZATION='token {}'.format(self.token2))
-            self.assertEqual(response.data['detail'], 'Not found')
+            msg = "Failed: status '%s', and data '%s'" % (response.status_code, response.data)
+            self.assertEqual(response.status_code, 404, msg=msg)
+            self.assertEqual(response.data['detail'], 'Not found', msg=msg)
         # TODO: test that git pushing to the app fails
         # give user 2 permission to user 1's app
         url = "/v1/apps/{}/perms".format(app_id)
