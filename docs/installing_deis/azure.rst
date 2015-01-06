@@ -97,18 +97,6 @@ Configure DNS
 See :ref:`configure-dns` for more information on properly setting up your DNS records with Deis.
 
 
-Open HTTP (80) and deisctl (2222) Ports
----------------------------------------
-
-Using the Azure portal or command line, open ports 80 (HTTP) and 2222 (deis) on each instance of your CoreOS cluster with a load balancing set that spreads the load across all of your cluster instances. For instance, if you have a cluster instance called deis-coreos-0, you can open these two ports with the following:
-
-.. code-block:: console
-
-    $ azure vm endpoint create deis-coreos-0 80 80 --lb-set-name http
-    $ azure vm endpoint create deis-coreos-0 2222 2222 --lb-set-name deis
-
-Do the same for all of the instances of your cluster.
-
 Install Deis Platform
 ---------------------
 
