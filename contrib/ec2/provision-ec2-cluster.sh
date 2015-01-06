@@ -44,5 +44,5 @@ aws cloudformation create-stack \
     --stack-name $NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)"
 
-echo_green "Your Deis cluster has successfully deployed to AWS CloudFormation."
-echo_green "Please continue to follow the instructions in the README."
+echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is currently starting."
+echo_green "Please continue to follow the instructions in the documentation."

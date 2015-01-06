@@ -28,8 +28,8 @@ $CONTRIB_DIR/util/check-user-data.sh
 
 # update the deis EC2 cloudformation
 aws cloudformation update-stack \
-    --template-body "$(./gen-json.py)" \
+    --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $NAME \
-    --parameters "$(<cloudformation.json)"
+    --parameters "$(<$THIS_DIR/cloudformation.json)"
 
-echo_green "Your Deis cluster CloudFormation has been successfully updated."
+echo_green "Your Deis cluster on AWS CloudFormation has been successfully updated."
