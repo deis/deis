@@ -52,22 +52,6 @@ parser.add_argument('--deis', action='store_true',
 parser.add_argument('--data-disk', action='store_true',
                    help='optional, attaches a data disk to each VM')
 
-cloud_init_template = """#cloud-config
-
-coreos:
-  etcd:
-    # generate a new token for each unique cluster from https://discovery.etcd.io/new
-    discovery: {0}
-    # deployments across multiple cloud services will need to use $public_ipv4
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
-  units:
-    - name: etcd.service
-      command: start
-    - name: fleet.service
-      command: start
-"""
-
 args = parser.parse_args()
 
 # Create SSH cert if it's not given
@@ -85,16 +69,6 @@ if not args.ssh_cert and not args.ssh_thumb:
 # Get Deis config
 if args.deis and args.custom_data:
   print 'Conflicting options --deis and --custom-data provided, using --custom-data'
-if args.deis and not args.custom_data:
-  print 'Getting deis recommended CoreOS configuration'
-  discovery_url_fetch = urllib2.urlopen('https://discovery.etcd.io/new')
-  discovery_url = discovery_url_fetch.read()
-  deis_config_master = urllib2.urlopen('https://raw.githubusercontent.com/deis/deis/master/contrib/coreos/user-data.example')
-  deis_config_string = deis_config_master.read()
-  deis_config_string = deis_config_string.replace('  etcd:', '  etcd:\n    discovery: ' + discovery_url)
-  with open('deis_user_data.yml', 'w') as deis_config:
-    deis_config.write(deis_config_string)
-  args.custom_data = './deis_user_data.yml'
 
 # Setup custom data
 if args.custom_data:
