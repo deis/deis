@@ -6,7 +6,7 @@
 Microsoft Azure
 ===============
 
-This section will describe you how to create a Deis cluster on Microsoft Azure.
+This section will show you how to create a 3-node Deis cluster on Microsoft Azure.
 
 Before you start, :ref:`get the Deis source <get_the_source>` and change directory into `contrib/azure`_ while following this documentation.
 
@@ -35,9 +35,9 @@ And check to make sure they are configured correctly:
 Generate Certificates
 ---------------------
 
-The azure-coreos-cluster creation tool uses the Azure management REST API to create the CoreOS cluster which requires a management certificate to authenticate.
+The azure-coreos-cluster creation tool uses the Azure management REST API to create the CoreOS cluster which uses a management certificate to authenticate.
 
-If you don't have a management certificate already, there is a script included called generate-mgmt-cert.sh to create this certificate for you. Otherwise, you can skip to the next section.
+If you don't have a management certificate already configured, the script generate-mgmt-cert.sh can create this certificate for you. Otherwise, you can skip to the next section.
 
 If you need to create a certificate, edit cert.conf in contrib/azure with your company's details and then run:
 
@@ -52,14 +52,24 @@ If you haven't uploaded your management certificate to Azure (azure-cert.cer if 
 
 Also copy the Azure subscription id from this table and save it for the cluster creation script below.
 
+Create Cluster Cloud Config
+---------------------------
+
+Before we can create a cluster, we need to create a cloud config for it. The script create-azure-user-data does this for you. This script takes the stock cluster instance config in ../coreos/user-data.example and customizes it for Azure and inserts a unique cluster discovery url:
+
+.. code-block:: console
+
+    $ ./create-azure-user-data $(curl -s https://discovery.etcd.io/new)
+
+This will create a azure-user-data cloud config file. We'll use this with the script in the next section during cluster creation.
+
 Create CoreOS Cluster
 ---------------------
 
-With the management certificate in place, we are ready to create our cluster.
+With the management certificate and cloud config in place, we are ready to create our cluster.
 
-* Create a container called 'vhds' within a storage account in the same region as your cluster in using the Azure portal. Note the URL of the container for the cluster creation script below.
+* Create a container called 'vhds' within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
 * Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
-* Create a cluster discovery url for CoreOS by navigating to https://discovery.etcd.io/new and then uncommenting line 8 in deis-cloud-init-with-disk.yml and pasting this url there.
 
 With that, let's run the azure-coreos-cluster script which will create the CoreOS cluster. Fill in the bracketed values with the values for your deployment you created above.
 
@@ -74,9 +84,9 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
          --pip
          --blob-container-url https://[blob container].blob.core.windows.net/vhds/
          --data-disk
-         --custom-data deis-cloud-init-with-disk.yml
+         --custom-data azure-user-data
 
-This script will by default provision a 3 node cluster but you can increase this with the --num-nodes parameter. Likewise, you can increase the vm size using the --vm-size, but it is not recommended to use smaller sized instances.
+This script will by default provision a 3 node cluster but you can increase this with the --num-nodes parameter. Likewise, you can increase the vm size using the --vm-size. It is not recommended that you use smaller than Large (A3) sized instances.
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members. For more information, see `optimal etcd cluster size`_.
 
@@ -90,12 +100,14 @@ See :ref:`configure-dns` for more information on properly setting up your DNS re
 Open HTTP (80) and deisctl (2222) Ports
 ---------------------------------------
 
-Using the Azure portal or command line, open ports 80 (HTTP) and 2222 (deis) on each instance of your CoreOS cluster with a load balancing set that spreads the load across all of your cluster instances. For instance, if you have a cluster instance called deis-coreos-0, you can open these two ports with the following (do the same for all of the instances of your cluster):
+Using the Azure portal or command line, open ports 80 (HTTP) and 2222 (deis) on each instance of your CoreOS cluster with a load balancing set that spreads the load across all of your cluster instances. For instance, if you have a cluster instance called deis-coreos-0, you can open these two ports with the following:
 
 .. code-block:: console
 
-    azure vm endpoint create deis-coreos-0 80 80 --lb-set-name http
-    azure vm endpoint create deis-coreos-0 2222 2222 --lb-set-name deis
+    $ azure vm endpoint create deis-coreos-0 80 80 --lb-set-name http
+    $ azure vm endpoint create deis-coreos-0 2222 2222 --lb-set-name deis
+
+Do the same for all of the instances of your cluster.
 
 Install Deis Platform
 ---------------------
