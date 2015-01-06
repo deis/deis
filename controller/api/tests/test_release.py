@@ -254,12 +254,18 @@ class ReleaseTest(TransactionTestCase):
         requests should return a 404.
         """
         app_id = 'autotest'
-        url = '/v1/apps'
+        base_url = '/v1/apps'
         body = {'id': app_id}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
+        response = self.client.post(base_url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # push a new build
+        url = '{base_url}/{app_id}/builds'.format(**locals())
+        body = {'image': 'test'}
+        response = self.client.post(
+            url, json.dumps(body), content_type='application/json',
+            HTTP_AUTHORIZATION='token {}'.format(self.token))
         # update config to roll a new release
-        url = '/v1/apps/{app_id}/config'.format(**locals())
+        url = '{base_url}/{app_id}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
         response = self.client.post(
             url, json.dumps(body), content_type='application/json',
@@ -267,6 +273,6 @@ class ReleaseTest(TransactionTestCase):
         unauthorized_user = User.objects.get(username='autotest2')
         unauthorized_token = Token.objects.get(user=unauthorized_user).key
         # try to rollback
-        url = '{}/{}/releases/rollback'.format(url, app_id)
+        url = '{base_url}/{app_id}/releases/rollback/'.format(**locals())
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)

@@ -36,6 +36,8 @@ class IsAppUser(permissions.BasePermission):
     an app-related model.
     """
     def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
         if isinstance(obj, models.App) and obj.owner == request.user:
             return True
         elif hasattr(obj, 'app') and obj.app.owner == request.user:

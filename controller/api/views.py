@@ -231,7 +231,7 @@ class AppViewSet(OwnerViewSet):
                         content_type='text/plain')
 
     def destroy(self, request, **kwargs):
-        obj = get_object_or_404(self.model, id=kwargs['id'])
+        obj = self.get_object()
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -368,6 +368,7 @@ class AppReleaseViewSet(BaseAppViewSet):
         """
         try:
             app = get_object_or_404(models.App, id=self.kwargs['id'])
+            self.check_object_permissions(self.request, app)
             release = app.release_set.latest()
             version_to_rollback_to = release.version - 1
             if request.DATA.get('version'):
