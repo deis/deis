@@ -6,11 +6,13 @@ coreos:
       content: |
         [Unit]
         Description=Formats the ephemeral drive
+        ConditionPathExists=!/etc/azure-formatted
         [Service]
         Type=oneshot
         RemainAfterExit=yes
         ExecStart=/usr/sbin/wipefs -f /dev/sdc
         ExecStart=/usr/sbin/mkfs.btrfs -f /dev/sdc
+        ExecStart=/bin/touch /etc/azure-formatted
     - name: var-lib-docker.mount
       command: start
       content: |
