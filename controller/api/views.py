@@ -231,7 +231,7 @@ class AppViewSet(OwnerViewSet):
                         content_type='text/plain')
 
     def destroy(self, request, **kwargs):
-        obj = get_object_or_404(self.model, id=kwargs['id'])
+        obj = self.get_object()
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
