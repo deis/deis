@@ -82,6 +82,7 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
          --location "West US"    
          --vm-size Large  
          --pip
+         --deis
          --blob-container-url https://[blob container].blob.core.windows.net/vhds/
          --data-disk
          --custom-data azure-user-data
