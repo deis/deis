@@ -117,4 +117,4 @@ class DomainTest(TestCase):
         body = {'domain': 'example.com'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)

@@ -163,8 +163,9 @@ class TestAppPerms(TestCase):
             response = self.client.get("/v1/apps/{}/{}/".format(app_id, model),
                                        HTTP_AUTHORIZATION='token {}'.format(self.token2))
             msg = "Failed: status '%s', and data '%s'" % (response.status_code, response.data)
-            self.assertEqual(response.status_code, 404, msg=msg)
-            self.assertEqual(response.data['detail'], 'Not found', msg=msg)
+            self.assertEqual(response.status_code, 403, msg=msg)
+            self.assertEqual(response.data['detail'],
+                             'You do not have permission to perform this action.', msg=msg)
         # TODO: test that git pushing to the app fails
         # give user 2 permission to user 1's app
         url = "/v1/apps/{}/perms".format(app_id)
@@ -194,7 +195,7 @@ class TestAppPerms(TestCase):
         body = {'username': 'autotest-2'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete(self):
         # give user 2 permission to user 1's app
@@ -213,7 +214,7 @@ class TestAppPerms(TestCase):
         url = "/v1/apps/{}/perms/{}".format(app_id, 'autotest-2')
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
         self.assertIsNone(response.data)
         # delete permission to user 1's app
         response = self.client.delete(url, content_type='application/json',
@@ -226,7 +227,7 @@ class TestAppPerms(TestCase):
         # delete permission to user 1's app again, expecting an error
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_list(self):
         # check that user 1 sees her lone app and user 2's app
@@ -259,7 +260,7 @@ class TestAppPerms(TestCase):
         response = self.client.get(
             "/v1/apps/{}/perms".format(app_id), content_type='application/json',
             HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
 
     def test_unauthorized_user_cannot_modify_perms(self):
         """
@@ -279,4 +280,4 @@ class TestAppPerms(TestCase):
         body = {'username': unauthorized_user.username}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)

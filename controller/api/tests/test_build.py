@@ -212,8 +212,8 @@ class BuildTest(TransactionTestCase):
         """
         An unauthorized user should not be able to modify other builds.
 
-        Since an unauthorized user should not know about the application at all, these
-        requests should return a 404.
+        Since an unauthorized user can't access the application, these
+        requests should return a 403.
         """
         app_id = 'autotest'
         url = '/v1/apps'
@@ -226,4 +226,4 @@ class BuildTest(TransactionTestCase):
         body = {'image': 'foo'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)

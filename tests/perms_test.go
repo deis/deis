@@ -53,7 +53,7 @@ func permsCreateAdminTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func permsCreateAppTest(t *testing.T, params, user *utils.DeisTestConfig) {
 	utils.Execute(t, authLoginCmd, user, false, "")
-	utils.Execute(t, permsCreateAppCmd, user, true, "404 NOT FOUND")
+	utils.Execute(t, permsCreateAppCmd, user, true, "403 FORBIDDEN")
 	utils.Execute(t, authLoginCmd, params, false, "")
 	utils.Execute(t, permsCreateAppCmd, params, false, "")
 	utils.CheckList(t, permsListAppCmd, params, "test1", false)
@@ -66,7 +66,7 @@ func permsDeleteAdminTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func permsDeleteAppTest(t *testing.T, params, user *utils.DeisTestConfig) {
 	utils.Execute(t, authLoginCmd, user, false, "")
-	utils.Execute(t, permsDeleteAppCmd, user, true, "404 NOT FOUND")
+	utils.Execute(t, permsDeleteAppCmd, user, true, "403 FORBIDDEN")
 	utils.Execute(t, authLoginCmd, params, false, "")
 	utils.Execute(t, permsDeleteAppCmd, params, false, "")
 	utils.CheckList(t, permsListAppCmd, params, "test1", true)
