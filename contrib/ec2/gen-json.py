@@ -14,7 +14,7 @@ FORMAT_EPHEMERAL_VOLUME = '''
   Type=oneshot
   RemainAfterExit=yes
   ExecStart=/usr/sbin/wipefs -f /dev/xvdb
-  ExecStart=/usr/sbin/mkfs.ext4 /dev/xvdb
+  ExecStart=/usr/sbin/mkfs.ext3 /dev/xvdb
   ExecStart=/bin/touch /etc/ephemeral-volume-formatted
 '''
 MOUNT_EPHEMERAL_VOLUME = '''
@@ -25,7 +25,7 @@ MOUNT_EPHEMERAL_VOLUME = '''
   [Mount]
   What=/dev/xvdb
   Where=/media/ephemeral
-  Type=ext4
+  Type=ext3
 '''
 PREPARE_ETCD_DATA_DIRECTORY = '''
   [Unit]
