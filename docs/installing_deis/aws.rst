@@ -135,6 +135,15 @@ For example, if your VPC has ID ``vpc-a26218bf`` and consists of the subnets ``s
     export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
     export VPC_ZONES=us-east-1b,us-east-1c
 
+Change ELB Scheme
+------------------------
+For load balancers attached to an Amazon VPC, this parameter can be used to specify the type of load balancer to use. 
+Specify internal to create an internal load balancer with a DNS name that resolves to private IP addresses or 
+internet-facing to create a load balancer with a publicly resolvable DNS name, which resolves to public IP addresses.
+
+.. code-block:: console
+
+    export ELB_SCHEME=internet-facing|internal
 
 Run the Provision Script
 ------------------------

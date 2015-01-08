@@ -264,6 +264,7 @@
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "DependsOn" : "GatewayToInternet",
       "Properties": {
+        "Scheme" : "internet-facing",
         "HealthCheck": {
           "HealthyThreshold": "4",
           "Interval": "15",

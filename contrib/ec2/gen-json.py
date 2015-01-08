@@ -83,6 +83,11 @@ template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTA
 VPC_ID = os.getenv('VPC_ID', None)
 VPC_SUBNETS = os.getenv('VPC_SUBNETS', None)
 VPC_ZONES = os.getenv('VPC_ZONES', None)
+ELB_SCHEME = os.getenv('ELB_SCHEME', None)
+
+if ELB_SCHEME:
+  # Update ELB Scheme
+  template['Resources']['DeisWebELB']['Properties']['Scheme'] = ELB_SCHEME
 
 if VPC_ID and VPC_SUBNETS and VPC_ZONES and len(VPC_SUBNETS.split(',')) == len(VPC_ZONES.split(',')):
   # skip VPC, subnet, route, and internet gateway creation
