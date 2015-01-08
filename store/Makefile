@@ -9,8 +9,6 @@ GATEWAY_IMAGE = $(IMAGE_PREFIX)store-gateway:$(BUILD_TAG)
 GATEWAY_DEV_IMAGE = $(DEV_REGISTRY)/$(GATEWAY_IMAGE)
 METADATA_IMAGE = $(IMAGE_PREFIX)store-metadata:$(BUILD_TAG)
 METADATA_DEV_IMAGE = $(DEV_REGISTRY)/$(METADATA_IMAGE)
-MOCK_IMAGE = $(IMAGE_PREFIX)store-mock:$(BUILD_TAG)
-MOCK_DEV_IMAGE = $(DEV_REGISTRY)/$(MOCK_IMAGE)
 MONITOR_IMAGE = $(IMAGE_PREFIX)store-monitor:$(BUILD_TAG)
 MONITOR_DEV_IMAGE = $(DEV_REGISTRY)/$(MONITOR_IMAGE)
 
@@ -22,7 +20,6 @@ build: check-docker
 		docker build -t deis/store-$(I):$(BUILD_TAG) $(I)/ ; \
 		rm $(I)/Dockerfile ; \
 	)
-	docker build -t $(MOCK_IMAGE) mock/
 
 clean: check-docker check-registry
 	$(foreach I, $(BUILT_IMAGES), \
@@ -77,8 +74,6 @@ push: check-registry
 	docker push $(GATEWAY_DEV_IMAGE)
 	docker tag $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
 	docker push $(METADATA_DEV_IMAGE)
-	docker tag $(MOCK_IMAGE) $(MOCK_DEV_IMAGE)
-	docker push $(MOCK_DEV_IMAGE)
 	docker tag $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
 	docker push $(MONITOR_DEV_IMAGE)
 
@@ -92,7 +87,6 @@ release:
 	docker push $(DAEMON_IMAGE)
 	docker push $(GATEWAY_IMAGE)
 	docker push $(METADATA_IMAGE)
-	docker push $(MOCK_IMAGE)
 	docker push $(MONITOR_IMAGE)
 
 deploy: build dev-release restart

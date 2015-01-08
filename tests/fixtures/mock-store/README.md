@@ -1,35 +1,35 @@
 # Mock S3 storage
 
-The objective is to not require a Ceph cluster in the test to provide a S3 compatible service.
-This component uses [mock-s3](https://github.com/jserver/mock-s3).
+The objective is to provide an S3-compatible service for tests, so a Ceph cluster
+is not required. This component uses [mock-s3](https://github.com/jserver/mock-s3).
 
 ## Usage:
 
 ```
-docker run -p 8888:8888 -e HOST=$COREOS_PRIVATE_IPV4 -v <local directory>:/app/storage deis/store-mock
+docker run -p 8888:8888 -e HOST=$COREOS_PRIVATE_IPV4 -v <local directory>:/app/storage deis/mock-store
 ```
 
 *The use of a local directory `(-v <local directory>)` is optional*
 
 
-`mock-s3` does not requires an ACCESS_KEY and SECRET_KEY (there is no concept of permissions) but this
-component will generate both keep compatibility with `deis-store-gateway`
+`mock-s3` does not requires an `ACCESS_KEY` and `SECRET_KEY` (there is no concept of permissions), but this
+component will generate both to keep compatibility with `deis-store-gateway`.
 
 ## Containers
 
-The mock store component is composed by one container:
+The mock store component is composed of one container:
 
-* [store-mock](https://index.docker.io/u/deis/store-mock/) - the blob store gateway,
+* [mock-store](https://index.docker.io/u/deis/mock-store/) - the blob store gateway,
 offering a S3-compatible bucket APIs using the local filesystem as storage.
 
 ## Usage
 
 Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
-install, and start **deis/store-mock**.
+install, and start **deis/mock-store**.
 
 ## License
 
-© 2014 OpDemand LLC
+© 2015 OpDemand LLC
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may
 not use this file except in compliance with the License. You may obtain
