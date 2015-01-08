@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import json
 import mock
 import requests
+import unittest
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
@@ -539,3 +540,29 @@ class ContainerTest(TransactionTestCase):
         build.sha = 'somereallylongsha'
         rc, output = c.run('echo hi')
         self.assertEqual(json.loads(output)['entrypoint'], '/runner/init')
+
+    @unittest.expectedFailure
+    def test_scale_with_unauthorized_user_returns_403(self):
+        """An unauthorized user should not be able to access an app's resources.
+
+        If an unauthorized user is trying to scale an app he or she does not have access to, it
+        should return a 403. Currently, it returns a 404. FIXME!
+        """
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        unauthorized_user = User.objects.get(username='autotest2')
+        unauthorized_token = Token.objects.get(user=unauthorized_user).key
+        # scale up with unauthorized user
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 403)
