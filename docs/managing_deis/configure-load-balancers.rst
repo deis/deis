@@ -30,9 +30,7 @@ EC2
 ===
 
 The Deis provisioning scripts for EC2 automatically create an Elastic Load Balancer for your Deis
-cluster. However, ELBs on EC2 have a default timeout of 60 seconds, which will disrupt a ``git push``
-when using Deis. You should manually `increase this timeout`_ to 1200 seconds to match the timeout
-on the router and application unit files.
+cluster.
 
 Rackspace
 =========
@@ -52,8 +50,6 @@ You'll need to create two load balancers on Rackspace, as follows:
       Virtual IP Shared VIP on Another Load Balancer (select Load Balancer 1)
       Port 2222
       Protocol TCP
-
-.. _`increase this timeout`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/config-idle-timeout.html
 
 Google Compute Engine
 =====================
