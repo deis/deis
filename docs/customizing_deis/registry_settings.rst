@@ -19,19 +19,19 @@ Settings set by registry
 --------------------------
 The following etcd keys are set by the registry component, typically in its /bin/boot script.
 
-===========================              =================================================================================
+===================================      =================================================================================
 setting                                  description
-===========================              =================================================================================
+===================================      =================================================================================
 /deis/registry/auth/docker/username      username in docker public registry
 /deis/registry/auth/docker/password      password in docker public registry
-/deis/registry/auth/{url}/username       username in private registry. {url} contains the hostname and port. Only uses https
-/deis/registry/auth/{url}/password       password in private registry. {url} contains the hostname and port. Only uses https
+/deis/registry/auth/url/username         username in private registry. This will force https. (url: hostname and port)
+/deis/registry/auth/url/password         password in private registry. This will force https. (url: hostname and port)
 /deis/registry/bucketName                store component bucket used for registry image layers (default: registry)
 /deis/registry/host                      IP address of the host running registry
 /deis/registry/port                      port used by the registry service (default: 5000)
 /deis/registry/protocol                  protocol for registry (default: http)
 /deis/registry/secretKey                 used for secrets (default: randomly generated)
-===========================              =================================================================================
+===================================      =================================================================================
 
 Settings used by registry
 ---------------------------
