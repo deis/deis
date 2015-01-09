@@ -277,6 +277,12 @@ class AppTest(TestCase):
         url = '{}/{}/logs'.format(base_url, app_id)
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
+        url = '{}/{}'.format(base_url, app_id)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.delete(url,
+                                      HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
+        self.assertEqual(response.status_code, 403)
 
     def test_app_info_not_showing_wrong_app(self):
         app_id = 'autotest'
