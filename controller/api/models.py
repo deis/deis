@@ -845,7 +845,7 @@ def _etcd_purge_key(**kwargs):
         _etcd_client.delete('/deis/builder/users/{}/{}'.format(
             key.owner.username, fingerprint(key.public)))
     except KeyError:
-        # if _etcd_publish_key() wasn't called, ignore KeyError
+        # If the ETCD key does not exist, ignore KeyError.
         pass
 
 
@@ -870,7 +870,7 @@ def _etcd_purge_app(**kwargs):
     try:
         _etcd_client.delete('/deis/services/{}'.format(appname), dir=True, recursive=True)
     except KeyError:
-        # if _etcd_create_app() wasn't called, ignore KeyError
+        # If the ETCD key does not exist, ignore KeyError.
         pass
 
 
