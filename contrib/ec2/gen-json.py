@@ -37,7 +37,7 @@ PREPARE_ETCD_DATA_DIRECTORY = '''
   Type=oneshot
   RemainAfterExit=yes
   ExecStart=/usr/bin/mkdir -p /media/ephemeral/etcd
-  ExecStart=/usr/bin/chown -R etcd /media/ephemeral/etcd
+  ExecStart=/usr/bin/chown -R etcd:etcd /media/ephemeral/etcd
 '''
 FORMAT_DOCKER_VOLUME = '''
   [Unit]
@@ -62,12 +62,19 @@ MOUNT_DOCKER_VOLUME = '''
   Type=btrfs
 '''
 
+new_units = [
+  dict({'name': 'format-ephemeral-volume.service', 'command': 'start', 'content': FORMAT_EPHEMERAL_VOLUME}),
+  dict({'name': 'media-ephemeral.mount', 'command': 'start', 'content': MOUNT_EPHEMERAL_VOLUME}),
+  dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}),
+  dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
+  dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME})
+]
+
 data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
-data['coreos']['units'].append(dict({'name': 'format-ephemeral-volume.service', 'command': 'start', 'content': FORMAT_EPHEMERAL_VOLUME}))
-data['coreos']['units'].append(dict({'name': 'media-ephemeral.mount', 'command': 'start', 'content': MOUNT_EPHEMERAL_VOLUME}))
-data['coreos']['units'].append(dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}))
-data['coreos']['units'].append(dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}))
-data['coreos']['units'].append(dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME}))
+
+# coreos-cloudinit will start the units in order, so we want these to be processed before etcd/fleet
+# are started
+data['coreos']['units'] = new_units + data['coreos']['units']
 
 # configure etcd to use the ephemeral drive
 data['coreos']['etcd']['data-dir'] = '/media/ephemeral/etcd'
