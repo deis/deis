@@ -49,6 +49,7 @@ etcd_set_default secretKey ${DEIS_SECRET_KEY:-`openssl rand -base64 64 | tr -d '
 etcd_set_default builderKey ${DEIS_BUILDER_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 etcd_set_default registrationEnabled 1
 etcd_set_default webEnabled 0
+etcd_set_default unitHostname default
 
 # safely create required keyspaces
 etcd_safe_mkdir /deis/services

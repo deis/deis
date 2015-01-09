@@ -44,3 +44,5 @@ REGISTRATION_ENABLED = bool({{ .deis_controller_registrationEnabled }})
 {{ if .deis_controller_webEnabled }}
 WEB_ENABLED = bool({{ .deis_controller_webEnabled }})
 {{ end }}
+
+UNIT_HOSTNAME = '{{ or (.deis_controller_unitHostname) "default" }}'
