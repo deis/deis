@@ -22,6 +22,10 @@ The following etcd keys are set by the registry component, typically in its /bin
 ===========================              =================================================================================
 setting                                  description
 ===========================              =================================================================================
+/deis/registry/auth/docker/username      username in docker public registry
+/deis/registry/auth/docker/password      password in docker public registry
+/deis/registry/auth/{url}/username       username in private registry. {url} contains the hostname and port. Only uses https
+/deis/registry/auth/{url}/password       password in private registry. {url} contains the hostname and port. Only uses https
 /deis/registry/bucketName                store component bucket used for registry image layers (default: registry)
 /deis/registry/host                      IP address of the host running registry
 /deis/registry/port                      port used by the registry service (default: 5000)
@@ -66,5 +70,35 @@ registry:
 Be sure that your custom image functions in the same way as the `stock registry image`_ shipped with
 Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
-.. _`stock registry image`: https://github.com/deis/deis/tree/master/registry
+Private registry authentication
+-------------------------------
+
+Docker provides the command `docker login` to authenticate users. It is possible to use the generated configuration file
+in deis to gain access to registries with authentication
+
+Procedure
+---------
+
+In any node of the cluster follow the docker procedure to use an account (`docker login`) with any private registry required
+
+.. note::
+    To use a private registry use: docker login https://example.com:5000
+
+
+Compile and run the utility read-dockercfg located in `docker-authentication`
+
+.. code-block:: console
+
+    $ read-dockercfg [-dockercfg optional path to the .dockercfg directory]
+
+.. note::
+    read-dockercfg will read the content of the file .dockercfg and set the required keys in etcd
+
+
+Copy the file $HOME/.dockercfg to all the nodes in the cluster.
+Also copy the file to the /root folder (docker run as root in coreos)
+
+.. _`stock registry image`: https://github.com/deis/deis/tree/master/registr
 .. _`README`: https://github.com/dotcloud/docker-registry/blob/master/README.md
+.. _`docker login`: https://docs.docker.com/reference/commandline/cli/#login
+.. _`docker-authentication`: https://github.com/deis/deis/tree/master/contrib/docker-authentication

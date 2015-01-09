@@ -1,0 +1,9 @@
+[template]
+src   = "auth.json"
+dest  = "/docker-registry/config/auth.json"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/registry",
+]

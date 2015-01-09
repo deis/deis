@@ -26,9 +26,9 @@ curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | 
 useradd -s /bin/bash registry
 
 # add the docker registry source from github
-git clone https://github.com/deis/docker-registry /docker-registry && \
+git clone https://github.com/aledbf/docker-registry /docker-registry && \
     cd /docker-registry && \
-    git checkout eb62607 && \
+    git checkout 4f9f999 && \
     chown -R registry:registry /docker-registry
 
 # install boto configuration
