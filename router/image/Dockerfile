@@ -23,3 +23,6 @@ ADD . /app
 ADD nginx.tgz /opt/nginx
 
 RUN rm nginx.tgz
+
+ENV DEIS_RELEASE 1.2.0-dev
+

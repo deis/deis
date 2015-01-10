@@ -6,3 +6,6 @@ ENV ROUTESPATH /tmp
 CMD ["/bin/logspout"]
 
 ADD logspout /bin/logspout
+
+ENV DEIS_RELEASE 1.2.0-dev
+

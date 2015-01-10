@@ -60,3 +60,6 @@ ADD templates/shim.dockerfile /home/git/
 ADD etc /etc
 ADD . /app
 RUN chown -R root:root /app
+
+ENV DEIS_RELEASE 1.2.0-dev
+

@@ -30,10 +30,16 @@ Patch Release
 
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
         README.md \
+        builder/image/Dockerfile \
+        builder/slugbuilder/Dockerfile \
+        builder/slugrunner/Dockerfile \
+        cache/Dockerfile \
         client/deis.py \
         client/setup.py \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \
+        controller/Dockerfile \
+        database/Dockerfile \
         deisctl/cmd/cmd.go \
         deisctl/deis-version \
         docs/installing_deis/install-deisctl.rst \
@@ -41,6 +47,12 @@ Patch Release
         docs/managing_deis/upgrading-deis.rst \
         docs/reference/api-v1.1.rst \
         docs/troubleshooting_deis/index.rst \
+        logger/image/Dockerfile \
+        logspout/image/Dockerfile \
+        publisher/image/Dockerfile \
+        registry/Dockerfile \
+        router/image/Dockerfile \
+        store/base/Dockerfile \
         version/version.go
 
 - Update the CHANGELOG to include all commits since the last release

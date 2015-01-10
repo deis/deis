@@ -21,3 +21,6 @@ WORKDIR /app
 CMD ["/app/bin/boot"]
 EXPOSE 5432
 ADD . /app
+
+ENV DEIS_RELEASE 1.2.0-dev
+
