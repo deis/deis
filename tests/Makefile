@@ -1,3 +1,7 @@
+include ../includes.mk
+
+MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store:latest
+
 test: test-smoke
 
 test-smoke: test-style
@@ -21,6 +25,9 @@ setup-root-gotools:
 
 setup-gotools:
 	go get -v github.com/golang/lint/golint
+
+mock-store:
+	docker build -t $(MOCK_STORE_IMAGE) fixtures/mock-store/
 
 test-style:
 	go vet -x ./...
