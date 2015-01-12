@@ -65,6 +65,17 @@ coreos:
       ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
       ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
       ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
+  - name: disable-transparent-huge-pages.service
+    command: start
+    content: |
+      [Unit]
+      Description=Disable Transparent Huge Pages
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c "until (echo 'Waiting for sys mount...' && cat /sys/kernel/mm/transparent_hugepage/enabled >/dev/null 2>&1); do sleep 1; done"
+      ExecStart=/bin/sh -c "echo never | tee /sys/kernel/mm/transparent_hugepage/enabled >/dev/null 2>&1"
+      ExecStart=/bin/sh -c "echo never | tee /sys/kernel/mm/transparent_hugepage/defrag >/dev/null 2>&1"
 write_files:
   - path: /etc/deis-release
     content: |
