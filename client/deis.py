@@ -490,7 +490,7 @@ class DeisClient(object):
         else:
             try:
                 subprocess.check_call(
-                    ['git', 'remote', 'add', '-f', 'deis', git_remote],
+                    ['git', 'remote', 'add', 'deis', git_remote],
                     stdout=subprocess.PIPE)
                 self._logger.info('Git remote deis added')
             except subprocess.CalledProcessError:
