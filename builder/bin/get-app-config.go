@@ -85,15 +85,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	// raw body content
+	body, _ := ioutil.ReadAll(res.Body)
+
 	if err != nil || res.StatusCode != 200 {
 		fmt.Println("failed retrieving config from controller")
-		fmt.Println(res.Body)
+		fmt.Println(string(body))
 		os.Exit(1)
 	}
 
 	config, err := builder.ParseConfig(res)
 	if err != nil {
 		fmt.Println("failed parsing config from controller")
+		fmt.Println(string(body))
 		os.Exit(1)
 	}
 	toString, err := json.Marshal(config)
