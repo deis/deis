@@ -68,7 +68,8 @@ Create CoreOS Cluster
 
 With the management certificate and cloud config in place, we are ready to create our cluster.
 
-* Create a container called 'vhds' within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
+* Create a container called 'vhds' within a storage account in the same region as your cluster using the Azure portal. To do this, press "+ New" on the sidebar from within the portal and select Data Services -> Storage -> Quick Create. Choose an appropriate name for the container, select the location that your cluster will be hosted in, and then create the storage account. Once the account is created, select the "Containers" tab item inside of the account, press "Add" to create a container, name it 'vhds', and press create. Once the container is created, note the URL of the container for the cluster creation script below.
+
 * Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
 
 With that, let's run the azure-coreos-cluster script which will create the CoreOS cluster. Fill in the bracketed values with the values for your deployment you created above.
@@ -77,10 +78,10 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
 
     $ ./azure-coreos-cluster [cloud service name]
          --subscription [subscription id]
-         --azure-cert azure-cert.pem 
+         --azure-cert azure-cert.pem
          --num-nodes 3
-         --location "West US"    
-         --vm-size Large  
+         --location "West US"
+         --vm-size Large
          --pip
          --deis
          --blob-container-url https://[blob container].blob.core.windows.net/vhds/
@@ -104,7 +105,7 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
-IMPORTANT NOTE: Once you have installed deisctl, you will need to use a customized deis-builder component for Azure since Azure uses routable IP addresses for each instance. Configure this using the following command before you run 'deisctl install platform': 
+IMPORTANT NOTE: Once you have installed deisctl, you will need to use a customized deis-builder component for Azure since Azure uses routable IP addresses for each instance. Configure this using the following command before you run 'deisctl install platform':
 
 .. code-block:: console
 
