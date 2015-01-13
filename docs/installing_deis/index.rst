@@ -23,6 +23,7 @@ with CoreOS.
     quick-start
     system-requirements
     aws
+    azure
     digitalocean
     gce
     rackspace
