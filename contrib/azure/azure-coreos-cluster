@@ -85,7 +85,10 @@ if not args.ssh_cert and not args.ssh_thumb:
 # Setup custom data
 if args.custom_data:
     with open(args.custom_data, 'r') as f:
-        cloud_init = f.read()
+      if not os.path.exists(args.custom_data):
+        print "Couldn't find the user-data file. Did you remember to run `create-azure-user-data`?"
+        sys.exit(1)
+      cloud_init = f.read()
     f.closed
 else:
     if args.discovery_service_url:
@@ -101,7 +104,7 @@ with open(args.ssh_cert) as f:
     service_cert_file_data = base64.b64encode(f.read())
 f.closed
 
-def wait_for_async(request_id, operation_name, timeout):
+def wait_for_async(request_id, timeout):
     count = 0
     result = sms.get_operation_status(request_id)
     while result.status == 'InProgress':
@@ -110,14 +113,13 @@ def wait_for_async(request_id, operation_name, timeout):
             print('Timed out waiting for async operation to complete.')
             return
         time.sleep(5)
-        print('.')
+        print('.'),
+        sys.stdout.flush()
         result = sms.get_operation_status(request_id)
-        print(vars(result))
         if result.error:
             print(result.error.code)
             print(vars(result.error))
-    print(result.status)
-    print(operation_name + ' took:' + str(count*5) + 's')
+    print result.status + ' in ' + str(count*5) + 's'
 
 def linux_config(hostname, args):
     pk = PublicKey(args.ssh_thumb,
@@ -163,15 +165,24 @@ def data_hd(target_container_url, target_blob_name, target_lun, target_disk_size
 sms = ServiceManagementService(args.subscription, args.azure_cert)
 
 #Create the cloud service
-sms.create_hosted_service(
-    args.cloud_service_name, label=args.cloud_service_name, location=args.location)
-print('created service ' + args.cloud_service_name)
-time.sleep(2)
+try:
+  print 'Creating the hosted service...',
+  sys.stdout.flush()
+  sms.create_hosted_service(
+      args.cloud_service_name, label=args.cloud_service_name, location=args.location)
+  print('Successfully created hosted service ' + args.cloud_service_name)
+  sys.stdout.flush()
+  time.sleep(2)
+except WindowsAzureConflictError:
+  print "Hosted service {} already exists. Delete it or try again with a different name.".format(args.cloud_service_name)
+  sys.exit(1)
 
 #upload ssh cert to cloud-service
+print 'Uploading SSH certificate...',
+sys.stdout.flush()
 result = sms.add_service_certificate(args.cloud_service_name,
                                      service_cert_file_data, SERVICE_CERT_FORMAT, '')
-wait_for_async(result.request_id, 'upload cert', 15)
+wait_for_async(result.request_id, 15)
 
 def get_vm_name(args, i):
     return args.cloud_service_name + '-' + args.vm_name_prefix + '-' + str(i)
@@ -199,19 +210,31 @@ for i in range(args.num_nodes):
     else:
         data_disks = None
 
-    if i == 0:
-        result = sms.create_virtual_machine_deployment(
-                    args.cloud_service_name, deployment_name=args.cloud_service_name,
-                    deployment_slot='production', label=vm_name,
-                    role_name=vm_name, system_config=system, os_virtual_hard_disk=os_hd,
-                    role_size=args.vm_size, network_config=network, data_virtual_hard_disks=data_disks)
-    else:
-        result = sms.add_role(
-                    args.cloud_service_name, deployment_name=args.cloud_service_name,
-                    role_name=vm_name,
-                    system_config=system, os_virtual_hard_disk=os_hd,
-                    role_size=args.vm_size, network_config=network, data_virtual_hard_disks=data_disks)
-    wait_for_async(result.request_id, 'create VM' + vm_name, 30)
+    try:
+      if i == 0:
+          result = sms.create_virtual_machine_deployment(
+                      args.cloud_service_name, deployment_name=args.cloud_service_name,
+                      deployment_slot='production', label=vm_name,
+                      role_name=vm_name, system_config=system, os_virtual_hard_disk=os_hd,
+                      role_size=args.vm_size, network_config=network, data_virtual_hard_disks=data_disks)
+      else:
+          result = sms.add_role(
+                      args.cloud_service_name, deployment_name=args.cloud_service_name,
+                      role_name=vm_name,
+                      system_config=system, os_virtual_hard_disk=os_hd,
+                      role_size=args.vm_size, network_config=network, data_virtual_hard_disks=data_disks)
+    except WindowsAzureError as e:
+      if "Forbidden" in str(e):
+        print "Unable to use this CoreOS image. This usually means a newer image has been published."
+        print "See https://coreos.com/docs/running-coreos/cloud-providers/azure/ for the latest stable image,"
+        print "and supply it to this script with --coreos-image. If it works, please open a pull request to update this script."
+        sys.exit(1)
+      else:
+        pass
+
+    print 'Creating VM ' + vm_name + '...',
+    sys.stdout.flush()
+    wait_for_async(result.request_id, 30)
     vms.append({'name':vm_name,
                 'host':args.cloud_service_name + '.cloudapp.net',
                 'port':ssh_port,
@@ -229,18 +252,30 @@ def get_ips(service_name, deployment_name):
 if args.pip:
     ips = []
     ips = get_ips(args.cloud_service_name, args.cloud_service_name)
-    print 'dns file ----'
+    print ''
+    print '-------'
+    print "You'll need to configure DNS records for a domain you wish to use with your Deis cluster."
+    print 'For convenience, the public IP addresses are printed below, along with sane DNS timeouts.'
+    print ''
     for ip in ips:
         print '@ 10800 IN A ' + ip
     print '* 10800 IN CNAME @'
-    print 'end dns file ----'
+    print '-------'
+    print 'For more information, see: http://docs.deis.io/en/latest/managing_deis/configure-dns/'
+    print ''
 
 #print ~/.ssh/config
-print '~/.ssh/config ----'
+print ''
+print '-------'
+print "Instances on Azure don't use typical SSH ports. It is recommended to configure ~/.ssh/config"
+print 'so the instances can easily be referenced when logging in via SSH. For convenience, the config'
+print 'directives for your instances are below:'
+print ''
 for vm in vms:
     print 'Host ' + vm['name']
     print '    HostName ' + vm['host']
     print '    Port ' + str(vm['port'])
     print '    User ' + vm['user']
     print '    IdentityFile ' + vm['identity']
-print 'end ~/.ssh/config ----'
+print '-------'
+print ''
