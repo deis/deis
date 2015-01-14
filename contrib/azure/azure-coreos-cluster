@@ -204,7 +204,7 @@ for i in range(args.num_nodes):
     network = network_config(subnet_name=args.subnet_names, port=ssh_port, public_ip_name=pip_name)
     #specifiy the data disk, important to start at lun = 0
     if args.data_disk:
-        data_disk = data_hd(args.blob_container_url, vm_name + '-data.vhd', 0, 25)
+        data_disk = data_hd(args.blob_container_url, vm_name + '-data.vhd', 0, 100)
         data_disks = DataVirtualHardDisks()
         data_disks.data_virtual_hard_disks.append(data_disk)
     else:
