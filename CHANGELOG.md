@@ -1,3 +1,10 @@
+### v1.2.0 -> v1.2.1
+
+#### Maintenance
+
+ - [`3292b7c`](https://github.com/deis/deis/commit/3292b7c693b84f5789bbb12bee33ad61f2ec400d) release: update version to v1.2.1
+ - [`0d13d66`](https://github.com/deis/deis/commit/0d13d66ee40b6d41d6328b411b98521283a1300b) controller: update Django to 1.6.10 security release
+
 ### v1.1.1 -> v1.2.0
 
 #### Features
