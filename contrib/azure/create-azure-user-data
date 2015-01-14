@@ -64,10 +64,6 @@ def main():
 
     configuration["coreos"]["etcd"]["discovery"] = url
 
-    for config in configuration['write_files']:
-        if "DOCKER_OPTS" in config['content']:
-            config['content'] = '[Service]\nEnvironment="DOCKER_OPTS=--insecure-registry 0.0.0.0/0"\n'
-
     with azure_user_data as outfile:
         try:
             outfile.write("#cloud-config\n\n" + yaml.dump(configuration, default_flow_style=False))
