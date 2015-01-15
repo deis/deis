@@ -30,7 +30,9 @@ Note that you always use ``deis.<domain>`` to communicate with the controller.
 
 .. important::
 
-    The first user to register with Deis receives "superuser" privileges.
+    The first user to register with Deis receives "superuser" privileges. Additional users who
+    register will be ordinary users. It's also possible to disable user registration after creating
+    the superuser account. For details, see :ref:`disable_user_registration`.
 
 Upload Your SSH Public Key
 --------------------------
