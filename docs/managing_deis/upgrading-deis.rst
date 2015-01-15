@@ -178,8 +178,11 @@ Once all applications have been validated, the old cluster can be retired.
 Upgrading CoreOS
 ----------------
 
-By default, Deis disables CoreOS automatic updates. This is partially because of problems we've seen
-with etcd/fleet version incompatibilities as hosts in the cluster are upgraded one-by-one.
+By default, Deis disables CoreOS automatic updates. This is partially because in the case of a
+machine reboot, Deis components will be scheduled to a new host and will need a few minutes to start
+and restore to a running state. This results in a short downtime of the Deis control plane,
+which can be disruptive if unplanned.
+
 Additionally, because Deis customizes the CoreOS cloud-config file, upgrading the CoreOS host to
 a new version without accounting for changes in the cloud-config file could cause Deis to stop
 functioning properly.
