@@ -65,7 +65,7 @@ By default, the script will provision 3 servers. You can override this by settin
     $ export DEIS_NUM_INSTANCES=5
 
 Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always
-have an odd number of members. For more information, see `optimal etcd cluster size`_.
+have an odd number of members. For more information, see `etcd disaster recovery`_.
 
 Deis clusters of less than 3 nodes are unsupported.
 
@@ -178,5 +178,5 @@ start installing the platform.
 .. _`contrib/ec2`: https://github.com/deis/deis/tree/master/contrib/ec2
 .. _`cloudformation.json`: https://github.com/deis/deis/blob/master/contrib/ec2/cloudformation.json
 .. _`etcd`: https://github.com/coreos/etcd
-.. _`optimal etcd cluster size`: https://github.com/coreos/etcd/blob/master/Documentation/optimal-cluster-size.md
+.. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`PyYAML`: http://pyyaml.org/
