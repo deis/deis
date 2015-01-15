@@ -869,7 +869,8 @@ class DeisClient(object):
         """
         user = self._settings.get('username')
         if user:
-            self._logger.info(user)
+            self._logger.info(
+                'You are {} at {}'.format(user, self._settings['controller']))
         else:
             self._logger.info(
                 'Not logged in. Use `deis login` or `deis register` to get started.')
