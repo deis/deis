@@ -29,6 +29,8 @@ You can use the ``deis perms`` command to promote a user to an administrator:
 
     $ deis perms:create john --admin
 
+.. _disable_user_registration:
+
 Disabling user registration
 ---------------------------
 
