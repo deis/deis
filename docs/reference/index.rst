@@ -11,6 +11,8 @@ Reference Guide
 
     usage
     terms/index
+    domain-ssl
+    self-signed-certs
     client
     server/index
     api-v1.0
