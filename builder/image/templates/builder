@@ -75,10 +75,6 @@ if [ -f Dockerfile ]; then
     USING_DOCKERFILE=true
 fi
 
-if [ -f Procfile ]; then
-    PROCFILE=$(cat Procfile)
-fi
-
 # pull config from controller to be used during build
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/config"
 RESPONSE=$(/app/bin/get-app-config -url="$URL" -key="{{ .deis_controller_builderKey }}" -user=$USER -app=$APP_NAME)
@@ -139,23 +135,18 @@ puts-step "Pushing image to private registry"
 docker push $TMP_IMAGE  &>/dev/null
 echo
 
-if [ -f $TMP_DIR/slug.tgz ]; then
-    RELEASE_INFO=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | /app/bin/extract-types)
+# use Procfile if provided, otherwise try default process types from ./release
+if [ -f Procfile ]; then
+    PROCFILE=$(cat Procfile | /app/bin/yaml2json-procfile)
+elif [ -f $TMP_DIR/slug.tgz ]; then
+    PROCFILE=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | /app/bin/extract-types)
 else
-    RELEASE_INFO="{}"
-fi
-
-if [ "$RELEASE_INFO" == "{}" ]; then
-    if [ -f $TMP_DIR/Procfile ]; then
-        # fall back to Procfile if there's no default process types
-        # FIXME: refactor into slugbuilder
-        RELEASE_INFO=$(cat $TMP_DIR/Procfile | /app/bin/yaml2json-procfile)
-    fi
+    PROCFILE="{}"
 fi
 
 puts-step "Launching... "
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/build"
-DATA=$(/app/bin/generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$RELEASE_INFO" "$USING_DOCKERFILE")
+DATA=$(/app/bin/generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "$USING_DOCKERFILE")
 PUBLISH_RELEASE=$(echo "$DATA" | /app/bin/publish-release-controller -url=$URL -key={{ .deis_controller_builderKey }})
 
 CODE=$?
