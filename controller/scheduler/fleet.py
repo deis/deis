@@ -256,14 +256,27 @@ class FleetHTTPClient(object):
             rc, output = chan.recv_exit_status(), out.read()
             return rc, output
 
-        # wait for container to start
-        for _ in range(1200):
+        # wait for container to launch
+        for _ in range(60):
             rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
             if rc == 0:
                 break
             time.sleep(1)
         else:
-            raise RuntimeError('container failed to start on host')
+            raise RuntimeError('failed to create container')
+
+        # wait for container to start
+        for _ in range(2):
+            _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
+            if _rc != 0:
+                raise RuntimeError('failed to inspect container')
+            _container = json.loads(_output)
+            started_at = _container[0]["State"]["StartedAt"]
+            if not started_at.startswith('0001'):
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError('container failed to start')
 
         # wait for container to complete
         for _ in range(1200):
