@@ -38,9 +38,6 @@ RUN useradd -d $GITHOME $GITUSER
 RUN mkdir -p $GITHOME/.ssh && chown git:git $GITHOME/.ssh
 RUN chown -R $GITUSER:$GITUSER $GITHOME
 
-# let the git user run `sudo /home/git/builder` (not writeable)
-RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
-
 # HACK: import progrium/cedarish as a tarball
 # see https://github.com/deis/deis/issues/1027
 RUN curl -#SL -o /progrium_cedarish.tar.gz \
@@ -55,6 +52,11 @@ ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
 RUN addgroup --quiet --gid 2000 slug && useradd slug --uid=2000 --gid=2000
+
+# $GITUSER is added to docker group to use docker without sudo and to slug
+# group in order to share resources with the slug user
+RUN usermod -a -G docker $GITUSER
+RUN usermod -a -G slug $GITUSER
 
 ADD templates/shim.dockerfile /home/git/
 ADD etc /etc

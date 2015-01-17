@@ -102,8 +102,13 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=' -v '
     BUILD_OPTS+=$(echo $CACHE_DIR)
     BUILD_OPTS+=':/tmp/cache:rw'
-    # give non-root slugbuilder user R/W perms for docker volumes
-    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
+    # give slug group ownership of TMP_DIR and CACHE_DIR.
+    chown -R :2000 $TMP_DIR
+    chown :2000 $CACHE_DIR
+    # TMP_DIR is created using mktemp, which sets permissions to 700. Since
+    # we share this with the slug group, the slug group needs to be able to
+    # work with it.
+    chmod g+rwx $TMP_DIR
 
     BUILD_OPTS+=' deis/slugbuilder'
 
