@@ -1,4 +1,4 @@
-:title: Addding/Removing Hosts
+:title: Adding/Removing Hosts
 :description: Considerations for adding or removing Deis hosts.
 
 .. _add_remove_host:
