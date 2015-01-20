@@ -10,7 +10,6 @@ import json
 import mock
 import os.path
 import requests
-import unittest
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -268,7 +267,6 @@ class AppTest(TestCase):
         self.assertEqual(response.data, "No build associated with this release "
                                         "to run this command")
 
-    @unittest.expectedFailure
     def test_unauthorized_user_cannot_see_app(self):
         """
         An unauthorized user should not be able to access an app's resources.
