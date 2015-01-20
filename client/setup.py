@@ -57,7 +57,7 @@ setup(name='deis',
       ],
       long_description=LONG_DESCRIPTION,
       install_requires=[
-          'docopt==0.6.2', 'python-dateutil==2.2',
+          'docopt==0.6.2', 'python-dateutil==2.4.0',
           'PyYAML==3.11', 'requests==2.5.1',
           'termcolor==1.1.0'
       ],
