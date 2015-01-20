@@ -538,8 +538,7 @@ class DeisClient(object):
         finally:
             progress.cancel()
             progress.join()
-        if response.status_code in (requests.codes.no_content,
-                                    requests.codes.not_found):
+        if response.status_code == requests.codes.no_content:
             self._logger.info('done in {}s'.format(int(time.time() - before)))
             try:
                 # If the requested app is a heroku app and the app
