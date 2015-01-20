@@ -39,7 +39,7 @@ $ deisctl install platform
 Logging subsystem...
 deis-logger.service: loaded
 Storage subsystem...
-deis-store-gateway.service: loaded
+deis-store-gateway@1.service: loaded
 Control plane...
 deis-cache.service: loaded
 deis-database.service: loaded
@@ -66,7 +66,7 @@ deis-logspout.service: running
 Storage subsystem...
 deis-store-daemon.service: running
 deis-store-monitor.service: running
-deis-store-gateway.service: running
+deis-store-gateway@1.service: running
 Control plane...
 deis-cache.service: running
 deis-database.service: running
@@ -84,7 +84,7 @@ Done.
 
 Note that the default start command activates 1 of each component.
 You can scale components with `deisctl scale router=3`, for example.
-The router and the registry are the only component that _currently_ scales beyond 1 unit.
+The router, the registry and the store gateway are the only component that _currently_ scales beyond 1 unit.
 
 You can also use the `deisctl uninstall` command to destroy platform units:
 
@@ -105,7 +105,7 @@ deis-cache.service: inactive
 deis-database.service: inactive
 deis-registry@1.service: inactive
 Storage subsystem...
-deis-store-gateway.service: inactive
+deis-store-gateway@1.service: inactive
 Logging subsystem...
 deis-logger.service: inactive
 Done.
