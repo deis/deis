@@ -1,3 +1,14 @@
+### v1.2.1 -> v1.2.2
+
+#### Fixes
+
+ - [`97d9406`](https://github.com/deis/deis/commit/97d9406f397cbf794b39a133a408fb0aa2900731) database: fix build because of python-daemon
+ - [`5d508c6`](https://github.com/deis/deis/commit/5d508c6882e6767f8d9c2982d004881b1d644185) builder: allow procfile to override default process types
+
+#### Maintenance
+
+ - [`7bb8caa`](https://github.com/deis/deis/commit/7bb8caac471dfd58fa3533e0d099f7e86b698776) release: update version to v1.2.2
+
 ### v1.2.0 -> v1.2.1
 
 #### Maintenance
