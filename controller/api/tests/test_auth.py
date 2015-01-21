@@ -133,6 +133,8 @@ class AuthTest(TestCase):
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {'detail': 'Current password does not match'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         submit = {
             'password': password,
             'new_password': 'password2',

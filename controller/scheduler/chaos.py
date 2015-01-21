@@ -50,7 +50,7 @@ class ChaosSchedulerClient(object):
         Run a one-off command
         """
         if random.random() < CREATE_ERROR_RATE:
-            raise RuntimeError
+            raise RuntimeError('exit code 1')
         return 0, ''
 
 SchedulerClient = ChaosSchedulerClient

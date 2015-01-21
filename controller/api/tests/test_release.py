@@ -147,6 +147,8 @@ class ReleaseTest(TransactionTestCase):
         response = self.client.post(url, content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {'detail': 'version cannot be below 0'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         # update config to roll a new release
         url = '/v1/apps/{app_id}/config'.format(**locals())
         body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}

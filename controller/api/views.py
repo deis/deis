@@ -38,7 +38,8 @@ class UserManagementViewSet(GenericViewSet,
     def passwd(self, request, **kwargs):
         obj = self.get_object()
         if not obj.check_password(request.DATA['password']):
-            return Response("Current password did not match", status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': 'Current password does not match'},
+                            status=status.HTTP_400_BAD_REQUEST)
         obj.set_password(request.DATA['new_password'])
         obj.save()
         return Response({'status': 'password set'})
@@ -60,7 +61,7 @@ class BaseDeisViewSet(viewsets.OwnerViewSet):
             return super(BaseDeisViewSet, self).create(request, *args, **kwargs)
         # If the scheduler oopsie'd
         except RuntimeError as e:
-            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class AppResourceViewSet(BaseDeisViewSet):
@@ -116,22 +117,20 @@ class AppViewSet(BaseDeisViewSet):
 
     def scale(self, request, **kwargs):
         new_structure = {}
+        app = self.get_object()
         try:
             for target, count in request.DATA.items():
                 new_structure[target] = int(count)
-        except (TypeError, ValueError):
-            return Response('Invalid scaling format',
-                            status=status.HTTP_400_BAD_REQUEST)
-        app = self.get_object()
-        try:
             models.validate_app_structure(new_structure)
             app.scale(request.user, new_structure)
-        except (EnvironmentError, ValidationError) as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+        except (TypeError, ValueError):
+            return Response({'detail': 'Invalid scaling format'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        except (ValidationError, EnvironmentError) as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
-            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
-        return Response(status=status.HTTP_204_NO_CONTENT,
-                        content_type='application/json')
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def logs(self, request, **kwargs):
         app = self.get_object()
@@ -150,9 +149,9 @@ class AppViewSet(BaseDeisViewSet):
         try:
             output_and_rc = app.run(self.request.user, command)
         except EnvironmentError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
-            return Response(str(e), status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
@@ -237,7 +236,7 @@ class ReleaseViewSet(AppResourceViewSet):
             response = {'version': new_release.version}
             return Response(response, status=status.HTTP_201_CREATED)
         except EnvironmentError as e:
-            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError:
             new_release.delete()
             raise
