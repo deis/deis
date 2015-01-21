@@ -158,9 +158,8 @@ class AppViewSet(BaseDeisViewSet):
 
     def run(self, request, **kwargs):
         app = self.get_object()
-        command = request.data['command']
         try:
-            output_and_rc = app.run(self.request.user, command)
+            output_and_rc = app.run(self.request.user, request.data['command'])
         except EnvironmentError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
@@ -239,8 +238,8 @@ class ReleaseViewSet(AppResourceViewSet):
         Create a new release as a copy of the state of the compiled slug and config vars of a
         previous release.
         """
+        app = self.get_app()
         try:
-            app = self.get_app()
             release = app.release_set.latest()
             version_to_rollback_to = release.version - 1
             if request.data.get('version'):
