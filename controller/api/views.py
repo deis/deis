@@ -150,13 +150,11 @@ class AppViewSet(BaseDeisViewSet):
     def logs(self, request, **kwargs):
         app = self.get_object()
         try:
-            logs = app.logs()
+            return Response(app.logs(), status=status.HTTP_200_OK, content_type='text/plain')
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
                             status=status.HTTP_204_NO_CONTENT,
                             content_type='text/plain')
-        return Response(logs, status=status.HTTP_200_OK,
-                        content_type='text/plain')
 
     def run(self, request, **kwargs):
         app = self.get_object()
