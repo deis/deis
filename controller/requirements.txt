@@ -16,5 +16,5 @@ paramiko==1.15.2
 psycopg2==2.5.4
 python-etcd==0.3.2
 PyYAML==3.11
-static==1.0.2
+static==1.1.1
 South==1.0.2
