@@ -183,7 +183,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
     'PAGINATE_BY': 100,
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
 # URLs that end with slashes are ugly

@@ -25,12 +25,12 @@ from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 from django_fsm import FSMField, transition
 from django_fsm.signals import post_transition
-from docker.utils import utils
+from docker.utils import utils as dockerutils
 from json_field.fields import JSONField
 import requests
 from rest_framework.authtoken.models import Token
 
-from api import fields
+from api import fields, utils
 from registry import publish_release
 from utils import dict_diff, fingerprint
 
@@ -44,6 +44,15 @@ def log_event(app, msg, level=logging.INFO):
     app.log(msg)            # local filesystem
 
 
+def validate_id_is_docker_compatible(value):
+    """
+    Check that the ID follows docker's image name constraints
+    """
+    match = re.match(r'^[a-z0-9-]+$', value)
+    if not match:
+        raise ValidationError("App IDs can only contain [a-z0-9-].")
+
+
 def validate_app_structure(value):
     """Error if the dict values aren't ints >= 0."""
     try:
@@ -52,6 +61,12 @@ def validate_app_structure(value):
                 raise ValueError("Must be greater than or equal to zero")
     except ValueError, err:
         raise ValidationError(err)
+
+
+def validate_reserved_names(value):
+    """A value cannot use some reserved names."""
+    if value in ['deis']:
+        raise ValidationError('{} is a reserved name.'.format(value))
 
 
 def validate_comma_separated(value):
@@ -97,7 +112,9 @@ class App(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64, unique=True)
+    id = models.SlugField(max_length=64, unique=True, default=utils.generate_app_name,
+                          validators=[validate_id_is_docker_compatible,
+                                      validate_reserved_names])
     structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
 
     class Meta:
@@ -334,7 +351,7 @@ class App(UuidAuditedModel):
 
         # check for backwards compatibility
         def _has_hostname(image):
-            repo, tag = utils.parse_repository_tag(image)
+            repo, tag = dockerutils.parse_repository_tag(image)
             return True if '/' in repo and '.' in repo.split('/')[0] else False
 
         if not _has_hostname(image):
@@ -587,6 +604,29 @@ class Config(UuidAuditedModel):
 
     def __str__(self):
         return "{}-{}".format(self.app.id, self.uuid[:7])
+
+    def save(self, **kwargs):
+        """merge the old config with the new"""
+        try:
+            previous_config = self.app.config_set.latest()
+            for attr in ['cpu', 'memory', 'tags', 'values']:
+                # Guard against migrations from older apps without fixes to
+                # JSONField encoding.
+                try:
+                    data = getattr(previous_config, attr).copy()
+                except AttributeError:
+                    data = {}
+                try:
+                    new_data = getattr(self, attr).copy()
+                except AttributeError:
+                    new_data = {}
+                data.update(new_data)
+                # remove config keys if we provided a null value
+                [data.pop(k) for k, v in new_data.items() if v is None]
+                setattr(self, attr, data)
+        except Config.DoesNotExist:
+            pass
+        return super(Config, self).save(**kwargs)
 
 
 @python_2_unicode_compatible

@@ -62,7 +62,7 @@ func appsCreateTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, appsCreateCmdBuildpack, params, false, "BUILDPACK_URL")
 	utils.Execute(t, appsDestroyCmdNoApp, params, false, "")
 	utils.Execute(t, appsCreateCmd, params, false, "")
-	utils.Execute(t, appsCreateCmd, params, true, "App with this Id already exists")
+	utils.Execute(t, appsCreateCmd, params, true, "This field must be unique.")
 }
 
 func appsDestroyTest(t *testing.T, params *utils.DeisTestConfig) {

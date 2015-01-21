@@ -108,6 +108,31 @@ class ConfigTest(TransactionTestCase):
         return config5
 
     @mock.patch('requests.post', mock_import_repository_task)
+    def test_response_data(self):
+        """Test that the serialized response contains only relevant data."""
+        body = {'id': 'test'}
+        response = self.client.post('/v1/apps', json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = "/v1/apps/test/config".format()
+        # set an initial config value
+        body = {'values': json.dumps({'PORT': '5000'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        for key in response.data.keys():
+            self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'values', 'memory',
+                                'cpu', 'tags'])
+        expected = {
+            'owner': self.user.username,
+            'app': 'test',
+            'values': {'PORT': '5000'},
+            'memory': {},
+            'cpu': {},
+            'tags': {}
+        }
+        self.assertDictContainsSubset(expected, response.data)
+
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_same_key(self):
         """
         Test that config sets on the same key function properly

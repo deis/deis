@@ -1,12 +1,9 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.conf.urls import include
-from django.conf.urls import patterns
-from django.conf.urls import url
+from django.conf.urls import include, patterns, url
 
-from api import routers
-from api import views
+from api import routers, views
 
 
 router = routers.ApiRouter()
@@ -17,25 +14,25 @@ urlpatterns = patterns(
     url(r'^', include(router.urls)),
     # application release components
     url(r'^apps/(?P<id>{})/config/?'.format(settings.APP_URL_REGEX),
-        views.AppConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
+        views.ConfigViewSet.as_view({'get': 'retrieve', 'post': 'create'})),
     url(r'^apps/(?P<id>{})/builds/(?P<uuid>[-_\w]+)/?'.format(settings.APP_URL_REGEX),
-        views.AppBuildViewSet.as_view({'get': 'retrieve'})),
+        views.BuildViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>{})/builds/?'.format(settings.APP_URL_REGEX),
-        views.AppBuildViewSet.as_view({'get': 'list', 'post': 'create'})),
+        views.BuildViewSet.as_view({'get': 'list', 'post': 'create'})),
     url(r'^apps/(?P<id>{})/releases/v(?P<version>[0-9]+)/?'.format(settings.APP_URL_REGEX),
-        views.AppReleaseViewSet.as_view({'get': 'retrieve'})),
+        views.ReleaseViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>{})/releases/rollback/?'.format(settings.APP_URL_REGEX),
-        views.AppReleaseViewSet.as_view({'post': 'rollback'})),
+        views.ReleaseViewSet.as_view({'post': 'rollback'})),
     url(r'^apps/(?P<id>{})/releases/?'.format(settings.APP_URL_REGEX),
-        views.AppReleaseViewSet.as_view({'get': 'list'})),
+        views.ReleaseViewSet.as_view({'get': 'list'})),
     # application infrastructure
     url(r'^apps/(?P<id>{})/containers/(?P<type>[-_\w]+)/(?P<num>[-_\w]+)/?'.format(
         settings.APP_URL_REGEX),
-        views.AppContainerViewSet.as_view({'get': 'retrieve'})),
+        views.ContainerViewSet.as_view({'get': 'retrieve'})),
     url(r'^apps/(?P<id>{})/containers/(?P<type>[-_\w.]+)/?'.format(settings.APP_URL_REGEX),
-        views.AppContainerViewSet.as_view({'get': 'list'})),
+        views.ContainerViewSet.as_view({'get': 'list'})),
     url(r'^apps/(?P<id>{})/containers/?'.format(settings.APP_URL_REGEX),
-        views.AppContainerViewSet.as_view({'get': 'list'})),
+        views.ContainerViewSet.as_view({'get': 'list'})),
     # application domains
     url(r'^apps/(?P<id>{})/domains/(?P<domain>[-\._\w]+)/?'.format(settings.APP_URL_REGEX),
         views.DomainViewSet.as_view({'delete': 'destroy'})),
@@ -73,11 +70,11 @@ urlpatterns = patterns(
         views.ConfigHookViewSet.as_view({'post': 'create'})),
     # authn / authz
     url(r'^auth/register/?',
-        views.UserRegistrationView.as_view({'post': 'create'})),
+        views.UserRegistrationViewSet.as_view({'post': 'create'})),
     url(r'^auth/cancel/?',
-        views.UserManagementView.as_view({'delete': 'destroy'})),
+        views.UserManagementViewSet.as_view({'delete': 'destroy'})),
     url(r'^auth/passwd/?',
-        views.UserManagementView.as_view({'post': 'passwd'})),
+        views.UserManagementViewSet.as_view({'post': 'passwd'})),
     url(r'^auth/login/',
         'rest_framework.authtoken.views.obtain_auth_token'),
     # admin sharing

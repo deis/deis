@@ -42,14 +42,20 @@ class AuthTest(TestCase):
         url = '/v1/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data['username'], username)
-        self.assertNotIn('password', response.data)
-        self.assertEqual(response.data['email'], email)
-        self.assertEqual(response.data['first_name'], first_name)
-        self.assertEqual(response.data['last_name'], last_name)
-        self.assertTrue(response.data['is_active'])
-        self.assertFalse(response.data['is_superuser'])
-        self.assertFalse(response.data['is_staff'])
+        for key in response.data.keys():
+            self.assertIn(key, ['id', 'last_login', 'is_superuser', 'username', 'first_name',
+                                'last_name', 'email', 'is_active', 'is_superuser', 'is_staff',
+                                'date_joined', 'groups', 'user_permissions'])
+        expected = {
+            'username': username,
+            'email': email,
+            'first_name': first_name,
+            'last_name': last_name,
+            'is_active': True,
+            'is_superuser': False,
+            'is_staff': False
+        }
+        self.assertDictContainsSubset(expected, response.data)
         # test login
         url = '/v1/auth/login/'
         payload = urllib.urlencode({'username': username, 'password': password})
