@@ -83,6 +83,32 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(response.status_code, 405)
 
     @mock.patch('requests.post', mock_import_repository_task)
+    def test_response_data(self):
+        """Test that the serialized response contains only relevant data."""
+        body = {'id': 'test'}
+        url = '/v1/apps'
+        response = self.client.post(url, json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        # post an image as a build
+        url = "/v1/apps/test/builds".format(**locals())
+        body = {'image': 'autotest/example'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        for key in response.data.keys():
+            self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'dockerfile',
+                                'image', 'procfile', 'sha'])
+        expected = {
+            'owner': self.user.username,
+            'app': 'test',
+            'dockerfile': '',
+            'image': 'autotest/example',
+            'procfile': {},
+            'sha': ''
+        }
+        self.assertDictContainsSubset(expected, response.data)
+
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_build_default_containers(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))

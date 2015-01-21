@@ -34,7 +34,7 @@ func keysAddTest(t *testing.T, params *utils.DeisTestConfig) {
 	params.AuthKey = "deiskey"
 	utils.Execute(t, keysAddCmd, params, false, "")
 	utils.Execute(t, keysAddCmd, params, true,
-		"SSH Key with this Public already exists")
+		"This field must be unique")
 }
 
 func keysListTest(t *testing.T, params *utils.DeisTestConfig, notflag bool) {

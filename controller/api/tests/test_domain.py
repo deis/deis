@@ -27,6 +27,25 @@ class DomainTest(TestCase):
         self.assertEqual(response.status_code, 201)
         self.app_id = response.data['id']  # noqa
 
+    def test_response_data(self):
+        """Test that the serialized response contains only relevant data."""
+        body = {'id': 'test'}
+        response = self.client.post('/v1/apps', json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        body = {'domain': 'test-domain.example.com'}
+        response = self.client.post('/v1/apps/test/domains', json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        for key in response.data.keys():
+            self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'domain'])
+        expected = {
+            'owner': self.user.username,
+            'app': 'test',
+            'domain': 'test-domain.example.com'
+        }
+        self.assertDictContainsSubset(expected, response.data)
+
     def test_manage_domain(self):
         url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
         body = {'domain': 'test-domain.example.com'}

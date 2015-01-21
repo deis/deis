@@ -112,6 +112,31 @@ class ReleaseTest(TransactionTestCase):
         return release3
 
     @mock.patch('requests.post', mock_import_repository_task)
+    def test_response_data(self):
+        body = {'id': 'test'}
+        response = self.client.post('/v1/apps', json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        body = {'values': json.dumps({'NEW_URL': 'http://localhost:8080/'})}
+        config_response = self.client.post('/v1/apps/test/config', json.dumps(body),
+                                           content_type='application/json',
+                                           HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = '/v1/apps/test/releases/v2'
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        for key in response.data.keys():
+            self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'build', 'config',
+                                'summary', 'version'])
+        expected = {
+            'owner': self.user.username,
+            'app': 'test',
+            'build': None,
+            'config': config_response.data['uuid'],
+            'summary': '{} added NEW_URL'.format(self.user.username),
+            'version': 2
+        }
+        self.assertDictContainsSubset(expected, response.data)
+
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_release_rollback(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
