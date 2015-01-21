@@ -141,7 +141,7 @@ class AppViewSet(BaseDeisViewSet):
         except (TypeError, ValueError):
             return Response({'detail': 'Invalid scaling format'},
                             status=status.HTTP_400_BAD_REQUEST)
-        except (ValidationError, EnvironmentError) as e:
+        except (EnvironmentError, ValidationError) as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
             return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
