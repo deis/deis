@@ -9,7 +9,7 @@ BINARY_DEST_DIR := image/bin
 
 build: check-docker
 	for i in $(BINARIES); do \
-		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go ; \
+		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go || exit 1; \
 	done
 	docker build -t $(IMAGE) image
 
