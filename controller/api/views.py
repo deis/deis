@@ -37,10 +37,10 @@ class UserManagementViewSet(GenericViewSet,
 
     def passwd(self, request, **kwargs):
         obj = self.get_object()
-        if not obj.check_password(request.DATA['password']):
+        if not obj.check_password(request.data['password']):
             return Response({'detail': 'Current password does not match'},
                             status=status.HTTP_400_BAD_REQUEST)
-        obj.set_password(request.DATA['new_password'])
+        obj.set_password(request.data['new_password'])
         obj.save()
         return Response({'status': 'password set'})
 
@@ -80,7 +80,7 @@ class AppResourceViewSet(BaseDeisViewSet):
         return self.get_queryset(**kwargs).latest('created')
 
     def create(self, request, **kwargs):
-        request.DATA['app'] = self.get_app()
+        request.data['app'] = self.get_app()
         return super(AppResourceViewSet, self).create(request, **kwargs)
 
 
@@ -134,7 +134,7 @@ class AppViewSet(BaseDeisViewSet):
         new_structure = {}
         app = self.get_object()
         try:
-            for target, count in request.DATA.items():
+            for target, count in request.data.items():
                 new_structure[target] = int(count)
             models.validate_app_structure(new_structure)
             app.scale(request.user, new_structure)
@@ -160,7 +160,7 @@ class AppViewSet(BaseDeisViewSet):
 
     def run(self, request, **kwargs):
         app = self.get_object()
-        command = request.DATA['command']
+        command = request.data['command']
         try:
             output_and_rc = app.run(self.request.user, command)
         except EnvironmentError as e:
@@ -245,8 +245,8 @@ class ReleaseViewSet(AppResourceViewSet):
             app = self.get_app()
             release = app.release_set.latest()
             version_to_rollback_to = release.version - 1
-            if request.DATA.get('version'):
-                version_to_rollback_to = int(request.DATA['version'])
+            if request.data.get('version'):
+                version_to_rollback_to = int(request.data['version'])
             new_release = release.rollback(request.user, version_to_rollback_to)
             response = {'version': new_release.version}
             return Response(response, status=status.HTTP_201_CREATED)
@@ -318,8 +318,8 @@ class ConfigHookViewSet(BaseHookViewSet):
     serializer_class = serializers.ConfigSerializer
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
-        user = get_object_or_404(User, username=request.DATA['receive_user'])
+        app = get_object_or_404(models.App, id=request.data['receive_repo'])
+        user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
         if user == app.owner or \
            user in get_users_with_perms(app) or \
@@ -351,7 +351,7 @@ class AppPermsViewSet(BaseDeisViewSet):
         app = get_object_or_404(self.model, id=kwargs['id'])
         if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        user = get_object_or_404(User, username=request.DATA['username'])
+        user = get_object_or_404(User, username=request.data['username'])
         assign_perm(self.perm, user, app)
         models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
@@ -381,7 +381,7 @@ class AdminPermsViewSet(BaseDeisViewSet):
         return self.model.objects.filter(is_active=True, is_superuser=True)
 
     def create(self, request, **kwargs):
-        user = get_object_or_404(User, username=request.DATA['username'])
+        user = get_object_or_404(User, username=request.data['username'])
         user.is_superuser = user.is_staff = True
         user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_201_CREATED)
