@@ -42,6 +42,20 @@ class IsOwner(permissions.BasePermission):
             return False
 
 
+class IsOwnerOrAdmin(permissions.BasePermission):
+    """
+    Object-level permission to allow only owners of an object or administrators to access it.
+    Assumes the model instance has an `owner` attribute.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser:
+            return True
+        if hasattr(obj, 'owner'):
+            return obj.owner == request.user
+        else:
+            return False
+
+
 class IsAppUser(permissions.BasePermission):
     """
     Object-level permission to allow owners or collaborators to access

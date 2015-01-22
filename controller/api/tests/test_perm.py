@@ -215,7 +215,6 @@ class TestAppPerms(TestCase):
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token2))
         self.assertEqual(response.status_code, 403)
-        self.assertIsNone(response.data)
         # delete permission to user 1's app
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))

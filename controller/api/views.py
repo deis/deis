@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from guardian.shortcuts import assign_perm, get_objects_for_user, \
     get_users_with_perms, remove_perm
 from rest_framework import mixins, renderers, status
+from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -319,33 +320,31 @@ class AppPermsViewSet(BaseDeisViewSet):
     model = models.App  # models class
     perm = 'use_app'    # short name for permission
 
+    def get_queryset(self):
+        return self.model.objects.all()
+
+    @permission_classes([permissions.IsAppUser])
     def list(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
+        app = self.get_object()
         perm_name = "api.{}".format(self.perm)
-        if request.user != app.owner and \
-           not request.user.has_perm(perm_name, app) and \
-           not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
         return Response({'users': usernames})
 
+    @permission_classes([permissions.IsOwnerOrAdmin])
     def create(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        app = self.get_object()
         user = get_object_or_404(User, username=request.data['username'])
         assign_perm(self.perm, user, app)
         models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
+    @permission_classes([permissions.IsOwnerOrAdmin])
     def destroy(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        app = self.get_object()
         user = get_object_or_404(User, username=kwargs['username'])
         if not user.has_perm(self.perm, app):
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
         remove_perm(self.perm, user, app)
         models.log_event(app, "User {} was revoked access to {}".format(user, app))
         return Response(status=status.HTTP_204_NO_CONTENT)
