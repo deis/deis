@@ -323,8 +323,8 @@ class AppPermsViewSet(BaseDeisViewSet):
         app = get_object_or_404(self.model, id=kwargs['id'])
         perm_name = "api.{}".format(self.perm)
         if request.user != app.owner and \
-                not request.user.has_perm(perm_name, app) and \
-                not request.user.is_superuser:
+           not request.user.has_perm(perm_name, app) and \
+           not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
@@ -344,12 +344,11 @@ class AppPermsViewSet(BaseDeisViewSet):
         if request.user != app.owner and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         user = get_object_or_404(User, username=kwargs['username'])
-        if user.has_perm(self.perm, app):
-            remove_perm(self.perm, user, app)
-            models.log_event(app, "User {} was revoked access to {}".format(user, app))
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
+        if not user.has_perm(self.perm, app):
             return Response(status=status.HTTP_403_FORBIDDEN)
+        remove_perm(self.perm, user, app)
+        models.log_event(app, "User {} was revoked access to {}".format(user, app))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AdminPermsViewSet(BaseDeisViewSet):
@@ -357,7 +356,7 @@ class AdminPermsViewSet(BaseDeisViewSet):
 
     model = User
     serializer_class = serializers.AdminUserSerializer
-    permission_classes = (permissions.IsAdmin,)
+    permission_classes = [permissions.IsAdmin]
 
     def get_queryset(self, **kwargs):
         self.check_object_permissions(self.request, self.request.user)
