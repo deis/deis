@@ -5,6 +5,18 @@ from django.contrib.auth.models import AnonymousUser
 from api import models
 
 
+def is_app_user(request, obj):
+    if request.user.is_superuser or \
+            isinstance(obj, models.App) and obj.owner == request.user or \
+            hasattr(obj, 'app') and obj.app.owner == request.user:
+        return True
+    elif request.user.has_perm('use_app', obj) or \
+            hasattr(obj, 'app') and request.user.has_perm('use_app', obj.app):
+        return request.method != 'DELETE'
+    else:
+        return False
+
+
 class IsAnonymous(permissions.BasePermission):
     """
     View permission to allow anonymous users.
@@ -36,18 +48,7 @@ class IsAppUser(permissions.BasePermission):
     an app-related model.
     """
     def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
-            return True
-        if isinstance(obj, models.App) and obj.owner == request.user:
-            return True
-        elif hasattr(obj, 'app') and obj.app.owner == request.user:
-            return True
-        elif request.user.has_perm('use_app', obj):
-            return request.method != 'DELETE'
-        elif hasattr(obj, 'app') and request.user.has_perm('use_app', obj.app):
-            return request.method != 'DELETE'
-        else:
-            return False
+        return is_app_user(request, obj)
 
 
 class IsAdmin(permissions.BasePermission):

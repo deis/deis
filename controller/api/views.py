@@ -265,18 +265,13 @@ class PushHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.data['receive_repo'])
-        self.user = get_object_or_404(User, username=request.data['receive_user'])
+        request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if self.user == app.owner or \
-           self.user in get_users_with_perms(app) or \
-           self.user.is_superuser:
-                request.data['app'] = app
-                request.data['owner'] = self.user
-                return super(PushHookViewSet, self).create(request, *args, **kwargs)
-        raise PermissionDenied()
-
-    def perform_create(self, serializer, **kwargs):
-        serializer.save(owner=self.user)
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        request.data['app'] = app
+        request.data['owner'] = request.user
+        return super(PushHookViewSet, self).create(request, *args, **kwargs)
 
 
 class BuildHookViewSet(BaseHookViewSet):
@@ -286,24 +281,17 @@ class BuildHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.data['receive_repo'])
-        self.user = get_object_or_404(User, username=request.data['receive_user'])
+        self.user = request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if self.user == app.owner or \
-           self.user in get_users_with_perms(app) or \
-           self.user.is_superuser:
-            request._data = request.data.copy()
-            request.data['app'] = app
-            request.data['owner'] = self.user
-            super(BuildHookViewSet, self).create(request, *args, **kwargs)
-            # return the application databag
-            response = {'release': {'version': app.release_set.latest().version},
-                        'domains': ['.'.join([app.id, settings.DEIS_DOMAIN])]}
-            return Response(response, status=status.HTTP_200_OK)
-        raise PermissionDenied()
-
-    def perform_create(self, serializer, **kwargs):
-        build = serializer.save(owner=self.user)
-        self.post_save(build)
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        request.data['app'] = app
+        request.data['owner'] = self.user
+        super(BuildHookViewSet, self).create(request, *args, **kwargs)
+        # return the application databag
+        response = {'release': {'version': app.release_set.latest().version},
+                    'domains': ['.'.join([app.id, settings.DEIS_DOMAIN])]}
+        return Response(response, status=status.HTTP_200_OK)
 
     def post_save(self, build):
         build.create(self.user)
@@ -316,15 +304,13 @@ class ConfigHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.data['receive_repo'])
-        user = get_object_or_404(User, username=request.data['receive_user'])
+        request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or \
-           user in get_users_with_perms(app) or \
-           user.is_superuser:
-            config = app.release_set.latest().config
-            serializer = self.get_serializer(config)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        raise PermissionDenied()
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        config = app.release_set.latest().config
+        serializer = self.get_serializer(config)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AppPermsViewSet(BaseDeisViewSet):
