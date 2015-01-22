@@ -390,6 +390,7 @@ class DeisClient(object):
         func = getattr(self._session, method.lower())
         controller = self._settings.get('controller')
         token = self._settings.get('token')
+        ssl_verify = self._settings.get('ssl_verify')
         if not token:
             raise EnvironmentError(
                 'Could not find token. Use `deis login` or `deis register` to get started.')
@@ -399,7 +400,7 @@ class DeisClient(object):
             'X-Deis-Version': __api_version__.rsplit('.', 1)[0],
             'Authorization': 'token {}'.format(token)
         }
-        response = func(url, data=body, headers=headers)
+        response = func(url, data=body, headers=headers, verify=ssl_verify)
         # check for version mismatch
         server_api_version = response.headers.get('X_DEIS_API_VERSION')
         if server_api_version is not None and server_api_version != __api_version__:
@@ -789,8 +790,11 @@ class DeisClient(object):
             provide a username for the account.
           --password=<password>
             provide a password for the account.
+          --ssl-verify=false
+            disables SSL certificate verification for API requests
         """
         controller = args['<controller>']
+        ssl_verify = True
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
         username = args.get('--username')
@@ -800,15 +804,20 @@ class DeisClient(object):
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         url = urlparse.urljoin(controller, '/v1/auth/login/')
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
-        response = self._session.post(url, data=payload, allow_redirects=False)
+        response = self._session.post(url, data=payload, allow_redirects=False,
+            verify=ssl_verify)
         if response.status_code == requests.codes.ok:
             # retrieve and save the API token for future requests
             self._settings['controller'] = controller
             self._settings['username'] = username
             self._settings['token'] = response.json()['token']
+            self._settings['ssl_verify'] = ssl_verify
             self._settings.save()
             self._logger.info("Logged in as {}".format(username))
             return username
@@ -821,9 +830,8 @@ class DeisClient(object):
 
         Usage: deis auth:logout
         """
-        self._settings['controller'] = None
-        self._settings['username'] = None
-        self._settings['token'] = None
+        for i in ['controller', 'username', 'token', 'ssl_verify']:
+            self._settings[i] = None
         self._settings.save()
         self._logger.info('Logged out')
 
