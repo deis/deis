@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 import json
 import mock
 import requests
-import unittest
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
@@ -541,7 +540,6 @@ class ContainerTest(TransactionTestCase):
         rc, output = c.run('echo hi')
         self.assertEqual(json.loads(output)['entrypoint'], '/runner/init')
 
-    @unittest.expectedFailure
     def test_scale_with_unauthorized_user_returns_403(self):
         """An unauthorized user should not be able to access an app's resources.
 

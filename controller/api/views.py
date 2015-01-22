@@ -107,9 +107,24 @@ class AppViewSet(BaseDeisViewSet):
     model = models.App
     serializer_class = serializers.AppSerializer
 
-    def get_queryset(self, **kwargs):
-        return super(AppViewSet, self).get_queryset(**kwargs) | \
+    def get_queryset(self, *args, **kwargs):
+        return self.model.objects.all(*args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        """
+        HACK: Instead of filtering by the queryset, we limit the queryset to list only the apps
+        which are owned by the user as well as any apps they have been given permission to
+        interact with.
+        """
+        queryset = super(AppViewSet, self).get_queryset(**kwargs) | \
             get_objects_for_user(self.request.user, 'api.use_app')
+        instance = self.filter_queryset(queryset)
+        page = self.paginate_queryset(instance)
+        if page is not None:
+            serializer = self.get_pagination_serializer(page)
+        else:
+            serializer = self.get_serializer(instance, many=True)
+        return Response(serializer.data)
 
     def post_save(self, app):
         app.create()
