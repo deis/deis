@@ -65,6 +65,15 @@ coreos:
       ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
       ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
       ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
+  - name: increase-nf_conntrack-connections.service
+    command: start
+    content: |
+      [Unit]
+      Description=Increase the number of connections in nf_conntrack. default is 65536
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
 write_files:
   - path: /etc/deis-release
     content: |
