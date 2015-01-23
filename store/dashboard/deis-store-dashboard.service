@@ -1,0 +1,16 @@
+[Unit]
+Description=deis-store-dashboard
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-dashboard` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-store-dashboard >/dev/null 2>&1 && docker rm -f deis-store-dashboard || true"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-dashboard` && docker run --name deis-store-dashboard -h deis-store-dashboard --rm -e HOST=$COREOS_PRIVATE_IPV4 -e EXTERNAL_PORT=9999 -p 9999:9999 $IMAGE"
+ExecStopPost=-/usr/bin/docker rm -f deis-store-dashboard
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,10 +1,12 @@
 include ../includes.mk
 
-TEMPLATE_IMAGES=daemon gateway metadata monitor
+TEMPLATE_IMAGES=daemon dashboard gateway metadata monitor
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 
 DAEMON_IMAGE = $(IMAGE_PREFIX)store-daemon:$(BUILD_TAG)
 DAEMON_DEV_IMAGE = $(DEV_REGISTRY)/$(DAEMON_IMAGE)
+DASHBOARD_IMAGE = $(IMAGE_PREFIX)store-dashboard:$(BUILD_TAG)
+DASHBOARD_DEV_IMAGE = $(DEV_REGISTRY)/$(DASHBOARD_IMAGE)
 GATEWAY_IMAGE = $(IMAGE_PREFIX)store-gateway:$(BUILD_TAG)
 GATEWAY_DEV_IMAGE = $(DEV_REGISTRY)/$(GATEWAY_IMAGE)
 METADATA_IMAGE = $(IMAGE_PREFIX)store-metadata:$(BUILD_TAG)
@@ -70,6 +72,8 @@ dev-release: push set-image
 push: check-registry
 	docker tag $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
 	docker push $(DAEMON_DEV_IMAGE)
+	docker tag $(DASHBOARD_IMAGE) $(DASHBOARD_DEV_IMAGE)
+	docker push $(DASHBOARD_DEV_IMAGE)
 	docker tag $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	docker push $(GATEWAY_DEV_IMAGE)
 	docker tag $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
@@ -79,12 +83,14 @@ push: check-registry
 
 set-image: check-deisctl
 	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
+	deisctl config store-dashboard set image=$(DASHBOARD_DEV_IMAGE)
 	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
 	deisctl config store-metadata set image=$(METADATA_DEV_IMAGE)
 	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
 
 release:
 	docker push $(DAEMON_IMAGE)
+	docker push $(DASHBOARD_IMAGE)
 	docker push $(GATEWAY_IMAGE)
 	docker push $(METADATA_IMAGE)
 	docker push $(MONITOR_IMAGE)
