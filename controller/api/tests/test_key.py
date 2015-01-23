@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for the Deis api app.
 
@@ -29,6 +30,10 @@ ECDSA_PUBKEY = (
     "ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAAB"
     "BBCGB0x9lmubbLJTF5NekCI0Cgjyip6jJh/t/qQQi1LAZisbREBJ8Wy+hwSn3tnbf/Imh9X"
     "+MQnrrza0jaQ3QUAQ= autotest@autotesting comment"
+)
+
+BAD_KEY = (
+    "ssh-rsa foo_bar"
 )
 
 
@@ -63,11 +68,26 @@ class KeyTest(TestCase):
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
+    def _check_bad_key(self, pubkey):
+        """
+        Test that a user cannot add invalid SSH public keys
+        """
+        url = '/v1/keys'
+        body = {'id': 'mykey@box.local', 'public': pubkey}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 400)
+        return response
+
     def test_rsa_key(self):
         self._check_key(RSA_PUBKEY)
 
     def test_ecdsa_key(self):
         self._check_key(ECDSA_PUBKEY)
+
+    def test_bad_key(self):
+        response = self._check_bad_key(BAD_KEY)
+        self.assertEqual(response.data, {'public': ['Incorrect padding']})
 
     def _check_duplicate_key(self, pubkey):
         """

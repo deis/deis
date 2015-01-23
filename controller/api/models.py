@@ -5,6 +5,7 @@ Data models for the Deis API.
 """
 
 from __future__ import unicode_literals
+import base64
 import etcd
 import importlib
 import logging
@@ -42,6 +43,14 @@ def log_event(app, msg, level=logging.INFO):
     msg = "{}: {}".format(app.id, msg)
     logger.log(level, msg)  # django logger
     app.log(msg)            # local filesystem
+
+
+def validate_base64(value):
+    """Check that value contains only valid base64 characters."""
+    try:
+        base64.b64decode(value.split()[1])
+    except Exception as e:
+        raise ValidationError(e)
 
 
 def validate_id_is_docker_compatible(value):
@@ -825,7 +834,7 @@ class Key(UuidAuditedModel):
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128)
-    public = models.TextField(unique=True)
+    public = models.TextField(unique=True, validators=[validate_base64])
 
     class Meta:
         verbose_name = 'SSH Key'
