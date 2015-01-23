@@ -1,8 +1,10 @@
 include ../includes.mk
 
-TEMPLATE_IMAGES=daemon gateway metadata monitor
+TEMPLATE_IMAGES=admin daemon gateway metadata monitor
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 
+ADMIN_IMAGE = $(IMAGE_PREFIX)store-admin:$(BUILD_TAG)
+ADMIN_DEV_IMAGE = $(DEV_REGISTRY)/$(ADMIN_IMAGE)
 DAEMON_IMAGE = $(IMAGE_PREFIX)store-daemon:$(BUILD_TAG)
 DAEMON_DEV_IMAGE = $(DEV_REGISTRY)/$(DAEMON_IMAGE)
 GATEWAY_IMAGE = $(IMAGE_PREFIX)store-gateway:$(BUILD_TAG)
@@ -68,6 +70,8 @@ run: install start
 dev-release: push set-image
 
 push: check-registry
+	docker tag $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
+	docker push $(ADMIN_DEV_IMAGE)
 	docker tag $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
 	docker push $(DAEMON_DEV_IMAGE)
 	docker tag $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
@@ -78,12 +82,14 @@ push: check-registry
 	docker push $(MONITOR_DEV_IMAGE)
 
 set-image: check-deisctl
+	deisctl config store-admin set image=$(ADMIN_DEV_IMAGE)
 	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
 	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
 	deisctl config store-metadata set image=$(METADATA_DEV_IMAGE)
 	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
 
 release:
+	docker push $(ADMIN_IMAGE)
 	docker push $(DAEMON_IMAGE)
 	docker push $(GATEWAY_IMAGE)
 	docker push $(METADATA_IMAGE)
