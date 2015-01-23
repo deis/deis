@@ -18,6 +18,7 @@ Managing Deis
     operational_tasks
     platform_logging
     platform_monitoring
+    recovering-ceph-quorum
     security_considerations
     ssl-endpoints
     upgrading-deis

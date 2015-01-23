@@ -63,6 +63,12 @@ We can also see from the ``pgmap`` that we have 1344 placement groups, all of wh
 For additional information on troubleshooting Ceph, see `troubleshooting`_. Common issues with
 specific store components are detailed below.
 
+.. note::
+
+    If all of the ``ceph`` client commands seem to be hanging and the output is solely monitor
+    faults, the cluster may have lost quorum and manual intervention is necessary to recover.
+    For more information, see :ref:`recovering-ceph-quorum`.
+
 store-monitor
 -------------
 

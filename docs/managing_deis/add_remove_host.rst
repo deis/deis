@@ -111,6 +111,8 @@ that the store services on this host will be leaving the cluster.
 In this example we're going to remove the first node in our cluster, deis-1.
 That machine has an IP address of ``172.17.8.100``.
 
+.. _removing_an_osd:
+
 Removing an OSD
 ~~~~~~~~~~~~~~~
 
