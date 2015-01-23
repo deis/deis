@@ -24,6 +24,8 @@ sys.path.insert(0, os.path.abspath(os.path.join('..')))
 sys.path.insert(0, os.path.abspath(os.path.join('..', 'controller')))
 # set up Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+os.environ['DATABASE_ENGINE'] = 'sqlite3'
+os.environ['DATABASE_NAME'] = 'dummy.sqlite3'
 from django.conf import settings  # noqa
 
 # -- General configuration -----------------------------------------------------
