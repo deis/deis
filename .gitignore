@@ -40,6 +40,7 @@ deisctl/package/
 deisctl/makeself/
 docs/_build/
 docs/docs.zip
+docs/dummy.sqlite3
 logspout/build/
 logspout/image/logspout
 logspout/Godeps/

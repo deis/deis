@@ -30,6 +30,8 @@ if not os.path.exists(local_settings_path):
         local_settings.write("SECRET_KEY = 'DummySecretKey'\n")
 # set up Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'
+os.environ['DATABASE_ENGINE'] = 'sqlite3'
+os.environ['DATABASE_NAME'] = 'dummy.sqlite3'
 from django.conf import settings  # noqa
 
 # -- General configuration -----------------------------------------------------
