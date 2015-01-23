@@ -3,11 +3,13 @@ package builder
 import (
 	"bytes"
 	"encoding/json"
+	dtime "github.com/deis/deis/pkg/time"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
-	dtime "github.com/deis/deis/pkg/time"
 )
 
 type ClosingBuffer struct {
@@ -139,7 +141,7 @@ default_process_types:
 	}
 }
 
-func TestParseControllerConfigGood(t *testing.T) {
+func TestParseConfigCreateEnvFilesGood(t *testing.T) {
 	// mock controller config response
 	resp := []byte(`{"owner": "test",
 		"app": "example-go",
@@ -152,7 +154,13 @@ func TestParseControllerConfigGood(t *testing.T) {
 		"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
 	}`)
 
-	config, err := ParseControllerConfig(resp)
+	tmpDir, err := ioutil.TempDir("", "test_")
+	if err != nil {
+		t.Fatalf("error creating temporal directory '%s': %v", tmpDir, err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	config, err := CreateEnvFilesFomConfig(tmpDir, resp)
 
 	if err != nil {
 		t.Errorf("expected to pass, got '%v'", err)
@@ -162,8 +170,8 @@ func TestParseControllerConfigGood(t *testing.T) {
 		t.Errorf("expected 2, got %d", len(config))
 	}
 
-	if !stringInSlice(config, " -e CAR=\"star\"") {
-		t.Error("expected ' -e CAR=\"star\"' in slice")
+	if !stringInSlice(config, tmpDir+"/CAR") {
+		t.Error("expected 'CAR' in slice")
 	}
 }
 

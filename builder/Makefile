@@ -4,13 +4,14 @@ COMPONENT = builder
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE := $(COMPONENT)-build
-BINARIES := extract-domain extract-types extract-version generate-buildhook get-app-config get-app-values publish-release-controller yaml2json-procfile
+BINARIES := extract-domain extract-types extract-version generate-buildhook get-app-config create-app-env publish-release-controller yaml2json-procfile
 BINARY_DEST_DIR := image/bin
 
-build: check-docker
+build: check-docker cedarish/build
 	for i in $(BINARIES); do \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go || exit 1; \
 	done
+
 	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
@@ -41,7 +42,7 @@ run: install start
 dev-release: push set-image
 
 push: check-registry
-	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker tag -f $(IMAGE) $(DEV_IMAGE)
 	docker push $(DEV_IMAGE)
 
 set-image: check-deisctl
@@ -57,11 +58,12 @@ test: test-unit test-functional
 test-unit:
 	godep go test -v .
 
-test-functional:
+test-functional: push
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 cedarish/build:
-	mkdir -p build
-	docker pull progrium/cedarish:latest
-	docker save progrium/cedarish:latest | gzip -9 > build/progrium_cedarish_$(shell date "+%Y_%m_%d").tar.gz
+	curl -#SL -o progrium_cedarish.tar.gz \
+    https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014_12_15.tar.gz
+	docker load -i progrium_cedarish.tar.gz
+	rm -rf progrium_cedarish.tar.gz

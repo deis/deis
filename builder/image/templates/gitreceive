@@ -53,7 +53,6 @@ EOF
       cd $GITHOME
       # if we're processing a receive-pack on an existing repo, run a build
       if [[ $SSH_ORIGINAL_COMMAND == git-receive-pack* ]]; then
-        # SECURITY: git user runs the builder as root (for docker access)
         sudo $GITHOME/builder $RECEIVE_USER $RECEIVE_REPO $newrev 2>&1 | strip_remote_prefix
       fi
     done

@@ -30,6 +30,7 @@ func TestBuilder(t *testing.T) {
 		"/deis/registry",
 		"/deis/domains",
 		"/deis/services",
+		"/deis/slugrunner",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	etcdName := "deis-etcd-" + tag
@@ -53,7 +54,8 @@ func TestBuilder(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "EXTERNAL_PORT="+port,
-			"--privileged", "deis/builder:"+tag)
+			"-v", "/var/run/docker.sock:/var/run/docker.sock",
+			"deis/builder:"+tag)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
 	if err != nil {

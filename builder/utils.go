@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"gopkg.in/yaml.v2"
 )
@@ -93,19 +94,28 @@ func GetDefaultType(bytes []byte) (string, error) {
 	return string(retVal), nil
 }
 
-func ParseControllerConfig(bytes []byte) ([]string, error) {
+func CreateEnvFilesFomConfig(envDirectory string, bytes []byte) ([]string, error) {
+	if err := os.MkdirAll(envDirectory, 0777); err != nil {
+		return []string{}, err
+	}
+
 	var controllerConfig Config
 	if err := json.Unmarshal(bytes, &controllerConfig); err != nil {
 		return []string{}, err
 	}
 
 	if controllerConfig.Values == nil {
-		return []string{""}, nil
+		return []string{}, nil
 	}
 
 	retVal := []string{}
 	for k, v := range controllerConfig.Values {
-		retVal = append(retVal, fmt.Sprintf(" -e %s=\"%v\"", k, v))
+		err := ioutil.WriteFile(envDirectory+"/"+k, []byte(fmt.Sprintf("%v", v)), 0777)
+		if err != nil {
+			return []string{}, err
+		}
+		retVal = append(retVal, envDirectory+"/"+k)
 	}
+
 	return retVal, nil
 }

@@ -1,4 +1,4 @@
-FROM ubuntu-debootstrap:14.04
+FROM progrium/cedarish:latest
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -12,6 +12,10 @@ RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdem
 # install confd
 RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-v0.5.0-json \
     && chmod +x /usr/local/bin/confd
+
+# install herokuish
+RUN curl -sSL https://github.com/aledbf/herokuish/releases/download/v0.1.2/herokuish_0.1.2_linux_x86_64.tgz \
+    | tar -xzC /usr/local/bin && chmod 755 /usr/local/bin/herokuish
 
 # install docker-in-docker
 RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
@@ -28,9 +32,6 @@ RUN rm /etc/ssh/ssh_host_*
 RUN dpkg-reconfigure openssh-server
 RUN mkdir -p /var/run/sshd
 
-# configure locale
-RUN echo LANG="en_US.UTF-8" > /etc/default/locale && dpkg-reconfigure locales
-
 # install git and configure gituser
 ENV GITHOME /home/git
 ENV GITUSER git
@@ -41,17 +42,7 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 # let the git user run `sudo /home/git/builder` (not writeable)
 RUN echo "%git    ALL=(ALL:ALL) NOPASSWD:/home/git/builder" >> /etc/sudoers
 
-# HACK: import progrium/cedarish as a tarball
-# see https://github.com/deis/deis/issues/1027
-RUN curl -#SL -o /progrium_cedarish.tar.gz \
-    https://s3-us-west-2.amazonaws.com/opdemand/progrium_cedarish_2014_12_15.tar.gz
-
-# define the execution environment
-# use VOLUME to remove /var/lib/docker from copy-on-write for performance
-# we don't want to stack overlay filesystems
-VOLUME /var/lib/docker
 WORKDIR /app
-ENTRYPOINT ["/app/bin/entry"]
 CMD ["/app/bin/boot"]
 EXPOSE 22
 RUN addgroup --quiet --gid 2000 slug && useradd slug --uid=2000 --gid=2000
@@ -60,6 +51,8 @@ ADD templates/shim.dockerfile /home/git/
 ADD etc /etc
 ADD . /app
 RUN chown -R root:root /app
+
+RUN /app/bin/install-buildpacks.sh
 
 ENV DEIS_RELEASE 1.3.0-dev
 

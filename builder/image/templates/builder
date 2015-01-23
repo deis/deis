@@ -48,32 +48,36 @@ APP_NAME="${REPO%.*}"
 
 cd $(dirname $0) # ensure we are in the root dir
 
-ROOT_DIR=$(pwd)
-DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
-REPO_DIR="${ROOT_DIR}/${REPO}"
-BUILD_DIR="${REPO_DIR}/build"
-CACHE_DIR="${REPO_DIR}/cache"
-
 # define image names
 IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
 TMP_IMAGE="{{ .deis_registry_host }}:{{ .deis_registry_port }}/$IMAGE_NAME"
 
-# create app directories
-mkdir -p $BUILD_DIR $CACHE_DIR
-# create temporary directory inside the build dir for this push
-TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
+ROOT_DIR=$(pwd)
+DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
 
-cd $REPO_DIR
-git archive $GIT_SHA | tar -xmC $TMP_DIR
+REPO_DIR="${ROOT_DIR}/${REPO}"
+BUILD_DIR="${REPO_DIR}/build"
+
+mkdir -p $BUILD_DIR
+
+export ENV_PATH="${REPO_DIR}/env"
+export CACHE_PATH="${REPO_DIR}/cache"
+export BUILD_PATH=$(mktemp -d --tmpdir=$BUILD_DIR)
+export APP_PATH=$(mktemp -d --tmpdir=$BUILD_DIR)
+export SLUG_PATH="${BUILD_PATH}/slug.tgz"
+
+mkdir -p $CACHE_PATH $APP_PATH $ENV_PATH
+
+# cleanup of temporal files
+trap 'rm -rf $BUILD_PATH $APP_PATH $ENV_PATH/*; exit $?' INT TERM EXIT
+
+# go to the app git directory and extract the latest version
+cd $REPO_DIR && git archive $GIT_SHA | tar -xmC $APP_PATH
 
 # switch to app context
-cd $TMP_DIR
+cd $APP_PATH
 
 USING_DOCKERFILE=false
-
-if [ -f Dockerfile ]; then
-    USING_DOCKERFILE=true
-fi
 
 # pull config from controller to be used during build
 URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/config"
@@ -85,40 +89,27 @@ if [ $CODE -ne 0 ]; then
     exit 1
 fi
 
-BUILD_OPTS=()
-BUILD_OPTS+='/usr/bin/docker'
-BUILD_OPTS+=' run '
 # get application configuration
-BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
+APP_CONFIG=$(echo $RESPONSE | /app/bin/create-app-env -directory=$ENV_PATH)
+CODE=$?
+
+if [ $CODE -ne 0 ]; then
+    puts-warn $APP_CONFIG
+    exit 1
+fi
+
+if [ -f Dockerfile ]; then
+    USING_DOCKERFILE=true
+fi
 
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    if [ -f /buildpacks ]; then
-        BUILD_OPTS+=' -v /buildpacks:/tmp/buildpacks:rw'
-        # give non-root slugbuilder user R/W perms for docker volumes
-        chown -R 2000:2000 /buildpacks
-    fi
+    herokuish buildpack build
+    # update permissions
+    chown -R 2000:2000 $CACHE_PATH $BUILD_DIR
+    herokuish slug generate
 
-    # run in the background, we'll attach to it to retrieve logs
-    BUILD_OPTS+=' -d'
-    BUILD_OPTS+=' -v '
-    BUILD_OPTS+=$(echo $TMP_DIR)
-    BUILD_OPTS+=':/tmp/app'
-    BUILD_OPTS+=' -v '
-    BUILD_OPTS+=$(echo $CACHE_DIR)
-    BUILD_OPTS+=':/tmp/cache:rw'
-    # give non-root slugbuilder user R/W perms for docker volumes
-    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
-
-    BUILD_OPTS+=' deis/slugbuilder'
-
-    # build the application and attach to the process
-    JOB=$(eval $(parse-string "${BUILD_OPTS[@]}") )
-    docker attach $JOB
-
-    # copy out the compiled slug
-    docker cp $JOB:/tmp/slug.tgz $TMP_DIR
     # copy over the Dockerfile shim to the build dir
     cp $DOCKERFILE_SHIM ./Dockerfile
 fi
@@ -138,8 +129,8 @@ echo
 # use Procfile if provided, otherwise try default process types from ./release
 if [ -f Procfile ]; then
     PROCFILE=$(cat Procfile | /app/bin/yaml2json-procfile)
-elif [ -f $TMP_DIR/slug.tgz ]; then
-    PROCFILE=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | /app/bin/extract-types)
+elif [ -f $SLUG_PATH/slug.tgz ]; then
+    PROCFILE=$(tar --to-stdout -xf $SLUG_PATH/slug.tgz ./.release | /app/bin/extract-types)
 else
     PROCFILE="{}"
 fi
@@ -168,6 +159,4 @@ echo
 # cleanup
 cd $REPO_DIR
 git gc &>/dev/null
-if [ -n "$JOB" ]; then
-  docker rm -f $JOB &>/dev/null
-fi
+

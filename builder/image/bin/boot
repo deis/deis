@@ -47,29 +47,9 @@ done
 confd -node $ETCD -config-file /app/confd.toml &
 CONFD_PID=$!
 
-# remove any pre-existing docker.sock
-test -e /var/run/docker.sock && rm -f /var/run/docker.sock
-
-# spawn a docker daemon to run builds
-docker -d --storage-driver=$STORAGE_DRIVER --bip=172.19.42.1/16 --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 &
-DOCKER_PID=$!
-
-# wait for docker to start
-while [[ ! -e /var/run/docker.sock ]]; do
-  sleep 1
-done
-
-# HACK: load progrium/cedarish tarball for faster boot times
-# see https://github.com/deis/deis/issues/1027
-if ! docker history progrium/cedarish >/dev/null 2>/dev/null ; then
-    echo "Loading cedarish..."
-    gzip -dc /progrium_cedarish.tar.gz | docker load
-else
-    echo "Cedarish already loaded"
-fi
-
-# build required images
-docker build -t deis/slugbuilder /app/slugbuilder/
+# do not use cedarish from the registry
+# use the id from the opdemand cedarish tgz
+docker tag -f 4b458f40de0a progrium/cedarish:latest
 docker build -t deis/slugrunner /app/slugrunner/
 
 # start an SSH daemon to process `git push` requests
