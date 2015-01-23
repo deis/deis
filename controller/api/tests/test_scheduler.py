@@ -69,6 +69,8 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data, {'detail': 'aborting, failed to create some containers'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         # inspect broken containers
         url = "/v1/apps/{app_id}/containers".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -151,6 +153,8 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data, {'detail': 'aborting, failed to destroy some containers'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         # inspect broken containers
         url = "/v1/apps/{app_id}/containers".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -167,7 +171,10 @@ class SchedulerTest(TransactionTestCase):
             # break if we destroyed successfully
             if response.status_code == 204:
                 break
-            self.assertEquals(response.status_code, 503)
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.data, {'detail': 'aborting, failed to '
+                                                       'destroy some containers'})
+            self.assertEqual(response.get('content-type'), 'application/json')
             # inspect broken containers
             url = "/v1/apps/{app_id}/containers".format(**locals())
             response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -216,6 +223,8 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data, {'detail': 'aborting, failed to create some containers'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         # inspect releases
         url = "/v1/apps/{app_id}/releases".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -267,6 +276,8 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data, {'detail': 'aborting, failed to create some containers'})
+        self.assertEqual(response.get('content-type'), 'application/json')
         # inspect releases
         url = "/v1/apps/{app_id}/releases".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -315,3 +326,5 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.data, {'detail': 'exit code 1'})
+        self.assertEqual(response.get('content-type'), 'application/json')

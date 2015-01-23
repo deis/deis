@@ -303,7 +303,8 @@ class ContainerTest(TransactionTestCase):
         body = {'web': 'not_an_int'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertContains(response, 'Invalid scaling format', status_code=400)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {'detail': 'Invalid scaling format'})
         body = {'invalid': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -446,7 +447,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, "No build associated with this release")
+        self.assertEqual(response.data, {'detail': 'No build associated with this release'})
 
     def test_command_good(self):
         """Test the default command for each container workflow"""

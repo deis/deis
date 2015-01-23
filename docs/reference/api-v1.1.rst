@@ -18,6 +18,8 @@ What's New
 
 **New!** Users see a 404 response when modifying applications they are unauthorized to see.
 
+**New!** Responses returned from the scheduler are properly formatted JSON responses.
+
 
 Authentication
 --------------
