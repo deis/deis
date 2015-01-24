@@ -32,7 +32,7 @@ Commands, use "deisctl help <command>" to learn more:
   install           install components, or the entire platform
   uninstall         uninstall components
   list              list installed components
-  start             start compnents
+  start             start components
   stop              stop components
   restart           stop, then start components
   scale             grow or shrink the number of routers or registries
