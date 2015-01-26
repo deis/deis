@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 )
 
 // BuildTag returns the $BUILD_TAG environment variable or `git rev-parse` output.
@@ -155,7 +154,6 @@ func RunCommandWithStdoutStderr(cmd *exec.Cmd) (bytes.Buffer, bytes.Buffer, erro
 	go func() {
 		streamOutput(stderrPipe, &stderr, os.Stderr)
 	}()
-	time.Sleep(2000 * time.Millisecond)
 	err = cmd.Wait()
 	if err != nil {
 		fmt.Println("error at command wait")
