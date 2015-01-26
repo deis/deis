@@ -15,3 +15,9 @@ FAQ
     DAY-iss
 
 .. _dais: https://en.wiktionary.org/wiki/dais
+
+- Is there documentation for Deis in languages other than English?
+
+    Unofficial `documentation in Chinese`_ for Deis has been created by the DockerOne community.
+
+.. _`documentation in Chinese`: http://dockerone.com/article/124
