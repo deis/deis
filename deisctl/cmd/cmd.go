@@ -653,6 +653,7 @@ Options:
 		"deis-publisher.service",
 		"deis-registry.service",
 		"deis-router.service",
+		"deis-store-admin.service",
 		"deis-store-daemon.service",
 		"deis-store-gateway.service",
 		"deis-store-metadata.service",

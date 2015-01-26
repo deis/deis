@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+ETCD_PORT=${ETCD_PORT:-4001}
+ETCD="$HOST:$ETCD_PORT"
+
+confd -node $ETCD -config-file /app/confd.toml &
+
+# loop forever until the container is stopped
+while true; do
+  sleep 1
+done
