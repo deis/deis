@@ -28,6 +28,10 @@ Note that you always use ``deis.<domain>`` to communicate with the controller.
 
     For Vagrant clusters: ``deis register http://deis.local3.deisapp.com``
 
+.. note::
+
+    For Docker-ized clusters: ``deis register http://deisapp.com:8000``
+
 .. important::
 
     The first user to register with Deis receives "superuser" privileges. Additional users who
