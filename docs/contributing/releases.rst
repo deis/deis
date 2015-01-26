@@ -120,6 +120,8 @@ Major or Minor Release
 Any Release
 -----------
 
+- If this release includes a new component, configure `test-acceptance`_ to publish it to Docker Hub
+
 - Trigger CI jobs manually at https://ci.deis.io/, specifying the new vA.B.D tag
 
   - build-deis-cli-installer-darwin
@@ -218,3 +220,4 @@ Major or Minor Release
 .. _`release notes`: https://github.com/deis/deis/releases
 .. _`Deis pypi`:  https://pypi.python.org/pypi/deis/
 .. _`deis/deis.io`: https://github.com/deis/deis.io
+.. _`test-acceptance`: https://ci.deis.io/job/test-acceptance/configure
