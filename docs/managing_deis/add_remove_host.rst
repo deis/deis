@@ -25,11 +25,11 @@ Inspecting health
 -----------------
 
 Before we begin, we should check the state of the Ceph cluster to be sure it's healthy.
-We can do this by logging into any machine in the cluster, entering a store container, and then querying Ceph:
+To do this, we use ``deis-store-admin`` - see :ref:`using-store-admin`.
 
 .. code-block:: console
 
-    core@deis-1 ~ $ nse deis-store-monitor
+    core@deis-1 ~ $ nse deis-store-admin
     root@deis-1:/# ceph -s
         cluster 20038e38-4108-4e79-95d4-291d0eef2949
          health HEALTH_OK
@@ -111,6 +111,8 @@ that the store services on this host will be leaving the cluster.
 In this example we're going to remove the first node in our cluster, deis-1.
 That machine has an IP address of ``172.17.8.100``.
 
+.. _removing_an_osd:
+
 Removing an OSD
 ~~~~~~~~~~~~~~~
 
@@ -130,7 +132,7 @@ on any host in the cluster (except the one we're removing). In this example, I a
 
 .. code-block:: console
 
-    core@deis-2 ~ $ nse deis-store-monitor
+    core@deis-2 ~ $ nse deis-store-admin
     root@deis-2:/# ceph osd out 2
     marked out osd.2.
 
@@ -178,7 +180,7 @@ Back inside a store container on ``deis-2``, we can finally remove the OSD:
 
 .. code-block:: console
 
-    core@deis-2 ~ $ nse deis-store-monitor
+    core@deis-2 ~ $ nse deis-store-admin
     root@deis-2:/# ceph osd crush remove osd.2
     removed item id 2 name 'osd.2' from crush map
     root@deis-2:/# ceph auth del osd.2
@@ -196,7 +198,7 @@ That's it! If we inspect the health, we see that there are now 3 osds again, and
 
 .. code-block:: console
 
-    core@deis-2 ~ $ nse deis-store-monitor
+    core@deis-2 ~ $ nse deis-store-admin
     root@deis-2:/# ceph -s
         cluster 20038e38-4108-4e79-95d4-291d0eef2949
          health HEALTH_OK
@@ -231,7 +233,7 @@ Back on another host, we can again enter a store container and then remove this 
 
 .. code-block:: console
 
-    core@deis-2 ~ $ nse deis-store-monitor
+    core@deis-2 ~ $ nse deis-store-admin
     root@deis-2:/# ceph mon remove deis-1
     removed mon.deis-1 at 172.17.8.100:6789/0, there are now 3 monitors
     2014-11-04 06:57:59.712934 7f04bc942700  0 monclient: hunting for new mon
