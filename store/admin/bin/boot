@@ -10,5 +10,5 @@ confd -node $ETCD -config-file /app/confd.toml &
 
 # loop forever until the container is stopped
 while true; do
-  sleep 5
+  sleep 1
 done
