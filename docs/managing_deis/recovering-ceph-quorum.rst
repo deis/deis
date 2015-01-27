@@ -34,7 +34,7 @@ To recover from Ceph quorum loss:
 #. Update ``/deis/store/monSetupLock`` to point to the healthy monitor -- note that this isn't strictly necessary, as this value is only used if wiping clean and starting a fresh cluster from scratch with no data, but it's good cleanup
 #. Start the healthy monitor and use the admin socket to get the current state of the cluster.
 #. Given the cluster state as the monitor sees it, use `monmaptool`_ to manually remove stale monitor entries from the monmap (i.e. ``monmaptool --rm mon.<hostname> --clobber /etc/ceph/monmap``)
-#. Stop the healty moitor and use ``deis-store-admin`` to inject the prepared monmap into the monitor with ``ceph-mon -i <hostname> --inject-monmap /etc/ceph/monmap``
+#. Stop the healthy monitor and use ``deis-store-admin`` to inject the prepared monmap into the monitor with ``ceph-mon -i <hostname> --inject-monmap /etc/ceph/monmap``
 #. Start the monitor and ensure it achieves quorum by itself (use ``ceph -s`` and/or query mon_status on the admin socket)
 #. Start the other monitors and ensure they connect
 #. Start the OSDs with ``deisctl start store-daemon``
