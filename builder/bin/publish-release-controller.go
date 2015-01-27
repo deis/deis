@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -77,15 +78,14 @@ func main() {
 
 	res, err := client.Do(req)
 
-	if res.StatusCode == 404 {
-		fmt.Println("Check the Controller. Is it running?")
-		os.Exit(1)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
-	if err != nil || res.StatusCode != 200 {
-		fmt.Println("failed retrieving config from controller")
-		fmt.Println(res.Body)
-		os.Exit(1)
+	if res.StatusCode == 503 {
+		log.Fatalln("check the controller. is it running?")
+	} else if res.StatusCode != 200 {
+		log.Fatalf("failed retrieving config from controller: %s\n", res.Body)
 	}
 
 	defer res.Body.Close()
