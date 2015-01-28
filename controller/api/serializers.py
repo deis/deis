@@ -239,23 +239,22 @@ class DomainSerializer(ModelSerializer):
         """
         Check that the hostname is valid
         """
-        match = re.match(
-            r'^(\*\.)?(' + settings.APP_URL_REGEX + r'\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$',
-            value)
-        if not match:
+        if len(value) > 255:
+            raise serializers.ValidationError('Hostname must be 255 characters or less.')
+        if value[-1:] == ".":
+            value = value[:-1]  # strip exactly one dot from the right, if present
+        labels = value.split('.')
+        if labels[0] == '*':
             raise serializers.ValidationError(
-                "Hostname does not look like a valid hostname. "
-                "Only lowercase characters are allowed.")
-
+                'Adding a wildcard subdomain is currently not supported.')
+        allowed = re.compile("^(?!-)[a-z0-9-]{1,63}(?<!-)$", re.IGNORECASE)
+        for label in labels:
+            match = allowed.match(label)
+            if not match or '--' in label or label[-1].isdigit() or label.isdigit():
+                raise serializers.ValidationError('Hostname does not look valid.')
         if models.Domain.objects.filter(domain=value).exists():
             raise serializers.ValidationError(
                 "The domain {} is already in use by another app".format(value))
-
-        domain_parts = value.split('.')
-        if domain_parts[0] == '*':
-            raise serializers.ValidationError(
-                "Adding a wildcard subdomain is currently not supported".format(value))
-
         return value
 
 
