@@ -93,6 +93,7 @@ func main() {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Println(string(body))
 		os.Exit(1)
 	}
 	var response map[string]interface{}

@@ -16,7 +16,8 @@ func main() {
 
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	values, err := builder.ParseControllerConfig(bytes)
