@@ -76,6 +76,10 @@ get written on boot. Add it to the `write_files` section of the user-data file:
           COREOS_PUBLIC_IPV4=<your public ip>
           COREOS_PRIVATE_IPV4=<your private ip>
 
+Consider a local Docker Hub mirror
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. include:: ../_includes/_consider_local_hub_mirror.rst
 
 Install CoreOS to disk
 ----------------------
