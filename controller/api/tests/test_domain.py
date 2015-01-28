@@ -48,24 +48,26 @@ class DomainTest(TestCase):
 
     def test_manage_domain(self):
         url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
-        body = {'domain': 'test-domain.example.com'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-        url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
-        response = self.client.get(url, content_type='application/json',
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
-        result = response.data['results'][0]
-        self.assertEqual('test-domain.example.com', result['domain'])
-        url = '/v1/apps/{app_id}/domains/{hostname}'.format(hostname='test-domain.example.com',
-                                                            app_id=self.app_id)
-        response = self.client.delete(url, content_type='application/json',
-                                      HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 204)
-        url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
-        response = self.client.get(url, content_type='application/json',
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(0, response.data['count'])
+        test_domains = ['test-domain.example.com', 'django.paas-sandbox']
+        for domain in test_domains:
+            body = {'domain': domain}
+            response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(response.status_code, 201)
+            url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
+            response = self.client.get(url, content_type='application/json',
+                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
+            result = response.data['results'][0]
+            self.assertEqual(domain, result['domain'])
+            url = '/v1/apps/{app_id}/domains/{hostname}'.format(hostname=domain,
+                                                                app_id=self.app_id)
+            response = self.client.delete(url, content_type='application/json',
+                                          HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(response.status_code, 204)
+            url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
+            response = self.client.get(url, content_type='application/json',
+                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(0, response.data['count'])
 
     def test_manage_domain_invalid_app(self):
         url = '/v1/apps/{app_id}/domains'.format(app_id="this-app-does-not-exist")
