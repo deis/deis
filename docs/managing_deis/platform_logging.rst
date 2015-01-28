@@ -16,8 +16,19 @@ and sends their logs to ``/deis/logs/host`` and ``/deis/logs/port``.
 when a client runs ``deis logs``. This component publishes its host and port to ``/deis/logs/host``
 and ``/deis/logs/port``, and is typically the service which consumes logs from ``deis-logspout``.
 
-Routing logs to a custom location
----------------------------------
+Application log drain
+---------------------
+
+Application logs can be drained to an external syslog server (or compatible service such as Logstash, Papertrail, Splunk etc).
+
+.. code-block:: console
+
+    $ deisctl config logs set drain=syslog://logs2.papertrailapp.com:23654
+
+This will send all application logs - there is currently no way to drain logs per application.
+
+Routing host logs to a custom location
+--------------------------------------
 
 Logging to an external location can be achieved without modifying the log flow within Deis -
 we can simply send the master journal on a CoreOS host using ``ncat``. For example, if I'm using the

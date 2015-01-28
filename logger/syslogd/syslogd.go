@@ -9,6 +9,8 @@ import (
 	"regexp"
 
 	"github.com/deis/deis/logger/syslog"
+
+	"github.com/deis/deis/logger/drain"
 )
 
 const logRoot = "/data/logs"
@@ -81,6 +83,10 @@ func (h *handler) mainLoop() {
 		m := h.Get()
 		if m == nil {
 			break
+		}
+		d := drain.GetDrain()
+		if d != "" {
+			drain.SendToDrain(m.String(), d)
 		}
 		err := writeToDisk(m)
 		if err != nil {
