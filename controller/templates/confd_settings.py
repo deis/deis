@@ -3,7 +3,7 @@ SECRET_KEY = '{{ .deis_controller_secretKey }}'
 BUILDER_KEY = '{{ .deis_controller_builderKey }}'
 
 # scheduler settings
-SCHEDULER_MODULE = '{{ or (.deis_controller_schedulerModule) "fleet" }}'
+SCHEDULER_MODULE = 'scheduler.{{ or (.deis_controller_schedulerModule) "fleet" }}'
 SCHEDULER_TARGET = '{{ or (.deis_controller_schedulerTarget) "/var/run/fleet.sock" }}'
 try:
     SCHEDULER_OPTIONS = dict('{{ or (.deis_controller_schedulerOptions) "{}" }}')

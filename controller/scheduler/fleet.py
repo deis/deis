@@ -1,13 +1,16 @@
 import cStringIO
 import base64
 import copy
-import json
 import httplib
+import json
 import paramiko
 import socket
 import re
 import time
+
 from django.conf import settings
+
+from .states import JobState
 
 
 MATCH = re.compile(
@@ -42,16 +45,21 @@ class FleetHTTPClient(object):
     # connection helpers
 
     def _put_unit(self, name, body):
-        headers = {'Content-Type': 'application/json'}
-        self.conn.request('PUT', '/v1-alpha/units/{name}.service'.format(**locals()),
-                          headers=headers, body=json.dumps(body))
-        resp = self.conn.getresponse()
-        data = resp.read()
-        if not 200 <= resp.status <= 299:
-            errmsg = "Failed to create unit: {} {} - {}".format(
-                resp.status, resp.reason, data)
-            raise RuntimeError(errmsg)
-        return data
+        for attempt in range(RETRIES):
+            try:
+                headers = {'Content-Type': 'application/json'}
+                self.conn.request('PUT', '/v1-alpha/units/{name}.service'.format(**locals()),
+                                  headers=headers, body=json.dumps(body))
+                resp = self.conn.getresponse()
+                data = resp.read()
+                if not 200 <= resp.status <= 299:
+                    errmsg = "Failed to create unit: {} {} - {}".format(
+                        resp.status, resp.reason, data)
+                    raise RuntimeError(errmsg)
+                return data
+            except:
+                if attempt >= (RETRIES - 1):
+                    raise
 
     def _delete_unit(self, name):
         headers = {'Content-Type': 'application/json'}
@@ -131,14 +139,8 @@ class FleetHTTPClient(object):
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
                          "value": tagset})
-        # post unit to fleet and retry
-        for attempt in range(RETRIES):
-            try:
-                self._put_unit(name, {"desiredState": "launched", "options": unit})
-                break
-            except:
-                if attempt == (RETRIES - 1):  # account for 0 indexing
-                    raise
+        # post unit to fleet
+        self._put_unit(name, {"desiredState": "loaded", "options": unit})
 
     def _get_hostname(self, application_name):
         hostname = settings.UNIT_HOSTNAME
@@ -155,31 +157,40 @@ class FleetHTTPClient(object):
 
     def start(self, name):
         """Start a container"""
-        self._wait_for_container(name)
+        self._put_unit(name, {'desiredState': 'launched'})
+        self._wait_for_container_running(name)
 
-    def _wait_for_container(self, name):
+    def _wait_for_container_state(self, name):
+        # wait for container to get scheduled
+        for _ in range(30):
+            states = self._get_state(name)
+            if states and len(states.get('states', [])) == 1:
+                return states.get('states')[0]
+            time.sleep(1)
+        else:
+            raise RuntimeError('container timeout while retrieving state')
+
+    def _wait_for_container_running(self, name):
         failures = 0
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
-            states = self._get_state(name)
-            if states and len(states.get('states', [])) == 1:
-                state = states.get('states')[0]
-                subState = state.get('systemdSubState')
-                if subState == 'running' or subState == 'exited':
-                    break
-                elif subState == 'failed':
-                    # FIXME: fleet unit state reports failed when containers are fine
-                    failures += 1
-                    if failures == 10:
-                        raise RuntimeError('container failed to start')
+            # FIXME: fleet unit state reports failed when containers are fine
+            state = self._wait_for_container_state(name)
+            if state.get('systemdSubState') == 'failed':
+                failures += 1
+                if failures == 10:
+                    raise RuntimeError('container failed to start')
+                time.sleep(1)
+                continue
+            if self.state(name) == JobState.up:
+                return
             time.sleep(1)
         else:
-            raise RuntimeError('container timeout on start')
+            raise RuntimeError('container failed to start')
 
     def _wait_for_destroy(self, name):
         for _ in range(30):
-            states = self._get_state(name)
-            if not states:
+            if not self._get_state(name):
                 break
             time.sleep(1)
         else:
@@ -211,16 +222,10 @@ class FleetHTTPClient(object):
         """Run a one-off command"""
         self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE),
                                entrypoint=entrypoint)
-
+        # launch the container
+        self._put_unit(name, {'desiredState': 'launched'})
         # wait for the container to get scheduled
-        for _ in range(30):
-            states = self._get_state(name)
-            if states and len(states.get('states', [])) == 1:
-                state = states.get('states')[0]
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container did not report state')
+        state = self._wait_for_container_state(name)
 
         try:
             machineID = state.get('machineID')
@@ -313,6 +318,27 @@ class FleetHTTPClient(object):
 
         # return rc and output
         return rc, output
+
+    def state(self, name):
+        systemdActiveStateMap = {
+            "active": "up",
+            "reloading": "down",
+            "inactive": "created",
+            "failed": "crashed",
+            "activating": "down",
+            "deactivating": "down",
+        }
+        try:
+            state = self._wait_for_container_state(name)
+            activeState = state['systemdActiveState']
+            return getattr(JobState, systemdActiveStateMap[activeState])
+        except KeyError:
+            # failed retrieving a proper response from the fleet API
+            return JobState.error
+        except RuntimeError:
+            # failed to retrieve a response from the fleet API,
+            # which means it does not exist
+            return JobState.destroyed
 
     def attach(self, name):
         """

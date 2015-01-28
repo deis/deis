@@ -24,8 +24,6 @@ from django.db.models import Max
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
-from django_fsm import FSMField, transition
-from django_fsm.signals import post_transition
 from docker.utils import utils as dockerutils
 from json_field.fields import JSONField
 import requests
@@ -37,6 +35,25 @@ from utils import dict_diff, fingerprint
 
 
 logger = logging.getLogger(__name__)
+
+
+def close_db_connections(func, *args, **kwargs):
+    """
+    Decorator to explicitly close db connections during threaded execution
+
+    Note this is necessary to work around:
+    https://code.djangoproject.com/ticket/22420
+    """
+    def _close_db_connections(*args, **kwargs):
+        ret = None
+        try:
+            ret = func(*args, **kwargs)
+        finally:
+            from django.db import connections
+            for conn in connections.all():
+                conn.close()
+        return ret
+    return _close_db_connections
 
 
 def log_event(app, msg, level=logging.INFO):
@@ -129,19 +146,16 @@ class App(UuidAuditedModel):
     class Meta:
         permissions = (('use_app', 'Can use app'),)
 
-    def __str__(self):
-        return self.id
-
-    def _get_scheduler(self, *args, **kwargs):
-        module_name = 'scheduler.' + settings.SCHEDULER_MODULE
-        mod = importlib.import_module(module_name)
-
+    @property
+    def _scheduler(self):
+        mod = importlib.import_module(settings.SCHEDULER_MODULE)
         return mod.SchedulerClient(settings.SCHEDULER_TARGET,
                                    settings.SCHEDULER_AUTH,
                                    settings.SCHEDULER_OPTIONS,
                                    settings.SSH_PRIVATE_KEY)
 
-    _scheduler = property(_get_scheduler)
+    def __str__(self):
+        return self.id
 
     @property
     def url(self):
@@ -246,13 +260,13 @@ class App(UuidAuditedModel):
             start_threads.append(threading.Thread(target=c.start))
         [t.start() for t in create_threads]
         [t.join() for t in create_threads]
-        if set([c.state for c in to_add]) != set([Container.CREATED]):
+        if set([c.state for c in to_add]) != set(['created']):
             err = 'aborting, failed to create some containers'
             log_event(self, err, logging.ERROR)
             raise RuntimeError(err)
         [t.start() for t in start_threads]
         [t.join() for t in start_threads]
-        if set([c.state for c in to_add]) != set([Container.UP]):
+        if set([c.state for c in to_add]) != set(['up']):
             err = 'warning, some containers failed to start'
             log_event(self, err, logging.WARNING)
 
@@ -266,8 +280,8 @@ class App(UuidAuditedModel):
             destroy_threads.append(threading.Thread(target=c.destroy))
         [t.start() for t in destroy_threads]
         [t.join() for t in destroy_threads]
-        [c.delete() for c in to_destroy if c.state == Container.DESTROYED]
-        if set([c.state for c in to_destroy]) != set([Container.DESTROYED]):
+        [c.delete() for c in to_destroy if c.state == 'destroyed']
+        if set([c.state for c in to_destroy]) != set(['destroyed']):
             err = 'aborting, failed to destroy some containers'
             log_event(self, err, logging.ERROR)
             raise RuntimeError(err)
@@ -359,30 +373,20 @@ class Container(UuidAuditedModel):
     """
     Docker container used to securely host an application process.
     """
-    INITIALIZED = 'initialized'
-    CREATED = 'created'
-    UP = 'up'
-    DOWN = 'down'
-    DESTROYED = 'destroyed'
-    CRASHED = 'crashed'
-    ERROR = 'error'
-    STATE_CHOICES = (
-        (INITIALIZED, 'initialized'),
-        (CREATED, 'created'),
-        (UP, 'up'),
-        (DOWN, 'down'),
-        (DESTROYED, 'destroyed'),
-        (CRASHED, 'crashed'),
-        (ERROR, 'error'),
-    )
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     release = models.ForeignKey('Release')
     type = models.CharField(max_length=128, blank=False)
     num = models.PositiveIntegerField()
-    state = FSMField(default=INITIALIZED, choices=STATE_CHOICES,
-                     protected=True, propagate=False)
+
+    @property
+    def _scheduler(self):
+        return self.app._scheduler
+
+    @property
+    def state(self):
+        return self._scheduler.state(self._job_id).name
 
     def short_name(self):
         return "{}.{}.{}".format(self.app.id, self.type, self.num)
@@ -404,11 +408,6 @@ class Container(UuidAuditedModel):
         return job_id
 
     _job_id = property(_get_job_id)
-
-    def _get_scheduler(self):
-        return self.app._scheduler
-
-    _scheduler = property(_get_scheduler)
 
     def _get_command(self):
         try:
@@ -434,7 +433,7 @@ class Container(UuidAuditedModel):
                                      num=self.num)
         return c
 
-    @transition(field=state, source=INITIALIZED, target=CREATED, on_error=ERROR)
+    @close_db_connections
     def create(self):
         image = self.release.image
         kwargs = {'memory': self.release.config.memory,
@@ -452,7 +451,7 @@ class Container(UuidAuditedModel):
             log_event(self.app, err, logging.ERROR)
             raise
 
-    @transition(field=state, source=[CREATED, UP, DOWN], target=UP, on_error=CRASHED)
+    @close_db_connections
     def start(self):
         job_id = self._job_id
         try:
@@ -462,7 +461,7 @@ class Container(UuidAuditedModel):
             log_event(self.app, err, logging.WARNING)
             raise
 
-    @transition(field=state, source=UP, target=DOWN, on_error=ERROR)
+    @close_db_connections
     def stop(self):
         job_id = self._job_id
         try:
@@ -472,7 +471,7 @@ class Container(UuidAuditedModel):
             log_event(self.app, err, logging.ERROR)
             raise
 
-    @transition(field=state, source='*', target=DESTROYED, on_error=ERROR)
+    @close_db_connections
     def destroy(self):
         job_id = self._job_id
         try:
@@ -941,17 +940,6 @@ post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
-
-# save FSM transitions as they happen
-def _save_transition(**kwargs):
-    kwargs['instance'].save()
-    # close database connections after transition
-    # to avoid leaking connections inside threads
-    from django.db import connection
-    connection.close()
-
-post_transition.connect(_save_transition)
 
 # wire up etcd publishing if we can connect
 try:

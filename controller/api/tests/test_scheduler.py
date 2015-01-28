@@ -30,13 +30,13 @@ class SchedulerTest(TransactionTestCase):
         chaos.START_ERROR_RATE = 0
         chaos.STOP_ERROR_RATE = 0
         # use chaos scheduler
-        settings.SCHEDULER_MODULE = 'chaos'
+        settings.SCHEDULER_MODULE = 'scheduler.chaos'
         # provide mock authentication used for run commands
         settings.SSH_PRIVATE_KEY = '<some-ssh-private-key>'
 
     def tearDown(self):
         # reset for subsequent tests
-        settings.SCHEDULER_MODULE = 'mock'
+        settings.SCHEDULER_MODULE = 'scheduler.mock'
         settings.SSH_PRIVATE_KEY = ''
 
     def test_create_chaos(self):
