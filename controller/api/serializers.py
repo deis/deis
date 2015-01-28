@@ -240,7 +240,7 @@ class DomainSerializer(ModelSerializer):
         Check that the hostname is valid
         """
         match = re.match(
-            r'^(\*\.)?(' + settings.APP_URL_REGEX + r'\.)*([a-z0-9-]+)\.([a-z0-9]{2,})$',
+            r'^(\*\.)?(' + settings.APP_URL_REGEX + r'\.)*([a-z0-9-]+)\.([a-z0-9-]{2,})$',
             value)
         if not match:
             raise serializers.ValidationError(
