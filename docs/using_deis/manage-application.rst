@@ -47,7 +47,7 @@ Use ``deis run`` to execute commands on the deployed application.
 
     $ deis run 'ls -l'
     Running `ls -l`...
-    
+
     total 28
     -rw-r--r-- 1 root root  553 Dec  2 23:59 LICENSE
     -rw-r--r-- 1 root root   60 Dec  2 23:59 Procfile
@@ -59,11 +59,11 @@ Use ``deis run`` to execute commands on the deployed application.
 
 Share the Application
 ---------------------
-Use ``deis perms:add`` to allow another Deis user to collaborate on your application.
+Use ``deis perms:create`` to allow another Deis user to collaborate on your application.
 
 .. code-block:: console
 
-  $ deis perms:add otheruser
+  $ deis perms:create otheruser
   Adding otheruser to peachy-waxworks collaborators... done
 
 Use ``deis perms`` to see who an application is currently shared with, and
