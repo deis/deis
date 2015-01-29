@@ -172,6 +172,21 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
+CloudFormation Updates
+----------------------
+
+To use CloudFormation to perform update operations to your stack, there is another script: 
+`update_ec2_cluster.sh`_. Depending on the parameters that you have changed, CloudFormation
+may replace the EC2 instances in your stack.
+
+The following parameters can be changed without replacing any resources:
+
+- ``ClusterSize`` - Number of nodes in the cluster. This may launch new instances or terminate
+  existing ones, but service will not be interrupted.
+- ``SSHFrom`` - Locks down SSH access to the Deis hosts. This will update the security
+  group for the Deis hosts.
+
+Please reference the AWS documentation for `more information about CloudFormation stack updates`_.
 
 .. _`#1758`: https://github.com/deis/deis/issues/1758
 .. _`awscli`: https://github.com/aws/aws-cli
@@ -180,3 +195,6 @@ start installing the platform.
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`PyYAML`: http://pyyaml.org/
+.. _`update_ec2_cluster.sh`: https://github.com/deis/deis/blob/master/contrib/ec2/update-ec2-cluster.sh
+.. _`More information about CloudFormation stack updates`: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html
+
