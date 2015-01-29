@@ -179,10 +179,12 @@ To use CloudFormation to perform update operations to your stack, there is anoth
 `update_ec2_cluster.sh`_. Depending on the parameters that you have changed, CloudFormation
 may replace the EC2 instances in your stack.
 
-The following parameters can be changed without replacing any resources:
+The following parameters can be changed without replacing all instances in a stack:
 
 - ``ClusterSize`` - Number of nodes in the cluster. This may launch new instances or terminate
-  existing ones, but service will not be interrupted.
+  existing instances. If you are scaling down, this may interrupt service. If a container
+  was running on an instance that was terminated, it will have to be rebalanced onto another 
+  node which will cause some downtime.
 - ``SSHFrom`` - Locks down SSH access to the Deis hosts. This will update the security
   group for the Deis hosts.
 
