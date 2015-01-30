@@ -4,15 +4,14 @@ COMPONENT = logger
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 BUILD_IMAGE := $(COMPONENT)-build
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	docker build -t $(BUILD_IMAGE) .
-	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/logger image/bin/
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/logger github.com/deis/deis/logger || exit 1
 	docker build -t $(IMAGE) image
-	rm -rf image/bin/logger
-	-docker rm -f `docker ps | grep logger-build | awk '{print $$1}'`
 
 clean: check-docker check-registry
+	rm -f image/bin/logger
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
