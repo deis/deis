@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from guardian.shortcuts import assign_perm, get_objects_for_user, \
     get_users_with_perms, remove_perm
 from rest_framework import mixins, renderers, status
+from rest_framework.decorators import permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -37,10 +38,10 @@ class UserManagementViewSet(GenericViewSet,
 
     def passwd(self, request, **kwargs):
         obj = self.get_object()
-        if not obj.check_password(request.DATA['password']):
+        if not obj.check_password(request.data['password']):
             return Response({'detail': 'Current password does not match'},
                             status=status.HTTP_400_BAD_REQUEST)
-        obj.set_password(request.DATA['new_password'])
+        obj.set_password(request.data['new_password'])
         obj.save()
         return Response({'status': 'password set'})
 
@@ -80,7 +81,7 @@ class AppResourceViewSet(BaseDeisViewSet):
         return self.get_queryset(**kwargs).latest('created')
 
     def create(self, request, **kwargs):
-        request.DATA['app'] = self.get_app()
+        request.data['app'] = self.get_app()
         return super(AppResourceViewSet, self).create(request, **kwargs)
 
 
@@ -134,14 +135,14 @@ class AppViewSet(BaseDeisViewSet):
         new_structure = {}
         app = self.get_object()
         try:
-            for target, count in request.DATA.items():
+            for target, count in request.data.items():
                 new_structure[target] = int(count)
             models.validate_app_structure(new_structure)
             app.scale(request.user, new_structure)
         except (TypeError, ValueError):
             return Response({'detail': 'Invalid scaling format'},
                             status=status.HTTP_400_BAD_REQUEST)
-        except (ValidationError, EnvironmentError) as e:
+        except (EnvironmentError, ValidationError) as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
             return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
@@ -150,19 +151,16 @@ class AppViewSet(BaseDeisViewSet):
     def logs(self, request, **kwargs):
         app = self.get_object()
         try:
-            logs = app.logs()
+            return Response(app.logs(), status=status.HTTP_200_OK, content_type='text/plain')
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
                             status=status.HTTP_204_NO_CONTENT,
                             content_type='text/plain')
-        return Response(logs, status=status.HTTP_200_OK,
-                        content_type='text/plain')
 
     def run(self, request, **kwargs):
         app = self.get_object()
-        command = request.DATA['command']
         try:
-            output_and_rc = app.run(self.request.user, command)
+            output_and_rc = app.run(self.request.user, request.data['command'])
         except EnvironmentError as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except RuntimeError as e:
@@ -241,12 +239,12 @@ class ReleaseViewSet(AppResourceViewSet):
         Create a new release as a copy of the state of the compiled slug and config vars of a
         previous release.
         """
+        app = self.get_app()
         try:
-            app = self.get_app()
             release = app.release_set.latest()
             version_to_rollback_to = release.version - 1
-            if request.DATA.get('version'):
-                version_to_rollback_to = int(request.DATA['version'])
+            if request.data.get('version'):
+                version_to_rollback_to = int(request.data['version'])
             new_release = release.rollback(request.user, version_to_rollback_to)
             response = {'version': new_release.version}
             return Response(response, status=status.HTTP_201_CREATED)
@@ -268,18 +266,13 @@ class PushHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.data['receive_repo'])
-        self.user = get_object_or_404(User, username=request.data['receive_user'])
+        request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if self.user == app.owner or \
-           self.user in get_users_with_perms(app) or \
-           self.user.is_superuser:
-                request.data['app'] = app
-                request.data['owner'] = self.user
-                return super(PushHookViewSet, self).create(request, *args, **kwargs)
-        raise PermissionDenied()
-
-    def perform_create(self, serializer, **kwargs):
-        serializer.save(owner=self.user)
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        request.data['app'] = app
+        request.data['owner'] = request.user
+        return super(PushHookViewSet, self).create(request, *args, **kwargs)
 
 
 class BuildHookViewSet(BaseHookViewSet):
@@ -289,24 +282,17 @@ class BuildHookViewSet(BaseHookViewSet):
 
     def create(self, request, *args, **kwargs):
         app = get_object_or_404(models.App, id=request.data['receive_repo'])
-        self.user = get_object_or_404(User, username=request.data['receive_user'])
+        self.user = request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if self.user == app.owner or \
-           self.user in get_users_with_perms(app) or \
-           self.user.is_superuser:
-            request._data = request.data.copy()
-            request.data['app'] = app
-            request.data['owner'] = self.user
-            super(BuildHookViewSet, self).create(request, *args, **kwargs)
-            # return the application databag
-            response = {'release': {'version': app.release_set.latest().version},
-                        'domains': ['.'.join([app.id, settings.DEIS_DOMAIN])]}
-            return Response(response, status=status.HTTP_200_OK)
-        raise PermissionDenied()
-
-    def perform_create(self, serializer, **kwargs):
-        build = serializer.save(owner=self.user)
-        self.post_save(build)
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        request.data['app'] = app
+        request.data['owner'] = self.user
+        super(BuildHookViewSet, self).create(request, *args, **kwargs)
+        # return the application databag
+        response = {'release': {'version': app.release_set.latest().version},
+                    'domains': ['.'.join([app.id, settings.DEIS_DOMAIN])]}
+        return Response(response, status=status.HTTP_200_OK)
 
     def post_save(self, build):
         build.create(self.user)
@@ -318,16 +304,14 @@ class ConfigHookViewSet(BaseHookViewSet):
     serializer_class = serializers.ConfigSerializer
 
     def create(self, request, *args, **kwargs):
-        app = get_object_or_404(models.App, id=request.DATA['receive_repo'])
-        user = get_object_or_404(User, username=request.DATA['receive_user'])
+        app = get_object_or_404(models.App, id=request.data['receive_repo'])
+        request.user = get_object_or_404(User, username=request.data['receive_user'])
         # check the user is authorized for this app
-        if user == app.owner or \
-           user in get_users_with_perms(app) or \
-           user.is_superuser:
-            config = app.release_set.latest().config
-            serializer = self.get_serializer(config)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        raise PermissionDenied()
+        if not permissions.is_app_user(request, app):
+            raise PermissionDenied()
+        config = app.release_set.latest().config
+        serializer = self.get_serializer(config)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AppPermsViewSet(BaseDeisViewSet):
@@ -336,37 +320,34 @@ class AppPermsViewSet(BaseDeisViewSet):
     model = models.App  # models class
     perm = 'use_app'    # short name for permission
 
+    def get_queryset(self):
+        return self.model.objects.all()
+
+    @permission_classes([permissions.IsAppUser])
     def list(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
+        app = self.get_object()
         perm_name = "api.{}".format(self.perm)
-        if request.user != app.owner and \
-                not request.user.has_perm(perm_name, app) and \
-                not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
         usernames = [u.username for u in get_users_with_perms(app)
                      if u.has_perm(perm_name, app)]
         return Response({'users': usernames})
 
+    @permission_classes([permissions.IsOwnerOrAdmin])
     def create(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        user = get_object_or_404(User, username=request.DATA['username'])
+        app = self.get_object()
+        user = get_object_or_404(User, username=request.data['username'])
         assign_perm(self.perm, user, app)
         models.log_event(app, "User {} was granted access to {}".format(user, app))
         return Response(status=status.HTTP_201_CREATED)
 
+    @permission_classes([permissions.IsOwnerOrAdmin])
     def destroy(self, request, **kwargs):
-        app = get_object_or_404(self.model, id=kwargs['id'])
-        if request.user != app.owner and not request.user.is_superuser:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        app = self.get_object()
         user = get_object_or_404(User, username=kwargs['username'])
-        if user.has_perm(self.perm, app):
-            remove_perm(self.perm, user, app)
-            models.log_event(app, "User {} was revoked access to {}".format(user, app))
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        if not user.has_perm(self.perm, app):
+            raise PermissionDenied()
+        remove_perm(self.perm, user, app)
+        models.log_event(app, "User {} was revoked access to {}".format(user, app))
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AdminPermsViewSet(BaseDeisViewSet):
@@ -374,14 +355,14 @@ class AdminPermsViewSet(BaseDeisViewSet):
 
     model = User
     serializer_class = serializers.AdminUserSerializer
-    permission_classes = (permissions.IsAdmin,)
+    permission_classes = [permissions.IsAdmin]
 
     def get_queryset(self, **kwargs):
         self.check_object_permissions(self.request, self.request.user)
         return self.model.objects.filter(is_active=True, is_superuser=True)
 
     def create(self, request, **kwargs):
-        user = get_object_or_404(User, username=request.DATA['username'])
+        user = get_object_or_404(User, username=request.data['username'])
         user.is_superuser = user.is_staff = True
         user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_201_CREATED)
