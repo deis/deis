@@ -28,7 +28,7 @@ else:
 
 
 setup(name='deis',
-      version='1.3.0-dev',
+      version='1.3.0',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',

@@ -56,10 +56,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
 
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.2.2
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.3.0
     $ deisctl --version  # should match the desired platform
-    1.2.2
-    $ deisctl config platform set version=v1.2.2
+    1.3.0
+    $ deisctl config platform set version=v1.3.0
     $ deisctl install platform
     $ deisctl start platform
 

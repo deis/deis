@@ -101,6 +101,8 @@ Major or Minor Release
   - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
     (near the bottom of the file) from ``[master]`` to ``[vA.B.D]``.
 
+  - Find and replace "A.B.D-dev" with "A.B.D" in all project Dockerfiles.
+
 - Update the CHANGELOG to include all commits since the last release
 
   - ``./contrib/util/generate-changelog.sh vA.B.C | cat - CHANGELOG.md > tmp && mv tmp CHANGELOG.md``
@@ -202,6 +204,7 @@ Major or Minor Release
         deisctl/deis-version \
         version/version.go
 
+  - Find and replace "A.B.D-dev" with "A.B.D" in all project Dockerfiles.
   - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
   - ``git push origin master``
 

@@ -1,3 +1,78 @@
+### v1.2.2 -> v1.3.0
+
+#### Features
+
+ - [`dc5b866`](https://github.com/deis/deis/commit/dc5b8664a77f0a0947f7c971c091e3c845431517) deisctl: support store-admin in refresh-units
+ - [`a238964`](https://github.com/deis/deis/commit/a23896420a7ad6b18c50e70cdefa2f01966033ff) store: add store-admin container
+ - [`678f20b`](https://github.com/deis/deis/commit/678f20be1aa09635db72ca8406e006244c59d8fa) client: add flag to disable SSL certificate verification
+ - [`bafc3e2`](https://github.com/deis/deis/commit/bafc3e2e956ede7bc9597c8dc1ef1a5161865f62) router: listen on port 80 for platform SSL
+ - [`6117570`](https://github.com/deis/deis/commit/6117570a9842a9eaf829ba083dadad2a82fe43b7) builder: disable simultaneous push in the same repository
+ - [`a30137e`](https://github.com/deis/deis/commit/a30137e016ad1ef2da2fd07e808347e93040cb79) (all): support RFC 6598 for insecure registries
+ - [`b8ff429`](https://github.com/deis/deis/commit/b8ff429c9457395478f79b0c994da5d17bcb5def) client: Add controller to whoami command.
+ - [`468cb1f`](https://github.com/deis/deis/commit/468cb1f201b35452feaaf33206900764d6086e59) slugbuilder: update nodejs buildpack to v64 (yoga release
+ - [`8477f3e`](https://github.com/deis/deis/commit/8477f3ed8b74c166e9a1dd8a02fe077b609b77f9) store: add gateway mock
+ - [`4b791d2`](https://github.com/deis/deis/commit/4b791d29fd9f3e7ea78e801ae409355c73018ea3) controller: add hostname exposing to units
+ - [`72fac56`](https://github.com/deis/deis/commit/72fac56a16797caeca70054d9c1d6882fcd19fe3) contrib/ec2: Set ELB timeout to 1200s
+ - [`1ed1281`](https://github.com/deis/deis/commit/1ed1281d71d85330a123feab481c3f9d60448aac) docker: add env DEIS_RELEASE
+
+#### Fixes
+
+ - [`c20d892`](https://github.com/deis/deis/commit/c20d8925decbcfb9db5a99c1c92de3527312c9be) logger: add logger build to gitignore
+ - [`dc0dae9`](https://github.com/deis/deis/commit/dc0dae9320434050665ed85b12315eb2b038016c) contrib: use 1GB per VM"
+ - [`1a8a656`](https://github.com/deis/deis/commit/1a8a656b0c111883835b28ef164d71f04592cc82) logger: use godep for dependencies
+ - [`d39c9c8`](https://github.com/deis/deis/commit/d39c9c85db3a01d9b949edd991516536a2e3a706) docs: refer to correct "deis perms:create" command
+ - [`90fe432`](https://github.com/deis/deis/commit/90fe432dcf5e436802f0cb4bbf2c2492dd082e30) contrib/coreos: etdcd_request_timeout value type
+ - [`c67afb4`](https://github.com/deis/deis/commit/c67afb4ea9f65e7e6b3130aba151f11b23c520ae) builder: correctly handle error on request timeout
+ - [`7af2e16`](https://github.com/deis/deis/commit/7af2e16b8d3def0b0477f7c8f24b8c18e8473594) security: increase max conntrack connections
+ - [`aabb08f`](https://github.com/deis/deis/commit/aabb08f2d807a8a5b94283b5d45d8e4e9487ec3e) controller: return proper json messages on error
+ - [`4692bda`](https://github.com/deis/deis/commit/4692bda95ba59fcc5034b3897db3f4f5343792c0) controller: validate key material on upload
+ - [`861108a`](https://github.com/deis/deis/commit/861108a1fe5fdbd2bcc9576a834d3a7083c53f39) controller: return 403 when a user does not have permission
+ - [`43d8a92`](https://github.com/deis/deis/commit/43d8a9207e9493625dafc92e2c95ee36dcec0bf3) builder: exit if an error occur compiling go
+ - [`283ead3`](https://github.com/deis/deis/commit/283ead314f2a4d7bd79560361418b9d189d9e129) client: check for expected destroy response
+ - [`31052eb`](https://github.com/deis/deis/commit/31052eb18ea780d2ada7ef09fbaa7a30d70c4f1f) database: increases max_connections to 250
+ - [`2515661`](https://github.com/deis/deis/commit/25156613c820d2ed753523c9ec44bbd8b8d72410) store: use hostnames for mon host
+ - [`f2d2f2f`](https://github.com/deis/deis/commit/f2d2f2f6b0eae1ea3195c0ba6591391dcb50c486) builder: allow procfile to override default process types
+ - [`7b8e6d7`](https://github.com/deis/deis/commit/7b8e6d7acd734d8a9be4f63ec53ce1fe4aedd6c2) controller: track create and start separately to catch early errors
+ - [`a23bd6a`](https://github.com/deis/deis/commit/a23bd6a6893885d64094458eec60398ea2f34918) database: fix build because of python-daemon
+ - [`70af19c`](https://github.com/deis/deis/commit/70af19c47d7452fbef51bcca6eb2534f671c4d23) (all): bump version in Dockerfiles
+ - [`c85b062`](https://github.com/deis/deis/commit/c85b06219cbaa4876b9321acc7007ac2a1bde05f) client: remove fetch call from apps:create
+
+#### Documentation
+
+ - [`db7a930`](https://github.com/deis/deis/commit/db7a930967f65c8c25d0f844e4cb064b87f22cbe) ec2: Update installing_deis/aws
+ - [`88a2de2`](https://github.com/deis/deis/commit/88a2de28ed62f5dbbfcda99ea976cccfb0858305) ec2: Document update_ec2_cluster.sh
+ - [`249cded`](https://github.com/deis/deis/commit/249cded318147a54ea4327a71a27d236d5ccfd5e) installing_deis: add --use_compute_key option flag
+ - [`102633e`](https://github.com/deis/deis/commit/102633eb1f94130d859850b7a77f684a0968bcfa) contributing: customize test-acceptance on component addition
+ - [`4ef7b4d`](https://github.com/deis/deis/commit/4ef7b4d269d5568356df476122b3183c9d995a34) faq: added a link to unofficial Chinese documentation
+ - [`d7d3f6d`](https://github.com/deis/deis/commit/d7d3f6dc7cb7e868243aa631fa3fac01272d018b) (all): add Ceph quorum documentation
+ - [`cfae0e3`](https://github.com/deis/deis/commit/cfae0e31ac9dd8587b4f6cdaf94895e0f6800789) (all): reference deis-store-admin for admin tasks
+ - [`aba69b1`](https://github.com/deis/deis/commit/aba69b14d12ed012eadd37d508398b8995f7f326) system-requirements: Fix broken links
+ - [`42931ab`](https://github.com/deis/deis/commit/42931abccb7ece448f19ed49521687033b896f3c) ssl: add instructions for configuring ssl on routers
+ - [`3998c15`](https://github.com/deis/deis/commit/3998c156485aa20a44616ac048d638daac04515e) private-networks: add RFC 6598 address range
+ - [`0cbd091`](https://github.com/deis/deis/commit/0cbd0911d2fd1ba1338a9895e4d93ca2c1e80d35) managing_deis: clarify reasons for disabling CoreOS upgrades
+ - [`ec07233`](https://github.com/deis/deis/commit/ec07233fa27b740dad113f3e508312cd349cf5b1) using_deis: add disabling registration docs to user creation
+ - [`6022e6c`](https://github.com/deis/deis/commit/6022e6c994fd2bf82a0d395e59fc78096ccb69bf) controller: add unit hostname documentation
+
+#### Maintenance
+
+ - [`dddfec3`](https://github.com/deis/deis/commit/dddfec39ace1016e5fa9ef9a82fda05f61415704) release: update version to v1.3.0
+ - [`a14a4ed`](https://github.com/deis/deis/commit/a14a4ed8beaf94ade91e2b1605b11b72680110fd) contrib/rackspace: bump CoreOS to 522.6.0
+ - [`e4fc01c`](https://github.com/deis/deis/commit/e4fc01c76cd878517e273c65bcae83b446904c2d) (all): bump CoreOS to 522.6.0
+ - [`863acd9`](https://github.com/deis/deis/commit/863acd903542fc1970011890e4a559f99e0c8f41) builder: bump heroku-buildpack-php to v57
+ - [`60a61cd`](https://github.com/deis/deis/commit/60a61cde9ec1cd6710aa56158556928bfad19163) contrib/rackspace: bump CoreOS to 522.5.0
+ - [`2a56376`](https://github.com/deis/deis/commit/2a5637669cc31cd036955a7b596a88703414ae1b) controller: bump API version to 1.1.2
+ - [`73a9c08`](https://github.com/deis/deis/commit/73a9c08aeff439d1904108348010dbf17915ad12) controller: update static wsgi library to v1.1.1
+ - [`b174fae`](https://github.com/deis/deis/commit/b174faeeb72f1c7cfd42eaf2545474573b07f104) controller: bump django-rest-framework to 3.0.3
+ - [`ffac129`](https://github.com/deis/deis/commit/ffac1293fa5bed2faaeeccdafaccd511202704be) release: update version in master to v1.2.2
+ - [`60b1aa3`](https://github.com/deis/deis/commit/60b1aa31388fadc59353ce34542581e152600783) controller: update django-guardian to 1.2.5
+ - [`898193a`](https://github.com/deis/deis/commit/898193adedb3645b52de43d8ff4e339b82060866) client: update python-dateutil to 2.4.0
+ - [`f0b9358`](https://github.com/deis/deis/commit/f0b9358cd1e2bc4c9ce1b3f6502532b8ddb730a4) controller: update paramiko to 1.15.2
+ - [`544f55b`](https://github.com/deis/deis/commit/544f55bf96300a398fe8d15d7a5e5cbb1195210f) (all): bump CoreOS to 522.5.0
+ - [`dbd42a7`](https://github.com/deis/deis/commit/dbd42a7352759f9ac98cbd59bf20ac757672bc6d) release: update version in master to v1.2.1
+ - [`a57cabf`](https://github.com/deis/deis/commit/a57cabfea0a894ff4e5909301b72e8883d283dd2) controller: update Django to 1.6.10 security release
+ - [`0db7905`](https://github.com/deis/deis/commit/0db79055c99532aa7bd43c23bfadc3951b883240) release: update version in master to v1.3.0-dev
+ - [`f67dd7f`](https://github.com/deis/deis/commit/f67dd7fe621060b27e59984f66f7140a9601193e) controller: update Django to 1.6.9 bugfix release
+
 ### v1.2.1 -> v1.2.2
 
 #### Fixes
