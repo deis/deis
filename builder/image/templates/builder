@@ -94,12 +94,6 @@ BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
-    if [ -f /buildpacks ]; then
-        BUILD_OPTS+=' -v /buildpacks:/tmp/buildpacks:rw'
-        # give non-root slugbuilder user R/W perms for docker volumes
-        chown -R 2000:2000 /buildpacks
-    fi
-
     # run in the background, we'll attach to it to retrieve logs
     BUILD_OPTS+=' -d'
     BUILD_OPTS+=' -v '
@@ -108,8 +102,13 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=' -v '
     BUILD_OPTS+=$(echo $CACHE_DIR)
     BUILD_OPTS+=':/tmp/cache:rw'
-    # give non-root slugbuilder user R/W perms for docker volumes
-    chown -R 2000:2000 $TMP_DIR $CACHE_DIR
+    # give slug group ownership of TMP_DIR and CACHE_DIR.
+    chown -R :2000 $TMP_DIR
+    chown :2000 $CACHE_DIR
+    # TMP_DIR is created using mktemp, which sets permissions to 700. Since
+    # we share this with the slug group, the slug group needs to be able to
+    # work with it.
+    chmod g+rwx $TMP_DIR
 
     BUILD_OPTS+=' deis/slugbuilder'
 
