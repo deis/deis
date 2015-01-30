@@ -17,7 +17,7 @@ $num_instances = 1
 $update_channel = ENV["COREOS_CHANNEL"] || "stable"
 $enable_serial_logging = false
 $vb_gui = false
-$vb_memory = 1024
+$vb_memory = 2048
 $vb_cpus = 1
 
 # Attempt to apply the deprecated environment variable NUM_INSTANCES to
