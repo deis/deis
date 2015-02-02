@@ -204,8 +204,8 @@ Major or Minor Release
         deisctl/deis-version \
         version/version.go
 
-  - Find and replace "A.B.D-dev" with "A.B.D" in all project Dockerfiles.
-  - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
+  - Find and replace "A.B.D" with "A.B.D-dev" in all project Dockerfiles.
+  - ``git commit -a -m 'chore(release): update version in master to vA.B.D-dev'``
   - ``git push origin master``
 
 - Create release notes blog post at `deis/deis.io`_ following previous formats
