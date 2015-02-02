@@ -28,11 +28,8 @@ Setup
 -----
 
 The ``deis-store-gateway`` component exposes an S3-compatible API, so we can use a tool like `s3cmd`_
-to work with the object store. First, install our fork of s3cmd with a patch for Ceph support:
-
-.. code-block:: console
-
-    $ pip install git+https://github.com/deis/s3cmd
+to work with the object store. First, `download s3cmd`_ and install it (you'll need at least version
+1.5.0 for Ceph support).
 
 We'll need the generated access key and secret key for use with the gateway. We can get these using
 ``deisctl``, either on one of the cluster machines or on a remote machine with ``DEISCTL_TUNNEL`` set:
@@ -43,23 +40,19 @@ We'll need the generated access key and secret key for use with the gateway. We 
     $ deisctl config store get gateway/secretKey
 
 Back on the local machine, run ``s3cmd --configure`` and enter your access key and secret key.
-Other settings can be left at the defaults. If the configure script prompts you to test the credentials,
-skip that step - it will try to authenticate against Amazon S3 and fail.
 
-You'll need to change a few additional configuration settings. First, edit ``~/.s3cfg`` and change
+When prompted with the ``Use HTTPS protocol`` option, answer ``No``. Other settings can be left at
+the defaults. If the configure script prompts to test the credentials, skip that step - it will
+try to authenticate against Amazon S3 and fail.
+
+You'll need to change two configuration settings - edit ``~/.s3cfg`` and change
 ``host_base`` and ``host_bucket`` to match ``deis-store.<your domain>``. For example, for my local
 Vagrant setup, I've changed the lines to:
 
 .. code-block:: console
 
     host_base = deis-store.local3.deisapp.com
-    host_bucket = deis-store.local3.deisapp.com/%(bucket)
-
-You'll also need to enable ``use_path_mode``:
-
-.. code-block:: console
-
-    use_path_mode = True
+    host_bucket = deis-store.local3.deisapp.com
 
 We can now use ``s3cmd`` to back up and restore data from the store-gateway.
 
@@ -224,4 +217,5 @@ use in the ``export`` command should correspond to the IP of the host machine wh
 That's it! The cluster should be fully restored.
 
 .. _`Ceph`: http://ceph.com
+.. _`download s3cmd`: http://s3tools.org/download
 .. _`s3cmd`: http://s3tools.org/
