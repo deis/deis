@@ -9,7 +9,7 @@ git+https://github.com/deis/django-fsm@propagate-false
 django-cors-headers==1.0.0
 django-guardian==1.2.5
 django-json-field==0.5.7
-djangorestframework==3.0.3
+djangorestframework==3.0.4
 docker-py==0.6.0
 gunicorn==19.1.1
 paramiko==1.15.2
