@@ -2,7 +2,6 @@ include ../includes.mk
 
 COMPONENT := logspout
 DOCKER_IMAGE := deis/$(COMPONENT)
-BUILD_IMAGE := $(DOCKER_IMAGE)-build
 RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
 
@@ -12,12 +11,11 @@ build: check-docker
 
 clean: check-docker check-registry
 	rm -rf image/logspout
-	docker rmi $(RELEASE_IMAGE) $(BUILD_IMAGE)
 
 full-clean: check-docker check-registry
 	docker images -q $(DOCKER_IMAGE) | xargs docker rmi -f
-	docker images -q $(BUILD_IMAGE) | xargs docker rmi -f
 	docker images -q $(DEV_DOCKER_IMAGE) | xargs docker rmi -f
+	docker images -q $(RELEASE_IMAGE) | xargs docker rmi -f
 
 install: check-deisctl
 	deisctl install $(COMPONENT)

@@ -2,7 +2,6 @@ include ../includes.mk
 
 COMPONENT = logger
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
-BUILD_IMAGE := $(COMPONENT)-build
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARY_DEST_DIR = image/bin
 
