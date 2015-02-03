@@ -15,6 +15,7 @@ CONFIG = File.join(File.dirname(__FILE__), "config.rb")
 # Defaults for config options defined in CONFIG
 $num_instances = 1
 $update_channel = ENV["COREOS_CHANNEL"] || "stable"
+$instance_ids = ENV["INSTANCE_IDS"]
 $enable_serial_logging = false
 $vb_gui = false
 $vb_memory = 2048
@@ -64,7 +65,9 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  (1..$num_instances).each do |i|
+  instances = $instance_ids ? $instance_ids.split(',').map(&:to_i) : (1..$num_instances)
+
+  instances.each do |i|
     config.vm.define vm_name = "deis-%d" % i do |config|
       config.vm.hostname = vm_name
 
