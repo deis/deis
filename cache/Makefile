@@ -35,13 +35,15 @@ restart: stop start
 
 run: install start
 
-dev-release: push set-image
+dev-release: dev-tag dev-push dev-set-image
 
-push: check-registry
-	docker tag $(IMAGE) $(DEV_IMAGE)
+dev-tag:
+	docker tag -f $(IMAGE) $(DEV_IMAGE)
+
+dev-push: check-registry
 	docker push $(DEV_IMAGE)
 
-set-image: check-deisctl
+dev-set-image: check-deisctl
 	deisctl config $(COMPONENT) set image=$(DEV_IMAGE)
 
 release:

@@ -23,13 +23,15 @@ full-clean: check-docker check-registry
 install: check-deisctl
 	deisctl install publisher
 
-dev-release: push set-image
+dev-release: dev-tag dev-push dev-set-image
 
-push: check-registry
-	docker tag $(RELEASE_IMAGE) $(REMOTE_IMAGE)
+dev-tag:
+	docker tag -f $(RELEASE_IMAGE) $(REMOTE_IMAGE)
+
+dev-push: check-registry
 	docker push $(REMOTE_IMAGE)
 
-set-image: check-deisctl
+dev-set-image: check-deisctl
 	deisctl config publisher set image=$(REMOTE_IMAGE)
 
 release: check-docker

@@ -67,21 +67,23 @@ restart: stop start
 
 run: install start
 
-dev-release: push set-image
+dev-release: dev-tag dev-push dev-set-image
 
-push: check-registry
-	docker tag $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
+dev-tag:
+	docker tag -f $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
+	docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
+	docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
+	docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+
+dev-push: check-registry
 	docker push $(ADMIN_DEV_IMAGE)
-	docker tag $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
 	docker push $(DAEMON_DEV_IMAGE)
-	docker tag $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	docker push $(GATEWAY_DEV_IMAGE)
-	docker tag $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
 	docker push $(METADATA_DEV_IMAGE)
-	docker tag $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
 	docker push $(MONITOR_DEV_IMAGE)
 
-set-image: check-deisctl
+dev-set-image: check-deisctl
 	deisctl config store-admin set image=$(ADMIN_DEV_IMAGE)
 	deisctl config store-daemon set image=$(DAEMON_DEV_IMAGE)
 	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
