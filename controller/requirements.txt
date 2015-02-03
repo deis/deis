@@ -11,7 +11,7 @@ django-guardian==1.2.5
 django-json-field==0.5.7
 djangorestframework==3.0.4
 docker-py==0.6.0
-gunicorn==19.1.1
+gunicorn==19.2.1
 paramiko==1.15.2
 psycopg2==2.5.4
 python-etcd==0.3.2
