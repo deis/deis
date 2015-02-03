@@ -36,7 +36,7 @@ run: install start
 dev-release: push set-image
 
 push: check-registry
-	docker tag $(IMAGE) $(DEV_IMAGE)
+	docker tag -f $(IMAGE) $(DEV_IMAGE)
 	docker push $(DEV_IMAGE)
 
 set-image: check-deisctl
