@@ -14,7 +14,7 @@ RUN buildDeps='curl git-core'; \
     set -x; \
     export DEBIAN_FRONTEND=noninteractive; \
     apt-get update && apt-get install -y $buildDeps --no-install-recommends \
-    && curl -sSL https://storage.googleapis.com/golang/go1.3.1.linux-amd64.tar.gz | tar -C /usr/local -xz \
+    && curl -sSL https://storage.googleapis.com/golang/go1.4.1.linux-amd64.tar.gz | tar -C /usr/local -xz \
     && git clone -q https://github.com/coreos/etcd.git /opt/etcd \
     && cd /opt/etcd && git checkout -q v0.4.6 && PATH=/usr/local/go/bin:$PATH ./build \
     && cp /opt/etcd/bin/etcd /usr/local/bin \
