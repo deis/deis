@@ -16,7 +16,7 @@ faults on every host in the cluster.
 .. important::
 
     Ceph refusing to do anything when it has lost quorum is a safety precaution to prevent you
-    from losing data. Attempting to recover from this situation rquires knowledge about the state
+    from losing data. Attempting to recover from this situation requires knowledge about the state
     of your cluster, and should only be attempted if data loss is not considered catastrophic (such as
     when a recent backup is available). When in doubt, consult the Ceph and Deis communities for
     assistance. Deis recommends regular backups to minimize impact should an issue like this occur.
