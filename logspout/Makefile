@@ -9,10 +9,10 @@ build: check-docker
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o image/logspout
 	docker build -t $(RELEASE_IMAGE) image
 
-clean: check-docker check-registry
+clean:
 	rm -rf image/logspout
 
-full-clean: check-docker check-registry
+full-clean:
 	docker images -q $(DOCKER_IMAGE) | xargs docker rmi -f
 	docker images -q $(DEV_DOCKER_IMAGE) | xargs docker rmi -f
 	docker images -q $(RELEASE_IMAGE) | xargs docker rmi -f
