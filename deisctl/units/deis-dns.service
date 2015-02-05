@@ -1,0 +1,26 @@
+[Unit]
+Description=deis-dns
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=$(/run/deis/bin/get_image /deis/dns) && docker history $IMAGE >/dev/null || docker pull $IMAGE"
+ExecStartPre=-/usr/bin/docker rm -f deis-dns
+ExecStartPre=/bin/sh -c 'DOMAIN=`(etcdctl get /deis/platform/domain 2>/dev/null || echo "deis.local") | tr "." "\n" | tac | tr "\n" "/"` && /usr/bin/etcdctl set /skydns/"$DOMAIN"dockerhosts/%H "{\\"host\\":\\"$COREOS_PUBLIC_IPV4\\"}"'
+ExecStartPre=/bin/sh -c 'DOMAIN=`(etcdctl get /deis/platform/domain 2>/dev/null || echo "deis.local") | tr "." "\n" | tac | tr "\n" "/"` && /usr/bin/etcdctl set /skydns/"$DOMAIN"%H "{\\"host\\":\\"$COREOS_PUBLIC_IPV4\\"}"'
+ExecStartPre=/bin/sh -c 'DOMAIN=`(etcdctl get /deis/platform/domain 2>/dev/null || echo "deis.local") | tr "." "\n" | tac | tr "\n" "/"` && /usr/bin/etcdctl set /skydns/"$DOMAIN"dns/ns "{\\"host\\":\\"$COREOS_PUBLIC_IPV4\\"}"'
+ExecStartPre=/bin/sh -c 'NAMESERVERS=`etcdctl get /deis/platform/nameServers 2>/dev/null || echo [\\"8.8.8.8:53\\",\\"8.8.4.4:53\\"]` && /usr/bin/etcdctl set /skydns/config "{\\"ttl\\":3600, \\"nameservers\\": $NAMESERVERS}"'
+ExecStartPost=/bin/bash -c 'DOMAIN=`etcdctl get /deis/platform/domain 2>/dev/null || echo "deis.local"` && echo "search $DOMAIN" >>/tmp/skydns.resolv.conf && echo "nameserver $COREOS_PUBLIC_IPV4" >>/tmp/skydns.resolv.conf'
+ExecStart=/bin/sh -c 'DOMAIN=`etcdctl get /deis/platform/domain 2>/dev/null || echo "deis.local"` && IMAGE=$(/run/deis/bin/get_image /deis/dns) && /usr/bin/docker run --name deis-dns -p 53:53 -p 53:53/udp $IMAGE /bin/skydns -addr=0.0.0.0:53 -domain=$(echo "$DOMAIN.") -ver
+bose -discover -machines=$(echo "http://$COREOS_PUBLIC_IPV4:4001")'
+ExecStartPost=/usr/bin/mv -b -S "~orig" /tmp/skydns.resolv.conf /etc/resolv.conf
+ExecStop=/usr/bin/docker rm -f deis-dns
+ExecStopPost=/usr/bin/mv /etc/resolv.conf~orig /etc/resolv.conf
+ExecStopPost=/usr/bin/rm /tmp/skydns.resolv.conf
+Restart=always
+ExecStopPost=/usr/bin/etcdctl rm /skydns/local/deis/hosts/%m
+
+[X-Fleet]
+Global=true

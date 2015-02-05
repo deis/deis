@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -89,13 +90,23 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		}
 		appName := match[1]
 		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
-		for _, p := range container.Ports {
-			port := strconv.Itoa(int(p.PublicPort))
-			if s.IsPublishableApp(containerName) {
+		if s.IsPublishableApp(containerName) {
+			for _, p := range container.Ports {
+				port := strconv.Itoa(int(p.PublicPort))
 				s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
+				// TODO: support multiple exposed ports
+				break
 			}
-			// TODO: support multiple exposed ports
-			break
+
+			// the last character in containerName is the number of instances
+			// of the application. We use that to publish one A record
+			appInstance := containerName[len(containerName)-1]
+			// configured domain name
+			domainName := s.getEtcd("/deis/platform/domain")
+			// change the format
+			skydnsName := s.DomainNameToSkyDNS(domainName)
+			dnsARecord := "/skydns/" + skydnsName + "/dockerhosts/" + appName + "/x" + string(appInstance)
+			s.setEtcd(dnsARecord, "{\"host\":\""+host+"\"}", uint64(ttl.Seconds()))
 		}
 	}
 }
@@ -118,6 +129,20 @@ func (s *Server) IsPublishableApp(name string) bool {
 	} else {
 		return false
 	}
+}
+
+// DomainNameToSkyDNS receives a valid domain name and returns a valid domain name
+// for SkyDNS. Example: deis.local returns local/deis
+func (s *Server) DomainNameToSkyDNS(name string) string {
+	domainParts := strings.Split(name, ".")
+	result := make([]string, len(domainParts))
+	i := len(domainParts)
+	for _, c := range domainParts {
+		i--
+		result[i] = c
+	}
+
+	return strings.Join(result, "/")
 }
 
 // latestRunningVersion retrieves the highest version of the application published
@@ -170,4 +195,14 @@ func (s *Server) setEtcd(key, value string, ttl uint64) {
 		log.Println(err)
 	}
 	log.Println("set", key, "->", value)
+}
+
+// getEtcd return the corresponding value of a key in etcd or an empty string
+func (s *Server) getEtcd(key string) string {
+	result, err := s.EtcdClient.Get(key, false, false)
+	if err != nil {
+		return ""
+	}
+
+	return result.Node.Value
 }

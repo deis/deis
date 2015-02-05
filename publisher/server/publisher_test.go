@@ -1,6 +1,7 @@
 package server
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -26,5 +27,18 @@ func TestIsPublishableApp(t *testing.T) {
 	futureVersion := "ceci-nest-pas-une-app_v4.web.1"
 	if !s.IsPublishableApp(futureVersion) {
 		t.Errorf("%s should be publishable", futureVersion)
+	}
+}
+
+func TestDomainNameToSkyDNS(t *testing.T) {
+	s := &Server{nil, nil}
+	domain := "deis.local"
+	if !strings.EqualFold(s.DomainNameToSkyDNS(domain), "local/deis") {
+		t.Errorf("%s should be local/deis", domain)
+	}
+
+	longDomain := "this.is.a.large.domain.name"
+	if !strings.EqualFold(s.DomainNameToSkyDNS(longDomain), "name/domain/large/a/is/this") {
+		t.Errorf("%s should be name/domain/large/a/is/this", longDomain)
 	}
 }

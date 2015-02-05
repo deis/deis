@@ -6,6 +6,16 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "bitbucket.org/kardianos/osext",
+			"Comment": "null-15",
+			"Rev": "44140c5fc69ecf1102c5ef451d73cd98ef59b178"
+		},
+		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-12",
+			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
+		},
+		{
 			"ImportPath": "code.google.com/p/go.crypto/ssh",
 			"Comment": "null-218",
 			"Rev": "f3cebac2bd11c2bf03c15bfa4c66688ad02a0a40"
@@ -23,6 +33,61 @@
 		{
 			"ImportPath": "github.com/ActiveState/tail",
 			"Rev": "068b72961a6bc5b4a82cf4fc14ccc724c0cfa73a"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/api",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/client",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/conversion",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/health",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/labels",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/proxy/config",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/runtime",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/tools",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/util",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/version",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
+		},
+		{
+			"ImportPath": "github.com/GoogleCloudPlatform/kubernetes/pkg/watch",
+			"Comment": "v0.7.0-67-g8379966",
+			"Rev": "8379966ac5ef7bbfe841639774b40eaa74c4cbb2"
 		},
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -94,13 +159,31 @@
 			"Rev": "23142f6773a676cc2cae8dd0cb90b2ea761c853f"
 		},
 		{
+			"ImportPath": "github.com/coreos/go-log/log",
+			"Rev": "70d039bee4b0e389e5be560491d8291708506f59"
+		},
+		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
 			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-systemd/activation",
+			"Comment": "v2-27-g97e243d",
+			"Rev": "97e243d21a8e232e9d8af38ba2366dfcfceebeba"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-systemd/journal",
+			"Comment": "v2-27-g97e243d",
+			"Rev": "97e243d21a8e232e9d8af38ba2366dfcfceebeba"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/unit",
 			"Comment": "v2-27-g97e243d",
 			"Rev": "97e243d21a8e232e9d8af38ba2366dfcfceebeba"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "83f84dc933714d51504ceed59f43ead21d096fe7"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/api",
@@ -302,9 +385,22 @@
 			"Rev": "4b6c75c1d58fbbbaae680348f56fd61b35d2f3ee"
 		},
 		{
+			"ImportPath": "github.com/ghodss/yaml",
+			"Rev": "4fb5c728a37b361a1e971a3bb3d785fcc96b6ef5"
+		},
+		{
 			"ImportPath": "github.com/go-martini/martini",
 			"Comment": "v1.0-56-g819aca5",
 			"Rev": "819aca59fdc412028cc5348ff3d16be2715d33cf"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
+		},
+		{
+			"ImportPath": "github.com/google/cadvisor/info",
+			"Comment": "0.6.2-70-gba990c5",
+			"Rev": "ba990c55fb1851540dce674ff1e9a72b110e029c"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -320,6 +416,11 @@
 			"Rev": "6b1ef893dc11e0447abda6da20a5203481878dda"
 		},
 		{
+			"ImportPath": "github.com/influxdb/influxdb/client",
+			"Comment": "v0.8.6-226-g3d19e6e",
+			"Rev": "3d19e6edc0de0fecd0f4cec0058b5edfa0c90f67"
+		},
+		{
 			"ImportPath": "github.com/jonboulle/clockwork",
 			"Rev": "b473f398c464f1988327f67c9e6aa7fba62f80d2"
 		},
@@ -333,6 +434,28 @@
 			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
 		},
 		{
+			"ImportPath": "github.com/miekg/dns",
+			"Rev": "3f504e8dabd5d562e997d19ce0200aa41973e1b2"
+		},
+		{
+			"ImportPath": "github.com/rcrowley/go-metrics",
+			"Rev": "dee209f2455f101a5e4e593dea94872d2c62d85d"
+		},
+		{
+			"ImportPath": "github.com/skynetservices/skydns/cache",
+			"Comment": "2.0.1d-2-g245a121",
+			"Rev": "245a1216be2a7f5377ea56e957fdfa0de6ecd067"
+		},
+		{
+			"ImportPath": "github.com/skynetservices/skydns/msg",
+			"Comment": "2.0.1d-2-g245a121",
+			"Rev": "245a1216be2a7f5377ea56e957fdfa0de6ecd067"
+		},
+		{
+			"ImportPath": "github.com/stathat/go",
+			"Rev": "01d012b9ee2ecc107cb28b6dd32d9019ed5c1d77"
+		},
+		{
 			"ImportPath": "github.com/tchap/go-patricia/patricia",
 			"Comment": "v1.0.1",
 			"Rev": "f64d0a63cd3363481c898faa9339de04d12213f9"
@@ -342,8 +465,16 @@
 			"Rev": "0e395dffb67b1423a648cba4031fc13b4d866b6b"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "cbcac7bb8415db9b6cb4d1ebab1dc9afbd688b97"
+		},
+		{
 			"ImportPath": "gopkg.in/tomb.v1",
 			"Rev": "dd632973f1e7218eb1089048e0798ec9ae7dceb8"
+		},
+		{
+			"ImportPath": "gopkg.in/v2/yaml",
+			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",

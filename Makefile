@@ -4,7 +4,7 @@
 
 include includes.mk
 
-COMPONENTS=builder cache controller database logger logspout publisher registry router store
+COMPONENTS=builder cache controller database dns logger logspout publisher registry router store
 START_ORDER=publisher store logger logspout database cache registry controller builder router
 CLIENTS=client deisctl
 
