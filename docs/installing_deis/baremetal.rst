@@ -83,6 +83,11 @@ Install CoreOS to disk
 Assuming you have booted your bare metal server into `CoreOS`_, you can now perform the
 installation to disk.
 
+Review disk usage
+^^^^^^^^^^^^^^^^^
+
+See :ref:`disk_usage` for more information on how to optimize local disks for Deis.
+
 Provide the config file to the installer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
