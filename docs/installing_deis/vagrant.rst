@@ -42,6 +42,10 @@ Generate a New Discovery URL
 
 .. include:: ../_includes/_generate-discovery-url.rst
 
+Consider a local Docker Hub mirror
+----------------------------------
+
+.. include:: ../_includes/_consider_local_hub_mirror.rst
 
 Boot CoreOS
 -----------
