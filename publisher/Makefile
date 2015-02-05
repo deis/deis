@@ -12,16 +12,14 @@ DOCKER_IMAGE := $(IMAGE_PREFIX)$(COMPONENT)
 BUILD_IMAGE := $(DOCKER_IMAGE)-build
 RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 REMOTE_IMAGE := $(REGISTRY)/$(RELEASE_IMAGE)
+BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	cp -pR ../Godeps .
-	docker build -t $(BUILD_IMAGE) .
-	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/publisher image/
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/deis/deis/publisher || exit 1
 	docker build -t $(RELEASE_IMAGE) image
-	rm -rf image/publisher
 
 clean: check-docker check-registry
-	rm -rf Godeps
+	rm -rf $(BINARY_DEST_DIR)
 	docker rmi $(RELEASE_IMAGE) $(REMOTE_IMAGE)
 
 full-clean: check-docker check-registry
