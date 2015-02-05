@@ -1,6 +1,13 @@
 include ../includes.mk
 
-COMPONENT = deisctl
+# the filepath to this repository, relative to $GOPATH/src
+repo_path = github.com/deis/deis/deisctl
+
+GO_FILES = deisctl.go deisctl_test.go
+GO_PACKAGES = backend client cmd config utils
+GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+
+COMPONENT = $(notdir $(repo_path))
 IMAGE =  $(IMAGE_PREFIX)/$(COMPONENT):$(BUILD_TAG)
 
 build:
@@ -32,11 +39,16 @@ setup-root-gotools:
 setup-gotools:
 	go get -v github.com/golang/lint/golint
 
+test: test-style test-unit test-functional
+
 test-style:
-	go vet ./...
-	-golint ./...
+# display output, then check
+	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
+	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+# FIXME: make this mandatory
+	-$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
+# FIXME: make this mandatory
+	-$(GOLINT) ./...
 
 test-unit:
 	godep go test -v -cover ./...
-
-test: test-style test-unit

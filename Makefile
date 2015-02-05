@@ -4,6 +4,12 @@
 
 include includes.mk
 
+# the filepath to this repository, relative to $GOPATH/src
+repo_path = github.com/deis/deis
+
+GO_PACKAGES = pkg/time version
+GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+
 COMPONENTS=builder cache controller database logger logspout publisher registry router store
 START_ORDER=publisher store logger logspout database cache registry controller builder router
 CLIENTS=client deisctl
@@ -67,7 +73,7 @@ release: check-registry
 
 deploy: build dev-release restart
 
-test: test-unit test-functional push test-integration
+test: test-style test-unit test-functional push test-integration
 
 test-functional:
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-functional &&) echo done
@@ -81,3 +87,16 @@ test-integration:
 
 test-smoke:
 	$(MAKE) -C tests/ test-smoke
+
+test-style:
+# display output, then check
+	$(GOFMT) $(GO_PACKAGES)
+	@$(GOFMT) $(GO_PACKAGES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+# FIXME: make this mandatory
+	-$(GOVET) $(GO_PACKAGES_REPO_PATH)
+# FIXME: make this mandatory
+	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
+		$(GOLINT) $$i; \
+	done
+	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
+	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) test-style &&) echo done

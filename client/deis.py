@@ -47,7 +47,6 @@ from getpass import getpass
 from itertools import cycle
 from threading import Event
 from threading import Thread
-import base64
 import glob
 import json
 import locale
@@ -175,17 +174,6 @@ class Settings(dict):
         self._path = os.path.join(path, 'client.json')
         if not os.path.exists(self._path):
             settings = {}
-            # try once to convert the old settings file if it exists
-            # FIXME: this code can be removed in November 2014 or thereabouts, that's long enough.
-            old_path = os.path.join(path, 'client.yaml')
-            if os.path.exists(old_path):
-                try:
-                    with open(old_path, 'r') as f:
-                        txt = f.read().replace('{', '{"', 1).replace(':', '":', 1).replace("'", '"')
-                        settings = json.loads(txt)
-                        os.remove(old_path)
-                except:
-                    pass  # ignore errors, at least we tried to convert it
             with open(self._path, 'w') as f:
                 json.dump(settings, f)
         # load initial settings
@@ -638,6 +626,7 @@ class DeisClient(object):
                     log_tag = line.split(': ')[0].split(' ')[1]
                     # colorize the log based on the tag
                     color = sum([ord(ch) for ch in log_tag]) % 6
+
                     def f(x):
                         return {
                             0: 'green',
@@ -797,7 +786,6 @@ class DeisClient(object):
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
         username = args.get('--username')
-        headers = {}
         if not username:
             username = raw_input('username: ')
         password = args.get('--password')
@@ -810,7 +798,7 @@ class DeisClient(object):
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
         response = self._session.post(url, data=payload, allow_redirects=False,
-            verify=ssl_verify)
+                                      verify=ssl_verify)
         if response.status_code == requests.codes.ok:
             # retrieve and save the API token for future requests
             self._settings['controller'] = controller
@@ -1562,8 +1550,9 @@ class DeisClient(object):
         """
         Sets tags for an application.
 
-        A tag is a key/value pair used to tag an application's containers and is passed to the scheduler.
-        This is often used to restrict workloads to specific hosts matching the scheduler-configured metadata.
+        A tag is a key/value pair used to tag an application's containers and is passed to the
+        scheduler. This is often used to restrict workloads to specific hosts matching the
+        scheduler-configured metadata.
 
         Usage: deis tags:set [options] <key>=<value>...
 

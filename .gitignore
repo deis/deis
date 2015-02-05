@@ -47,6 +47,7 @@ logspout/build/
 logspout/image/logspout
 logspout/Godeps/
 publisher/Godeps/
+publisher/image/bin/publisher
 router/Godeps/
 
 # coverage reports

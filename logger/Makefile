@@ -1,6 +1,13 @@
 include ../includes.mk
 
-COMPONENT = logger
+# the filepath to this repository, relative to $GOPATH/src
+repo_path = github.com/deis/deis/logger
+
+GO_FILES = main.go
+GO_PACKAGES = syslog syslogd
+GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+
+COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARY_DEST_DIR = image/bin
@@ -46,8 +53,6 @@ release:
 
 deploy: build dev-release restart
 
-test: test-unit test-functional
-
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/vet
@@ -56,16 +61,23 @@ setup-root-gotools:
 setup-gotools:
 	go get -v github.com/golang/lint/golint
 
-test-style:
-	go vet -x ./...
-	-golint ./...
-
-test-unit: test-style
-	go test -v -cover ./syslog
+test: test-style test-unit test-functional
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
+
+test-style:
+# display output, then check
+	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
+	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+# FIXME: make this mandatory
+	-$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
+# FIXME: make this mandatory
+	-$(GOLINT) ./...
+
+test-unit: test-style
+	$(GOTEST) $(GO_PACKAGES_REPO_PATH)
 
 coverage:
 	go test -coverprofile coverage.out ./syslog

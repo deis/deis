@@ -1,6 +1,13 @@
 include ../includes.mk
 
-COMPONENT = router
+# the filepath to this repository, relative to $GOPATH/src
+repo_path = github.com/deis/deis/router
+
+GO_FILES = boot.go
+GO_PACKAGES = logger
+GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+
+COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
@@ -55,11 +62,20 @@ release:
 
 deploy: build dev-release restart
 
-test: test-unit test-functional
-
-test-unit:
-	@echo no unit tests
+test: test-style test-unit test-functional
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
+
+test-style:
+# display output, then check
+	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
+	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+# FIXME: make this mandatory
+	-$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
+# FIXME: make this mandatory
+	-$(GOLINT) ./...
+
+test-unit:
+	@echo no unit tests
