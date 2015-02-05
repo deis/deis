@@ -1,3 +1,25 @@
+SHELL = /bin/bash
+
+GO = godep go
+GOFMT = gofmt -l
+GOLINT = golint
+GOTEST = $(GO) test --cover --race -v
+GOVET = $(GO) vet
+
+SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
+DOCKER_HOST = $(shell echo $$DOCKER_HOST)
+REGISTRY = $(shell echo $$DEV_REGISTRY)
+GIT_SHA = $(shell git rev-parse --short HEAD)
+IMAGE_PREFIX := deis/
+
+ifndef BUILD_TAG
+  BUILD_TAG = git-$(GIT_SHA)
+endif
+
+ifndef S3_BUCKET
+  S3_BUCKET = deis-updates
+endif
+
 ifndef DEIS_NUM_INSTANCES
   DEIS_NUM_INSTANCES = 3
 endif
@@ -9,18 +31,6 @@ endef
 define echo_yellow
   @echo "\033[0;33m$(subst ",,$(1))\033[0m"
 endef
-
-SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-DOCKER_HOST = $(shell echo $$DOCKER_HOST)
-REGISTRY = $(shell echo $$DEV_REGISTRY)
-GIT_SHA = $(shell git rev-parse --short HEAD)
-ifndef BUILD_TAG
-  BUILD_TAG = git-$(GIT_SHA)
-endif
-ifndef S3_BUCKET
-  S3_BUCKET = deis-updates
-endif
-IMAGE_PREFIX := deis/
 
 check-docker:
 	@if [ -z $$(which docker) ]; then \

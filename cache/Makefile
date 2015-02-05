@@ -1,6 +1,12 @@
 include ../includes.mk
 
-COMPONENT = cache
+# the filepath to this repository, relative to $GOPATH/src
+repo_path = github.com/deis/deis/cache
+
+GO_PACKAGES = image
+GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+
+COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
@@ -50,10 +56,19 @@ release:
 
 deploy: build dev-release restart
 
-test: test-unit test-functional
+test: test-style test-unit test-functional
 
 test-unit:
 	@echo no unit tests
+
+test-style:
+# display output, then check
+	$(GOFMT) $(GO_PACKAGES)
+	@$(GOFMT) $(GO_PACKAGES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
+# FIXME: make this mandatory
+	-$(GOVET) $(GO_PACKAGES_REPO_PATH)
+# FIXME: make this mandatory
+	-$(GOLINT) ./...
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest

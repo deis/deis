@@ -73,7 +73,7 @@ func runRemoteCommand(cmd string, addr string, timeout time.Duration) (exit int,
 	defer sshClient.Close()
 
 	err, exit = ssh.Execute(sshClient, cmd)
-	return 
+	return
 }
 
 func machineState(machID string) (*machine.MachineState, error) {

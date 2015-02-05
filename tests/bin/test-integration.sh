@@ -17,6 +17,10 @@ source $THIS_DIR/test-setup.sh
 trap cleanup EXIT
 trap dump_logs ERR
 
+log_phase "Running style tests"
+
+make test-style
+
 log_phase "Running documentation tests"
 
 # test building documentation

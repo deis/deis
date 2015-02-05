@@ -43,12 +43,15 @@ release:
 
 deploy: build dev-release restart
 
-test: test-unit test-functional
-
-test-unit:
-	@echo no unit tests
+test: test-style test-unit test-functional
 
 test-functional:
 	@docker history deis/mock-store >/dev/null 2>&1 || $(MAKE) -C ../tests/ mock-store
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
+
+test-style:
+	@echo no style tests
+
+test-unit:
+	@echo no unit tests

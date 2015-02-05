@@ -43,10 +43,13 @@ release:
 
 deploy: build dev-release restart
 
-test: test-unit test-functional
+test: test-style test-unit test-functional
 
 test-unit:
 	@echo no unit tests
+
+test-style:
+	@echo no style tests
 
 test-functional:
 	@docker history deis/mock-store >/dev/null 2>&1 || $(MAKE) -C ../tests/ mock-store
