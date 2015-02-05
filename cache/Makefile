@@ -3,18 +3,19 @@ include ../includes.mk
 COMPONENT = cache
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
-BUILD_IMAGE := $(COMPONENT)-build
+BUILD_IMAGE = $(COMPONENT)-build
+BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	docker build -t $(BUILD_IMAGE) image
-	docker cp `docker run -d $(BUILD_IMAGE)`:/usr/local/bin/redis-server bin/
-	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/boot bin/
-	docker build -t $(IMAGE) .
-	rm bin/boot
-	rm bin/redis-server
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot main.go || exit 1
+	docker build -t $(BUILD_IMAGE) .
+	docker cp `docker run -d $(BUILD_IMAGE)`:/usr/local/bin/redis-server $(BINARY_DEST_DIR)/
+	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
-	docker rmi $(IMAGE)
+	rm -f $(BINARY_DEST_DIR)/boot
+	rm -f $(BINARY_DEST_DIR)/redis-server
+	docker rmi -f $(IMAGE)
 
 full-clean: check-docker check-registry
 	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
