@@ -31,6 +31,7 @@ builder/image/bin/get-app-config
 builder/image/bin/get-app-values
 builder/image/bin/publish-release-controller
 builder/image/bin/yaml2json-procfile
+cache/image/bin
 client/dist/
 client/makeself/
 contrib/bumpver/bumpver
