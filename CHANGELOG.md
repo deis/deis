@@ -1,3 +1,9 @@
+### v1.3.0 -> v1.3.1
+
+#### Fixes
+
+ - [`71bd706`](https://github.com/deis/deis/commit/71bd7060836e853efac41b4e9a990daddc487ccf) cache: use godep to build binaries
+
 ### v1.2.2 -> v1.3.0
 
 #### Features
