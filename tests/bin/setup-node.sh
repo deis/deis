@@ -23,7 +23,7 @@ wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.1_x86_64.deb
 dpkg -i vagrant_1.7.1_x86_64.deb && rm vagrant_1.7.1_x86_64.deb
 
 # install go
-wget -qO- https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz | tar -C /usr/local -xz
+wget -qO- https://storage.googleapis.com/golang/go1.4.1.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 echo "You must reboot for the global $PATH changes to take effect."
 
