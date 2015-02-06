@@ -93,6 +93,13 @@ func (h *handler) mainLoop() {
 // Listen starts a new syslog server which runs until it receives a signal.
 func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
 	fmt.Println("Starting syslog...")
+	// If logRoot doesn't exist, create it
+	// equivalent to Python's `if not os.path.exists(filename)`
+	if _, err := os.Stat(logRoot); os.IsNotExist(err) {
+		if err = os.MkdirAll(logRoot, 0777); err != nil {
+			log.Fatalf("unable to create logRoot at %s", logRoot)
+		}
+	}
 	// Create a server with one handler and run one listen gorutine
 	s := syslog.NewServer()
 	s.AddHandler(newHandler())
