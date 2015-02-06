@@ -181,8 +181,11 @@ class App(UuidAuditedModel):
 
     def delete(self, *args, **kwargs):
         """Delete this application including all containers"""
-        for c in self.container_set.exclude(type='run'):
-            c.destroy()
+        try:
+            # attempt to remove containers from the scheduler
+            self._destroy_containers([c for c in self.container_set.exclude(type='run')])
+        except RuntimeError:
+            pass
         self._clean_app_logs()
         return super(App, self).delete(*args, **kwargs)
 
