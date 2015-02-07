@@ -18,6 +18,6 @@ do
         rm -rf "$repo"
         docker images | grep $appname | awk '{ print $3 }' | xargs docker rmi -f
         # remove any dangling images left over from the cleanup
-        docker images --filter "dangling=true" | awk '{ print $3 }' | xargs docker rmi -f
+        docker images --filter "dangling=true" | awk '{ print $3 }' | grep -v IMAGE | xargs docker rmi -f
     fi
 done
