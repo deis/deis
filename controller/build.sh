@@ -21,9 +21,8 @@ apt-get update && \
 # install pip
 curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
 
-# add a deis user that has passwordless sudo (for now)
-useradd deis --groups sudo --home-dir /app --shell /bin/bash
-sed -i -e 's/%sudo\tALL=(ALL:ALL) ALL/%sudo\tALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers
+# add a deis user
+useradd deis --home-dir /app --shell /bin/bash
 
 # create a /app directory for storing application data
 mkdir -p /app && chown -R deis:deis /app
