@@ -48,6 +48,10 @@ By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, th
 
 See [Routes Resource](#routes-resource) for all options.
 
+#### Using a custom timestamp format
+
+By default, logspout will use the timestamp format `2006-01-02T15:04:05MST`. A custom format can be specified by setting the `DATETIME_FORMAT` environment variable.
+
 ## HTTP API
 
 ### Streaming Endpoints
