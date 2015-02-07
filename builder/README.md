@@ -22,7 +22,6 @@ install, and start **deis/builder**.
   its configuration (default: */deis/builder*)
 * **ETCD_TTL** sets the time-to-live before etcd purges a configuration
   value, in seconds (default: *10*)
-* **STORAGE_DRIVER** sets the Docker-in-Docker storage driver (default: btrfs)
 * **PORT** sets the TCP port on which the builder listens (default: *2222*)
 
 ## License
