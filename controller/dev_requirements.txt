@@ -19,7 +19,7 @@ coverage>=3.7.1
 docutils>=0.12
 
 # Run "make flake8" to check python syntax and style
-flake8==2.2.2
+flake8==2.3.0
 
 # Used for mocking endpoints
 mock==1.0.1
