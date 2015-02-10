@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+"""
+Create CoreOS user-data by merging contrib/coreos/user-data and azure-user-data
+
+Usage: create-azure-user-data.py <discovery_url>
+
+Arguments:
+    <discovery_url> This is the CoreOS etcd discovery URL. You should generate
+    a new URL at https://discovery.etcd.io/new and pass it as the argument.
+"""
+
+import sys
+import os
+import re
+import yaml
+import collections
+
+
+def combine_dicts(orig_dict, new_dict):
+    for key, val in new_dict.iteritems():
+        if isinstance(val, collections.Mapping):
+            tmp = combine_dicts(orig_dict.get(key, {}), val)
+            orig_dict[key] = tmp
+        elif isinstance(val, list):
+            orig_dict[key] = (val + orig_dict[key])
+        else:
+            orig_dict[key] = new_dict[key]
+    return orig_dict
+
+
+def get_file(name, mode="r", abspath=False):
+    current_dir = os.path.dirname(__file__)
+
+    if abspath:
+        return file(os.path.abspath(os.path.join(current_dir, name)), mode)
+    else:
+        return file(os.path.join(current_dir, name), mode)
+
+
+def main():
+    try:
+        url = sys.argv[1]
+    except (NameError, IndexError):
+        print __doc__
+        return 1
+
+    url_pattern = 'http[|s]\:[\/]{2}discovery\.etcd\.io\/[0-9a-f]{32}'
+
+    m = re.match(url_pattern, url)
+
+    if not m:
+        print "Discovery URL invalid."
+        return 1
+
+    azure_user_data = get_file("azure-user-data", "w", True)
+    azure_template = get_file("azure-user-data-template")
+    coreos_template = get_file("../coreos/user-data.example")
+
+    configuration_coreos_template = yaml.safe_load(coreos_template)
+    configuration_azure_template = yaml.safe_load(azure_template)
+
+    configuration = combine_dicts(configuration_coreos_template,
+                                  configuration_azure_template)
+
+    configuration["coreos"]["etcd"]["discovery"] = url
+
+    with azure_user_data as outfile:
+        try:
+            outfile.write("#cloud-config\n\n" + yaml.dump(configuration, default_flow_style=False))
+        except (IOError, ValueError):
+            print "There was an issue writing to file " + azure_user_data.name
+            return 1
+        else:
+            print "Wrote file \"%s\" with url \"%s\"" %\
+                (azure_user_data.name, url)
+
+if __name__ == "__main__":
+    sys.exit(main())

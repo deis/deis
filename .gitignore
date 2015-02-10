@@ -34,6 +34,7 @@ builder/image/bin/yaml2json-procfile
 cache/image/bin
 client/dist/
 client/makeself/
+contrib/azure/azure-user-data
 contrib/bumpver/bumpver
 deisctl/deisctl
 deisctl/dist/
