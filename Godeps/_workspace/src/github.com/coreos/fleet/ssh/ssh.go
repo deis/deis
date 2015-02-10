@@ -24,9 +24,9 @@ import (
 	"strings"
 	"time"
 
-	gossh "code.google.com/p/go.crypto/ssh"
-	gosshagent "code.google.com/p/go.crypto/ssh/agent"
-	"code.google.com/p/go.crypto/ssh/terminal"
+	gossh "golang.org/x/crypto/ssh"
+	gosshagent "golang.org/x/crypto/ssh/agent"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type SSHForwardingClient struct {

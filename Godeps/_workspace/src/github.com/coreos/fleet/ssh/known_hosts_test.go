@@ -25,7 +25,7 @@ import (
 	"syscall"
 	"testing"
 
-	gossh "code.google.com/p/go.crypto/ssh"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 const (

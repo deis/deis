@@ -28,7 +28,7 @@ import (
 	"strconv"
 	"strings"
 
-	gossh "code.google.com/p/go.crypto/ssh"
+	gossh "golang.org/x/crypto/ssh"
 
 	"github.com/coreos/fleet/log"
 	"github.com/coreos/fleet/pkg"
