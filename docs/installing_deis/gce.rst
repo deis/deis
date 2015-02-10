@@ -119,7 +119,7 @@ Launch 3 instances. You can choose another starting CoreOS image from the listin
 
 .. code-block:: console
 
-    $ for num in 1 2 3; do gcutil addinstance --use_compute_key --image projects/coreos-cloud/global/images/coreos-stable-522-6-0-v20150128 --persistent_boot_disk --zone us-central1-a --machine_type n1-standard-2 --tags deis --metadata_from_file user-data:gce-user-data --disk cored${num},deviceName=coredocker --authorized_ssh_keys=core:~/.ssh/deis.pub,core:~/.ssh/google_compute_engine.pub core${num}; done
+    $ for num in 1 2 3; do gcutil addinstance --use_compute_key --image projects/coreos-cloud/global/images/coreos-stable-557-2-0-v20150210 --persistent_boot_disk --zone us-central1-a --machine_type n1-standard-2 --tags deis --metadata_from_file user-data:gce-user-data --disk cored${num},deviceName=coredocker --authorized_ssh_keys=core:~/.ssh/deis.pub,core:~/.ssh/google_compute_engine.pub core${num}; done
 
     Table of resources:
 
