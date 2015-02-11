@@ -995,7 +995,9 @@ class DeisClient(object):
         if response.status_code == requests.codes.ok:
             config = response.json()
             values = config['values']
-            self._logger.info("=== {} Config".format(app))
+            if not oneline:
+                self._logger.info("=== {} Config".format(app))
+
             items = values.items()
             if len(items) == 0:
                 self._logger.info('No configuration')
