@@ -257,7 +257,8 @@ class FleetHTTPClient(object):
             return rc, output
 
         # wait for container to launch
-        for _ in range(60):
+        # we loop indefinitely here, as we have no idea how long the docker pull will take
+        while True:
             rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
             if rc == 0:
                 break
