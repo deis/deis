@@ -753,7 +753,7 @@ class DeisClient(object):
         self._logger.info('Please log in again in order to cancel this account')
         username = self.auth_login({'<controller>': controller})
         if username:
-            confirm = raw_input("Cancel account \"{}\" at {}? (y/n) ".format(username, controller))
+            confirm = raw_input("Cancel account \"{}\" at {}? (y/N) ".format(username, controller))
             if confirm == 'y':
                 self._dispatch('delete', '/v1/auth/cancel')
                 self._settings['controller'] = None
