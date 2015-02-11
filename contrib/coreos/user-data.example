@@ -74,6 +74,29 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
+  - name: daily-docker-cleanup.timer
+    command: start
+    content: |
+      [Unit]
+      Description=Daily docker cleanup timer
+
+      [Timer]
+      OnCalendar=daily
+      Persistent=true
+      Unit=daily-docker-cleanup.service
+
+      [Install]
+      WantedBy=timers.target
+  - name: daily-docker-cleanup.service
+    command: start
+    content: |
+
+      [Unit]
+      Description=Daily docker cleanup service
+
+      [Service]
+      Type=simple
+      ExecStart=/bin/bash -c '/opt/bin/docker-cleanup.sh > /home/core/cleanup-$(date +%F) 2>&1'
 write_files:
   - path: /etc/deis-release
     content: |
@@ -141,3 +164,24 @@ write_files:
       TOOLBOX_DOCKER_IMAGE=ubuntu-debootstrap
       TOOLBOX_DOCKER_TAG=14.04
       TOOLBOX_USER=root
+  - path: /opt/bin/docker-cleanup.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+
+      # remove stopped containers
+      docker rm $(docker ps -a -q) 2>/dev/null
+      # remove unused images
+      docker rmi $(docker images -q --filter "dangling=true") 2>/dev/null
+
+      UNIQ_NAMES=$(docker images -a | grep -v "<none>" | awk '{print $1}' | sort | uniq)
+
+      for CONTAINER in ${UNIQ_NAMES[@]}
+      do
+        REMOVE=( $(docker images -a | grep "${CONTAINER}" | awk '{print $3}' | tail -n +4) )
+        # only execute if there's at least 1 image.
+        if [ "${#REMOVE[@]}" -ne "0" ]; then
+          echo "Removing older versions of '$CONTAINER'"
+          docker rmi -f "${REMOVE[@]}"
+        fi
+      done
