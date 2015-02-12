@@ -78,6 +78,13 @@
       "AllowedValues" : [ "PV", "HVM" ],
       "ConstraintDescription" : "must be either PV or HVM"
     },
+    "EC2EBSVolumeType" : {
+      "Description" : "EC2 EBS VolumeType",
+      "Type": "String",
+      "Default": "gp2",
+      "AllowedValues" : [ "gp2", "standard" ],
+      "ConstraintDescription" : "must be either 'gp2' for SSD or 'standard' for magnetic (provisioned iOPS requires further manual changes)"
+    },
     "AssociatePublicIP": {
       "Description": "Whether to associate a public IP address to the instances",
       "Type": "String",
@@ -251,11 +258,11 @@
         "BlockDeviceMappings" : [
           {
             "DeviceName" : { "Fn::FindInMap": [ "RootDevices", { "Ref": "EC2VirtualizationType" }, "Name" ] },
-            "Ebs" : { "VolumeSize" : "50" }
+            "Ebs" : { "VolumeSize" : "50", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           },
           {
             "DeviceName" : "/dev/xvdf",
-            "Ebs" : { "VolumeSize" : "100" }
+            "Ebs" : { "VolumeSize" : "100", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           }
         ]
       }
