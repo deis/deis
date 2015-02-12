@@ -162,7 +162,7 @@ func AuthCancel(t *testing.T, params *DeisTestConfig) {
 		t.Fatalf("expect password failed\n%v", err)
 	}
 	child.SendLine(params.Password)
-	err = child.ExpectRegex("(y/n)")
+	err = child.ExpectRegex("(y/N)")
 	if err != nil {
 		t.Fatalf("expect cancel \n%v", err)
 	}
