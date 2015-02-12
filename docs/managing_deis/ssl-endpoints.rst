@@ -87,5 +87,18 @@ certificate chain, append the intermediate certs to the bottom of the sslCert va
     To secure all endpoints on the platform domain, you must use a wildcard certificate.
 
 
+Redirecting traffic to HTTPS
+----------------------------
+
+Once your cluster is serving traffic over HTTPS, you can optionally instruct the router component
+to forward all traffic on HTTP to HTTPS (application traffic and requests to the controller component).
+
+This is achieved with ``deisctl``:
+
+.. code-block:: console
+
+    $ deisctl config router set enforceHTTPS=true
+
+
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
 .. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers
