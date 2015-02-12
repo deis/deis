@@ -14,8 +14,10 @@ Please add any issues you find with this software to the
 
 ## Containers
 
-The store component is comprised of four containers:
+The store component is comprised of six containers:
 
+* [store-admin](https://index.docker.io/u/deis/store-daemon/) - an optional administrative container
+to aid in diagnosing and resolving issues with the storage cluster
 * [store-daemon](https://index.docker.io/u/deis/store-daemon/) - the daemon which serves data
 (in Ceph, this is an object store daemon, or OSD)
 * [store-gateway](https://index.docker.io/u/deis/store-gateway/) - the blob store gateway,
@@ -24,6 +26,8 @@ offering Swift and S3-compatible bucket APIs
 to use the CephFS shared filesystem (in Ceph, this is a metadata server daemon, or MDS)
 * [store-monitor](https://index.docker.io/u/deis/store-monitor/) - the service responsible for
 keeping track of the cluster state (this is also called a monitor in Ceph)
+* [store-volume](https://index.docker.io/u/deis/store-volume/) - a container which mounts a CephFS
+FUSE filesystem to be used by other containers
 
 These are all based upon the [store-base](https://github.com/deis/deis/tree/master/store/base) image,
 which is a Docker container that preinstalls Ceph.

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# This script is designed to be run inside the container
+#
+
+ETCD_PORT=${ETCD_PORT:-4001}
+ETCD="$HOST:$ETCD_PORT"
+
+# write the Ceph configuration file before trying to mount the volume
+until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1 ; do
+  echo "store-volume: waiting for confd to write initial templates..."
+  sleep 5
+done
+
+# update the configuration file periodically because we can
+confd -node $ETCD -config-file /app/confd.toml &
+
+# mount the data directory
+ceph-fuse -d /data
+
+# prepare for application logs
+test -d /data/logs || mkdir -p /data/logs
+
+# unmount on exit
+function on_exit() {
+  fusermount -u /data
+  exit 0
+}
+trap on_exit INT TERM EXIT
+
+# loop forever until the container is stopped
+while true; do
+  sleep 1
+done
+

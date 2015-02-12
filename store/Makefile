@@ -1,6 +1,6 @@
 include ../includes.mk
 
-TEMPLATE_IMAGES=admin daemon gateway metadata monitor
+TEMPLATE_IMAGES=admin daemon gateway metadata monitor volume
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 
 ADMIN_IMAGE = $(IMAGE_PREFIX)store-admin:$(BUILD_TAG)
@@ -13,6 +13,8 @@ METADATA_IMAGE = $(IMAGE_PREFIX)store-metadata:$(BUILD_TAG)
 METADATA_DEV_IMAGE = $(DEV_REGISTRY)/$(METADATA_IMAGE)
 MONITOR_IMAGE = $(IMAGE_PREFIX)store-monitor:$(BUILD_TAG)
 MONITOR_DEV_IMAGE = $(DEV_REGISTRY)/$(MONITOR_IMAGE)
+VOLUME_IMAGE = $(IMAGE_PREFIX)store-volume:$(BUILD_TAG)
+VOLUME_DEV_IMAGE = $(DEV_REGISTRY)/$(VOLUME_IMAGE)
 
 build: check-docker
 	@# Build base as normal
@@ -80,6 +82,8 @@ push: check-registry
 	docker push $(METADATA_DEV_IMAGE)
 	docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
 	docker push $(MONITOR_DEV_IMAGE)
+	docker tag -f $(VOLUME_IMAGE) $(VOLUME_DEV_IMAGE)
+	docker push $(VOLUME_DEV_IMAGE)
 
 set-image: check-deisctl
 	deisctl config store-admin set image=$(ADMIN_DEV_IMAGE)
@@ -87,6 +91,7 @@ set-image: check-deisctl
 	deisctl config store-gateway set image=$(GATEWAY_DEV_IMAGE)
 	deisctl config store-metadata set image=$(METADATA_DEV_IMAGE)
 	deisctl config store-monitor set image=$(MONITOR_DEV_IMAGE)
+	deisctl config store-volume set image=$(VOLUME_DEV_IMAGE)
 
 release:
 	docker push $(ADMIN_IMAGE)
@@ -94,6 +99,7 @@ release:
 	docker push $(GATEWAY_IMAGE)
 	docker push $(METADATA_IMAGE)
 	docker push $(MONITOR_IMAGE)
+	docker push $(VOLUME_IMAGE)
 
 deploy: build dev-release restart
 
