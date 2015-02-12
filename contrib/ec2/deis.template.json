@@ -91,6 +91,13 @@
       "Default": "true",
       "AllowedValues" : [ "true", "false" ],
       "ConstraintDescription" : "must be either true or false"
+    },
+    "ELBScheme": {
+      "Description": "Whether to create an internal-only load balancer, or a public-facing one (default)",
+      "Type": "String",
+      "Default": "internet-facing",
+      "AllowedValues" : [ "internet-facing", "internal" ],
+      "ConstraintDescription" : "must be either 'internet-facing' for public use, or 'internal' for private use"
     }
   },
 
@@ -271,7 +278,7 @@
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "DependsOn" : "GatewayToInternet",
       "Properties": {
-        "Scheme" : "internet-facing",
+        "Scheme" : {"Ref": "ELBScheme"},
         "HealthCheck": {
           "HealthyThreshold": "4",
           "Interval": "15",

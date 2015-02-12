@@ -80,7 +80,7 @@ Customize cloudformation.json
 -----------------------------
 
 Any of the parameter defaults defined in deis.template.json can be overridden by setting the value
-in `cloudformation.json`_ like so:
+in `cloudformation.json`_. For example, to configure all of the optional settings:
 
 .. code-block:: console
 
@@ -99,7 +99,12 @@ in `cloudformation.json`_ like so:
     {
         "ParameterKey":     "AssociatePublicIP",
         "ParameterValue":   "false"
+    },
+    {
+        "ParameterKey":     "ELBScheme",
+        "ParameterValue":   "internal"
     }
+
 
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`, which is
 already filled out. The defaults will be applied for the other settings.
@@ -135,15 +140,6 @@ For example, if your VPC has ID ``vpc-a26218bf`` and consists of the subnets ``s
     export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
     export VPC_ZONES=us-east-1b,us-east-1c
 
-Change ELB Scheme
-------------------------
-For load balancers attached to an Amazon VPC, this parameter can be used to specify the type of load balancer to use. 
-Specify internal to create an internal load balancer with a DNS name that resolves to private IP addresses or 
-internet-facing to create a load balancer with a publicly resolvable DNS name, which resolves to public IP addresses.
-
-.. code-block:: console
-
-    export ELB_SCHEME=internet-facing|internal
 
 Run the Provision Script
 ------------------------
@@ -184,7 +180,7 @@ start installing the platform.
 CloudFormation Updates
 ----------------------
 
-To use CloudFormation to perform update operations to your stack, there is another script: 
+To use CloudFormation to perform update operations to your stack, there is another script:
 `update_ec2_cluster.sh`_. Depending on the parameters that you have changed, CloudFormation
 may replace the EC2 instances in your stack.
 
@@ -192,7 +188,7 @@ The following parameters can be changed without replacing all instances in a sta
 
 - ``ClusterSize`` - Number of nodes in the cluster. This may launch new instances or terminate
   existing instances. If you are scaling down, this may interrupt service. If a container
-  was running on an instance that was terminated, it will have to be rebalanced onto another 
+  was running on an instance that was terminated, it will have to be rebalanced onto another
   node which will cause some downtime.
 - ``SSHFrom`` - Locks down SSH access to the Deis hosts. This will update the security
   group for the Deis hosts.
