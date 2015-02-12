@@ -46,11 +46,11 @@ func ListUnitFiles(argv []string, b backend.Backend) error {
 }
 
 // Scale grows or shrinks the number of running components.
-// Currently "router" and "registry" are the only types that can be scaled.
+// Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
 func Scale(argv []string, b backend.Backend) error {
 	usage := `Grows or shrinks the number of running components.
 
-Currently "router" and "registry" are the only types that can be scaled.
+Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
 
 Usage:
   deisctl scale [<target>...] [options]
@@ -74,7 +74,7 @@ Usage:
 			return err
 		}
 		// the router is the only component that can scale at the moment
-		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") {
+		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") && !strings.Contains(component, "store-gateway") {
 			return fmt.Errorf("cannot scale %s components", component)
 		}
 		b.Scale(component, num, &wg, outchan, errchan)
@@ -171,7 +171,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	// we start gateway first to give metadata time to come up for volume
-	b.Start([]string{"store-gateway"}, wg, outchan, errchan)
+	b.Start([]string{"store-gateway@1"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"store-volume"}, wg, outchan, errchan)
 	wg.Wait()
@@ -282,7 +282,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
+	b.Stop([]string{"store-volume", "store-gateway@1"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
 	wg.Wait()
@@ -428,7 +428,7 @@ func InstallPlatform(b backend.Backend) error {
 func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway"}, wg, outchan, errchan)
+	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -524,7 +524,7 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-volume", "store-gateway"}, wg, outchan, errchan)
+	b.Destroy([]string{"store-volume", "store-gateway@1"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
 	wg.Wait()

@@ -40,10 +40,10 @@ install: check-deisctl
 	deisctl install store-daemon
 	deisctl install store-metadata
 	deisctl install store-volume
-	deisctl install store-gateway
+	deisctl install store-gateway@1
 
 uninstall: check-deisctl
-	deisctl uninstall store-gateway
+	deisctl uninstall store-gateway@1
 	deisctl uninstall store-volume
 	deisctl uninstall store-metadata
 	deisctl uninstall store-daemon
@@ -54,10 +54,10 @@ start: check-deisctl
 	deisctl start store-daemon
 	deisctl start store-metadata
 	deisctl start store-volume
-	deisctl start store-gateway
+	deisctl start store-gateway@1
 
 stop: check-deisctl
-	deisctl stop store-gateway
+	deisctl stop store-gateway@1
 	deisctl stop store-volume
 	deisctl stop store-metadata
 	deisctl stop store-daemon
