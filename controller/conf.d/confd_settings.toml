@@ -10,5 +10,6 @@ keys = [
   "/deis/registry",
   "/deis/domains",
   "/deis/platform",
+  "/deis/scheduler/swarm/host",
 ]
 reload_cmd = "/app/bin/reload"

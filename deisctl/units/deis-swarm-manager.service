@@ -1,0 +1,15 @@
+[Unit]
+Description=deis-cache
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "docker history smothiki/swarm >/dev/null || docker pull smothiki/swarm"
+ExecStartPre=/bin/sh -c "docker inspect deis-swarm-manager >/dev/null && docker rm -f deis-swarm-manager || true"
+ExecStart=/bin/sh -c "docker run -p 2395:2375 --name deis-swarm-manager -e HOST=$COREOS_PRIVATE_IPV4 smothiki/swarm manage"
+ExecStopPost=-/usr/bin/docker rm -f deis-swarm-manager
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
