@@ -10,7 +10,7 @@ django-cors-headers==1.0.0
 django-guardian==1.2.5
 django-json-field==0.5.7
 djangorestframework==3.0.5
-docker-py==0.6.0
+docker-py==0.7.2
 gunicorn==19.2.1
 paramiko==1.15.2
 psycopg2==2.6
