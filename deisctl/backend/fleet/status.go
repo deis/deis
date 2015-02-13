@@ -21,6 +21,10 @@ func (c *FleetClient) Status(target string) (err error) {
 // printUnitStatus displays the systemd status for a given unit
 func printUnitStatus(name string) int {
 	u, err := cAPI.Unit(name)
+	if suToGlobal(*u) {
+		fmt.Fprintf(os.Stderr, "Unable to get status for global unit %s. Check the status on the host using systemctl.\n", name)
+		return 1
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error retrieving Unit %s: %v", name, err)
 		return 1
