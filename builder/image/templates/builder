@@ -87,7 +87,7 @@ fi
 
 BUILD_OPTS=()
 BUILD_OPTS+='/usr/bin/docker'
-BUILD_OPTS+=' run '
+BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
 # get application configuration
 BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
 

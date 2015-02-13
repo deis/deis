@@ -23,3 +23,4 @@ Managing Deis
     security_considerations
     ssl-endpoints
     upgrading-deis
+    using-a-proxy-server

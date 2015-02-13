@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
+source /etc/environment_proxy
+
 # START jpetazzo/dind wrapper
 
 # First, make sure that cgroups are mounted correctly.

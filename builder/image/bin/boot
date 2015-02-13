@@ -6,6 +6,8 @@
 # fail hard and fast even on pipelines
 set -eo pipefail
 
+source /etc/environment_proxy
+
 # set debug based on envvar
 [[ $DEBUG ]] && set -x
 
