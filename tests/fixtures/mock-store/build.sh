@@ -24,7 +24,7 @@ git clone https://github.com/jserver/mock-s3 /app/mock-s3
 cd /app/mock-s3
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
 
 python setup.py install
 
