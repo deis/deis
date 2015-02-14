@@ -228,7 +228,8 @@ class App(UuidAuditedModel):
             if to_remove:
                 self._destroy_containers(to_remove)
         # save new structure to the database
-        vals = self.container_set.values('type').annotate(Count('pk')).order_by()
+        vals = self.container_set.exclude(type='run').values(
+            'type').annotate(Count('pk')).order_by()
         self.structure = {v['type']: v['pk__count'] for v in vals}
         self.save()
         return changed
