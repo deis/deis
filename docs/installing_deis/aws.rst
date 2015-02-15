@@ -189,6 +189,13 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
     The default name of the CloudFormation stack will be ``deis``. You can specify a different name
     with ``./provision-ec2-cluster.sh <name>``.
 
+Remote IPs behind your ELB
+--------------------------
+
+The ELB you just created is load-balancing raw TCP connections, which is required for custom domain SSL
+and WebSockets. As remote IPs are by default not visible behind a TCP-Proxy, the ELB and your cluster routers
+were created with `Proxy Protocol`_ enabled.
+
 
 Configure DNS
 -------------
@@ -229,3 +236,4 @@ Please reference the AWS documentation for `more information about CloudFormatio
 .. _`PyYAML`: http://pyyaml.org/
 .. _`update_ec2_cluster.sh`: https://github.com/deis/deis/blob/master/contrib/ec2/update-ec2-cluster.sh
 .. _`More information about CloudFormation stack updates`: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html
+.. _`Proxy Protocol`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-proxy-protocol.html

@@ -55,7 +55,7 @@ SLEEPTIME=10
 COUNTER=1
 INSTANCE_IDS=""
 until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then 
+    if [ $COUNTER -gt $ATTEMPTS ]; then
         echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after 10m)"
         echo "Destroying stack $STACK_NAME"
         bailout
@@ -63,7 +63,7 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
     fi
 
     STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus')
-    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \
@@ -127,3 +127,20 @@ echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"
 
 echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is started."
 echo_green "Please continue to follow the instructions in the documentation."
+
+FIRST_INSTANCE=$(aws ec2 describe-instances \
+    --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
+    --query 'Reservations[].Instances[].[PublicIpAddress]' \
+    --output text | head -1)
+echo_green "Setting DEISCTL_TUNNEL=$FIRST_INSTANCE"
+export DEISCTL_TUNNEL=$FIRST_INSTANCE
+echo_green "Enabling proxy protocol"
+
+if ! deisctl config router set proxyProtocol=1; then
+    echo_red "#"
+    echo_red "# Enabling proxy protocol failed, please enable proxy protocol "
+    echo_red "# manually after finishing your deis cluster installation."
+    echo_red "#"
+    echo_red "# deisctl config router set proxyProtocol=1"
+    echo_red "#"
+fi
