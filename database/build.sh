@@ -29,7 +29,7 @@ apt-get update && apt-get install -yq \
 /etc/init.d/postgresql stop
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
 
 # install wal-e
 cd /tmp

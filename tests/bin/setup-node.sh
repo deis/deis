@@ -29,7 +29,7 @@ echo "You must reboot for the global $PATH changes to take effect."
 
 # install test suite requirements
 apt-get install -yq curl mercurial python-dev libpq-dev libyaml-dev git postgresql postgresql-client
-RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/1.5.6/contrib/get-pip.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
 pip install virtualenv
 
 # create jenkins user and install node bootstrap script
