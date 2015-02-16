@@ -10,9 +10,9 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
-export VERSION_NGINX=nginx-1.6.2
-export VERSION_TCP_PROXY=0.4.5
-export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
+export VERSION_NGINX=nginx-1.7.10
+export VERSION_TCP_PROXY=ad8826a727024f4124fec9d9d3ada32b8078d699
+export VERSION_NAXSI=d0d5a30ad35a3be4482b2a99ea03785280d73a21
 
 export BUILD_PATH=/tmp/build
 
@@ -26,13 +26,12 @@ mkdir $BUILD_PATH
 cd $BUILD_PATH
 
 # install required packages to build
-apt-get update \
-  && apt-get install -y patch curl build-essential \
-  libpcre3 libpcre3-dev libssl-dev libgeoip-dev zlib1g-dev
+apk-install patch curl build-base libcrypto1.0 \
+  libpcre32 pcre-dev openssl-dev geoip-dev zlib zlib-dev
 
 # grab the source files
 curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
-curl -sSL https://github.com/yaoweibin/nginx_tcp_proxy_module/archive/v$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
+curl -sSL https://github.com/irr/nginx_tcp_proxy_module/archive/$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
 curl -sSL https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz -o $BUILD_PATH/$VERSION_NAXSI.tar.gz
 
 # expand the source files
@@ -44,6 +43,7 @@ tar xzf $VERSION_NAXSI.tar.gz
 cd $BUILD_PATH/$VERSION_NGINX
 
 patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
+
 
 ./configure \
   --prefix=$PREFIX \
@@ -66,5 +66,5 @@ patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
   --add-module=$BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY \
   --add-module=$BUILD_PATH/naxsi-$VERSION_NAXSI/naxsi_src \
   && make && make install
-  
+
 mv /tmp/firewall /opt/nginx/firewall

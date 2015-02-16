@@ -1,4 +1,6 @@
-FROM ubuntu-debootstrap:14.04
+FROM gliderlabs/alpine:3.1
+
+RUN apk-install redis
 
 ADD . /app
 WORKDIR /app

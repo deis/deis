@@ -1,4 +1,4 @@
-FROM ubuntu-debootstrap:14.04
+FROM gliderlabs/alpine:3.1
 
 CMD ["/bin/logger"]
 EXPOSE 514
