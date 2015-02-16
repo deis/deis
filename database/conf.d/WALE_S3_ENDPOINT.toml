@@ -2,7 +2,7 @@
 src   = "WALE_S3_ENDPOINT"
 dest  = "/etc/wal-e.d/env/WALE_S3_ENDPOINT"
 uid = 0
-gid = 106
+gid = 70
 mode  = "0640"
 keys = [
   "/deis/store/gateway",

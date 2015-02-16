@@ -5,7 +5,7 @@ set -eo pipefail
 # "remote: Updated branch 'master' of 'repo'. Deploying to dev." becomes
 # "Updated branch 'master' of 'repo'. Deploying to dev."
 strip_remote_prefix() {
-    sed -u "s/^/"$'\e[1G'"/"
+    stdbuf -i0 -o0 -e0 sed "s/^/"$'\e[1G'"/"
 }
 
 GITUSER=${GITUSER:-git}

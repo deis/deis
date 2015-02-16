@@ -1,4 +1,4 @@
-FROM busybox
+FROM alpine:3.1
 
 ENTRYPOINT ["/bin/logger"]
 CMD ["--enable-publish"]

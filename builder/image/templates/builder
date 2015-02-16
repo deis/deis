@@ -61,7 +61,7 @@ TMP_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$IM
 # create app directories
 mkdir -p $BUILD_DIR $CACHE_DIR
 # create temporary directory inside the build dir for this push
-TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
+TMP_DIR=$(mktemp -d -p $BUILD_DIR)
 
 cd $REPO_DIR
 git archive $GIT_SHA | tar -xmC $TMP_DIR
@@ -108,7 +108,7 @@ if [ ! -f Dockerfile ]; then
     # TMP_DIR is created using mktemp, which sets permissions to 700. Since
     # we share this with the slug group, the slug group needs to be able to
     # work with it.
-    chmod g+rwx $TMP_DIR
+    chmod g+rwx $TMP_DIR $CACHE_DIR
 
     BUILD_OPTS+=' deis/slugbuilder'
 

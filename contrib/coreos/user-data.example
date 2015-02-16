@@ -185,8 +185,8 @@ write_files:
   - path: /home/core/.toolboxrc
     owner: core
     content: |
-      TOOLBOX_DOCKER_IMAGE=ubuntu-debootstrap
-      TOOLBOX_DOCKER_TAG=14.04
+      TOOLBOX_DOCKER_IMAGE=alpine
+      TOOLBOX_DOCKER_TAG=3.1
       TOOLBOX_USER=root
   - path: /etc/environment_proxy
     owner: core
