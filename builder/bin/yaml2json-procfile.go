@@ -21,7 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	procfile, err := builder.YamlToJson(bytes)
+	procfile, err := builder.YamlToJSON(bytes)
 
 	if err != nil {
 		fmt.Println("the procfile does not contains a valid yaml structure")

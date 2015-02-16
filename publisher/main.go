@@ -34,7 +34,7 @@ func main() {
 	}
 	etcdClient := etcd.NewClient([]string{"http://" + etcdHost + ":4001"})
 
-	server := &server.Server{client, etcdClient}
+	server := &server.Server{DockerClient: client, EtcdClient: etcdClient}
 
 	go server.Listen(etcdTTL)
 

@@ -71,10 +71,8 @@ test-style:
 # display output, then check
 	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
-# FIXME: make this mandatory
-	-$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
-# FIXME: make this mandatory
-	-$(GOLINT) ./...
+	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
+	$(GOLINT) ./...
 
 test-unit:
 	@echo no unit tests

@@ -29,7 +29,7 @@ func stringInSlice(list []string, s string) bool {
 	return false
 }
 
-func TestYamlToJsonGood(t *testing.T) {
+func TestYamlToJSONGood(t *testing.T) {
 	goodProcfiles := [][]byte{
 		[]byte(`web: while true; do echo hello; sleep 1; done`),
 
@@ -42,7 +42,7 @@ worker: while true; do echo hello; sleep 1; done`),
 	goodProcess := "while true; do echo hello; sleep 1; done"
 
 	for _, procfile := range goodProcfiles {
-		data, err := YamlToJson(procfile)
+		data, err := YamlToJSON(procfile)
 		if err != nil {
 			t.Errorf("expected procfile to be valid, got '%v'", err)
 		}
@@ -169,7 +169,7 @@ func TestParseControllerConfigGood(t *testing.T) {
 }
 
 func TestTimeSerialize(t *testing.T) {
-	time, err := json.Marshal(&dtime.Time{time.Now().UTC()})
+	time, err := json.Marshal(&dtime.Time{Time: time.Now().UTC()})
 
 	if err != nil {
 		t.Errorf("expected to be able to serialize time as json, got '%v'", err)

@@ -100,7 +100,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 	}
 }
 
-// isPublishableApp determines if the application should be published to etcd.
+// IsPublishableApp determines if the application should be published to etcd.
 func (s *Server) IsPublishableApp(name string) bool {
 	r := regexp.MustCompile(appNameRegex)
 	match := r.FindStringSubmatch(name)
@@ -115,9 +115,8 @@ func (s *Server) IsPublishableApp(name string) bool {
 	}
 	if version >= latestRunningVersion(s.EtcdClient, appName) {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 // latestRunningVersion retrieves the highest version of the application published

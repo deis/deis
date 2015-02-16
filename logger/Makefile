@@ -4,8 +4,9 @@ include ../includes.mk
 repo_path = github.com/deis/deis/logger
 
 GO_FILES = main.go
-GO_PACKAGES = syslog syslogd
+GO_PACKAGES = syslog syslogd tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
+GO_TESTABLE_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,syslog syslogd)
 
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
@@ -71,13 +72,11 @@ test-style:
 # display output, then check
 	$(GOFMT) $(GO_PACKAGES) $(GO_FILES)
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
-# FIXME: make this mandatory
-	-$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
-# FIXME: make this mandatory
-	-$(GOLINT) ./...
+	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
+	$(GOLINT) ./...
 
 test-unit: test-style
-	$(GOTEST) $(GO_PACKAGES_REPO_PATH)
+	$(GOTEST) $(GO_TESTABLE_PACKAGES_REPO_PATH)
 
 coverage:
 	go test -coverprofile coverage.out ./syslog

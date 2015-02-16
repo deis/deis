@@ -9,8 +9,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// YamlToJson takes an input yaml string, parses it and returns a string formatted as json.
-func YamlToJson(bytes []byte) (string, error) {
+// YamlToJSON takes an input yaml string, parses it and returns a string formatted as json.
+func YamlToJSON(bytes []byte) (string, error) {
 	var anomaly map[string]string
 
 	if err := yaml.Unmarshal(bytes, &anomaly); err != nil {
@@ -39,6 +39,7 @@ func ParseConfig(res *http.Response) (*Config, error) {
 	return &config, err
 }
 
+// ParseDomain returns the domain field from the bytes of a build hook response.
 func ParseDomain(bytes []byte) (string, error) {
 	var hook BuildHookResponse
 	if err := json.Unmarshal(bytes, &hook); err != nil {
@@ -56,6 +57,7 @@ func ParseDomain(bytes []byte) (string, error) {
 	return hook.Domains[0], nil
 }
 
+// ParseReleaseVersion returns the version field from the bytes of a build hook response.
 func ParseReleaseVersion(bytes []byte) (int, error) {
 	var hook BuildHookResponse
 	if err := json.Unmarshal(bytes, &hook); err != nil {
@@ -69,9 +71,10 @@ func ParseReleaseVersion(bytes []byte) (int, error) {
 	return hook.Release["version"], nil
 }
 
+// GetDefaultType returns the default process types given a YAML byte array.
 func GetDefaultType(bytes []byte) (string, error) {
 	type YamlTypeMap struct {
-		DefaultProcessTypes ProcessType `default_process_types`
+		DefaultProcessTypes ProcessType `yaml:"default_process_types"`
 	}
 
 	var p YamlTypeMap
@@ -93,6 +96,7 @@ func GetDefaultType(bytes []byte) (string, error) {
 	return string(retVal), nil
 }
 
+// ParseControllerConfig returns configuration key/value pair strings from a config.
 func ParseControllerConfig(bytes []byte) ([]string, error) {
 	var controllerConfig Config
 	if err := json.Unmarshal(bytes, &controllerConfig); err != nil {
