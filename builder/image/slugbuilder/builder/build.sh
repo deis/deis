@@ -1,7 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
-source /etc/environment_proxy
+if [[ -f /etc/environment_proxy ]]; then
+	source /etc/environment_proxy
+fi
 
 if [[ "$1" == "-" ]]; then
     slug_file="$1"
