@@ -1,0 +1,9 @@
+bind = '0.0.0.0'
+workers = 8
+proc_name = 'deis-controller'
+timeout = 1200
+pidfile = '/tmp/gunicorn.pid'
+loglevel = 'info'
+errorlog = '-'
+accesslog = '-'
+access_log_format = '%(h)s "%(r)s" %(s)s %(b)s "%(a)s"'

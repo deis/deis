@@ -71,9 +71,7 @@ chmod 777 /data/logs
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
 # spawn a gunicorn server in the background
-sudo -E -u deis gunicorn deis.wsgi -b 0.0.0.0 -w 8 -n deis --timeout=1200 --pid=/tmp/gunicorn.pid \
-                         --log-level info --error-logfile - --access-logfile - \
-                         --access-logformat '%(h)s "%(r)s" %(s)s %(b)s "%(a)s"' &
+sudo -E -u deis gunicorn -c deis/gconf.py deis.wsgi &
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
