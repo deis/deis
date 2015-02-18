@@ -78,6 +78,7 @@ func NewUnit(component string) (uf *unit.UnitFile, err error) {
 // formatUnitName returns a properly formatted systemd service name
 // using the given component type and number
 func formatUnitName(component string, num int) (unitName string, err error) {
+	component = strings.TrimPrefix(component, "deis-")
 	if num == 0 {
 		return "deis-" + component + ".service", nil
 	}

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -66,10 +67,10 @@ func splitJobName(component string) (c string, num int, err error) {
 
 func splitTarget(target string) (component string, num int, err error) {
 	// see if we were provided a specific target
-	r := regexp.MustCompile(`^([a-z-]+)(@\d+)?$`)
+	r := regexp.MustCompile(`^([a-z-]+)(@\d+)?(\.service)?$`)
 	match := r.FindStringSubmatch(target)
 	// check for failed match
-	if len(match) != 3 {
+	if len(match) < 3 {
 		err = fmt.Errorf("Could not parse target: %v", target)
 		return
 	}
@@ -82,6 +83,29 @@ func splitTarget(target string) (component string, num int, err error) {
 		return "", 0, err
 	}
 	return match[1], num, err
+}
+
+// expand a target to all installed units
+func expandTargets(c *FleetClient, targets []string) (expandedTargets []string, err error) {
+	for _, t := range targets {
+		if strings.HasSuffix(t, "@*") {
+			var targets []string
+			targets, err = expandTarget(c, strings.TrimSuffix(t, "@*"))
+			if err != nil {
+				return
+			}
+			expandedTargets = append(expandedTargets, targets...)
+		} else {
+			expandedTargets = append(expandedTargets, t)
+		}
+
+	}
+	return
+}
+
+func expandTarget(c *FleetClient, target string) (targets []string, err error) {
+	targets, err = c.Units(target)
+	return
 }
 
 // randomValue returns a random string from a slice of string

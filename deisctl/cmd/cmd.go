@@ -171,7 +171,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	// we start gateway first to give metadata time to come up for volume
-	b.Start([]string{"store-gateway@1"}, wg, outchan, errchan)
+	b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"store-volume"}, wg, outchan, errchan)
 	wg.Wait()
@@ -188,12 +188,12 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Start([]string{"cache"}, &_wg, _outchan, _errchan)
 	wg.Wait()
 	b.Start([]string{
-		"database", "registry@1", "controller", "builder",
-		"publisher", "router@1", "router@2", "router@3"},
+		"database", "registry@*", "controller", "builder",
+		"publisher", "router@*"},
 		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Start([]string{"cache", "database", "registry@1", "controller"}, wg, outchan, errchan)
+	b.Start([]string{"cache", "database", "registry@*", "controller"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
@@ -203,7 +203,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Start([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	b.Start([]string{"router@*"}, wg, outchan, errchan)
 	wg.Wait()
 }
 
@@ -264,7 +264,7 @@ func StopPlatform(b backend.Backend) error {
 func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Stop([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	b.Stop([]string{"router@*"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
@@ -272,7 +272,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Stop([]string{"controller", "builder", "database", "registry@1"}, wg, outchan, errchan)
+	b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Stop([]string{"cache"}, wg, outchan, errchan)
 	wg.Wait()
@@ -282,7 +282,7 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-volume", "store-gateway@1"}, wg, outchan, errchan)
+	b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
 	wg.Wait()
@@ -508,7 +508,7 @@ func UninstallPlatform(b backend.Backend) error {
 func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
 
 	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Destroy([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	b.Destroy([]string{"router@*"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
@@ -516,7 +516,7 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Destroy([]string{"controller", "builder", "cache", "database", "registry@1"}, wg, outchan, errchan)
+	b.Destroy([]string{"controller", "builder", "cache", "database", "registry@*"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
@@ -524,7 +524,7 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-volume", "store-gateway@1"}, wg, outchan, errchan)
+	b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
 	wg.Wait()
