@@ -541,11 +541,52 @@ class ContainerTest(TransactionTestCase):
         rc, output = c.run('echo hi')
         self.assertEqual(json.loads(output)['entrypoint'], '/runner/init')
 
+    def test_scaling_does_not_add_run_proctypes_to_structure(self):
+        """Test that app info doesn't show transient "run" proctypes."""
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        app = App.objects.get(id=app_id)
+        user = User.objects.get(username='autotest')
+        # dockerfile + procfile worflow
+        build = Build.objects.create(owner=user,
+                                     app=app,
+                                     image="qwerty",
+                                     procfile={'web': 'node server.js',
+                                               'worker': 'node worker.js'},
+                                     dockerfile='foo',
+                                     sha='somereallylongsha')
+        # create an initial release
+        release = Release.objects.create(version=2,
+                                         owner=user,
+                                         app=app,
+                                         config=app.config_set.latest(),
+                                         build=build)
+        # create a run container manually to simulate how they persist
+        # when actually created by "deis apps:run".
+        c = Container.objects.create(owner=user,
+                                     app=app,
+                                     release=release,
+                                     type='run',
+                                     num=1)
+        # scale up
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 3}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        # test that "run" proctype isn't in the app info returned
+        url = "/v1/apps/{app_id}".format(**locals())
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('run', response.data['structure'])
+
     def test_scale_with_unauthorized_user_returns_403(self):
         """An unauthorized user should not be able to access an app's resources.
 
         If an unauthorized user is trying to scale an app he or she does not have access to, it
-        should return a 403. Currently, it returns a 404. FIXME!
+        should return a 403.
         """
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
