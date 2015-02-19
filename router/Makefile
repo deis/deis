@@ -35,14 +35,10 @@ uninstall: check-deisctl
 	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start $(COMPONENT)@1
-	deisctl start $(COMPONENT)@2
-	deisctl start $(COMPONENT)@3
+	deisctl start $(COMPONENT)@*
 
 stop: check-deisctl
-	deisctl stop $(COMPONENT)@1
-	deisctl stop $(COMPONENT)@2
-	deisctl stop $(COMPONENT)@3
+	deisctl stop $(COMPONENT)@*
 
 restart: stop start
 

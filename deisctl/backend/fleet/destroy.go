@@ -9,7 +9,14 @@ import (
 
 // Destroy units for a given target
 func (c *FleetClient) Destroy(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	for _, target := range targets {
+	// expand @* targets
+	expandedTargets, err := expandTargets(c, targets)
+	if err != nil {
+		errchan <- err
+		return
+	}
+
+	for _, target := range expandedTargets {
 		wg.Add(1)
 		go doDestroy(c, target, wg, outchan, errchan)
 	}

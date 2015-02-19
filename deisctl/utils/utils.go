@@ -1,5 +1,4 @@
 // Package utils contains commonly useful functions from Deisctl
-
 package utils
 
 import (

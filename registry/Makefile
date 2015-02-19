@@ -14,16 +14,16 @@ full-clean: check-docker check-registry
 	docker images -q $(IMAGE_PREFIX)$(COMPONENT) | xargs docker rmi -f
 
 install: check-deisctl
-	deisctl install $(COMPONENT)
+	deisctl scale $(COMPONENT)=1
 
 uninstall: check-deisctl
-	deisctl uninstall $(COMPONENT)
+	deisctl scale $(COMPONENT)=0
 
 start: check-deisctl
-	deisctl start $(COMPONENT)
+	deisctl start $(COMPONENT)@*
 
 stop: check-deisctl
-	deisctl stop $(COMPONENT)
+	deisctl stop $(COMPONENT)@*
 
 restart: stop start
 

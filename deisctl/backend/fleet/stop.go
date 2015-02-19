@@ -10,7 +10,14 @@ import (
 
 // Stop units and wait for their desiredState
 func (c *FleetClient) Stop(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
-	for _, target := range targets {
+	// expand @* targets
+	expandedTargets, err := expandTargets(c, targets)
+	if err != nil {
+		errchan <- err
+		return
+	}
+
+	for _, target := range expandedTargets {
 		wg.Add(1)
 		go doStop(c, target, wg, outchan, errchan)
 	}
