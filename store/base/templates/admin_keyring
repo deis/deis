@@ -1,1 +1,1 @@
-{{ .deis_store_adminKeyring }}
+{{ getv "/deis/store/adminKeyring" }}

@@ -1,4 +1,4 @@
-{{ range $key := .deis_store_hosts }}{{ Base $key.Key }}      {{ $key.Value }}
+{{ range $key := ls "/deis/store/hosts" }}{{ base $key.Key }}      {{ $key.Value }}
 {{ end }}
 
 ff00::0 ip6-mcastprefix

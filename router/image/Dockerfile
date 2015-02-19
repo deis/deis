@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && apt-get install -y curl net-tools sudo
 
 # install confd
-RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-b8e693c \
+RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.7.1/confd-0.7.1-linux-amd64 \
     && chmod +x /usr/local/bin/confd
 
 # install common packages
@@ -25,4 +25,3 @@ ADD nginx.tgz /opt/nginx
 RUN rm nginx.tgz
 
 ENV DEIS_RELEASE 1.4.0-dev
-

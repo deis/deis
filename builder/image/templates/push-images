@@ -6,5 +6,5 @@ until docker history deis/slugrunner >/dev/null 2>&1; do
 done
 
 # tag and push
-docker tag deis/slugrunner:latest {{ .deis_registry_host }}:{{ .deis_registry_port }}/deis/slugrunner:latest
-docker push {{ .deis_registry_host }}:{{ .deis_registry_port }}/deis/slugrunner:latest
+docker tag deis/slugrunner:latest {{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/deis/slugrunner:latest
+docker push {{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/deis/slugrunner:latest

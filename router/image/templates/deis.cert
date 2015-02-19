@@ -1,1 +1,1 @@
-{{ .deis_router_sslCert }}
+{{ getv "/deis/router/sslCert" }}

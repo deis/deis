@@ -1,6 +1,6 @@
 # security keys and auth tokens
-SECRET_KEY = '{{ .deis_controller_secretKey }}'
-BUILDER_KEY = '{{ .deis_controller_builderKey }}'
+SECRET_KEY = '{{ getv "/deis/controller/secretKey" }}'
+BUILDER_KEY = '{{ getv "/deis/controller/builderKey" }}'
 
 # scheduler settings
 SCHEDULER_MODULE = '{{ or (.deis_controller_schedulerModule) "fleet" }}'
@@ -14,35 +14,35 @@ except:
 SSH_PRIVATE_KEY = """{{ or (.deis_platform_sshPrivateKey) "" }}"""
 
 # platform domain must be provided
-DEIS_DOMAIN = '{{ .deis_platform_domain }}'
+DEIS_DOMAIN = '{{ getv "/deis/platform/domain" }}'
 
 # use the private registry module
 REGISTRY_MODULE = 'registry.private'
-REGISTRY_URL = '{{ .deis_registry_protocol }}://{{ .deis_registry_host }}:{{ .deis_registry_port }}'  # noqa
-REGISTRY_HOST = '{{ .deis_registry_host }}'
-REGISTRY_PORT = '{{ .deis_registry_port }}'
+REGISTRY_URL = '{{ getv "/deis/registry/protocol" }}://{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}'  # noqa
+REGISTRY_HOST = '{{ getv "/deis/registry/host" }}'
+REGISTRY_PORT = '{{ getv "/deis/registry/port" }}'
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.{{ .deis_database_engine }}',
-        'NAME': '{{ .deis_database_name }}',
-        'USER': '{{ .deis_database_user }}',
-        'PASSWORD': '{{ .deis_database_password }}',
-        'HOST': '{{ .deis_database_host }}',
-        'PORT': '{{ .deis_database_port }}',
+        'ENGINE': 'django.db.backends.{{ getv "/deis/database/engine" }}',
+        'NAME': '{{ getv "/deis/database/name" }}',
+        'USER': '{{ getv "/deis/database/user" }}',
+        'PASSWORD': '{{ getv "/deis/database/password" }}',
+        'HOST': '{{ getv "/deis/database/host" }}',
+        'PORT': '{{ getv "/deis/database/port" }}',
     }
 }
 
 # move log directory out of /app/deis
 DEIS_LOG_DIR = '/data/logs'
 
-{{ if .deis_controller_registrationEnabled }}
-REGISTRATION_ENABLED = bool({{ .deis_controller_registrationEnabled }})
+{{ if exists "/deis/controller/registrationEnabled" }}
+REGISTRATION_ENABLED = bool({{ getv "/deis/controller/registrationEnabled" }})
 {{ end }}
 
-{{ if .deis_controller_webEnabled }}
-WEB_ENABLED = bool({{ .deis_controller_webEnabled }})
+{{ if exists "/deis/controller/webEnabled" }}
+WEB_ENABLED = bool({{ getv "/deis/controller/webEnabled" }})
 {{ end }}
 
 UNIT_HOSTNAME = '{{ or (.deis_controller_unitHostname) "default" }}'
