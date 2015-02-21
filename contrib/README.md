@@ -24,5 +24,6 @@ Some of these projects include:
 * [deis-netstat](https://github.com/lorieri/deis-netstat) (@lorieri) - A cluster-wide netstat tool for Deis
 * [deis-proxy](https://github.com/lorieri/deis-proxy) (@lorieri) - A transparent proxy for Deis
 * [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) (@aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
+* [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) (@lorieri) - A global unit to launch New Relic sysmond
 
 This is a non-exhaustive list. Please add to this list by opening a pull request.
