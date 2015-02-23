@@ -262,7 +262,8 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(response.data['results'][0]['release'], 'v2')
         # post a new build
         url = "/v1/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example'}
+        # a web proctype must exist on the second build or else the container will be removed
+        body = {'image': 'autotest/example', 'procfile': {'web': 'echo hi'}}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
@@ -606,3 +607,30 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
+
+    def test_modified_procfile_from_build_removes_containers(self):
+        """
+        When a new procfile is posted which removes a certain process type, deis should stop the
+        existing containers.
+        """
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        build_url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
+        response = self.client.post(build_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'worker': 'node worker.js'})}
+        response = self.client.post(build_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Container.objects.filter(type='web').count(), 0)

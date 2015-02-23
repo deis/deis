@@ -256,6 +256,9 @@ class App(UuidAuditedModel):
     def _destroy_containers(self, to_destroy):
         """Destroys containers via the scheduler"""
         destroy_threads = []
+        if not to_destroy:
+            # do nothing if we didn't request any containers
+            return
         for c in to_destroy:
             destroy_threads.append(threading.Thread(target=c.destroy))
         [t.start() for t in destroy_threads]
@@ -588,6 +591,19 @@ class Build(UuidAuditedModel):
         except RuntimeError:
             new_release.delete()
             raise
+
+    def save(self, **kwargs):
+        try:
+            previous_build = self.app.build_set.latest()
+            to_destroy = []
+            for proctype in previous_build.procfile.keys():
+                if proctype not in self.procfile.keys():
+                    for c in self.app.container_set.filter(type=proctype):
+                        to_destroy.append(c)
+            self.app._destroy_containers(to_destroy)
+        except Build.DoesNotExist:
+            pass
+        return super(Build, self).save(**kwargs)
 
     def __str__(self):
         return "{0}-{1}".format(self.app.id, self.uuid[:7])
