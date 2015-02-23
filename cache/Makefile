@@ -13,7 +13,7 @@ BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot main.go || exit 1
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot main.go || exit 1
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/usr/local/bin/redis-server $(BINARY_DEST_DIR)/
 	docker build -t $(IMAGE) image

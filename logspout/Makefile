@@ -13,7 +13,7 @@ RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
 
 build: check-docker
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o image/logspout
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o image/logspout
 	docker build -t $(RELEASE_IMAGE) image
 
 clean:
