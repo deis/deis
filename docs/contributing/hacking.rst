@@ -202,7 +202,8 @@ Django Shell
 
 .. code-block:: console
 
-    $ deisctl ssh controller   # SSH into the controller
+    $ deisctl list             # determine which host runs the controller
+    $ ssh core@<host>          # SSH into the controller host
     $ nse deis-controller      # inject yourself into the container
     $ cd /app                  # change into the django project root
     $ ./manage.py shell        # get a django shell
