@@ -67,10 +67,12 @@ fi
 
 # ensure WAL log bucket exists
 envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
+INIT_ID=$(etcdctl get $ETCD_PATH/initId 2> /dev/null || echo none)
+echo "database: expecting initialization id: $INIT_ID"
 
 initial_backup=0
-if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
-  echo "database: no existing database found."
+if [[ "$(cat /var/lib/postgresql/9.3/main/initialized 2> /dev/null)" != "$INIT_ID" ]]; then
+  echo "database: no existing database found or it is outdated."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
   if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
@@ -85,7 +87,9 @@ if [[ ! -f /var/lib/postgresql/9.3/main/initialized ]]; then
     initial_backup=1
   fi
   # either way, we mark the database as initialized
-  touch /var/lib/postgresql/9.3/main/initialized
+  INIT_ID=$(cat /proc/sys/kernel/random/uuid)
+  echo $INIT_ID > /var/lib/postgresql/9.3/main/initialized
+  etcdctl --no-sync -C $ETCD set $ETCD_PATH/initId $INIT_ID >/dev/null
 else
   echo "database: existing data directory found. Starting postgres..."
 fi
@@ -152,6 +156,7 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
         # only retain the latest BACKUPS_TO_RETAIN backups
         sudo -u postgres envdir /etc/wal-e.d/env wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
         count=0
+        echo "database: backup has been completed."
       fi
     fi
     ((count++))

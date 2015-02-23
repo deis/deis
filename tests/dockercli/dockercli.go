@@ -126,12 +126,11 @@ func NewClient() (
 }
 
 func CreateVolume(cli *client.DockerCli, name string, path string) {
-  RunContainer(cli,
-           "--name", name,
-           "-v", path,
-           "ubuntu-debootstrap:14.04", "/bin/true")
+	RunContainer(cli,
+		"--name", name,
+		"-v", path,
+		"ubuntu-debootstrap:14.04", "/bin/true")
 }
-
 
 // PrintToStdout prints a string to stdout.
 func PrintToStdout(t *testing.T, stdout *io.PipeReader,
