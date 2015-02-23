@@ -10,8 +10,8 @@ coreos:
         [Service]
         Type=oneshot
         RemainAfterExit=yes
-        ExecStart=/usr/sbin/wipefs -f /dev/disk/by-id/scsi-0Google_PersistentDisk_coredocker
-        ExecStart=/usr/sbin/mkfs.btrfs -f /dev/disk/by-id/scsi-0Google_PersistentDisk_coredocker
+        ExecStart=/usr/sbin/wipefs -f /dev/disk/by-id/scsi-0Google_EphemeralDisk_coredocker
+        ExecStart=/usr/sbin/mkfs.btrfs -f /dev/disk/by-id/scsi-0Google_EphemeralDisk_coredocker
         ExecStart=/bin/touch /etc/gce-formatted
     - name: var-lib-docker.mount
       command: start
@@ -21,6 +21,6 @@ coreos:
         Requires=format-ephemeral.service
         Before=docker.service
         [Mount]
-        What=/dev/disk/by-id/scsi-0Google_PersistentDisk_coredocker
+        What=/dev/disk/by-id/scsi-0Google_EphemeralDisk_coredocker
         Where=/var/lib/docker
         Type=btrfs
