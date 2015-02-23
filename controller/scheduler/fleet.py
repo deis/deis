@@ -221,92 +221,95 @@ class FleetHTTPClient(object):
             time.sleep(1)
         else:
             raise RuntimeError('container did not report state')
-        machineID = state.get('machineID')
 
-        # find the machine
-        machines = self._get_machines()
-        if not machines:
-            raise RuntimeError('no available hosts to run command')
+        try:
+            machineID = state.get('machineID')
 
-        # find the machine's primaryIP
-        primaryIP = None
-        for m in machines.get('machines', []):
-            if m['id'] == machineID:
-                primaryIP = m['primaryIP']
-        if not primaryIP:
-            raise RuntimeError('could not find host')
+            # find the machine
+            machines = self._get_machines()
+            if not machines:
+                raise RuntimeError('no available hosts to run command')
 
-        # prepare ssh key
-        file_obj = cStringIO.StringIO(base64.b64decode(self.pkey))
-        pkey = paramiko.RSAKey(file_obj=file_obj)
+            # find the machine's primaryIP
+            primaryIP = None
+            for m in machines.get('machines', []):
+                if m['id'] == machineID:
+                    primaryIP = m['primaryIP']
+            if not primaryIP:
+                raise RuntimeError('could not find host')
 
-        # grab output via docker logs over SSH
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(primaryIP, username="core", pkey=pkey)
-        # share a transport
-        tran = ssh.get_transport()
+            # prepare ssh key
+            file_obj = cStringIO.StringIO(base64.b64decode(self.pkey))
+            pkey = paramiko.RSAKey(file_obj=file_obj)
 
-        def _do_ssh(cmd):
-            chan = tran.open_session()
-            # get a pty so stdout/stderr look right
-            chan.get_pty()
-            out = chan.makefile()
-            chan.exec_command(cmd)
-            rc, output = chan.recv_exit_status(), out.read()
-            return rc, output
+            # grab output via docker logs over SSH
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(primaryIP, username="core", pkey=pkey)
+            # share a transport
+            tran = ssh.get_transport()
 
-        # wait for container to launch
-        # we loop indefinitely here, as we have no idea how long the docker pull will take
-        while True:
-            rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
-            if rc == 0:
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('failed to create container')
+            def _do_ssh(cmd):
+                chan = tran.open_session()
+                # get a pty so stdout/stderr look right
+                chan.get_pty()
+                out = chan.makefile()
+                chan.exec_command(cmd)
+                rc, output = chan.recv_exit_status(), out.read()
+                return rc, output
 
-        # wait for container to start
-        for _ in range(2):
+            # wait for container to launch
+            # we loop indefinitely here, as we have no idea how long the docker pull will take
+            while True:
+                rc, _ = _do_ssh('docker inspect {name}'.format(**locals()))
+                if rc == 0:
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError('failed to create container')
+
+            # wait for container to start
+            for _ in range(2):
+                _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
+                if _rc != 0:
+                    raise RuntimeError('failed to inspect container')
+                _container = json.loads(_output)
+                started_at = _container[0]["State"]["StartedAt"]
+                if not started_at.startswith('0001'):
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError('container failed to start')
+
+            # wait for container to complete
+            for _ in range(1200):
+                _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
+                if _rc != 0:
+                    raise RuntimeError('failed to inspect container')
+                _container = json.loads(_output)
+                finished_at = _container[0]["State"]["FinishedAt"]
+                if not finished_at.startswith('0001'):
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError('container timed out')
+
+            # gather container output
+            _rc, output = _do_ssh('docker logs {name}'.format(**locals()))
+            if _rc != 0:
+                raise RuntimeError('could not attach to container')
+
+            # determine container exit code
             _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
             if _rc != 0:
-                raise RuntimeError('failed to inspect container')
-            _container = json.loads(_output)
-            started_at = _container[0]["State"]["StartedAt"]
-            if not started_at.startswith('0001'):
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container failed to start')
+                raise RuntimeError('could not determine exit code')
+            container = json.loads(_output)
+            rc = container[0]["State"]["ExitCode"]
 
-        # wait for container to complete
-        for _ in range(1200):
-            _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
-            if _rc != 0:
-                raise RuntimeError('failed to inspect container')
-            _container = json.loads(_output)
-            finished_at = _container[0]["State"]["FinishedAt"]
-            if not finished_at.startswith('0001'):
-                break
-            time.sleep(1)
-        else:
-            raise RuntimeError('container timed out')
-
-        # gather container output
-        _rc, output = _do_ssh('docker logs {name}'.format(**locals()))
-        if _rc != 0:
-            raise RuntimeError('could not attach to container')
-
-        # determine container exit code
-        _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
-        if _rc != 0:
-            raise RuntimeError('could not determine exit code')
-        container = json.loads(_output)
-        rc = container[0]["State"]["ExitCode"]
-
-        # cleanup
-        self._destroy_container(name)
-        self._wait_for_destroy(name)
+        finally:
+            # cleanup
+            self._destroy_container(name)
+            self._wait_for_destroy(name)
 
         # return rc and output
         return rc, output
