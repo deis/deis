@@ -28,7 +28,7 @@ func main() {
 	var procfile builder.ProcessType
 	assert(json.Unmarshal([]byte(os.Args[5]), &procfile))
 
-	var dockerfile string = os.Args[6]
+	var dockerfile = os.Args[6]
 	if dockerfile == "false" {
 		dockerfile = ""
 	}

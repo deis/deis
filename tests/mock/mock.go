@@ -1,5 +1,4 @@
 // Package mock provides mock objects and setup for Deis tests.
-
 package mock
 
 import (

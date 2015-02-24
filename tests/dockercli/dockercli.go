@@ -1,5 +1,4 @@
 // Package dockercli provides helper functions for testing with Docker.
-
 package dockercli
 
 import (

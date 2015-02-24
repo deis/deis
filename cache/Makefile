@@ -3,7 +3,7 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/cache
 
-GO_PACKAGES = image
+GO_PACKAGES = . tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))
@@ -65,10 +65,8 @@ test-style:
 # display output, then check
 	$(GOFMT) $(GO_PACKAGES)
 	@$(GOFMT) $(GO_PACKAGES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
-# FIXME: make this mandatory
-	-$(GOVET) $(GO_PACKAGES_REPO_PATH)
-# FIXME: make this mandatory
-	-$(GOLINT) ./...
+	$(GOVET) $(GO_PACKAGES_REPO_PATH)
+	$(GOLINT) ./...
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest

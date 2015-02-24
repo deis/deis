@@ -1,5 +1,4 @@
 // Package etcdutils helps test interactions with etcd.
-
 package etcdutils
 
 import (

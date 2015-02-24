@@ -92,11 +92,8 @@ test-style:
 # display output, then check
 	$(GOFMT) $(GO_PACKAGES)
 	@$(GOFMT) $(GO_PACKAGES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
-# FIXME: make this mandatory
-	-$(GOVET) $(GO_PACKAGES_REPO_PATH)
-# FIXME: make this mandatory
+	$(GOVET) $(GO_PACKAGES_REPO_PATH)
 	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
 		$(GOLINT) $$i; \
 	done
-	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
-	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) test-style &&) echo done
+	@$(foreach C, tests $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
