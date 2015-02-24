@@ -82,19 +82,20 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if res.StatusCode == 503 {
-		log.Fatalln("check the controller. is it running?")
-	} else if res.StatusCode != 200 {
-		log.Fatalf("failed retrieving config from controller: %s\n", res.Body)
-	}
-
 	defer res.Body.Close()
-	// Read json response from body
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	if res.StatusCode == 503 {
+		log.Fatalln("check the controller. is it running?")
+	} else if res.StatusCode != 200 {
+		log.Fatalf("failed retrieving config from controller: %s\n", body)
+	}
+
 	var response map[string]interface{}
 	if err := json.Unmarshal(body, &response); err != nil {
 		fmt.Println("invalid controller json response")

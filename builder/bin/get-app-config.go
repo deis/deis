@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -85,9 +86,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	if err != nil || res.StatusCode != 200 {
 		fmt.Println("failed retrieving config from controller")
-		fmt.Println(res.Body)
+		fmt.Println(body)
 		os.Exit(1)
 	}
 
