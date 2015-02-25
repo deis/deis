@@ -9,7 +9,17 @@ GO_FILES = apps_test.go auth_test.go builds_test.go config_test.go integration_t
 GO_PACKAGES = dockercli etcdutils mock utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
-MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store:latest
+MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store
+MOCK_STORE_IMAGE_PATH = fixtures/mock-store
+
+MOCK_STORE_TAG = $(shell git log -n 1 --format="%h" -- $(MOCK_STORE_IMAGE_PATH))
+ifeq (${LAZY},1)
+  MOCK_STORE_TAG_CHECK = $(docker history $(MOCK_STORE_IMAGE):$(MOCK_STORE_TAG) > /dev/null; echo $$?)
+else
+  MOCK_STORE_TAG_CHECK = 0
+endif
+
+
 
 test: test-smoke
 
@@ -35,8 +45,13 @@ setup-root-gotools:
 setup-gotools:
 	go get -v github.com/golang/lint/golint
 
+
+
 mock-store:
-	docker build -t $(MOCK_STORE_IMAGE) fixtures/mock-store/
+ifeq ($(MOCK_STORE_TAG_CHECK), 0)
+	docker build -t $(MOCK_STORE_IMAGE):latest $(MOCK_STORE_IMAGE_PATH) \
+	  && docker tag $(MOCK_STORE_IMAGE):latest $(MOCK_STORE_IMAGE):$(MOCK_STORE_TAG)
+endif
 
 test-style:
 # display output, then check
