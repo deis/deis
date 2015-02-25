@@ -25,5 +25,6 @@ Some of these projects include:
 * [deis-proxy](https://github.com/lorieri/deis-proxy) (@lorieri) - A transparent proxy for Deis
 * [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) (@aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
 * [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) (@lorieri) - A global unit to launch New Relic sysmond
+* [deis-api](https://github.com/aledbf/deis-api) (@aledbf) - node.js Deis API wrapper
 
 This is a non-exhaustive list. Please add to this list by opening a pull request.
