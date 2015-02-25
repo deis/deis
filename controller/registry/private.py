@@ -70,7 +70,7 @@ def publish_release(source, config, target):
 def _commit(repository_path, image, layer, tag):
     _put_image(image)
     cookies = _put_layer(image['id'], layer)
-    _put_checksum(image, cookies)
+    _put_checksum(image, layer, cookies)
     _put_tag(image['id'], repository_path, tag)
 
 
@@ -87,8 +87,7 @@ def _put_first_image(repository_path):
 
 
 def _api_call(endpoint, data=None, headers={}, cookies=None, request_type='GET'):
-    # FIXME: update API calls for docker 0.10.0+
-    base_headers = {'user-agent': 'docker/0.9.0'}
+    base_headers = {'user-agent': 'docker/1.0.0'}
     r = None
     if len(headers) > 0:
         for header, value in headers.iteritems():
@@ -138,11 +137,13 @@ def _put_layer(image_id, layer_fileobj):
     return r.cookies
 
 
-def _put_checksum(image, cookies):
+def _put_checksum(image, layer, cookies):
     path = "/v1/images/{id}/checksum".format(**image)
     url = urlparse.urljoin(settings.REGISTRY_URL, path)
-    tarsum = TarSum(json.dumps(image)).compute()
-    headers = {'X-Docker-Checksum': tarsum}
+    h = hashlib.sha256(json.dumps(image) + '\n')
+    h.update(layer.getvalue())
+    layer_checksum = "sha256:{0}".format(h.hexdigest())
+    headers = {'X-Docker-Checksum-Payload': layer_checksum}
     r = _api_call(url, headers=headers, cookies=cookies, request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Checksum Error ({}: {})".format(r.status_code, r.text))
@@ -188,60 +189,3 @@ def _empty_tar_archive():
     tar.close()
     data.seek(0)
     return data
-
-
-#
-# Below adapted from https://github.com/dotcloud/docker-registry/blob/master/lib/checksums.py
-#
-
-def sha256_file(fp, data=None):
-    h = hashlib.sha256(data or '')
-    if not fp:
-        return h.hexdigest()
-    while True:
-        buf = fp.read(4096)
-        if not buf:
-            break
-        h.update(buf)
-    return h.hexdigest()
-
-
-def sha256_string(s):
-    return hashlib.sha256(s).hexdigest()
-
-
-class TarSum(object):
-
-    def __init__(self, json_data):
-        self.json_data = json_data
-        self.hashes = []
-        self.header_fields = ('name', 'mode', 'uid', 'gid', 'size', 'mtime',
-                              'type', 'linkname', 'uname', 'gname', 'devmajor',
-                              'devminor')
-
-    def append(self, member, tarobj):
-        header = ''
-        for field in self.header_fields:
-            value = getattr(member, field)
-            if field == 'type':
-                field = 'typeflag'
-            elif field == 'name':
-                if member.isdir() and not value.endswith('/'):
-                    value += '/'
-            header += '{0}{1}'.format(field, value)
-        h = None
-        try:
-            if member.size > 0:
-                f = tarobj.extractfile(member)
-                h = sha256_file(f, header)
-            else:
-                h = sha256_string(header)
-        except KeyError:
-            h = sha256_string(header)
-        self.hashes.append(h)
-
-    def compute(self):
-        self.hashes.sort()
-        data = self.json_data + ''.join(self.hashes)
-        tarsum = 'tarsum+sha256:{0}'.format(sha256_string(data))
-        return tarsum
