@@ -37,6 +37,7 @@ coreos:
     content: |
       [Unit]
       Description=Install deisctl utility
+      ConditionPathExists=!/opt/bin/deisctl
 
       [Service]
       Type=oneshot
