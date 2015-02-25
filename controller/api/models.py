@@ -238,6 +238,9 @@ class App(UuidAuditedModel):
         """Creates and starts containers via the scheduler"""
         create_threads = []
         start_threads = []
+        if not to_add:
+            # do nothing if we didn't request any containers
+            return
         for c in to_add:
             create_threads.append(threading.Thread(target=c.create))
             start_threads.append(threading.Thread(target=c.start))
@@ -278,32 +281,7 @@ class App(UuidAuditedModel):
             n.save()
             new.append(n)
 
-        # create new containers
-        threads = []
-        for c in new:
-            threads.append(threading.Thread(target=c.create))
-        [t.start() for t in threads]
-        [t.join() for t in threads]
-
-        # check for containers that failed to create
-        if len(new) > 0 and set([c.state for c in new]) != set([Container.CREATED]):
-            err = 'aborting, failed to create some containers'
-            log_event(self, err, logging.ERROR)
-            self._destroy_containers(new)
-            raise RuntimeError(err)
-
-        # start new containers
-        threads = []
-        for c in new:
-            threads.append(threading.Thread(target=c.start))
-        [t.start() for t in threads]
-        [t.join() for t in threads]
-
-        # check for containers that didn't come up correctly
-        if len(new) > 0 and set([c.state for c in new]) != set([Container.UP]):
-            # report the deploy error
-            err = 'warning, some containers failed to start'
-            log_event(self, err, logging.WARNING)
+        self._start_containers(new)
 
         # destroy old containers
         if existing:
