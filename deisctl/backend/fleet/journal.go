@@ -25,6 +25,10 @@ func runJournal(name string) (exit int) {
 		fmt.Fprintf(os.Stderr, "Error retrieving Unit %s: %v", name, err)
 		return 1
 	}
+	if suToGlobal(*u) {
+		fmt.Fprintf(os.Stderr, "Unable to get journal for global unit %s. Check the logs on the host using journalctl.\n", name)
+		return 1
+	}
 	if u == nil {
 		fmt.Fprintf(os.Stderr, "Unit %s does not exist.\n", name)
 		return 1
