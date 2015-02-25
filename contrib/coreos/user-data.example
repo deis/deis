@@ -73,6 +73,7 @@ coreos:
 
       [Service]
       Type=oneshot
+      ExecStartPre=/usr/sbin/modprobe nf_conntrack
       ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
 write_files:
   - path: /etc/deis-release
