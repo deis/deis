@@ -1,5 +1,5 @@
 build:
-	CGO_ENABLED=0 godep go build -a -ldflags '-s' .
+	CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' .
 
 upx:
 	upx -9 --brute bumpver && upx -t bumpver

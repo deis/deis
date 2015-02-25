@@ -11,11 +11,11 @@ COMPONENT = $(notdir $(repo_path))
 IMAGE =  $(IMAGE_PREFIX)/$(COMPONENT):$(BUILD_TAG)
 
 build:
-	CGO_ENABLED=0 godep go build -a -ldflags '-s' .
+	CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' .
 
 installer:
 	rm -rf dist && mkdir -p dist
-	CGO_ENABLED=0 godep go build -a -ldflags '-s' -o dist/deisctl .
+	CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o dist/deisctl .
 	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
 	PATH=./makeself:$$PATH BINARY=deisctl makeself.sh --bzip2 --current --nox11 dist \
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run "Deis Control Utility" \

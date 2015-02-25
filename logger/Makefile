@@ -14,7 +14,7 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/logger github.com/deis/deis/logger || exit 1
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/logger github.com/deis/deis/logger || exit 1
 	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
