@@ -328,8 +328,10 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; docker pull $IMAGE"'''},  # noqa
     {"section": "Service", "name": "ExecStartPre", "value": '''/bin/sh -c "docker inspect {name} >/dev/null 2>&1 && docker rm -f {name} || true"'''},  # noqa
     {"section": "Service", "name": "ExecStart", "value": '''/bin/sh -c "IMAGE=$(etcdctl get /deis/registry/host 2>&1):$(etcdctl get /deis/registry/port 2>&1)/{image}; port=$(docker inspect -f '{{{{range $k, $v := .ContainerConfig.ExposedPorts }}}}{{{{$k}}}}{{{{end}}}}' $IMAGE | cut -d/ -f1) ; docker run --name {name} {memory} {cpu} {hostname} -P -e PORT=$port $IMAGE {command}"'''},  # noqa
+    {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker stop {name}'''},
     {"section": "Service", "name": "ExecStop", "value": '''/usr/bin/docker rm -f {name}'''},
     {"section": "Service", "name": "TimeoutStartSec", "value": "20m"},
+    {"section": "Service", "name": "TimeoutStopSec", "value": "10"},
     {"section": "Service", "name": "RestartSec", "value": "5"},
     {"section": "Service", "name": "Restart", "value": "on-failure"},
 ]
