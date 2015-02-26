@@ -44,13 +44,30 @@ class FleetHTTPClient(object):
 
     # connection helpers
 
+    def _request_unit(self, method, name, body=None):
+        headers = {'Content-Type': 'application/json'}
+        self.conn.request(method, '/v1-alpha/units/{name}.service'.format(**locals()),
+                                  headers=headers, body=json.dumps(body))
+        return self.conn.getresponse()
+
+    def _get_unit(self, name):
+        for attempt in range(RETRIES):
+            try:
+                resp = self._request_unit('GET', name)
+                data = resp.read()
+                if not 200 <= resp.status <= 299:
+                    errmsg = "Failed to retrieve unit: {} {} - {}".format(
+                        resp.status, resp.reason, data)
+                    raise RuntimeError(errmsg)
+                return data
+            except:
+                if attempt >= (RETRIES - 1):
+                    raise
+
     def _put_unit(self, name, body):
         for attempt in range(RETRIES):
             try:
-                headers = {'Content-Type': 'application/json'}
-                self.conn.request('PUT', '/v1-alpha/units/{name}.service'.format(**locals()),
-                                  headers=headers, body=json.dumps(body))
-                resp = self.conn.getresponse()
+                resp = self._request_unit('PUT', name, body)
                 data = resp.read()
                 if not 200 <= resp.status <= 299:
                     errmsg = "Failed to create unit: {} {} - {}".format(
@@ -171,17 +188,8 @@ class FleetHTTPClient(object):
             raise RuntimeError('container timeout while retrieving state')
 
     def _wait_for_container_running(self, name):
-        failures = 0
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
-            # FIXME: fleet unit state reports failed when containers are fine
-            state = self._wait_for_container_state(name)
-            if state.get('systemdSubState') == 'failed':
-                failures += 1
-                if failures == 10:
-                    raise RuntimeError('container failed to start')
-                time.sleep(1)
-                continue
             if self.state(name) == JobState.up:
                 return
             time.sleep(1)
@@ -329,8 +337,17 @@ class FleetHTTPClient(object):
             "deactivating": "down",
         }
         try:
+            # NOTE (bacongobbler): this call to ._get_unit() also acts as a pre-emptive check to
+            # determine if the job no longer exists (will raise a RuntimeError on 404)
+            unit = self._get_unit(name)
             state = self._wait_for_container_state(name)
             activeState = state['systemdActiveState']
+            # FIXME (bacongobbler): when fleet loads a job, sometimes it'll automatically start and
+            # stop the container, which in our case will return as 'failed', even though
+            # the container is perfectly fine.
+            if activeState == 'failed':
+                if json.loads(unit)['currentState'] == 'loaded':
+                    return JobState.created
             return getattr(JobState, systemdActiveStateMap[activeState])
         except KeyError:
             # failed retrieving a proper response from the fleet API
