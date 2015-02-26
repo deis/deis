@@ -147,7 +147,6 @@ def _put_checksum(image, layer, cookies):
     r = _api_call(url, headers=headers, cookies=cookies, request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Checksum Error ({}: {})".format(r.status_code, r.text))
-    print r.json()
 
 
 def _put_tag(image_id, repository_path, tag):
@@ -156,7 +155,6 @@ def _put_tag(image_id, repository_path, tag):
     r = _api_call(url, data=json.dumps(image_id), request_type='PUT')
     if not r.status_code == 200:
         raise RuntimeError("PUT Tag Error ({}: {})".format(r.status_code, r.text))
-    print r.json()
 
 
 # utility functions

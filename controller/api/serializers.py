@@ -205,6 +205,7 @@ class ContainerSerializer(ModelSerializer):
     class Meta:
         """Metadata options for a :class:`ContainerSerializer`."""
         model = models.Container
+        fields = ['owner', 'app', 'release', 'type', 'num', 'state', 'created', 'updated', 'uuid']
 
     def get_release(self, obj):
         return "v{}".format(obj.release.version)

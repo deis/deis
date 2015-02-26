@@ -12,7 +12,7 @@ import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-from django_fsm import TransitionNotAllowed
+from scheduler.states import TransitionNotAllowed
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release

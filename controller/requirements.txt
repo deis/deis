@@ -4,9 +4,9 @@
 # ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [args]
 #
 Django==1.6.10
-# FIXME: switch to upstream pending merge of https://github.com/kmmbvnr/django-fsm/pull/59
-git+https://github.com/deis/django-fsm@propagate-false
 django-cors-headers==1.0.0
+# required for south migrations
+django-fsm==2.2.0
 django-guardian==1.2.5
 django-json-field==0.5.7
 djangorestframework==3.0.5

@@ -136,7 +136,6 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     # Third-party apps
-    'django_fsm',
     'guardian',
     'json_field',
     'gunicorn',
@@ -276,7 +275,7 @@ DEIS_DOMAIN = 'deisapp.local'
 DEIS_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S%Z'
 
 # default scheduler settings
-SCHEDULER_MODULE = 'mock'
+SCHEDULER_MODULE = 'scheduler.mock'
 SCHEDULER_TARGET = ''  # path to scheduler endpoint (e.g. /var/run/fleet.sock)
 SCHEDULER_AUTH = ''
 SCHEDULER_OPTIONS = {}
