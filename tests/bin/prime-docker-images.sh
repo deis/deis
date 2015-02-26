@@ -7,7 +7,7 @@
 
 # Remove all Dockernalia
 docker kill `docker ps -q`
-docker rm `docker ps -a -q`
+docker rm -v `docker ps -a -q`
 docker rmi -f `docker images -q`
 
 # Pull Deis testing essentials

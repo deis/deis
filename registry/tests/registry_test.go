@@ -36,10 +36,7 @@ func TestRegistry(t *testing.T) {
 	// run mock ceph containers
 	cephName := "deis-ceph-" + tag
 	mock.RunMockCeph(t, cephName, cli, etcdPort)
-	defer cli.CmdRm("-f", "-v", cephName+"-monitor")
-	defer cli.CmdRm("-f", "-v", cephName+"-daemon")
-	defer cli.CmdRm("-f", cephName+"-metadata")
-	defer cli.CmdRm("-f", cephName+"-gateway")
+	defer cli.CmdRm("-f", cephName)
 
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run deis/registry:%s at %s:%s\n", tag, host, port)

@@ -52,26 +52,24 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 	}
 }
 
-// RunMockCeph runs a set of containers used to mock a Ceph storage cluster
+// RunMockCeph runs a container used to mock a Ceph storage cluster
 func RunMockCeph(t *testing.T, name string, cli *client.DockerCli, etcdPort string) {
 
 	etcdutils.SetSingle(t, "/deis/store/hosts/"+utils.HostAddress(), utils.HostAddress(), etcdPort)
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()
-	cephImage := "deis/mock-store:latest"
 	ipaddr := utils.HostAddress()
 	fmt.Printf("--- Running deis/mock-store at %s\n", ipaddr)
-	done2 := make(chan bool, 1)
+	done := make(chan bool, 1)
 	go func() {
-		done2 <- true
-		_ = cli.CmdRm("-f", name)
+		done <- true
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
 			"-e", "HOST="+ipaddr,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--net=host",
-			cephImage)
+			"deis/mock-store:latest")
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-store-gateway running...")
 	if err != nil {
