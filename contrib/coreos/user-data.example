@@ -155,3 +155,7 @@ write_files:
       https_proxy=
       all_proxy=
       no_proxy=
+  - path: /etc/systemd/coredump.conf
+    content: |
+      [Coredump]
+      Storage=none
