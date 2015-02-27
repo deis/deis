@@ -14,7 +14,7 @@ var (
 	configSet2Cmd         = "config:set FOO=10 --app={{.AppName}}"
 	configSet3Cmd         = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
 	configSet4Cmd         = "config:set CAR='`star' --app={{.AppName}}"
-	configSetBuildpackCmd = "config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-go#98f37cc"
+	configSetBuildpackCmd = "config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-go#98f37cc --app={{.AppName}}"
 	configUnsetCmd        = "config:unset FOO --app={{.AppName}}"
 )
 
