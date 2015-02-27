@@ -31,16 +31,18 @@ The ``Vagrantfile`` requires the plugin `vagrant-triggers`_. To install the plug
     website.
 
 
-Generate SSH Key
-----------------
-
-.. include:: ../_includes/_generate-ssh-key.rst
-
-
 Generate a New Discovery URL
 ----------------------------
 
 .. include:: ../_includes/_generate-discovery-url.rst
+
+
+Generate SSH Key
+----------------
+
+.. note::
+
+    For Vagrant clusters you don't need to create a key pair, instead use the insecure_private_key located in ``~/.vagrant.d/insecure_private_key``.
 
 
 Boot CoreOS
