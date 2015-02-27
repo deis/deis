@@ -84,13 +84,24 @@ if [[ -n "$BUILDPACK_URL" ]]; then
     rm -fr "$buildpack"
 
     url=${BUILDPACK_URL%#*}
-    branch=${BUILDPACK_URL#*#}
+    committish=${BUILDPACK_URL#*#}
 
-    if [ "$branch" == "$url" ]; then
-        branch="master"
+    if [ "$committish" == "$url" ]; then
+        committish="master"
     fi
 
-    git clone --quiet --branch "$branch" --depth=1 "$url" "$buildpack"
+    set +e
+    git clone --quiet --branch "$committish" --depth=1 "$url" "$buildpack"
+    SHALLOW_CLONED=$?
+    set -e
+    if [ $SHALLOW_CLONED -ne 0 ]; then
+        # if the shallow clone failed partway through, clean up and try a full clone
+        rm -rf "$buildpack"
+        git clone --quiet "$url" "$buildpack"
+        pushd "$buildpack" &>/dev/null
+            git checkout --quiet "$committish"
+        popd &>/dev/null
+    fi
 
     selected_buildpack="$buildpack"
     buildpack_name=$($buildpack/bin/detect "$build_root") && selected_buildpack=$buildpack
