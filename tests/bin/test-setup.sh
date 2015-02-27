@@ -78,10 +78,6 @@ ssh-add $DEIS_TEST_SSH_KEY
 # clean out deis session data
 rm -rf ~/.deis
 
-# clean out vagrant environment
-$THIS_DIR/halt-all-vagrants.sh
-vagrant destroy --force
-
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
     log_phase "Cleaning up"
