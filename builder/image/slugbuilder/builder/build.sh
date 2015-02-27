@@ -77,6 +77,9 @@ selected_buildpack=
 if [[ -n "$BUILDPACK_URL" ]]; then
     echo_title "Fetching custom buildpack"
 
+    # FIXME: strip single quotes coming from the builder
+    BUILDPACK_URL=$(echo $BUILDPACK_URL | tr -d "'")
+
     buildpack="$buildpack_root/custom"
     rm -fr "$buildpack"
 
