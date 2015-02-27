@@ -1,3 +1,118 @@
+### v1.3.1 -> v1.4.0
+
+#### Features
+
+ - [`1c5ae0c`](https://github.com/deis/deis/commit/1c5ae0c9d9f02fa6e3374968dcbda4b53d1c8909) builder: allow to lock BUILDPACK_URL to a commit
+ - [`17ccf8a`](https://github.com/deis/deis/commit/17ccf8a72d16f3e5beb0d10080ad39ae51203224) builder: Adding support to lock BUILDPACK_URL to a git revision
+ - [`f35e3a3`](https://github.com/deis/deis/commit/f35e3a3ef6d32e280d28b5fa7b3e43e2bab61582) cloud-init: check if deisctl does not exists before install it
+ - [`fb6f0a0`](https://github.com/deis/deis/commit/fb6f0a0cbc37086833e6b0aac70f799ea58c86e1) scheduler: graceful shutdown with SIGTERM
+ - [`751cc6b`](https://github.com/deis/deis/commit/751cc6b79ffeea43f1db5c8a3e154a71545c7b3b) deisctl: start / stop all installed units
+ - [`8a09204`](https://github.com/deis/deis/commit/8a09204b6b56e8599616024474bf1d72c9d9b0dd) router: Removed X-Deis-Upstream
+ - [`cbb9fa1`](https://github.com/deis/deis/commit/cbb9fa146840edb82464097c6fe17c0966cb15e2) controller: worker processes named as "deis-controller"
+ - [`82574fc`](https://github.com/deis/deis/commit/82574fc054dc6ef2a61e5934c84b3a34ec1af103) builder: add proxy support
+ - [`b4cddba`](https://github.com/deis/deis/commit/b4cddba96a24e0b04e7d5f100e2b92facae8561a) router: add optional HTTPs redirect
+ - [`dd5004c`](https://github.com/deis/deis/commit/dd5004cc7f36710efb8b34b44a6f646912332725) contrib/ec2: add support for internal ELBs
+ - [`9cb77bf`](https://github.com/deis/deis/commit/9cb77bf609eec8bb21f169c1b3ab59048fe698b6) deis/config: remove "===" when listing configs with --oneline
+ - [`c35f9e8`](https://github.com/deis/deis/commit/c35f9e883e50446ed71256d32f6c1fe10147ab1d) contrib/azure: clean up Azure docs and scripts
+ - [`ad85aba`](https://github.com/deis/deis/commit/ad85aba1c1d38f7b5b2afe088d1b20a2e9909609) contrib/azure: add Azure provision scripts and docs
+ - [`261f78d`](https://github.com/deis/deis/commit/261f78dc86f484480529dc03e34206c34225f27d) logspout: use custom datetime
+ - [`b3c06af`](https://github.com/deis/deis/commit/b3c06af618ad6e06a7bda1b2788b33ab5dba8d8b) router: nginx status; log http_host, upstream and request times
+ - [`e35206b`](https://github.com/deis/deis/commit/e35206b2c74fcc7bb172141d9cc7effefa7d267a) builder: Try shallow cloning buildpack repos
+ - [`6aaa48f`](https://github.com/deis/deis/commit/6aaa48fadc649d4ab7397e450c3f2e455bb9a47d) ec2/cloudformation: Select SSD EBS volumes by default
+ - [`db946a0`](https://github.com/deis/deis/commit/db946a0901f2599c669081a017c85f55fd90cd1f) store: Scalable store-gateway
+
+#### Fixes
+
+ - [`883c4f9`](https://github.com/deis/deis/commit/883c4f91b1897bc5acd7d4fca84752915d447fea) builder: install docker from get.docker.com
+ - [`bdc4313`](https://github.com/deis/deis/commit/bdc431327884e5f082a89610e96f990652db8e40) tests: check for "git "
+ - [`70ae060`](https://github.com/deis/deis/commit/70ae0606d6f7ce035342b8e2c584d994b7b26dbf) tests: add --app
+ - [`0c6353f`](https://github.com/deis/deis/commit/0c6353fda1d4f22c1e6778b5d5ac65c61a543f80) builder: silence errors from initial clone
+ - [`1598d72`](https://github.com/deis/deis/commit/1598d72d23f423cd877e696fe66230aade3d689b) builder: strip single quotes from BUILDPACK_URL
+ - [`30b3306`](https://github.com/deis/deis/commit/30b330605cb7c490bf1cc898185f3e8370fde471) tests: remove mock-store containers after functional tests
+ - [`3c462b7`](https://github.com/deis/deis/commit/3c462b7b9a67c49ed2cc9b7f8b2ab89777bb4150) controller: fixup fleet reporting failed state
+ - [`9ee7525`](https://github.com/deis/deis/commit/9ee752507deba2c2181334bcfc11cd6f6c212138) controller: remove print calls
+ - [`cb82f62`](https://github.com/deis/deis/commit/cb82f627d65f9a372439ce2649c1d9fbaff56d66) controller: destroy app containers in parallel
+ - [`f811b7d`](https://github.com/deis/deis/commit/f811b7ddddb6af19bc5842d27725b7fbbe6b5006) controller: update registry API calls for 0.10.x+
+ - [`042ef60`](https://github.com/deis/deis/commit/042ef60e12bf00a1d5596e725dcf9ca14053e068) builder: properly escape backticks in envvars
+ - [`93bb0fd`](https://github.com/deis/deis/commit/93bb0fd9cb33e5b8bdcfdc277d15d61b938a88d4) router: disable SSLv3 CVE-2014-3566
+ - [`7c4fc31`](https://github.com/deis/deis/commit/7c4fc31dc8565b7f992ac5121f40eecb63193c1a) go: go 1.4 static binaries
+ - [`345f900`](https://github.com/deis/deis/commit/345f900a636012ea8461626ae9ec9a676254106a) deisctl: add custom error message for global units.
+ - [`37cc14f`](https://github.com/deis/deis/commit/37cc14f77c1cf64e3482b7507662b5156b180b20) user-data: ensure nf_conntrack kernel module is loaded
+ - [`caa3eac`](https://github.com/deis/deis/commit/caa3eac70d85c632bf4dab7ec9ee773007603301) controller: ensure cleanup of "deis run" fleet units
+ - [`05c322c`](https://github.com/deis/deis/commit/05c322c675c7ff6007a40f3d7de6554489f35281) controller: kill processes removed from procfile
+ - [`bad8a73`](https://github.com/deis/deis/commit/bad8a731e3379d1eb9d336a21dc9b50dece1f00e) docs+controller: update botbot.me and stackoverflow links
+ - [`0a206fd`](https://github.com/deis/deis/commit/0a206fdb6902006efe54c7e1e83b9a32de8288e7) tests: source /etc/environment only if it exists
+ - [`96c7a4c`](https://github.com/deis/deis/commit/96c7a4c555e05d2eb92e82a20babe6234342415c) publisher: remove unnecessary BUILD_IMAGE variable from Makefile
+ - [`458be25`](https://github.com/deis/deis/commit/458be251c3d9918dd0725adfa33881806c80c36b) controller: ignore run procs when updating structure field
+ - [`1eb8fac`](https://github.com/deis/deis/commit/1eb8fac66fffe6221019945585da25c1f5632e40) contrib/azure: bump load balancer timeout to 20 minutes
+ - [`a49ff60`](https://github.com/deis/deis/commit/a49ff604d73a248710b849679e6531f3975ee5c6) tests: check for expected prompt
+ - [`0901332`](https://github.com/deis/deis/commit/0901332cad68adfa4f6ca92b55927aa13642cdff) contrib/ec2: restrict EBS type to standard or gp2
+ - [`4295eea`](https://github.com/deis/deis/commit/4295eeaa8effe733fe6955ec294fd428972bc239) client: display default answer for auth:cancel prompt
+ - [`93ea9aa`](https://github.com/deis/deis/commit/93ea9aa8577670e4bd2d9144393cde511e139178) controller: remove timeout on container launch
+ - [`9793fd5`](https://github.com/deis/deis/commit/9793fd506e519e8a86ebcbcf106ae7cff79a87b3) contrib/azure: fix health-check for builder
+ - [`a820841`](https://github.com/deis/deis/commit/a820841aa5ddd27b80ce3de7896e638ad94c4115) builder: ignore header when removing dangling docker images
+ - [`b590f4c`](https://github.com/deis/deis/commit/b590f4c190ebd680d6ea6796771125260d31457c) builder: ensure loopback devices for docker's devicemapper
+ - [`2ace8be`](https://github.com/deis/deis/commit/2ace8be56d9a5cdacc47cd84796f0ae883a41008) builder: use Docker's default storage driver
+ - [`c4efc67`](https://github.com/deis/deis/commit/c4efc67f1e79c881c2a6144942ed2975c29a86a8) publisher: use godeps
+ - [`9090c77`](https://github.com/deis/deis/commit/9090c7770b95f0b230e245afd1be6651c0880d6d) logger: create logRoot on startup
+ - [`555f863`](https://github.com/deis/deis/commit/555f8639cddbac9fbab97e4390bbf1eb97e005f4) cache: use godep to build binaries
+ - [`1610707`](https://github.com/deis/deis/commit/1610707e6df5ee58125d616316ed066d8c6d0a6f) builder: properly escape backticks
+ - [`76c5b0e`](https://github.com/deis/deis/commit/76c5b0ef9e782480f9a528214daf9f93151ed04f) (all): force tags in Makefiles
+ - [`a002dd4`](https://github.com/deis/deis/commit/a002dd44024801610492ecd5bd2966e8d4719311) controller: improve domain name validation per RFC 1123
+ - [`1d4eaf5`](https://github.com/deis/deis/commit/1d4eaf53956841a1fa7ffc9ec2a746b351e6c514) builder: Fixed invalid redirect syntax
+
+#### Documentation
+
+ - [`406075b`](https://github.com/deis/deis/commit/406075b5c25667fad2f8616e29f156b01ac727a8) contrib: add link to new community project
+ - [`17752b5`](https://github.com/deis/deis/commit/17752b5e4c8c29e56ee2cb92e23f00d98c2db9c6) contributing: remove reference to `deisctl ssh`
+ - [`440bb16`](https://github.com/deis/deis/commit/440bb1676bb978c0d07d93b622fc1c3c731f57f3) contrib/README: add link to New Relic unit for CoreOS
+ - [`33ce22d`](https://github.com/deis/deis/commit/33ce22d599e926a6e5e95c0b30ca7cd9a4625866) contrib: link to community projects
+ - [`5f6ce0b`](https://github.com/deis/deis/commit/5f6ce0baba25eea0bd5e51b33bf0fb60059b8575) managing_deis: add proxy docs
+ - [`41fbc85`](https://github.com/deis/deis/commit/41fbc85f329db6a6ab9a17ee126a32f8e9a553bf) installing_deis: link to Azure on quick start guide
+ - [`1d26154`](https://github.com/deis/deis/commit/1d2615418530c710baef72b96222ac0def0590c8) managing_deis: fix typo in Recovering Ceph Quorum
+ - [`59bb22d`](https://github.com/deis/deis/commit/59bb22dd1af49ca7b58f9c6a4ca14e0bc2296af6) (all): add disk usage docs
+ - [`aeeb430`](https://github.com/deis/deis/commit/aeeb430319448f4e9073fc8d703a11f9761b568f) managing_deis: use non-forked s3cmd
+ - [`cede565`](https://github.com/deis/deis/commit/cede565cd8a31543a3e735e06fdd9947ee0b3d43) logspout: Fix remote syslog example
+
+#### Maintenance
+
+ - [`d97f502`](https://github.com/deis/deis/commit/d97f50263810aa3983406e48a4ecf814fc77cd8a) release: update version to v1.4.0
+ - [`b5335b4`](https://github.com/deis/deis/commit/b5335b45cfabd65fbbb841b6bb985c93d36167ca) tests: update CI node setup instructions
+ - [`4d3c4b4`](https://github.com/deis/deis/commit/4d3c4b47d7f6685de8e507e91609e0331c79a231) (all): bump to CoreOS 557.2.0
+ - [`2f45df9`](https://github.com/deis/deis/commit/2f45df99cf70bb9b60ddd146f1cf23284d68aae0) builder: update Docker to 1.4.1
+ - [`a5661da`](https://github.com/deis/deis/commit/a5661da7a68d8cd23cf809a4270a639dba33a957) registry: update docker-registry to v0.9.1
+ - [`05ad53c`](https://github.com/deis/deis/commit/05ad53c085b90c8eb98c9be02bc7308cedaa40f0) controller: update docker-py to 0.7.2
+ - [`e90633a`](https://github.com/deis/deis/commit/e90633aa71c21615f4b5f9f69b90ee3ae9998861) (all): update pip installer tool to 6.0.8
+ - [`3875bdc`](https://github.com/deis/deis/commit/3875bdcd2a4f643f141ef71ddb1dfb648c04f000) registry: bump docker-registry to 258398d
+ - [`3aed97b`](https://github.com/deis/deis/commit/3aed97b2e48b082465e215d3e873952c4d6ea9eb) controller: update djangorestframework to 3.0.5
+ - [`4c02b5b`](https://github.com/deis/deis/commit/4c02b5b27779bde062e82806e8016006690d622e) contrib/azure: bump to CoreOS 522.6.0
+ - [`1830431`](https://github.com/deis/deis/commit/18304318bbaaa97a76bc7f4cae229829f62ad5f0) contrib/azure: bump Docker volume to 100GB to match AWS
+ - [`51dcbe2`](https://github.com/deis/deis/commit/51dcbe2211b9402658326d51c7a15cec6edcbeaf) controller: update PostgreSQL driver to 2.6
+ - [`fca5610`](https://github.com/deis/deis/commit/fca5610b90ac8334becb9918fe8193c746b7a2b1) client+controller: update flake8 code checker to 2.3.0
+ - [`6c2c7e8`](https://github.com/deis/deis/commit/6c2c7e8e24363f11875ee7a9005aaf7ff318ce1f) deisctl: update vendored fleet code to 0.9.0
+ - [`f540e96`](https://github.com/deis/deis/commit/f540e96bf5b6c2c4f8de6e0c4c7ca3bbfd50a1cc) controller: No sudo for deis
+ - [`65fbebb`](https://github.com/deis/deis/commit/65fbebbcc18dd353b6e89a2deb0c506cc2f86f3d) (all): update to go 1.4.1
+ - [`6d313a6`](https://github.com/deis/deis/commit/6d313a60259ed41247ab67a4f534c776a2f5778b) client: remove deprecated settings file converter
+ - [`bf92c4c`](https://github.com/deis/deis/commit/bf92c4c7b882394a421fc5858b3388916f97bb6a) logspout: remove unused Dockerfile
+ - [`dab12f4`](https://github.com/deis/deis/commit/dab12f45f5f7b16cd794a57cd8630f3754a79e9c) controller: update gunicorn to 19.2.1
+ - [`5e951c7`](https://github.com/deis/deis/commit/5e951c71cad7edec993aec6fa4ad8a1263718d0b) release: update version in master to v1.3.1
+ - [`19125af`](https://github.com/deis/deis/commit/19125af9430c42b58b5e8e149a5a072a2dd34d5a) logspout: remove checks from make clean
+ - [`7480d70`](https://github.com/deis/deis/commit/7480d708da565b245dba1ab7993ec2e359b63b0c) builder, logger, logspout: remove unused references to BUILD_IMAGE from the Makefile
+ - [`9b77f0f`](https://github.com/deis/deis/commit/9b77f0fc689cc8603526b6d29b57d59ca822c4a6) release: update version in master to v1.4.0-dev
+ - [`a4081f4`](https://github.com/deis/deis/commit/a4081f45f2a0ef4e2530a685d9d509a6d5638340) Vagrantfile: sync with changes in coreos-vagrant
+ - [`3997d1b`](https://github.com/deis/deis/commit/3997d1b4a24a7269f189e12b971c94c22dbf90cf) controller: update djangorestframework to 3.0.4
+ - [`1fb501b`](https://github.com/deis/deis/commit/1fb501b9569a18d4fecd4c0336d7eab5bdca2bde) builder: Updated gradle and play buildpack
+
+### v1.3.0 -> v1.3.1
+
+#### Fixes
+
+ - [`71bd706`](https://github.com/deis/deis/commit/71bd7060836e853efac41b4e9a990daddc487ccf) cache: use godep to build binaries
+
+#### Maintenance
+
+ - [`deaa34c`](https://github.com/deis/deis/commit/deaa34cd0d83ddb7107d4862dfb3475f49b4672a) release: update version to v1.3.1
+
 ### v1.2.2 -> v1.3.0
 
 #### Features

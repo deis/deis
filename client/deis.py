@@ -68,7 +68,7 @@ from docopt import DocoptExit
 import requests
 from termcolor import colored
 
-__version__ = '1.4.0-dev'
+__version__ = '1.4.0'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.1'
