@@ -91,7 +91,7 @@ if [[ -n "$BUILDPACK_URL" ]]; then
     fi
 
     set +e
-    git clone --quiet --branch "$committish" --depth=1 "$url" "$buildpack"
+    git clone --branch "$committish" --depth=1 "$url" "$buildpack" &> /dev/null
     SHALLOW_CLONED=$?
     set -e
     if [ $SHALLOW_CLONED -ne 0 ]; then
