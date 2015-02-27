@@ -9,12 +9,13 @@ import (
 )
 
 var (
-	configListCmd  = "config:list --app={{.AppName}}"
-	configSetCmd   = "config:set FOO=讲台 --app={{.AppName}}"
-	configSet2Cmd  = "config:set FOO=10 --app={{.AppName}}"
-	configSet3Cmd  = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
-	configSet4Cmd  = "config:set CAR='`star' --app={{.AppName}}"
-	configUnsetCmd = "config:unset FOO --app={{.AppName}}"
+	configListCmd         = "config:list --app={{.AppName}}"
+	configSetCmd          = "config:set FOO=讲台 --app={{.AppName}}"
+	configSet2Cmd         = "config:set FOO=10 --app={{.AppName}}"
+	configSet3Cmd         = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
+	configSet4Cmd         = "config:set CAR='`star' --app={{.AppName}}"
+	configSetBuildpackCmd = "config:set BUILDPACK_URL=https://github.com/heroku/heroku-buildpack-go#98f37cc"
+	configUnsetCmd        = "config:unset FOO --app={{.AppName}}"
 )
 
 func TestConfig(t *testing.T) {
@@ -48,6 +49,8 @@ func configSetup(t *testing.T) *utils.DeisTestConfig {
 	// ensure envvars with backticks work too
 	// https://github.com/deis/deis/issues/2980
 	utils.Execute(t, configSet4Cmd, cfg, false, "`star")
+	// ensure custom buildpack URLS are in order
+	utils.Execute(t, configSetBuildpackCmd, cfg, false, "https://github.com/heroku/heroku-buildpack-go#98f37cc")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
 	utils.CurlWithFail(t, cfg, false, "the Deis team")
 	if err := utils.Chdir(".."); err != nil {
@@ -63,13 +66,13 @@ func configListTest(
 
 func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configSetCmd, params, false, "讲台")
-	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
-	utils.Execute(t, configSet2Cmd, params, false, "10")
 	utils.CheckList(t, appsInfoCmd, params, "(v6)", false)
+	utils.Execute(t, configSet2Cmd, params, false, "10")
+	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
 }
 
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
-	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v8)", false)
 	utils.CheckList(t, "run env --app={{.AppName}}", params, "FOO", true)
 }
