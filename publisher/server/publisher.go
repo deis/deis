@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"regexp"
 	"strconv"
@@ -91,8 +92,9 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
 		for _, p := range container.Ports {
 			port := strconv.Itoa(int(p.PublicPort))
-			if s.IsPublishableApp(containerName) {
-				s.setEtcd(keyPath, host+":"+port, uint64(ttl.Seconds()))
+			hostAndPort := host + ":" + port
+			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
+				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
 			}
 			// TODO: support multiple exposed ports
 			break
@@ -113,10 +115,21 @@ func (s *Server) IsPublishableApp(name string) bool {
 		log.Println(err)
 		return false
 	}
+
 	if version >= latestRunningVersion(s.EtcdClient, appName) {
 		return true
 	}
 	return false
+}
+
+func (s *Server) IsPortOpen(hostAndPort string) bool {
+	portOpen := false
+	conn, err := net.Dial("tcp", hostAndPort)
+	if err == nil {
+		portOpen = true
+		defer conn.Close()
+	}
+	return portOpen
 }
 
 // latestRunningVersion retrieves the highest version of the application published
