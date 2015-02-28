@@ -135,6 +135,14 @@ To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
     === humble-autoharp
     BUILDPACK_URL: https://github.com/dpiddy/heroku-buildpack-ruby-minimal
 
+.. note::
+
+    If, however, you're unable to deploy using the latest version of the buildpack,
+    You can set
+    an exact version of a buildpack by using a git revision in your
+    ``BUILDPACK_URL``.
+    For example: ``BUILDPACK_URL=https://github.com/dpiddy/heroku-buildpack-ruby-minimal#v13``
+
 On your next ``git push``, the custom buildpack will be used.
 
 

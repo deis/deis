@@ -251,7 +251,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 	cmdString := cmdBuf.String()
 	fmt.Println(cmdString)
 	var cmdl *exec.Cmd
-	if strings.Contains(cmd, "git") {
+	if strings.Contains(cmd, "git ") {
 		cmdl = exec.Command("sh", "-c", cmdString)
 	} else {
 		cmdl = exec.Command("sh", "-c", Deis+cmdString)

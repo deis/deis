@@ -77,9 +77,32 @@ selected_buildpack=
 if [[ -n "$BUILDPACK_URL" ]]; then
     echo_title "Fetching custom buildpack"
 
+    # FIXME: strip single quotes coming from the builder
+    BUILDPACK_URL=$(echo $BUILDPACK_URL | tr -d "'")
+
     buildpack="$buildpack_root/custom"
     rm -fr "$buildpack"
-    git clone --quiet --depth=1 "$BUILDPACK_URL" "$buildpack"
+
+    url=${BUILDPACK_URL%#*}
+    committish=${BUILDPACK_URL#*#}
+
+    if [ "$committish" == "$url" ]; then
+        committish="master"
+    fi
+
+    set +e
+    git clone --branch "$committish" --depth=1 "$url" "$buildpack" &> /dev/null
+    SHALLOW_CLONED=$?
+    set -e
+    if [ $SHALLOW_CLONED -ne 0 ]; then
+        # if the shallow clone failed partway through, clean up and try a full clone
+        rm -rf "$buildpack"
+        git clone --quiet "$url" "$buildpack"
+        pushd "$buildpack" &>/dev/null
+            git checkout --quiet "$committish"
+        popd &>/dev/null
+    fi
+
     selected_buildpack="$buildpack"
     buildpack_name=$($buildpack/bin/detect "$build_root") && selected_buildpack=$buildpack
 else
