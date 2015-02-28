@@ -14,7 +14,7 @@ RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdeman
     && chmod +x /usr/local/bin/confd
 
 # install docker-in-docker
-RUN echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
+RUN echo "deb http://get.docker.com/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 
 # install builder, docker, and hook dependencies
