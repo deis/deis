@@ -26,12 +26,17 @@ somewhere in your $PATH:
 
 Proxy Support
 -------------
-Set the ``http_proxy`` or ``https_proxy`` environment variable to enable proxy support:
+If your workstation uses a proxy to reach the network where the cluster lies,
+set the ``http_proxy`` or ``https_proxy`` environment variable to enable proxy support:
 
 .. code-block:: console
 
     $ export http_proxy="http://proxyip:port"
     $ export https_proxy="http://proxyip:port"
+
+.. note::
+
+    Configuring a proxy is generally not necessary for local Vagrant clusters.
 
 Integrated Help
 ---------------
