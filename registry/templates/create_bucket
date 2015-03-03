@@ -3,10 +3,10 @@ import boto
 import sys
 from boto.s3.connection import OrdinaryCallingFormat
 
-conn = boto.connect_s3(aws_access_key_id='{{ .deis_store_gateway_accessKey }}',
-                       aws_secret_access_key='{{ .deis_store_gateway_secretKey }}',
-                       host='{{ .deis_store_gateway_host }}',
-                       port={{ .deis_store_gateway_port }},
+conn = boto.connect_s3(aws_access_key_id='{{ getv "/deis/store/gateway/accessKey" }}',
+                       aws_secret_access_key='{{ getv "/deis/store/gateway/secretKey" }}',
+                       host='{{ getv "/deis/store/gateway/host" }}',
+                       port={{ getv "/deis/store/gateway/port" }},
                        is_secure=False,
                        calling_format=OrdinaryCallingFormat(),
                       )

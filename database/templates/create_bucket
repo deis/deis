@@ -3,8 +3,8 @@ import boto
 import sys
 from boto.s3.connection import OrdinaryCallingFormat
 
-conn = boto.connect_s3(host='{{ .deis_store_gateway_host }}',
-                       port={{ .deis_store_gateway_port }},
+conn = boto.connect_s3(host='{{ getv "/deis/store/gateway/host" }}',
+                       port={{ getv "/deis/store/gateway/port" }},
                        is_secure=False,
                        calling_format=OrdinaryCallingFormat(),
                       )

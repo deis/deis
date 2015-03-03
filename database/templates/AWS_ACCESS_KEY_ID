@@ -1,1 +1,1 @@
-{{ .deis_store_gateway_accessKey }}
+{{ getv "/deis/store/gateway/accessKey" }}

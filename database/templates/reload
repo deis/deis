@@ -10,10 +10,10 @@ PG_LISTEN=${PG_LISTEN:-*}
 
 # run idemptoent database configuration
 sudo -i -u postgres psql postgres <<EOF
-ALTER ROLE postgres WITH PASSWORD '{{ .deis_database_adminPass }}';
-CREATE ROLE {{ .deis_database_user }} WITH LOGIN;
-ALTER ROLE {{ .deis_database_user }} WITH PASSWORD '{{ .deis_database_password }}';
-CREATE DATABASE {{ .deis_database_name }} WITH OWNER {{ .deis_database_user }};
+ALTER ROLE postgres WITH PASSWORD '{{ getv "/deis/database/adminPass" }}';
+CREATE ROLE {{ getv "/deis/database/user" }} WITH LOGIN;
+ALTER ROLE {{ getv "/deis/database/user" }} WITH PASSWORD '{{ getv "/deis/database/password" }}';
+CREATE DATABASE {{ getv "/deis/database/name" }} WITH OWNER {{ getv "/deis/database/user" }};
 EOF
 
 exit 0
