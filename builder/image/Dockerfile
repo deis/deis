@@ -12,22 +12,24 @@ RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdeman
     && chmod +x /usr/local/bin/confd
 
 # install builder, docker, and hook dependencies
-<<<<<<< HEAD
-RUN apt-get update && apt-get install -yq \
-    openssh-server git \
-    aufs-tools iptables lxc \
-    lxc-docker-1.5.0
-=======
 RUN apk-install openssh \
     git \
     coreutils \
     iptables \
-    docker \
-    lxc
->>>>>>> feat(*): use alpine linux.
+    xz \
+    device-mapper \
+    e2fsprogs \
+    lxc \
+    libudev \
+    udev
+
+# the docker package in alpine disables aufs and devicemapper
+RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-latest -o /usr/bin/docker && \
+  chmod +x /usr/bin/docker
 
 # configure ssh server
 RUN mkdir -p /var/run/sshd && rm -rf /etc/ssh/ssh_host*
+RUN /usr/bin/ssh-keygen -A
 
 # install git and configure gituser
 ENV GITHOME /home/git
@@ -53,6 +55,7 @@ RUN addgroup -g 2000 slug && adduser -D -u 2000 -G slug slug
 
 # $GITUSER is added to docker group to use docker without sudo and to slug
 # group in order to share resources with the slug user
+RUN addgroup -S docker
 RUN addgroup $GITUSER docker
 RUN addgroup $GITUSER slug
 RUN passwd -u git
