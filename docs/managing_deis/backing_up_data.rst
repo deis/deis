@@ -208,12 +208,6 @@ use in the ``export`` command should correspond to the IP of the host machine wh
     EOF
     $ exit
 
-.. note::
-
-  The database keeps track of running application containers. Since this is a fresh cluster, it is
-  advisable to ``deis scale <proctype>=0`` and then ``deis scale`` back up to the desired number of
-  containers for an application. This ensures the database has an accurate view of the cluster.
-
 That's it! The cluster should be fully restored.
 
 .. _`Ceph`: http://ceph.com
