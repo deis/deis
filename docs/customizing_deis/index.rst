@@ -11,6 +11,7 @@ Customizing Deis
 
 .. toctree::
 
+    cli-plugins
     builder_settings
     cache_settings
     controller_settings
