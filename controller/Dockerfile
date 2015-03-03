@@ -31,5 +31,4 @@ ADD . /app
 # Create static resources
 RUN /app/manage.py collectstatic --settings=deis.settings --noinput
 
-ENV DEIS_RELEASE 1.4.0
-
+ENV DEIS_RELEASE 1.5.0-dev
