@@ -33,7 +33,7 @@ echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 echo "You must reboot for the global $PATH changes to take effect."
 
 # install test suite requirements
-apt-get install -yq curl mercurial python-dev libffi-dev libpq-dev libyaml-dev git postgresql postgresql-client
+apt-get install -yq curl mercurial python-dev libffi-dev libpq-dev libyaml-dev git postgresql postgresql-client libldap2-dev libsasl2-dev
 curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
 pip install virtualenv
 
