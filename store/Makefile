@@ -16,23 +16,23 @@ MONITOR_DEV_IMAGE = $(DEV_REGISTRY)/$(MONITOR_IMAGE)
 
 build: check-docker
 	@# Build base as normal
-	docker build -t deis/store-base:$(BUILD_TAG) base/
+	docker build -t $(IMAGE_PREFIX)store-base:$(BUILD_TAG) base/
 	$(foreach I, $(TEMPLATE_IMAGES), \
-		sed -e "s/#FROM is generated dynamically by the Makefile/FROM deis\/store-base:${BUILD_TAG}/" $(I)/Dockerfile.template > $(I)/Dockerfile ; \
-		docker build -t deis/store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
+		sed -e "s,#FROM is generated dynamically by the Makefile,FROM $(IMAGE_PREFIX)store-base:${BUILD_TAG}," $(I)/Dockerfile.template > $(I)/Dockerfile ; \
+		docker build -t $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
 		rm $(I)/Dockerfile ; \
 	)
 
 clean: check-docker check-registry
 	$(foreach I, $(BUILT_IMAGES), \
-		docker rmi deis/store-$(I):$(BUILD_TAG) ; \
-		docker rmi $(REGISTRY)/deis/store-$(I):$(BUILD_TAG) ; \
+		docker rmi $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
+		docker rmi $(REGISTRY)/$(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
 	)
 
 full-clean: check-docker check-registry
 	$(foreach I, $(BUILT_IMAGES), \
-		docker images -q deis/store-$(I) | xargs docker rmi -f ; \
-		docker images -q $(REGISTRY)/deis/store-$(I) | xargs docker rmi -f ; \
+		docker images -q $(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
+		docker images -q $(REGISTRY)/$(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
 	)
 
 install: check-deisctl

@@ -26,6 +26,7 @@ func TestRegistry(t *testing.T) {
 		"/deis/store",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	imageName := utils.ImagePrefix() + "registry" + ":" + tag
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
@@ -39,7 +40,7 @@ func TestRegistry(t *testing.T) {
 	defer cli.CmdRm("-f", cephName)
 
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/registry:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-registry-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -51,7 +52,7 @@ func TestRegistry(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/registry:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
