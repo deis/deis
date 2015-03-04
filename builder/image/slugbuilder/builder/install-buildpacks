@@ -8,19 +8,22 @@ download_buildpack() {
     buildpack_name=$(basename $buildpack_url)
     buildpack_commit="$2"
 
+    echo "Fetching $buildpack_name..."
+
     set +e
-    git clone --branch $buildpack_commit --depth 1 $buildpack_url $BUILDPACK_INSTALL_PATH/$buildpack_name
+    git clone --branch $buildpack_commit --depth 1 $buildpack_url $BUILDPACK_INSTALL_PATH/$buildpack_name &>/dev/null
     SHALLOW_CLONED=$?
     set -e
     if [ $SHALLOW_CLONED -ne 0 ]; then
         # if the shallow clone failed partway through, clean up and try a full clone
         rm -rf $BUILDPACK_INSTALL_PATH/$buildpack_name
-        git clone $buildpack_url $BUILDPACK_INSTALL_PATH/$buildpack_name
+        git clone --quiet $buildpack_url $BUILDPACK_INSTALL_PATH/$buildpack_name
         pushd $BUILDPACK_INSTALL_PATH/$buildpack_name &>/dev/null
             git checkout --quiet $buildpack_commit
         popd &>/dev/null
     fi
 
+    echo "Done."
 }
 
 mkdir -p $BUILDPACK_INSTALL_PATH
