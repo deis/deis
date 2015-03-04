@@ -57,9 +57,9 @@ def close_db_connections(func, *args, **kwargs):
 
 
 def log_event(app, msg, level=logging.INFO):
-    msg = "{}: {}".format(app.id, msg)
-    logger.log(level, msg)  # django logger
-    app.log(msg)            # local filesystem
+    # controller needs to know which app this log comes from
+    logger.log(level, "{}: {}".format(app.id, msg))
+    app.log(msg)
 
 
 def validate_base64(value):
@@ -680,7 +680,7 @@ class Release(UuidAuditedModel):
             release.publish()
         except EnvironmentError as e:
             # If we cannot publish this app, just log and carry on
-            logger.info(e)
+            log_event(self.app, e)
             pass
         return release
 
@@ -847,36 +847,35 @@ class Key(UuidAuditedModel):
 def _log_build_created(**kwargs):
     if kwargs.get('created'):
         build = kwargs['instance']
-        log_event(build.app, "build {} created".format(build))
+        # log only to the controller; this event will be logged in the release summary
+        logger.info("{}: build {} created".format(build.app, build))
 
 
 def _log_release_created(**kwargs):
     if kwargs.get('created'):
         release = kwargs['instance']
-        log_event(release.app, "release {} created".format(release))
+        # log only to the controller; this event will be logged in the release summary
+        logger.info("{}: release {} created".format(release.app, release))
         # append release lifecycle logs to the app
         release.app.log(release.summary)
 
 
 def _log_config_updated(**kwargs):
     config = kwargs['instance']
-    log_event(config.app, "config {} updated".format(config))
+    # log only to the controller; this event will be logged in the release summary
+    logger.info("{}: config {} updated".format(config.app, config))
 
 
 def _log_domain_added(**kwargs):
     domain = kwargs['instance']
     msg = "domain {} added".format(domain)
     log_event(domain.app, msg)
-    # adding a domain does not create a release, so we have to log here
-    domain.app.log(msg)
 
 
 def _log_domain_removed(**kwargs):
     domain = kwargs['instance']
     msg = "domain {} removed".format(domain)
     log_event(domain.app, msg)
-    # adding a domain does not create a release, so we have to log here
-    domain.app.log(msg)
 
 
 def _etcd_publish_key(**kwargs):
