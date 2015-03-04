@@ -98,12 +98,8 @@ etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
 echo "Starting RADOS gateway..."
 /etc/init.d/radosgw start
 
-echo "Starting Apache..."
-/usr/sbin/apache2ctl start
-
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
-  /usr/sbin/apache2ctl stop
   /etc/init.d/radosgw stop
   exit 0
 }
@@ -146,3 +142,4 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 fi
 
 wait
+
