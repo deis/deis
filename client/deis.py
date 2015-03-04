@@ -438,8 +438,8 @@ class DeisClient(object):
           -b --buildpack BUILDPACK
             a buildpack url to use for this app
 
-          -r --remote REMOTE        
-            name of remote to create, default 'deis'
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
         """
         body = {}
         app_name = None
@@ -476,10 +476,7 @@ class DeisClient(object):
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             self._logger.info('remote available at {}'.format(git_remote))
         else:
-            remote_name = args.get('--remote')
-            if not remote_name: 
-                remote_name = 'deis'
-            self._git_remote_create(app_id, remote_name)
+            self._git_remote_create(app_id, args.get('--remote'))
 
     def apps_destroy(self, args):
         """
@@ -1288,8 +1285,8 @@ class DeisClient(object):
           -a --app=<app>
             the uniquely identifiable name for the application.
 
-          -r --remote REMOTE        
-            name of remote to create, default 'deis'
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
         """
         app = args.get('--app')
         if not app:
@@ -1297,10 +1294,7 @@ class DeisClient(object):
         response = self._dispatch(
             'get', "/v1/apps/{app}/domains".format(app=app))
         if response.status_code == requests.codes.ok:
-            remote_name = args.get('--remote')
-            if not remote_name: 
-                remote_name = 'deis'
-            self._git_remote_create(app, remote_name)
+            self._git_remote_create(app, args.get('--remote'))
         else:
             raise ResponseError(response)
 
