@@ -127,6 +127,17 @@ write_files:
 
       # remove leading slash
       echo ${IMAGE#/}
+  - path: /run/deis/bin/preseed
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+
+      COMPONENTS=(builder cache controller database logger logspout publisher registry router store-daemon store-gateway store-metadata store-monitor store-volume)
+
+      for c in $COMPONENTS; do
+        image=`/run/deis/bin/get_image /deis/$c`
+        docker history $image >/dev/null 2>&1 || docker pull $image
+      done
   - path: /opt/bin/deis-debug-logs
     permissions: '0755'
     content: |
