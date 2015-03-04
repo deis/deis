@@ -299,8 +299,10 @@ def readable_datetime(datetime_str):
     dt = parser.parse(datetime_str).astimezone(timezone)
     now = datetime.now(timezone)
     delta = relativedelta.relativedelta(now, dt)
+    yesterday = now - relativedelta.relativedelta(days=1)
+
     # if it happened today, say "2 hours and 1 minute ago"
-    if delta.days <= 1 and dt.day == now.day:
+    if dt > yesterday:
         if delta.hours == 0:
             hour_str = ''
         elif delta.hours == 1:
@@ -317,13 +319,13 @@ def readable_datetime(datetime_str):
             return 'Just now'
         else:
             return "{}{}ago".format(hour_str, min_str)
+
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days=-1)
-    if delta.days <= 2 and dt.day == yesterday.day:
+    elif yesterday.year == dt.year and yesterday.month == dt.month and yesterday.day == dt.day:
         return dt.strftime("Yesterday at %X")
+
     # otherwise return locale-specific date/time format
-    else:
-        return dt.strftime('%c %Z')
+    return dt.strftime('%c %Z')
 
 
 def trim(docstring):
