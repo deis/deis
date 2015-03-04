@@ -19,6 +19,7 @@ Managing Deis
     operational_tasks
     platform_logging
     platform_monitoring
+    production_deployments
     recovering-ceph-quorum
     security_considerations
     ssl-endpoints
