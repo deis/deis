@@ -58,6 +58,10 @@ hosts during ``deis run``:
 
     $ deisctl config platform set sshPrivateKey=~/.ssh/deis
 
+.. note::
+
+    For Vagrant clusters: ``deisctl config platform set sshPrivateKey=$(HOME)/.vagrant.d/insecure_private_key``
+
 We'll also need to tell the controller which domain name we are deploying applications under:
 
 .. code-block:: console
