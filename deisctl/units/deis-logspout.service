@@ -6,8 +6,8 @@ After=docker.socket etcd.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker history $IMAGE >/dev/null || docker pull $IMAGE"
-ExecStartPre=/bin/sh -c "docker inspect deis-logspout >/dev/null && docker rm -f deis-logspout || true"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-logspout >/dev/null 2>&1 && docker rm -f deis-logspout || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker run --name deis-logspout --rm -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=$COREOS_PRIVATE_IPV4 -e HOST=$COREOS_PRIVATE_IPV4 -e DEBUG=1 $IMAGE"
 ExecStopPost=-/usr/bin/docker rm -f deis-logspout
 Restart=on-failure

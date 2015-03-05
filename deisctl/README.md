@@ -149,8 +149,8 @@ $ deisctl status controller
 ● deis-controller.service - deis-controller
    Loaded: loaded (/run/fleet/units/deis-controller.service; linked-runtime)
    Active: active (running) since Mon 2014-08-25 22:56:50 UTC; 15min ago
-  Process: 22969 ExecStartPre=/bin/sh -c docker inspect deis-controller >/dev/null && docker rm -f deis-controller || true (code=exited, status=0/SUCCESS)
-  Process: 22945 ExecStartPre=/bin/sh -c IMAGE=`/run/deis/bin/get_image /deis/controller`; docker history $IMAGE >/dev/null || docker pull $IMAGE (code=exited, status=0/SUCCESS)
+  Process: 22969 ExecStartPre=/bin/sh -c docker inspect deis-controller >/dev/null 2>&1 && docker rm -f deis-controller || true (code=exited, status=0/SUCCESS)
+  Process: 22945 ExecStartPre=/bin/sh -c IMAGE=`/run/deis/bin/get_image /deis/controller`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE (code=exited, status=0/SUCCESS)
  Main PID: 22979 (sh)
    CGroup: /system.slice/system-deis\x2dcontroller.slice/deis-controller.service
            ├─22979 /bin/sh -c IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e PUBLISH=8000 -e HOST=$COREOS_PRIVATE_IPV4 --volumes-from=deis-logger $IMAGE

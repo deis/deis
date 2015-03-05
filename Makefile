@@ -17,7 +17,7 @@ CLIENTS=client deisctl
 all: build run
 
 dev-registry: check-docker
-	@docker inspect registry >/dev/null && docker start registry || docker run --restart="always" -d -p 5000:5000 --name registry registry:0.9.1
+	@docker inspect registry >/dev/null 2>&1 && docker start registry || docker run --restart="always" -d -p 5000:5000 --name registry registry:0.9.1
 	@echo
 	@echo "To use local boot2docker registry for Deis development:"
 	@echo "    export DEV_REGISTRY=`boot2docker ip 2>/dev/null`:5000"
