@@ -1,10 +1,8 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"regexp"
 	"strconv"
@@ -44,6 +42,8 @@ func (s *Server) Listen(ttl time.Duration) {
 					continue
 				}
 				s.publishContainer(container, ttl)
+			} else if event.Status == "stop" {
+				s.removeContainer(event.ID)
 			}
 		}
 	}
@@ -73,7 +73,7 @@ func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 			return &container, nil
 		}
 	}
-	return nil, errors.New("could not find container")
+	return nil, fmt.Errorf("could not find container with id %v", id)
 }
 
 // publishContainer publishes the docker container to etcd.
@@ -89,17 +89,33 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			continue
 		}
 		appName := match[1]
-		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
+		appPath := fmt.Sprintf("%s/%s", appName, containerName)
+		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
 		for _, p := range container.Ports {
 			port := strconv.Itoa(int(p.PublicPort))
 			hostAndPort := host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
+				s.setEtcd("/deis/publisher/containers/"+container.ID, appPath, uint64(ttl.Seconds()))
 			}
 			// TODO: support multiple exposed ports
 			break
 		}
 	}
+}
+
+// removeContainer remove a container published by this component
+func (s *Server) removeContainer(event string) {
+	containerPath := "/deis/publisher/containers/" + event
+	appPath, err := s.getEtcd(containerPath)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	keyPath := fmt.Sprintf("/deis/services/%s", appPath)
+	s.removeEtcd(keyPath, false)
+	s.removeEtcd(containerPath, false)
 }
 
 // IsPublishableApp determines if the application should be published to etcd.
@@ -182,4 +198,22 @@ func (s *Server) setEtcd(key, value string, ttl uint64) {
 		log.Println(err)
 	}
 	log.Println("set", key, "->", value)
+}
+
+func (s *Server) getEtcd(key string) (string, error) {
+	result, err := s.EtcdClient.Get(key, false, false)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("get", key, "->", result.Node.Value)
+	return result.Node.Value, nil
+}
+
+// removeEtcd removes the corresponding etcd key
+func (s *Server) removeEtcd(key string, recursive bool) {
+	if _, err := s.EtcdClient.Delete(key, recursive); err != nil {
+		log.Println(err)
+	}
+	log.Println("del", key)
 }
