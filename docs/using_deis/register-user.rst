@@ -1,6 +1,7 @@
 :title: Register a new Deis user using the client
 :description: First steps for developers using Deis to deploy and scale applications.
 
+.. _register-user:
 
 Register a User
 ===============
