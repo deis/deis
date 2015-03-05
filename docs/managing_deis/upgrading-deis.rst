@@ -37,21 +37,6 @@ First, use the current ``deisctl`` to stop and uninstall the Deis platform.
     1.0.2
     $ deisctl stop platform && deisctl uninstall platform
 
-There are important security fixes since Deis 1.0.2 that require upgrading
-to CoreOS 494.1.0 or later, and configuring Docker to access deis-registry. See
-:ref:`upgrading-coreos` first, then open a shell to each node:
-
-.. code-block:: console
-
-    $ ssh deis-1.example.com  # repeat these steps for each node
-    $ sudo -i
-    $ mkdir -p /etc/systemd/system/docker.service.d
-    $ cat <<EOF > /etc/systemd/system/docker.service.d/50-insecure-registry.conf
-    [Service]
-    Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16"
-    EOF
-    $ reboot  # one node at a time, to avoid etcd failures
-
 Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
