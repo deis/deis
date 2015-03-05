@@ -27,6 +27,14 @@ usage() {
     echo "Usage: $0 <user> <repo> <sha>"
 }
 
+parse-string(){
+    # helper to avoid the single quote escape
+    # occurred in command substitution
+    local args=() idx=0 IFS=' ' c
+    for c; do printf -v args[idx++] '%s ' "$c"; done
+    printf "%s\n" "${args[*]}"
+}
+
 if [ $# -ne $ARGS ]; then
     usage
     exit 1
@@ -105,7 +113,7 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=' deis/slugbuilder'
 
     # build the application and attach to the process
-    JOB=$(${BUILD_OPTS[@]})
+    JOB=$(eval '$(parse-string "${BUILD_OPTS[@]}")' )
     docker attach $JOB
 
     # copy out the compiled slug
