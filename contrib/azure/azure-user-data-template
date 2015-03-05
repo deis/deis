@@ -38,5 +38,4 @@ coreos:
         ExecStart=/usr/bin/etcd
         Restart=always
         RestartSec=10s
-        LimitNOFILE=1048576
-        LimitNPROC=1048576
+        LimitNOFILE=40000
