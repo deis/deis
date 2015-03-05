@@ -113,7 +113,7 @@ if [ ! -f Dockerfile ]; then
     BUILD_OPTS+=' deis/slugbuilder'
 
     # build the application and attach to the process
-    JOB=$(eval '$(parse-string "${BUILD_OPTS[@]}")' )
+    JOB=$(eval $(parse-string "${BUILD_OPTS[@]}") )
     docker attach $JOB
 
     # copy out the compiled slug
