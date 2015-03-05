@@ -3,9 +3,11 @@ package server
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -22,6 +24,11 @@ type Server struct {
 	DockerClient *docker.Client
 	EtcdClient   *etcd.Client
 }
+
+var safeMap = struct {
+	sync.RWMutex
+	data map[string]string
+}{data: make(map[string]string)}
 
 // Listen adds an event listener to the docker client and publishes containers that were started.
 func (s *Server) Listen(ttl time.Duration) {
@@ -96,7 +103,9 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			hostAndPort := host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
-				s.setEtcd("/deis/publisher/containers/"+container.ID, appPath, uint64(ttl.Seconds()))
+				safeMap.Lock()
+				safeMap.data[container.ID] = appPath
+				safeMap.Unlock()
 			}
 			// TODO: support multiple exposed ports
 			break
@@ -106,16 +115,15 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 
 // removeContainer remove a container published by this component
 func (s *Server) removeContainer(event string) {
-	containerPath := "/deis/publisher/containers/" + event
-	appPath, err := s.getEtcd(containerPath)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	safeMap.RLock()
+	appPath := safeMap.data[event]
+	safeMap.RUnlock()
 
-	keyPath := fmt.Sprintf("/deis/services/%s", appPath)
-	s.removeEtcd(keyPath, false)
-	s.removeEtcd(containerPath, false)
+	if appPath != "" {
+		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
+		log.Printf("stopped %s\n", keyPath)
+		s.removeEtcd(keyPath, false)
+	}
 }
 
 // IsPublishableApp determines if the application should be published to etcd.
@@ -198,16 +206,6 @@ func (s *Server) setEtcd(key, value string, ttl uint64) {
 		log.Println(err)
 	}
 	log.Println("set", key, "->", value)
-}
-
-func (s *Server) getEtcd(key string) (string, error) {
-	result, err := s.EtcdClient.Get(key, false, false)
-	if err != nil {
-		return "", err
-	}
-
-	log.Println("get", key, "->", result.Node.Value)
-	return result.Node.Value, nil
 }
 
 // removeEtcd removes the corresponding etcd key
