@@ -3,7 +3,7 @@
 # builder hook called on every git receive-pack
 # NOTE: this script must be run as root (for docker access)
 #
-set -e
+set -eo pipefail
 
 ARGS=3
 
