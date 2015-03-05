@@ -88,6 +88,14 @@ coreos:
       Type=oneshot
       ExecStartPre=/usr/sbin/modprobe nf_conntrack
       ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
+  - name: load-overlay-module.service
+    content: |
+      [Unit]
+      Description=Load overlay module before docker start
+      Before=docker.service
+
+      [Service]
+      ExecStart=/bin/bash -c "modprobe overlay"
 write_files:
   - path: /etc/deis-release
     content: |
