@@ -768,11 +768,15 @@ class DeisClient(object):
                 confirm = raw_input(
                     "Cancel account \"{}\" at {}? (y/N) ".format(username, controller))
             if confirm in ['y', True]:
-                self._dispatch('delete', '/v1/auth/cancel')
-                self._settings['controller'] = None
-                self._settings['token'] = None
-                self._settings.save()
-                self._logger.info('Account cancelled')
+                response = self._dispatch('delete', '/v1/auth/cancel')
+                if response.status_code == requests.codes.no_content:
+                    self._settings['controller'] = None
+                    self._settings['token'] = None
+                    self._settings.save()
+                    self._logger.info('Account cancelled')
+                else:
+                    self._logger.info('Account not changed')
+                    raise ResponseError(response)
             else:
                 self._logger.info('Account not changed')
 
