@@ -16,24 +16,41 @@ Examples:
 ./route53-wildcard.py create mycluster.gabrtv.io deis-elb.blah.amazonaws.com
 ./route53-wildcard.py delete mycluster.gabrtv.io deis-elb.blah.amazonaws.com
 """
+
+from __future__ import print_function
+
 import boto.route53
 import docopt
-import json
-import subprocess
+import socket
 import time
+import uuid
 
 
 def parse_args():
     return docopt.docopt(__doc__)
 
+
 def create_cname(args):
     conn = boto.route53.connect_to_region(args['--region'])
     zone = conn.get_zone(args['<zone>'])
-    status = zone.add_cname(args['<name>'], args['<value>'], ttl=args['--ttl'])
+    name = args['<name>']
+    status = zone.add_cname(name, args['<value>'], ttl=args['--ttl'])
     print("waiting for record to sync: {}".format(status))
     while status.update() != "INSYNC":
         time.sleep(2)
     print(status)
+    print('waiting for wildcard domain to become available...', end='')
+    # AWS docs say it can take up to 30 minutes for route53 changes to happen, although
+    # it seems to be almost immediate.
+    for i in xrange(120):
+        try:
+            random_hostname = str(uuid.uuid4())[:8]
+            if socket.gethostbyname("{}.{}".format(random_hostname, name)):
+                print('ok')
+                break
+        except socket.gaierror:
+            time.sleep(15)
+
 
 def delete_cname(args, block=False):
     conn = boto.route53.connect_to_region(args['--region'])
