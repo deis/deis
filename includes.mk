@@ -48,3 +48,13 @@ check-deisctl:
 	@if [ -z $$(which deisctl) ]; then \
 	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deis"; \
 	fi
+
+define check-static-binary
+  if file $(1) | grep -q "statically linked"; then \
+    echo -n ""; \
+  else \
+    echo "The binary file $(1) is not statically linked. Build canceled"; \
+    exit 1; \
+  fi
+endef
+
