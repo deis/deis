@@ -1,3 +1,15 @@
+### v1.4.0 -> v1.4.1
+
+#### Fixes
+
+ - [`cf61859`](https://github.com/deis/deis/commit/cf61859be532603b615c511ab9b2f6163e0d8ce6) builder: strip single quotes from BUILDPACK_URL"
+ - [`45e7413`](https://github.com/deis/deis/commit/45e74138b6b88c14fbc844bbc8eb1979237601ab) builder: properly escape backticks"
+ - [`0046494`](https://github.com/deis/deis/commit/004649486f26c4d3c43fd4f56a27a4e873b6f59d) builder: properly escape backticks in envvars"
+
+#### Maintenance
+
+ - [`6960646`](https://github.com/deis/deis/commit/696064661a70846ccc1780299a714aeff8c4999e) release: update version to v1.4.1
+
 ### v1.3.1 -> v1.4.0
 
 #### Features
