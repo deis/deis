@@ -124,7 +124,7 @@ initialize. So, we will install the whole platform, but only start the store com
     $ deisctl start store-monitor
     $ deisctl start store-daemon
     $ deisctl start store-metadata
-    $ deisctl start store-gateway
+    $ deisctl start store-gateway@1
     $ deisctl start store-volume
 
 We'll also need to start a router so we can access the gateway:
