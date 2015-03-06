@@ -1,7 +1,6 @@
 """
 RESTful view classes for presenting Deis API objects.
 """
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -220,6 +219,17 @@ class DomainViewSet(AppResourceViewSet):
 
     def get_object(self, **kwargs):
         return self.get_queryset(**kwargs)
+
+
+class DomainCertViewSet(BaseDeisViewSet):
+    """A viewset for interacting with Domain objects."""
+    model = models.DomainCert
+    serializer_class = serializers.DomainCertSerializer
+
+    def get_object(self, **kwargs):
+        """Retrieve domain certificate by common name"""
+        qs = self.get_queryset(**kwargs)
+        return qs.get(common_name=self.kwargs['common_name'])
 
 
 class KeyViewSet(BaseDeisViewSet):

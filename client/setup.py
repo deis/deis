@@ -59,7 +59,7 @@ setup(name='deis',
       install_requires=[
           'docopt==0.6.2', 'python-dateutil==2.4.1',
           'PyYAML==3.11', 'requests==2.5.1',
-          'termcolor==1.1.0'
+          'tabulate==0.7.4', 'termcolor==1.1.0'
       ],
       zip_safe=True,
       **KWARGS)

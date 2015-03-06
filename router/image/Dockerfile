@@ -10,7 +10,7 @@ RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdeman
     && chmod +x /usr/local/bin/confd
 
 # install common packages
-RUN apt-get update && apt-get install -y libgeoip1
+RUN apt-get update && apt-get install -y libgeoip1 cron
 
 WORKDIR /app
 

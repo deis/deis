@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# create or truncate the file
+> /etc/ssl/deis_certs
+
+{{ range $cert := .deis_certs }}
+echo {{ $cert.Key }} >> /etc/ssl/deis_certs
+{{ end }}
+
+CERT_PATH=/etc/ssl/deis/certs
+KEY_PATH=/etc/ssl/deis/keys
+
+# clean up all certs
+rm -rf $CERT_PATH
+rm -rf $KEY_PATH
+
+# ...then re-create the paths
+mkdir -p $CERT_PATH
+mkdir -p $KEY_PATH
+
+while read etcd_path; do
+    ETCD_SLUG=".$(echo $etcd_path | sed s/\\/// | sed s/\\//_/g)"
+    ETCD_CERT_SLUG="${ETCD_SLUG}_cert"
+    ETCD_KEY_SLUG="${ETCD_SLUG}_key"
+
+    # cert template
+    {{ range $cert := .deis_certs }}{{ if $cert.Nodes }}
+    {{ range $certFields := $cert.Nodes }}
+    {{ if eq (Base $certFields.Key) "cert" }}
+    cat << EOF > "$CERT_PATH/$(basename $etcd_path).cert"
+{{ $certFields.Value }}
+EOF
+    {{ else if eq (Base $certFields.Key) "key" }}
+    cat << EOF > "$KEY_PATH/$(basename $etcd_path).key"
+{{ $certFields.Value }}
+EOF
+    {{ end }}
+    {{ end }}
+    {{ end }}{{ end }}
+done < /etc/ssl/deis_certs
