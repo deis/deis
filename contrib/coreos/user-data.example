@@ -89,7 +89,6 @@ coreos:
       [Install]
       WantedBy=multi-user.target
   - name: sync-clock-hourly.service
-    command: enable
     content: |
 
       [Unit]
@@ -97,7 +96,7 @@ coreos:
 
       [Service]
       Type=simple
-      ExecStart=/bin/bash -c "/usr/sbin/ntpdate -b -u 0.pool.ntp.org"
+      ExecStart=/bin/bash -c "/usr/sbin/ntpdate -b -u $(cat /etc/ntp.conf | grep server | cut -d ' ' -f2 | tr '\n' ' ' )"
 write_files:
   - path: /etc/deis-release
     content: |
