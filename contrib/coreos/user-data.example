@@ -76,6 +76,28 @@ coreos:
       Type=oneshot
       ExecStartPre=/usr/sbin/modprobe nf_conntrack
       ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
+  - name: sync-clock-hourly.timer
+    command: start
+    content: |
+      [Unit]
+      Description=sync clock timer
+
+      [Timer]
+      OnCalendar=hourly
+      Unit=sync-clock-hourly.service
+
+      [Install]
+      WantedBy=multi-user.target
+  - name: sync-clock-hourly.service
+    command: enable
+    content: |
+
+      [Unit]
+      Description=sync clock service
+
+      [Service]
+      Type=simple
+      ExecStart=/bin/bash -c "/usr/sbin/ntpdate -b -u 0.pool.ntp.org"
 write_files:
   - path: /etc/deis-release
     content: |
