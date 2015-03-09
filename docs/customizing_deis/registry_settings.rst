@@ -26,7 +26,6 @@ setting                                  description
 /deis/registry/host                      IP address of the host running registry
 /deis/registry/port                      port used by the registry service (default: 5000)
 /deis/registry/protocol                  protocol for registry (default: http)
-/deis/registry/secretKey                 used for secrets (default: randomly generated)
 ===========================              =================================================================================
 
 Settings used by registry
