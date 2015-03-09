@@ -22,6 +22,13 @@ coreos:
     command: start
   - name: fleet.service
     command: start
+# - name: docker.socket
+#   command: start
+#   drop-ins:
+#   - name: 30-ListenStream.conf
+#     content: |
+#       [Socket]
+#       ListenStream=2375
   - name: stop-update-engine.service
     command: start
     content: |
