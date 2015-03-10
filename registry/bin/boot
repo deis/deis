@@ -42,7 +42,6 @@ function etcd_set_default {
 
 # seed initial service configuration if necessary
 etcd_set_default protocol http
-etcd_set_default secretKey ${REGISTRY_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
 etcd_set_default bucketName ${BUCKET_NAME}
 
 # wait for confd to run once and install initial templates
