@@ -27,11 +27,9 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 			"--name", "deis-test-database-"+tag,
 			"--rm",
 			"-p", dbPort+":5432",
-			"-e", "EXTERNAL_PORT="+dbPort,
-			"-e", "HOST="+ipaddr,
-			"-e", "USER=deis",
-			"-e", "DB=deis",
-			"-e", "PASS=deis",
+			"-e", "POSTGRES_USER=deis",
+			"-e", "POSTGRES_DB=deis",
+			"-e", "POSTGRES_PASSWORD=deis",
 			dbImage)
 	}()
 	time.Sleep(1000 * time.Millisecond)
