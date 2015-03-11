@@ -337,16 +337,16 @@ class FleetHTTPClient(object):
             "deactivating": "down",
         }
         try:
-            # NOTE (bacongobbler): this call to ._get_unit() also acts as a pre-emptive check to
+            # NOTE (bacongobbler): this call to ._get_unit() acts as a pre-emptive check to
             # determine if the job no longer exists (will raise a RuntimeError on 404)
-            unit = self._get_unit(name)
+            self._get_unit(name)
             state = self._wait_for_container_state(name)
             activeState = state['systemdActiveState']
             # FIXME (bacongobbler): when fleet loads a job, sometimes it'll automatically start and
             # stop the container, which in our case will return as 'failed', even though
             # the container is perfectly fine.
             if activeState == 'failed':
-                if json.loads(unit)['currentState'] == 'loaded':
+                if state['systemdLoadState'] == 'loaded':
                     return JobState.created
             return getattr(JobState, systemdActiveStateMap[activeState])
         except KeyError:
