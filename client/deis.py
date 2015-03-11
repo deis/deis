@@ -23,6 +23,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
 
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
+  git           manage git for applications
 
 Shortcut commands, use ``deis shortcuts`` to see all::
 
@@ -436,6 +437,9 @@ class DeisClient(object):
 
           -b --buildpack BUILDPACK
             a buildpack url to use for this app
+
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
         """
         body = {}
         app_name = None
@@ -467,24 +471,12 @@ class DeisClient(object):
         if buildpack:
             self._config_set(app_id, {'BUILDPACK_URL': buildpack})
 
-        # set a git remote if necessary
-        try:
-            self._session.git_root()
-        except EnvironmentError:
-            return
-        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
-        git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
         if args.get('--no-remote'):
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             self._logger.info('remote available at {}'.format(git_remote))
         else:
-            try:
-                subprocess.check_call(
-                    ['git', 'remote', 'add', 'deis', git_remote],
-                    stdout=subprocess.PIPE)
-                self._logger.info('Git remote deis added')
-            except subprocess.CalledProcessError:
-                self._logger.error('Could not create Deis remote')
-                sys.exit(1)
+            self._git_remote_create(app_id, args.get('--remote'))
 
     def apps_destroy(self, args):
         """
@@ -1272,6 +1264,58 @@ class DeisClient(object):
                 self._logger.info(domain['domain'])
         else:
             raise ResponseError(response)
+
+    def git(self, args):
+        """
+        Valid commands for git:
+
+        git:remote          Adds git remote of application to repository
+
+        Use `deis help [command]` to learn more.
+        """
+        raise DocoptExit('`deis git` is not a valid command, try `deis help git`')
+
+    def git_remote(self, args):
+        """
+        Adds git remote of application to repository
+
+        Usage: deis git:remote [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch(
+            'get', "/v1/apps/{app}/domains".format(app=app))
+        if response.status_code == requests.codes.ok:
+            self._git_remote_create(app, args.get('--remote'))
+        else:
+            raise ResponseError(response)
+
+    def _git_remote_create(self, app, remote_name):
+        """
+        Adds a git_remote to the current repository. Sets up a git root if necessary.
+        """
+        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+        git_remote = "ssh://git@{hostname}:2222/{app}.git".format(**locals())
+        try:
+            self._session.git_root()
+        except EnvironmentError:
+            return
+        try:
+            subprocess.check_call(
+                ['git', 'remote', 'add', remote_name, git_remote],
+                stdout=subprocess.PIPE)
+            self._logger.info('Git remote {} added'.format(remote_name))
+        except subprocess.CalledProcessError:
+            self._logger.error('Could not create Deis remote')
+            sys.exit(1)
 
     def limits(self, args):
         """
