@@ -19,7 +19,7 @@ build: check-docker
 	docker build -t deis/store-base:$(BUILD_TAG) base/
 	$(foreach I, $(TEMPLATE_IMAGES), \
 		sed -e "s/#FROM is generated dynamically by the Makefile/FROM deis\/store-base:${BUILD_TAG}/" $(I)/Dockerfile.template > $(I)/Dockerfile ; \
-		docker build -t deis/store-$(I):$(BUILD_TAG) $(I)/ ; \
+		docker build -t deis/store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
 		rm $(I)/Dockerfile ; \
 	)
 
