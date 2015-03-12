@@ -707,8 +707,11 @@ class DeisClient(object):
             provide a password for the new account.
           --email=<email>
             provide an email address.
+          --ssl-verify=false
+            disables SSL certificate verification for API requests
         """
         controller = args['<controller>']
+        ssl_verify = True
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
         username = args.get('--username')
@@ -721,12 +724,16 @@ class DeisClient(object):
             if password != confirm:
                 self._logger.error('Password mismatch, aborting registration.')
                 sys.exit(1)
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
-        response = self._session.post(url, data=payload, allow_redirects=False)
+        response = self._session.post(url, data=payload, allow_redirects=False, 
+                                      verify=ssl_verify)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
             self._settings.save()
