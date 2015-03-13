@@ -58,10 +58,12 @@ setting                                      description
 /deis/router/gzipVary                        nginx gzipVary setting (default: on)
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
+/deis/router/maxWorkerConnections            maximum number of simultaneous connections that can be opened by a worker process (default: 768)
 /deis/router/serverNameHashMaxSize           nginx server_names_hash_max_size setting (default: 512)
 /deis/router/serverNameHashBucketSize        nginx server_names_hash_bucket_size (default: 64)
 /deis/router/sslCert                         cluster-wide SSL certificate
 /deis/router/sslKey                          cluster-wide SSL private key
+/deis/router/workerProcesses                 nginx number of worker processes to start (default: auto i.e. available CPU cores)
 /deis/services/*                             healthy application containers reported by deis/publisher
 /deis/store/gateway/host                     host of the store gateway component (set by store-gateway)
 /deis/store/gateway/port                     port of the store gateway component (set by store-gateway)
