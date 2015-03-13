@@ -17,6 +17,7 @@ build: check-docker
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/nginx.tgz image/
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/bin/boot image/bin/
+	$(call check-static-binary,image/bin/boot)
 	docker build -t $(IMAGE) image
 	rm image/nginx.tgz
 	rm image/bin/boot
