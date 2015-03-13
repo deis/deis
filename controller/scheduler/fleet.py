@@ -9,6 +9,7 @@ import re
 import time
 
 from django.conf import settings
+from retrying import retry
 
 from .states import JobState
 
@@ -90,6 +91,7 @@ class FleetHTTPClient(object):
             raise RuntimeError(errmsg)
         return data
 
+    @retry(stop_max_attempt_number=5, wait_exponential_multiplier=1000)
     def _get_state(self, name=None):
         headers = {'Content-Type': 'application/json'}
         url = '/v1-alpha/state'
