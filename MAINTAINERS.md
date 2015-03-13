@@ -64,6 +64,8 @@ conversations where the contributing maintainer is knowledgeable.
 The duties of a contributing maintainer are very similar to those of a core maintainer, but they are limited to areas of the Deis project where the contributing maintainer is knowledgeable.
 
 The current contributing maintainers of Deis:
+* Johannes Würbach - <johannes.wuerbach@googlemail.com> ([@johanneswuerbach](https://github.com/johanneswuerbach))
+* Manuel de Brito Fontes - <alejandro.debrito@soficom.cl> ([@aledbf](https://github.com/aledbf))
 * Sivaram Mothiki - <smothiki@opdemand.com> ([@smothiki](https://github.com/smothiki))
 
 ## Becoming a maintainer
