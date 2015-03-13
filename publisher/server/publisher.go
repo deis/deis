@@ -1,13 +1,13 @@
 package server
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net"
 	"os"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -24,6 +24,11 @@ type Server struct {
 	DockerClient *docker.Client
 	EtcdClient   *etcd.Client
 }
+
+var safeMap = struct {
+	sync.RWMutex
+	data map[string]string
+}{data: make(map[string]string)}
 
 // Listen adds an event listener to the docker client and publishes containers that were started.
 func (s *Server) Listen(ttl time.Duration) {
@@ -44,6 +49,8 @@ func (s *Server) Listen(ttl time.Duration) {
 					continue
 				}
 				s.publishContainer(container, ttl)
+			} else if event.Status == "stop" {
+				s.removeContainer(event.ID)
 			}
 		}
 	}
@@ -73,7 +80,7 @@ func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 			return &container, nil
 		}
 	}
-	return nil, errors.New("could not find container")
+	return nil, fmt.Errorf("could not find container with id %v", id)
 }
 
 // publishContainer publishes the docker container to etcd.
@@ -89,16 +96,33 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			continue
 		}
 		appName := match[1]
-		keyPath := fmt.Sprintf("/deis/services/%s/%s", appName, containerName)
+		appPath := fmt.Sprintf("%s/%s", appName, containerName)
+		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
 		for _, p := range container.Ports {
 			port := strconv.Itoa(int(p.PublicPort))
 			hostAndPort := host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
+				safeMap.Lock()
+				safeMap.data[container.ID] = appPath
+				safeMap.Unlock()
 			}
 			// TODO: support multiple exposed ports
 			break
 		}
+	}
+}
+
+// removeContainer remove a container published by this component
+func (s *Server) removeContainer(event string) {
+	safeMap.RLock()
+	appPath := safeMap.data[event]
+	safeMap.RUnlock()
+
+	if appPath != "" {
+		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
+		log.Printf("stopped %s\n", keyPath)
+		s.removeEtcd(keyPath, false)
 	}
 }
 
@@ -182,4 +206,12 @@ func (s *Server) setEtcd(key, value string, ttl uint64) {
 		log.Println(err)
 	}
 	log.Println("set", key, "->", value)
+}
+
+// removeEtcd removes the corresponding etcd key
+func (s *Server) removeEtcd(key string, recursive bool) {
+	if _, err := s.EtcdClient.Delete(key, recursive); err != nil {
+		log.Println(err)
+	}
+	log.Println("del", key)
 }
