@@ -67,8 +67,10 @@ go get -v github.com/tools/godep
 # cleanup any stale example applications
 rm -rf $DEIS_ROOT/tests/example-*
 
-# generate ssh key if it doesn't already exist
+# generate ssh keys if they don't already exist
 test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUTH_KEY -N ''
+# TODO: parameterize this key required for keys_test.go?
+test -e ~/.ssh/deiskey || ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 
 # prepare the SSH agent
 ssh-add -D || eval $(ssh-agent) && ssh-add -D
@@ -77,10 +79,6 @@ ssh-add $DEIS_TEST_SSH_KEY
 
 # clean out deis session data
 rm -rf ~/.deis
-
-# clean out vagrant environment
-$THIS_DIR/halt-all-vagrants.sh
-vagrant destroy --force
 
 # wipe out all vagrants & deis virtualboxen
 function cleanup {

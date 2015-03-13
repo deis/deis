@@ -45,6 +45,7 @@ func TestBuilder(t *testing.T) {
 	defer os.Remove(tmpfile.Name())
 
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	imageName := utils.ImagePrefix() + "builder" + ":" + tag
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
@@ -52,7 +53,7 @@ func TestBuilder(t *testing.T) {
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/builder:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-builder-" + tag
 	defer cli.CmdRm("-f", "-v", name)
 	go func() {
@@ -67,7 +68,7 @@ func TestBuilder(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"--privileged",
 			"-v", tmpfile.Name()+":/etc/environment_proxy",
-			"deis/builder:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
 	if err != nil {

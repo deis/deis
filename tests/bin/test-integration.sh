@@ -13,6 +13,10 @@ export THIS_DIR=$(cd $(dirname $0); pwd)
 # setup the test environment
 source $THIS_DIR/test-setup.sh
 
+# clean out vagrant environment
+$THIS_DIR/halt-all-vagrants.sh
+vagrant destroy --force
+
 # setup callbacks on process exit and error
 trap cleanup EXIT
 trap dump_logs ERR

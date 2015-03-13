@@ -26,6 +26,7 @@ func TestController(t *testing.T) {
 		"/deis/domains",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	imageName := utils.ImagePrefix() + "controller" + ":" + tag
 
 	//start etcd container
 	etcdName := "deis-etcd-" + tag
@@ -38,7 +39,7 @@ func TestController(t *testing.T) {
 	mock.RunMockDatabase(t, tag, etcdPort, utils.RandomPort())
 	defer cli.CmdRm("-f", "deis-test-database-"+tag)
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/controller:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-controller-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -51,7 +52,7 @@ func TestController(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/controller:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
 	if err != nil {
