@@ -146,6 +146,7 @@ Deis includes ``Makefile`` targets designed to simplify the development workflow
 This workflow is typically:
 
   #. Update source code and commit your changes using ``git``
+  #. Use ``make -C <component> compile`` to compile go code, if component uses go
   #. Use ``make -C <component> build`` to build a new Docker image
   #. Use ``make -C <component> dev-release`` to push a snapshot release
   #. Use ``make -C <component> restart`` to restart the component

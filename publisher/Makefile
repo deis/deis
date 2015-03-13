@@ -13,8 +13,10 @@ RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 REMOTE_IMAGE := $(REGISTRY)/$(RELEASE_IMAGE)
 BINARY_DEST_DIR = image/bin
 
-build: check-docker
+compile:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/deis/deis/publisher || exit 1
+
+build: check-docker
 	docker build -t $(RELEASE_IMAGE) image
 
 clean: check-docker check-registry
@@ -40,7 +42,7 @@ set-image: check-deisctl
 release: check-docker
 	docker push $(DOCKER_IMAGE)
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 restart: stop start
 

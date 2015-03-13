@@ -29,6 +29,7 @@ make test-unit
 log_phase "Building from current source tree"
 
 # build all docker images and client binaries
+make compile
 make build
 
 # use the built client binaries

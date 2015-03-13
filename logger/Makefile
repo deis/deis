@@ -13,8 +13,10 @@ IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARY_DEST_DIR = image/bin
 
-build: check-docker
+compile:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/logger github.com/deis/deis/logger || exit 1
+
+build: check-docker
 	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
@@ -52,7 +54,7 @@ set-image: check-deisctl
 release:
 	docker push $(IMAGE)
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover

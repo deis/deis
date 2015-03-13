@@ -10,6 +10,7 @@ repo_path = github.com/deis/deis
 GO_PACKAGES = pkg/time version
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
+COMPILED_COMPONENTS=builder logger logspout publisher
 COMPONENTS=builder cache controller database logger logspout publisher registry router store
 START_ORDER=publisher store logger logspout database cache registry controller builder router
 CLIENTS=client deisctl
@@ -31,6 +32,9 @@ dev-cluster: discovery-url
 
 discovery-url:
 	sed -e "s,# discovery:,discovery:," -e "s,discovery: https://discovery.etcd.io/.*,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data.example > contrib/coreos/user-data
+
+compile:
+	@$(foreach C, $(COMPILED_COMPONENTS), $(MAKE) -C $(C) compile &&) echo done
 
 build: check-docker
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build &&) echo done
@@ -71,7 +75,7 @@ set-image:
 release: check-registry
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) release &&) echo done
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 test: test-style test-unit test-functional push test-integration
 

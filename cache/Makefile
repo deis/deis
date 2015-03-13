@@ -12,8 +12,10 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
-build: check-docker
+compile:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot main.go || exit 1
+
+build: check-docker
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/usr/local/bin/redis-server $(BINARY_DEST_DIR)/
 	docker build -t $(IMAGE) image
@@ -54,7 +56,7 @@ set-image: check-deisctl
 release:
 	docker push $(IMAGE)
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 test: test-style test-unit test-functional
 

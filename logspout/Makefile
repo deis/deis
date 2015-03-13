@@ -12,8 +12,10 @@ DOCKER_IMAGE := deis/$(COMPONENT)
 RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
 DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
 
-build: check-docker
+compile:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o image/logspout
+
+build: check-docker
 	docker build -t $(RELEASE_IMAGE) image
 
 clean:
@@ -52,7 +54,7 @@ set-image: check-deisctl
 release:
 	docker push $(RELEASE_IMAGE)
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover

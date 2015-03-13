@@ -13,10 +13,12 @@ DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARIES := extract-domain extract-types extract-version generate-buildhook get-app-config get-app-values publish-release-controller yaml2json-procfile
 BINARY_DEST_DIR := image/bin
 
-build: check-docker
+compile:
 	for i in $(BINARIES); do \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go || exit 1; \
 	done
+
+build: check-docker
 	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
@@ -56,7 +58,7 @@ set-image: check-deisctl
 release:
 	docker push $(IMAGE)
 
-deploy: build dev-release restart
+deploy: compile build dev-release restart
 
 test: test-style test-unit test-functional
 
