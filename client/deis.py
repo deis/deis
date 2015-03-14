@@ -726,7 +726,7 @@ class DeisClient(object):
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
-        response = self._session.post(url, data=payload, allow_redirects=False, 
+        response = self._session.post(url, data=payload, allow_redirects=False,
                                       verify=ssl_verify)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
