@@ -171,3 +171,8 @@ write_files:
     content: |
       [Coredump]
       Storage=none
+  - path: /etc/systemd/system/ntpd.service.d/debug.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/sbin/ntpd -g -n -f /var/lib/ntp/ntp.drift
