@@ -3,6 +3,11 @@
 # Preps a Ubuntu 14.04 box with requirements to run as a Jenkins node to https://ci.deis.io/
 # Should be run as root.
 
+# fail on any command exiting non-zero
+set -eo pipefail
+
+apt-get install -y apt-transport-https
+
 # install docker
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sh -c "echo deb https://get.docker.com/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
@@ -13,18 +18,17 @@ apt-get install -yq openjdk-7-jre-headless
 
 # install virtualbox
 apt-get install -yq build-essential libgl1-mesa-glx libpython2.7 libqt4-network libqt4-opengl \
-    libqtcore4 libqtgui4 libsdl1.2debian libvpx1 libxcursor1 libxinerama1 libxmu6
-wget http://download.virtualbox.org/virtualbox/4.3.22/virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
+    libqtcore4 libqtgui4 libsdl1.2debian libvpx1 libxcursor1 libxinerama1 libxmu6 psmisc
+wget -nv http://download.virtualbox.org/virtualbox/4.3.22/virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
 dpkg -i virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb && \
     rm virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
 
 # install vagrant
-wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
+wget -nv https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
 dpkg -i vagrant_1.7.2_x86_64.deb && rm vagrant_1.7.2_x86_64.deb
-# as the jenkins user, do "vagrant plugin install vagrant-triggers"
 
 # install go
-wget -qO- https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -xz
+wget -nv -O- https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 echo "You must reboot for the global $PATH changes to take effect."
 
@@ -34,14 +38,19 @@ curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | 
 pip install virtualenv
 
 # create jenkins user and install node bootstrap script
-useradd -G docker,vboxusers -s /bin/bash -m jenkins
+useradd -G docker,vboxusers -s /bin/bash --system -m jenkins
 mkdir -p /home/jenkins/bin
-wget -x -O /home/jenkins/bin/start-node.sh \
+wget -nv -x -O /home/jenkins/bin/start-node.sh \
     https://raw.githubusercontent.com/deis/deis/master/tests/bin/start-node.sh
 chmod +x /home/jenkins/bin/start-node.sh
 chown -R jenkins:jenkins /home/jenkins/bin
 
+# as the jenkins user, do "vagrant plugin install vagrant-triggers"
+su - jenkins -c "vagrant plugin install vagrant-triggers"
+
 # TODO: instructions to download and install fleetctl
+
+/etc/init.d/postgresql start
 
 # set up PostgreSQL role for controller unit tests
 sudo -u postgres psql -c "CREATE ROLE jenkins WITH CREATEDB LOGIN;"
