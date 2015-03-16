@@ -298,6 +298,12 @@
             "Protocol": "HTTP"
           },
           {
+            "InstancePort": "80",
+            "InstanceProtocol": "HTTP",
+            "LoadBalancerPort": "443",
+            "Protocol": "HTTPS"
+          },
+          {
             "InstancePort": "2222",
             "InstanceProtocol": "TCP",
             "LoadBalancerPort": "2222",
