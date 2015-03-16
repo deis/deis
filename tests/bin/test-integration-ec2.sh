@@ -67,6 +67,11 @@ if ! aws ec2 describe-key-pairs --key-names "deis" >/dev/null ; then
 fi
 
 make discovery-url
+
+# Turn on the debug-etcd.service
+sed -i.bak '/  - name: debug-etcd.service/{G;s/$/    command: start/;}' $DEIS_ROOT/contrib/coreos/user-data
+sed -i.bak '/    Description=etcd debugging service/{G;s/$/      After=etcd.service/;}' $DEIS_ROOT/contrib/coreos/user-data
+
 # add random characters after STACK_TAG to avoid collisions
 # TODO: somehow this breaks "set -eo pipefail"
 STACK_TAG=${STACK_TAG:-test}-$(base64 /dev/urandom | tr -dc a-z0-9 | head -c 6)

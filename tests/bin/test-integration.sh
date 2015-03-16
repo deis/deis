@@ -50,6 +50,11 @@ log_phase "Provisioning 3-node CoreOS"
 
 export DEIS_NUM_INSTANCES=3
 make discovery-url
+
+# Turn on the debug-etcd.service
+sed -i.bak '/  - name: debug-etcd.service/{G;s/$/    command: start/;}' $DEIS_ROOT/contrib/coreos/user-data
+sed -i.bak '/    Description=etcd debugging service/{G;s/$/      After=etcd.service/;}' $DEIS_ROOT/contrib/coreos/user-data
+
 vagrant up --provider virtualbox
 
 log_phase "Waiting for etcd/fleet"
