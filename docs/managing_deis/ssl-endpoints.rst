@@ -62,8 +62,7 @@ On most cloud-based load balancers, you can install a SSL certificate onto the l
 itself. This is the recommended way of enabling SSL onto a cluster, as any communication inbound to
 the cluster will be encrypted while the internal components of Deis will still communicate over
 HTTP. To enable SSL, you will need to open port 443 on the load balancer and forward it to port 80
-on the routers. For EC2, you'll also need to add port 443 in the security group settings for your
-load balancer.
+on the routers.
 
 See your vendor's specific instructions on installing SSL on your load balancer. For EC2, see their
 documentation on `installing an SSL cert for load balancing`_. For Rackspace, see their
