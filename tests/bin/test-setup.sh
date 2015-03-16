@@ -134,6 +134,14 @@ function dump_logs {
   get_logs deis-router@3 deis-store-volume deis-store-volume-3
   get_logs deis-store-gateway
 
+  # get debug-etcd logs
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-1.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-2.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-3.log
+
   # tarball logs
   BUCKET=jenkins-failure-logs
   FILENAME=deis-test-failure-$TIMESTAMP.tar.gz
