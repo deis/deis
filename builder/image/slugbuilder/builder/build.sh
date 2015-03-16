@@ -87,6 +87,18 @@ if [[ -n "$BUILDPACK_URL" ]]; then
         committish="master"
     fi
 
+    if [[ -n "$SSH_KEY" ]]; then
+        mkdir -p ~/.ssh/
+        chmod 700 ~/.ssh/
+
+        echo $SSH_KEY | base64 -d > ~/.ssh/id_rsa
+        chmod 400 ~/.ssh/id_rsa
+
+        echo 'StrictHostKeyChecking=no' > ~/.ssh/config
+        chmod 600 ~/.ssh/config
+
+    fi
+
     set +e
     git clone --branch "$committish" --depth=1 "$url" "$buildpack" &> /dev/null
     SHALLOW_CLONED=$?

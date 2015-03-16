@@ -48,6 +48,7 @@ from getpass import getpass
 from itertools import cycle
 from threading import Event
 from threading import Thread
+from base64 import b64encode
 import glob
 import json
 import locale
@@ -1039,6 +1040,18 @@ class DeisClient(object):
         if not app:
             app = self._session.app
         values = dictify(args['<var>=<value>'])
+        if values.get('SSH_KEY'):
+            if os.path.isfile(values.get('SSH_KEY')):
+                with open(values.get('SSH_KEY')) as f:
+                    ssh_key = f.read()
+            else:
+                ssh_key = values['SSH_KEY']
+            match = re.match(r'^-.+ .SA PRIVATE KEY-*', ssh_key)
+            if match:
+                values['SSH_KEY'] = b64encode(ssh_key)
+            else:
+                self._logger.error("Could not parse SSH private key {}".format(ssh_key))
+                sys.exit(1)
         self._config_set(app, values)
 
     def _config_set(self, app, values):

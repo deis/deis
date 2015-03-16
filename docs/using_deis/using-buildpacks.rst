@@ -27,6 +27,29 @@ Use ``deis create`` to create an application on the :ref:`controller`.
     Creating application... done, created unisex-huntress
     Git remote deis added
 
+Optional: Add SSH KEY to use private repositories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To pull code from private repositories, you'll need to provide Deis with a private SSH key which has access.
+
+You can do so with deis client:
+
+
+Using private key file:
+
+.. code-block:: console
+
+    $ deis config:set SSH_KEY=/home/user/.ssh/id_rsa
+
+
+You can also use a raw key instead of a private key file:
+
+.. code-block:: console
+
+    $ deis config:set SSH_KEY="""-----BEGIN RSA PRIVATE KEY-----
+    (...)
+    -----END RSA PRIVATE KEY-----"""
+
 Push to Deploy
 --------------
 Use ``git push deis master`` to deploy your application.
