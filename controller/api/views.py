@@ -218,6 +218,9 @@ class DomainViewSet(AppResourceViewSet):
     model = models.Domain
     serializer_class = serializers.DomainSerializer
 
+    def get_object(self, **kwargs):
+        return self.get_queryset(**kwargs)
+
 
 class KeyViewSet(BaseDeisViewSet):
     """A viewset for interacting with Key objects."""

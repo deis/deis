@@ -12,6 +12,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
+from api.models import Domain
+
 
 class DomainTest(TestCase):
 
@@ -77,6 +79,26 @@ class DomainTest(TestCase):
             response = self.client.get(url, content_type='application/json',
                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEqual(0, response.data['count'], msg)
+
+    def test_delete_domain_does_not_remove_latest(self):
+        """https://github.com/deis/deis/issues/3239"""
+        url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
+        test_domains = [
+            'test-domain.example.com',
+            'django.paas-sandbox',
+        ]
+        for domain in test_domains:
+            body = {'domain': domain}
+            response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(response.status_code, 201)
+        url = '/v1/apps/{app_id}/domains/{domain}'.format(domain=test_domains[0],
+                                                          app_id=self.app_id)
+        response = self.client.delete(url, content_type='application/json',
+                                      HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        with self.assertRaises(Domain.DoesNotExist):
+            Domain.objects.get(domain=test_domains[0])
 
     def test_manage_domain_invalid_app(self):
         url = '/v1/apps/{app_id}/domains'.format(app_id="this-app-does-not-exist")
