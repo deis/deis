@@ -140,6 +140,24 @@ For example, if your VPC has ID ``vpc-a26218bf`` and consists of the subnets ``s
     export VPC_SUBNETS=subnet-04d7f942,subnet-2b03ab7f
     export VPC_ZONES=us-east-1b,us-east-1c
 
+If you have set up private subnets in which you'd like to run your Deis hosts, and public subnets
+for the ELB, you should export the following environment variables instead:
+
+ - ``VPC_ID``
+ - ``VPC_SUBNETS``
+ - ``VPC_PRIVATE_SUBNETS``
+ - ``VPC_ZONES``
+
+For example, if you have a public subnet ``subnet-8cd457b3`` for the ELB and a private subnet
+``subnet-8cd457b0`` (both in ``us-east-1a``) you would export:
+
+.. code-block:: console
+
+    export VPC_ID=vpc-a26218bf
+    export VPC_SUBNETS=subnet-8cd457b3
+    export VPC_PRIVATE_SUBNETS=subnet-8cd457b0
+    export VPC_ZONES=us-east-1a
+
 
 Run the Provision Script
 ------------------------
