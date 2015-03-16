@@ -407,6 +407,69 @@ Example Response:
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
+Restart Application
+```````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/restart/ HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.3.1
+
+
+Restart Application Containers by Type
+``````````````````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/restart/web HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.3.1
+
+
+Restart Specific Container
+``````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/restart/web/1 HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.3.1
+
+
 Configuration
 -------------
 
