@@ -42,7 +42,7 @@ template=$(cat <<EOF
 
 # Log and drop everything else
 -A Firewall-INPUT -j LOG
--A Firewall-INPUT -j REJECT --reject-with icmp-host-prohibited
+-A Firewall-INPUT -j REJECT
 
 COMMIT
 EOF
@@ -65,4 +65,3 @@ echo "Loading custom iptables firewall"
 sudo /sbin/iptables-restore --noflush /var/lib/iptables/rules-save
 
 echo "Done"
-
