@@ -109,7 +109,7 @@ func ParseControllerConfig(bytes []byte) ([]string, error) {
 
 	retVal := []string{}
 	for k, v := range controllerConfig.Values {
-		retVal = append(retVal, fmt.Sprintf(" -e %s='%v'", k, v))
+		retVal = append(retVal, fmt.Sprintf(" -e %s=\"%v\"", k, v))
 	}
 	return retVal, nil
 }

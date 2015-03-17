@@ -24,7 +24,8 @@ Example Request:
 
     {
         "username": "test",
-        "password": "opensesame"
+        "password": "opensesame",
+        "email": "test@example.com"
     }
 
 Optional Parameters:
@@ -32,7 +33,6 @@ Optional Parameters:
 .. code-block:: console
 
     {
-        "email": "test@example.com",
         "first_name": "test",
         "last_name": "testerson"
     }

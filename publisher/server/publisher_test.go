@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net"
 	"testing"
 )
 
@@ -26,5 +27,21 @@ func TestIsPublishableApp(t *testing.T) {
 	futureVersion := "ceci-nest-pas-une-app_v4.web.1"
 	if !s.IsPublishableApp(futureVersion) {
 		t.Errorf("%s should be publishable", futureVersion)
+	}
+}
+
+func TestIsPortOpen(t *testing.T) {
+	ln, err := net.Listen("tcp4", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("Listen failed: %v", err)
+	}
+	defer ln.Close()
+
+	s := &Server{nil, nil}
+	if !s.IsPortOpen(ln.Addr().String()) {
+		t.Errorf("Port should be open")
+	}
+	if s.IsPortOpen("127.0.0.1:-1") {
+		t.Errorf("Port should be closed")
 	}
 }

@@ -30,6 +30,7 @@ func TestRouter(t *testing.T) {
 		"/deis/store",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+	imageName := utils.ImagePrefix() + "router" + ":" + tag
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
@@ -37,7 +38,7 @@ func TestRouter(t *testing.T) {
 	handler := etcdutils.InitEtcd(setdir, setkeys, etcdPort)
 	etcdutils.PublishEtcd(t, handler)
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/router:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-router-" + tag
 	go func() {
 		_ = cli.CmdRm("-f", name)
@@ -50,7 +51,7 @@ func TestRouter(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "LOG=debug",
-			"deis/router:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
 	if err != nil {

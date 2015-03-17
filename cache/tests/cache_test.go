@@ -13,13 +13,14 @@ import (
 func TestCache(t *testing.T) {
 	var err error
 	tag := utils.BuildTag()
+	imageName := utils.ImagePrefix() + "cache" + ":" + tag
 	etcdPort := utils.RandomPort()
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
 	defer cli.CmdRm("-f", etcdName)
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run deis/cache:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-cache-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -31,7 +32,7 @@ func TestCache(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/cache:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "started")
 	if err != nil {

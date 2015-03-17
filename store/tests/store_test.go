@@ -16,6 +16,7 @@ func TestStore(t *testing.T) {
 
 	// Set up etcd, which will be used by all containers
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
+
 	etcdName := "deis-etcd-" + tag
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	dockercli.RunTestEtcd(t, etcdName, etcdPort)
@@ -29,7 +30,8 @@ func TestStore(t *testing.T) {
 	etcdutils.SetSingle(t, "/deis/store/pgNum", "64", etcdPort)
 
 	// test deis-store-monitor
-	fmt.Printf("--- Run deis/store-monitor:%s at %s\n", tag, host)
+	imageName := utils.ImagePrefix() + "store-monitor" + ":" + tag
+	fmt.Printf("--- Run %s at %s\n", imageName, host)
 	name := "deis-store-monitor-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -41,7 +43,7 @@ func TestStore(t *testing.T) {
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "NUM_STORES=1",
 			"--net=host",
-			"deis/store-monitor:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "monmap e1: 1 mons at")
 	if err != nil {
@@ -55,7 +57,8 @@ func TestStore(t *testing.T) {
 	etcdutils.VerifyEtcdValue(t, "/deis/store/monSetupComplete", "youBetcha", etcdPort)
 
 	// test deis-store-daemon
-	fmt.Printf("--- Run deis/store-daemon:%s at %s\n", tag, host)
+	imageName = utils.ImagePrefix() + "store-daemon" + ":" + tag
+	fmt.Printf("--- Run %s at %s\n", imageName, host)
 	name = "deis-store-daemon-" + tag
 	cli2, stdout2, stdoutPipe2 := dockercli.NewClient()
 	defer cli2.CmdRm("-f", "-v", name)
@@ -67,7 +70,7 @@ func TestStore(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--net=host",
-			"deis/store-daemon:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout2, stdoutPipe2, "journal close /var/lib/ceph/osd/ceph-0/journal")
 	if err != nil {
@@ -79,7 +82,8 @@ func TestStore(t *testing.T) {
 	etcdutils.VerifyEtcdValue(t, "/deis/store/osds/"+host, "0", etcdPort)
 
 	// test deis-store-metadata
-	fmt.Printf("--- Run deis/store-metadata:%s at %s\n", tag, host)
+	imageName = utils.ImagePrefix() + "store-metadata" + ":" + tag
+	fmt.Printf("--- Run %s at %s\n", imageName, host)
 	name = "deis-store-metadata-" + tag
 	cli3, stdout3, stdoutPipe3 := dockercli.NewClient()
 	defer cli3.CmdRm("-f", "-v", name)
@@ -91,7 +95,7 @@ func TestStore(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"--net=host",
-			"deis/store-metadata:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout3, stdoutPipe3, "mds.0.1 active_start")
 	if err != nil {
@@ -99,8 +103,9 @@ func TestStore(t *testing.T) {
 	}
 
 	// test deis-store-gateway
+	imageName = utils.ImagePrefix() + "store-gateway" + ":" + tag
 	port := utils.RandomPort()
-	fmt.Printf("--- Run deis/store-gateway:%s at %s:%s\n", tag, host, port)
+	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name = "deis-store-gateway-" + tag
 	cli4, stdout4, stdoutPipe4 := dockercli.NewClient()
 	defer cli4.CmdRm("-f", name)
@@ -114,7 +119,7 @@ func TestStore(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "ETCD_PORT="+etcdPort,
-			"deis/store-gateway:"+tag)
+			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout4, stdoutPipe4, "deis-store-gateway running...")
 	if err != nil {

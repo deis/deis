@@ -26,9 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var retVal string
 	for _, value := range values {
-		retVal = fmt.Sprintf("%s%s", retVal, value)
+		fmt.Println(value)
 	}
-	fmt.Println(retVal)
 }

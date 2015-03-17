@@ -67,8 +67,10 @@ go get -v github.com/tools/godep
 # cleanup any stale example applications
 rm -rf $DEIS_ROOT/tests/example-*
 
-# generate ssh key if it doesn't already exist
+# generate ssh keys if they don't already exist
 test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUTH_KEY -N ''
+# TODO: parameterize this key required for keys_test.go?
+test -e ~/.ssh/deiskey || ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 
 # prepare the SSH agent
 ssh-add -D || eval $(ssh-agent) && ssh-add -D
@@ -77,10 +79,6 @@ ssh-add $DEIS_TEST_SSH_KEY
 
 # clean out deis session data
 rm -rf ~/.deis
-
-# clean out vagrant environment
-$THIS_DIR/halt-all-vagrants.sh
-vagrant destroy --force
 
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
@@ -135,6 +133,14 @@ function dump_logs {
   get_logs deis-router@3 deis-store-metadata deis-store-metadata-3
   get_logs deis-router@3 deis-store-volume deis-store-volume-3
   get_logs deis-store-gateway
+
+  # get debug-etcd logs
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-1.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-2.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 journalctl --no-pager -u etcd \
+    > $FAILED_LOGS_DIR/debug-etcd-3.log
 
   # tarball logs
   BUCKET=jenkins-failure-logs

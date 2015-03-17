@@ -124,7 +124,7 @@ initialize. So, we will install the whole platform, but only start the store com
     $ deisctl start store-monitor
     $ deisctl start store-daemon
     $ deisctl start store-metadata
-    $ deisctl start store-gateway
+    $ deisctl start store-gateway@1
     $ deisctl start store-volume
 
 We'll also need to start a router so we can access the gateway:
@@ -207,12 +207,6 @@ use in the ``export`` command should correspond to the IP of the host machine wh
     [d.save() for d in Domain.objects.all()]
     EOF
     $ exit
-
-.. note::
-
-  The database keeps track of running application containers. Since this is a fresh cluster, it is
-  advisable to ``deis scale <proctype>=0`` and then ``deis scale`` back up to the desired number of
-  containers for an application. This ensures the database has an accurate view of the cluster.
 
 That's it! The cluster should be fully restored.
 

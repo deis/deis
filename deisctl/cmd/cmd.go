@@ -183,17 +183,13 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
-	// optimization: start all remaining services in the background
-	// cache is a special case because it must start before registry
-	b.Start([]string{"cache"}, &_wg, _outchan, _errchan)
-	wg.Wait()
 	b.Start([]string{
 		"database", "registry@*", "controller", "builder",
 		"publisher", "router@*"},
 		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Start([]string{"cache", "database", "registry@*", "controller"}, wg, outchan, errchan)
+	b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
@@ -436,7 +432,7 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Create([]string{"cache", "database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+	b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")

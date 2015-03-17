@@ -10,7 +10,10 @@ SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 DOCKER_HOST = $(shell echo $$DOCKER_HOST)
 REGISTRY = $(shell echo $$DEV_REGISTRY)
 GIT_SHA = $(shell git rev-parse --short HEAD)
-IMAGE_PREFIX := deis/
+
+ifndef IMAGE_PREFIX
+  IMAGE_PREFIX = deis/
+endif
 
 ifndef BUILD_TAG
   BUILD_TAG = git-$(GIT_SHA)
@@ -48,3 +51,13 @@ check-deisctl:
 	@if [ -z $$(which deisctl) ]; then \
 	  echo "Missing \`deisctl\` utility, please install from https://github.com/deis/deis"; \
 	fi
+
+define check-static-binary
+  if file $(1) | grep -q "statically linked"; then \
+    echo -n ""; \
+  else \
+    echo "The binary file $(1) is not statically linked. Build canceled"; \
+    exit 1; \
+  fi
+endef
+

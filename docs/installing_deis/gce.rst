@@ -57,7 +57,7 @@ Initialize Compute Engine
 Google Computer Engine won't be available via the command line tools until it is initialized in the
 web console. Navigate to *COMPUTE* -> *COMPUTE ENGINE* -> *VM Instances* in the project console.
 The Compute Engine will take a moment to initialize and then be ready to create resources via
-``gcutil``.
+``gcloud compute``.
 
 
 Cloud Init
@@ -95,43 +95,37 @@ Create a SSH key that we will use for Deis host communication:
 
 Create some persistent disks to use for ``/var/lib/docker``. The default root partition of CoreOS
 is only around 4 GB and not enough for storing Docker images and instances. The following creates 3
-disks sized at 32 GB:
+disks sized at 256 GB:
 
 .. code-block:: console
 
-    $ gcutil adddisk --zone us-central1-a --size_gb 32 cored1 cored2 cored3
+    $ gcloud compute disks create cored1 cored2 cored3 --size 256GB --type pd-standard --zone us-central1-c
 
-    Table of resources:
-
-    +--------+---------------+--------+---------+
-    | name   | zone          | status | size-gb |
-    +--------+---------------+--------+---------+
-    | cored1 | us-central1-a | READY  |      32 |
-    +--------+---------------+--------+---------+
-    | cored2 | us-central1-a | READY  |      32 |
-    +--------+---------------+--------+---------+
-    | cored3 | us-central1-a | READY  |      32 |
-    +--------+---------------+--------+---------+
-
+    NAME   ZONE          SIZE_GB TYPE        STATUS
+    cored1 us-central1-c 256     pd-standard READY
+    cored2 us-central1-c 256     pd-standard READY
+    cored3 us-central1-c 256     pd-standard READY
 
 Launch 3 instances. You can choose another starting CoreOS image from the listing output of
 ``gcloud compute images list``:
 
 .. code-block:: console
 
-    $ for num in 1 2 3; do gcutil addinstance --use_compute_key --image projects/coreos-cloud/global/images/coreos-stable-557-2-0-v20150210 --persistent_boot_disk --zone us-central1-a --machine_type n1-standard-2 --tags deis --metadata_from_file user-data:gce-user-data --disk cored${num},deviceName=coredocker --authorized_ssh_keys=core:~/.ssh/deis.pub,core:~/.ssh/google_compute_engine.pub core${num}; done
+    $ for num in 1 2 3; do
+      gcloud compute instances create core${num} \
+      --zone us-central1-c \
+      --machine-type n1-standard-2 \
+      --metadata-from-file user-data=gce-user-data sshKeys=~/.ssh/deis.pub \
+      --disk name=cored${num} device-name=coredocker \
+      --tags deis \
+      --image coreos-stable-557-2-0-v20150210 \
+      --image-project coreos-cloud;
+    done
 
-    Table of resources:
-
-    +-------+---------------+--------------+---------------+---------+
-    | name  | network-ip    | external-ip  | zone          | status  |
-    +-------+---------------+--------------+---------------+---------+
-    | core1 | 10.240.33.107 | 23.236.59.66 | us-central1-a | RUNNING |
-    +-------+---------------+--------------+---------------+---------+
-    | core2 | 10.240.94.33  | 108.59.80.17 | us-central1-a | RUNNING |
-    +-------+---------------+--------------+---------------+---------+
-    | core3 | 10.240.28.163 | 108.59.85.85 | us-central1-a | RUNNING |
-    +-------+---------------+--------------+---------------+---------+
+    NAME  ZONE          MACHINE_TYPE  INTERNAL_IP   EXTERNAL_IP    STATUS
+    core1 us-central1-c n1-standard-2 10.240.10.107 108.59.80.10   RUNNING
+    core2 us-central1-c n1-standard-2 10.240.10.108 108.59.80.11   RUNNING
+    core3 us-central1-c n1-standard-2 10.240.10.109 108.59.80.12   RUNNING
 
 .. note::
 
@@ -146,23 +140,19 @@ We will need to load balance the Deis routers so we can get to Deis services (co
 
 .. code-block:: console
 
-    $ gcutil addhttphealthcheck basic-check --request_path /health-check
-    $ gcutil addtargetpool deis --health_checks basic-check --region us-central1 --instances core1,core2,core3
-    $ gcutil addforwardingrule deisapp --region us-central1 --target_pool deis
+    $ gcloud compute http-health-checks create basic-check --request-path /health-check
+    $ gcloud compute target-pools create deis --health-check basic-check --session-affinity CLIENT_IP_PROTO --region us-central1
+    $ gcloud compute target-pools add-instances deis --instances core1 core2 core3
+    $ gcloud compute forwarding-rules create deisapp --target-pool deis --region us-central1
 
-    Table of resources:
-
-    +---------+-------------+--------------+
-    | name    | region      | ip           |
-    +---------+-------------+--------------+
-    | deisapp | us-central1 | 23.251.153.6 |
-    +---------+-------------+--------------+
+    NAME    REGION      IP_ADDRESS     IP_PROTOCOL TARGET
+    deisapp us-central1 23.251.153.6   TCP         us-central1/targetPools/deis
 
 Note the forwarding rule external IP address. We will use it as the Deis login endpoint in a future step. Now allow the ports on the CoreOS nodes:
 
 .. code-block:: console
 
-    $ gcutil addfirewall deis-router --target_tags deis --allowed "tcp:80,tcp:2222"
+    $ gcloud compute firewall-rules create deis-router --target-tags deis --allow tcp:80 tcp:443 tcp:2222
 
 
 Configure DNS
@@ -284,5 +274,5 @@ start installing the platform.
 It works! Enjoy your Deis cluster in Google Compute Engine!
 
 .. _`contrib/gce`: https://github.com/deis/deis/tree/master/contrib/gce
-.. _`Google Cloud SDK`: https://developers.google.com/compute/docs/gcutil/#install
+.. _`Google Cloud SDK`: https://cloud.google.com/compute/docs/gcloud-compute/#install
 .. _`Google Developer Console`: https://console.developers.google.com/project

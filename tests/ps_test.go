@@ -4,7 +4,6 @@ package tests
 
 import (
 	"os"
-	"os/exec"
 	"strings"
 	"testing"
 	"time"
@@ -72,18 +71,4 @@ func psScaleTest(t *testing.T, params *utils.DeisTestConfig, cmd string) {
 		cmd = strings.Replace(cmd, "web", "cmd", 1)
 	}
 	utils.Execute(t, cmd, params, false, "")
-	// Regression test for https://github.com/deis/deis/pull/1347
-	// Ensure that systemd unitfile droppings are cleaned up.
-	sshCmd := exec.Command("ssh",
-		"-o", "StrictHostKeyChecking=no",
-		"-o", "UserKnownHostsFile=/dev/null",
-		"-o", "PasswordAuthentication=no",
-		"core@deis."+params.Domain, "ls")
-	out, err := sshCmd.Output()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(string(out), ".service") {
-		t.Fatalf("systemd files left on filesystem: \n%s", out)
-	}
 }

@@ -28,7 +28,7 @@ else:
 
 
 setup(name='deis',
-      version='1.4.0-dev',
+      version='1.5.0-dev',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='OpDemand',
@@ -57,7 +57,7 @@ setup(name='deis',
       ],
       long_description=LONG_DESCRIPTION,
       install_requires=[
-          'docopt==0.6.2', 'python-dateutil==2.4.0',
+          'docopt==0.6.2', 'python-dateutil==2.4.1',
           'PyYAML==3.11', 'requests==2.5.1',
           'termcolor==1.1.0'
       ],

@@ -29,6 +29,16 @@ func BuildTag() string {
 	return strings.TrimSpace(tag)
 }
 
+// ImagePrefix returns the $IMAGE_PREFIX environment variable or `deis/`
+func ImagePrefix() string {
+	var prefix string
+	prefix = os.Getenv("IMAGE_PREFIX")
+	if prefix != "" {
+		return prefix
+	}
+	return "deis/"
+}
+
 // Chdir sets the current working directory to the relative path specified.
 func Chdir(app string) error {
 	var wd, _ = os.Getwd()

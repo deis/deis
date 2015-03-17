@@ -251,7 +251,8 @@ class DomainSerializer(ModelSerializer):
         allowed = re.compile("^(?!-)[a-z0-9-]{1,63}(?<!-)$", re.IGNORECASE)
         for label in labels:
             match = allowed.match(label)
-            if not match or '--' in label or label[-1].isdigit() or label.isdigit():
+            if not match or '--' in label or label.isdigit() or \
+               len(labels) == 1 and any(char.isdigit() for char in label):
                 raise serializers.ValidationError('Hostname does not look valid.')
         if models.Domain.objects.filter(domain=value).exists():
             raise serializers.ValidationError(

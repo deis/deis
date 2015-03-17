@@ -54,6 +54,7 @@ class DomainTest(TestCase):
             'domain',
             'not.too.loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
             '3com.com',
+            'w3.example.com',
             'MYDOMAIN.NET',
         ]
         for domain in test_domains:

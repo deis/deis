@@ -23,6 +23,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
 
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
+  git           manage git for applications
 
 Shortcut commands, use ``deis shortcuts`` to see all::
 
@@ -68,7 +69,7 @@ from docopt import DocoptExit
 import requests
 from termcolor import colored
 
-__version__ = '1.4.0-dev'
+__version__ = '1.5.0-dev'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.1'
@@ -298,8 +299,10 @@ def readable_datetime(datetime_str):
     dt = parser.parse(datetime_str).astimezone(timezone)
     now = datetime.now(timezone)
     delta = relativedelta.relativedelta(now, dt)
+    yesterday = now - relativedelta.relativedelta(days=1)
+
     # if it happened today, say "2 hours and 1 minute ago"
-    if delta.days <= 1 and dt.day == now.day:
+    if dt > yesterday:
         if delta.hours == 0:
             hour_str = ''
         elif delta.hours == 1:
@@ -316,13 +319,13 @@ def readable_datetime(datetime_str):
             return 'Just now'
         else:
             return "{}{}ago".format(hour_str, min_str)
+
     # if it happened yesterday, say "yesterday at 3:23 pm"
-    yesterday = now + relativedelta.relativedelta(days=-1)
-    if delta.days <= 2 and dt.day == yesterday.day:
+    elif yesterday.year == dt.year and yesterday.month == dt.month and yesterday.day == dt.day:
         return dt.strftime("Yesterday at %X")
+
     # otherwise return locale-specific date/time format
-    else:
-        return dt.strftime('%c %Z')
+    return dt.strftime('%c %Z')
 
 
 def trim(docstring):
@@ -436,6 +439,9 @@ class DeisClient(object):
 
           -b --buildpack BUILDPACK
             a buildpack url to use for this app
+
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
         """
         body = {}
         app_name = None
@@ -467,24 +473,12 @@ class DeisClient(object):
         if buildpack:
             self._config_set(app_id, {'BUILDPACK_URL': buildpack})
 
-        # set a git remote if necessary
-        try:
-            self._session.git_root()
-        except EnvironmentError:
-            return
-        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
-        git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
         if args.get('--no-remote'):
+            hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             self._logger.info('remote available at {}'.format(git_remote))
         else:
-            try:
-                subprocess.check_call(
-                    ['git', 'remote', 'add', 'deis', git_remote],
-                    stdout=subprocess.PIPE)
-                self._logger.info('Git remote deis added')
-            except subprocess.CalledProcessError:
-                self._logger.error('Could not create Deis remote')
-                sys.exit(1)
+            self._git_remote_create(app_id, args.get('--remote'))
 
     def apps_destroy(self, args):
         """
@@ -707,8 +701,11 @@ class DeisClient(object):
             provide a password for the new account.
           --email=<email>
             provide an email address.
+          --ssl-verify=false
+            disables SSL certificate verification for API requests
         """
         controller = args['<controller>']
+        ssl_verify = True
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
         username = args.get('--username')
@@ -721,12 +718,16 @@ class DeisClient(object):
             if password != confirm:
                 self._logger.error('Password mismatch, aborting registration.')
                 sys.exit(1)
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
-        response = self._session.post(url, data=payload, allow_redirects=False)
+        response = self._session.post(url, data=payload, allow_redirects=False,
+                                      verify=ssl_verify)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
             self._settings.save()
@@ -1272,6 +1273,58 @@ class DeisClient(object):
                 self._logger.info(domain['domain'])
         else:
             raise ResponseError(response)
+
+    def git(self, args):
+        """
+        Valid commands for git:
+
+        git:remote          Adds git remote of application to repository
+
+        Use `deis help [command]` to learn more.
+        """
+        raise DocoptExit('`deis git` is not a valid command, try `deis help git`')
+
+    def git_remote(self, args):
+        """
+        Adds git remote of application to repository
+
+        Usage: deis git:remote [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+
+          -r --remote REMOTE
+            name of remote to create. [default: deis]
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        response = self._dispatch(
+            'get', "/v1/apps/{app}/domains".format(app=app))
+        if response.status_code == requests.codes.ok:
+            self._git_remote_create(app, args.get('--remote'))
+        else:
+            raise ResponseError(response)
+
+    def _git_remote_create(self, app, remote_name):
+        """
+        Adds a git_remote to the current repository. Sets up a git root if necessary.
+        """
+        hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+        git_remote = "ssh://git@{hostname}:2222/{app}.git".format(**locals())
+        try:
+            self._session.git_root()
+        except EnvironmentError:
+            return
+        try:
+            subprocess.check_call(
+                ['git', 'remote', 'add', remote_name, git_remote],
+                stdout=subprocess.PIPE)
+            self._logger.info('Git remote {} added'.format(remote_name))
+        except subprocess.CalledProcessError:
+            self._logger.error('Could not create Deis remote')
+            sys.exit(1)
 
     def limits(self, args):
         """

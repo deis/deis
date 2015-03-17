@@ -165,12 +165,13 @@ CORS_ALLOW_HEADERS = (
     'content-type',
     'accept',
     'origin',
-    'Authentication',
+    'Authorization',
+    'Host',
 )
 
 CORS_EXPOSE_HEADERS = (
-    'X_DEIS_VERSION',
-    'X_DEIS_RELEASE',
+    'X_DEIS_API_VERSION',
+    'X_DEIS_PLATFORM_VERSION',
 )
 
 REST_FRAMEWORK = {

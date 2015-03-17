@@ -14,7 +14,7 @@ First check that you have ``deisctl`` installed and the version is correct.
 .. code-block:: console
 
     $ deisctl --version
-    1.3.1
+    1.4.1
 
 If not, follow instructions to :ref:`install_deisctl`.
 
@@ -57,6 +57,10 @@ hosts during ``deis run``:
 .. code-block:: console
 
     $ deisctl config platform set sshPrivateKey=~/.ssh/deis
+
+.. note::
+
+    For Vagrant clusters: ``deisctl config platform set sshPrivateKey=$(HOME)/.vagrant.d/insecure_private_key``
 
 We'll also need to tell the controller which domain name we are deploying applications under:
 

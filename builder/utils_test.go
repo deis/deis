@@ -163,8 +163,8 @@ func TestParseControllerConfigGood(t *testing.T) {
 		t.Errorf("expected 2, got %d", len(config))
 	}
 
-	if !stringInSlice(config, " -e CAR='star'") {
-		t.Error("expected ' -e CAR='star'' in slice")
+	if !stringInSlice(config, " -e CAR=\"star\"") {
+		t.Error("expected ' -e CAR=\"star\"' in slice")
 	}
 }
 
