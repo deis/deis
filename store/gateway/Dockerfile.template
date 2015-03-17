@@ -1,30 +1,11 @@
 #FROM is generated dynamically by the Makefile
 
-# install Apache and RADOS gateway
-RUN curl -sSL https://raw.github.com/ceph/ceph/master/keys/autobuild.asc | apt-key add -
-RUN echo deb http://gitbuilder.ceph.com/apache2-deb-trusty-x86_64-basic/ref/master trusty main > /etc/apt/sources.list.d/ceph-apache.list
-RUN echo deb http://gitbuilder.ceph.com/libapache-mod-fastcgi-deb-trusty-x86_64-basic/ref/master trusty main > /etc/apt/sources.list.d/ceph-fastcgi.list
+ADD build.sh /tmp/build.sh
 
-RUN apt-get update && apt-get install -yq apache2 libapache2-mod-fastcgi radosgw radosgw-agent
-
-# enable required Apache modules
-RUN a2enmod rewrite
-RUN a2enmod fastcgi
-
-# change the default port
-RUN sed -i 's/80/8888/' /etc/apache2/ports.conf
-
-# set the ServerName
-RUN echo "ServerName deis-store-gateway" > /etc/apache2/conf-available/servername.conf
-RUN a2enconf servername.conf
-
-# create gateway site, and disable the default site
-ADD s3gw.fcgi /var/www/s3gw.fcgi
-ADD rgw.conf /etc/apache2/sites-available/rgw.conf
-RUN a2ensite rgw.conf
-RUN a2dissite 000-default.conf
+RUN DOCKER_BUILD=true /tmp/build.sh
 
 WORKDIR /app
 EXPOSE 8888
 CMD ["/app/bin/boot"]
 ADD bin/boot /app/bin/boot
+
