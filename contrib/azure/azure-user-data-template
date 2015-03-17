@@ -11,7 +11,7 @@ coreos:
         Type=oneshot
         RemainAfterExit=yes
         ExecStart=/usr/sbin/wipefs -f /dev/sdc
-        ExecStart=/usr/sbin/mkfs.btrfs -f /dev/sdc
+        ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -b 4096 /dev/sdc
         ExecStart=/bin/touch /etc/azure-formatted
     - name: var-lib-docker.mount
       command: start
@@ -24,4 +24,4 @@ coreos:
         [Mount]
         What=/dev/sdc
         Where=/var/lib/docker
-        Type=btrfs
+        Type=ext4

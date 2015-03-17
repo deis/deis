@@ -14,7 +14,7 @@ FORMAT_EPHEMERAL_VOLUME = '''
   Type=oneshot
   RemainAfterExit=yes
   ExecStart=/usr/sbin/wipefs -f /dev/xvdb
-  ExecStart=/usr/sbin/mkfs.ext4 /dev/xvdb
+  ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -b 4096 /dev/xvdb
   ExecStart=/bin/touch /etc/ephemeral-volume-formatted
 '''
 MOUNT_EPHEMERAL_VOLUME = '''
@@ -47,7 +47,7 @@ FORMAT_DOCKER_VOLUME = '''
   Type=oneshot
   RemainAfterExit=yes
   ExecStart=/usr/sbin/wipefs -f /dev/xvdf
-  ExecStart=/usr/sbin/mkfs.btrfs -f /dev/xvdf
+  ExecStart=/usr/sbin/mkfs.ext4 -i 4096 -b 4096 /dev/xvdf
   ExecStart=/bin/touch /etc/docker-volume-formatted
 '''
 MOUNT_DOCKER_VOLUME = '''
@@ -59,7 +59,7 @@ MOUNT_DOCKER_VOLUME = '''
   [Mount]
   What=/dev/xvdf
   Where=/var/lib/docker
-  Type=btrfs
+  Type=ext4
 '''
 
 new_units = [
