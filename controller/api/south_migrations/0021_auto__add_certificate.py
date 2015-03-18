@@ -8,8 +8,8 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'DomainCert'
-        db.create_table(u'api_domaincert', (
+        # Adding model 'Certificate'
+        db.create_table(u'api_certificate', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('updated', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
@@ -19,27 +19,19 @@ class Migration(SchemaMigration):
             ('common_name', self.gf('django.db.models.fields.TextField')(unique=True)),
             ('expires', self.gf('django.db.models.fields.DateTimeField')()),
         ))
-        db.send_create_signal(u'api', ['DomainCert'])
-
-        # Adding field 'Domain.cert'
-        db.add_column(u'api_domain', 'cert',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['api.DomainCert'], null=True),
-                      keep_default=False)
+        db.send_create_signal(u'api', ['Certificate'])
 
 
     def backwards(self, orm):
-        # Deleting model 'DomainCert'
-        db.delete_table(u'api_domaincert')
-
-        # Deleting field 'Domain.cert'
-        db.delete_column(u'api_domain', 'cert_id')
+        # Deleting model 'Certificate'
+        db.delete_table(u'api_certificate')
 
 
     models = {
         u'api.app': {
             'Meta': {'object_name': 'App'},
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'id': ('django.db.models.fields.SlugField', [], {'default': "'dogged-quotient'", 'unique': 'True', 'max_length': '64'}),
+            'id': ('django.db.models.fields.SlugField', [], {'default': "'tender-jamboree'", 'unique': 'True', 'max_length': '64'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'structure': ('json_field.fields.JSONField', [], {'default': '{}', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
@@ -56,6 +48,17 @@ class Migration(SchemaMigration):
             'sha': ('django.db.models.fields.CharField', [], {'max_length': '40', 'blank': 'True'}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'uuid': ('api.fields.UuidField', [], {'unique': 'True', 'max_length': '32', 'primary_key': 'True'})
+        },
+        u'api.certificate': {
+            'Meta': {'object_name': 'Certificate'},
+            'certificate': ('django.db.models.fields.TextField', [], {}),
+            'common_name': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
+            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'expires': ('django.db.models.fields.DateTimeField', [], {}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.TextField', [], {}),
+            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
         },
         u'api.config': {
             'Meta': {'ordering': "[u'-created']", 'unique_together': "((u'app', u'uuid'),)", 'object_name': 'Config'},
@@ -83,21 +86,9 @@ class Migration(SchemaMigration):
         u'api.domain': {
             'Meta': {'object_name': 'Domain'},
             'app': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.App']"}),
-            'cert': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['api.DomainCert']", 'null': 'True'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'domain': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
-            'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
-        },
-        u'api.domaincert': {
-            'Meta': {'object_name': 'DomainCert'},
-            'certificate': ('django.db.models.fields.TextField', [], {}),
-            'common_name': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'expires': ('django.db.models.fields.DateTimeField', [], {}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'key': ('django.db.models.fields.TextField', [], {}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'updated': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'})
         },

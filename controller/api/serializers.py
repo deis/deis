@@ -260,7 +260,7 @@ class DomainSerializer(ModelSerializer):
         return value
 
 
-class DomainCertSerializer(ModelSerializer):
+class CertificateSerializer(ModelSerializer):
     """Serialize a :class:`~api.models.Cert` model."""
 
     expires = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
@@ -269,7 +269,7 @@ class DomainCertSerializer(ModelSerializer):
 
     class Meta:
         """Metadata options for a DomainCertSerializer."""
-        model = models.DomainCert
+        model = models.Certificate
         extra_kwargs = {'certificate': {'write_only': True},
                         'key': {'write_only': True}}
         read_only_fields = ['owner', 'common_name', 'expires', 'created', 'updated']

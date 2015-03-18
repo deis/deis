@@ -112,14 +112,11 @@ def validate_domain(value):
         raise ValidationError('"{}" contains unexpected characters'.format(value))
 
 
-def validate_domain_certificate(value):
+def validate_certificate(value):
     try:
-        cert = crypto.load_certificate(crypto.FILETYPE_PEM, value)
-        Domain.objects.get(domain=cert.get_subject().CN)
+        crypto.load_certificate(crypto.FILETYPE_PEM, value)
     except crypto.Error as e:
         raise ValidationError('Could not load certificate: {}'.format(e))
-    except Domain.DoesNotExist:
-        raise ValidationError('No matching domain was found for {}'.format(cert.get_subject().CN))
 
 
 class AuditedModel(models.Model):
@@ -832,20 +829,19 @@ class Domain(AuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     app = models.ForeignKey('App')
     domain = models.TextField(blank=False, null=False, unique=True)
-    cert = models.ForeignKey('DomainCert', null=True)
 
     def __str__(self):
         return self.domain
 
 
 @python_2_unicode_compatible
-class DomainCert(AuditedModel):
+class Certificate(AuditedModel):
     """
     Public and private key pair used to secure application traffic at the router.
     """
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     # there is no upper limit on the size of an x.509 certificate
-    certificate = models.TextField(validators=[validate_domain_certificate])
+    certificate = models.TextField(validators=[validate_certificate])
     key = models.TextField()
     # X.509 certificates allow any string of information as the common name.
     common_name = models.TextField(unique=True)
@@ -867,7 +863,7 @@ class DomainCert(AuditedModel):
         if not self.expires:
             # convert openssl's expiry date format to Django's DateTimeField format
             self.expires = datetime.strptime(certificate.get_notAfter(), '%Y%m%d%H%M%SZ')
-        return super(DomainCert, self).save(*args, **kwargs)
+        return super(Certificate, self).save(*args, **kwargs)
 
 
 @python_2_unicode_compatible
@@ -1011,9 +1007,9 @@ post_save.connect(_log_build_created, sender=Build, dispatch_uid='api.models.log
 post_save.connect(_log_release_created, sender=Release, dispatch_uid='api.models.log')
 post_save.connect(_log_config_updated, sender=Config, dispatch_uid='api.models.log')
 post_save.connect(_log_domain_added, sender=Domain, dispatch_uid='api.models.log')
-post_save.connect(_log_cert_added, sender=DomainCert, dispatch_uid='api.models.log')
+post_save.connect(_log_cert_added, sender=Certificate, dispatch_uid='api.models.log')
 post_delete.connect(_log_domain_removed, sender=Domain, dispatch_uid='api.models.log')
-post_delete.connect(_log_cert_removed, sender=DomainCert, dispatch_uid='api.models.log')
+post_delete.connect(_log_cert_removed, sender=Certificate, dispatch_uid='api.models.log')
 
 
 # automatically generate a new token on creation
@@ -1038,5 +1034,5 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_domains, sender=Domain, dispatch_uid='api.models')
     post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
-    post_save.connect(_etcd_publish_cert, sender=DomainCert, dispatch_uid='api.models')
-    post_delete.connect(_etcd_purge_cert, sender=DomainCert, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_cert, sender=Certificate, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_cert, sender=Certificate, dispatch_uid='api.models')

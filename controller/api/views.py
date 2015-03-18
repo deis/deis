@@ -221,10 +221,10 @@ class DomainViewSet(AppResourceViewSet):
         return self.get_queryset(**kwargs)
 
 
-class DomainCertViewSet(BaseDeisViewSet):
+class CertificateViewSet(BaseDeisViewSet):
     """A viewset for interacting with Domain objects."""
-    model = models.DomainCert
-    serializer_class = serializers.DomainCertSerializer
+    model = models.Certificate
+    serializer_class = serializers.CertificateSerializer
 
     def get_object(self, **kwargs):
         """Retrieve domain certificate by common name"""

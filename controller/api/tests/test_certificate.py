@@ -6,10 +6,10 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
-from api.models import App, Domain, DomainCert
+from api.models import App, Certificate
 
 
-class DomainCertTest(TestCase):
+class CertificateTest(TestCase):
 
     """Tests creation of domain SSL certificates"""
 
@@ -22,8 +22,6 @@ class DomainCertTest(TestCase):
         self.token2 = Token.objects.get(user=self.user).key
         self.url = '/v1/certs'
         self.app = App.objects.create(owner=self.user, id='test-app')
-        self.domain = Domain.objects.create(owner=self.user, app=self.app,
-                                            domain='autotest.example.com')
         self.key = """-----BEGIN RSA PRIVATE KEY-----
 MIIEogIBAAKCAQEAwyLIwjpUQkAmh/z6JvQMAtvNu/dBuCt+R8cnQMEw4VglglMw
 YKAm2ZXA03LYWk5EO52YaDZKPAqjng+m4k+B0ble5XG4vFRTlBhln0cR3UAYlm7Z
@@ -76,7 +74,7 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
 -----END CERTIFICATE-----"""
 
     def test_create_certificate_with_domain(self):
-        """Tests creating a domain cert when the domain is present."""
+        """Tests creating a certificate."""
         body = {'certificate': self.autotest_example_com_cert, 'key': self.key}
         response = self.client.post(self.url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -105,24 +103,10 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
         self.assertEqual(response.status_code, 405)
 
     def test_delete_certificate(self):
-        """Destroying a domain cert should generate a 204 response"""
-        DomainCert.objects.create(owner=self.user,
-                                  common_name='autotest.example.com',
-                                  certificate=self.autotest_example_com_cert)
+        """Destroying a certificate should generate a 204 response"""
+        Certificate.objects.create(owner=self.user,
+                                   common_name='autotest.example.com',
+                                   certificate=self.autotest_example_com_cert)
         url = '/v1/certs/autotest.example.com'
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
-
-    def test_create_certificate_without_domain_present(self):
-        """
-        When a domain cert is being created without the corresponding domain in place, the request
-        should be denied and no domain certificate should be created.
-        """
-        self.domain.delete()
-        body = {'certificate': self.autotest_example_com_cert, 'key': self.key}
-        response = self.client.post(self.url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, {'certificate': ['No matching domain was found '
-                                                         'for autotest.example.com']})
-        self.assertEqual(len(DomainCert.objects.all()), 0)
