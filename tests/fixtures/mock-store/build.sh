@@ -10,14 +10,16 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
-# install required packages to build
-apt-get update \
-  && apt-get install -y build-essential git python-dev curl net-tools
+apk add --update curl \
+  file \
+  gcc \
+  git \
+  build-base \
+  python-dev
 
 # install etcdctl
 curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
   && chmod +x /usr/local/bin/etcdctl
-
 
 git clone https://github.com/jserver/mock-s3 /app/mock-s3
 
@@ -28,12 +30,12 @@ curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | 
 
 python setup.py install
 
-# cleanup. indicate that python, libpq and libyanl are required packages.
-apt-mark unmarkauto python && \
-  apt-get remove -y --purge build-essential python-dev gcc cpp git && \
-  apt-get autoremove -y --purge && \
-  apt-get clean -y && \
-  rm -Rf /usr/share/man /usr/share/doc && \
-  rm -rf /tmp/* /var/tmp/* && \
-  rm -rf /var/lib/apt/lists/*
+# cleanup.
+apk del gcc \
+  git \
+  build-base
 
+rm -rf /root/.cache \
+  /usr/share/doc \
+  /tmp/* \
+  /var/cache/apk/*

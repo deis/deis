@@ -45,9 +45,9 @@ pip install .
 # python port of daemontools
 pip install envdir
 
-mkdir -p /etc/wal-e.d/env /etc/postgresql/main /var/run/postgresql
+mkdir -p /etc/wal-e.d/env /etc/postgresql/main /var/run/postgresql /var/lib/postgresql
 
-chown -R root:postgres /etc/wal-e.d /etc/postgresql/main /var/run/postgresql
+chown -R root:postgres /etc/wal-e.d /etc/postgresql/main /var/run/postgresql /var/lib/postgresql
 
 # cleanup.
 apk del gcc \
