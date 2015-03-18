@@ -4,6 +4,8 @@ Django settings for the Deis project.
 
 from __future__ import unicode_literals
 import os.path
+import random
+import string
 import sys
 import tempfile
 
@@ -303,6 +305,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.' + os.environ.get('DATABASE_ENGINE', 'postgresql_psycopg2'),
         'NAME': os.environ.get('DATABASE_NAME', 'deis'),
+        # randomize test database name so we can run multiple unit tests simultaneously
+        'TEST_NAME': "unittest-{}".format(''.join(
+            random.choice(string.ascii_letters + string.digits) for _ in range(8)))
     }
 }
 
