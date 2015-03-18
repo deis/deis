@@ -17,7 +17,8 @@ build: check-docker
 	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE) /bin/bash`:/nginx.tgz image/
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot boot.go || exit 1
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot boot.go || exit 1
+	$(call check-static-binary,image/bin/boot)
 	docker build -t $(IMAGE) image
 	rm image/nginx.tgz
 	rm image/bin/boot
