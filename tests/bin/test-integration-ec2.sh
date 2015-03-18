@@ -5,7 +5,7 @@
 #
 
 # fail on any command exiting non-zero
-set -e
+set -eo pipefail
 
 # absolute path to current directory
 export THIS_DIR=$(cd $(dirname $0); pwd)
@@ -68,8 +68,7 @@ fi
 
 make discovery-url
 # add random characters after STACK_TAG to avoid collisions
-# TODO: somehow this breaks "set -eo pipefail"
-STACK_TAG=${STACK_TAG:-test}-$(base64 /dev/urandom | tr -dc a-z0-9 | head -c 6)
+STACK_TAG=${STACK_TAG:-test}-$(openssl rand -hex 4)
 STACK_NAME=deis-$STACK_TAG
 echo "Creating CloudFormation stack $STACK_NAME"
 $DEIS_ROOT/contrib/ec2/provision-ec2-cluster.sh $STACK_NAME
