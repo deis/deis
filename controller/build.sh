@@ -14,13 +14,14 @@ fi
 # HACK: install git so we can install bacongobbler's fork of django-fsm
 # install openssh-client for temporary fleetctl wrapper
 echo "@edge http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-apk-install libffi-dev \
-    libpq \
-    git \
-    python \
-    python-dev \
-    postgresql-dev \
-    build-base
+apk add --update \
+  libffi-dev \
+  libpq \
+  git \
+  python \
+  python-dev \
+  postgresql-dev \
+  build-base
 
 # install pip
 curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
@@ -37,15 +38,17 @@ mkdir -p /templates && chown -R deis:deis /templates
 # install dependencies
 pip install -r /app/requirements.txt
 
-apk del libffi-dev \
-        python-dev \
-        postgresql-dev \
-        musl-dev \
-        g++ \
-        gcc \
-        git \
-        linux-headers \
-        build-base
+apk del \
+  libffi-dev \
+  python-dev \
+  postgresql-dev \
+  musl-dev \
+  g++ \
+  gcc \
+  git \
+  linux-headers \
+  build-base
 
 rm -rf /root/.cache \
-  /usr/share/doc
+  /usr/share/doc \
+  /var/cache/apk/*

@@ -1,4 +1,4 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 
 CMD ["/bin/logger"]
 EXPOSE 514

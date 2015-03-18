@@ -27,6 +27,21 @@ func TestDatabase(t *testing.T) {
 	mock.RunMockCeph(t, cephName, cli, etcdPort)
 	defer cli.CmdRm("-f", cephName)
 
+	// run deis-database-data
+	deisDatabaseData := "deis-database-data" + ":" + tag
+	defer cli.CmdRm("-f", deisDatabaseData)
+	go func() {
+		_ = cli.CmdRm("-f", deisDatabaseData)
+		err = dockercli.RunContainer(cli,
+			"--name", deisDatabaseData,
+			"--rm",
+			"-v", "/var/lib/postgresql",
+			"alpine:3.1",
+			"/bin/true")
+	}()
+	if err != nil {
+		t.Fatal(err)
+	}
 	// run database container
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
@@ -41,6 +56,7 @@ func TestDatabase(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
+			"--volumes-from", deisDatabaseData,
 			imageName)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "database: postgres is running...")

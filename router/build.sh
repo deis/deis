@@ -26,8 +26,17 @@ mkdir $BUILD_PATH
 cd $BUILD_PATH
 
 # install required packages to build
-apk-install patch curl build-base libcrypto1.0 \
-  libpcre32 pcre-dev openssl-dev geoip-dev zlib zlib-dev
+apk add --update \
+  patch \
+  curl \
+  build-base \
+  libcrypto1.0 \
+  libpcre32 \
+  pcre-dev \
+  openssl-dev \
+  geoip-dev \
+  zlib \
+  zlib-dev
 
 # grab the source files
 curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz

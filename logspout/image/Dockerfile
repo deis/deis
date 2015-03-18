@@ -1,4 +1,4 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 MAINTAINER OpDemand <info@opdemand.com>
 
 ENV DOCKER_HOST unix:///tmp/docker.sock

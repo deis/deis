@@ -10,7 +10,7 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
-apk-install curl \
+apk add --update curl \
   file \
   gcc \
   git \
@@ -59,4 +59,5 @@ apk del gcc \
 
 rm -rf /root/.cache \
   /usr/share/doc \
-  /tmp/*
+  /tmp/* \
+  /var/cache/apk/*

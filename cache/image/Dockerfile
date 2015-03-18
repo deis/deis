@@ -1,6 +1,6 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 
-RUN apk-install redis
+RUN apk add --update redis && rm -rf /var/cache/apk/*
 
 ADD . /app
 WORKDIR /app

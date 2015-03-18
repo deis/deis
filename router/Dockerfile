@@ -1,7 +1,7 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 
 # install common packages
-RUN apk-install curl bash
+RUN apk add --update curl bash sudo && rm -rf /var/cache/apk/*
 
 ADD firewall /tmp/firewall
 

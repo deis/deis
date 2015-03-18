@@ -1,7 +1,7 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 
 # install common packages
-RUN apk-install curl bash sudo
+RUN apk add --update curl bash sudo && rm -rf /var/cache/apk/*
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
@@ -12,7 +12,8 @@ RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdeman
     && chmod +x /usr/local/bin/confd
 
 # install builder, docker, and hook dependencies
-RUN apk-install openssh \
+RUN apk add --update \
+    openssh \
     git \
     coreutils \
     iptables \
@@ -21,7 +22,7 @@ RUN apk-install openssh \
     e2fsprogs \
     lxc \
     libudev \
-    udev
+    udev && rm -rf /var/cache/apk/*
 
 # the docker package in alpine disables aufs and devicemapper
 RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-latest -o /usr/bin/docker && \

@@ -1,7 +1,7 @@
-FROM gliderlabs/alpine:3.1
+FROM alpine:3.1
 
 # install common packages
-RUN apk-install curl bash sudo
+RUN apk add --update curl bash sudo && rm -rf /var/cache/apk/*
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \

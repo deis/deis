@@ -11,6 +11,7 @@ COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
+BINARY_DEST_DIR = image/bin
 
 build: check-docker
 	cp -pR ../Godeps .

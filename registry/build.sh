@@ -11,7 +11,8 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
-apk-install git \
+apk add --update \
+  git \
   build-base \
   python-dev \
   libevent-dev \
