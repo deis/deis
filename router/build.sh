@@ -11,7 +11,7 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 export VERSION_NGINX=nginx-1.7.10
-export VERSION_TCP_PROXY=ad8826a727024f4124fec9d9d3ada32b8078d699
+export VERSION_TCP_PROXY=e58564da3bdd5bcd503a8d02d52676a8318ee0bf
 export VERSION_NAXSI=d0d5a30ad35a3be4482b2a99ea03785280d73a21
 
 export BUILD_PATH=/tmp/build
