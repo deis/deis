@@ -745,17 +745,29 @@ class DeisClient(object):
         """
         Cancels and removes the current account.
 
-        Usage: deis auth:cancel
+        Usage: deis auth:cancel [options]
+
+        Options:
+          --username=<username>
+            provide a username for the account.
+          --password=<password>
+            provide a password for the account.
+          --yes
+            force "yes" when prompted.
         """
         controller = self._settings.get('controller')
         if not controller:
             self._logger.error('Not logged in to a Deis controller')
             sys.exit(1)
         self._logger.info('Please log in again in order to cancel this account')
-        username = self.auth_login({'<controller>': controller})
+        args['<controller>'] = controller
+        username = self.auth_login(args)
         if username:
-            confirm = raw_input("Cancel account \"{}\" at {}? (y/N) ".format(username, controller))
-            if confirm == 'y':
+            confirm = args.get('--yes')
+            if not confirm:
+                confirm = raw_input(
+                    "Cancel account \"{}\" at {}? (y/N) ".format(username, controller))
+            if confirm in ['y', True]:
                 self._dispatch('delete', '/v1/auth/cancel')
                 self._settings['controller'] = None
                 self._settings['token'] = None

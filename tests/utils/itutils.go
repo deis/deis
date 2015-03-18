@@ -143,37 +143,6 @@ func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect st
 	}
 }
 
-// AuthCancel tests whether `deis auth:cancel` destroys a user's account.
-func AuthCancel(t *testing.T, params *DeisTestConfig) {
-	fmt.Println("deis auth:cancel")
-	child, err := gexpect.Spawn(Deis + " auth:cancel")
-	if err != nil {
-		t.Fatalf("command not started\n%v", err)
-	}
-	fmt.Println("username:")
-	err = child.Expect("username:")
-	if err != nil {
-		t.Fatalf("expect username failed\n%v", err)
-	}
-	child.SendLine(params.UserName)
-	fmt.Print("password:")
-	err = child.Expect("password:")
-	if err != nil {
-		t.Fatalf("expect password failed\n%v", err)
-	}
-	child.SendLine(params.Password)
-	err = child.ExpectRegex("(y/N)")
-	if err != nil {
-		t.Fatalf("expect cancel \n%v", err)
-	}
-	child.SendLine("y")
-	err = child.Expect("Account cancelled")
-	if err != nil {
-		t.Fatalf("command executiuon failed\n%v", err)
-	}
-	child.Close()
-}
-
 // AuthPasswd tests whether `deis auth:passwd` updates a user's password.
 func AuthPasswd(t *testing.T, params *DeisTestConfig, password string) {
 	fmt.Println("deis auth:passwd")
