@@ -64,7 +64,10 @@ mkdir -p $BUILD_DIR $CACHE_DIR
 TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
 
 cd $REPO_DIR
-git archive $GIT_SHA | tar -xmC $TMP_DIR
+git archive $GIT_SHA | { tmpdir=`mktemp -d` &&
+  tar x -C"$tmpdir" &&
+  tar c -C"$tmpdir" --mtime=1970-01-01T00:00:00Z . &&
+  rm -r "$tmpdir"; } | tar -xC $TMP_DIR
 
 # switch to app context
 cd $TMP_DIR
