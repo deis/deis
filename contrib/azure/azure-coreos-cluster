@@ -30,7 +30,9 @@ parser.add_argument('--vm-name-prefix', default='coreos',
 parser.add_argument('--availability-set', default='coreos-as',
                    help='optional, name of availability set for cluster [coreos-as]')
 parser.add_argument('--location', default='West US',
-                   help='optional, [West US]')
+                   help='optional - overriden by affinity-group, [West US]')
+parser.add_argument('--affinity-group', default='',
+                   help='optional, overrides location if specified')
 parser.add_argument('--ssh', default=22001, type=int,
                    help='optional, starts with 22001 and +1 for each machine in cluster')
 parser.add_argument('--coreos-image', default='2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-607.0.0',
@@ -176,8 +178,12 @@ sms = ServiceManagementService(args.subscription, args.azure_cert)
 try:
   print 'Creating the hosted service...',
   sys.stdout.flush()
-  sms.create_hosted_service(
-      args.cloud_service_name, label=args.cloud_service_name, location=args.location)
+  if args.affinity_group:
+    sms.create_hosted_service(
+        args.cloud_service_name, label=args.cloud_service_name, affinity_group=args.affinity_group)
+  else:
+    sms.create_hosted_service(
+        args.cloud_service_name, label=args.cloud_service_name, location=args.location)
   print('Successfully created hosted service ' + args.cloud_service_name)
   sys.stdout.flush()
   time.sleep(2)
