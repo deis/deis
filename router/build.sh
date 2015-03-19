@@ -10,8 +10,8 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
-export VERSION_NGINX=nginx-1.6.2
-export VERSION_TCP_PROXY=0.4.5
+export VERSION_NGINX=nginx-1.7.10
+export VERSION_TCP_PROXY=f2156eff9f6621aaf601eaa8dee40c6820dea0b0
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
 
 export BUILD_PATH=/tmp/build
@@ -32,7 +32,7 @@ apt-get update \
 
 # grab the source files
 curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
-curl -sSL https://github.com/yaoweibin/nginx_tcp_proxy_module/archive/v$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
+curl -sSL https://github.com/yaoweibin/nginx_tcp_proxy_module/archive/$VERSION_TCP_PROXY.tar.gz -o $BUILD_PATH/$VERSION_TCP_PROXY.tar.gz
 curl -sSL https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz -o $BUILD_PATH/$VERSION_NAXSI.tar.gz
 
 # expand the source files
