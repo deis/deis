@@ -42,8 +42,8 @@ To run cAdvisor on all hosts in the cluster, you can submit and start a fleet se
     After=docker.socket
 
     [Service]
-    ExecStartPre=/bin/sh -c "docker history google/cadvisor:latest >/dev/null || docker pull google/cadvisor:latest"
-    ExecStartPre=/bin/sh -c "docker inspect cadvisor >/dev/null && docker rm -f cadvisor || true"
+    ExecStartPre=/bin/sh -c "docker history google/cadvisor:latest >/dev/null 2>&1 || docker pull google/cadvisor:latest"
+    ExecStartPre=/bin/sh -c "docker inspect cadvisor >/dev/null 2>&1 && docker rm -f cadvisor || true"
     ExecStart=/usr/bin/docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=8080:8080 --name=cadvisor google/cadvisor:latest
     ExecStopPost=-/usr/bin/docker rm -f cadvisor
     Restart=on-failure
