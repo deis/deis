@@ -69,7 +69,7 @@ With the management certificate and cloud config in place, we are ready to creat
 
 * Create a container called ``vhds`` within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
 * Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
-* Choose an Azure `region`_ to use. Supply it in quotes with the ``--location`` parameter. The default is "West US".
+* Create an `affinity group`_ if you already don't have one. Supply it in quotes with the ``--affinity-group`` parameter. Although *using an affinity group is not mandatory*, it is **highly recommended** since it tells the Azure fabric to place all VMs in the cluster physically close to each other, reducing inter-node latency by a great deal. If you don't want ot use affinity groups, specify a `region`_ for Azure to use with a ``--location`` parameter. The default is ``"West US"``. If you specify both parameters, ``location`` will be ignored. Please note that the script *will not* create an affinity group by itself; it expects the affinity group exists.
 
 With that, let's run the azure-coreos-cluster script which will create the CoreOS cluster. Fill in the bracketed values with the values for your deployment you created above.
 
@@ -79,7 +79,7 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
          --subscription [subscription id]
          --azure-cert azure-cert.pem
          --num-nodes 3
-         --location "[location]"
+         --affinity-group [affinity group name]
          --vm-size Large
          --pip
          --deis
@@ -112,3 +112,4 @@ start installing the platform.
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`region`: http://azure.microsoft.com/en-us/regions/
+.. _`affinity group`: https://msdn.microsoft.com/en-gb/library/azure/jj156085.aspx
