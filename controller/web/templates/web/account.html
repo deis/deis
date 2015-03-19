@@ -19,15 +19,10 @@
       {{ user.email }}
     </div>
   </div>
-  <form method="post" action="{% url 'rest_framework:logout' %}">
-    {% csrf_token %}
-    {% if redirect_field_value %}
-    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-    {% endif %}
-    <button type="submit" class="btn btn-link">{% trans 'Log Out' %}</button>
+  <div class="row-fluid">
     {% if user.is_staff %}
     <a href="{% url 'admin:index' %}" class="btn btn-link">Admin</a>
     {% endif %}
-  </form>
+  </div>
 </div>
 {% endblock %}
