@@ -1,4 +1,4 @@
-FROM ubuntu-debootstrap:14.04
+FROM alpine:3.1
 
 ADD bin/publisher /usr/local/bin/publisher
 ENTRYPOINT ["/usr/local/bin/publisher"]

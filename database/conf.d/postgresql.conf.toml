@@ -1,8 +1,8 @@
 [template]
 src   = "postgresql.conf"
-dest  = "/etc/postgresql/9.3/main/postgresql.conf"
-uid = 102
-gid = 106
+dest  = "/etc/postgresql/main/postgresql.conf"
+uid = 70
+gid = 70
 mode  = "0644"
 keys = [
   "/deis/database",

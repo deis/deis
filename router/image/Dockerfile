@@ -1,16 +1,18 @@
-FROM ubuntu-debootstrap:14.04
-
-ENV DEBIAN_FRONTEND noninteractive
+FROM alpine:3.1
 
 # install common packages
-RUN apt-get update && apt-get install -y curl net-tools sudo
+RUN apk add --update curl bash sudo && rm -rf /var/cache/apk/*
 
 # install confd
 RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-b8e693c \
     && chmod +x /usr/local/bin/confd
 
 # install common packages
-RUN apt-get update && apt-get install -y libgeoip1
+RUN apk add --update geoip openssl libssl1.0 pcre && rm -rf /var/cache/apk/*
+
+# add nginx user
+RUN addgroup -S nginx && \
+  adduser -S -G nginx -H -h /app/errors -s /sbin/nologin -D nginx
 
 WORKDIR /app
 

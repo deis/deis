@@ -2,7 +2,7 @@
 src   = "AWS_ACCESS_KEY_ID"
 dest  = "/etc/wal-e.d/env/AWS_ACCESS_KEY_ID"
 uid = 0
-gid = 106
+gid = 70
 mode  = "0640"
 keys = [
   "/deis/store/gateway",
