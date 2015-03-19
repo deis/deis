@@ -229,7 +229,7 @@ for i in range(args.num_nodes):
           result = sms.create_virtual_machine_deployment(
                       args.cloud_service_name, deployment_name=args.cloud_service_name,
                       deployment_slot='production', label=vm_name,
-                      role_name=vm_name, system_config=system, os_virtual_hard_disk=os_hd,
+                      role_name=vm_name, system_config=system, os_virtual_hard_disk=os_hd, virtual_network_name=args.virtual_network_name,
                       role_size=args.vm_size, network_config=network, data_virtual_hard_disks=data_disks)
       else:
           result = sms.add_role(
