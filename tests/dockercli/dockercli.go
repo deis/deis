@@ -125,11 +125,15 @@ func NewClient() (
 	return
 }
 
-func CreateVolume(cli *client.DockerCli, name string, path string) {
-	RunContainer(cli,
+func CreateVolume(t *testing.T, cli *client.DockerCli, name string, path string) {
+	err := RunContainer(cli,
 		"--name", name,
 		"-v", path,
 		"ubuntu-debootstrap:14.04", "/bin/true")
+
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 // PrintToStdout prints a string to stdout.

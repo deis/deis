@@ -1,60 +1,60 @@
 package tests
 
 import (
+	"database/sql"
 	"fmt"
-	"testing"
-	"time"
 	"github.com/deis/deis/tests/dockercli"
 	"github.com/deis/deis/tests/mock"
 	"github.com/deis/deis/tests/utils"
-        "database/sql"
-        "github.com/lib/pq"
+	"github.com/lib/pq"
+	"testing"
+	"time"
 )
 
-func OpenDeisDatabase(t *testing.T, host string, port string) (*sql.DB) {
-	db, err := sql.Open("postgres", "postgres://deis:changeme123@" + host + ":" + port + "/deis?sslmode=disable");
+func OpenDeisDatabase(t *testing.T, host string, port string) *sql.DB {
+	db, err := sql.Open("postgres", "postgres://deis:changeme123@"+host+":"+port+"/deis?sslmode=disable")
 	if err != nil {
-                t.Fatal(err)
-        } 
+		t.Fatal(err)
+	}
 	WaitForDatabase(t, db)
 	return db
 }
 
 func WaitForDatabase(t *testing.T, db *sql.DB) {
-        fmt.Printf("--- Waiting for pg to be ready")
+	fmt.Printf("--- Waiting for pg to be ready")
 	for {
-          _, err := db.Query("select 1")
-	  if err, ok := err.(*pq.Error); ok {
-	    if err.Code.Name() == "cannot_connect_now" { 	
-	      fmt.Printf(".")
-	      time.Sleep(500 * time.Millisecond)
-  	      continue
-	    }
-	    t.Fatal(err)
-	  }
-	  fmt.Printf("\n")
-	  break
+		_, err := db.Query("select 1")
+		if err, ok := err.(*pq.Error); ok {
+			if err.Code.Name() == "cannot_connect_now" {
+				fmt.Printf(".")
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			t.Fatal(err)
+		}
+		fmt.Printf("\n")
+		break
 	}
 }
 
 func TryTableSelect(t *testing.T, db *sql.DB, tableName string, expectFailure bool) {
-        _, err := db.Query("select * from " + tableName)
+	_, err := db.Query("select * from " + tableName)
 
 	if expectFailure {
-	   if err == nil {
-                  t.Fatal("The table should not exist")
-           } 
+		if err == nil {
+			t.Fatal("The table should not exist")
+		}
 	} else {
-	   if err != nil {
-                  t.Fatal(err)
-           } 
-	}        
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func execSql(t *testing.T, db *sql.DB, q string) {
 	_, err := db.Query(q)
 	if err != nil {
-	    t.Fatal(err)
+		t.Fatal(err)
 	}
 }
 
@@ -62,6 +62,7 @@ func TestDatabaseRecovery(t *testing.T) {
 	var err error
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	cli, stdout, _ := dockercli.NewClient()
+	imageName := utils.ImagePrefix() + "database" + ":" + tag
 
 	// start etcd container
 	etcdName := "deis-etcd-" + tag
@@ -79,14 +80,14 @@ func TestDatabaseRecovery(t *testing.T) {
 	defer cli.CmdRm("-f", databaseVolumeA)
 	defer cli.CmdRm("-f", databaseVolumeB)
 	go func() {
-	        fmt.Printf("--- Creating Volume A\n")
+		fmt.Printf("--- Creating Volume A\n")
 		_ = cli.CmdRm("-f", "-v", databaseVolumeA)
-		dockercli.CreateVolume(cli, databaseVolumeA, "/var/lib/postgresql")
+		dockercli.CreateVolume(t, cli, databaseVolumeA, "/var/lib/postgresql")
 
 		fmt.Printf("--- Creating Volume B\n")
 
 		_ = cli.CmdRm("-f", databaseVolumeB)
-		dockercli.CreateVolume(cli, databaseVolumeB, "/var/lib/postgresql")
+		dockercli.CreateVolume(t, cli, databaseVolumeB, "/var/lib/postgresql")
 	}()
 	dockercli.WaitForLine(t, stdout, databaseVolumeB, true)
 
@@ -99,7 +100,7 @@ func TestDatabaseRecovery(t *testing.T) {
 		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
 			"--name", name,
-                        "--volumes-from", volumeName,
+			"--volumes-from", volumeName,
 			"--rm",
 			"-p", port+":5432",
 			"-e", "EXTERNAL_PORT="+port,
@@ -108,7 +109,7 @@ func TestDatabaseRecovery(t *testing.T) {
 			"-e", "ETCD_TTL=2",
 			"-e", "BACKUP_FREQUENCY=0",
 			"-e", "BACKUPS_TO_RETAIN=100",
-			"deis/database:"+tag)
+			imageName)
 	}
 
 	stopDatabase := func() {
@@ -120,52 +121,48 @@ func TestDatabaseRecovery(t *testing.T) {
 		fmt.Println("Done")
 	}
 
-
 	//ACTION
 
 	//STEP 1: start db with volume A and wait for init to complete
-        fmt.Print("--- Starting database with Volume A... ")
+	fmt.Print("--- Starting database with Volume A... ")
 	go startDatabase(databaseVolumeA)
 	dockercli.WaitForLine(t, stdout, "database: postgres is running...", true)
-        fmt.Println("Done")
+	fmt.Println("Done")
 
 	db := OpenDeisDatabase(t, host, port)
 	TryTableSelect(t, db, "api_foo", true)
-	
+
 	stopDatabase()
 
 	//STEP 2a: start db with volume B, wait for init and create the table
 	cli, stdout, _ = dockercli.NewClient()
-        fmt.Printf("--- Starting database with Volume B... ")
+	fmt.Printf("--- Starting database with Volume B... ")
 	go startDatabase(databaseVolumeB)
 	dockercli.WaitForLine(t, stdout, "database: postgres is running...", true)
-        fmt.Println("Done")
+	fmt.Println("Done")
 
-	
 	db = OpenDeisDatabase(t, host, port)
 	TryTableSelect(t, db, "api_foo", true)
 
-        fmt.Println("--- Creating the table") 	
+	fmt.Println("--- Creating the table")
 	execSql(t, db, "create table api_foo(t text)")
 
 	//STEP 2b: make sure we observed full backup cycle after forced checkpoint
-        fmt.Print("--- Waiting for the change to be backed up... ")
+	fmt.Print("--- Waiting for the change to be backed up... ")
 	dockercli.WaitForLine(t, stdout, "database: performing a backup...", true)
 	dockercli.WaitForLine(t, stdout, "database: backup has been completed.", true)
-        fmt.Println("Done")
+	fmt.Println("Done")
 
 	stopDatabase()
 
 	//STEP 3: start db with volume A again and assert table existence
 	cli, stdout, _ = dockercli.NewClient()
-        fmt.Printf("--- Starting database with Volume A again... ")
+	fmt.Printf("--- Starting database with Volume A again... ")
 	go startDatabase(databaseVolumeA)
 	dockercli.WaitForLine(t, stdout, "database: postgres is running...", true)
-        fmt.Println("Done")
+	fmt.Println("Done")
 
 	db = OpenDeisDatabase(t, host, port)
 	TryTableSelect(t, db, "api_foo", false)
-
-
 
 }
