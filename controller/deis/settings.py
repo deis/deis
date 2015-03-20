@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import os.path
 import random
 import string
+import semantic_version
 import sys
 import tempfile
 
@@ -340,3 +341,12 @@ except ImportError:
 if os.path.exists('/templates/confd_settings.py'):
     sys.path.append('/templates')
     from confd_settings import *  # noqa
+
+
+DOCKER_VERSION = os.environ.get('DOCKER_VERSION', '1.4.1')
+
+DISABLE_SWAP = ""
+
+if (semantic_version.validate(DOCKER_VERSION) and
+        semantic_version.Version(DOCKER_VERSION) >= semantic_version.Version('1.5.0')):
+    DISABLE_SWAP = "--memory-swap=-1"
