@@ -49,6 +49,8 @@ func configSetup(t *testing.T) *utils.DeisTestConfig {
 	utils.Execute(t, configSetBuildpackCmd, cfg, false, "https://github.com/heroku/heroku-buildpack-go#98f37cc")
 	utils.Execute(t, gitPushCmd, cfg, false, "")
 	utils.CurlWithFail(t, cfg, false, "the Deis team")
+	utils.CheckList(t, "run env --app={{.AppName}}", cfg, "DEIS_APP", false)
+	utils.CheckList(t, "run env --app={{.AppName}}", cfg, "DEIS_RELEASE", false)
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
