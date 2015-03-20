@@ -196,11 +196,10 @@ func CheckList(
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(stdout.String(), contain) == notflag {
-		if notflag {
-			t.Fatalf(
-				"Didn't expect '%s' in command output:\n%v", contain, stdout)
-		}
+	if notflag && strings.Contains(stdout.String(), contain) {
+		t.Fatalf("Didn't expect '%s' in command output:\n%v", contain, stdout)
+	}
+	if !notflag && !strings.Contains(stdout.String(), contain) {
 		t.Fatalf("Expected '%s' in command output:\n%v", contain, stdout)
 	}
 }
