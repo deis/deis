@@ -12,6 +12,7 @@ var (
 	authLoginCmd    = "auth:login http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}}"
 	authLogoutCmd   = "auth:logout"
 	authRegisterCmd = "auth:register http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}"
+	authCancelCmd   = "auth:cancel --username={{.UserName}} --password={{.Password}} --yes"
 )
 
 func TestAuth(t *testing.T) {
@@ -31,7 +32,7 @@ func authSetup(t *testing.T) *utils.DeisTestConfig {
 }
 
 func authCancel(t *testing.T, params *utils.DeisTestConfig) {
-	utils.AuthCancel(t, params)
+	utils.Execute(t, authCancelCmd, params, false, "Account cancelled")
 }
 
 func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
