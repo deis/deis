@@ -73,14 +73,14 @@ sudo -E -u deis ./manage.py syncdb --migrate --noinput
 # spawn a gunicorn server in the background
 sudo -E -u deis gunicorn -c deis/gconf.py deis.wsgi &
 
-# smart shutdown on SIGINT and SIGTERM
+# smart shutdown on SIGTERM (SIGINT is handled by gunicorn)
 function on_exit() {
 	GUNICORN_PID=$(cat /tmp/gunicorn.pid)
 	kill -TERM $GUNICORN_PID 2>/dev/null
 	wait $GUNICORN_PID 2>/dev/null
 	exit 0
 }
-trap on_exit INT TERM
+trap on_exit TERM
 
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD -config-file /app/confd.toml &
