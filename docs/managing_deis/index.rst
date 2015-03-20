@@ -15,6 +15,7 @@ Managing Deis
     backing_up_data
     configure-dns
     configure-load-balancers
+    configure-websockets
     disk_usage
     operational_tasks
     platform_logging

@@ -98,6 +98,13 @@
       "Default": "internet-facing",
       "AllowedValues" : [ "internet-facing", "internal" ],
       "ConstraintDescription" : "must be either 'internet-facing' for public use, or 'internal' for private use"
+    },
+    "ExtraTCPELB": {
+        "Description": "Whether to create an extra TCP configured ELB (necessary for websocket support)",
+        "Type": "String",
+        "Default": "false",
+        "AllowedValues" : [ "true", "false" ],
+        "ConstraintDescription" : "must be either true or false"
     }
   },
 
@@ -133,6 +140,12 @@
            ""
         ]
       }]
+    },
+    "CreateExtraTCPELB" : {
+      "Fn::Equals" : [
+        { "Ref" : "ExtraTCPELB" },
+          "true"
+      ]
     }
   },
 
@@ -241,7 +254,8 @@
             {"Key": "Name", "Value": "Deis", "PropagateAtLaunch": true}
         ],
         "LoadBalancerNames": [
-          { "Ref": "DeisWebELB" }
+          { "Ref": "DeisWebELB" },
+          { "Fn::If" : [ "CreateExtraTCPELB", { "Ref": "DeisTCPELB" }, { "Ref": "AWS::NoValue" } ] }
         ]
       }
     },
@@ -314,6 +328,47 @@
         }
       }
     },
+    "DeisTCPELB": {
+        "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+        "Condition": "CreateExtraTCPELB",
+        "DependsOn" : "GatewayToInternet",
+        "Properties": {
+            "Scheme" : {"Ref": "ELBScheme"},
+            "HealthCheck": {
+                "HealthyThreshold": "4",
+                "Interval": "15",
+                "Target": "HTTP:80/health-check",
+                "Timeout": "5",
+                "UnhealthyThreshold": "2"
+            },
+            "Subnets": [
+                { "Ref" : "Subnet1" },
+                { "Ref" : "Subnet2" }
+            ],
+            "Listeners": [
+                {
+                    "InstancePort": "80",
+                    "InstanceProtocol": "TCP",
+                    "LoadBalancerPort": "80",
+                    "Protocol": "TCP"
+                },
+                {
+                    "InstancePort": "2222",
+                    "InstanceProtocol": "TCP",
+                    "LoadBalancerPort": "2222",
+                    "Protocol": "TCP"
+                }
+            ],
+            "SecurityGroups": [
+                {
+                    "Fn::GetAtt": ["DeisWebELBSecurityGroup", "GroupId"]
+                }
+            ],
+            "ConnectionSettings": {
+                "IdleTimeout": 1200
+            }
+        }
+    },
     "DeisWebELBSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -350,8 +405,17 @@
   },
   "Outputs" : {
     "DNSName" : {
-      "Description" : "DNS Name of the ELB",
+      "Description" : "(Deprecated) DNS Name of Deis Web ELB",
       "Value" :  { "Fn::GetAtt" : ["DeisWebELB", "DNSName"] }
+    },
+    "WebELBDNSName" : {
+        "Description" : "DNS Name of Deis Web ELB",
+        "Value" :  { "Fn::GetAtt" : ["DeisWebELB", "DNSName"] }
+    },
+    "TCPELBELBName" : {
+      "Description" : "DNS Name of Deis TCP ELB",
+      "Condition" : "CreateExtraTCPELB",
+      "Value" : { "Fn::GetAtt" : ["DeisTCPELB", "DNSName"] }
     }
   }
 }

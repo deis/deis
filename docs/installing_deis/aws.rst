@@ -103,6 +103,10 @@ in `cloudformation.json`_. For example, to configure all of the optional setting
     {
         "ParameterKey":     "ELBScheme",
         "ParameterValue":   "internal"
+    },
+    {
+        "ParameterKey":     "ExtraTCPELB",
+        "ParameterValue":   "true"
     }
 
 
@@ -115,6 +119,13 @@ If updated with update-ec2-cluster.sh, the InstanceType will only impact newly d
 NOTE: The smallest recommended instance size is `large`. Having not enough CPU or RAM will result
 in numerous issues when using the cluster.
 
+.. _deis_on_aws_websockets:
+
+WebSockets
+----------
+
+If you plan to use WebSockets. Enable ``ExtraTCPELB`` in the ``cloudformation.json`` and see
+:ref:`configure-websockets`.
 
 Launch into an existing VPC
 ---------------------------

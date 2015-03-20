@@ -105,6 +105,7 @@ if VPC_ID and VPC_SUBNETS and VPC_ZONES and len(VPC_SUBNETS.split(',')) == len(V
   del template['Resources']['PublicRoute']
   del template['Resources']['CoreOSServerLaunchConfig']['DependsOn']
   del template['Resources']['DeisWebELB']['DependsOn']
+  del template['Resources']['DeisTCPELB']['DependsOn']
 
   # update VpcId fields
   template['Resources']['DeisWebELBSecurityGroup']['Properties']['VpcId'] = VPC_ID
@@ -114,5 +115,6 @@ if VPC_ID and VPC_SUBNETS and VPC_ZONES and len(VPC_SUBNETS.split(',')) == len(V
   template['Resources']['CoreOSServerAutoScale']['Properties']['AvailabilityZones'] = VPC_ZONES.split(',')
   template['Resources']['CoreOSServerAutoScale']['Properties']['VPCZoneIdentifier'] = VPC_PRIVATE_SUBNETS.split(',')
   template['Resources']['DeisWebELB']['Properties']['Subnets'] = VPC_SUBNETS.split(',')
+  template['Resources']['DeisTCPELB']['Properties']['Subnets'] = VPC_SUBNETS.split(',')
 
 print json.dumps(template)
