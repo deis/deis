@@ -64,10 +64,13 @@ mkdir -p $BUILD_DIR $CACHE_DIR
 TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
 
 cd $REPO_DIR
-git archive $GIT_SHA | tar -xmC $TMP_DIR
+git clone --depth=1 $REPO_DIR/ "$TMP_DIR/"
 
 # switch to app context
 cd $TMP_DIR
+export GIT_DIR="$TMP_DIR/.git" GIT_WORK_TREE="$TMP_DIR"
+git config core.bare false
+git reset --hard $GIT_SHA
 
 USING_DOCKERFILE=false
 
