@@ -263,6 +263,7 @@ class DomainSerializer(ModelSerializer):
 class CertificateSerializer(ModelSerializer):
     """Serialize a :class:`~api.models.Cert` model."""
 
+    owner = serializers.ReadOnlyField(source='owner.username')
     expires = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
     created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
     updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
@@ -272,7 +273,7 @@ class CertificateSerializer(ModelSerializer):
         model = models.Certificate
         extra_kwargs = {'certificate': {'write_only': True},
                         'key': {'write_only': True}}
-        read_only_fields = ['owner', 'common_name', 'expires', 'created', 'updated']
+        read_only_fields = ['common_name', 'expires', 'created', 'updated']
 
 
 class PushSerializer(ModelSerializer):
