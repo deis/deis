@@ -56,6 +56,14 @@ continuous deployment, start one locally:
     To use local boot2docker registry for Deis development:
         export DEV_REGISTRY=192.168.59.103:5000
 
+.. important::
+
+    The functional tests also use several mock or example containers:
+    **deis/test-etcd**, **deis/test-postgresql**, and **deis/mock-store**.
+    These are referenced by the ``:latest`` tag, so in the rare case that one
+    of these test containers needs to change, ``docker rmi`` its image and
+    the tests will pull it from Docker Hub or rebuild it.
+
 
 Run the Tests
 -------------

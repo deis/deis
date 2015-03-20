@@ -27,6 +27,9 @@ offering a S3-compatible bucket APIs using the local filesystem as storage.
 Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
 install, and start **deis/mock-store**.
 
+Note that changes to **deis/mock-store** will *not* be built automatically by the test suite.
+Run `make mock-store` from the tests/ directory to update the Docker image used by tests.
+
 ## License
 
 © 2015 OpDemand LLC
