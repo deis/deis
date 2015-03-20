@@ -3,7 +3,7 @@
 # NOTE: For testing on Mac OS X Mavericks, use the following to work around a clang issue:
 # ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future pip install [args]
 #
-Django==1.6.10
+Django==1.6.11
 django-cors-headers==1.0.0
 # required for south migrations
 django-fsm==2.2.0
