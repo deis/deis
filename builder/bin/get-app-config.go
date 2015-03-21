@@ -94,13 +94,14 @@ func main() {
 
 	if err != nil || res.StatusCode != 200 {
 		fmt.Println("failed retrieving config from controller")
-		fmt.Println(body)
+		fmt.Printf("%v\n", body)
 		os.Exit(1)
 	}
 
-	config, err := builder.ParseConfig(res)
+	config, err := builder.ParseConfig(body)
 	if err != nil {
 		fmt.Println("failed parsing config from controller")
+		fmt.Printf("%v\n", err)
 		os.Exit(1)
 	}
 	toString, err := json.Marshal(config)
