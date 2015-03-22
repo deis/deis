@@ -32,7 +32,7 @@ installer: build
 
 setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -q flake8==2.3.0
+	venv/bin/pip install -q flake8==2.4.0
 
 test-style: setup-venv
 	venv/bin/flake8
