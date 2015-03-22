@@ -1,4 +1,5 @@
 FROM ubuntu-debootstrap:14.04
+ENV GIT_SHA $GIT_SHA
 
 ENV DEBIAN_FRONTEND noninteractive
 
