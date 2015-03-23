@@ -12,7 +12,7 @@ import (
 )
 
 func OpenDeisDatabase(t *testing.T, host string, port string) *sql.DB {
-	db, err := sql.Open("postgres", "postgres://deis:changeme123@"+host+":"+port+"/deis?sslmode=disable")
+	db, err := sql.Open("postgres", "postgres://deis:changeme123@"+host+":"+port+"/deis?sslmode=disable&connect_timeout=4")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,18 +21,18 @@ func OpenDeisDatabase(t *testing.T, host string, port string) *sql.DB {
 }
 
 func WaitForDatabase(t *testing.T, db *sql.DB) {
-	fmt.Printf("--- Waiting for pg to be ready")
+	fmt.Println("--- Waiting for pg to be ready")
 	for {
-		_, err := db.Query("select 1")
+		err := db.Ping()
 		if err, ok := err.(*pq.Error); ok {
 			if err.Code.Name() == "cannot_connect_now" {
-				fmt.Printf(".")
-				time.Sleep(500 * time.Millisecond)
+				fmt.Println(err.Message)
+				time.Sleep(1000 * time.Millisecond)
 				continue
 			}
 			t.Fatal(err)
 		}
-		fmt.Printf("\n")
+		fmt.Println("Ready")
 		break
 	}
 }
