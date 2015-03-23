@@ -100,14 +100,11 @@ function dump_logs {
   export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
   fleetctl -strict-host-key-checking=false list-units
   # application unit logs
-  get_logs appssample_v2.web.1
-  get_logs appssample_v2.run.1
-  get_logs buildsample_v2.web.1
-  get_logs buildsample_v3.cmd.1
-  get_logs deispullsample_v2.cmd.1
-  get_logs deispullsample_v2.worker.1
-  get_logs pssample_v2.worker.1
-  get_logs pssample_v2.worker.2
+  for APP in `fleetctl -strict-host-key-checking=false list-units --no-legend --fields=unit | grep -v "deis-"`;do
+    CURRENT_APP=$(echo $APP | sed "s/\.service//")
+    #echo "$CURRENT_APP"
+    get_journal_logs $CURRENT_APP
+  done
   # etcd keyspace
   get_logs deis-controller "etcdctl ls / --recursive" etcdctl-dump
   # component logs
@@ -169,4 +166,9 @@ function get_logs {
     FILENAME=$TARGET
   fi
   fleetctl -strict-host-key-checking=false ssh "$TARGET" docker logs "$CONTAINER" > $FAILED_LOGS_DIR/$FILENAME.log
+}
+
+function get_journal_logs {
+  TARGET="$1"
+  fleetctl -strict-host-key-checking=false journal --lines=1000 "$TARGET" > $FAILED_LOGS_DIR/$TARGET.log
 }
