@@ -57,7 +57,7 @@ etcd_safe_mkdir /deis/domains
 etcd_safe_mkdir /deis/platform
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml 2>/dev/null; do
+until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet 2>/dev/null; do
 	echo "controller: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -83,7 +83,7 @@ function on_exit() {
 trap on_exit TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
+confd -node $ETCD --confdir /app --interval 5 --quiet &
 CONFD_PID=$!
 
 echo deis-controller running...
