@@ -16,7 +16,6 @@ paramiko==1.15.2
 psycopg2==2.6
 python-etcd==0.3.2
 PyYAML==3.11
-semantic_version==2.3.1
 setproctitle==1.1.8
 static==1.1.1
 South==1.0.2
