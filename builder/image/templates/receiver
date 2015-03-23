@@ -10,6 +10,6 @@ fingerprint=$4
 curl \
   -X 'POST' --fail \
   -H 'Content-Type: application/json' \
-  -H "X-Deis-Builder-Auth: {{ .deis_controller_builderKey }}" \
+  -H "X-Deis-Builder-Auth: {{ getv "/deis/controller/builderKey" }}" \
   -d "{\"receive_user\": \"$username\", \"receive_repo\": \"$app\", \"sha\": \"$sha\", \"fingerprint\": \"$fingerprint\", \"ssh_connection\": \"$SSH_CONNECTION\", \"ssh_original_command\": \"$SSH_ORIGINAL_COMMAND\"}" \
-  --silent http://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/push >/dev/null
+  --silent {{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/push >/dev/null
