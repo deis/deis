@@ -20,7 +20,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   limits        manage resource limits for your application
   tags          manage tags for application containers
   releases      manage releases of an application
-  certs         manage ssl endpoints for an app
+  certs         manage SSL endpoints for an app
 
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
@@ -983,10 +983,10 @@ class DeisClient(object):
         """
         Valid commands for certs:
 
-        certs:list            list ssl certificates for an app
-        certs:add             add an ssl certificate to an app
+        certs:list            list SSL certificates for an app
+        certs:add             add an SSL certificate to an app
         certs:update          update an existing certifcate for an app
-        certs:remove          remove an ssl certificate from an app
+        certs:remove          remove an SSL certificate from an app
 
         Use `deis help [command]` to learn more.
         """
@@ -1027,7 +1027,7 @@ class DeisClient(object):
 
     def certs_list(self, args):
         """
-        Show certificate information for an ssl application.
+        Show certificate information for an SSL application.
 
         Usage: deis certs:list
         """
