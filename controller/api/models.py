@@ -886,8 +886,11 @@ def _etcd_publish_key(**kwargs):
 
 def _etcd_purge_key(**kwargs):
     key = kwargs['instance']
-    _etcd_client.delete('/deis/builder/users/{}/{}'.format(
-        key.owner.username, fingerprint(key.public)))
+    try:
+        _etcd_client.delete('/deis/builder/users/{}/{}'.format(
+            key.owner.username, fingerprint(key.public)))
+    except KeyError:
+        pass
 
 
 def _etcd_purge_user(**kwargs):
@@ -908,7 +911,10 @@ def _etcd_create_app(**kwargs):
 
 def _etcd_purge_app(**kwargs):
     appname = kwargs['instance']
-    _etcd_client.delete('/deis/services/{}'.format(appname), dir=True, recursive=True)
+    try:
+        _etcd_client.delete('/deis/services/{}'.format(appname), dir=True, recursive=True)
+    except KeyError:
+        pass
 
 
 def _etcd_publish_domains(**kwargs):
@@ -926,7 +932,10 @@ def _etcd_purge_domains(**kwargs):
         _etcd_client.write('/deis/domains/{}'.format(app),
                            ' '.join(str(d.domain) for d in app_domains))
     else:
-        _etcd_client.delete('/deis/domains/{}'.format(app))
+        try:
+            _etcd_client.delete('/deis/domains/{}'.format(app))
+        except KeyError:
+            pass
 
 
 # Log significant app-related events
