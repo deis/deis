@@ -26,8 +26,8 @@ common: &common
         tags_cache_ttl: _env:MIRROR_TAGS_CACHE_TTL:172800 # seconds
 
     cache:
-        host: {{ or (.deis_cache_host) "" }}
-        port: {{ or (.deis_cache_port) "" }}
+        host: {{ if exists "/deis/cache/host" }}{{ getv "/deis/cache/host" }}{{ else }}""{{ end }}
+        port: {{ if exists "/deis/cache/port" }}{{ getv "/deis/cache/port" }}{{ else }}""{{ end }}
         password: _env:CACHE_REDIS_PASSWORD
         db: 1
 
@@ -35,21 +35,21 @@ common: &common
     # This speeds up read/write on small files
     # when using a remote storage backend (like S3).
     cache_lru:
-        host: {{ or (.deis_cache_host) "" }}
-        port: {{ or (.deis_cache_port) "" }}
+        host: {{ if exists "/deis/cache/host" }}{{ getv "/deis/cache/host" }}{{ else }}""{{ end }}
+        port: {{ if exists "/deis/cache/port" }}{{ getv "/deis/cache/port" }}{{ else }}""{{ end }}
         password: _env:CACHE_LRU_REDIS_PASSWORD
         db: 2
 
     # Enabling these options makes the Registry send an email on each code Exception
-    {{ if .deis_registry_smtpHost }}
+    {{ if exists "/deis/registry/smtpHost" }}
     email_exceptions:
-        smtp_host: {{ or (.deis_registry_smtpHost) "" }}
-        smtp_port: {{ or (.deis_registry_smtpPort) "25" }}
-        smtp_login: {{ or (.deis_registry_smtpLogin) "" }}
-        smtp_password: {{ or (.deis_registry_smtpPassword) "" }}
-        smtp_secure: bool({{ or (.deis_registry_smtpSecure) "false" }})
-        from_addr: {{ or (.deis_registry_smtpFrom) "docker-registry@localdomain.local" }}
-        to_addr: {{ or (.deis_registry_smtpTo) "noise+dockerregistry@localdomain.local" }}
+        smtp_host: {{ if exists "/deis/registry/smtpHost" }}{{ getv "/deis/registry/smtpHost" }}{{ else }}""{{ end }}
+        smtp_port: {{ if exists "/deis/registry/smtpPort" }}{{ getv "/deis/registry/smtpPort" }}{{ else }}"25"{{ end }}
+        smtp_login: {{ if exists "/deis/registry/smtpLogin" }}{{ getv "/deis/registry/smtpLogin" }}{{ else }}""{{ end }}
+        smtp_password: {{ if exists "/deis/registry/smtpPassword" }}{{ getv "/deis/registry/smtpPassword" }}{{ else }}""{{ end }}
+        smtp_secure: bool({{ if exists "/deis/registry/smtpSecure" }}{{ getv "/deis/registry/smtpSecure" }}{{ else }}"false"{{ end }})
+        from_addr: {{ if exists "/deis/registry/smtpFrom" }}{{ getv "/deis/registry/smtpFrom" }}{{ else }}"docker-registry@localdomain.local"{{ end }}
+        to_addr: {{ if exists "/deis/registry/smtpTo" }}{{ getv "/deis/registry/smtpTo" }}{{ else }}"noise+dockerregistry@localdomain.local"{{ end }}
     {{ end }}
 
     # Enable bugsnag (set the API key)
@@ -78,14 +78,14 @@ local: &local
 s3: &s3
     <<: *common
     storage: s3
-    s3_region: {{ or (.deis_registry_s3region) "" }}
-    s3_bucket: {{ or (.deis_registry_s3bucket) "" }}
-    boto_bucket: {{ or (.deis_registry_s3bucket) "" }}
-    storage_path: {{ or (.deis_registry_s3path) "/registry" }}
-    s3_encrypt: bool({{ or (.deis_registry_s3encrypt) "true" }})
-    s3_secure: bool({{ or (.deis_registry_s3secure) "true" }})
-    s3_access_key: {{ or (.deis_registry_s3accessKey) "" }}
-    s3_secret_key: {{ or (.deis_registry_s3secretKey) "" }}
+    s3_region: {{ if exists "/deis/registry/s3region" }}{{ getv "/deis/registry/s3region" }}{{ else }}""{{ end }}
+    s3_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}""{{ end }}
+    boto_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}""{{ end }}
+    storage_path: {{ if exists "/deis/registry/s3path" }}{{ getv "/deis/registry/s3path" }}{{ else }}"/registry"{{ end }}
+    s3_encrypt: bool({{ if exists "/deis/registry/s3encrypt" }}{{ getv "/deis/registry/s3encrypt" }}{{ else }}"true"{{ end }})
+    s3_secure: bool({{ if exists "/deis/registry/s3secure" }}{{ getv "/deis/registry/s3secure" }}{{ else }}"true"{{ end }})
+    s3_access_key: {{ if exists "/deis/registry/s3accessKey" }}{{ getv "/deis/registry/s3accessKey" }}{{ else }}""{{ end }}
+    s3_secret_key: {{ if exists "/deis/registry/s3secretKey" }}{{ getv "/deis/registry/s3secretKey" }}{{ else }}""{{ end }}
 
 # Ceph Object Gateway Configuration
 # See http://ceph.com/docs/master/radosgw/ for details on installing this service.
@@ -93,15 +93,15 @@ ceph-s3: &ceph-s3
     <<: *common
     storage: s3
     s3_region: ~
-    s3_bucket: {{ .deis_registry_bucketName }}
+    s3_bucket: {{ getv "/deis/registry/bucketName" }}
     s3_encrypt: false
     s3_secure: false
     storage_path: /registry
-    s3_access_key: {{ .deis_store_gateway_accessKey }}
-    s3_secret_key: {{ .deis_store_gateway_secretKey }}
-    boto_bucket: {{ .deis_registry_bucketName }}
-    boto_host: {{ .deis_store_gateway_host }}
-    boto_port: {{ .deis_store_gateway_port }}
+    s3_access_key: {{ getv "/deis/store/gateway/accessKey" }}
+    s3_secret_key: {{ getv "/deis/store/gateway/secretKey" }}
+    boto_bucket: {{ getv "/deis/registry/bucketName" }}
+    boto_host: {{ getv "/deis/store/gateway/host" }}
+    boto_port: {{ getv "/deis/store/gateway/port" }}
     boto_debug: 0
     boto_calling_format: boto.s3.connection.OrdinaryCallingFormat
 
@@ -131,12 +131,12 @@ swift: &swift
     storage: swift
     storage_path: _env:STORAGE_PATH:/registry
     # keystone authorization
-    swift_authurl: {{ or (.deis_registry_swiftAuthURL) "" }}
-    swift_container: {{ or (.deis_registry_swiftContainer) "" }}
-    swift_user: {{ or (.deis_registry_swiftUser) "" }}
-    swift_password: {{ or (.deis_registry_swiftPassword) "" }}
-    swift_tenant_name: {{ or (.deis_registry_swiftTenantName) "" }}
-    swift_region_name: {{ or (.deis_registry_swiftRegionName) "" }}
+    swift_authurl: {{ if exists "/deis/registry/swiftAuthURL" }}{{ getv "/deis/registry/swiftAuthURL" }}{{ else }}""{{ end }}
+    swift_container: {{ if exists "/deis/registry/swiftContainer" }}{{ getv "/deis/registry/swiftContainer" }}{{ else }}""{{ end }}
+    swift_user: {{ if exists "/deis/registry/swiftUser" }}{{ getv "/deis/registry/swiftUser" }}{{ else }}""{{ end }}
+    swift_password: {{ if exists "/deis/registry/swiftPassword" }}{{ getv "/deis/registry/swiftPassword" }}{{ else }}""{{ end }}
+    swift_tenant_name: {{ if exists "/deis/registry/swiftTenantName" }}{{ getv "/deis/registry/swiftTenantName" }}{{ else }}""{{ end }}
+    swift_region_name: {{ if exists "/deis/registry/swiftRegionName" }}{{ getv "/deis/registry/swiftRegionName" }}{{ else }}""{{ end }}
 
 # This flavor stores the images in Glance (to integrate with openstack)
 # See also: https://github.com/dotcloud/openstack-docker
@@ -194,7 +194,7 @@ prod:
 
 # Flavor used by deis
 deis:
-    {{ if .deis_registry_s3accessKey }}<<: *s3
-    {{ else if .deis_registry_swiftAuthURL }} <<: *openstack-swift
+    {{ if exists "/deis/registry/s3accessKey" }}<<: *s3
+    {{ else if exists "/deis/registry/swiftAuthURL" }} <<: *openstack-swift
     {{ else }} <<: *ceph-s3
     {{ end }}

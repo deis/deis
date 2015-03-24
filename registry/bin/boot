@@ -45,7 +45,7 @@ etcd_set_default protocol http
 etcd_set_default bucketName ${BUCKET_NAME}
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -config-file /app/confd.toml; do
+until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet; do
 	echo "registry: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -67,7 +67,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -config-file /app/confd.toml &
+confd -node $ETCD --confdir /app --interval 5 --quiet &
 CONFD_PID=$!
 
 echo deis-registry running...
