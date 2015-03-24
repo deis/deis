@@ -7,5 +7,4 @@ mode  = "0755"
 keys = [
   "/deis/database",
 ]
-check_cmd = "/app/bin/check {{ .src }}"
 reload_cmd = "/usr/local/bin/reload"
