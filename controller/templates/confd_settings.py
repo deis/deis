@@ -1,48 +1,47 @@
 # security keys and auth tokens
-SECRET_KEY = '{{ .deis_controller_secretKey }}'
-BUILDER_KEY = '{{ .deis_controller_builderKey }}'
+SECRET_KEY = '{{ getv "/deis/controller/secretKey" }}'
+BUILDER_KEY = '{{ getv "/deis/controller/builderKey" }}'
 
 # scheduler settings
-SCHEDULER_MODULE = 'scheduler.{{ or (.deis_controller_schedulerModule) "fleet" }}'
-SCHEDULER_TARGET = '{{ or (.deis_controller_schedulerTarget) "/var/run/fleet.sock" }}'
+SCHEDULER_MODULE = 'scheduler.{{ if exists "/deis/controller/schedulerModule" }}{{ getv "/deis/controller/schedulerModule" }}{{ else }}fleet{{ end }}'
+SCHEDULER_TARGET = '{{ if exists "/deis/controller/schedulerTarget" }}{{ getv "/deis/controller/schedulerTarget" }}{{ else }}/var/run/fleet.sock{{ end }}'
 try:
-    SCHEDULER_OPTIONS = dict('{{ or (.deis_controller_schedulerOptions) "{}" }}')
+    SCHEDULER_OPTIONS = dict('{{ if exists "/deis/controller/schedulerOptions" }}{{ getv "/deis/controller/schedulerOptions" }}{{ else }}{}{{ end }}')
 except:
     SCHEDULER_OPTIONS = {}
 
 # base64-encoded SSH private key to facilitate current version of "deis run"
-SSH_PRIVATE_KEY = """{{ or (.deis_platform_sshPrivateKey) "" }}"""
+SSH_PRIVATE_KEY = """{{ if exists "/deis/platform/sshPrivateKey" }}{{ getv "/deis/platform/sshPrivateKey" }}{{ else }}""{{end}}"""
 
 # platform domain must be provided
-DEIS_DOMAIN = '{{ .deis_platform_domain }}'
+DEIS_DOMAIN = '{{ getv "/deis/platform/domain" }}'
 
 # use the private registry module
 REGISTRY_MODULE = 'registry.private'
-REGISTRY_URL = '{{ .deis_registry_protocol }}://{{ .deis_registry_host }}:{{ .deis_registry_port }}'  # noqa
-REGISTRY_HOST = '{{ .deis_registry_host }}'
-REGISTRY_PORT = '{{ .deis_registry_port }}'
+REGISTRY_URL = '{{ getv "/deis/registry/protocol" }}://{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}'  # noqa
+REGISTRY_HOST = '{{ getv "/deis/registry/host" }}'
+REGISTRY_PORT = '{{ getv "/deis/registry/port" }}'
 
 # default to sqlite3, but allow postgresql config through envvars
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.{{ .deis_database_engine }}',
-        'NAME': '{{ .deis_database_name }}',
-        'USER': '{{ .deis_database_user }}',
-        'PASSWORD': '{{ .deis_database_password }}',
-        'HOST': '{{ .deis_database_host }}',
-        'PORT': '{{ .deis_database_port }}',
+        'ENGINE': 'django.db.backends.{{ getv "/deis/database/engine" }}',
+        'NAME': '{{ getv "/deis/database/name" }}',
+        'USER': '{{ getv "/deis/database/user" }}',
+        'PASSWORD': '{{ getv "/deis/database/password" }}',
+        'HOST': '{{ getv "/deis/database/host" }}',
+        'PORT': '{{ getv "/deis/database/port" }}',
     }
 }
 
 # move log directory out of /app/deis
 DEIS_LOG_DIR = '/data/logs'
 
-{{ if .deis_controller_registrationEnabled }}
-REGISTRATION_ENABLED = bool({{ .deis_controller_registrationEnabled }})
+{{ if exists "/deis/controller/registrationEnabled" }}
+REGISTRATION_ENABLED = bool({{ getv "/deis/controller/registrationEnabled" }})
 {{ end }}
 
-{{ if .deis_controller_webEnabled }}
-WEB_ENABLED = bool({{ .deis_controller_webEnabled }})
+{{ if exists "/deis/controller/webEnabled" }}
+WEB_ENABLED = bool({{ getv "/deis/controller/webEnabled" }})
 {{ end }}
-
-UNIT_HOSTNAME = '{{ or (.deis_controller_unitHostname) "default" }}'
+UNIT_HOSTNAME = '{{ if exists "/deis/controller/unitHostname" }}{{ getv "/deis/controller/unitHostname" }}{{ else }}default{{ end }}'
