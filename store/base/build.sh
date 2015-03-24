@@ -20,8 +20,8 @@ curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/
     && chmod +x /usr/local/bin/etcdctl
 
 # Use modified confd with a fix for /etc/hosts - see https://github.com/kelseyhightower/confd/pull/123
-curl -sSL https://s3-us-west-2.amazonaws.com/opdemand/confd-git-0e563e5 -o /usr/local/bin/confd
-chmod +x /usr/local/bin/confd
+curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.8.0/confd-0.8.0-linux-amd64 \
+	&& chmod +x /usr/local/bin/confd
 
 curl -sSL 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
 echo "deb http://ceph.com/debian-giant trusty main" > /etc/apt/sources.list.d/ceph.list
