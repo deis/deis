@@ -1,8 +1,0 @@
-#!/bin/bash
-#
-# Check that the configuration for deis-controller is valid.
-#
-
-if grep -q "<no value>" $1 ; then
-    exit 1
-fi
