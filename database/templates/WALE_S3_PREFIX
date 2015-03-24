@@ -1,1 +1,1 @@
-s3://{{ .deis_database_bucketName }}
+s3://{{ getv "/deis/database/bucketName" }}

@@ -1,1 +1,1 @@
-http+path://{{ .deis_store_gateway_host }}:{{ .deis_store_gateway_port }}
+http+path://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}
