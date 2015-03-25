@@ -9,5 +9,4 @@ keys = [
   "/deis/registry",
   "/deis/store/gateway",
 ]
-check_cmd = "/app/bin/check {{ .src }}"
 reload_cmd = "/app/bin/reload"

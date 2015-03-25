@@ -10,7 +10,7 @@ RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdem
     && chmod +x /usr/local/bin/etcdctl
 
 # install confd
-RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-v0.5.0-json \
+RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.8.0/confd-0.8.0-linux-amd64 \
     && chmod +x /usr/local/bin/confd
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config.yml
@@ -28,4 +28,3 @@ RUN DOCKER_BUILD=true /app/build.sh
 ADD . /app
 
 ENV DEIS_RELEASE 1.5.0-dev
-
