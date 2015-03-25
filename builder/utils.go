@@ -3,8 +3,6 @@ package builder
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"gopkg.in/yaml.v2"
 )
@@ -27,15 +25,9 @@ func YamlToJSON(bytes []byte) (string, error) {
 }
 
 // ParseConfig takes a response body from the controller and returns a Config object.
-func ParseConfig(res *http.Response) (*Config, error) {
-	body, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
+func ParseConfig(body []byte) (*Config, error) {
 	var config Config
-	err = json.Unmarshal(body, &config)
+	err := json.Unmarshal(body, &config)
 	return &config, err
 }
 
