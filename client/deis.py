@@ -172,7 +172,8 @@ class Settings(dict):
         # Create the $HOME/.deis dir if it doesn't exist
         if not os.path.isdir(path):
             os.mkdir(path, 0700)
-        self._path = os.path.join(path, 'client.json')
+        filename = '%s.json' % os.environ.get('DEIS_PROFILE', 'client')
+        self._path = os.path.join(path, filename)
         if not os.path.exists(self._path):
             settings = {}
             with open(self._path, 'w') as f:
