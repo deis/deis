@@ -47,7 +47,7 @@ until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet; do
 done
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --interval 5 --quiet &
+confd -node $ETCD --confdir /app --interval 5 --quiet --watch &
 CONFD_PID=$!
 
 # remove any pre-existing docker.sock
