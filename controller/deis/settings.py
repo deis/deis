@@ -8,6 +8,10 @@ import random
 import string
 import sys
 import tempfile
+import ldap
+
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
 
 PROJECT_ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -138,6 +142,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     # Third-party apps
+    'django_auth_ldap',
     'guardian',
     'json_field',
     'gunicorn',
@@ -151,6 +156,7 @@ INSTALLED_APPS = (
 )
 
 AUTHENTICATION_BACKENDS = (
+    "django_auth_ldap.backend.LDAPBackend",
     "django.contrib.auth.backends.ModelBackend",
     "guardian.backends.ObjectPermissionBackend",
 )
@@ -324,6 +330,16 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 #  server       - Hostname based on CoreOS server hostname
 UNIT_HOSTNAME = 'default'
 
+# LDAP DEFAULT SETTINGS (Overrided by confd later)
+LDAP_ENDPOINT = ""
+BIND_DN = ""
+BIND_PASSWORD = ""
+USER_BASEDN = ""
+USER_FILTER = ""
+GROUP_BASEDN = ""
+GROUP_FILTER = ""
+GROUP_TYPE = ""
+
 # Create a file named "local_settings.py" to contain sensitive settings data
 # such as database configuration, admin email, or passwords and keys. It
 # should also be used for any settings which differ between development
@@ -334,9 +350,41 @@ try:
 except ImportError:
     pass
 
-
 # have confd_settings within container execution override all others
 # including local_settings (which may end up in the container)
 if os.path.exists('/templates/confd_settings.py'):
     sys.path.append('/templates')
     from confd_settings import *  # noqa
+
+# LDAP Backend Configuration
+# Should be always after the confd_settings import.
+LDAP_USER_SEARCH = LDAPSearch(
+    base_dn=USER_BASEDN,
+    scope=ldap.SCOPE_SUBTREE,
+    filterstr="(%s=%%(user)s)" % USER_FILTER
+)
+LDAP_GROUP_SEARCH = LDAPSearch(
+    base_dn=GROUP_BASEDN,
+    scope=ldap.SCOPE_SUBTREE,
+    filterstr="(%s=%s)" % (GROUP_FILTER, GROUP_TYPE)
+)
+AUTH_LDAP_SERVER_URI = LDAP_ENDPOINT
+AUTH_LDAP_BIND_DN = BIND_DN
+AUTH_LDAP_BIND_PASSWORD = BIND_PASSWORD
+AUTH_LDAP_USER_SEARCH = LDAP_USER_SEARCH
+AUTH_LDAP_GROUP_SEARCH = LDAP_GROUP_SEARCH
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType()
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+    "username": USER_FILTER,
+}
+AUTH_LDAP_GLOBAL_OPTIONS = {
+    ldap.OPT_X_TLS_REQUIRE_CERT: False,
+    ldap.OPT_REFERRALS: False
+}
+AUTH_LDAP_ALWAYS_UPDATE_USER = True
+AUTH_LDAP_MIRROR_GROUPS = True
+AUTH_LDAP_FIND_GROUP_PERMS = True
+AUTH_LDAP_CACHE_GROUPS = False

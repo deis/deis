@@ -16,7 +16,7 @@ DEBIAN_FRONTEND=noninteractive
 # HACK: install git so we can install bacongobbler's fork of django-fsm
 # install openssh-client for temporary fleetctl wrapper
 apt-get update && \
-    apt-get install -yq python-dev libffi-dev libpq-dev libyaml-dev git
+    apt-get install -yq python-dev libffi-dev libpq-dev libyaml-dev git libldap2-dev libsasl2-dev
 
 # install pip
 curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
