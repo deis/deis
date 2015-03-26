@@ -56,7 +56,7 @@ CACHE_DIR="${REPO_DIR}/cache"
 
 # define image names
 IMAGE_NAME="$APP_NAME:git-$SHORT_SHA"
-TMP_IMAGE="{{ .deis_registry_host }}:{{ .deis_registry_port }}/$IMAGE_NAME"
+TMP_IMAGE="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$IMAGE_NAME"
 
 # create app directories
 mkdir -p $BUILD_DIR $CACHE_DIR
@@ -76,8 +76,8 @@ if [ -f Dockerfile ]; then
 fi
 
 # pull config from controller to be used during build
-URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/config"
-RESPONSE=$(/app/bin/get-app-config -url="$URL" -key="{{ .deis_controller_builderKey }}" -user=$USER -app=$APP_NAME)
+URL="{{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/config"
+RESPONSE=$(/app/bin/get-app-config -url="$URL" -key="{{ getv "/deis/controller/builderKey" }}" -user=$USER -app=$APP_NAME)
 CODE=$?
 
 if [ $CODE -ne 0 ]; then
@@ -144,9 +144,9 @@ else
 fi
 
 puts-step "Launching... "
-URL="{{ .deis_controller_protocol }}://{{ .deis_controller_host }}:{{ .deis_controller_port }}/v1/hooks/build"
+URL="{{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/build"
 DATA=$(/app/bin/generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "$USING_DOCKERFILE")
-PUBLISH_RELEASE=$(echo "$DATA" | /app/bin/publish-release-controller -url=$URL -key={{ .deis_controller_builderKey }})
+PUBLISH_RELEASE=$(echo "$DATA" | /app/bin/publish-release-controller -url=$URL -key={{ getv "/deis/controller/builderKey" }})
 
 CODE=$?
 if [ $CODE -ne 0 ]; then
