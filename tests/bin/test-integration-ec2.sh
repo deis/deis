@@ -109,7 +109,7 @@ make dev-release
 
 log_phase "Provisioning Deis"
 
-export DEIS_TEST_DOMAIN=$STACK_TAG.deis.works
+export DEIS_TEST_DOMAIN=$STACK_TAG.$DEIS_TEST_DOMAIN
 
 # configure platform settings
 deisctl config platform set domain=$DEIS_TEST_DOMAIN
