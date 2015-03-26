@@ -50,6 +50,14 @@ echo "HOST_IPADDR=$HOST_IPADDR"
 export DEV_REGISTRY=${DEV_REGISTRY?}
 echo "DEV_REGISTRY=$DEV_REGISTRY"
 
+# random 10-char (5-byte) hex string to identify a test run
+export DEIS_TEST_ID=${DEIS_TEST_ID:-$(openssl rand -hex 5)}
+echo "DEIS_TEST_ID=$DEIS_TEST_ID"
+
+# give this session a unique ~/.deis/<client>.json file
+export DEIS_PROFILE=test-$DEIS_TEST_ID
+rm -f $HOME/.deis/test-$DEIS_TEST_ID.json
+
 # bail if registry is not accessible
 if ! curl -s $DEV_REGISTRY; then
   echo "DEV_REGISTRY is not accessible, exiting..."
@@ -76,9 +84,6 @@ test -e ~/.ssh/deiskey || ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiske
 ssh-add -D || eval $(ssh-agent) && ssh-add -D
 ssh-add ~/.ssh/$DEIS_TEST_AUTH_KEY
 ssh-add $DEIS_TEST_SSH_KEY
-
-# clean out deis session data
-rm -rf ~/.deis
 
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
