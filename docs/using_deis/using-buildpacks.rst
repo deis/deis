@@ -153,7 +153,7 @@ On your next ``git push``, the custom buildpack will be used.
 .. _`Grails Buildpack`: https://github.com/heroku/heroku-buildpack-grails
 .. _`Play Buildpack`: https://github.com/heroku/heroku-buildpack-play
 .. _`Python Buildpack`: https://github.com/heroku/heroku-buildpack-python
-.. _`PHP Buildpack`: https://github.com/deis/heroku-buildpack-php
+.. _`PHP Buildpack`: https://github.com/heroku/heroku-buildpack-php
 .. _`Clojure Buildpack`: https://github.com/heroku/heroku-buildpack-clojure
 .. _`Scala Buildpack`: https://github.com/heroku/heroku-buildpack-scala
 .. _`Go Buildpack`: https://github.com/kr/heroku-buildpack-go
