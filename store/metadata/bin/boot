@@ -8,7 +8,7 @@ ETCD_PATH=${ETCD_PATH:-/deis/store}
 HOSTNAME=`hostname`
 MDS_NAME=$HOSTNAME
 
-until confd -onetime -node $ETCD -config-file /app/confd.toml >/dev/null 2>&1 ; do
+until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet >/dev/null 2>&1 ; do
   echo "store-metadata: waiting for confd to write initial templates..."
   sleep 5
 done

@@ -1,1 +1,1 @@
-{{ .deis_store_monKeyring }}
+{{ getv "/deis/store/monKeyring" }}
