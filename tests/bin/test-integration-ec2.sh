@@ -67,11 +67,29 @@ if ! aws ec2 describe-key-pairs --key-names "deis" >/dev/null ; then
 fi
 
 make discovery-url
+
+# customize cloudformation.json to use m3.medium instances
+cat > $DEIS_ROOT/contrib/ec2/cloudformation.json <<EOF
+[
+    {
+        "ParameterKey":     "KeyPair",
+        "ParameterValue":   "deis"
+    },
+    {
+        "ParameterKey":     "InstanceType",
+        "ParameterValue":   "m3.medium"
+    }
+]
+EOF
+
 # add random characters after STACK_TAG to avoid collisions
 STACK_TAG=${STACK_TAG:-test}-$(openssl rand -hex 4)
 STACK_NAME=deis-$STACK_TAG
 echo "Creating CloudFormation stack $STACK_NAME"
 $DEIS_ROOT/contrib/ec2/provision-ec2-cluster.sh $STACK_NAME
+
+# discard changes to cloudformation.json
+git checkout -- $DEIS_ROOT/contrib/ec2/cloudformation.json
 
 # use the first cluster node for now
 INSTANCE_IDS=$(aws ec2 describe-instances \
