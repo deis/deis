@@ -19,6 +19,8 @@ and run the latest installer:
 
     $ cd ~/bin
     $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.4.1
+    $ # on CoreOS, add "sudo" to install to /opt/bin/deisctl
+    $ curl -sSL http://deis.io/deisctl/install.sh | sudo sh -s 1.4.1
 
 This installs ``deisctl`` version 1.4.1 to the current directory, and downloads the matching
 Deis systemd unit files used to schedule the components. Link ``deisctl`` into /usr/local/bin, so
