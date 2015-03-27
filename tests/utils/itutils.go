@@ -31,6 +31,7 @@ type DeisTestConfig struct {
 	Password    string
 	Email       string
 	ExampleApp  string
+	AppDomain   string
 	AppName     string
 	ProcessNum  string
 	ImageID     string
@@ -63,6 +64,10 @@ func GetGlobalConfig() *DeisTestConfig {
 	if exampleApp == "" {
 		exampleApp = randomApp
 	}
+	appDomain := os.Getenv("DEIS_TEST_APP_DOMAIN")
+	if appDomain == "" {
+		appDomain = fmt.Sprintf("test.%s", domain)
+	}
 	var envCfg = DeisTestConfig{
 		AuthKey:     authKey,
 		Hosts:       hosts,
@@ -73,6 +78,7 @@ func GetGlobalConfig() *DeisTestConfig {
 		Password:    "asdf1234",
 		Email:       "test@test.co.nz",
 		ExampleApp:  exampleApp,
+		AppDomain:   appDomain,
 		AppName:     "sample",
 		ProcessNum:  "2",
 		ImageID:     "buildtest",
@@ -97,15 +103,18 @@ func doCurl(url string) ([]byte, error) {
 	return body, nil
 }
 
-// Curl connects to a Deis endpoint to see if the example app is running.
-func Curl(t *testing.T, params *DeisTestConfig) {
-	CurlWithFail(t, params, false, "")
+// Curl connects to an endpoint to see if the endpoint is responding.
+func Curl(t *testing.T, url string) {
+	CurlWithFail(t, url, false, "")
+}
+
+// CurlApp is a convenience function to see if the example app is running.
+func CurlApp(t *testing.T, cfg DeisTestConfig) {
+	CurlWithFail(t, fmt.Sprintf("http://%s.%s", cfg.AppName, cfg.Domain), false, "")
 }
 
 // CurlWithFail connects to a Deis endpoint to see if the example app is running.
-func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect string) {
-	url := "http://" + params.AppName + "." + params.Domain
-
+func CurlWithFail(t *testing.T, url string, failFlag bool, expect string) {
 	// FIXME: try the curl a few times
 	for i := 0; i < 20; i++ {
 		body, err := doCurl(url)
