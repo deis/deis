@@ -102,7 +102,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -confdir /app --interval 5 --quiet &
+confd -node $ETCD -confdir /app --interval 5 --quiet --watch &
 CONFD_PID=$!
 
 # wait for the service to become available
