@@ -14,7 +14,7 @@ REMOTE_IMAGE := $(REGISTRY)/$(RELEASE_IMAGE)
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -v -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/deis/deis/publisher || exit 1
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/publisher github.com/deis/deis/publisher || exit 1
 	$(call check-static-binary,$(BINARY_DEST_DIR)/publisher)
 	docker build -t $(RELEASE_IMAGE) image
 
