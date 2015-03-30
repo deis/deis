@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/deis/deis/tests/utils"
@@ -20,6 +21,7 @@ var (
 func TestConfig(t *testing.T) {
 	params := configSetup(t)
 	configSetTest(t, params)
+	configPushTest(t, params)
 	configListTest(t, params, false)
 	appsOpenTest(t, params)
 	configUnsetTest(t, params)
@@ -69,8 +71,23 @@ func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.CheckList(t, appsInfoCmd, params, "(v6)", false)
 }
 
+func configPushTest(t *testing.T, params *utils.DeisTestConfig) {
+	if err := utils.Chdir(params.ExampleApp); err != nil {
+		t.Fatal(err)
+	}
+	// create a .env in the project root
+	if err := ioutil.WriteFile(".env", []byte("POWERED_BY=Deis"), 0664); err != nil {
+		t.Fatal(err)
+	}
+	utils.Execute(t, "config:push --app {{.AppName}}", params, false, "Deis")
+	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
+	if err := utils.Chdir(".."); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
-	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v8)", false)
 	utils.CheckList(t, "run env --app={{.AppName}}", params, "FOO", true)
 }

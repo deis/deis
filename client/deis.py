@@ -984,6 +984,7 @@ class DeisClient(object):
         config:set         set environment variables for an app
         config:unset       unset environment variables for an app
         config:pull        extract environment variables to .env
+        config:push        set environment variables from .env
 
         Use `deis help [command]` to learn more.
         """
@@ -1183,6 +1184,30 @@ class DeisClient(object):
                 sys.exit(1)
         else:
             raise ResponseError(response)
+
+    def config_push(self, args):
+        """
+        Sets environment variables for an application.
+
+        Your environment is read from a file named .env. This file can be
+        read by foreman to load the local environment for your app.
+
+        Usage: deis config:push [options]
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        # read from .env
+        try:
+            with open('.env', 'r') as f:
+                self._config_set(app, dictify([line.strip() for line in f]))
+        except IOError:
+            self._logger.error('could not read from local env')
+            sys.exit(1)
 
     def domains(self, args):
         """
