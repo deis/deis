@@ -64,6 +64,10 @@ Add your certificate, any intermediate certificates, and private key to the endp
     Adding SSL endpoint... done
     www.example.com
 
+.. note::
+
+    It may take up to one minute for the certificate to be available on the routers.
+
 
 Attach a Certificate Chain
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
