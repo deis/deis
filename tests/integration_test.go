@@ -5,14 +5,13 @@ package tests
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"os/user"
 	"path"
 	"testing"
 
 	"github.com/deis/deis/tests/utils"
 )
-
-const clientJsonFilePath string = ".deis/client.json"
 
 var (
 	gitCloneCmd  = "if [ ! -d {{.ExampleApp}} ] ; then git clone https://github.com/deis/{{.ExampleApp}}.git ; fi"
@@ -39,6 +38,11 @@ func clientTest(t *testing.T, params *utils.DeisTestConfig) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	profile := os.Getenv("DEIS_PROFILE")
+	if profile == "" {
+		profile = "client"
+	}
+	clientJsonFilePath := ".deis/" + profile + ".json"
 	data, err := ioutil.ReadFile(path.Join(user.HomeDir, clientJsonFilePath))
 	if err != nil {
 		t.Fatal(err)

@@ -83,7 +83,7 @@ cat > $DEIS_ROOT/contrib/ec2/cloudformation.json <<EOF
 EOF
 
 # add random characters after STACK_TAG to avoid collisions
-STACK_TAG=${STACK_TAG:-test}-$(openssl rand -hex 4)
+STACK_TAG=${STACK_TAG:-test}-$DEIS_TEST_ID
 STACK_NAME=deis-$STACK_TAG
 echo "Creating CloudFormation stack $STACK_NAME"
 $DEIS_ROOT/contrib/ec2/provision-ec2-cluster.sh $STACK_NAME
