@@ -268,7 +268,8 @@ class FleetHTTPClient(object):
                 chan.get_pty()
                 out = chan.makefile()
                 chan.exec_command(cmd)
-                rc, output = chan.recv_exit_status(), out.read()
+                output = out.read()
+                rc = chan.recv_exit_status()
                 return rc, output
 
             # wait for container to launch
