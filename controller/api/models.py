@@ -977,29 +977,26 @@ def _etcd_publish_cert(**kwargs):
 
 def _etcd_purge_cert(**kwargs):
     cert = kwargs['instance']
-    _etcd_client.delete('/deis/certs/{}'.format(cert),
-                        prevExist=True, dir=True, recursive=True)
+    try:
+        _etcd_client.delete('/deis/certs/{}'.format(cert),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
 
 
 def _etcd_publish_domains(**kwargs):
-    app = kwargs['instance'].app
-    app_domains = app.domain_set.all()
-    if app_domains:
-        _etcd_client.write('/deis/domains/{}'.format(app),
-                           ' '.join(str(d.domain) for d in app_domains))
+    domain = kwargs['instance']
+    if kwargs['created']:
+        _etcd_client.write('/deis/domains/{}'.format(domain), domain.app)
 
 
 def _etcd_purge_domains(**kwargs):
-    app = kwargs['instance'].app
-    app_domains = app.domain_set.all()
-    if app_domains:
-        _etcd_client.write('/deis/domains/{}'.format(app),
-                           ' '.join(str(d.domain) for d in app_domains))
-    else:
-        try:
-            _etcd_client.delete('/deis/domains/{}'.format(app))
-        except KeyError:
-            pass
+    domain = kwargs['instance']
+    try:
+        _etcd_client.delete('/deis/certs/{}'.format(domain),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
 
 
 # Log significant app-related events

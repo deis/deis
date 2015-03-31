@@ -56,6 +56,14 @@ etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
 etcd_safe_mkdir /deis/platform
 
+# run etcd data migrations
+echo "controller: running etcd data migrations..."
+for script in $(ls /app/migrations/data/*.sh);
+do
+    . $script;
+done
+echo "controller: done running etcd data migrations."
+
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet 2>/dev/null; do
 	echo "controller: waiting for confd to write initial templates..."
