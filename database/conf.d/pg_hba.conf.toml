@@ -1,7 +1,7 @@
 [template]
 src   = "pg_hba.conf"
 dest  = "/etc/postgresql/9.3/main/pg_hba.conf"
-uid = 102
+uid = 101
 gid = 106
 mode  = "0640"
 keys = [

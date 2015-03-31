@@ -318,6 +318,15 @@
 			"Rev": "b473f398c464f1988327f67c9e6aa7fba62f80d2"
 		},
 		{
+			"ImportPath": "github.com/jteeuwen/go-bindata",
+			"Comment": "v3.0.7-17-g8ee21af",
+			"Rev": "8ee21af0fa554ff13f12acd730a7b40a106965f0"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "ccfcd0245381f0c94c68f50626665eed3c6b726a"
+		},
+		{
 			"ImportPath": "github.com/kballard/go-shellquote",
 			"Rev": "e5c918b80c17694cbc49aab32a759f9a40067f5d"
 		},
@@ -325,6 +334,15 @@
 			"ImportPath": "github.com/kr/pty",
 			"Comment": "release.r56-19-g67e2db2",
 			"Rev": "67e2db24c831afa6c64fc17b4a143390674365ef"
+		},
+		{
+			"ImportPath": "github.com/progrium/go-basher",
+			"Rev": "ca3b97b3bd2a7eda303716f56916684771b79942"
+		},
+		{
+			"ImportPath": "github.com/robfig/cron",
+			"Comment": "v1-2-g67823cd",
+			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
 		},
 		{
 			"ImportPath": "github.com/tchap/go-patricia/patricia",

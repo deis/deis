@@ -11,13 +11,12 @@ import (
 	"time"
 
 	"github.com/ActiveState/tail"
-	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 
-	"github.com/deis/deis/router/logger"
+	Log "github.com/deis/deis/pkg/log"
 )
 
-var log = logrus.New()
+var log = Log.New()
 
 const (
 	timeout        time.Duration = 10 * time.Second
@@ -28,13 +27,6 @@ const (
 )
 
 func main() {
-	log.Formatter = new(logger.StdOutFormatter)
-
-	logLevel := getopt("LOG", "info")
-	if level, err := logrus.ParseLevel(logLevel); err == nil {
-		log.Level = level
-	}
-
 	log.Debug("reading environment variables...")
 	host := getopt("HOST", "127.0.0.1")
 

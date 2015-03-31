@@ -1,7 +1,7 @@
 [template]
 src   = "postgresql.conf"
 dest  = "/etc/postgresql/9.3/main/postgresql.conf"
-uid = 102
+uid = 101
 gid = 106
 mode  = "0644"
 keys = [

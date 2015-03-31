@@ -7,7 +7,7 @@ include includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis
 
-GO_PACKAGES = pkg/time version
+GO_PACKAGES = pkg/time version pkg/boot pkg/confd pkg/docker pkg/etcd pkg/log pkg/net pkg/os
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENTS=builder cache controller database logger logspout publisher registry router store

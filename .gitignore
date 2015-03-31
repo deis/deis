@@ -36,6 +36,7 @@ client/dist/
 client/makeself/
 contrib/azure/azure-user-data
 contrib/bumpver/bumpver
+database/bindata
 deisctl/deisctl
 deisctl/dist/
 deisctl/package/

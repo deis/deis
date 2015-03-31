@@ -71,6 +71,7 @@ export GIT_SSH=$DEIS_ROOT/tests/bin/git-ssh-nokeycheck.sh
 # install required go dependencies
 go get -v github.com/golang/lint/golint
 go get -v github.com/tools/godep
+go get github.com/jteeuwen/go-bindata/...
 
 # cleanup any stale example applications
 rm -rf $DEIS_ROOT/tests/example-*
