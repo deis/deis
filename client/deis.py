@@ -756,8 +756,14 @@ Make sure that the Controller URI is correct and the server is running.
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
+        headers = {}
+
+        token = self._settings.get('token')
+        if token:
+            headers.update({'Authorization': 'token {}'.format(token)})
+
         response = self._session.post(url, data=payload, allow_redirects=False,
-                                      verify=ssl_verify)
+                                      verify=ssl_verify, headers=headers)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
             self._settings.save()
