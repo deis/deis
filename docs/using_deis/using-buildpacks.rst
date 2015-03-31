@@ -27,29 +27,6 @@ Use ``deis create`` to create an application on the :ref:`controller`.
     Creating application... done, created unisex-huntress
     Git remote deis added
 
-Optional: Add SSH KEY to use private repositories
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To pull code from private repositories, you'll need to provide Deis with a private SSH key which has access.
-
-You can do so with deis client:
-
-
-Using private key file:
-
-.. code-block:: console
-
-    $ deis config:set SSH_KEY=/home/user/.ssh/id_rsa
-
-
-You can also use a raw key instead of a private key file:
-
-.. code-block:: console
-
-    $ deis config:set SSH_KEY="""-----BEGIN RSA PRIVATE KEY-----
-    (...)
-    -----END RSA PRIVATE KEY-----"""
-
 Push to Deploy
 --------------
 Use ``git push deis master`` to deploy your application.
@@ -168,6 +145,28 @@ To use a custom buildpack, set the ``BUILDPACK_URL`` environment variable.
 
 On your next ``git push``, the custom buildpack will be used.
 
+Using Private Repositories
+--------------------------
+To pull code from private repositories, set the ``SSH_KEY`` environment variable to a private key
+which has access. Use either the path of a private key file or the raw key material:
+
+.. code-block:: console
+
+    $ deis config:set SSH_KEY=/home/user/.ssh/id_rsa
+    $ deis config:set SSH_KEY="""-----BEGIN RSA PRIVATE KEY-----
+    (...)
+    -----END RSA PRIVATE KEY-----"""
+
+For example, to use a custom buildpack hosted at a private GitHub URL, ensure that an SSH public
+key exists in your `GitHub settings`_. Then set ``SSH_KEY`` to the corresponding SSH private key
+and set ``BUILDPACK_URL`` to the URL:
+
+.. code-block:: console
+
+    $ deis config:set SSH_KEY=/home/user/.ssh/github_id_rsa
+    $ deis config:set BUILDPACK_URL=git@github.com:user/private_buildpack.git
+    $ git push deis master
+
 
 .. _`Ruby Buildpack`: https://github.com/heroku/heroku-buildpack-ruby
 .. _`Nodejs Buildpack`: https://github.com/heroku/heroku-buildpack-nodejs
@@ -182,3 +181,4 @@ On your next ``git push``, the custom buildpack will be used.
 .. _`Go Buildpack`: https://github.com/kr/heroku-buildpack-go
 .. _`Multi Buildpack`: https://github.com/heroku/heroku-buildpack-multi
 .. _`Heroku Buildpacks`: https://devcenter.heroku.com/articles/buildpacks
+.. _`GitHub settings`: https://github.com/settings/ssh
