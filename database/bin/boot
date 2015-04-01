@@ -48,6 +48,10 @@ etcd_set_default password ${PG_USER_PASS:-changeme123}
 etcd_set_default name ${PG_USER_DB:-deis}
 etcd_set_default bucketName ${BUCKET_NAME}
 
+# stub out the confd reload script before it gets templated
+echo '#!/bin/sh' > /usr/local/bin/reload
+chmod 0755 /usr/local/bin/reload
+
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD -confdir /app --interval 5 --quiet; do
 	echo "database: waiting for confd to write initial templates..."
