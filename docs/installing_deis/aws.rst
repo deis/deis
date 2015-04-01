@@ -33,7 +33,6 @@ Configure aws-cli
 
 Run ``aws configure`` to set your AWS credentials:
 
-
 .. code-block:: console
 
     $ aws configure
@@ -168,19 +167,27 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
 
     $ cd contrib/ec2
     $ ./provision-ec2-cluster.sh
+    Creating CloudFormation stack deis
     {
-        "StackId": "arn:aws:cloudformation:us-west-1:413516094235:stack/deis/9699ec20-c257-11e3-99eb-50fa01cd4496"
+        "StackId": "arn:aws:cloudformation:us-east-1:69326027886:stack/deis/1e9916b0-d7ea-11e4-a0be-50d2020578e0"
     }
-    Your Deis cluster has successfully deployed.
-    Please wait for all instances to come up as "running" before continuing.
+    Waiting for instances to be created...
+    Waiting for instances to be created...
+    Waiting for instances to pass initial health checks...
+    Waiting for instances to pass initial health checks...
+    Waiting for instances to pass initial health checks...
+    Instances are available:
+    i-5c3c91aa	203.0.113.91	m3.large	us-east-1a	running
+    i-403c91b6	203.0.113.20	m3.large	us-east-1a	running
+    i-e36fc6ee	203.0.113.31	m3.large	us-east-1b	running
+    Using ELB deis-DeisWebE-17PGCR3KPJC54 at deis-DeisWebE-17PGCR3KPJC54-1499385382.us-east-1.elb.amazonaws.com
+    Your Deis cluster has been successfully deployed to AWS CloudFormation and is started.
+    Please continue to follow the instructions in the documentation.
 
 .. note::
 
     The default name of the CloudFormation stack will be ``deis``. You can specify a different name
     with ``./provision-ec2-cluster.sh <name>``.
-
-Check the AWS EC2 web control panel and wait until "Status Checks" for all instances have passed.
-This will take several minutes.
 
 
 Configure DNS
@@ -222,4 +229,3 @@ Please reference the AWS documentation for `more information about CloudFormatio
 .. _`PyYAML`: http://pyyaml.org/
 .. _`update_ec2_cluster.sh`: https://github.com/deis/deis/blob/master/contrib/ec2/update-ec2-cluster.sh
 .. _`More information about CloudFormation stack updates`: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html
-
