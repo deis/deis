@@ -245,6 +245,8 @@ class DomainSerializer(ModelSerializer):
         if value[-1:] == ".":
             value = value[:-1]  # strip exactly one dot from the right, if present
         labels = value.split('.')
+        if 'xip.io' in value:
+            return value
         if labels[0] == '*':
             raise serializers.ValidationError(
                 'Adding a wildcard subdomain is currently not supported.')
