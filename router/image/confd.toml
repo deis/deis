@@ -1,6 +1,0 @@
-[confd]
-confdir  = "/app"
-interval = 5
-prefix   = "/"
-quiet = true
-debug = false
