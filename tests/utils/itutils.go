@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -117,7 +118,12 @@ func GetGlobalConfig() *DeisTestConfig {
 }
 
 func doCurl(url string) ([]byte, error) {
-	response, err := http.Get(url)
+	// disable security check for self-signed certificates
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	response, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}
