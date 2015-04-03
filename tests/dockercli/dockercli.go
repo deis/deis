@@ -125,6 +125,17 @@ func NewClient() (
 	return
 }
 
+func CreateVolume(t *testing.T, cli *client.DockerCli, name string, path string) {
+	err := RunContainer(cli,
+		"--name", name,
+		"-v", path,
+		"ubuntu-debootstrap:14.04", "/bin/true")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // PrintToStdout prints a string to stdout.
 func PrintToStdout(t *testing.T, stdout *io.PipeReader,
 	stdoutPipe *io.PipeWriter, stoptag string) string {
@@ -141,6 +152,25 @@ func PrintToStdout(t *testing.T, stdout *io.PipeReader,
 			if err := CloseWrap(stdout, stdoutPipe); err != nil {
 				t.Fatal(err)
 			}
+		}
+	}
+	return result
+}
+
+func WaitForLine(t *testing.T, stdout *io.PipeReader, stoptag string, trace bool) string {
+	var result string
+	r := bufio.NewReader(stdout)
+	for {
+		cmdBytes, err := r.ReadString('\n')
+		if err != nil {
+			break
+		}
+		result = cmdBytes
+		if trace {
+			fmt.Print(cmdBytes)
+		}
+		if strings.Contains(cmdBytes, stoptag) == true {
+			break
 		}
 	}
 	return result
