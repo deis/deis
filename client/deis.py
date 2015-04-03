@@ -2208,7 +2208,17 @@ def main():
     if hasattr(cli, cmd):
         method = getattr(cli, cmd)
     else:
-        raise DocoptExit('Found no matching command, try `deis help`')
+        # split by : to execute the proper command
+        split_cmd = args['<command>'].split(':')
+        dash_separated_command = 'deis-{}'.format(split_cmd[0])
+        arglist = args['<args>']
+        if len(split_cmd) > 1:
+            # safety precaution in case users want to use more than one colon in their command
+            arglist = split_cmd[1:] + arglist
+        try:
+            sys.exit(subprocess.call([dash_separated_command] + arglist))
+        except OSError:
+            raise DocoptExit('Found no matching command, try `deis help`')
     # re-parse docopt with the relevant docstring
     docstring = trim(getattr(cli, cmd).__doc__)
     if 'Usage: ' in docstring:
