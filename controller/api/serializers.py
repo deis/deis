@@ -245,6 +245,8 @@ class DomainSerializer(ModelSerializer):
         if value[-1:] == ".":
             value = value[:-1]  # strip exactly one dot from the right, if present
         labels = value.split('.')
+        if 'xip.io' in value:
+            return value
         if labels[0] == '*':
             raise serializers.ValidationError(
                 'Adding a wildcard subdomain is currently not supported.')
@@ -258,6 +260,22 @@ class DomainSerializer(ModelSerializer):
             raise serializers.ValidationError(
                 "The domain {} is already in use by another app".format(value))
         return value
+
+
+class CertificateSerializer(ModelSerializer):
+    """Serialize a :class:`~api.models.Cert` model."""
+
+    owner = serializers.ReadOnlyField(source='owner.username')
+    expires = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+    updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
+
+    class Meta:
+        """Metadata options for a DomainCertSerializer."""
+        model = models.Certificate
+        extra_kwargs = {'certificate': {'write_only': True},
+                        'key': {'write_only': True}}
+        read_only_fields = ['common_name', 'expires', 'created', 'updated']
 
 
 class PushSerializer(ModelSerializer):

@@ -11,6 +11,7 @@ keys = [
   "/deis/controller",
   "/deis/builder",
   "/deis/store/gateway",
+  "/deis/certs",
 ]
 check_cmd  = "/app/bin/check {{ .src }}"
 reload_cmd = "/opt/nginx/sbin/nginx -s reload"

@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -30,7 +31,7 @@ func TestPs(t *testing.T) {
 	time.Sleep(time.Millisecond * 7000)
 
 	// test for a 503 response
-	utils.CurlWithFail(t, params, true, "503")
+	utils.CurlWithFail(t, fmt.Sprintf("http://%s.%s", params.AppName, params.Domain), true, "503")
 
 	utils.AppsDestroyTest(t, params)
 	utils.Execute(t, psScaleCmd, params, true, "404 NOT FOUND")

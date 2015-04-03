@@ -20,6 +20,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   limits        manage resource limits for your application
   tags          manage tags for application containers
   releases      manage releases of an application
+  certs         manage SSL endpoints for an app
 
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
@@ -68,12 +69,13 @@ from dateutil import tz
 from docopt import docopt
 from docopt import DocoptExit
 import requests
+from tabulate import tabulate
 from termcolor import colored
 
 __version__ = '1.5.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.1'
+__api_version__ = '1.2'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -974,6 +976,94 @@ class DeisClient(object):
             data = response.json()
             for item in data['results']:
                 self._logger.info("{0[uuid]:<23} {0[created]}".format(item))
+        else:
+            raise ResponseError(response)
+
+    def certs(self, args):
+        """
+        Valid commands for certs:
+
+        certs:list            list SSL certificates for an app
+        certs:add             add an SSL certificate to an app
+        certs:update          update an existing certifcate for an app
+        certs:remove          remove an SSL certificate from an app
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'certs:list'
+        args = docopt(self.certs_list.__doc__)
+        return self.certs_list(args)
+
+    def certs_add(self, args):
+        """
+        Binds a certificate/key pair to an application.
+
+        Usage: deis certs:add <cert> <key>
+
+        Arguments:
+          <cert>
+            The public key of the SSL certificate.
+          <key>
+            The private key of the SSL certificate.
+        """
+        cert = args.get('<cert>')
+        key = args.get('<key>')
+        body = {'certificate': file(cert).read().strip(), 'key': file(key).read().strip()}
+        sys.stdout.write("Adding SSL endpoint... ")
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            response = self._dispatch('post', "/v1/certs", json.dumps(body))
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.created:
+            self._logger.info("done")
+            data = response.json()
+            self._logger.info("{common_name}".format(**data))
+        else:
+            raise ResponseError(response)
+
+    def certs_list(self, args):
+        """
+        Show certificate information for an SSL application.
+
+        Usage: deis certs:list
+        """
+        response = self._dispatch('get', "/v1/certs")
+        if response.status_code == requests.codes.ok:
+            data = response.json()
+            table = [['Common Name', 'Expires']]
+            if len(data['results']) == 0:
+                self._logger.info('No certs')
+                return
+            for item in data['results']:
+                # strip unused fields
+                for field in item.keys():
+                    if field not in ['common_name', 'expires']:
+                        del item[field]
+                table += [[item['common_name'], item['expires']]]
+            self._logger.info(tabulate(table, headers='firstrow'))
+        else:
+            raise ResponseError(response)
+
+    def certs_remove(self, args):
+        """
+        removes a certificate/key pair from the application.
+
+        Usage: deis certs:remove <cn> [options]
+
+        Arguments:
+          <cn>
+            the common name of the cert to remove from the app.
+        """
+        cn = args.get('<cn>')
+        sys.stdout.write("Removing {}... ".format(cn))
+        sys.stdout.flush()
+        response = self._dispatch('delete', "/v1/certs/{}".format(cn))
+        if response.status_code == requests.codes.no_content:
+            self._logger.info('Done.')
         else:
             raise ResponseError(response)
 

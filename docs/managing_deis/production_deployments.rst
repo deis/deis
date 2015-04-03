@@ -55,4 +55,4 @@ Enable TLS
 ----------
 
 Using TLS to encrypt traffic (including Deis client traffic, such as login credentials) is crucial.
-See :ref:`ssl-endpoints`.
+See :ref:`platform_ssl`.

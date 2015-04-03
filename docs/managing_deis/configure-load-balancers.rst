@@ -19,7 +19,7 @@ These ports need to be open on the load balancers:
 * 80 (for application traffic and for API calls to the controller)
 * 2222 (for traffic to the builder)
 
-If you want to configure SSL termination on your load balancer, see :ref:`ssl-endpoints`.
+If you want to configure SSL termination on your load balancer, see :ref:`platform_ssl`.
 
 A health check should be configured on the load balancer to send an HTTP request to /health-check at
 port 80 on all nodes in the Deis cluster. The health check endpoint returns an HTTP 200. This enables

@@ -2,12 +2,15 @@ package utils
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"text/template"
@@ -22,20 +25,23 @@ var Deis = "deis "
 // DeisTestConfig allows tests to be repeated against different
 // targets, with different example apps, using specific credentials, and so on.
 type DeisTestConfig struct {
-	AuthKey     string
-	Hosts       string
-	Domain      string
-	SSHKey      string
-	ClusterName string
-	UserName    string
-	Password    string
-	Email       string
-	ExampleApp  string
-	AppName     string
-	ProcessNum  string
-	ImageID     string
-	Version     string
-	AppUser     string
+	AuthKey            string
+	Hosts              string
+	Domain             string
+	SSHKey             string
+	ClusterName        string
+	UserName           string
+	Password           string
+	Email              string
+	ExampleApp         string
+	AppDomain          string
+	AppName            string
+	ProcessNum         string
+	ImageID            string
+	Version            string
+	AppUser            string
+	SSLCertificatePath string
+	SSLKeyPath         string
 }
 
 // randomApp is used for the test run if DEIS_TEST_APP isn't set
@@ -63,27 +69,61 @@ func GetGlobalConfig() *DeisTestConfig {
 	if exampleApp == "" {
 		exampleApp = randomApp
 	}
+	appDomain := os.Getenv("DEIS_TEST_APP_DOMAIN")
+	if appDomain == "" {
+		appDomain = fmt.Sprintf("test.%s", domain)
+	}
+
+	// generate a self-signed certifcate for the app domain
+	keyOut, err := filepath.Abs(appDomain + ".key")
+	if err != nil {
+		log.Fatal(err)
+	}
+	certOut, err := filepath.Abs(appDomain + ".cert")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmd := exec.Command("openssl", "req", "-new", "-newkey", "rsa:4096", "-nodes", "-x509",
+		"-days", "1",
+		"-subj", fmt.Sprintf("/C=US/ST=Colorado/L=Boulder/CN=%s", appDomain),
+		"-keyout", keyOut,
+		"-out", certOut)
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err)
+	}
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err)
+	}
+
 	var envCfg = DeisTestConfig{
-		AuthKey:     authKey,
-		Hosts:       hosts,
-		Domain:      domain,
-		SSHKey:      sshKey,
-		ClusterName: "dev",
-		UserName:    "test",
-		Password:    "asdf1234",
-		Email:       "test@test.co.nz",
-		ExampleApp:  exampleApp,
-		AppName:     "sample",
-		ProcessNum:  "2",
-		ImageID:     "buildtest",
-		Version:     "2",
-		AppUser:     "test1",
+		AuthKey:            authKey,
+		Hosts:              hosts,
+		Domain:             domain,
+		SSHKey:             sshKey,
+		ClusterName:        "dev",
+		UserName:           "test",
+		Password:           "asdf1234",
+		Email:              "test@test.co.nz",
+		ExampleApp:         exampleApp,
+		AppDomain:          appDomain,
+		AppName:            "sample",
+		ProcessNum:         "2",
+		ImageID:            "buildtest",
+		Version:            "2",
+		AppUser:            "test1",
+		SSLCertificatePath: certOut,
+		SSLKeyPath:         keyOut,
 	}
 	return &envCfg
 }
 
 func doCurl(url string) ([]byte, error) {
-	response, err := http.Get(url)
+	// disable security check for self-signed certificates
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+	response, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -97,15 +137,18 @@ func doCurl(url string) ([]byte, error) {
 	return body, nil
 }
 
-// Curl connects to a Deis endpoint to see if the example app is running.
-func Curl(t *testing.T, params *DeisTestConfig) {
-	CurlWithFail(t, params, false, "")
+// Curl connects to an endpoint to see if the endpoint is responding.
+func Curl(t *testing.T, url string) {
+	CurlWithFail(t, url, false, "")
+}
+
+// CurlApp is a convenience function to see if the example app is running.
+func CurlApp(t *testing.T, cfg DeisTestConfig) {
+	CurlWithFail(t, fmt.Sprintf("http://%s.%s", cfg.AppName, cfg.Domain), false, "")
 }
 
 // CurlWithFail connects to a Deis endpoint to see if the example app is running.
-func CurlWithFail(t *testing.T, params *DeisTestConfig, failFlag bool, expect string) {
-	url := "http://" + params.AppName + "." + params.Domain
-
+func CurlWithFail(t *testing.T, url string, failFlag bool, expect string) {
 	// FIXME: try the curl a few times
 	for i := 0; i < 20; i++ {
 		body, err := doCurl(url)

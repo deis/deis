@@ -56,6 +56,7 @@ func main() {
 	mkdirEtcd(client, "/deis/services")
 	mkdirEtcd(client, "/deis/domains")
 	mkdirEtcd(client, "/deis/builder")
+	mkdirEtcd(client, "/deis/certs")
 	mkdirEtcd(client, "/deis/router/hosts")
 
 	setDefaultEtcd(client, etcdPath+"/gzip", "on")
@@ -70,6 +71,9 @@ func main() {
 	go launchNginx(nginxChan)
 	<-nginxChan
 
+	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
+	go launchCron()
+
 	waitForInitialConfd(host+":"+etcdPort, timeout)
 
 	go launchConfd(host + ":" + etcdPort)
@@ -82,6 +86,21 @@ func main() {
 	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
 	go cleanOnExit(exitChan)
 	<-exitChan
+}
+
+func launchCron() {
+	// edit crontab
+	crontab := `(echo "* * * * * generate-certs >> /dev/stdout") | crontab -`
+	cmd := exec.Command("bash", "-c", crontab)
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("could not write to crontab: %v", err)
+	}
+
+	// run cron
+	cmd = exec.Command("cron")
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("cron terminated by error: %v", err)
+	}
 }
 
 func cleanOnExit(exitChan chan os.Signal) {

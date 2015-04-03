@@ -58,6 +58,7 @@ class DomainTest(TestCase):
             '3com.com',
             'w3.example.com',
             'MYDOMAIN.NET',
+            'autotest.127.0.0.1.xip.io',
         ]
         for domain in test_domains:
             body = {'domain': domain}

@@ -1,22 +1,18 @@
-:title: Controller API v1.1
-:description: The v1.1 REST API for Deis' Controller
+:title: Controller API v1.2
+:description: The v1.2 REST API for Deis' Controller
 
-Controller API v1.1
+.. _controller_api_v1:
+
+Controller API v1.2
 ===================
 
-This is the v1.1 REST API for the :ref:`Controller`.
+This is the v1.2 REST API for the :ref:`Controller`.
 
 
 What's New
 ----------
 
-**New!** All controller responses now return the ``X_DEIS_API_VERSION`` header.
-
-**New!** All controller responses now return the ``X_DEIS_PLATFORM_VERSION`` header.
-
-**New!** Users see a 404 response when modifying applications they are unauthorized to see.
-
-**New!** Responses returned from the scheduler are properly formatted JSON responses.
+**New!** ``/certs`` endpoint for managing custom domain certificates
 
 
 Authentication
@@ -54,7 +50,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -92,7 +88,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -115,7 +111,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -139,7 +135,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -185,7 +181,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -216,7 +212,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -236,7 +232,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -267,7 +263,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: text/plain
 
@@ -291,11 +287,135 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
     {"rc": 0, "output": "hi"}
+
+
+Certificates
+------------
+
+
+List all Certificates
+`````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    GET /v1/certs HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.2
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
+
+    {
+        "count": 1,
+        "next": null,
+        "previous": null,
+        "results": [
+            {
+                "common_name": "test.example.com",
+                "expires": "2014-01-01T00:00:00UTC"
+            }
+        ]
+    }
+
+
+List Certificate Details
+````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    GET /v1/certs/test.example.com HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.2
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
+
+    {
+        "updated": "2014-01-01T00:00:00UTC",
+        "created": "2014-01-01T00:00:00UTC",
+        "expires": "2015-01-01T00:00:00UTC",
+        "common_name": "test.example.com",
+        "owner": "test",
+        "id": 1
+    }
+
+
+Create Certificate
+``````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/certs/ HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+    {
+        "certificate": "-----BEGIN CERTIFICATE-----",
+        "key": "-----BEGIN RSA PRIVATE KEY-----"
+    }
+
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 201 CREATED
+    X_DEIS_API_VERSION: 1.2
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
+
+    {
+        "updated": "2014-01-01T00:00:00UTC",
+        "created": "2014-01-01T00:00:00UTC",
+        "expires": "2015-01-01T00:00:00UTC",
+        "common_name": "test.example.com",
+        "owner": "test",
+        "id": 1
+    }
+
+
+Destroy a Certificate
+`````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    DELETE /v1/certs/test.example.com HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.2
+    X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
 Containers
@@ -318,7 +438,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -358,7 +478,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -401,7 +521,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -425,7 +545,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -461,7 +581,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
     X-Deis-Release: 3
@@ -504,7 +624,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
     X-Deis-Release: 4
@@ -546,7 +666,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -584,7 +704,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -614,7 +734,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -638,7 +758,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -683,7 +803,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
     X-Deis-Release: 4
@@ -721,7 +841,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -783,7 +903,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -819,7 +939,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -846,7 +966,7 @@ Example Response:
 .. code-block:: console
 
     {
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
         "count": 1,
         "next": null,
@@ -885,7 +1005,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -915,7 +1035,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -939,7 +1059,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
     Content-Type: application/json
 
@@ -966,7 +1086,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 
@@ -986,7 +1106,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1
 
 Grant User Administrative Privileges
@@ -1011,5 +1131,5 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    X_DEIS_API_VERSION: 1.1
+    X_DEIS_API_VERSION: 1.2
     X_DEIS_PLATFORM_VERSION: 1.4.1

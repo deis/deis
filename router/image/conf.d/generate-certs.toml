@@ -1,0 +1,9 @@
+[template]
+src   = "generate-certs"
+dest  = "/bin/generate-certs"
+uid = 0
+gid = 0
+mode  = "0755"
+keys = [
+  "/deis/certs"
+]

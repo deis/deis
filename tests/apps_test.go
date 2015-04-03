@@ -94,7 +94,7 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	utils.Execute(t, gitPushCmd, params, false, "")
-	utils.Curl(t, params)
+	utils.CurlApp(t, *params)
 	utils.Execute(t, cmd, params, false, "created initial release")
 	utils.Execute(t, cmd, params, false, "listening on 5000...")
 	if err := utils.Chdir(".."); err != nil {
@@ -103,7 +103,7 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 }
 
 func appsOpenTest(t *testing.T, params *utils.DeisTestConfig) {
-	utils.Curl(t, params)
+	utils.CurlApp(t, *params)
 }
 
 func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
