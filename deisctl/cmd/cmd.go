@@ -270,8 +270,6 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	outchan <- fmt.Sprintf("Control plane...")
 	b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
 	wg.Wait()
-	b.Stop([]string{"cache"}, wg, outchan, errchan)
-	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
 	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
