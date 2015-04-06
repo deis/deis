@@ -21,3 +21,9 @@ FAQ
     Unofficial `documentation in Chinese`_ for Deis has been created by the DockerOne community.
 
 .. _`documentation in Chinese`: http://dockerone.com/article/124
+
+- What's the difference between the ``deis`` and ``deisctl`` clients?
+
+    :ref:`deis <install-client>` is a "dev" tool, used to deploy and scale applications
+    to a Deis platform. :ref:`deisctl <install_deisctl>` is an "ops" tool, used to configure
+    and manage the Deis platform itself.
