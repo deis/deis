@@ -23,7 +23,7 @@ pip install awscli boto docopt
 function cleanup_ec2 {
     log_phase "Cleaning up"
     aws cloudformation delete-stack --stack-name $STACK_NAME
-    python $DEIS_ROOT/tests/bin/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+    python $DEIS_ROOT/contrib/ec2/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
 }
 
 # setup callbacks on process exit and error
@@ -152,7 +152,7 @@ echo "Using ELB $ELB_NAME"
 
 # add or update a route53 alias record set to route queries to the ELB
 # this python script won't return until the wildcard domain is accessible
-python $DEIS_ROOT/tests/bin/route53-wildcard.py create $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+python $DEIS_ROOT/contrib/ec2/route53-wildcard.py create $DEIS_TEST_DOMAIN $ELB_DNS_NAME
 
 # loop until at least one instance is "in service" with the ELB
 ATTEMPTS=45
