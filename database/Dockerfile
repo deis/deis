@@ -22,5 +22,5 @@ CMD ["/app/bin/boot"]
 EXPOSE 5432
 ADD . /app
 
-ENV DEIS_RELEASE 1.5.0
+ENV DEIS_RELEASE 1.6.0-dev
 
