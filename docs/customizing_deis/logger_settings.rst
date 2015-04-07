@@ -17,7 +17,7 @@ Considerations: none
 
 Settings set by logger
 ------------------------
-The following etcd keys are set by the database component, typically in its /bin/boot script.
+The following etcd keys are set by the logger component, typically in its /bin/boot script.
 
 ===========================              =================================================================================
 setting                                  description
