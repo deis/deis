@@ -1,0 +1,11 @@
+[Unit]
+Description=Systemd Reload Hack for Fleet Bug https://github.com/coreos/fleet/issues/1158
+After=fleet.service
+
+[Service]
+Restart=always
+RestartSec=20s
+ExecStart=/bin/bash -c "while true; do if systemctl -all list-units | grep -e '@.*not-found.*inactive.*dead.*'; then systemctl daemon-reload; fi; systemctl -all list-units | grep '@[0-9].*loaded.*inactive.*dead.*'  | awk '{print $1}' | xargs --no-run-if-empty systemctl restart; sleep 120s; done"
+
+[X-Fleet]
+Global=true
