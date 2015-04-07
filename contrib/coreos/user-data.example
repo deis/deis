@@ -32,8 +32,18 @@ coreos:
       Restart=always
       RestartSec=10s
       LimitNOFILE=40000
-  - name: fleet.service
+  - name: upgrade-fleet-091.service
     command: start
+    content: |
+      [Unit]
+      Description=Upgrade fleet if system fleet is v0.9.1, which has a known bug
+      Before=fleet.service
+      ConditionPathIsSymbolicLink=!/etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf
+
+      [Service]
+      ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /run/deis/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /run/deis/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -s /run/deis/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
+      RemainAfterExit=yes
+      Type=oneshot
   - name: stop-update-engine.service
     command: start
     content: |
@@ -97,6 +107,8 @@ coreos:
 
       [Service]
       ExecStart=/bin/bash -c "lsmod | grep overlay || modprobe overlay"
+  - name: fleet.service
+    command: start
 write_files:
   - path: /etc/deis-release
     content: |
@@ -195,3 +207,8 @@ write_files:
       [Service]
       ExecStart=
       ExecStart=/usr/sbin/ntpd -g -n -f /var/lib/ntp/ntp.drift
+  - path: /run/deis/conf/fleetd-092-custom-binary.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/run/deis/bin/fleetd-0.9.2
