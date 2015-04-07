@@ -56,41 +56,38 @@ Use ``git push deis master`` to deploy your application.
     Uploading context
     Step 0 : FROM deis/base:latest
      ---> 60024338bc63
-    Step 1 : MAINTAINER OpDemand <info@opdemand.com>
-     ---> Using cache
-     ---> 2af5ad7f28d6
-    Step 2 : RUN wget -O /tmp/go1.2.1.linux-amd64.tar.gz -q https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz
+    Step 1 : RUN wget -O /tmp/go1.2.1.linux-amd64.tar.gz -q https://go.googlecode.com/files/go1.2.1.linux-amd64.tar.gz
      ---> Using cache
      ---> cf9ef8c5caa7
-    Step 3 : RUN tar -C /usr/local -xzf /tmp/go1.2.1.linux-amd64.tar.gz
+    Step 2 : RUN tar -C /usr/local -xzf /tmp/go1.2.1.linux-amd64.tar.gz
      ---> Using cache
      ---> 515b1faf3bd8
-    Step 4 : RUN mkdir -p /go
+    Step 3 : RUN mkdir -p /go
      ---> Using cache
      ---> ebf4927a00e9
-    Step 5 : ENV GOPATH /go
+    Step 4 : ENV GOPATH /go
      ---> Using cache
      ---> c6a276eded37
-    Step 6 : ENV PATH /usr/local/go/bin:/go/bin:$PATH
+    Step 5 : ENV PATH /usr/local/go/bin:/go/bin:$PATH
      ---> Using cache
      ---> 2ba6f6c9f108
-    Step 7 : ADD . /go/src/github.com/deis/helloworld
+    Step 6 : ADD . /go/src/github.com/deis/helloworld
      ---> 94ab7f4b977b
     Removing intermediate container 171b7d9fdb34
-    Step 8 : RUN cd /go/src/github.com/deis/helloworld && go install -v .
+    Step 7 : RUN cd /go/src/github.com/deis/helloworld && go install -v .
      ---> Running in 0c8fbb2d2812
     github.com/deis/helloworld
      ---> 13b5af931393
     Removing intermediate container 0c8fbb2d2812
-    Step 9 : ENV PORT 80
+    Step 8 : ENV PORT 80
      ---> Running in 9b07da36a272
      ---> 2dce83167874
     Removing intermediate container 9b07da36a272
-    Step 10 : CMD ["/go/bin/helloworld"]
+    Step 9 : CMD ["/go/bin/helloworld"]
      ---> Running in f7b215199940
      ---> b1e55ce5195a
     Removing intermediate container f7b215199940
-    Step 11 : EXPOSE 80
+    Step 10 : EXPOSE 80
      ---> Running in 7eb8ec45dcb0
      ---> ea1a8cc93ca3
     Removing intermediate container 7eb8ec45dcb0
