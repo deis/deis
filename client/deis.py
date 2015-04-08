@@ -378,6 +378,34 @@ class DeisClient(object):
         self._settings = Settings()
         self._logger = logging.getLogger(__name__)
 
+    def check_connection(self, controller, ssl_verify):
+        url = urlparse.urljoin(controller, '/v1/')
+        error_message = """
+{} does not appear to be a valid Deis controller.
+Make sure that the Controller URI is correct and the server is running.
+""".format(controller)
+
+        try:
+            response = self._session.get(url, allow_redirects=False,
+                                         verify=ssl_verify)
+        except requests.exceptions.ConnectionError as err:
+            raise EnvironmentError(error_message + "\nSpecific Error: " + str(err.message))
+
+        if response.status_code != 401:
+            raise EnvironmentError(error_message)
+        self.check_api_version(response.headers.get('X_DEIS_API_VERSION'))
+
+    def check_api_version(self, server_api_version):
+        """
+        Check if the client is compatable with the api
+        """
+        if server_api_version is not None and server_api_version != __api_version__:
+            self._logger.warning("""
+  !    WARNING: Client and server API versions do not match. Please consider upgrading.
+  !    Client version: {}
+  !    Server version: {}
+""".format(__api_version__, server_api_version))
+
     def _dispatch(self, method, path, body=None, **kwargs):
         """
         Dispatch an API request to the active Deis controller
@@ -397,13 +425,7 @@ class DeisClient(object):
         }
         response = func(url, data=body, headers=headers, verify=ssl_verify)
         # check for version mismatch
-        server_api_version = response.headers.get('X_DEIS_API_VERSION')
-        if server_api_version is not None and server_api_version != __api_version__:
-            self._logger.warning("""
- !    WARNING: Client and server API versions do not match. Please consider upgrading.
- !    Client version: {}
- !    Server version: {}
-""".format(__api_version__, server_api_version))
+        self.check_api_version(response.headers.get('X_DEIS_API_VERSION'))
         return response
 
     def apps(self, args):
@@ -710,8 +732,14 @@ class DeisClient(object):
         """
         controller = args['<controller>']
         ssl_verify = True
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
+
+        self.check_connection(controller, ssl_verify)
+
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
@@ -722,9 +750,6 @@ class DeisClient(object):
             if password != confirm:
                 self._logger.error('Password mismatch, aborting registration.')
                 sys.exit(1)
-        ssl_option = args.get('--ssl-verify')
-        if ssl_option == 'false':
-            ssl_verify = False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
@@ -804,17 +829,20 @@ class DeisClient(object):
         """
         controller = args['<controller>']
         ssl_verify = True
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
+
+        self.check_connection(controller, ssl_verify)
+
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
-        ssl_option = args.get('--ssl-verify')
-        if ssl_option == 'false':
-            ssl_verify = False
         url = urlparse.urljoin(controller, '/v1/auth/login/')
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
