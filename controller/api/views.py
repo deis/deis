@@ -385,3 +385,13 @@ class AdminPermsViewSet(BaseDeisViewSet):
         user.is_superuser = user.is_staff = False
         user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserView(BaseDeisViewSet):
+    """A Viewset for interacting with User objects."""
+    model = User
+    serializer_class = serializers.UserSerializer
+    permission_classes = [permissions.IsAdmin]
+
+    def get_queryset(self):
+        return self.model.objects.exclude(username='AnonymousUser')
