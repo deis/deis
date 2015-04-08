@@ -11,7 +11,6 @@ Reference Guide
 
     usage
     terms/index
-    domain-ssl
     self-signed-certs
     client
     server/index

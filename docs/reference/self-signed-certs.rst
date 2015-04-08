@@ -6,7 +6,7 @@
 Creating a Self-Signed SSL Certificate
 ======================================
 
-When :ref:`using the domain ssl <domain_ssl>` feature for non-production applications or when
+When :ref:`using the app ssl <app_ssl>` feature for non-production applications or when
 :ref:`installing SSL for the platform <platform_ssl>`, you can avoid the costs associated with the SSL
 certificate by using a self-signed SSL certificate. Though the certificate implements full
 encryption, visitors to your site will see a browser warning indicating that the certificate should
@@ -70,4 +70,4 @@ The self-signed SSL certificate is generated from the server.key private key and
     $ openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
 
 The server.crt file is your site certificate suitable for use with
-:ref:`Deis's SSL endpoint <domain_ssl>` along with the server.key private key.
+:ref:`Deis's SSL endpoint <app_ssl>` along with the server.key private key.
