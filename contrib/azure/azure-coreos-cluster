@@ -257,11 +257,19 @@ for i in range(args.num_nodes):
 
 #get the ip addresses
 def get_ips(service_name, deployment_name):
+  try:
     result = sms.get_deployment_by_name(service_name, deployment_name)
     for instance in result.role_instance_list:
         ips.append(instance.public_ips[0].address)
     return ips
-
+  except WindowsAzureMissingResourceError:
+    # some helpful user error info
+    print 'Could not find cloud service ip address. This is likely due to the fact that the'
+    print 'cloud service failed to start. Check that the storage account for the'
+    print '--blob-container-url argument exists, ends with a \'/\' and that there is a container named \'vhds\' '
+    print 'within it. You may need to delete the cloud service \'' + service_name + '\' if you try'
+    print 'this script again'
+    sys.exit(1)
 #print dns config
 if args.pip:
     ips = []
