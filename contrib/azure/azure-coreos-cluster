@@ -159,6 +159,7 @@ def network_config(subnet_name=None, port='59913', public_ip_name=None):
     if args.deis:
         # create web endpoint with probe checking /health-check
         network.input_endpoints.input_endpoints.append(endpoint_config('web', '80', load_balancer_probe('/health-check', '80', 'http')))
+        network.input_endpoints.input_endpoints.append(endpoint_config('https', '443', load_balancer_probe(None, '443', 'tcp')))
         # create builder endpoint TCP probe check
         network.input_endpoints.input_endpoints.append(endpoint_config('builder', '2222', load_balancer_probe(None, '2222', 'tcp')))
     return network
