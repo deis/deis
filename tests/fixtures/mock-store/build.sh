@@ -3,13 +3,6 @@
 # fail on any command exiting non-zero
 set -eo pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
-  echo
-  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the store mock component locally"
-  echo
-  exit 1
-fi
-
 # install required packages to build
 apt-get update \
   && apt-get install -y build-essential git python-dev curl net-tools

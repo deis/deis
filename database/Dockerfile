@@ -14,7 +14,7 @@ RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/r
     && chmod +x /usr/local/bin/confd
 
 ADD build.sh /tmp/build.sh
-RUN DOCKER_BUILD=true /tmp/build.sh
+RUN /tmp/build.sh
 
 # define the execution environment
 WORKDIR /app

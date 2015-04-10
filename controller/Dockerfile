@@ -24,7 +24,7 @@ ADD build.sh /app/tmp/build.sh
 
 ADD requirements.txt /app/requirements.txt
 
-RUN DOCKER_BUILD=true /app/tmp/build.sh
+RUN /app/tmp/build.sh
 
 ADD . /app
 

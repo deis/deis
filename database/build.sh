@@ -3,13 +3,6 @@
 # fail on any command exiting non-zero
 set -eo pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
-  echo
-  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the database locally"
-  echo
-  exit 1
-fi
-
 # install postgresql 9.3 from postgresql.org repository as well as requirements for building wal-e
 echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 curl -sk https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -

@@ -1,8 +1,7 @@
 #FROM is generated dynamically by the Makefile
 
 ADD build.sh /tmp/build.sh
-
-RUN DOCKER_BUILD=true /tmp/build.sh
+RUN /tmp/build.sh
 
 WORKDIR /app
 EXPOSE 8888

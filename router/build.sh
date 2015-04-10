@@ -3,13 +3,6 @@
 # fail on any command exiting non-zero
 set -eo pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
-  echo
-  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the router locally"
-  echo
-  exit 1
-fi
-
 export VERSION_NGINX=nginx-1.7.10
 export VERSION_TCP_PROXY=f2156eff9f6621aaf601eaa8dee40c6820dea0b0
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
@@ -66,5 +59,5 @@ patch -p1 < $BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY/tcp.patch
   --add-module=$BUILD_PATH/nginx_tcp_proxy_module-$VERSION_TCP_PROXY \
   --add-module=$BUILD_PATH/naxsi-$VERSION_NAXSI/naxsi_src \
   && make && make install
-  
+
 mv /tmp/firewall /opt/nginx/firewall

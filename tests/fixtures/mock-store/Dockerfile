@@ -8,4 +8,4 @@ CMD ["/app/bin/boot"]
 ADD bin/boot /app/bin/boot
 
 ADD build.sh /tmp/build.sh
-RUN DOCKER_BUILD=true /tmp/build.sh
+RUN /tmp/build.sh

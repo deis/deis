@@ -3,13 +3,6 @@
 # fail on any command exiting non-zero
 set -eo pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
-  echo
-  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the registry locally"
-  echo
-  exit 1
-fi
-
 DEBIAN_FRONTEND=noninteractive
 
 sed -i 's/main$/main universe/' /etc/apt/sources.list
