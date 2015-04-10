@@ -44,7 +44,7 @@ EOF
     do
       LOCKFILE="/tmp/$RECEIVE_REPO.lock"
       if ( set -o noclobber; echo "$$" > "$LOCKFILE" ) 2> /dev/null; then
-        trap 'rm -f "$LOCKFILE"; exit $?' INT TERM EXIT
+        trap 'rm -f "$LOCKFILE"; exit 1' INT TERM EXIT
 
         # check for authorization on this repo
         $GITHOME/receiver "$RECEIVE_REPO" "$newrev" "$RECEIVE_USER" "$RECEIVE_FINGERPRINT"
