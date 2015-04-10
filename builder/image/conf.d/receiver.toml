@@ -7,4 +7,3 @@ mode  = "0755"
 keys = [
   "/deis/controller",
 ]
-check_cmd = "/app/bin/check {{ .src }}"

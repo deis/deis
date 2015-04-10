@@ -26,7 +26,7 @@ done
 sleep $(($ETCD_TTL+1))
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet >/dev/null 2>/dev/null; do
+until confd -onetime -node $ETCD --confdir /app --log-level error; do
     echo "store-gateway: waiting for confd to write initial templates..."
     sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
@@ -106,7 +106,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --interval 5 --quiet --watch &
+confd -node $ETCD --confdir /app --log-level error --watch &
 CONFD_PID=$!
 
 echo deis-store-gateway running...
