@@ -82,6 +82,9 @@ fi
 docker build -t deis/slugbuilder /app/slugbuilder/
 docker build -t deis/slugrunner /app/slugrunner/
 
+# push deis/slugrunner in the background
+/usr/local/bin/push-images &
+
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
 SSHD_PID=$!
