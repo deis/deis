@@ -1,4 +1,4 @@
-FROM flynn/busybox
+FROM busybox
 MAINTAINER OpDemand <info@opdemand.com>
 
 ENV DOCKER_HOST unix:///tmp/docker.sock
