@@ -115,7 +115,7 @@ func waitForInitialConfd(etcd string, timeout time.Duration) {
 		var buffer bytes.Buffer
 		output := bufio.NewWriter(&buffer)
 		log.Debugf("Connecting to etcd server %s", etcd)
-		cmd := exec.Command("confd", "-onetime", "-node", etcd, "--confdir", "/app", "--quiet")
+		cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "-onetime", "--log-level", "debug")
 		cmd.Stdout = output
 		cmd.Stderr = output
 
@@ -132,7 +132,7 @@ func waitForInitialConfd(etcd string, timeout time.Duration) {
 }
 
 func launchConfd(etcd string) {
-	cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "--interval", "5", "--quiet")
+	cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "--log-level", "debug", "--watch")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
