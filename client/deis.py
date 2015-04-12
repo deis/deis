@@ -25,6 +25,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
   git           manage git for applications
+  users         manage users
 
 Shortcut commands, use ``deis shortcuts`` to see all::
 
@@ -75,7 +76,7 @@ from termcolor import colored
 __version__ = '1.6.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.2'
+__api_version__ = '1.3'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -2223,6 +2224,35 @@ Make sure that the Controller URI is correct and the server is running.
             if ':' not in shortcut:
                 self._logger.info("{:<10} -> {}".format(shortcut, command))
         self._logger.info('\nUse `deis help [command]` to learn more')
+
+    def users(self, args):
+        """
+        Valid commands for users:
+
+        users:list        list all registered users
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'users:list'
+        args = docopt(self.users_list.__doc__)
+        return self.users_list(args)
+
+    def users_list(self, args):
+        """
+        Lists all registered users.
+        Requires admin privilages.
+
+        Usage: deis users:list
+        """
+        response = self._dispatch('get', '/v1/users/')
+        if response.status_code == requests.codes.ok:
+            data = response.json()
+            self._logger.info('=== Users')
+            for item in data['results']:
+                self._logger.info('{username}'.format(**item))
+        else:
+            raise ResponseError(response)
+
 
 SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),

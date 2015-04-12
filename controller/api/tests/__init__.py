@@ -59,3 +59,4 @@ from .test_key import *  # noqa
 from .test_perm import *  # noqa
 from .test_release import *  # noqa
 from .test_scheduler import *  # noqa
+from .test_users import *  # noqa
