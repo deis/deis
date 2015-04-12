@@ -53,7 +53,7 @@ CONFD_PID=$!
 # remove any pre-existing docker.sock
 test -e /var/run/docker.sock && rm -f /var/run/docker.sock
 
-# force overlay if it's supported
+# force overlayfs if the Docker daemon on the host is using it
 mkdir --parents --mode=0700 /
 fstype=$(findmnt --noheadings --output FSTYPE --target /)
 if [[ "$fstype" == "overlay" ]]; then
