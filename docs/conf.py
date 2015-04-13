@@ -55,7 +55,7 @@ master_doc = 'toctree'
 
 # General information about the project.
 project = u'deis'
-copyright = u'2013, 2014 OpDemand LLC'
+copyright = u'2013, 2014 Engine Yard, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -270,9 +270,9 @@ texinfo_documents = [
 
 # Bibliographic Dublin Core info.
 epub_title = u'deis'
-epub_author = u'OpDemand LLC'
-epub_publisher = u'OpDemand LLC'
-epub_copyright = u'2013, OpDemand LLC'
+epub_author = u'Engine Yard, Inc.'
+epub_publisher = u'Engine Yard, Inc.'
+epub_copyright = u'2013, Engine Yard, Inc.'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.
