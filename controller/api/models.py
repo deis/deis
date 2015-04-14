@@ -993,7 +993,7 @@ def _etcd_publish_domains(**kwargs):
 def _etcd_purge_domains(**kwargs):
     domain = kwargs['instance']
     try:
-        _etcd_client.delete('/deis/certs/{}'.format(domain),
+        _etcd_client.delete('/deis/domains/{}'.format(domain),
                             prevExist=True, dir=True, recursive=True)
     except KeyError:
         pass
