@@ -24,7 +24,7 @@ curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/relea
 	&& chmod +x /usr/local/bin/confd
 
 curl -sSL 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
-echo "deb http://ceph.com/debian-giant trusty main" > /etc/apt/sources.list.d/ceph.list
+echo "deb http://ceph.com/debian-hammer trusty main" > /etc/apt/sources.list.d/ceph.list
 
 apt-get update && apt-get install -yq ceph
 
