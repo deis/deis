@@ -63,8 +63,20 @@ mkdir -p $BUILD_DIR $CACHE_DIR
 # create temporary directory inside the build dir for this push
 TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
 
-cd $REPO_DIR
-git archive $GIT_SHA | tar -xmC $TMP_DIR
+# Full clone the repo so we can check for .gitmodules
+git clone -n $REPO_DIR/ $TMP_DIR
+cd $TMP_DIR
+git config core.bare false
+git reset --hard $GIT_SHA
+
+# If there is not a .gitmodules in this non-bare clone, revert to git archive behavior
+if [ ! -f $TMP_DIR/.gitmodules ]; then
+  TMP_DIR=$(mktemp -d --tmpdir=$BUILD_DIR)
+
+  cd $REPO_DIR
+
+  git archive $GIT_SHA | tar -xmC $TMP_DIR
+fi
 
 # switch to app context
 cd $TMP_DIR
