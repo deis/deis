@@ -53,6 +53,11 @@ Finally, update ``deisctl`` to the new version and reinstall:
     In-place upgrades incur approximately 10-30 minutes of downtime for deployed applications, the router mesh
     and the platform control plane.  Please plan your maintenance windows accordingly.
 
+Upgrade Deis clients
+^^^^^^^^^^^^^^^^^^^^
+If changing versions, make sure you upgrade your ``deis`` and ``deisctl`` clients
+to match the cluster's release.
+
 
 Migration Upgrade
 -----------------
