@@ -12,7 +12,7 @@ until etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&
   sleep 5
 done
 
-until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet >/dev/null 2>&1 ; do
+until confd -onetime -node $ETCD --confdir /app --log-level error; do
   echo "store-daemon: waiting for confd to write initial templates..."
   sleep 5
 done

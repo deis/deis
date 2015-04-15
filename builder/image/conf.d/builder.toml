@@ -9,4 +9,3 @@ keys = [
   "/deis/builder",
   "/deis/registry",
 ]
-check_cmd = "/app/bin/check {{ .src }}"
