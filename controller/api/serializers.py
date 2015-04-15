@@ -215,6 +215,7 @@ class KeySerializer(ModelSerializer):
     """Serialize a :class:`~api.models.Key` model."""
 
     owner = serializers.ReadOnlyField(source='owner.username')
+    fingerprint = serializers.CharField(read_only=True)
     created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
     updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
