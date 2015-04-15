@@ -20,7 +20,7 @@ apt-get update && \
     libevent-dev libssl-dev libyaml-0-2 libyaml-dev python-openssl liblzma-dev swig
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
 
 # create a registry user
 useradd -s /bin/bash registry

@@ -19,7 +19,7 @@ apt-get update && \
     apt-get install -yq python-dev libffi-dev libpq-dev libyaml-dev git libldap2-dev libsasl2-dev
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.0.8/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
 
 # add a deis user
 useradd deis --home-dir /app --shell /bin/bash
