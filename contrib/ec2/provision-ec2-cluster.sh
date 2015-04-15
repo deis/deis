@@ -45,14 +45,14 @@ aws cloudformation create-stack \
     --parameters "$(<$THIS_DIR/cloudformation.json)"
 
 # loop until the instances are created
-ATTEMPTS=45
+ATTEMPTS=60
 SLEEPTIME=10
 COUNTER=1
 INSTANCE_IDS=""
 until [ `wc -w <<< $INSTANCE_IDS` -eq $DEIS_NUM_INSTANCES ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
+    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after 10m)"; exit 1; fi  # timeout after 10m
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
-    echo "Waiting for instances to be created..."
+    echo "Waiting for instances to be provisioned ($(expr 61 - $COUNTER)0s) ..."
     INSTANCE_IDS=$(aws ec2 describe-instances \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
         --query 'Reservations[].Instances[].[ InstanceId ]' \
@@ -64,9 +64,9 @@ done
 COUNTER=1
 INSTANCE_STATUSES=""
 until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
+    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Health checks not passed after 10m, giving up"; exit 1; fi  # timeout after 10 minutes
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
-    echo "Waiting for instances to pass initial health checks..."
+    echo "Waiting for instances to pass initial health checks ($(expr 61 - $COUNTER)0s) ..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
         --filters Name=instance-status.reachability,Values=passed \
         --instance-ids $INSTANCE_IDS \
