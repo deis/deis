@@ -19,22 +19,10 @@ mkdir -p $CERT_PATH
 mkdir -p $KEY_PATH
 
 while read etcd_path; do
-    ETCD_SLUG=".$(echo $etcd_path | sed s/\\/// | sed s/\\//_/g)"
-    ETCD_CERT_SLUG="${ETCD_SLUG}_cert"
-    ETCD_KEY_SLUG="${ETCD_SLUG}_key"
+  ETCD_CERT_SLUG="${etcd_path}/cert"
+  ETCD_KEY_SLUG="${etcd_path}/key"
 
-    # cert template
-    {{ range $cert := .deis_certs }}{{ if $cert.Nodes }}
-    {{ range $certFields := $cert.Nodes }}
-    {{ if eq (Base $certFields.Key) "cert" }}
-    cat << EOF > "$CERT_PATH/$(basename $etcd_path).cert"
-{{ $certFields.Value }}
-EOF
-    {{ else if eq (Base $certFields.Key) "key" }}
-    cat << EOF > "$KEY_PATH/$(basename $etcd_path).key"
-{{ $certFields.Value }}
-EOF
-    {{ end }}
-    {{ end }}
-    {{ end }}{{ end }}
+  # cert template
+  etcdctl -C $HOST:4001 get $ETCD_CERT_SLUG > "$CERT_PATH/$(basename $etcd_path).cert"
+  etcdctl -C $HOST:4001 get $ETCD_KEY_SLUG  > "$KEY_PATH/$(basename $etcd_path).key"
 done < /etc/ssl/deis_certs
