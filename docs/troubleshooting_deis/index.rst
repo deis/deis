@@ -26,7 +26,7 @@ Connect to the public IP address of one of your nodes (or use "convenience" DNS 
 
 .. code-block:: console
 
-    $ ssh core@deis-1.example.com -i ~/.ssh/deis.pub
+    $ ssh core@deis-1.example.com -i ~/.ssh/deis
 
 
 Troubleshooting etcd
