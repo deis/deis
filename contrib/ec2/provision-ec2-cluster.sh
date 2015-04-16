@@ -49,10 +49,18 @@ ATTEMPTS=45
 SLEEPTIME=10
 COUNTER=1
 INSTANCE_IDS=""
-until [ `wc -w <<< $INSTANCE_IDS` -eq $DEIS_NUM_INSTANCES ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
-    if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
-    echo "Waiting for instances to be created..."
+until [ `wc -w <<< $INSTANCE_IDS` -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
+    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Timed out waiting for instances..." ; exit 1; fi  # timeout after 7 1/2 minutes
+    echo "Waiting for instances to be created... $STACK_STATUS"
+    sleep $SLEEPTIME
+    STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus')
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
+      echo "error creating stack: "
+      aws --output text cloudformation describe-stack-events \
+          --stack-name $STACK_NAME \
+          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]'
+      exit 1
+    fi
     INSTANCE_IDS=$(aws ec2 describe-instances \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
         --query 'Reservations[].Instances[].[ InstanceId ]' \
@@ -64,7 +72,7 @@ done
 COUNTER=1
 INSTANCE_STATUSES=""
 until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
+    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Timed out waiting for instances..." ; exit 1; fi  # timeout after 7 1/2 minutes
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
     echo "Waiting for instances to pass initial health checks..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
