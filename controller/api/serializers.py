@@ -17,7 +17,7 @@ from api import models
 
 
 PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z]+)')
-MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+[BbKkMmGg])$')
+MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+(MB|KB|GB|[BKMG]))$', re.IGNORECASE)
 CPUSHARE_MATCH = re.compile(r'^(?P<cpu>[0-9]+)$')
 TAGKEY_MATCH = re.compile(r'^[a-z]+$')
 TAGVAL_MATCH = re.compile(r'^\w+$')

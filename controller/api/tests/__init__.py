@@ -60,3 +60,4 @@ from .test_perm import *  # noqa
 from .test_release import *  # noqa
 from .test_scheduler import *  # noqa
 from .test_users import *  # noqa
+from .test_limits import *  # noqa
