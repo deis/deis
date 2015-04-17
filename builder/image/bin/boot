@@ -47,7 +47,7 @@ until confd -onetime -node $ETCD --confdir /app --log-level error; do
 done
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --watch &
+confd -node $ETCD --confdir /app --log-level error --interval 5 &
 CONFD_PID=$!
 
 # remove any pre-existing docker.sock

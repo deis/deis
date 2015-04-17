@@ -91,7 +91,7 @@ function on_exit() {
 trap on_exit TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --watch &
+confd -node $ETCD --confdir /app --log-level error --interval 5 &
 CONFD_PID=$!
 
 echo deis-controller running...
