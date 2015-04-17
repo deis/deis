@@ -1,12 +1,5 @@
 #!/usr/bin/env bash
 
-# create or truncate the file
-> /etc/ssl/deis_certs
-
-{{ range $cert := .deis_certs }}
-echo {{ $cert.Key }} >> /etc/ssl/deis_certs
-{{ end }}
-
 CERT_PATH=/etc/ssl/deis/certs
 KEY_PATH=/etc/ssl/deis/keys
 
@@ -18,11 +11,14 @@ rm -rf $KEY_PATH
 mkdir -p $CERT_PATH
 mkdir -p $KEY_PATH
 
-while read etcd_path; do
-  ETCD_CERT_SLUG="${etcd_path}/cert"
-  ETCD_KEY_SLUG="${etcd_path}/key"
+ETCD_CERTS=$(etcdctl -C 172.17.8.102:4001 ls /deis/certs)
+
+for CURRENT_CERT in $ETCD_CERTS; do
+  echo "Generating ssl certificate for $(basename $CURRENT_CERT)..."
+  ETCD_CERT_SLUG="$CURRENT_CERT/cert"
+  ETCD_KEY_SLUG="$CURRENT_CERT/key"
 
   # cert template
-  etcdctl -C $HOST:4001 get $ETCD_CERT_SLUG > "$CERT_PATH/$(basename $etcd_path).cert"
-  etcdctl -C $HOST:4001 get $ETCD_KEY_SLUG  > "$KEY_PATH/$(basename $etcd_path).key"
-done < /etc/ssl/deis_certs
+  etcdctl -C $HOST:4001 get $ETCD_CERT_SLUG > "$CERT_PATH/$(basename $CURRENT_CERT).cert"
+  etcdctl -C $HOST:4001 get $ETCD_KEY_SLUG  > "$KEY_PATH/$(basename $CURRENT_CERT).key"
+done

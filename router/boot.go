@@ -13,6 +13,7 @@ import (
 	"github.com/ActiveState/tail"
 	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
+	"github.com/robfig/cron"
 
 	"github.com/deis/deis/router/logger"
 )
@@ -71,8 +72,7 @@ func main() {
 	go launchNginx(nginxChan)
 	<-nginxChan
 
-	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
-	go launchCron()
+	launchCron()
 
 	waitForInitialConfd(host+":"+etcdPort, timeout)
 
@@ -89,18 +89,14 @@ func main() {
 }
 
 func launchCron() {
-	// edit crontab
-	crontab := `(echo "* * * * * generate-certs >> /dev/stdout") | crontab -`
-	cmd := exec.Command("bash", "-c", crontab)
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("could not write to crontab: %v", err)
-	}
-
-	// run cron
-	cmd = exec.Command("cron")
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("cron terminated by error: %v", err)
-	}
+	scheduler := cron.New()
+	scheduler.AddFunc("@every 30s", func() {
+		cmd := exec.Command("/bin/generate-certs")
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("an error occured generating ssl certificates: %v", err)
+		}
+	})
+	scheduler.Start()
 }
 
 func cleanOnExit(exitChan chan os.Signal) {

@@ -332,6 +332,11 @@
 			"Rev": "72d960fe96ac86dfd376b0de7ca81c0334838d0b"
 		},
 		{
+			"ImportPath": "github.com/robfig/cron",
+			"Comment": "v1-2-g67823cd",
+			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
+		},
+		{
 			"ImportPath": "github.com/tchap/go-patricia/patricia",
 			"Comment": "v1.0.1",
 			"Rev": "f64d0a63cd3363481c898faa9339de04d12213f9"
