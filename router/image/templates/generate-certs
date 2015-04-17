@@ -27,13 +27,17 @@ while read etcd_path; do
     {{ range $cert := .deis_certs }}{{ if $cert.Nodes }}
     {{ range $certFields := $cert.Nodes }}
     {{ if eq (Base $certFields.Key) "cert" }}
+    if [[ "$(basename $etcd_path)" == "{{ Base $cert.Key }}" ]]; then
     cat << EOF > "$CERT_PATH/$(basename $etcd_path).cert"
 {{ $certFields.Value }}
 EOF
+    fi
     {{ else if eq (Base $certFields.Key) "key" }}
+    if [[ "$(basename $etcd_path)" == "{{ Base $cert.Key }}" ]]; then
     cat << EOF > "$KEY_PATH/$(basename $etcd_path).key"
 {{ $certFields.Value }}
 EOF
+    fi
     {{ end }}
     {{ end }}
     {{ end }}{{ end }}
