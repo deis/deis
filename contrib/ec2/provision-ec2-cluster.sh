@@ -38,6 +38,11 @@ fi
 # check that the CoreOS user-data file is valid
 $CONTRIB_DIR/util/check-user-data.sh
 
+# Prepare bailout function to prevent us polluting the namespace
+bailout() {
+  aws cloudformation delete-stack --stack-name $STACK_NAME
+}
+
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
     --template-body "$($THIS_DIR/gen-json.py)" \
@@ -45,26 +50,36 @@ aws cloudformation create-stack \
     --parameters "$(<$THIS_DIR/cloudformation.json)"
 
 # loop until the instances are created
-ATTEMPTS=45
+ATTEMPTS=60
 SLEEPTIME=10
 COUNTER=1
 INSTANCE_IDS=""
-until [ `wc -w <<< $INSTANCE_IDS` -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Timed out waiting for instances..." ; exit 1; fi  # timeout after 7 1/2 minutes
-    echo "Waiting for instances to be created... $STACK_STATUS"
-    sleep $SLEEPTIME
+until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
+    if [ $COUNTER -gt $ATTEMPTS ]; then 
+        echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after 10m)"
+        echo "Destroying stack $STACK_NAME"
+        bailout
+        exit 1
+    fi
+
     STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus')
     if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \
           --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]'
+      bailout
       exit 1
     fi
+
     INSTANCE_IDS=$(aws ec2 describe-instances \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
         --query 'Reservations[].Instances[].[ InstanceId ]' \
         --output text)
+
+    echo "Waiting for instances to be provisioned ($STACK_STATUS, $(expr 61 - $COUNTER)0s) ..."
+    sleep $SLEEPTIME
+
     let COUNTER=COUNTER+1
 done
 
@@ -72,9 +87,15 @@ done
 COUNTER=1
 INSTANCE_STATUSES=""
 until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then echo "Timed out waiting for instances..." ; exit 1; fi  # timeout after 7 1/2 minutes
+    if [ $COUNTER -gt $ATTEMPTS ];
+        then echo "Health checks not passed after 10m, giving up"
+        echo "Destroying stack $STACK_NAME"
+        bailout
+        exit 1
+    fi
+
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
-    echo "Waiting for instances to pass initial health checks..."
+    echo "Waiting for instances to pass initial health checks ($(expr 61 - $COUNTER)0s) ..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
         --filters Name=instance-status.reachability,Values=passed \
         --instance-ids $INSTANCE_IDS \
