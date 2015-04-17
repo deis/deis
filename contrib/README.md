@@ -16,16 +16,21 @@ Various community members have modified Deis components, created new components,
 that may be useful to Deis users. While these are not supported by the Deis team, they can be helpful
 in certain scenarios.
 
-Some of these projects include:
+Some of these projects are listed below. This is not an exhaustive list.
 
-* [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) (@ianblenke) - Unit files to launch various services on CoreOS hosts
-* [deis-dashboard](https://github.com/lorieri/deis-dashboard) (@lorieri) - A dashboard which summarizes requests to the Deis cluster
-* [deis-docs](https://github.com/lorieri/deis-docs) (@lorieri) - Container to test Deis documentation
-* [deis-netstat](https://github.com/lorieri/deis-netstat) (@lorieri) - A cluster-wide netstat tool for Deis
-* [deis-proxy](https://github.com/lorieri/deis-proxy) (@lorieri) - A transparent proxy for Deis
-* [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) (@aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
-* [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) (@lorieri) - A global unit to launch New Relic sysmond
-* [deis-api](https://github.com/aledbf/deis-api) (@aledbf) - node.js Deis API wrapper
-* [deis-backup-service](https://github.com/mozilla/deis-backup-service) (@glogiotatidis) - Unit Files to automatically backup to S3 database and registry data.
+Please add to this list by opening a pull request!
 
-This is a non-exhaustive list. Please add to this list by opening a pull request.
+### Deis API Clients
+* [Node.js](https://github.com/aledbf/deis-api) by [@aledbf](https://github.com/aledbf) - node.js Deis API wrapper
+
+### Custom Deis Components
+* [deis-dashboard](https://github.com/lorieri/deis-dashboard) by [@lorieri](https://github.com/lorieri) - A dashboard which summarizes requests to the Deis cluster
+* [deis-docs](https://github.com/lorieri/deis-docs) by [@lorieri](https://github.com/lorieri) - Container to test Deis documentation
+* [deis-netstat](https://github.com/lorieri/deis-netstat) by [@lorieri](https://github.com/lorieri) - A cluster-wide netstat tool for Deis
+* [deis-proxy](https://github.com/lorieri/deis-proxy) by [@lorieri](https://github.com/lorieri) - A transparent proxy for Deis
+* [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) by [@aledbf](https://github.com/aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
+
+### CoreOS unit files
+* [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) by [@ianblenke](https://github.com/ianblenke) - Unit files to launch various services on CoreOS hosts
+* [deis-backup-service](https://github.com/mozilla/deis-backup-service) by [@glogiotatidis](https://github.com/glogiotatidis) - Unit Files to automatically backup to S3 database and registry data.
+* [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) by [@lorieri](https://github.com/lorieri) - A global unit to launch New Relic sysmond
