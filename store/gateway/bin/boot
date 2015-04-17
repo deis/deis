@@ -106,7 +106,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --interval 5 --quiet --watch &
+confd -node $ETCD --confdir /app --quiet --interval 5 &
 CONFD_PID=$!
 
 echo deis-store-gateway running...
@@ -142,4 +142,3 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 fi
 
 wait
-

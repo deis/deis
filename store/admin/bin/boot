@@ -6,7 +6,7 @@
 ETCD_PORT=${ETCD_PORT:-4001}
 ETCD="$HOST:$ETCD_PORT"
 
-confd -node $ETCD --confdir /app --interval 5 --quiet --watch &
+confd -node $ETCD --confdir /app --quiet --interval 5 &
 
 # loop forever until the container is stopped
 while true; do
