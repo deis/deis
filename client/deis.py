@@ -1342,7 +1342,7 @@ Make sure that the Controller URI is correct and the server is running.
             with open(args.get('--path'), 'r') as f:
                 self._config_set(app, dictify([line.strip() for line in f]))
         except IOError:
-            self._logger.error('could not read env from ' + env_file)
+            self._logger.error('could not read env from ' + args.get('--path'))
             sys.exit(1)
 
     def domains(self, args):
