@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	enablePublish bool
 	publishHost   string
 	publishPath   string
 	publishPort   string
@@ -21,6 +22,7 @@ var (
 )
 
 func init() {
+	flag.BoolVar(&enablePublish, "publish", false, "enable publishing to service discovery")
 	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
 	flag.StringVar(&publishPath, "publish-path", getopt("ETCD_PATH", "/deis/logs"), "path to publish host/port information")
@@ -42,7 +44,9 @@ func main() {
 
 	go syslogd.Listen(exitChan, cleanupChan)
 
-	go publishService(client, publishHost, publishPath, externalPort, uint64(time.Duration(publishTTL).Seconds()))
+	if enablePublish {
+		go publishService(client, publishHost, publishPath, externalPort, uint64(time.Duration(publishTTL).Seconds()))
+	}
 
 	// Wait for the proper shutdown of the syslog server before exit
 	<-cleanupChan
