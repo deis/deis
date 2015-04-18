@@ -1327,24 +1327,19 @@ Make sure that the Controller URI is correct and the server is running.
 
         Usage: deis config:push [<path>] [options]
 
-        Arguments:
-          <path>
-            a path leading to an environment file
-
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -p <path>, --path=<path>
+            a path leading to an environment file [default: .env]
         """
-        env_file = '.env'
-        if args.get('<path>'):
-            env_file = args.get('<path>')
         app = args.get('--app')
         if not app:
             app = self._session.app
 
         # read from .env
         try:
-            with open(env_file, 'r') as f:
+            with open(args.get('--path'), 'r') as f:
                 self._config_set(app, dictify([line.strip() for line in f]))
         except IOError:
             self._logger.error('could not read env from ' + env_file)
