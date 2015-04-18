@@ -97,7 +97,7 @@ func (h *handler) mainLoop() {
 }
 
 // Listen starts a new syslog server which runs until it receives a signal.
-func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
+func Listen(signalChan chan os.Signal, cleanupDone chan bool, bindAddr string) {
 	fmt.Println("Starting syslog...")
 	// If logRoot doesn't exist, create it
 	// equivalent to Python's `if not os.path.exists(filename)`
@@ -109,7 +109,7 @@ func Listen(signalChan chan os.Signal, cleanupDone chan bool) {
 	// Create a server with one handler and run one listen gorutine
 	s := syslog.NewServer()
 	s.AddHandler(newHandler())
-	s.Listen("0.0.0.0:514")
+	s.Listen(bindAddr)
 	fmt.Println("Syslog server started...")
 	fmt.Println("deis-logger running")
 

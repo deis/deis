@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -13,18 +15,22 @@ import (
 )
 
 var (
-	enablePublish bool
-	publishHost   string
-	publishPath   string
-	publishPort   string
+	logAddr         string
+	logPort         int
+	enablePublish   bool
+	publishHost     string
+	publishPath     string
+	publishPort     string
 	publishInterval int
 	publishTTL      int
 )
 
 func init() {
+	flag.StringVar(&logAddr, "log-addr", "0.0.0.0", "bind address for the logger")
+	flag.IntVar(&logPort, "log-port", 514, "bind port for the logger")
 	flag.BoolVar(&enablePublish, "publish", false, "enable publishing to service discovery")
-	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
+	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
 	flag.StringVar(&publishPath, "publish-path", getopt("ETCD_PATH", "/deis/logs"), "path to publish host/port information")
 	flag.StringVar(&publishPort, "publish-port", getopt("ETCD_PORT", "4001"), "service discovery port")
 	flag.IntVar(&publishTTL, "publish-ttl", publishInterval*2, "publish TTL in seconds")
@@ -33,8 +39,6 @@ func init() {
 func main() {
 	flag.Parse()
 
-	externalPort := getopt("EXTERNAL_PORT", "514")
-
 	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
 
 	// Wait for terminating signal
@@ -42,20 +46,20 @@ func main() {
 	cleanupChan := make(chan bool)
 	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
 
-	go syslogd.Listen(exitChan, cleanupChan)
+	go syslogd.Listen(exitChan, cleanupChan, fmt.Sprintf("%s:%d", logAddr, logPort))
 
 	if enablePublish {
-		go publishService(client, publishHost, publishPath, externalPort, uint64(time.Duration(publishTTL).Seconds()))
+		go publishService(client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL).Seconds()))
 	}
 
 	// Wait for the proper shutdown of the syslog server before exit
 	<-cleanupChan
 }
 
-func publishService(client *etcd.Client, host string, etcdPath string, externalPort string, ttl uint64) {
+func publishService(client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
 	for {
 		setEtcd(client, etcdPath+"/host", host, ttl)
-		setEtcd(client, etcdPath+"/port", externalPort, ttl)
+		setEtcd(client, etcdPath+"/port", port, ttl)
 		time.Sleep(time.Duration(publishInterval))
 	}
 }
