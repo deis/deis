@@ -1322,10 +1322,8 @@ Make sure that the Controller URI is correct and the server is running.
         """
         Sets environment variables for an application.
 
-        Your environment is read from the optionally specified path to a
-        .env-formatted file. If no path is specified, your environment is read
-        from a file named .env. This file can be read by foreman to load the
-        local environment for your app.
+        The environment is read from <path>. This file can be read by foreman
+        to load the local environment for your app.
 
         Usage: deis config:push [<path>] [options]
 
