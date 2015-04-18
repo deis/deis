@@ -28,6 +28,7 @@ var (
 func init() {
 	flag.StringVar(&logAddr, "log-addr", "0.0.0.0", "bind address for the logger")
 	flag.IntVar(&logPort, "log-port", 514, "bind port for the logger")
+	flag.StringVar(&syslogd.LogRoot, "log-root", "/data/logs", "log path to store logs")
 	flag.BoolVar(&enablePublish, "publish", false, "enable publishing to service discovery")
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
 	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
