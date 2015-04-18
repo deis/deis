@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -8,24 +9,31 @@ import (
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
-
 	"github.com/deis/deis/logger/syslogd"
 )
 
-const (
-	timeout time.Duration = 10 * time.Second
-	ttl     time.Duration = timeout * 2
+var (
+	publishHost   string
+	publishPath   string
+	publishPort   string
+	publishInterval int
+	publishTTL      int
 )
 
-func main() {
-	host := getopt("HOST", "127.0.0.1")
+func init() {
+	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
+	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
+	flag.StringVar(&publishPath, "publish-path", getopt("ETCD_PATH", "/deis/logs"), "path to publish host/port information")
+	flag.StringVar(&publishPort, "publish-port", getopt("ETCD_PORT", "4001"), "service discovery port")
+	flag.IntVar(&publishTTL, "publish-ttl", publishInterval*2, "publish TTL in seconds")
+}
 
-	etcdPort := getopt("ETCD_PORT", "4001")
-	etcdPath := getopt("ETCD_PATH", "/deis/logs")
+func main() {
+	flag.Parse()
 
 	externalPort := getopt("EXTERNAL_PORT", "514")
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
 
 	// Wait for terminating signal
 	exitChan := make(chan os.Signal, 2)
@@ -34,7 +42,7 @@ func main() {
 
 	go syslogd.Listen(exitChan, cleanupChan)
 
-	go publishService(client, host, etcdPath, externalPort, uint64(ttl.Seconds()))
+	go publishService(client, publishHost, publishPath, externalPort, uint64(time.Duration(publishTTL).Seconds()))
 
 	// Wait for the proper shutdown of the syslog server before exit
 	<-cleanupChan
@@ -44,7 +52,7 @@ func publishService(client *etcd.Client, host string, etcdPath string, externalP
 	for {
 		setEtcd(client, etcdPath+"/host", host, ttl)
 		setEtcd(client, etcdPath+"/port", externalPort, ttl)
-		time.Sleep(timeout)
+		time.Sleep(time.Duration(publishInterval))
 	}
 }
 
