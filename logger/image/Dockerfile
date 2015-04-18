@@ -1,6 +1,7 @@
 FROM ubuntu-debootstrap:14.04
 
-CMD ["/bin/logger --publish"]
+ENTRYPOINT ["/bin/logger"]
+CMD ["--publish"]
 EXPOSE 514
 
 ADD . /

@@ -10,19 +10,9 @@ the [Deis Project](https://github.com/deis/deis).
 
 ## Usage
 
-Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
-install, and start **deis/logger**.
-
-## Environment Variables
-
-* **DEBUG** enables verbose output if set
-* **ETCD_PORT** sets the TCP port on which to connect to the local etcd
-  daemon (default: *4001*)
-* **ETCD_PATH** sets the etcd directory where the logger announces
-  its configuration (default: */deis/logs*)
-* **ETCD_TTL** sets the time-to-live before etcd purges a configuration
-  value, in seconds (default: *10*)
-* **PORT** sets the TCP port on which the logger listens (default: *514*)
+```bash
+$ docker run deis/logger --help
+```
 
 ## License
 
