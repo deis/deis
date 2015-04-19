@@ -218,7 +218,8 @@ class DomainViewSet(AppResourceViewSet):
     serializer_class = serializers.DomainSerializer
 
     def get_object(self, **kwargs):
-        return self.get_queryset(**kwargs)
+        qs = self.get_queryset(**kwargs)
+        return qs.get(domain=self.kwargs['domain'])
 
 
 class CertificateViewSet(BaseDeisViewSet):

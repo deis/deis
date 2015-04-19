@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import unittest
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -102,7 +101,6 @@ class DomainTest(TestCase):
         with self.assertRaises(Domain.DoesNotExist):
             Domain.objects.get(domain=test_domains[0])
 
-    @unittest.skip(".get_object() returns all domains instead of the requested domain")
     def test_delete_domain_does_not_remove_others(self):
         """https://github.com/deis/deis/issues/3475"""
         self.test_delete_domain_does_not_remove_latest()
