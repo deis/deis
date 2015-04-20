@@ -32,7 +32,7 @@ func TestLogger(t *testing.T) {
 			"--rm",
 			"-p", port+":514/udp",
 			imageName,
-			"--publish",
+			"--enable-publish",
 			"--log-port="+port,
 			"--publish-host="+host,
 			"--publish-port="+etcdPort)
