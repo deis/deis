@@ -1325,7 +1325,7 @@ Make sure that the Controller URI is correct and the server is running.
         The environment is read from <path>. This file can be read by foreman
         to load the local environment for your app.
 
-        Usage: deis config:push [<path>] [options]
+        Usage: deis config:push [options]
 
         Options:
           -a --app=<app>
