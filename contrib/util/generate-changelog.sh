@@ -24,7 +24,7 @@ retrieve() {
         # Echo all this in a way that makes the commit hash and message a link
         # to the commit in markdown
         echo ' -' "[\`$commit\`]($LINK)" "$SUBSYSTEM": "$MESSAGE"
-    done < <(git --no-pager log --oneline --no-merges --oneline --format="%h %H %s" --grep="$1" "$FROM".."$TO")
+    done < <(git --no-pager log --oneline --merges --oneline --format="%h %H %b" --grep="$1" "$FROM".."$TO")
     # Scrape the information from git
 }
 
