@@ -1,6 +1,6 @@
 
 build: setup-venv
-	venv/bin/pip install docopt==0.6.2 python-dateutil==2.4.2 PyYAML==3.11 requests==2.5.1 git+https://github.com/pyinstaller/pyinstaller@7413317 tabulate==0.7.4 termcolor==1.1.0
+	venv/bin/pip install docopt==0.6.2 ndg-httpsclient==0.3.3 pyasn1==0.1.7 pyOpenSSL==0.15.1 python-dateutil==2.4.2 PyYAML==3.11 requests==2.5.1 git+https://github.com/pyinstaller/pyinstaller@7413317 tabulate==0.7.4 termcolor==1.1.0 urllib3==1.10.2
 	venv/bin/pyinstaller deis.spec
 	chmod +x dist/deis
 
