@@ -1,6 +1,6 @@
 
 build: setup-venv
-	venv/bin/pip install docopt==0.6.2 ndg-httpsclient==0.3.3 pyasn1==0.1.7 pyOpenSSL==0.15.1 python-dateutil==2.4.2 PyYAML==3.11 requests==2.5.1 git+https://github.com/pyinstaller/pyinstaller@7413317 tabulate==0.7.4 termcolor==1.1.0 urllib3==1.10.2
+	venv/bin/pip install -r requirements.txt git+https://github.com/pyinstaller/pyinstaller@7413317
 	venv/bin/pyinstaller deis.spec
 	chmod +x dist/deis
 
@@ -16,9 +16,6 @@ uninstall:
 clean:
 	rm -rf build/ dist/ *.egg-info
 
-client:
-	pyinstaller deis.spec
-
 installer: build
 	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
 	PATH=./makeself:$$PATH BINARY=deis makeself.sh --bzip2 --current --nox11 dist \
@@ -32,9 +29,9 @@ installer: build
 
 setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -q flake8==2.4.0
 
 test-style: setup-venv
+	venv/bin/pip install -q flake8==2.4.0
 	venv/bin/flake8
 
 test-unit:

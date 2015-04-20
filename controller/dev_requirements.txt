@@ -1,28 +1,5 @@
-# Deis client requirements
-docopt==0.6.2
-ndg-httpsclient==0.3.3
-pyasn1==0.1.7
-pyOpenSSL==0.15.1
-python-dateutil==2.4.2
-PyYAML==3.11
-requests==2.5.1
-tabulate==0.7.4
-termcolor==1.1.0
-urllib3==1.10.2
-
-# PyInstaller builds client binaries
-git+https://github.com/pyinstaller/pyinstaller@7413317
-
-# Deis documentation requirements
-Sphinx==1.3.1
-smartypants==1.8.6
-sphinxcontrib-httpdomain==1.3.0
-
-# Run "make coverage" for the % of code exercised during tests
+# Run "make coverage" or "make test-unit" for the % of code exercised during tests
 coverage>=3.7.1
-
-# Generates template documentation in the Django admin
-docutils>=0.12
 
 # Run "make flake8" to check python syntax and style
 flake8==2.4.0

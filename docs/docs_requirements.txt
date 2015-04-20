@@ -23,7 +23,7 @@ PyYAML==3.11
 South==1.0.2
 python-ldap==2.4.19
 
-# Deis client requirements
+# Deis client requirements, copied from client/requirements.txt
 docopt==0.6.2
 ndg-httpsclient==0.3.3
 pyasn1==0.1.7
