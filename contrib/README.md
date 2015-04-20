@@ -10,11 +10,9 @@ This does not preclude their usefulness.
 Please add any issues you find with this software to the
 [Deis project](https://github.com/deis/deis/issues).
 
-## Community contributions
+## Community Contributions
 
-Various community members have modified Deis components, created new components, or provided tools
-that may be useful to Deis users. While these are not supported by the Deis team, they can be helpful
-in certain scenarios.
+Various community members have modified Deis components, created new components, or provided tools that may be useful to Deis users. While these are not supported by the Deis team, they can be helpful in certain scenarios.
 
 Some of these projects are listed below. This is not an exhaustive list.
 
@@ -30,7 +28,10 @@ Please add to this list by opening a pull request!
 * [deis-proxy](https://github.com/lorieri/deis-proxy) by [@lorieri](https://github.com/lorieri) - A transparent proxy for Deis
 * [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) by [@aledbf](https://github.com/aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
 
-### CoreOS unit files
+### CoreOS Unit Files
 * [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) by [@ianblenke](https://github.com/ianblenke) - Unit files to launch various services on CoreOS hosts
 * [deis-backup-service](https://github.com/mozilla/deis-backup-service) by [@glogiotatidis](https://github.com/glogiotatidis) - Unit Files to automatically backup to S3 database and registry data.
 * [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) by [@lorieri](https://github.com/lorieri) - A global unit to launch New Relic sysmond
+
+### Example Applications
+* [Melano](https://github.com/SuaveIO/Melano) - F# "Hello World" app using the Suave framework
