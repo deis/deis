@@ -20,8 +20,8 @@ from api import authentication, models, permissions, serializers, viewsets
 class UserRegistrationViewSet(GenericViewSet,
                               mixins.CreateModelMixin):
     """ViewSet to handle registering new users. The logic is in the serializer."""
-    authentication_classes = [authentication.AnonymousAuthentication]
-    permission_classes = [permissions.IsAnonymous, permissions.HasRegistrationAuth]
+    authentication_classes = [authentication.AnonymousOrAuthenticatedAuthentication]
+    permission_classes = [permissions.HasRegistrationAuth]
     serializer_class = serializers.UserSerializer
 
 
