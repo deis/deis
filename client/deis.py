@@ -1043,18 +1043,35 @@ Make sure that the Controller URI is correct and the server is running.
         """
         Binds a certificate/key pair to an application.
 
-        Usage: deis certs:add <cert> <key>
+        Usage: deis certs:add <cert> <key> [--subject-alt-name=<san>...] [options]
 
         Arguments:
           <cert>
             The public key of the SSL certificate.
           <key>
             The private key of the SSL certificate.
+
+        Options:
+          --common-name=<cname>
+            The common name of the certificate. If none is provided, the controller will
+            interpret the common name from the certificate.
+          --subject-alt-name=<san>...
+            The subject alternate names (SAN) of the certificate. This will create multiple
+            Certificate objects in the controller, one for each SAN.
         """
         cert = args.get('<cert>')
         key = args.get('<key>')
+        self._certs_add(cert, key, args.get('--common-name'))
+        for san in args.get('--subject-alt-name'):
+            self._certs_add(cert, key, san)
+
+    def _certs_add(self, cert, key, common_name=None):
         body = {'certificate': file(cert).read().strip(), 'key': file(key).read().strip()}
-        sys.stdout.write("Adding SSL endpoint... ")
+        if common_name:
+            body['common_name'] = common_name
+            sys.stdout.write("Adding SSL endpoint {}...".format(common_name))
+        else:
+            sys.stdout.write("Adding SSL endpoint... ")
         sys.stdout.flush()
         try:
             progress = TextProgress()
@@ -1066,7 +1083,8 @@ Make sure that the Controller URI is correct and the server is running.
         if response.status_code == requests.codes.created:
             self._logger.info("done")
             data = response.json()
-            self._logger.info("{common_name}".format(**data))
+            if not common_name:
+                self._logger.info("{common_name}".format(**data))
         else:
             raise ResponseError(response)
 

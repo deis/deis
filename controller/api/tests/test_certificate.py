@@ -80,6 +80,20 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
 
+    def test_create_certificate_with_different_common_name(self):
+        """
+        In some cases such as with SAN certificates, the certificate can cover more
+        than a single domain. In that case, we want to be able to specify the common
+        name for the certificate/key.
+        """
+        body = {'certificate': self.autotest_example_com_cert,
+                'key': self.key,
+                'common_name': 'foo.example.com'}
+        response = self.client.post(self.url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['common_name'], 'foo.example.com')
+
     def test_get_certificate_screens_data(self):
         """
         When a user retrieves a certificate, only the common name and expiry date should be

@@ -275,8 +275,9 @@ class CertificateSerializer(ModelSerializer):
         """Metadata options for a DomainCertSerializer."""
         model = models.Certificate
         extra_kwargs = {'certificate': {'write_only': True},
-                        'key': {'write_only': True}}
-        read_only_fields = ['common_name', 'expires', 'created', 'updated']
+                        'key': {'write_only': True},
+                        'common_name': {'required': False}}
+        read_only_fields = ['expires', 'created', 'updated']
 
 
 class PushSerializer(ModelSerializer):
