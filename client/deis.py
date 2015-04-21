@@ -1182,6 +1182,7 @@ Make sure that the Controller URI is correct and the server is running.
         app = args.get('--app')
         if not app:
             app = self._session.app
+
         values = dictify(args['<var>=<value>'])
         if values.get('SSH_KEY'):
             if os.path.isfile(values.get('SSH_KEY')):
@@ -1327,24 +1328,27 @@ Make sure that the Controller URI is correct and the server is running.
         """
         Sets environment variables for an application.
 
-        Your environment is read from a file named .env. This file can be
-        read by foreman to load the local environment for your app.
+        The environment is read from <path>. This file can be read by foreman
+        to load the local environment for your app.
 
         Usage: deis config:push [options]
 
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -p <path>, --path=<path>
+            a path leading to an environment file [default: .env]
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
+
         # read from .env
         try:
-            with open('.env', 'r') as f:
+            with open(args.get('--path'), 'r') as f:
                 self._config_set(app, dictify([line.strip() for line in f]))
         except IOError:
-            self._logger.error('could not read from local env')
+            self._logger.error('could not read env from ' + args.get('--path'))
             sys.exit(1)
 
     def domains(self, args):
