@@ -633,12 +633,20 @@ Make sure that the Controller URI is correct and the server is running.
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -n --lines=<lines>
+            the number of lines to display
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get',
-                                  "/v1/apps/{}/logs".format(app))
+
+        url = "/v1/apps/{}/logs".format(app)
+
+        log_lines = args.get('--lines')
+        if log_lines:
+            url += "?log_lines={}".format(log_lines)
+
+        response = self._dispatch('get', url)
         if response.status_code == requests.codes.ok:
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:

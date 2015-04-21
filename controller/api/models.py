@@ -337,12 +337,12 @@ class App(UuidAuditedModel):
 
         self.scale(user, structure)
 
-    def logs(self):
+    def logs(self, log_lines):
         """Return aggregated log data for this application."""
         path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
         if not os.path.exists(path):
             raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+        data = subprocess.check_output(['tail', '-n', log_lines, path])
         return data
 
     def run(self, user, command):

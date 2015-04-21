@@ -13,6 +13,7 @@ What's New
 ----------
 
 **New!** ``/users`` endpoint for listing users
+**New!** ``/logs`` endpoint now has a option for limiting the number of log lines returned
 
 
 Authentication
@@ -257,6 +258,12 @@ Example Request:
     GET /v1/apps/example-go/logs/ HTTP/1.1
     Host: deis.example.com
     Authorization: token abc123
+
+Optional URL Query Parameters:
+
+.. code-block:: console
+
+    ?log_lines=
 
 Example Response:
 
