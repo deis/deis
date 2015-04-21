@@ -20,18 +20,6 @@ coreos:
   units:
   - name: etcd.service
     command: start
-    content: |
-      [Unit]
-      Description=etcd
-      [Service]
-      User=etcd
-      PermissionsStartOnly=true
-      Environment=ETCD_DATA_DIR=/var/lib/etcd
-      Environment=ETCD_NAME=%m
-      ExecStart=/usr/bin/etcd
-      Restart=always
-      RestartSec=10s
-      LimitNOFILE=40000
   - name: upgrade-fleet-091.service
     command: start
     content: |
