@@ -72,7 +72,7 @@ import requests
 from tabulate import tabulate
 from termcolor import colored
 
-__version__ = '1.5.1'
+__version__ = '1.5.2'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.2'
