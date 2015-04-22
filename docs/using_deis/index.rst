@@ -21,3 +21,4 @@ Using Deis
     using-docker-images
     config-application
     manage-application
+    app-ssl

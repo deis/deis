@@ -63,7 +63,7 @@ class AuthTest(TestCase):
                                     content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 200)
 
-    @override_settings(REGISTRATION_ENABLED=False)
+    @override_settings(REGISTRATION_MODE="disabled")
     def test_auth_registration_disabled(self):
         """test that a new user cannot register when registration is disabled."""
         url = '/v1/auth/register'
@@ -78,6 +78,89 @@ class AuthTest(TestCase):
         }
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 403)
+
+    @override_settings(REGISTRATION_MODE="admin_only")
+    def test_auth_registration_admin_only_fails_if_not_admin(self):
+        """test that a non superuser cannot register when registration is admin only."""
+        url = '/v1/auth/register'
+        submit = {
+            'username': 'testuser',
+            'password': 'password',
+            'first_name': 'test',
+            'last_name': 'user',
+            'email': 'test@user.com',
+            'is_superuser': False,
+            'is_staff': False,
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json')
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(REGISTRATION_MODE="admin_only")
+    def test_auth_registration_admin_only_works(self):
+        """test that a superuser can register when registration is admin only."""
+
+        user = User.objects.get(username='autotest')
+        token = Token.objects.get(user=user)
+
+        url = '/v1/auth/register'
+
+        username, password = 'newuser_by_admin', 'password'
+        first_name, last_name = 'Otto', 'Test'
+        email = 'autotest@deis.io'
+
+        submit = {
+            'username': username,
+            'password': password,
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            # try to abuse superuser/staff level perms (not the first signup!)
+            'is_superuser': True,
+            'is_staff': True,
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+
+        self.assertEqual(response.status_code, 201)
+        for key in response.data.keys():
+            self.assertIn(key, ['id', 'last_login', 'is_superuser', 'username', 'first_name',
+                                'last_name', 'email', 'is_active', 'is_superuser', 'is_staff',
+                                'date_joined', 'groups', 'user_permissions'])
+        expected = {
+            'username': username,
+            'email': email,
+            'first_name': first_name,
+            'last_name': last_name,
+            'is_active': True,
+            'is_superuser': False,
+            'is_staff': False
+        }
+        self.assertDictContainsSubset(expected, response.data)
+        # test login
+        url = '/v1/auth/login/'
+        payload = urllib.urlencode({'username': username, 'password': password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(REGISTRATION_MODE="not_a_mode")
+    def test_auth_registration_fails_with_nonexistant_mode(self):
+        """test that a registration should fail with a nonexistant mode"""
+        url = '/v1/auth/register'
+        submit = {
+            'username': 'testuser',
+            'password': 'password',
+            'first_name': 'test',
+            'last_name': 'user',
+            'email': 'test@user.com',
+            'is_superuser': False,
+            'is_staff': False,
+        }
+
+        try:
+            self.client.post(url, json.dumps(submit), content_type='application/json')
+        except Exception, e:
+            self.assertEqual(str(e), 'not_a_mode is not a valid registation mode')
 
     def test_cancel(self):
         """Test that a registered user can cancel her account."""

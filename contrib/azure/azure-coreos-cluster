@@ -35,8 +35,8 @@ parser.add_argument('--affinity-group', default='',
                    help='optional, overrides location if specified')
 parser.add_argument('--ssh', default=22001, type=int,
                    help='optional, starts with 22001 and +1 for each machine in cluster')
-parser.add_argument('--coreos-image', default='2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-607.0.0',
-                   help='optional, [2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-607.0.0]')
+parser.add_argument('--coreos-image', default='2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-633.1.0',
+                   help='optional, [2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-633.1.0]')
 parser.add_argument('--num-nodes', default=3, type=int,
                    help='optional, number of nodes to create (or add), defaults to 3')
 parser.add_argument('--virtual-network-name',
@@ -53,6 +53,8 @@ parser.add_argument('--deis', action='store_true',
                    help='optional, automatically opens http and controller endpoints')
 parser.add_argument('--data-disk', action='store_true',
                    help='optional, attaches a data disk to each VM')
+parser.add_argument('--nohttps', action='store_true',
+                   help='optional, disables the creation of the https load balanced endpoint')
 
 cloud_init_template = """#cloud-config
 
@@ -159,6 +161,8 @@ def network_config(subnet_name=None, port='59913', public_ip_name=None):
     if args.deis:
         # create web endpoint with probe checking /health-check
         network.input_endpoints.input_endpoints.append(endpoint_config('web', '80', load_balancer_probe('/health-check', '80', 'http')))
+        if not args.nohttps:
+          network.input_endpoints.input_endpoints.append(endpoint_config('https', '443', load_balancer_probe(None, '443', 'tcp')))
         # create builder endpoint TCP probe check
         network.input_endpoints.input_endpoints.append(endpoint_config('builder', '2222', load_balancer_probe(None, '2222', 'tcp')))
     return network
@@ -257,11 +261,19 @@ for i in range(args.num_nodes):
 
 #get the ip addresses
 def get_ips(service_name, deployment_name):
+  try:
     result = sms.get_deployment_by_name(service_name, deployment_name)
     for instance in result.role_instance_list:
         ips.append(instance.public_ips[0].address)
     return ips
-
+  except WindowsAzureMissingResourceError:
+    # some helpful user error info
+    print 'Could not find cloud service ip address. This is likely due to the fact that the'
+    print 'cloud service failed to start. Check that the storage account for the'
+    print '--blob-container-url argument exists, ends with a \'/\' and that there is a container named \'vhds\' '
+    print 'within it. You may need to delete the cloud service \'' + service_name + '\' if you try'
+    print 'this script again'
+    sys.exit(1)
 #print dns config
 if args.pip:
     ips = []

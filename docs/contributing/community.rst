@@ -15,7 +15,7 @@ Deis development is coordinated through its project `on GitHub`_. Anyone can
 check out the source code for Deis, fork the project, make improvements,
 and create a pull request to incorporate those changes into Deis.
 
-`OpDemand`_ maintains the Deis project, and as such decides what
+`Engine Yard`_ maintains the Deis project, and as such decides what
 ends up in the official GitHub repository for Deis. Deis depends on the
 contributions of the community; the maintainers will not ignore pull
 requests or issues.
@@ -36,6 +36,6 @@ but are more than happy to help community members attempting bounties.
 
 
 .. _`on Github`: https://github.com/deis/deis
-.. _`OpDemand`: http://www.opdemand.com/
+.. _`Engine Yard`: https://www.engineyard.com/
 .. _`BDFL`: http://en.wikipedia.org/wiki/Benevolent_Dictator_for_Life
 .. _`Gabriel Monroy`: https://github.com/gabrtv

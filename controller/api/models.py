@@ -337,12 +337,12 @@ class App(UuidAuditedModel):
 
         self.scale(user, structure)
 
-    def logs(self):
+    def logs(self, log_lines):
         """Return aggregated log data for this application."""
         path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
         if not os.path.exists(path):
             raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', str(settings.LOG_LINES), path])
+        data = subprocess.check_output(['tail', '-n', log_lines, path])
         return data
 
     def run(self, user, command):
@@ -873,13 +873,18 @@ class Key(UuidAuditedModel):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
     id = models.CharField(max_length=128)
     public = models.TextField(unique=True, validators=[validate_base64])
+    fingerprint = models.CharField(max_length=128)
 
     class Meta:
         verbose_name = 'SSH Key'
-        unique_together = (('owner', 'id'))
+        unique_together = (('owner', 'fingerprint'))
 
     def __str__(self):
         return "{}...{}".format(self.public[:18], self.public[-31:])
+
+    def save(self, *args, **kwargs):
+        self.fingerprint = fingerprint(self.public)
+        return super(Key, self).save(*args, **kwargs)
 
 
 # define update/delete callbacks for synchronizing
@@ -993,7 +998,7 @@ def _etcd_publish_domains(**kwargs):
 def _etcd_purge_domains(**kwargs):
     domain = kwargs['instance']
     try:
-        _etcd_client.delete('/deis/certs/{}'.format(domain),
+        _etcd_client.delete('/deis/domains/{}'.format(domain),
                             prevExist=True, dir=True, recursive=True)
     except KeyError:
         pass

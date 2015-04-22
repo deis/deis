@@ -41,19 +41,19 @@ function etcd_safe_mkdir {
 etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --interval 5 --quiet; do
+until confd -onetime -node $ETCD --confdir /app --log-level error; do
 	echo "builder: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --interval 5 --quiet --watch &
+confd -node $ETCD --confdir /app --log-level error --interval 5 &
 CONFD_PID=$!
 
 # remove any pre-existing docker.sock
 test -e /var/run/docker.sock && rm -f /var/run/docker.sock
 
-# force overlay if it's supported
+# force overlayfs if the Docker daemon on the host is using it
 mkdir --parents --mode=0700 /
 fstype=$(findmnt --noheadings --output FSTYPE --target /)
 if [[ "$fstype" == "overlay" ]]; then

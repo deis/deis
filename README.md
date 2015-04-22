@@ -3,7 +3,7 @@
 Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
 [![Build Status](https://ci.deis.io/buildStatus/icon?job=test-acceptance)](https://ci.deis.io/job/test-acceptance/)
-[![Current Release](http://img.shields.io/badge/release-v1.5.0-1eb0fc.svg)](https://github.com/deis/deis/releases/tag/v1.5.0)
+[![Current Release](http://img.shields.io/badge/release-v1.5.1-1eb0fc.svg)](https://github.com/deis/deis/releases/tag/v1.5.1)
 [![Latest Docs](http://img.shields.io/badge/docs-latest-fc1e5e.svg)](http://docs.deis.io/en/latest/)
 
 ![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
@@ -33,7 +33,7 @@ assistance with common issues.
 
 ## License
 
-Copyright 2013, 2014 OpDemand LLC
+Copyright 2013, 2014 Engine Yard, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>
 

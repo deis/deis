@@ -7,4 +7,3 @@ mode  = "0755"
 keys = [
   "/deis/registry",
 ]
-check_cmd = "/app/bin/check {{ .src }}"

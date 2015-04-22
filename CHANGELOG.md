@@ -1,3 +1,14 @@
+### v1.5.0 -> v1.5.1
+
+#### Fixes
+
+ - [`0866951`](https://github.com/deis/deis/commit/0866951334e3affaa9d04ae8f89f95bfe2590682) builder: exit 1 when gitreceive captures a build
+ - [`64c0990`](https://github.com/deis/deis/commit/64c0990e8cf1d71a45e2361f9d389abdfc53f0f0) router: use nginx $host in HTTPS redirects
+
+#### Maintenance
+
+ - [`f66ae3b`](https://github.com/deis/deis/commit/f66ae3badfd9f330a7b0caa7fd82aaef9521b9e8) release: update version to v1.5.1
+
 ### v1.4.1 -> v1.5.0
 
 #### Features

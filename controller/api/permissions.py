@@ -97,7 +97,22 @@ class HasRegistrationAuth(permissions.BasePermission):
     Checks to see if registration is enabled
     """
     def has_permission(self, request, view):
-        return settings.REGISTRATION_ENABLED
+        """
+        If settings.REGISTRATION_MODE does not exist, such as during a test, return True
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        try:
+            if settings.REGISTRATION_MODE == 'disabled':
+                return False
+            if settings.REGISTRATION_MODE == 'enabled':
+                return True
+            elif settings.REGISTRATION_MODE == 'admin_only':
+                return request.user.is_superuser
+            else:
+                raise Exception("{} is not a valid registation mode"
+                                .format(settings.REGISTRATION_MODE))
+        except AttributeError:
+            return True
 
 
 class HasBuilderAuth(permissions.BasePermission):

@@ -39,7 +39,7 @@ The following etcd keys are used by the controller component.
 ====================================      ======================================================
 setting                                   description
 ====================================      ======================================================
-/deis/controller/registrationEnabled      enable registration for new Deis users (default: true)
+/deis/controller/registrationMode         set registration to "enabled", "disabled", or "admin_only" (default: "enabled")
 /deis/controller/webEnabled               enable controller web UI (default: false)
 /deis/cache/host                          host of the cache component (set by cache)
 /deis/cache/port                          port of the cache component (set by cache)
@@ -77,9 +77,9 @@ Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 Unit hostname
 -------------
-Per default, Docker automatically generates a hostname for your application unit, such as: 
-``5c149b397cd6``. Auto generated hostnames is not always preferred. For instance, 
-New Relic would classify each Docker container as an unique server since they use hostname 
+Per default, Docker automatically generates a hostname for your application unit, such as:
+``5c149b397cd6``. Auto generated hostnames is not always preferred. For instance,
+New Relic would classify each Docker container as an unique server since they use hostname
 for grouping applications running on the same server together.
 
 Deis supports configuring hostname assignment through the ``unitHostname`` setting.
@@ -98,12 +98,12 @@ application
     The hostname is assigned based on the unit name. Example: ``dancing-cat.v2.web.1``
 
 server
-    The hostname is assigned based on the CoreOS hostname. Example: 
+    The hostname is assigned based on the CoreOS hostname. Example:
     ``ip-10-21-2-168.eu-west-1.compute.internal``
 
 .. note::
 
-    Changes to ``/deis/controller/unitHostname`` requires either pushing a new build to 
+    Changes to ``/deis/controller/unitHostname`` requires either pushing a new build to
     every application or scaling them down and up.
     The change is only detected when a container unit is deployed.
 

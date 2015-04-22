@@ -7,4 +7,3 @@ mode  = "0600"
 keys = [
   "/deis/builder/users",
 ]
-check_cmd = "/app/bin/check {{ .src }}"

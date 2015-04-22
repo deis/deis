@@ -31,7 +31,7 @@
     "groups": [],
     "user_permissions": [],
     "password": "pbkdf2_sha256$10000$SLr4X1T9L3QA$NB4d4a0d+3NZuAwLbdnKGb2z3P/hQrKQHVaGG3zAaMw=",
-    "email": "autotest@opdemand.com",
+    "email": "autotest@deis.io",
     "date_joined": "2013-11-25T21:58:46.208Z"
   }
 },
@@ -49,7 +49,7 @@
     "groups": [],
     "user_permissions": [],
     "password": "pbkdf2_sha256$10000$FrfwTVAtWPMD$HUfDokMeY37YshdyS3uhDZ+d/r8galU7kNuBfZxJl2s=",
-    "email": "autotest@opdemand.com",
+    "email": "autotest@deis.io",
     "date_joined": "2013-11-25T21:59:30.760Z"
   }
 },

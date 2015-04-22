@@ -25,6 +25,7 @@ Subcommands, use ``deis help [subcommand]`` to learn more::
   keys          manage ssh keys used for `git push` deployments
   perms         manage permissions for applications
   git           manage git for applications
+  users         manage users
 
 Shortcut commands, use ``deis shortcuts`` to see all::
 
@@ -75,7 +76,7 @@ from termcolor import colored
 __version__ = '1.6.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.2'
+__api_version__ = '1.3'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -378,6 +379,34 @@ class DeisClient(object):
         self._settings = Settings()
         self._logger = logging.getLogger(__name__)
 
+    def check_connection(self, controller, ssl_verify):
+        url = urlparse.urljoin(controller, '/v1/')
+        error_message = """
+{} does not appear to be a valid Deis controller.
+Make sure that the Controller URI is correct and the server is running.
+""".format(controller)
+
+        try:
+            response = self._session.get(url, allow_redirects=False,
+                                         verify=ssl_verify)
+        except requests.exceptions.ConnectionError as err:
+            raise EnvironmentError(error_message + "\nSpecific Error: " + str(err.message))
+
+        if response.status_code != 401:
+            raise EnvironmentError(error_message)
+        self.check_api_version(response.headers.get('X_DEIS_API_VERSION'))
+
+    def check_api_version(self, server_api_version):
+        """
+        Check if the client is compatable with the api
+        """
+        if server_api_version is not None and server_api_version != __api_version__:
+            self._logger.warning("""
+  !    WARNING: Client and server API versions do not match. Please consider upgrading.
+  !    Client version: {}
+  !    Server version: {}
+""".format(__api_version__, server_api_version))
+
     def _dispatch(self, method, path, body=None, **kwargs):
         """
         Dispatch an API request to the active Deis controller
@@ -397,13 +426,7 @@ class DeisClient(object):
         }
         response = func(url, data=body, headers=headers, verify=ssl_verify)
         # check for version mismatch
-        server_api_version = response.headers.get('X_DEIS_API_VERSION')
-        if server_api_version is not None and server_api_version != __api_version__:
-            self._logger.warning("""
- !    WARNING: Client and server API versions do not match. Please consider upgrading.
- !    Client version: {}
- !    Server version: {}
-""".format(__api_version__, server_api_version))
+        self.check_api_version(response.headers.get('X_DEIS_API_VERSION'))
         return response
 
     def apps(self, args):
@@ -610,12 +633,20 @@ class DeisClient(object):
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -n --lines=<lines>
+            the number of lines to display
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
-        response = self._dispatch('get',
-                                  "/v1/apps/{}/logs".format(app))
+
+        url = "/v1/apps/{}/logs".format(app)
+
+        log_lines = args.get('--lines')
+        if log_lines:
+            url += "?log_lines={}".format(log_lines)
+
+        response = self._dispatch('get', url)
         if response.status_code == requests.codes.ok:
             # strip the last newline character
             for line in response.json().split('\n')[:-1]:
@@ -710,8 +741,14 @@ class DeisClient(object):
         """
         controller = args['<controller>']
         ssl_verify = True
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
+
+        self.check_connection(controller, ssl_verify)
+
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
@@ -722,16 +759,19 @@ class DeisClient(object):
             if password != confirm:
                 self._logger.error('Password mismatch, aborting registration.')
                 sys.exit(1)
-        ssl_option = args.get('--ssl-verify')
-        if ssl_option == 'false':
-            ssl_verify = False
         email = args.get('--email')
         if not email:
             email = raw_input('email: ')
         url = urlparse.urljoin(controller, '/v1/auth/register')
         payload = {'username': username, 'password': password, 'email': email}
+        headers = {}
+
+        token = self._settings.get('token')
+        if token:
+            headers.update({'Authorization': 'token {}'.format(token)})
+
         response = self._session.post(url, data=payload, allow_redirects=False,
-                                      verify=ssl_verify)
+                                      verify=ssl_verify, headers=headers)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
             self._settings.save()
@@ -804,17 +844,20 @@ class DeisClient(object):
         """
         controller = args['<controller>']
         ssl_verify = True
+        ssl_option = args.get('--ssl-verify')
+        if ssl_option == 'false':
+            ssl_verify = False
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
+
+        self.check_connection(controller, ssl_verify)
+
         username = args.get('--username')
         if not username:
             username = raw_input('username: ')
         password = args.get('--password')
         if not password:
             password = getpass('password: ')
-        ssl_option = args.get('--ssl-verify')
-        if ssl_option == 'false':
-            ssl_verify = False
         url = urlparse.urljoin(controller, '/v1/auth/login/')
         payload = {'username': username, 'password': password}
         # post credentials to the login URL
@@ -1147,6 +1190,7 @@ class DeisClient(object):
         app = args.get('--app')
         if not app:
             app = self._session.app
+
         values = dictify(args['<var>=<value>'])
         if values.get('SSH_KEY'):
             if os.path.isfile(values.get('SSH_KEY')):
@@ -1292,24 +1336,27 @@ class DeisClient(object):
         """
         Sets environment variables for an application.
 
-        Your environment is read from a file named .env. This file can be
-        read by foreman to load the local environment for your app.
+        The environment is read from <path>. This file can be read by foreman
+        to load the local environment for your app.
 
         Usage: deis config:push [options]
 
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
+          -p <path>, --path=<path>
+            a path leading to an environment file [default: .env]
         """
         app = args.get('--app')
         if not app:
             app = self._session.app
+
         # read from .env
         try:
-            with open('.env', 'r') as f:
+            with open(args.get('--path'), 'r') as f:
                 self._config_set(app, dictify([line.strip() for line in f]))
         except IOError:
-            self._logger.error('could not read from local env')
+            self._logger.error('could not read env from ' + args.get('--path'))
             sys.exit(1)
 
     def domains(self, args):
@@ -2195,6 +2242,35 @@ class DeisClient(object):
             if ':' not in shortcut:
                 self._logger.info("{:<10} -> {}".format(shortcut, command))
         self._logger.info('\nUse `deis help [command]` to learn more')
+
+    def users(self, args):
+        """
+        Valid commands for users:
+
+        users:list        list all registered users
+
+        Use `deis help [command]` to learn more.
+        """
+        sys.argv[1] = 'users:list'
+        args = docopt(self.users_list.__doc__)
+        return self.users_list(args)
+
+    def users_list(self, args):
+        """
+        Lists all registered users.
+        Requires admin privilages.
+
+        Usage: deis users:list
+        """
+        response = self._dispatch('get', '/v1/users/')
+        if response.status_code == requests.codes.ok:
+            data = response.json()
+            self._logger.info('=== Users')
+            for item in data['results']:
+                self._logger.info('{username}'.format(**item))
+        else:
+            raise ResponseError(response)
+
 
 SHORTCUTS = OrderedDict([
     ('create', 'apps:create'),

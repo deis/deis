@@ -9,10 +9,10 @@ Troubleshooting deis-store
 The store component is the most complex component of Deis. As such, there are many ways for it to fail.
 Recall that the store components represent Ceph services as follows:
 
-* ``store-monitor``: http://ceph.com/docs/giant/man/8/ceph-mon/
-* ``store-daemon``: http://ceph.com/docs/giant/man/8/ceph-osd/
-* ``store-gateway``: http://ceph.com/docs/giant/radosgw/
-* ``store-metadata``: http://ceph.com/docs/giant/man/8/ceph-mds/
+* ``store-monitor``: http://ceph.com/docs/hammer/man/8/ceph-mon/
+* ``store-daemon``: http://ceph.com/docs/hammer/man/8/ceph-osd/
+* ``store-gateway``: http://ceph.com/docs/hammer/radosgw/
+* ``store-metadata``: http://ceph.com/docs/hammer/man/8/ceph-mds/
 * ``store-volume``: a system service which mounts a `Ceph FS`_ volume to be used by the controller and logger components
 
 Log output for store components can be viewed with ``deisctl status store-<component>`` (such as
@@ -126,5 +126,5 @@ failing store-volume, application logs will be lost until the volume recovers.
 
 Note that store-volume requires CoreOS >= 471.1.0 for the CephFS kernel module.
 
-.. _`Ceph FS`: https://ceph.com/docs/giant/cephfs/
-.. _`troubleshooting`: http://docs.ceph.com/docs/giant/rados/troubleshooting/
+.. _`Ceph FS`: https://ceph.com/docs/hammer/cephfs/
+.. _`troubleshooting`: http://docs.ceph.com/docs/hammer/rados/troubleshooting/

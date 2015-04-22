@@ -82,8 +82,10 @@ urlpatterns = patterns(
         views.AdminPermsViewSet.as_view({'delete': 'destroy'})),
     url(r'^admin/perms/?',
         views.AdminPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
-    url(r'^certs/(?P<common_name>[-_.\w]+)/?'.format(settings.APP_URL_REGEX),
+    url(r'^certs/(?P<common_name>[-_*.\w]+)/?'.format(settings.APP_URL_REGEX),
         views.CertificateViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
     url(r'^certs/?',
         views.CertificateViewSet.as_view({'get': 'list', 'post': 'create'})),
+    # list users
+    url(r'^users/', views.UserView.as_view({'get': 'list'})),
 )

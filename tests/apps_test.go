@@ -18,6 +18,7 @@ var (
 	appsRunCmd             = "apps:run echo Hello, 世界"
 	appsOpenCmd            = "apps:open --app={{.AppName}}"
 	appsLogsCmd            = "apps:logs --app={{.AppName}}"
+	appsLogsLimitCmd       = "apps:logs --app={{.AppName}} -n 1"
 	appsInfoCmd            = "apps:info --app={{.AppName}}"
 	appsDestroyCmd         = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 	appsDestroyCmdNoApp    = "apps:destroy --confirm={{.AppName}}"
@@ -97,6 +98,9 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.CurlApp(t, *params)
 	utils.Execute(t, cmd, params, false, "created initial release")
 	utils.Execute(t, cmd, params, false, "listening on 5000...")
+
+	utils.Execute(t, appsLogsLimitCmd, params, false, "")
+
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}

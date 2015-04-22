@@ -1,8 +1,6 @@
 :title: Controller API v1.2
 :description: The v1.2 REST API for Deis' Controller
 
-.. _controller_api_v1:
-
 Controller API v1.2
 ===================
 

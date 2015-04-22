@@ -46,9 +46,9 @@ The duties of a core maintainer include:
 * Answer questions and help users in IRC
 
 The current core maintainers of Deis:
-* Chris Armstrong - <chris@opdemand.com> ([@carmstrong](https://github.com/carmstrong))
-* Matt Boersma - <matt@opdemand.com> ([@mboersma](https://github.com/mboersma))
-* Matthew Fisher - <matthewf@opdemand.com> ([@bacongobbler](https://github.com/bacongobbler))
+* Chris Armstrong - <carmstrong@engineyard.com> ([@carmstrong](https://github.com/carmstrong))
+* Matt Boersma - <mboersma@engineyard.com> ([@mboersma](https://github.com/mboersma))
+* Matthew Fisher - <mfisher@engineyard.com> ([@bacongobbler](https://github.com/bacongobbler))
 
 No pull requests can be merged until at least one core maintainer signs off with a [Code LGTM](http://docs.deis.io/en/latest/contributing/standards/#merge-approval). The other LGTM can come from either a core maintainer
 or contributing maintainer.
@@ -66,7 +66,7 @@ The duties of a contributing maintainer are very similar to those of a core main
 The current contributing maintainers of Deis:
 * Johannes Würbach - <johannes.wuerbach@googlemail.com> ([@johanneswuerbach](https://github.com/johanneswuerbach))
 * Manuel de Brito Fontes - <alejandro.debrito@soficom.cl> ([@aledbf](https://github.com/aledbf))
-* Sivaram Mothiki - <smothiki@opdemand.com> ([@smothiki](https://github.com/smothiki))
+* Sivaram Mothiki - <smothiki@engineyard.com> ([@smothiki](https://github.com/smothiki))
 
 ## Becoming a maintainer
 

@@ -32,7 +32,7 @@ Run `make mock-store` from the tests/ directory to update the Docker image used 
 
 ## License
 
-© 2015 OpDemand LLC
+© 2015 Engine Yard, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may
 not use this file except in compliance with the License. You may obtain

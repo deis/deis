@@ -11,7 +11,7 @@ import (
 
 var (
 	limitsListCmd     = "limits:list --app={{.AppName}}"
-	limitsSetMemCmd   = "limits:set --app={{.AppName}} web=256M"
+	limitsSetMemCmd   = "limits:set --app={{.AppName}} web=256MB"
 	limitsSetCPUCmd   = "limits:set --app={{.AppName}} -c web=512"
 	limitsUnsetMemCmd = "limits:unset --app={{.AppName}} --memory web"
 	limitsUnsetCPUCmd = "limits:unset --app={{.AppName}} -c web"

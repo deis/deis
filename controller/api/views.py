@@ -20,8 +20,8 @@ from api import authentication, models, permissions, serializers, viewsets
 class UserRegistrationViewSet(GenericViewSet,
                               mixins.CreateModelMixin):
     """ViewSet to handle registering new users. The logic is in the serializer."""
-    authentication_classes = [authentication.AnonymousAuthentication]
-    permission_classes = [permissions.IsAnonymous, permissions.HasRegistrationAuth]
+    authentication_classes = [authentication.AnonymousOrAuthenticatedAuthentication]
+    permission_classes = [permissions.HasRegistrationAuth]
     serializer_class = serializers.UserSerializer
 
 
@@ -150,7 +150,9 @@ class AppViewSet(BaseDeisViewSet):
     def logs(self, request, **kwargs):
         app = self.get_object()
         try:
-            return Response(app.logs(), status=status.HTTP_200_OK, content_type='text/plain')
+            return Response(app.logs(request.query_params.get('log_lines',
+                                     str(settings.LOG_LINES))),
+                            status=status.HTTP_200_OK, content_type='text/plain')
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
                             status=status.HTTP_204_NO_CONTENT,
@@ -218,7 +220,8 @@ class DomainViewSet(AppResourceViewSet):
     serializer_class = serializers.DomainSerializer
 
     def get_object(self, **kwargs):
-        return self.get_queryset(**kwargs)
+        qs = self.get_queryset(**kwargs)
+        return qs.get(domain=self.kwargs['domain'])
 
 
 class CertificateViewSet(BaseDeisViewSet):
@@ -385,3 +388,13 @@ class AdminPermsViewSet(BaseDeisViewSet):
         user.is_superuser = user.is_staff = False
         user.save(update_fields=['is_superuser', 'is_staff'])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserView(BaseDeisViewSet):
+    """A Viewset for interacting with User objects."""
+    model = User
+    serializer_class = serializers.UserSerializer
+    permission_classes = [permissions.IsAdmin]
+
+    def get_queryset(self):
+        return self.model.objects.exclude(username='AnonymousUser')

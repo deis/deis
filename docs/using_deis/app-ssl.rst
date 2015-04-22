@@ -2,10 +2,10 @@
 :description: Enabling and configuring SSL on applications using the SSL endpoint.
 
 
-.. _domain_ssl:
+.. _app_ssl:
 
-Using an SSL Certificate with Deis
-==================================
+Application SSL Certificates
+============================
 
 SSL is a cryptographic protocol that provides end-to-end encryption and integrity for all web
 requests. Apps that transmit sensitive data should enable SSL to ensure all information is

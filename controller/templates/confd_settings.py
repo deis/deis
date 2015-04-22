@@ -37,8 +37,8 @@ DATABASES = {
 # move log directory out of /app/deis
 DEIS_LOG_DIR = '/data/logs'
 
-{{ if exists "/deis/controller/registrationEnabled" }}
-REGISTRATION_ENABLED = bool({{ getv "/deis/controller/registrationEnabled" }})
+{{ if exists "/deis/controller/registrationMode" }}
+REGISTRATION_MODE = '{{ getv "/deis/controller/registrationMode" }}'
 {{ end }}
 
 {{ if exists "/deis/controller/webEnabled" }}

@@ -121,6 +121,13 @@ class AppTest(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
+
+        # test with log_lines
+        response = self.client.get(url + "?log_lines=1",
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data, FAKE_LOG_DATA.splitlines(True)[4])
+
         os.remove(path)
         # TODO: test run needs an initial build
 

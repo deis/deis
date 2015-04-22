@@ -31,9 +31,10 @@ Patch Release
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
         README.md \
         builder/image/Dockerfile \
-        builder/slugbuilder/Dockerfile \
-        builder/slugrunner/Dockerfile \
+        builder/image/slugbuilder/Dockerfile \
+        builder/image/slugrunner/Dockerfile \
         cache/Dockerfile \
+        cache/image/Dockerfile \
         client/deis.py \
         client/setup.py \
         contrib/coreos/user-data.example \
@@ -45,7 +46,7 @@ Patch Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.1.rst \
+        docs/reference/api-v1.2.rst \
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
@@ -95,7 +96,7 @@ Major or Minor Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.1.rst \
+        docs/reference/api-v1.2.rst \
         docs/troubleshooting_deis/index.rst
 
   - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string

@@ -41,10 +41,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
 
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.5.0
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.5.1
     $ deisctl --version  # should match the desired platform
-    1.5.0
-    $ deisctl config platform set version=v1.5.0
+    1.5.1
+    $ deisctl config platform set version=v1.5.1
     $ deisctl install platform
     $ deisctl start platform
 
@@ -52,6 +52,11 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
     In-place upgrades incur approximately 10-30 minutes of downtime for deployed applications, the router mesh
     and the platform control plane.  Please plan your maintenance windows accordingly.
+
+Upgrade Deis clients
+^^^^^^^^^^^^^^^^^^^^
+As well as upgrading ``deisctl``, make sure to upgrade the :ref:`deis client <install-client>` to
+match the new version of Deis.
 
 
 Migration Upgrade

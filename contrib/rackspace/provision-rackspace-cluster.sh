@@ -49,6 +49,7 @@ $CONTRIB_DIR/util/check-user-data.sh
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
     # This image is CoreOS 607.0.0 in the stable channel
+    # TODO Update to 633.1.0 once it's available in the stable channel
     supernova $ENV boot --image c412af3b-f9a6-4ad1-a9e9-4aabca8073d3 --flavor $FLAVOR --key-name $1 --user-data $CONTRIB_DIR/coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done

@@ -58,6 +58,8 @@ htmlcov/
 
 # integration test droppings
 tests/example-*
+tests/*.cert
+tests/*.key
 
 # extra .py droppings from building docs
 /__init__.py
