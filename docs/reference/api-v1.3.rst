@@ -52,7 +52,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -90,7 +90,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {"token": "abc123"}
@@ -113,7 +113,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Applications
@@ -137,7 +137,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -183,7 +183,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -214,7 +214,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 List Application Details
@@ -234,7 +234,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -271,7 +271,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: text/plain
 
     "16:51:14 deis[api]: test created initial release\n"
@@ -295,7 +295,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {"rc": 0, "output": "hi"}
@@ -322,7 +322,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -355,7 +355,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -392,7 +392,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -422,7 +422,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Containers
@@ -446,7 +446,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -486,7 +486,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -529,7 +529,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Configuration
@@ -553,7 +553,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -589,7 +589,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
     X-Deis-Release: 3
 
@@ -632,7 +632,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
     X-Deis-Release: 4
 
@@ -674,7 +674,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -712,7 +712,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -742,7 +742,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Builds
@@ -766,7 +766,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -811,7 +811,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
     X-Deis-Release: 4
 
@@ -849,7 +849,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -911,7 +911,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -947,7 +947,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {"version": 5}
@@ -974,7 +974,7 @@ Example Response:
 
     {
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
         "count": 1,
         "next": null,
         "previous": null,
@@ -1013,7 +1013,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -1043,7 +1043,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Permissions
@@ -1067,7 +1067,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {
@@ -1094,7 +1094,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 
 Remove Application Permission
@@ -1114,7 +1114,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 Grant User Administrative Privileges
 ````````````````````````````````````
@@ -1139,7 +1139,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
 
 Users
 -----
@@ -1165,7 +1165,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.5.0
+    X_DEIS_PLATFORM_VERSION: 1.6.0
     Content-Type: application/json
 
     {

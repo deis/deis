@@ -46,7 +46,7 @@ Patch Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.2.rst \
+        docs/reference/api-v1.3.rst \
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
@@ -96,7 +96,7 @@ Major or Minor Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.2.rst \
+        docs/reference/api-v1.3.rst \
         docs/troubleshooting_deis/index.rst
 
   - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string

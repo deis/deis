@@ -1,3 +1,13 @@
+### v1.5.1 -> v1.5.2
+
+#### Fixes
+
+ - [`a4bf040`](https://github.com/deis/deis/commit/a4bf040b5982dee6b92bfd4cfdfb3d57f30cdba2) router: include deis.conf if no match with an SSL cert
+ - [`1df8eea`](https://github.com/deis/deis/commit/1df8eeaaf0f563d758167c454b2a8f9de612122f) controller: allow "*" wildcard in cert REST URLs
+ - [`7f6099c`](https://github.com/deis/deis/commit/7f6099c865c7a48f88b435cfad01f435251208e2) controller: return the correct domain from get_object
+ - [`02b78a2`](https://github.com/deis/deis/commit/02b78a258c93d1caa149be2dbf313a097552485f) router: write out only if cert matches the path
+ - [`8e960ca`](https://github.com/deis/deis/commit/8e960ca203bd5d8c48e129c4172dd2b13cdc4439) (all): use "confd --interval 5" instead of "--watch"
+
 ### v1.5.0 -> v1.5.1
 
 #### Fixes
