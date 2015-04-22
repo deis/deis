@@ -27,6 +27,11 @@ else:
     KWARGS = {'scripts': ['deis']}
 
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+    required = [r for r in required if r.strip() and not r.startswith('#')]
+
+
 setup(name='deis',
       version='1.6.0-dev',
       license=APACHE_LICENSE,
@@ -56,10 +61,6 @@ setup(name='deis',
           ('.', ['README.rst']),
       ],
       long_description=LONG_DESCRIPTION,
-      install_requires=[
-          'docopt==0.6.2', 'python-dateutil==2.4.2',
-          'PyYAML==3.11', 'requests==2.5.1',
-          'tabulate==0.7.4', 'termcolor==1.1.0'
-      ],
+      install_requires=required,
       zip_safe=True,
       **KWARGS)
