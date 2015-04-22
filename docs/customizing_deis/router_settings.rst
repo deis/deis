@@ -39,6 +39,7 @@ setting                                      description
 /deis/domains/*                              domain configuration for applications (set by controller)
 /deis/router/affinityArg                     for requests with the indicated query string variable, hash its contents to perform session affinity (default: undefined)
 /deis/router/bodySize                        nginx body size setting (default: 1m)
+/deis/router/defaultTimeout                  default timeout value in seconds. Should be greater then the frontfacing load balancers timeout value (default: 1300)
 /deis/router/builder/timeout/connect         proxy_connect_timeout for deis-builder (default: 10000). Unit in miliseconds
 /deis/router/builder/timeout/read            proxy_read_timeout for deis-builder (default: 1200000). Unit in miliseconds
 /deis/router/builder/timeout/send            proxy_send_timeout for deis-builder (default: 1200000). Unit in miliseconds
