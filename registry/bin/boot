@@ -19,8 +19,6 @@ export ETCD_TTL=${ETCD_TTL:-10}
 # run.sh requires $REGISTRY_PORT
 export REGISTRY_PORT=${PORT:-5000}
 
-export BUCKET_NAME=${BUCKET_NAME:-registry}
-
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
@@ -42,7 +40,7 @@ function etcd_set_default {
 
 # seed initial service configuration if necessary
 etcd_set_default protocol http
-etcd_set_default bucketName ${BUCKET_NAME}
+etcd_set_default bucketName registry
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD --confdir /app --log-level error; do
@@ -51,7 +49,7 @@ until confd -onetime -node $ETCD --confdir /app --log-level error; do
 done
 
 # ensure registry bucket exists
-/app/bin/create_bucket ${BUCKET_NAME}
+/app/bin/create_bucket $(etcdctl --no-sync -C $ETCD get $ETCD_PATH/bucketName)
 
 # spawn the service in the background
 cd /docker-registry
