@@ -38,11 +38,6 @@ RUN useradd -d $GITHOME $GITUSER
 RUN mkdir -p $GITHOME/.ssh && chown git:git $GITHOME/.ssh
 RUN chown -R $GITUSER:$GITUSER $GITHOME
 
-# HACK: import progrium/cedarish as a tarball
-# see https://github.com/deis/deis/issues/1027
-RUN curl -#SL -o /progrium_cedarish.tar.gz \
-    https://github.com/progrium/cedarish/releases/download/v3/cedarish-cedar14_v3.tar.gz
-
 # define the execution environment
 # use VOLUME to remove /var/lib/docker from copy-on-write for performance
 # we don't want to stack overlay filesystems
