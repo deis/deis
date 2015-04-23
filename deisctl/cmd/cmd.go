@@ -166,11 +166,6 @@ func startServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, e
 		return err
 	}
 
-	// create separate channels for background tasks
-	_outchan := make(chan string)
-	_errchan := make(chan error)
-	var _wg sync.WaitGroup
-
 	if incStore {
 		// wait for groups to come up
 		outchan <- fmt.Sprintf("Storage subsystem...")
@@ -195,11 +190,6 @@ func startServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, e
 	}
 	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
-
-	b.Start([]string{
-		"database", "registry@*", "controller", "builder",
-		"publisher", "router@*"},
-		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
 	if incStore && incDb {
