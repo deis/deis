@@ -92,4 +92,19 @@ Use ``deis scale web=3`` to increase ``web`` processes to 3, for example. Scalin
 process type directly changes the number of :ref:`Containers <container>`
 running that process.
 
+Web vs Cmd Process Types
+------------------------
+
+When deploying to Deis using a Heroku Buildpack, Deis boots the ``web`` process type to boot the
+application server. When you deploy an application that has a Dockerfile or uses :ref:`Docker
+images <using-docker-images>`, Deis boots the ``cmd`` process type. Both act similarly in that they
+are exposed to the router as web applications. However, The ``cmd`` process type is special because
+it is equivalent to running the :ref:`container` without any additional arguments. Every other
+process type is equivalent to running the relevant command that is provided in the Procfile.
+
+When migrating from Heroku Buildpacks to a Docker-based deployment, Deis will not convert ``web``
+process types to ``cmd``. To do this, you'll have to manually scale down the old process type and
+scale the new process type up.
+
+
 .. _`process model`: https://devcenter.heroku.com/articles/process-model
