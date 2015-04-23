@@ -51,7 +51,7 @@ until confd -onetime -node $ETCD --confdir /app --log-level error; do
 done
 
 # ensure registry bucket exists
-/app/bin/create_bucket ${BUCKET_NAME}
+/app/bin/create_bucket
 
 # spawn the service in the background
 cd /docker-registry
