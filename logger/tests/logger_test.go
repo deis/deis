@@ -31,10 +31,11 @@ func TestLogger(t *testing.T) {
 			"--name", name,
 			"--rm",
 			"-p", port+":514/udp",
-			"-e", "EXTERNAL_PORT="+port,
-			"-e", "HOST="+host,
-			"-e", "ETCD_PORT="+etcdPort,
-			imageName)
+			imageName,
+			"--enable-publish",
+			"--log-port="+port,
+			"--publish-host="+host,
+			"--publish-port="+etcdPort)
 	}()
 	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-logger running")
 	if err != nil {
