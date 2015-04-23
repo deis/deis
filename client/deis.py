@@ -1043,7 +1043,7 @@ Make sure that the Controller URI is correct and the server is running.
         """
         Binds a certificate/key pair to an application.
 
-        Usage: deis certs:add <cert> <key> [--subject-alt-name=<san>...] [options]
+        Usage: deis certs:add <cert> <key> [options]
 
         Arguments:
           <cert>
@@ -1055,15 +1055,16 @@ Make sure that the Controller URI is correct and the server is running.
           --common-name=<cname>
             The common name of the certificate. If none is provided, the controller will
             interpret the common name from the certificate.
-          --subject-alt-name=<san>...
-            The subject alternate names (SAN) of the certificate. This will create multiple
-            Certificate objects in the controller, one for each SAN.
+          --subject-alt-names=<sans>
+            The subject alternate names (SAN) of the certificate, separated by commas. This will
+            create multiple Certificate objects in the controller, one for each SAN.
         """
         cert = args.get('<cert>')
         key = args.get('<key>')
         self._certs_add(cert, key, args.get('--common-name'))
-        for san in args.get('--subject-alt-name'):
-            self._certs_add(cert, key, san)
+        sans = args.get('--subject-alt-names')
+        if sans:
+            [self._certs_add(cert, key, san) for san in sans.split(',')]
 
     def _certs_add(self, cert, key, common_name=None):
         body = {'certificate': file(cert).read().strip(), 'key': file(key).read().strip()}
