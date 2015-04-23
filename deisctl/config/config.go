@@ -40,6 +40,51 @@ func CheckConfig(root string, k string) error {
 	return nil
 }
 
+func SetConfig(target string, key string, val string) error {
+	path := "/deis/" + target + "/" + key
+	return SetConfigUsingFullKey(path, val)
+}
+
+func SetConfigUsingFullKey(key string, val string) error {
+	client, err := getEtcdClient()
+	if err != nil {
+		return err
+	}
+	_, err = client.Set(key, val)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetConfig(target string, key string) (string, error) {
+	var value string
+	client, err := getEtcdClient()
+	if err != nil {
+		return value, err
+	}
+	path := "/deis/" + target + "/" + key
+	value, err = client.Get(path)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
+func GetConfigWithDefault(target string, key string, defaultValue string) (string, error) {
+	var value string
+	client, err := getEtcdClient()
+	if err != nil {
+		return value, err
+	}
+	path := "/deis/" + target + "/" + key
+	value, err = client.GetWithDefault(path, defaultValue)
+	if err != nil {
+		return value, err
+	}
+	return value, nil
+}
+
 func doConfig(args map[string]interface{}) error {
 	client, err := getEtcdClient()
 	if err != nil {

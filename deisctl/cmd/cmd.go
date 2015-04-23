@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -16,6 +17,7 @@ import (
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/cmd/wizard"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -97,7 +99,7 @@ Usage:
 		return err
 	}
 
-	// if target is platform, install all services
+	// if target is platform, install all selected services
 	targets := args["<target>"].([]string)
 
 	if len(targets) == 1 && targets[0] == PlatformCommand {
@@ -143,7 +145,10 @@ func StartPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Starting Deis...")
 
-	startDefaultServices(b, &wg, outchan, errchan)
+	err := startServices(b, &wg, outchan, errchan)
+	if err != nil {
+		return err
+	}
 
 	wg.Wait()
 	close(outchan)
@@ -154,32 +159,40 @@ func StartPlatform(b backend.Backend) error {
 	return nil
 }
 
-func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func startServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+
+	incStore, incDb, err := retrieveInstallOptions()
+	if err != nil {
+		return err
+	}
 
 	// create separate channels for background tasks
 	_outchan := make(chan string)
 	_errchan := make(chan error)
 	var _wg sync.WaitGroup
 
-	// wait for groups to come up
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
-
-	// we start gateway first to give metadata time to come up for volume
-	b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-volume"}, wg, outchan, errchan)
-	wg.Wait()
+	if incStore {
+		// wait for groups to come up
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
+		// we start gateway first to give metadata time to come up for volume
+		b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-volume"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	// start logging subsystem first to collect logs from other components
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Start([]string{"logger"}, wg, outchan, errchan)
-	wg.Wait()
+	if incStore {
+		b.Start([]string{"logger"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
@@ -189,7 +202,10 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 		&_wg, _outchan, _errchan)
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
+	if incStore && incDb {
+		b.Start([]string{"database"}, wg, outchan, errchan)
+	}
+	b.Start([]string{"registry@*", "controller"}, wg, outchan, errchan)
 	wg.Wait()
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
@@ -201,6 +217,8 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Start([]string{"router@*"}, wg, outchan, errchan)
 	wg.Wait()
+
+	return nil
 }
 
 // Stop deactivates the specified components.
@@ -217,7 +235,7 @@ Usage:
 	}
 	targets := args["<target>"].([]string)
 
-	// if target is platform, stop all services
+	// if target is platform, stop all selected services
 	if len(targets) == 1 && targets[0] == PlatformCommand {
 		return StopPlatform(b)
 	}
@@ -246,7 +264,10 @@ func StopPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Stopping Deis...")
 
-	stopDefaultServices(b, &wg, outchan, errchan)
+	err := stopServices(b, &wg, outchan, errchan)
+	if err != nil {
+		return err
+	}
 
 	wg.Wait()
 	close(outchan)
@@ -257,7 +278,12 @@ func StopPlatform(b backend.Backend) error {
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func stopServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+
+	incStore, incDb, err := retrieveInstallOptions()
+	if err != nil {
+		return err
+	}
 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Stop([]string{"router@*"}, wg, outchan, errchan)
@@ -268,22 +294,32 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	if incStore && incDb {
+		b.Stop([]string{"database"}, wg, outchan, errchan)
+	}
+	b.Stop([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if incStore {
+		b.Stop([]string{"logger"}, wg, outchan, errchan)
+	}
+	b.Stop([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
+	if incStore {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+	}
+
+	return nil
 }
 
 // Restart stops and then starts the specified components.
@@ -365,6 +401,10 @@ After install, the components will be available to start.
 
 Usage:
   deisctl install [<target>...] [options]
+
+	Options:
+		-w --wizard      install using the wizard
+		--config=<path>  unattended install using options from a file
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -375,6 +415,14 @@ Usage:
 	// if target is platform, install all services
 	targets := args["<target>"].([]string)
 	if len(targets) == 1 && targets[0] == PlatformCommand {
+		if args["--wizard"].(bool) {
+			wizard.Run()
+		} else if args["--config"] != nil {
+			err = applyConfig(args["--config"].(string))
+			if err != nil {
+				return err
+			}
+		}
 		return InstallPlatform(b)
 	}
 
@@ -408,7 +456,10 @@ func InstallPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Installing Deis...")
 
-	installDefaultServices(b, &wg, outchan, errchan)
+	err := installServices(b, &wg, outchan, errchan)
+	if err != nil {
+		return err
+	}
 
 	wg.Wait()
 	close(outchan)
@@ -419,18 +470,31 @@ func InstallPlatform(b backend.Backend) error {
 	return nil
 }
 
-func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func installServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
-	wg.Wait()
+	incStore, incDb, err := retrieveInstallOptions()
+	if err != nil {
+		return err
+	}
+
+	if incStore {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if incStore {
+		b.Create([]string{"logger"}, wg, outchan, errchan)
+	}
+	b.Create([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+	if incStore && incDb {
+		b.Create([]string{"database"}, wg, outchan, errchan)
+	}
+	b.Create([]string{"registry@1", "controller", "builder"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
@@ -440,6 +504,8 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
 	wg.Wait()
+
+	return nil
 }
 
 // Uninstall unloads the definitions of the specified components.
@@ -458,7 +524,7 @@ Usage:
 		return err
 	}
 
-	// if target is platform, uninstall all services
+	// if target is platform, uninstall all selected services
 	targets := args["<target>"].([]string)
 	if len(targets) == 1 && targets[0] == PlatformCommand {
 		return UninstallPlatform(b)
@@ -490,7 +556,10 @@ func UninstallPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Uninstalling Deis...")
 
-	uninstallAllServices(b, &wg, outchan, errchan)
+	err := uninstallServices(b, &wg, outchan, errchan)
+	if err != nil {
+		return err
+	}
 
 	wg.Wait()
 	close(outchan)
@@ -499,7 +568,12 @@ func UninstallPlatform(b backend.Backend) error {
 	return nil
 }
 
-func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+func uninstallServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+
+	incStore, incDb, err := retrieveInstallOptions()
+	if err != nil {
+		return err
+	}
 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Destroy([]string{"router@*"}, wg, outchan, errchan)
@@ -510,22 +584,30 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	if incStore && incDb {
+		b.Destroy([]string{"database"}, wg, outchan, errchan)
+	}
+	b.Destroy([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if incStore {
+		b.Destroy([]string{"logger"}, wg, outchan, errchan)
+	}
+	b.Destroy([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
+	if incStore {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	return nil
 }
@@ -675,4 +757,47 @@ Options:
 		fmt.Printf("Refreshed %s from %s\n", unit, tag)
 	}
 	return nil
+}
+
+func applyConfig(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		split := strings.SplitN(scanner.Text(), "=", 2)
+		k, v := split[0], split[1]
+		err = config.SetConfigUsingFullKey(k, v)
+		if err != nil {
+			return err
+		}
+	}
+	err = scanner.Err()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func retrieveInstallOptions() (bool, bool, error) {
+	var incStore, incDb bool
+	incStoreStr, err := config.GetConfigWithDefault("installer", "includeStorageSubsystem", "true")
+	if err != nil {
+		return incStore, incDb, err
+	}
+	incStore, err = strconv.ParseBool(incStoreStr)
+	if err != nil {
+		return incStore, incDb, err
+	}
+	incDbStr, err := config.GetConfigWithDefault("installer", "includeDatabase", "true")
+	if err != nil {
+		return incStore, incDb, err
+	}
+	incDb, err = strconv.ParseBool(incDbStr)
+	if err != nil {
+		return incStore, incDb, err
+	}
+	return incStore, incDb, nil
 }
