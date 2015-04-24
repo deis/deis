@@ -50,6 +50,7 @@ setting                                      description
 /deis/router/enforceHTTPS                    redirect all HTTP traffic to HTTPS (default: false)
 /deis/router/firewall/enabled                nginx naxsi firewall enabled (default: false)
 /deis/router/firewall/errorCode              nginx default firewall error code (default: 400)
+/deis/router/errorLogLevel                   nginx error_log level (default: error) Valid options: debug, info, notice, warn, error, crit, alert, emerg
 /deis/router/gzip                            nginx gzip setting (default: on)
 /deis/router/gzipCompLevel                   nginx gzipCompLevel setting (default: 5)
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
