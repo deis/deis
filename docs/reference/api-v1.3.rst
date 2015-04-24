@@ -14,6 +14,7 @@ What's New
 
 **New!** ``/users`` endpoint for listing users
 **New!** ``/logs`` endpoint now has a option for limiting the number of log lines returned
+**New!** ``/certs`` endpoint now has an optional parameter to set the common name for a certificate
 
 
 Authentication
@@ -383,6 +384,14 @@ Example Request:
     {
         "certificate": "-----BEGIN CERTIFICATE-----",
         "key": "-----BEGIN RSA PRIVATE KEY-----"
+    }
+
+Optional Parameters:
+
+.. code-block:: console
+
+    {
+        "common_name": "test.example.com"
     }
 
 
