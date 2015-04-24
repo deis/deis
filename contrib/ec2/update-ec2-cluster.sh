@@ -23,6 +23,10 @@ if ! which aws > /dev/null; then
   exit 1
 fi
 
+if [ ! -z "$AWS_CLI_PROFILE" ]; then
+    EXTRA_AWS_CLI_ARGS+="--profile $AWS_CLI_PROFILE"
+fi
+
 # check that the CoreOS user-data file is valid
 $CONTRIB_DIR/util/check-user-data.sh
 
@@ -30,6 +34,7 @@ $CONTRIB_DIR/util/check-user-data.sh
 aws cloudformation update-stack \
     --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $NAME \
-    --parameters "$(<$THIS_DIR/cloudformation.json)"
+    --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    $EXTRA_AWS_CLI_ARGS
 
 echo_green "Your Deis cluster on AWS CloudFormation has been successfully updated."
