@@ -11,7 +11,7 @@ conn = boto.connect_s3(
     port={{ getv "/deis/store/gateway/port" }},
     is_secure=False,
     calling_format=OrdinaryCallingFormat())
-name = sys.argv[1]
+name = '{{ getv "/deis/registry/bucketName" }}'
 
 if name not in (bucket.name for bucket in conn.get_all_buckets()):
     conn.create_bucket(name)
