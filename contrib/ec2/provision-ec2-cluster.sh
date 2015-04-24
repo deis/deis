@@ -40,11 +40,13 @@ $CONTRIB_DIR/util/check-user-data.sh
 
 # Prepare bailout function to prevent us polluting the namespace
 bailout() {
-  aws cloudformation delete-stack --stack-name $STACK_NAME
+  aws cloudformation delete-stack --stack-name $STACK_NAME \
+    --profile "${AWS_PROFILE:-default}"
 }
 
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
+    --profile "${AWS_PROFILE:-default}" \
     --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $STACK_NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)"
@@ -55,24 +57,26 @@ SLEEPTIME=10
 COUNTER=1
 INSTANCE_IDS=""
 until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
-    if [ $COUNTER -gt $ATTEMPTS ]; then 
+    if [ $COUNTER -gt $ATTEMPTS ]; then
         echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after 10m)"
         echo "Destroying stack $STACK_NAME"
         bailout
         exit 1
     fi
 
-    STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus')
-    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
+    STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus' --profile "${AWS_PROFILE:-default}")
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \
-          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]'
+          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]' \
+          --profile "${AWS_PROFILE:-default}"
       bailout
       exit 1
     fi
 
     INSTANCE_IDS=$(aws ec2 describe-instances \
+        --profile "${AWS_PROFILE:-default}" \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
         --query 'Reservations[].Instances[].[ InstanceId ]' \
         --output text)
@@ -97,6 +101,7 @@ until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
     echo "Waiting for instances to pass initial health checks ($(expr 61 - $COUNTER)0s) ..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
+        --profile "${AWS_PROFILE:-default}" \
         --filters Name=instance-status.reachability,Values=passed \
         --instance-ids $INSTANCE_IDS \
         --query 'InstanceStatuses[].[ InstanceId ]' \
@@ -107,6 +112,7 @@ done
 # print instance info
 echo "Instances are available:"
 aws ec2 describe-instances \
+    --profile "${AWS_PROFILE:-default}" \
     --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[InstanceId,PublicIpAddress,InstanceType,Placement.AvailabilityZone,State.Name]' \
     --output text
@@ -114,6 +120,7 @@ aws ec2 describe-instances \
 # get ELB public DNS name through cloudformation
 # TODO: is "first output value" going to be reliable enough?
 export ELB_DNS_NAME=$(aws cloudformation describe-stacks \
+    --profile "${AWS_PROFILE:-default}" \
     --stack-name $STACK_NAME \
     --max-items 1 \
     --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
@@ -121,6 +128,7 @@ export ELB_DNS_NAME=$(aws cloudformation describe-stacks \
 
 # get ELB friendly name through aws elb
 ELB_NAME=$(aws elb describe-load-balancers \
+    --profile "${AWS_PROFILE:-default}" \
     --query 'LoadBalancerDescriptions[].[ DNSName,LoadBalancerName ]' \
     --output=text | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
 echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"

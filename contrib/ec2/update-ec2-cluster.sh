@@ -30,6 +30,7 @@ $CONTRIB_DIR/util/check-user-data.sh
 aws cloudformation update-stack \
     --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $NAME \
-    --parameters "$(<$THIS_DIR/cloudformation.json)"
+    --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    --profile "${AWS_PROFILE:-default}"
 
 echo_green "Your Deis cluster on AWS CloudFormation has been successfully updated."
