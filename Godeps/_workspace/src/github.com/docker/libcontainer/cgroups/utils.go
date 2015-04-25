@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/pkg/mount"
 )
@@ -31,6 +32,21 @@ func FindCgroupMountpoint(subsystem string) (string, error) {
 	}
 
 	return "", NewNotFoundError(subsystem)
+}
+
+func FindCgroupMountpointDir() (string, error) {
+	mounts, err := mount.GetMounts()
+	if err != nil {
+		return "", err
+	}
+
+	for _, mount := range mounts {
+		if mount.Fstype == "cgroup" {
+			return filepath.Dir(mount.Mountpoint), nil
+		}
+	}
+
+	return "", NewNotFoundError("cgroup")
 }
 
 type Mount struct {
@@ -173,7 +189,7 @@ func ParseCgroupFile(subsystem string, r io.Reader) (string, error) {
 	return "", NewNotFoundError(subsystem)
 }
 
-func pathExists(path string) bool {
+func PathExists(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		return false
 	}
@@ -182,7 +198,7 @@ func pathExists(path string) bool {
 
 func EnterPid(cgroupPaths map[string]string, pid int) error {
 	for _, path := range cgroupPaths {
-		if pathExists(path) {
+		if PathExists(path) {
 			if err := ioutil.WriteFile(filepath.Join(path, "cgroup.procs"),
 				[]byte(strconv.Itoa(pid)), 0700); err != nil {
 				return err
@@ -193,13 +209,30 @@ func EnterPid(cgroupPaths map[string]string, pid int) error {
 }
 
 // RemovePaths iterates over the provided paths removing them.
-// If an error is encountered the removal proceeds and the first error is
-// returned to ensure a partial removal is not possible.
+// We trying to remove all paths five times with increasing delay between tries.
+// If after all there are not removed cgroups - appropriate error will be
+// returned.
 func RemovePaths(paths map[string]string) (err error) {
-	for _, path := range paths {
-		if rerr := os.RemoveAll(path); err == nil {
-			err = rerr
+	delay := 10 * time.Millisecond
+	for i := 0; i < 5; i++ {
+		if i != 0 {
+			time.Sleep(delay)
+			delay *= 2
+		}
+		for s, p := range paths {
+			os.RemoveAll(p)
+			// TODO: here probably should be logging
+			_, err := os.Stat(p)
+			// We need this strange way of checking cgroups existence because
+			// RemoveAll almost always returns error, even on already removed
+			// cgroups
+			if os.IsNotExist(err) {
+				delete(paths, s)
+			}
+		}
+		if len(paths) == 0 {
+			return nil
 		}
 	}
-	return err
+	return fmt.Errorf("Failed to remove paths: %s", paths)
 }

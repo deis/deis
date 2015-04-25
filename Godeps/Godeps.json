@@ -269,18 +269,18 @@
 		},
 		{
 			"ImportPath": "github.com/docker/libcontainer/cgroups",
-			"Comment": "v1.2.0-160-g7294213",
-			"Rev": "72942137ef110d9468be3a4855b687d3734794df"
+			"Comment": "v1.4.0-484-g1c43532",
+			"Rev": "1c435321558c49f769198daaf04158b1ff970ad5"
 		},
 		{
-			"ImportPath": "github.com/docker/libcontainer/devices",
-			"Comment": "v1.2.0-160-g7294213",
-			"Rev": "72942137ef110d9468be3a4855b687d3734794df"
+			"ImportPath": "github.com/docker/libcontainer/configs",
+			"Comment": "v1.4.0-484-g1c43532",
+			"Rev": "1c435321558c49f769198daaf04158b1ff970ad5"
 		},
 		{
 			"ImportPath": "github.com/docker/libcontainer/netlink",
-			"Comment": "v1.2.0-160-g7294213",
-			"Rev": "72942137ef110d9468be3a4855b687d3734794df"
+			"Comment": "v1.4.0-484-g1c43532",
+			"Rev": "1c435321558c49f769198daaf04158b1ff970ad5"
 		},
 		{
 			"ImportPath": "github.com/docker/libtrust",
