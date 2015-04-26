@@ -74,9 +74,9 @@ func collectStorageSubsystemOptions() (bool, error) {
 }
 
 func collectDbOptions(incStore bool) error {
-  var incDb bool
-  // The option to install the deis-database component is only applicable if
-  // the storage subsystem is being installed
+	var incDb bool
+	// The option to install the deis-database component is only applicable if
+	// the storage subsystem is being installed
 	if incStore {
 		fmt.Println("\nNumerous Deis components store platform state in a PostgreSQL database.")
 		fmt.Println("You have opted to install Deis' storage subsystem.")
@@ -103,7 +103,7 @@ func collectDbOptions(incStore bool) error {
 	}
 
 	// If not installing the deis-database component, collect connection details
-	// for an exteral PostgreSQL server     
+	// for an exteral PostgreSQL server
 	if !incDb {
 		if incStore {
 			// Operator opted into the storage subsystem, but opted out of the
@@ -167,7 +167,7 @@ func collectObjectStoreOptions(incStore bool) error {
 		err = config.SetConfig("store", "gateway/host", objStoreRegistryHost)
 		if err != nil {
 			return err
-		}    
+		}
 		objStoreRegistryPort := promptForResponse("Enter port number for the object store gateway (usually 80 or 443): ", false)
 		err = config.SetConfig("store", "gateway/port", objStoreRegistryPort)
 		if err != nil {
@@ -274,8 +274,8 @@ func promptForYesNo(prompt string) bool {
 	fmt.Printf("%s [Yn]: ", prompt)
 	var response string
 	fmt.Scanln(&response)
-	okayResponses := []string{ "y", "Y", "yes", "Yes", "YES" }
-	nokayResponses := []string{ "n", "N", "no", "No", "NO" }
+	okayResponses := []string{"y", "Y", "yes", "Yes", "YES"}
+	nokayResponses := []string{"n", "N", "no", "No", "NO"}
 	if containsString(okayResponses, response) {
 		return true
 	} else if containsString(nokayResponses, response) {

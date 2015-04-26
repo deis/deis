@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/deis/deis/deisctl/backend"
+	"github.com/deis/deis/deisctl/cmd/wizard"
 	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/deisctl/utils"
-	"github.com/deis/deis/deisctl/cmd/wizard"
 
 	docopt "github.com/docopt/docopt-go"
 )
