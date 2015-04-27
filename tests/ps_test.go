@@ -16,6 +16,7 @@ var (
 	psListCmd      = "ps:list --app={{.AppName}}"
 	psScaleCmd     = "ps:scale web={{.ProcessNum}} --app={{.AppName}}"
 	psDownScaleCmd = "ps:scale web=0 --app={{.AppName}}"
+	psRestartCmd   = "ps:restart web --app={{.AppName}}"
 )
 
 func TestPs(t *testing.T) {
@@ -23,6 +24,7 @@ func TestPs(t *testing.T) {
 	psScaleTest(t, params, psScaleCmd)
 	appsOpenTest(t, params)
 	psListTest(t, params, false)
+	psScaleTest(t, params, psRestartCmd)
 	psScaleTest(t, params, psDownScaleCmd)
 
 	// FIXME if we don't wait here, some of the routers may give us a 502 before

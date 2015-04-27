@@ -12,7 +12,7 @@ import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-from scheduler.states import TransitionNotAllowed
+from scheduler.states import TransitionError
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release
@@ -57,7 +57,7 @@ class ContainerTest(TransactionTestCase):
                                      num=1)
         self.assertEqual(c.state, 'initialized')
         # test an illegal transition
-        self.assertRaises(TransitionNotAllowed, lambda: c.start())
+        self.assertRaises(TransitionError, lambda: c.start())
         c.create()
         self.assertEqual(c.state, 'created')
         c.start()

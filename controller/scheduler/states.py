@@ -1,8 +1,13 @@
 import enum
 
 
-class TransitionNotAllowed(Exception):
+class TransitionError(Exception):
     """Raised when a transition from one state to another is illegal"""
+
+    def __init__(self, prev, next, msg):
+        self.prev = prev
+        self.next = next
+        self.msg = msg
 
 
 class JobState(enum.Enum):

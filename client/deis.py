@@ -1700,6 +1700,7 @@ Make sure that the Controller URI is correct and the server is running.
         Valid commands for processes:
 
         ps:list        list application processes
+        ps:restart     restart process types (e.g. web, worker)
         ps:scale       scale processes (e.g. web=4 worker=2)
 
         Use `deis help [command]` to learn more.
@@ -1736,6 +1737,45 @@ Make sure that the Controller URI is correct and the server is running.
             for c in c_map[c_type]:
                 self._logger.info("{type}.{num} {state} ({release})".format(**c))
             self._logger.info('')
+
+    def ps_restart(self, args):
+        """
+        Restarts an application's processes by type.
+
+        Usage: deis ps:restart [<type>] [options]
+
+        Arguments:
+          <type>
+            the process name as defined in your Procfile, such as 'web' or 'worker'.
+
+        Options:
+          -a --app=<app>
+            the uniquely identifiable name for the application.
+        """
+        app = args.get('--app')
+        if not app:
+            app = self._session.app
+        restarting_cmd = 'Restarting processes... but first, {}!\n'.format(
+            os.environ.get('DEIS_DRINK_OF_CHOICE', 'coffee'))
+        sys.stdout.write(restarting_cmd)
+        sys.stdout.flush()
+        try:
+            progress = TextProgress()
+            progress.start()
+            before = time.time()
+            url = '/v1/apps/{}/containers/restart'.format(app)
+            if args.get('<type>'):
+                url = '/v1/apps/{}/containers/{}/restart'.format(app,
+                                                                 args.get('<type>'))
+            response = self._dispatch('post', url)
+        finally:
+            progress.cancel()
+            progress.join()
+        if response.status_code == requests.codes.ok:
+            self._logger.info('done in {}s'.format(int(time.time() - before)))
+            self.ps_list({}, app)
+        else:
+            raise ResponseError(response)
 
     def ps_scale(self, args):
         """
