@@ -62,6 +62,8 @@ class ContainerTest(TransactionTestCase):
         self.assertEqual(c.state, 'created')
         c.start()
         self.assertEqual(c.state, 'up')
+        c.stop()
+        self.assertEqual(c.state, 'down')
         c.destroy()
         self.assertEqual(c.state, 'destroyed')
 
