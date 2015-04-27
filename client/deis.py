@@ -1747,12 +1747,14 @@ Make sure that the Controller URI is correct and the server is running.
         Arguments:
           <type>
             the process name as defined in your Procfile, such as 'web' or 'worker'.
+            To restart a particular process, use 'web.1'.
 
         Options:
           -a --app=<app>
             the uniquely identifiable name for the application.
         """
         app = args.get('--app')
+        procname = args.get('<type>')
         if not app:
             app = self._session.app
         restarting_cmd = 'Restarting processes... but first, {}!\n'.format(
@@ -1764,9 +1766,15 @@ Make sure that the Controller URI is correct and the server is running.
             progress.start()
             before = time.time()
             url = '/v1/apps/{}/containers/restart'.format(app)
-            if args.get('<type>'):
-                url = '/v1/apps/{}/containers/{}/restart'.format(app,
-                                                                 args.get('<type>'))
+            if procname:
+                if '.' in procname:
+                    # format is web.2
+                    proctype, procnum = procname.split('.')
+                    url = '/v1/apps/{}/containers/{}/{}/restart'.format(app,
+                                                                        proctype,
+                                                                        procnum)
+                else:
+                    url = '/v1/apps/{}/containers/{}/restart'.format(app, procname)
             response = self._dispatch('post', url)
         finally:
             progress.cancel()

@@ -201,7 +201,9 @@ class App(UuidAuditedModel):
     def restart(self, **kwargs):
         to_restart = self.container_set.all()
         if kwargs.get('type'):
-            to_restart = self.container_set.filter(type=kwargs.get('type'))
+            to_restart = to_restart.filter(type=kwargs.get('type'))
+        if kwargs.get('num'):
+            to_restart = to_restart.filter(num=kwargs.get('num'))
         self._restart_containers(to_restart)
         return to_restart
 
