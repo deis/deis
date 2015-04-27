@@ -1,12 +1,12 @@
 [Unit]
-Description=deis-cache
+Description=deis-swarm-node
 
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker history smothiki/swarm  >/dev/null || docker pull smothiki/swarm "
+ExecStartPre=/bin/sh -c "docker history deis/swarm:v1.5.2  >/dev/null || docker pull deis/swarm:v1.5.2"
 ExecStartPre=/bin/sh -c "docker inspect deis-swarm-node >/dev/null && docker rm -f deis-swarm-node || true"
-ExecStart=/bin/sh -c "docker run --name deis-swarm-node -e HOST=$COREOS_PRIVATE_IPV4 deis/swarm:2.0 join"
+ExecStart=/bin/sh -c "docker run --name deis-swarm-node -e HOST=$COREOS_PRIVATE_IPV4 deis/swarm:v1.5.2 join"
 ExecStopPost=-/usr/bin/docker rm -f deis-swarm-node
 Restart=on-failure
 RestartSec=5

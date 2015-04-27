@@ -23,6 +23,7 @@ import (
 const (
 	// PlatformCommand is shorthand for "all the Deis components."
 	PlatformCommand string = "platform"
+	swarm           string = "swarm"
 )
 
 // ListUnits prints a list of installed units.
@@ -100,10 +101,14 @@ Usage:
 	// if target is platform, install all services
 	targets := args["<target>"].([]string)
 
-	if len(targets) == 1 && targets[0] == PlatformCommand {
-		return StartPlatform(b)
+	if len(targets) == 1 {
+		if targets[0] == PlatformCommand {
+			return StartPlatform(b)
+		}
+		if targets[0] == swarm {
+			return StartSwarm(b)
+		}
 	}
-
 	outchan := make(chan string)
 	errchan := make(chan error)
 	var wg sync.WaitGroup
@@ -129,28 +134,6 @@ deisctl config platform set domain=<your-domain>`)
 deisctl config platform set sshPrivateKey=<path-to-key>
 `)
 	}
-	return nil
-}
-
-// StartPlatform activates all components.
-func StartPlatform(b backend.Backend) error {
-
-	outchan := make(chan string)
-	errchan := make(chan error)
-	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	outchan <- utils.DeisIfy("Starting Deis...")
-
-	startDefaultServices(b, &wg, outchan, errchan)
-
-	wg.Wait()
-	close(outchan)
-
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please use `deis register` to setup an administrator account.")
 	return nil
 }
 
@@ -218,8 +201,13 @@ Usage:
 	targets := args["<target>"].([]string)
 
 	// if target is platform, stop all services
-	if len(targets) == 1 && targets[0] == PlatformCommand {
-		return StopPlatform(b)
+	if len(targets) == 1 {
+		if targets[0] == PlatformCommand {
+			return StopPlatform(b)
+		}
+		if targets[0] == swarm {
+			return StopSwarm(b)
+		}
 	}
 
 	outchan := make(chan string)
@@ -232,28 +220,6 @@ Usage:
 	wg.Wait()
 	close(outchan)
 
-	return nil
-}
-
-// StopPlatform deactivates all components.
-func StopPlatform(b backend.Backend) error {
-
-	outchan := make(chan string)
-	errchan := make(chan error)
-	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	outchan <- utils.DeisIfy("Stopping Deis...")
-
-	stopDefaultServices(b, &wg, outchan, errchan)
-
-	wg.Wait()
-	close(outchan)
-
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please run `deisctl start platform` to restart Deis.")
 	return nil
 }
 
@@ -372,12 +338,16 @@ Usage:
 		return err
 	}
 
-	// if target is platform, install all services
 	targets := args["<target>"].([]string)
-	if len(targets) == 1 && targets[0] == PlatformCommand {
-		return InstallPlatform(b)
+	// if target is platform, install all services
+	if len(targets) == 1 {
+		if targets[0] == PlatformCommand {
+			return InstallPlatform(b)
+		}
+		if targets[0] == swarm {
+			return InstallSwarm(b)
+		}
 	}
-
 	outchan := make(chan string)
 	errchan := make(chan error)
 	var wg sync.WaitGroup
@@ -389,33 +359,6 @@ Usage:
 	wg.Wait()
 
 	close(outchan)
-	return nil
-}
-
-// InstallPlatform loads all components' definitions from local unit files.
-// After InstallPlatform, all components will be available for StartPlatform.
-func InstallPlatform(b backend.Backend) error {
-
-	if err := checkRequiredKeys(); err != nil {
-		return err
-	}
-
-	outchan := make(chan string)
-	errchan := make(chan error)
-	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	outchan <- utils.DeisIfy("Installing Deis...")
-
-	installDefaultServices(b, &wg, outchan, errchan)
-
-	wg.Wait()
-	close(outchan)
-
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please run `deisctl start platform` to boot up Deis.")
 	return nil
 }
 
@@ -460,8 +403,13 @@ Usage:
 
 	// if target is platform, uninstall all services
 	targets := args["<target>"].([]string)
-	if len(targets) == 1 && targets[0] == PlatformCommand {
-		return UninstallPlatform(b)
+	if len(targets) == 1 {
+		if targets[0] == PlatformCommand {
+			return UninstallPlatform(b)
+		}
+		if targets[0] == swarm {
+			return UnInstallSwarm(b)
+		}
 	}
 
 	outchan := make(chan string)
@@ -475,27 +423,6 @@ Usage:
 	wg.Wait()
 	close(outchan)
 
-	return nil
-}
-
-// UninstallPlatform unloads all components' definitions.
-// After UninstallPlatform, all components will be unavailable.
-func UninstallPlatform(b backend.Backend) error {
-
-	outchan := make(chan string)
-	errchan := make(chan error)
-	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	outchan <- utils.DeisIfy("Uninstalling Deis...")
-
-	uninstallAllServices(b, &wg, outchan, errchan)
-
-	wg.Wait()
-	close(outchan)
-
-	fmt.Println("Done.")
 	return nil
 }
 

@@ -126,7 +126,7 @@ write_files:
     content: |
         [Service]
         EnvironmentFile=/etc/environment_proxy
-        Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 "
+        Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
   - path: /run/deis/bin/get_image
     permissions: '0755'
     content: |

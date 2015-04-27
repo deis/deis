@@ -168,22 +168,12 @@ func CurlWithFail(t *testing.T, url string, failFlag bool, expect string) {
 			if strings.Contains(string(err.Error()), expect) {
 				fmt.Println("(Error expected...ok) " + expect)
 			} else {
-				if expect == "503" {
-					if strings.Contains(string(err.Error()), "Welcome to nginx!") {
-						return
-					}
-				}
 				t.Fatal(err)
 			}
 		} else {
 			if strings.Contains(string(body), expect) {
 				fmt.Println("(Error expected...ok) " + expect)
 			} else {
-				if expect == "503" {
-					if strings.Contains(string(err.Error()), "Welcome to nginx!") {
-						return
-					}
-				}
 				t.Fatal(err)
 			}
 		}

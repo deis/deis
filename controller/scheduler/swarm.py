@@ -35,23 +35,20 @@ class SwarmClient(object):
         self.docker_cli.create_container(image=cimage, name=name,
                                          command=command.encode('utf-8'), mem_limit=mem,
                                          cpu_shares=cpu,
-                                         environment=[affinity])
-        self.docker_cli.stop(name)
+                                         environment=[affinity],
+                                         host_config={'PublishAllPorts': True})
 
     def start(self, name):
         """
         Start a container
         """
-        self.docker_cli.start(name, publish_all_ports=True)
-
-        return
+        self.docker_cli.start(name)
 
     def stop(self, name):
         """
         Stop a container
         """
         self.docker_cli.stop(name)
-        return
 
     def destroy(self, name):
         """
@@ -59,7 +56,6 @@ class SwarmClient(object):
         """
         self.stop(name)
         self.docker_cli.remove_container(name)
-        return
 
     def run(self, name, image, entrypoint, command):
         """
@@ -97,20 +93,13 @@ class SwarmClient(object):
 
     def state(self, name):
         try:
-            # NOTE (bacongobbler): this call to ._get_unit() acts as a pre-emptive check to
-            # determine if the job no longer exists (will raise a RuntimeError on 404)
             for _ in range(30):
                 return self._get_container_state(name)
                 time.sleep(1)
-            # FIXME (bacongobbler): when fleet loads a job, sometimes it'll automatically start and
-            # stop the container, which in our case will return as 'failed', even though
-            # the container is perfectly fine.
+            # FIXME (smothiki): should be able to send JobState.crashed
         except KeyError:
-            # failed retrieving a proper response from the fleet API
             return JobState.error
         except RuntimeError:
-            # failed to retrieve a response from the fleet API,
-            # which means it does not exist
             return JobState.destroyed
 
     def attach(self, name):

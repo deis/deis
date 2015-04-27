@@ -17,7 +17,7 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-//swarm join --addr=<node_ip:2375> etcd://<etcd_ip>/<path>
+//Response struct
 type Response struct {
 	ClientURL string `json:"clientURL"`
 	Name      string `json:"name"`
@@ -57,10 +57,7 @@ func getleaderHost() string {
 	resp, _ := client.Get("http://" + os.Getenv("HOST") + ":7001/v2/admin/machines")
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	// body, _ := ioutil.ReadFile("test.json")
-	// fmt.Println(body)
 	json.Unmarshal(body, &response)
-	// fmt.Println(response)
 	for _, node := range response {
 		if node.State == "leader" {
 			host = strings.Split(node.ClientURL, "//")[1]
@@ -87,14 +84,11 @@ func main() {
 	etcdhost := os.Getenv("HOST")
 	addr := "--addr=" + etcdhost + ":2375"
 	client := etcd.NewClient([]string{"http://" + etcdhost + ":" + etcdport})
-	var wd, _ = os.Getwd()
 	switch os.Args[1] {
 	case "join":
-		// fmt.Println("join")
-		run(wd + "/deis-swarm join " + addr + " " + etcdproto)
+		run("deis-swarm join " + addr + " " + etcdproto)
 	case "manage":
-		// fmt.Println("manage")
 		go publishService(client, etcdhost, uint64(ttl.Seconds()))
-		run(wd + "/deis-swarm manage " + etcdproto)
+		run("deis-swarm manage " + etcdproto)
 	}
 }
