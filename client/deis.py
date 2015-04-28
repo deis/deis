@@ -2205,7 +2205,7 @@ Make sure that the Controller URI is correct and the server is running.
             data = response.json()
             for item in data['results']:
                 item['created'] = readable_datetime(item['created'])
-                self._logger.info("v{version:<6} {created:<24} {summary}".format(**item))
+                self._logger.info("v{version:<6} {created:<28} {summary}".format(**item))
         else:
             raise ResponseError(response)
 
