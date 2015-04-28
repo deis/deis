@@ -1,5 +1,7 @@
+import multiprocessing
+
 bind = '0.0.0.0'
-workers = 8
+workers = multiprocessing.cpu_count() * 2 + 1
 proc_name = 'deis-controller'
 timeout = 1200
 pidfile = '/tmp/gunicorn.pid'
