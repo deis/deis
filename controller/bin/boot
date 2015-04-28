@@ -13,7 +13,7 @@ set -eo pipefail
 export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/controller}
-export ETCD_TTL=${ETCD_TTL:-10}
+export ETCD_TTL=${ETCD_TTL:-20}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
