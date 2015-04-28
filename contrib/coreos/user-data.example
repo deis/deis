@@ -29,7 +29,7 @@ coreos:
       ConditionPathIsSymbolicLink=!/etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf
 
       [Service]
-      ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /run/deis/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /run/deis/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -s /run/deis/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
+      ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /opt/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /opt/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -sf /opt/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
       RemainAfterExit=yes
       Type=oneshot
   - name: stop-update-engine.service
@@ -195,8 +195,8 @@ write_files:
       [Service]
       ExecStart=
       ExecStart=/usr/sbin/ntpd -g -n -f /var/lib/ntp/ntp.drift
-  - path: /run/deis/conf/fleetd-092-custom-binary.conf
+  - path: /opt/conf/fleetd-092-custom-binary.conf
     content: |
       [Service]
       ExecStart=
-      ExecStart=/run/deis/bin/fleetd-0.9.2
+      ExecStart=/opt/bin/fleetd-0.9.2
