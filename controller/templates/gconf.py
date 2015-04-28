@@ -1,7 +1,12 @@
-import multiprocessing
-
 bind = '0.0.0.0'
-workers = multiprocessing.cpu_count() * 2 + 1
+try:
+    workers = int({{ if exists "/deis/controller/workers" }}{{ getv "/deis/controller/workers" }}{{ else }}"not set"{{end}})
+except (NameError, ValueError):
+    import multiprocessing
+    try:
+        workers = multiprocessing.cpu_count() * 2 + 1
+    except NotImplementedError:
+        workers = 8
 proc_name = 'deis-controller'
 timeout = 1200
 pidfile = '/tmp/gunicorn.pid'

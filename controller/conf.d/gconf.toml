@@ -1,0 +1,10 @@
+[template]
+src   = "gconf.py"
+dest  = "/app/deis/gconf.py"
+uid = 1000
+gid = 1000
+mode  = "0640"
+keys = [
+  "/deis/controller",
+]
+reload_cmd = "/app/bin/reload"
