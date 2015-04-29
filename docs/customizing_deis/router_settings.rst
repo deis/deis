@@ -41,9 +41,7 @@ setting                                      description
 /deis/router/bodySize                        nginx body size setting (default: 1m)
 /deis/router/defaultTimeout                  default timeout value in seconds. Should be greater then the frontfacing load balancers timeout value (default: 1300)
 /deis/router/builder/timeout/connect         proxy_connect_timeout for deis-builder (default: 10000). Unit in miliseconds
-/deis/router/builder/timeout/read            proxy_read_timeout for deis-builder (default: 1200000). Unit in miliseconds
-/deis/router/builder/timeout/send            proxy_send_timeout for deis-builder (default: 1200000). Unit in miliseconds
-/deis/router/builder/timeout/tcp             timeout for deis-builder (default: 1200000). Unit in miliseconds
+/deis/router/builder/timeout/tcp             proxy_timeout for deis-builder (default: 1200000). Unit in miliseconds
 /deis/router/controller/timeout/connect      proxy_connect_timeout for deis-controller (default: 10m)
 /deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
 /deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
