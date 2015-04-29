@@ -198,6 +198,15 @@ class App(UuidAuditedModel):
         self._clean_app_logs()
         return super(App, self).delete(*args, **kwargs)
 
+    def restart(self, **kwargs):
+        to_restart = self.container_set.all()
+        if kwargs.get('type'):
+            to_restart = to_restart.filter(type=kwargs.get('type'))
+        if kwargs.get('num'):
+            to_restart = to_restart.filter(num=kwargs.get('num'))
+        self._restart_containers(to_restart)
+        return to_restart
+
     def _clean_app_logs(self):
         """Delete application logs stored by the logger component"""
         path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
@@ -279,6 +288,27 @@ class App(UuidAuditedModel):
         [t.start() for t in start_threads]
         [t.join() for t in start_threads]
         if set([c.state for c in to_add]) != set(['up']):
+            err = 'warning, some containers failed to start'
+            log_event(self, err, logging.WARNING)
+
+    def _restart_containers(self, to_restart):
+        """Restarts containers via the scheduler"""
+        stop_threads = []
+        start_threads = []
+        if not to_restart:
+            # do nothing if we didn't request any containers
+            return
+        for c in to_restart:
+            stop_threads.append(threading.Thread(target=c.stop))
+            start_threads.append(threading.Thread(target=c.start))
+        [t.start() for t in stop_threads]
+        [t.join() for t in stop_threads]
+        if set([c.state for c in to_restart]) != set(['created']):
+            err = 'warning, some containers failed to stop'
+            log_event(self, err, logging.WARNING)
+        [t.start() for t in start_threads]
+        [t.join() for t in start_threads]
+        if set([c.state for c in to_restart]) != set(['up']):
             err = 'warning, some containers failed to start'
             log_event(self, err, logging.WARNING)
 

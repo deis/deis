@@ -1,6 +1,6 @@
 import json
 from cStringIO import StringIO
-from .states import JobState, TransitionNotAllowed
+from .states import JobState, TransitionError
 
 
 # HACK: MockSchedulerClient is not persistent across requests
@@ -55,8 +55,14 @@ class MockSchedulerClient(object):
         """
         Start a container
         """
-        if self.state(name) not in [JobState.created, JobState.up, JobState.down]:
-            raise TransitionNotAllowed
+        if self.state(name) not in [JobState.created,
+                                    JobState.up,
+                                    JobState.down,
+                                    JobState.crashed,
+                                    JobState.error]:
+            raise TransitionError(self.state(name),
+                                  JobState.up,
+                                  'the container must be stopped or up to start')
         job = jobs.get(name, {})
         job.update({'state': JobState.up})
         jobs[name] = job
@@ -77,9 +83,11 @@ class MockSchedulerClient(object):
         Stop a container
         """
         job = jobs.get(name, {})
-        if job.get('state') != JobState.up:
-            raise TransitionNotAllowed
-        job.update({'state': JobState.stopped})
+        if job.get('state') not in [JobState.up, JobState.crashed, JobState.error]:
+            raise TransitionError(job.get('state'),
+                                  JobState.up,
+                                  'the container must be up to stop')
+        job.update({'state': JobState.down})
         jobs[name] = job
         return
 

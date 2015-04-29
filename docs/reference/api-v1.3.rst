@@ -15,6 +15,7 @@ What's New
 **New!** ``/users`` endpoint for listing users
 **New!** ``/logs`` endpoint now has a option for limiting the number of log lines returned
 **New!** ``/certs`` endpoint now has an optional parameter to set the common name for a certificate
+**New!** ``deis ps:restart`` endpoints for restarting processes by app, process type, or process ID
 
 
 Authentication
@@ -516,6 +517,111 @@ Example Response:
             }
         ]
     }
+
+
+Restart All Containers
+``````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/containers/restart/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.3
+    X_DEIS_PLATFORM_VERSION: 1.6.0
+    Content-Type: application/json
+
+    [
+        {
+            "owner": "test",
+            "app": "example-go",
+            "release": "v2",
+            "created": "2014-01-01T00:00:00UTC",
+            "updated": "2014-01-01T00:00:00UTC",
+            "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+            "type": "web",
+            "num": 1,
+            "state": "up"
+        }
+    ]
+
+
+Restart Containers by Type
+``````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/containers/web/restart/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.3
+    X_DEIS_PLATFORM_VERSION: 1.6.0
+    Content-Type: application/json
+
+    [
+        {
+            "owner": "test",
+            "app": "example-go",
+            "release": "v2",
+            "created": "2014-01-01T00:00:00UTC",
+            "updated": "2014-01-01T00:00:00UTC",
+            "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+            "type": "web",
+            "num": 1,
+            "state": "up"
+        }
+    ]
+
+
+Restart Containers by Type and Number
+`````````````````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/containers/web/1/restart/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.3
+    X_DEIS_PLATFORM_VERSION: 1.6.0
+    Content-Type: application/json
+
+    [
+        {
+            "owner": "test",
+            "app": "example-go",
+            "release": "v2",
+            "created": "2014-01-01T00:00:00UTC",
+            "updated": "2014-01-01T00:00:00UTC",
+            "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+            "type": "web",
+            "num": 1,
+            "state": "up"
+        }
+    ]
 
 
 Scale Containers

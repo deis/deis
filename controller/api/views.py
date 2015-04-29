@@ -213,6 +213,14 @@ class ContainerViewSet(AppResourceViewSet):
         qs = self.get_queryset(**kwargs)
         return qs.get(num=self.kwargs['num'])
 
+    def restart(self, *args, **kwargs):
+        try:
+            containers = self.get_app().restart(**kwargs)
+            serializer = self.get_serializer(containers, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
 
 class DomainViewSet(AppResourceViewSet):
     """A viewset for interacting with Domain objects."""

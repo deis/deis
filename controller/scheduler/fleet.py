@@ -189,12 +189,19 @@ class FleetHTTPClient(object):
 
     def _wait_for_container_running(self, name):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
+        try:
+            self._wait_for_job_state(name, JobState.up)
+        except RuntimeError:
+            raise RuntimeError('container failed to start')
+
+    def _wait_for_job_state(self, name, state):
+        # we bump to 20 minutes here to match the timeout on the router and in the app unit files
         for _ in range(1200):
-            if self.state(name) == JobState.up:
+            if self.state(name) == state:
                 return
             time.sleep(1)
         else:
-            raise RuntimeError('container failed to start')
+            raise RuntimeError('timeout waiting for job state: {}'.format(state))
 
     def _wait_for_destroy(self, name):
         for _ in range(30):
@@ -206,7 +213,8 @@ class FleetHTTPClient(object):
 
     def stop(self, name):
         """Stop a container"""
-        raise NotImplementedError
+        self._put_unit(name, {"desiredState": "loaded"})
+        self._wait_for_job_state(name, JobState.created)
 
     def destroy(self, name):
         """Destroy a container"""

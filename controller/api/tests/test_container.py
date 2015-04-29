@@ -12,7 +12,7 @@ import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-from scheduler.states import TransitionNotAllowed
+from scheduler.states import TransitionError
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release
@@ -57,11 +57,13 @@ class ContainerTest(TransactionTestCase):
                                      num=1)
         self.assertEqual(c.state, 'initialized')
         # test an illegal transition
-        self.assertRaises(TransitionNotAllowed, lambda: c.start())
+        self.assertRaises(TransitionError, lambda: c.start())
         c.create()
         self.assertEqual(c.state, 'created')
         c.start()
         self.assertEqual(c.state, 'up')
+        c.stop()
+        self.assertEqual(c.state, 'down')
         c.destroy()
         self.assertEqual(c.state, 'destroyed')
 
@@ -634,3 +636,39 @@ class ContainerTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Container.objects.filter(type='web').count(), 0)
+
+    def test_restart_containers(self):
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        build_url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
+        response = self.client.post(build_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 4, 'worker': 8}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        container_set = App.objects.get(id=app_id).container_set.all()
+        # restart all containers
+        response = self.client.post('/v1/apps/{}/containers/restart'.format(app_id),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), container_set.count())
+        # restart only the workers
+        response = self.client.post('/v1/apps/{}/containers/worker/restart'.format(app_id),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), container_set.filter(type='worker').count())
+        # restart only web.2
+        response = self.client.post('/v1/apps/{}/containers/web/1/restart'.format(app_id),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), container_set.filter(type='web', num=1).count())
