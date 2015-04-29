@@ -13,7 +13,9 @@ Each Deis component is deployed as a container or set of containers.
 
 Controller
 ----------
-The controller component is an HTTP API server.
+The controller component is an HTTP API server. Among other functions, the
+controller contains :ref:`the scheduler <choosing_a_scheduler>`, which decides
+where to run app containers.
 The ``deis`` command-line client interacts with this component.
 
 .. _database:
