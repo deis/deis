@@ -117,7 +117,7 @@ function dump_logs {
   get_logs deis-controller
   get_logs deis-database
   get_logs deis-logger
-  get_logs deis-registry
+  get_logs deis-registry@1 deis-registry deis-registry-1
   get_logs deis-router@1 deis-router deis-router-1
   get_logs deis-router@2 deis-router deis-router-2
   get_logs deis-router@3 deis-router deis-router-3
