@@ -5,9 +5,9 @@ ENV DEBIAN_FRONTEND noninteractive
 # install common packages
 RUN apt-get update && apt-get install -y curl net-tools sudo
 
-# install confd from https://github.com/deis/confd/tree/deis
-RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-4c50136 \
-    && chmod +x /usr/local/bin/confd
+# install confd
+RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-73f7489 \
+  && chmod +x /usr/local/bin/confd
 
 # install common packages
 RUN apt-get update && apt-get install -y libgeoip1 cron
