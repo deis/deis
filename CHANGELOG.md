@@ -1,3 +1,76 @@
+### v1.5.2 -> v1.6.0
+
+#### Features
+
+ - [`f08e9b0`](https://github.com/deis/deis/commit/f08e9b0a87ae8fcd2b5d4dd208e75b8269143243) controller: add swarm scheduler tech preview
+ - [`b7cb0eb`](https://github.com/deis/deis/commit/b7cb0eb6f0c44629fd32165befcedd32e52a565b) contrib/digitalocean: enable ams2 and sfo1 datacenters
+ - [`20a3eeb`](https://github.com/deis/deis/commit/20a3eeb0927daf3f0e1d5ba6a68ad81a9d25ff28) Makefile: Add a command to start a local postgresql container for running unit tests
+ - [`d2122e2`](https://github.com/deis/deis/commit/d2122e2706529daf5c23d53be54f2fba6edeeda9) controller: add ps:restart command
+ - [`958ad28`](https://github.com/deis/deis/commit/958ad282b4172e7d582e1225b6ebeb6b6edbe89a) router: nginx 1.9.0. Remove third party tcp module
+ - [`3182d1c`](https://github.com/deis/deis/commit/3182d1cd4ca7af9081f9fd56b55c4efc02482427) controller: allow user to scale gunicorn worker processes
+ - [`97ce414`](https://github.com/deis/deis/commit/97ce4148e2967deff13887c2ffdef4b28c5d3382) router: customize error_log level via etcd
+ - [`4f50645`](https://github.com/deis/deis/commit/4f506451a747a59356649ddd8a08e5198dd99cb7) controller: support SAN certificates
+ - [`aaa2f8e`](https://github.com/deis/deis/commit/aaa2f8eae2fbee577050b18e42131cb3b3d63a50) logger: expose config as flags
+ - [`603c537`](https://github.com/deis/deis/commit/603c537ce9c1b88430a06d0bcb1309ff37b92fcc) controller: add a option to limit the number of log lines
+ - [`c32b775`](https://github.com/deis/deis/commit/c32b7757477caa3b68064052ab4a60d00e219fb8) client: add optional path to config:push
+ - [`ebcc410`](https://github.com/deis/deis/commit/ebcc41003d760e96c42d0c47fa3d0c2d4a478d02) controller: Allow adminOnly registration
+ - [`a9019be`](https://github.com/deis/deis/commit/a9019bef4397aae81ce4d044099ff4b952e91733) contrib: list Melano, an example F#/Suave app for Deis
+ - [`a37d3d5`](https://github.com/deis/deis/commit/a37d3d5e4496238c84681a04e4c158777e598f62) controller: restore coverage.py report for unit tests
+ - [`fd3fc8e`](https://github.com/deis/deis/commit/fd3fc8e392e0abc361b77c51d1c5c23ebe4f0f3a) controller: add users:list endpoint
+ - [`4070755`](https://github.com/deis/deis/commit/4070755d502729e3a247c80176cb2d6e15908f65) contrib/azure/azure-coreos-cluster: add an https enddpoint on c… …reation
+ - [`ef3b89c`](https://github.com/deis/deis/commit/ef3b89c97e7be8fbb6c41f4f2bb4607b9ea3c2de) client: check controller before attempting to register. Fixes #3224
+
+#### Fixes
+
+ - [`e6a078b`](https://github.com/deis/deis/commit/e6a078b4119887b4de73e8a6d04291b7cdeb823b) contrib: remove message to exporting DEISCTL_TUNNEL
+ - [`b3a352d`](https://github.com/deis/deis/commit/b3a352d8722219f04daccc5c262c0d711d88c098) registry: bump etcd ttl to 20 seconds
+ - [`ea76828`](https://github.com/deis/deis/commit/ea76828bd95663748aa84b53a428392c56c83f2c) test: obtain logs from deis-registry
+ - [`12e79a4`](https://github.com/deis/deis/commit/12e79a4415173605d0af06bd3b7f402efd8d72d5) user-data: update fleetd 0.92 to /opt so it survives reboots
+ - [`2f4b965`](https://github.com/deis/deis/commit/2f4b9656fd25936769ebfac087142ef421a00cb8) store: change template to return ip address instead of :6789
+ - [`3103d0f`](https://github.com/deis/deis/commit/3103d0f9f14438000a0f8de2e5d60b20a3f2c654) store: install lsb-release package
+ - [`ded90a8`](https://github.com/deis/deis/commit/ded90a8417cfdc19cad56d2a5056b911d30ce5a2) client: Fix spacing of releases list
+ - [`efd02f8`](https://github.com/deis/deis/commit/efd02f842e19c42e2c56fc71f171ba18ce87a294) registry: retrieve bucket name from etcd
+ - [`e8ec005`](https://github.com/deis/deis/commit/e8ec005734078234489648a87a151a8706859f34) client: use pyOpenSSL for improved security features
+ - [`93b8ce8`](https://github.com/deis/deis/commit/93b8ce8007422b4ebb2033031bd61af7f233f415) router: Unify timeout values
+ - [`a4bf040`](https://github.com/deis/deis/commit/a4bf040b5982dee6b92bfd4cfdfb3d57f30cdba2) router: include deis.conf if no match with an SSL cert
+ - [`1df8eea`](https://github.com/deis/deis/commit/1df8eeaaf0f563d758167c454b2a8f9de612122f) controller: allow "*" wildcard in cert REST URLs
+ - [`5c2ae9c`](https://github.com/deis/deis/commit/5c2ae9c4e12ab43e4ba5193aa55cc8ab8be54376) controller: use key fingerprint instead of id for uniqueness
+ - [`7f6099c`](https://github.com/deis/deis/commit/7f6099c865c7a48f88b435cfad01f435251208e2) controller: return the correct domain from get_object(
+ - [`86b3b09`](https://github.com/deis/deis/commit/86b3b09324e3a9fe16d565f385908038533cdb73) contrib/ec2: improve timeout handling
+ - [`02b78a2`](https://github.com/deis/deis/commit/02b78a258c93d1caa149be2dbf313a097552485f) router: write out only if cert matches the path
+ - [`8e960ca`](https://github.com/deis/deis/commit/8e960ca203bd5d8c48e129c4172dd2b13cdc4439) (all): use "confd --interval 5" instead of "--watch"
+ - [`ce21c3b`](https://github.com/deis/deis/commit/ce21c3bfa1e71a140e9f5e259e37b1a97de5c54d) controller:  fix regex for deis limits
+ - [`fa48fd2`](https://github.com/deis/deis/commit/fa48fd21e9aed44f7c50c43211b96dfa4c28f21e) controller:  remove domain
+ - [`49d9002`](https://github.com/deis/deis/commit/49d9002e1cd2b1b0cac60c1aa6d3926c994fb3fb) builder: exit 1 when gitreceive captures a build
+ - [`bd8b2df`](https://github.com/deis/deis/commit/bd8b2dff4b03efa66d77f22078f6d2ccceceb00f) router: use nginx $host in HTTPS redirects
+ - [`def0d96`](https://github.com/deis/deis/commit/def0d9607e58cada0555a99ce86dd1e682954c8d) 'contrib/azure/azure-coreos-cluster': make this not found error more user friendly
+ - [`e153834`](https://github.com/deis/deis/commit/e1538349fad1be04d906ecb04ce2f1674b3abfed) database+registry: check for S3 bucket name before creating it
+
+#### Documentation
+
+ - [`3fa5df5`](https://github.com/deis/deis/commit/3fa5df5de89262f9321cec63e1411193fb0f6787) contrib: add link to Docker S3 Cleaner
+ - [`ee9f00e`](https://github.com/deis/deis/commit/ee9f00ed1a78f9b7ecf90f919058f5d1d0d6447d) using_deis: explain difference between web and cmd
+ - [`54757a0`](https://github.com/deis/deis/commit/54757a08e5f714789c0ead8307736849e2412136) contrib: organize community contributions
+ - [`6fe16b1`](https://github.com/deis/deis/commit/6fe16b1f90b6902cd842c8d3567af60d135c7d50) installing_deis/aws: update AWS provisioning example output
+ - [`b48ced3`](https://github.com/deis/deis/commit/b48ced3e3ad2c964634fcefd5f8cb56f712677a7) troubleshooting_deis: use private key on ssh -i
+ - [`ce4f8c3`](https://github.com/deis/deis/commit/ce4f8c3b97e7f6c6289d80f4010096776c78bf8a) managing_deis: add upgrade Deis clients for in-place upgrade
+
+#### Maintenance
+
+ - [`f4c2a24`](https://github.com/deis/deis/commit/f4c2a241530522d0d612fe3448bf9309d2c7927f) builder: migrate to heroku's cedar stack
+ - [`84cd7d0`](https://github.com/deis/deis/commit/84cd7d0d6e88725ffdbeb560f8c91d2c28f9d25a) database: update wal-e to v0.8.0 + busybox fix
+ - [`4b6cc67`](https://github.com/deis/deis/commit/4b6cc67dfa6874c4cb5206bbda6b38b3f4bad0d8) contrib/rackspace: bump CoreOS to 633.1.0
+ - [`053eb4e`](https://github.com/deis/deis/commit/053eb4e7a8b94b5f5abd445193aab61ddeef3662) router: update nginx to 1.8
+ - [`858d244`](https://github.com/deis/deis/commit/858d244be6df94286c58fcbeb8413197705b4573) contrib/coreos: remove etcd LimitNOFILE
+ - [`0a8c9e3`](https://github.com/deis/deis/commit/0a8c9e398a0695fc9447ddd8699ad723a7df19bb) (all): bump CoreOS to 633.1.0
+ - [`6702716`](https://github.com/deis/deis/commit/670271697c236743dfcfd3e8d4f85f1fa6922d35) (all): bump confd to v0.9.0
+ - [`82cf84c`](https://github.com/deis/deis/commit/82cf84c6c8c7bd6c898d98df41d8b325620106e2) controller: update docker-py to 1.1.0
+ - [`1cdf41e`](https://github.com/deis/deis/commit/1cdf41e929d12f8f98c5ac638b1294c0243a9a9b) (all): update pip installer tool to 6.1.1
+ - [`d120816`](https://github.com/deis/deis/commit/d1208162f232b1f7309b1dc4f2b98bcb76376233) contrib/ec2: introducing c4 instance types
+ - [`da4408b`](https://github.com/deis/deis/commit/da4408b87eafce9c5d00e63bf0b716add1de3080) store: bump Ceph to "hammer" release
+ - [`fb081f8`](https://github.com/deis/deis/commit/fb081f86cd1d9b5671bc489d71a64123d8d0fddd) client: update python-dateutil to 2.4.2
+ - [`ae7adc1`](https://github.com/deis/deis/commit/ae7adc16f21a0eff5685d86627fdb8fe6c577d79) logspout: switch to busybox
+
 ### v1.5.1 -> v1.5.2
 
 #### Fixes
