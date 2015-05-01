@@ -13,7 +13,7 @@ set -eo pipefail
 export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/store/gateway}
-export ETCD_TTL=${ETCD_TTL:-10}
+export ETCD_TTL=${ETCD_TTL:-20}
 
 export EXTERNAL_PORT=${EXTERNAL_PORT:-8888}
 export STORAGE_DIRECTORY=${STORAGE_DIRECTORY:-/app/storage}
