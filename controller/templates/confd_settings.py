@@ -10,6 +10,9 @@ try:
 except:
     SCHEDULER_OPTIONS = {}
 
+# scheduler swarm manager host
+SWARM_HOST = '{{ if exists "/deis/scheduler/swarm/host" }}{{ getv "/deis/scheduler/swarm/host" }}{{ else }}127.0.0.1{{ end }}'
+
 # base64-encoded SSH private key to facilitate current version of "deis run"
 SSH_PRIVATE_KEY = """{{ if exists "/deis/platform/sshPrivateKey" }}{{ getv "/deis/platform/sshPrivateKey" }}{{ else }}""{{end}}"""
 

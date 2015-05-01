@@ -6,9 +6,11 @@ After=deis-store-volume.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
+ExecStartPre=-/usr/bin/etcdctl mkdir /deis/scheduler >/dev/null 2>&1
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-controller >/dev/null 2>&1 && docker rm -f deis-controller || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e EXTERNAL_PORT=8000 -e HOST=$COREOS_PRIVATE_IPV4 -v /var/run/fleet.sock:/var/run/fleet.sock -v /var/lib/deis/store:/data $IMAGE"
+ExecStartPre=-/bin/sh -c "etcdctl get /deis/scheduler/module >/dev/null 2>&1 || etcdctl mk /deis/scheduler/module 'fleet' "
+ExecStart=/bin/sh -c "DOCKER_VERSION=`docker -v | sed 's/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*\).*$/\1/'` && IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e EXTERNAL_PORT=8000 -e HOST=$COREOS_PRIVATE_IPV4 -e DOCKER_VERSION=$DOCKER_VERSION -v /var/run/fleet.sock:/var/run/fleet.sock -v /var/lib/deis/store:/data $IMAGE"
 ExecStopPost=-/usr/bin/docker rm -f deis-controller
 Restart=on-failure
 RestartSec=5
