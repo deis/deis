@@ -68,6 +68,4 @@ you'd like:
 
 ## Base Environment
 
-The Docker image here is based on [cedarish](https://github.com/progrium/cedarish), an image that
-emulates the Heroku Cedar stack environment. All buildpacks should have everything they need to run
-in this environment, but if something is missing it should be added upstream to cedarish.
+The Docker image is based on Heroku's official [Cedar image](https://registry.hub.docker.com/u/heroku/cedar/).

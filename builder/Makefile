@@ -74,8 +74,3 @@ test-style:
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
 	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
 	$(GOLINT) ./...
-
-cedarish/build:
-	mkdir -p build
-	docker pull progrium/cedarish:latest
-	docker save progrium/cedarish:latest | gzip -9 > build/progrium_cedarish_$(shell date "+%Y_%m_%d").tar.gz

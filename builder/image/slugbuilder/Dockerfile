@@ -1,4 +1,4 @@
-FROM progrium/cedarish:latest
+FROM heroku/cedar:14
 
 RUN mkdir /app
 RUN addgroup --quiet --gid 2000 slug && \
