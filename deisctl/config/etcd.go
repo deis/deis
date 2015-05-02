@@ -42,6 +42,19 @@ func (c *etcdClient) Get(key string) (string, error) {
 	return resp.Node.Value, nil
 }
 
+func (c *etcdClient) GetWithDefault(key string, defaultValue string) (string, error) {
+	sort, recursive := true, false
+	resp, err := c.etcd.Get(key, sort, recursive)
+	if err != nil {
+		etcdErr, ok := err.(*etcd.EtcdError)
+		if ok && etcdErr.ErrorCode == 100 {
+			return defaultValue, nil
+		}
+		return "", err
+	}
+	return resp.Node.Value, nil
+}
+
 func (c *etcdClient) Set(key string, value string) (string, error) {
 	resp, err := c.etcd.Set(key, value, 0) // don't use TTLs
 	if err != nil {
