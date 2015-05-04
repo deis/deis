@@ -86,9 +86,9 @@ func main() {
 	client := etcd.NewClient([]string{"http://" + etcdhost + ":" + etcdport})
 	switch os.Args[1] {
 	case "join":
-		run("deis-swarm join " + addr + " " + etcdproto)
+		run("./deis-swarm join " + addr + " " + etcdproto)
 	case "manage":
 		go publishService(client, etcdhost, uint64(ttl.Seconds()))
-		run("deis-swarm manage " + etcdproto)
+		run("./deis-swarm manage " + etcdproto)
 	}
 }
