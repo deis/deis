@@ -39,6 +39,8 @@ func main() {
 	log.Debug("reading environment variables...")
 	host := getopt("HOST", "127.0.0.1")
 
+	etcdHost := getopt("ETCD_HOST", host)
+
 	etcdPort := getopt("ETCD_PORT", "4001")
 
 	etcdPath := getopt("ETCD_PATH", "/deis/router")
@@ -47,7 +49,14 @@ func main() {
 
 	externalPort := getopt("EXTERNAL_PORT", "80")
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+	var etcdPeers []string
+	if etcdPeersStr := os.Getenv("ETCDCTL_PEERS"); etcdPeersStr == "" {
+		etcdPeers = []string{"http://" + etcdHost + ":" + etcdPort}
+	} else {
+		etcdPeers = strings.Split(etcdPeersStr, ",")
+	}
+
+	client := etcd.NewClient(etcdPeers)
 
 	// wait until etcd has discarded potentially stale values
 	time.Sleep(timeout + 1)
@@ -75,9 +84,10 @@ func main() {
 	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
 	go launchCron()
 
-	waitForInitialConfd(host+":"+etcdPort, timeout)
+	confdHost := strings.Split(etcdPeers[0], "://")[1]
+	waitForInitialConfd(confdHost, timeout)
 
-	go launchConfd(host + ":" + etcdPort)
+	go launchConfd(confdHost)
 
 	go publishService(client, hostEtcdPath, host, externalPort, uint64(ttl.Seconds()))
 
