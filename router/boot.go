@@ -76,9 +76,9 @@ func main() {
 	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
 	go launchCron()
 
-	waitForInitialConfd(host+":"+etcdPort, timeout)
+	waitForInitialConfd(etcdHost+":"+etcdPort, timeout)
 
-	go launchConfd(host + ":" + etcdPort)
+	go launchConfd(etcdHost + ":" + etcdPort)
 
 	go publishService(client, hostEtcdPath, host, externalPort, uint64(ttl.Seconds()))
 
