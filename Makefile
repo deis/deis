@@ -10,7 +10,7 @@ repo_path = github.com/deis/deis
 GO_PACKAGES = pkg/time version
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
-COMPONENTS=builder cache controller database logger logspout publisher registry router store
+COMPONENTS=builder cache controller database logger logspout publisher registry router store swarm
 START_ORDER=publisher store logger logspout database cache registry controller builder router
 CLIENTS=client deisctl
 

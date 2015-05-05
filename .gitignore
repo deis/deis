@@ -31,7 +31,7 @@ builder/image/bin/get-app-config
 builder/image/bin/get-app-values
 builder/image/bin/publish-release-controller
 builder/image/bin/yaml2json-procfile
-cache/image/bin
+cache/image/bin/
 client/dist/
 client/makeself/
 contrib/azure/azure-user-data
@@ -50,6 +50,7 @@ logspout/Godeps/
 publisher/Godeps/
 publisher/image/bin/publisher
 router/Godeps/
+swarm/image/bin/
 
 # coverage reports
 .coverage

@@ -32,6 +32,19 @@ coreos:
       ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /opt/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /opt/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -sf /opt/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
       RemainAfterExit=yes
       Type=oneshot
+  - name: docker-tcp.socket
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Docker Socket for the API
+
+      [Socket]
+      ListenStream=2375
+      BindIPv6Only=both
+      Service=docker.service
+      [Install]
+      WantedBy=sockets.target
   - name: stop-update-engine.service
     command: start
     content: |

@@ -24,6 +24,7 @@ func TestController(t *testing.T) {
 		"/deis/database",
 		"/deis/registry",
 		"/deis/domains",
+		"/deis/scheduler",
 	}
 	tag, etcdPort := utils.BuildTag(), utils.RandomPort()
 	imageName := utils.ImagePrefix() + "controller" + ":" + tag

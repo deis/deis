@@ -1,4 +1,4 @@
-:title: Deis Components, Usage and Terminolody
+:title: Deis Components, Usage and Terminology
 :description: Deis Components, Usage and Terminology
 
 .. terms:
@@ -11,6 +11,7 @@ Terms
 
 
     controller
+    scheduler
 
     application
     container
