@@ -46,7 +46,9 @@ func main() {
 
 	externalPort := getopt("EXTERNAL_PORT", "80")
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+	etcdHost := getopt("ETCD_HOST", host)
+
+	client := etcd.NewClient([]string{"http://" + etcdHost + ":" + etcdPort})
 
 	// wait until etcd has discarded potentially stale values
 	time.Sleep(timeout + 1)

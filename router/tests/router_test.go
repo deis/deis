@@ -48,6 +48,7 @@ func TestRouter(t *testing.T) {
 			"-p", port+":80",
 			"-p", utils.RandomPort()+":2222",
 			"-e", "EXTERNAL_PORT="+port,
+			"-e", "ETCD_HOST="+host,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "LOG=debug",
