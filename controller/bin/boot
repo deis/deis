@@ -52,9 +52,10 @@ etcd_set_default webEnabled 0
 etcd_set_default unitHostname default
 
 # safely create required keyspaces
-etcd_safe_mkdir /deis/services
 etcd_safe_mkdir /deis/domains
 etcd_safe_mkdir /deis/platform
+etcd_safe_mkdir /deis/scheduler
+etcd_safe_mkdir /deis/services
 
 # run etcd data migrations
 echo "controller: running etcd data migrations..."
