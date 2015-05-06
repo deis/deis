@@ -166,10 +166,15 @@ func main() {
 
 	// HACK: if we are connecting to etcd, get the logger's connection
 	// details from there
-	if etcdHost := os.Getenv("ETCD_HOST"); etcdHost != "" {
-		connectionString := []string{"http://" + etcdHost + ":4001"}
-		debug("etcd:", connectionString[0])
-		etcd := etcd.NewClient(connectionString)
+	var etcdPeers []string
+	if etcdPeersStr := os.Getenv("ETCDCTL_PEERS"); etcdPeersStr == "" {
+		etcdPeers = []string{"http://" + getopt("ETCD_HOST", getopt("HOST", "127.0.0.1")) + ":" + getopt("ETCD_PORT", "4001")}
+	} else {
+		etcdPeers = strings.Split(etcdPeersStr, ",")
+	}
+	if len(etcdPeers) > 0 {
+		debug("etcd:", etcdPeers)
+		etcd := etcd.NewClient(etcdPeers)
 		etcd.SetDialTimeout(3 * time.Second)
 		hostResp, err := etcd.Get("/deis/logs/host", false, false)
 		assert(err, "url")
