@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -28,19 +29,28 @@ var (
 	etcdTTL         = flag.Duration("etcd-ttl", defaultEtcdTTL, "The TTL for all of the keys in etcd.")
 	host            = flag.String("host", defaultHost, "The host where the publisher is running.")
 	dockerHost      = flag.String("docker-host", defaultDockerHost, "The host where to find docker.")
+	etcdPeersStr    = flag.String("etcd-peers", "", "The etcd peers.")
 	etcdHost        = flag.String("etcd-host", defaultEtcdHost, "The etcd host.")
 	etcdPort        = flag.String("etcd-port", defaultEtcdPort, "The etcd port.")
 	logLevel        = flag.String("log-level", defaultLogLevel, "Acceptable values: error, debug")
 )
 
 func main() {
+
 	flag.Parse()
+
+	var etcdPeers []string
+	if *etcdPeersStr == "" {
+		etcdPeers = []string{"http://" + *etcdHost + ":" + *etcdPort}
+	} else {
+		etcdPeers = strings.Split(*etcdPeersStr, ",")
+	}
 
 	dockerClient, err := docker.NewClient(*dockerHost)
 	if err != nil {
 		log.Fatal(err)
 	}
-	etcdClient := etcd.NewClient([]string{"http://" + *etcdHost + ":" + *etcdPort})
+	etcdClient := etcd.NewClient(etcdPeers)
 
 	server := server.New(dockerClient, etcdClient, *host, *logLevel)
 
