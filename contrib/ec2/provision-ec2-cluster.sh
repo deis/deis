@@ -132,7 +132,6 @@ FIRST_INSTANCE=$(aws ec2 describe-instances \
     --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[PublicIpAddress]' \
     --output text | head -1)
-echo_green "Setting DEISCTL_TUNNEL=$FIRST_INSTANCE"
 export DEISCTL_TUNNEL=$FIRST_INSTANCE
 echo_green "Enabling proxy protocol"
 
