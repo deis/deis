@@ -6,7 +6,7 @@ import (
 )
 
 func TestIsPublishableApp(t *testing.T) {
-	s := &Server{nil, nil}
+	s := &Server{}
 	appName := "go_v2.web.1"
 	if !s.IsPublishableApp(appName) {
 		t.Errorf("%s should be publishable", appName)
@@ -37,7 +37,7 @@ func TestIsPortOpen(t *testing.T) {
 	}
 	defer ln.Close()
 
-	s := &Server{nil, nil}
+	s := &Server{}
 	if !s.IsPortOpen(ln.Addr().String()) {
 		t.Errorf("Port should be open")
 	}

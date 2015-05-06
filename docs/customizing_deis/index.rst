@@ -18,6 +18,7 @@ Customizing Deis
     controller_settings
     database_settings
     logger_settings
+    publisher_settings
     registry_settings
     router_settings
     store_daemon_settings
