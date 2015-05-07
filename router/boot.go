@@ -46,7 +46,9 @@ func main() {
 
 	externalPort := getopt("EXTERNAL_PORT", "80")
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+	etcdHost := getopt("ETCD_HOST", host)
+
+	client := etcd.NewClient([]string{"http://" + etcdHost + ":" + etcdPort})
 
 	// wait until etcd has discarded potentially stale values
 	time.Sleep(timeout + 1)
@@ -74,9 +76,9 @@ func main() {
 	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
 	go launchCron()
 
-	waitForInitialConfd(host+":"+etcdPort, timeout)
+	waitForInitialConfd(etcdHost+":"+etcdPort, timeout)
 
-	go launchConfd(host + ":" + etcdPort)
+	go launchConfd(etcdHost + ":" + etcdPort)
 
 	go publishService(client, hostEtcdPath, host, externalPort, uint64(ttl.Seconds()))
 
