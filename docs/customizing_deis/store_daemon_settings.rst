@@ -35,6 +35,7 @@ setting                                   description
 /deis/store/adminKeyring                  keyring for an admin user to access the Ceph cluster (set by store-monitor)
 /deis/store/fsid                          Ceph filesystem ID (set by store-monitor)
 /deis/store/hosts/*                       deis-monitor hosts (set by store-monitor)
+/deis/store/maxPGsPerOSDWarning           threshold for warning on number of placement groups per OSD (set by store-monitor)
 /deis/store/monKeyring                    keyring for the monitor to access the Ceph cluster (set by store-monitor)
 /deis/store/monSetupComplete              set when the Ceph cluster setup is complete (set by store-monitor)
 /deis/store/monSetupLock                  host of store-monitor that completed setup (set by store-monitor)
