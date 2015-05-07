@@ -29,7 +29,12 @@ platform state. Backups and WAL logs are pushed to :ref:`Store`.
 
 Cache
 -----
-The cache is an instance of `Redis`_ used by the registry.
+The cache component is an optional instance of `Redis`_. If the cache is running,
+it will be used by the :ref:`registry`.
+
+Caching can cause problems for ``deis pull``, but may speed up access to small
+files when using a remote storage backend such as S3. The ``deisctl`` provisioning
+tool does not install or start the cache by default.
 
 .. _builder:
 
