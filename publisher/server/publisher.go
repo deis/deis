@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"regexp"
 	"strconv"
 	"sync"
@@ -23,12 +22,25 @@ const (
 type Server struct {
 	DockerClient *docker.Client
 	EtcdClient   *etcd.Client
+
+	host     string
+	logLevel string
 }
 
 var safeMap = struct {
 	sync.RWMutex
 	data map[string]string
 }{data: make(map[string]string)}
+
+// New returns a new instance of Server.
+func New(dockerClient *docker.Client, etcdClient *etcd.Client, host, logLevel string) *Server {
+	return &Server{
+		DockerClient: dockerClient,
+		EtcdClient:   etcdClient,
+		host:         host,
+		logLevel:     logLevel,
+	}
+}
 
 // Listen adds an event listener to the docker client and publishes containers that were started.
 func (s *Server) Listen(ttl time.Duration) {
@@ -86,7 +98,6 @@ func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 // publishContainer publishes the docker container to etcd.
 func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Duration) {
 	r := regexp.MustCompile(appNameRegex)
-	host := os.Getenv("HOST")
 	for _, name := range container.Names {
 		// HACK: remove slash from container name
 		// see https://github.com/docker/docker/issues/7519
@@ -101,7 +112,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		dirPath := fmt.Sprintf("/deis/services/%s", appName)
 		for _, p := range container.Ports {
 			port := strconv.Itoa(int(p.PublicPort))
-			hostAndPort := host + ":" + port
+			hostAndPort := s.host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
 				s.updateDir(dirPath, uint64(ttl.Seconds()))
@@ -208,7 +219,9 @@ func (s *Server) setEtcd(key, value string, ttl uint64) {
 	if _, err := s.EtcdClient.Set(key, value, ttl); err != nil {
 		log.Println(err)
 	}
-	log.Println("set", key, "->", value)
+	if s.logLevel == "debug" {
+		log.Println("set", key, "->", value)
+	}
 }
 
 // removeEtcd removes the corresponding etcd key
@@ -216,7 +229,9 @@ func (s *Server) removeEtcd(key string, recursive bool) {
 	if _, err := s.EtcdClient.Delete(key, recursive); err != nil {
 		log.Println(err)
 	}
-	log.Println("del", key)
+	if s.logLevel == "debug" {
+		log.Println("del", key)
+	}
 }
 
 // updateDir updates the given directory for a given ttl. It succeeds
@@ -225,5 +240,7 @@ func (s *Server) updateDir(directory string, ttl uint64) {
 	if _, err := s.EtcdClient.UpdateDir(directory, ttl); err != nil {
 		log.Println(err)
 	}
-	log.Println("updateDir", directory)
+	if s.logLevel == "debug" {
+		log.Println("updateDir", directory)
+	}
 }
