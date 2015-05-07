@@ -3,6 +3,7 @@
 package tests
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"testing"
@@ -108,6 +109,7 @@ func appsLogsTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func appsOpenTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.CurlApp(t, *params)
+	utils.CurlWithFail(t, fmt.Sprintf("http://%s.%s", "this-app-does-not-exist", params.Domain), true, "404 Not Found")
 }
 
 func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
