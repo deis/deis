@@ -74,7 +74,7 @@ from tabulate import tabulate
 from termcolor import colored
 import urllib3.contrib.pyopenssl
 
-__version__ = '1.6.0'
+__version__ = '1.7.0-dev'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.3'
