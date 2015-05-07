@@ -6,9 +6,14 @@ set -e
 ETCD_PORT=${ETCD_PORT:-4001}
 ETCD="$HOST:$ETCD_PORT"
 ETCD_PATH=${ETCD_PATH:-/deis/store}
-NUM_STORES=${NUM_STORES:-3}
-PG_NUM=${PG_NUM:-128} # default for 3 OSDs
 HOSTNAME=`hostname`
+
+# These defaults are for 3 hosts
+NUM_STORES=${NUM_STORES:-3}
+PG_NUM=${PG_NUM:-64}
+## We set this to the number of PGs before re-evaluating the PG count so users upgrading don't see the warning
+## Now, 12 pools * 64 pgs per pool = 768 PGs per OSD
+PGS_PER_OSD_WARNING=${PGS_PER_OSD_WARNING:-1536}
 
 function etcd_set_default {
   set +e
@@ -29,10 +34,11 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&
 
     # set some defaults in etcd if they're not passed in as environment variables
     # these are templated in ceph.conf
-    etcd_set_default size ${NUM_STORES}
+    etcd_set_default delayStart 15
+    etcd_set_default maxPGsPerOSDWarning ${PGS_PER_OSD_WARNING}
     etcd_set_default minSize 1
     etcd_set_default pgNum ${PG_NUM}
-    etcd_set_default delayStart 15
+    etcd_set_default size ${NUM_STORES}
 
     # Generate administrator key
     ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'

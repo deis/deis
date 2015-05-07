@@ -19,19 +19,20 @@ Settings set by store-monitor
 -----------------------------
 The following etcd keys are set by the store-monitor component, typically in its /bin/boot script.
 
-=============================            =================================================================================
+===============================          ==================================================================================
 setting                                  description
-=============================            =================================================================================
+===============================          ==================================================================================
 /deis/store/adminKeyring                 keyring for an admin user to access the Ceph cluster
 /deis/store/fsid                         Ceph filesystem ID
 /deis/store/hosts/$HOST                  hostname (not IP) of the host running this store-monitor instance
+/deis/store/maxPGsPerOSDWarning          threshold for warning on number of placement groups per OSD (set by store-monitor)
 /deis/store/monKeyring                   keyring for the monitor to access the Ceph cluster
 /deis/store/monSetupComplete             set when the Ceph cluster setup is complete
 /deis/store/monSetupLock                 IP address of the monitor instance that is or has set up the Ceph cluster
 /deis/store/minSize                      minimum number of store-daemons necessary for the cluster to accept writes
 /deis/store/pgNum                        number of Ceph placement groups for the storage pools
 /deis/store/size                         number of replicas for data stored in Ceph
-=============================            =================================================================================
+===============================          ==================================================================================
 
 Settings used by store-monitor
 ------------------------------
