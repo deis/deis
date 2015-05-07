@@ -55,7 +55,6 @@ parser.add_argument('--data-disk', action='store_true',
                    help='optional, attaches a data disk to each VM')
 parser.add_argument('--nohttps', action='store_true',
                    help='optional, disables the creation of the https load balanced endpoint')
-
 cloud_init_template = """#cloud-config
 
 coreos:
@@ -134,8 +133,8 @@ def linux_config(hostname, args):
     system.disable_ssh_password_authentication = True
     return system
 
-def endpoint_config(name, port, probe=False):
-    endpoint = ConfigurationSetInputEndpoint(name, 'tcp', port, port, name)
+def lb_endpoint_config(name, port, probe=False, idle_timeout_minutes=4):
+    endpoint = ConfigurationSetInputEndpoint(name, 'tcp', port, port, name, False, idle_timeout_minutes)
     if probe:
       endpoint.load_balancer_probe = probe
     return endpoint
@@ -160,11 +159,12 @@ def network_config(subnet_name=None, port='59913', public_ip_name=None):
         network.public_ips.public_ips.append(ip)
     if args.deis:
         # create web endpoint with probe checking /health-check
-        network.input_endpoints.input_endpoints.append(endpoint_config('web', '80', load_balancer_probe('/health-check', '80', 'http')))
+        network.input_endpoints.input_endpoints.append(lb_endpoint_config('web', '80', load_balancer_probe('/health-check', '80', 'http')))
         if not args.nohttps:
-          network.input_endpoints.input_endpoints.append(endpoint_config('https', '443', load_balancer_probe(None, '443', 'tcp')))
-        # create builder endpoint TCP probe check
-        network.input_endpoints.input_endpoints.append(endpoint_config('builder', '2222', load_balancer_probe(None, '2222', 'tcp')))
+          network.input_endpoints.input_endpoints.append(lb_endpoint_config('https', '443', load_balancer_probe(None, '443', 'tcp')))
+        # create builder endpoint TCP probe check and extended timeout
+        network.input_endpoints.input_endpoints.append(lb_endpoint_config('builder', '2222', 
+load_balancer_probe(None, '2222', 'tcp',), 20))
     return network
 
 def data_hd(target_container_url, target_blob_name, target_lun, target_disk_size_in_gb):
