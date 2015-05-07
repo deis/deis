@@ -450,20 +450,32 @@ func Config(target string, action string, key []string, cb config.Backend) error
 // RefreshUnits overwrites local unit files with those requested.
 // Downloading from the Deis project GitHub URL by tag or SHA is the only mechanism
 // currently supported.
-func RefreshUnits(dir, tag, url string) error {
-	dir = utils.ResolvePath(dir)
+func RefreshUnits(unitDir, tag, rootURL string) error {
+	unitDir = utils.ResolvePath(unitDir)
+	decoratorDir := filepath.Join(unitDir, "decorators")
 	// create the target dir if necessary
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(decoratorDir, 0755); err != nil {
 		return err
 	}
 	// download and save the unit files to the specified path
 	for _, unit := range units.Names {
-		src := fmt.Sprintf(url, tag, unit)
-		dest := filepath.Join(dir, unit+".service")
-		if err := net.Download(src, dest); err != nil {
+		unitSrc := rootURL + tag + "/deisctl/units/" + unit + ".service"
+		unitDest := filepath.Join(unitDir, unit+".service")
+		if err := net.Download(unitSrc, unitDest); err != nil {
 			return err
 		}
-		fmt.Printf("Refreshed %s from %s\n", unit, tag)
+		fmt.Printf("Refreshed %s unit from %s\n", unit, tag)
+		decoratorSrc := rootURL + tag + "/deisctl/units/decorators/" + unit + ".service.decorator"
+		decoratorDest := filepath.Join(decoratorDir, unit+".service.decorator")
+		if err := net.Download(decoratorSrc, decoratorDest); err != nil {
+			if err.Error() == "404 Not Found" {
+				fmt.Printf("Decorator for %s not found in %s\n", unit, tag)
+			} else {
+				return err
+			}
+		} else {
+			fmt.Printf("Refreshed %s decorator from %s\n", unit, tag)
+		}
 	}
 	return nil
 }

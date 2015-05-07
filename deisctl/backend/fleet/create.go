@@ -3,6 +3,7 @@ package fleet
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -96,7 +97,15 @@ func (c *FleetClient) createServiceUnit(component string, num int) (name string,
 	if err != nil {
 		return "", nil, err
 	}
-	uf, err = NewUnit(component, c.templatePaths)
+	decorateStr, err := c.configBackend.GetWithDefault("/deis/platform/enablePlacementOptions", "false")
+	if err != nil {
+		return "", nil, err
+	}
+	decorate, err := strconv.ParseBool(decorateStr)
+	if err != nil {
+		return "", nil, err
+	}
+	uf, err = NewUnit(component, c.templatePaths, decorate)
 	if err != nil {
 		return
 	}

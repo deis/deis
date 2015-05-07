@@ -6,6 +6,9 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/deis/deis/deisctl/config/model"
+	"github.com/deis/deis/deisctl/test/mock"
+
 	"github.com/coreos/fleet/schema"
 )
 
@@ -30,7 +33,9 @@ func TestCreate(t *testing.T) {
 	testFleetClient := stubFleetClient{testUnits: []*schema.Unit{}, unitsMutex: &sync.Mutex{},
 		unitStatesMutex: &sync.Mutex{}}
 
-	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient}
+	testConfigBackend := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/platform/enablePlacementOptions", Value: "true"}}}
+
+	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient, configBackend: testConfigBackend}
 
 	var errOutput string
 	var wg sync.WaitGroup

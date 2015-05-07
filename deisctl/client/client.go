@@ -46,24 +46,24 @@ type Client struct {
 func NewClient(requestedBackend string) (*Client, error) {
 	var backend backend.Backend
 
+	cb, err := etcd.NewConfigBackend()
+	if err != nil {
+		return nil, err
+	}
+
 	if requestedBackend == "" {
 		requestedBackend = "fleet"
 	}
 
 	switch requestedBackend {
 	case "fleet":
-		b, err := fleet.NewClient()
+		b, err := fleet.NewClient(cb)
 		if err != nil {
 			return nil, err
 		}
 		backend = b
 	default:
 		return nil, errors.New("invalid backend")
-	}
-
-	cb, err := etcd.NewConfigBackend()
-	if err != nil {
-		return nil, err
 	}
 
 	return &Client{Backend: backend, configBackend: cb}, nil

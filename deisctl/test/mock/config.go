@@ -25,6 +25,17 @@ func (cb ConfigBackend) Get(key string) (value string, err error) {
 	return "", fmt.Errorf("%s does not exist", cb.Expected)
 }
 
+// GetWithDefault gets a value by key from an in memory config backend and
+// return a default value if not found
+func (cb ConfigBackend) GetWithDefault(key string, defaultValue string) (string, error) {
+	for _, expect := range cb.Expected {
+		if expect.Key == key {
+			return expect.Value, nil
+		}
+	}
+	return defaultValue, nil
+}
+
 // Set a value for the specified key in an in memory config backend
 func (cb ConfigBackend) Set(key, value string) (returnedValue string, err error) {
 	for _, expect := range cb.Expected {
