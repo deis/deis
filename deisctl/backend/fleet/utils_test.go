@@ -137,12 +137,21 @@ func TestExpandTargets(t *testing.T) {
 			Name: "deis-store-gateway@1.service",
 		},
 		&schema.Unit{
+			Name: "deis-store-gateway@2.service",
+		},
+		&schema.Unit{
 			Name: "deis-controller.service",
+		},
+		&schema.Unit{
+			Name: "deis-registry@1.service",
+		},
+		&schema.Unit{
+			Name: "registry_v2.cmd.1.service",
 		},
 	}
 	c := &FleetClient{Fleet: fc}
 
-	targets := []string{"deis-router@*", "deis-store-gateway@1", "deis-controller"}
+	targets := []string{"router@*", "deis-store-gateway@1", "deis-controller", "registry@*"}
 	expandedTargets, err := expandTargets(c, targets)
 	if err != nil {
 		t.Fatal(err)
@@ -152,6 +161,7 @@ func TestExpandTargets(t *testing.T) {
 		"deis-router@2.service",
 		"deis-store-gateway@1",
 		"deis-controller",
+		"deis-registry@1.service",
 	}
 	if !reflect.DeepEqual(expandedTargets, expectedTargets) {
 		t.Fatal(expandedTargets)
