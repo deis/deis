@@ -43,6 +43,7 @@ Patch Release
         database/Dockerfile \
         deisctl/cmd/cmd.go \
         deisctl/deis-version \
+        docs/_includes/_get-the-source.rst \
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
@@ -93,6 +94,7 @@ Major or Minor Release
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
         README.md \
         contrib/coreos/user-data.example \
+        docs/_includes/_get-the-source.rst \
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
@@ -173,6 +175,7 @@ Patch Release
     ./contrib/bumpver/bumpver -f A.B.C A.B.D \
       README.md \
       contrib/coreos/user-data.example \
+      docs/_includes/_get-the-source.rst \
       docs/installing_deis/install-deisctl.rst \
       docs/installing_deis/install-platform.rst \
       docs/managing_deis/upgrading-deis.rst \

@@ -6,6 +6,9 @@ this documentation. Download an archive file from the `releases page`_, or use
 
     $ git clone https://github.com/deis/deis.git
     $ cd deis
+    $ git checkout v1.6.0
+
+Check out the latest Deis release, rather than using the default (master).
 
 If you contribute to Deis or build components locally, use ``go get`` instead to
 clone the source code into your `$GOPATH`_:
