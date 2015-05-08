@@ -78,7 +78,7 @@ For providers that do not supply a security group feature, please try
 Router firewall
 ---------------
 The :ref:`Router` component includes a firewall to help thwart attacks. It can be enabled by running:
-``deisctl config router set firewall/enabled true``. For more information, see the `router README`_
+``deisctl config router set firewall/enabled=true``. For more information, see the `router README`_
 and :ref:`router_settings`.
 
 .. _`#986`: https://github.com/deis/deis/issues/986
