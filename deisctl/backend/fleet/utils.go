@@ -88,6 +88,10 @@ func splitTarget(target string) (component string, num int, err error) {
 // expand a target to all installed units
 func expandTargets(c *FleetClient, targets []string) (expandedTargets []string, err error) {
 	for _, t := range targets {
+		// ensure unit name starts with "deis-"
+		if !strings.HasPrefix(t, "deis-") {
+			t = "deis-" + t
+		}
 		if strings.HasSuffix(t, "@*") {
 			var targets []string
 			targets, err = expandTarget(c, strings.TrimSuffix(t, "@*"))
