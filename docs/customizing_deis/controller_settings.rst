@@ -109,9 +109,33 @@ server
     every application or scaling them down and up.
     The change is only detected when a container unit is deployed.
 
+Changing the Registration Mode
+------------------------------
+
+By default, anybody can register a user with the Deis controller.
+However, this is often undesirable from a security point of view.
+
+Deis supports configuring the registration mode through the ``registrationMode`` setting.
+
+Registration Modes
+^^^^^^^^^^^^^^^^^^
+========== =========================================================
+mode       description
+========== =========================================================
+enabled    Default. Anybody can register a user with the controller.
+disabled   Nobody can register a user with the controller.
+admin_only Only admins can register a user with the controller.
+========== =========================================================
+
+This will set the registration mode to admin_only.
+
+.. code-block:: console
+
+    $ deisctl config controller set registrationMode="admin_only"
+
 Using a LDAP Auth
 -----------------
-Deis Controller supports Single Sign On access control, for now Deis is able to authenticate using LDAP or Active Directory.
+The Deis controller supports Single Sign On access control, for now Deis is able to authenticate using LDAP or Active Directory.
 
 Settings used by LDAP
 ^^^^^^^^^^^^^^^^^^^^^
