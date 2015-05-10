@@ -17,6 +17,7 @@ import (
 var (
 	logAddr         string
 	logPort         int
+	drainURI        string
 	enablePublish   bool
 	publishHost     string
 	publishPath     string
@@ -28,6 +29,7 @@ var (
 func init() {
 	flag.StringVar(&logAddr, "log-addr", "0.0.0.0", "bind address for the logger")
 	flag.IntVar(&logPort, "log-port", 514, "bind port for the logger")
+	flag.StringVar(&drainURI, "drain-uri", "", "default drainURI, once set in etcd, this has no effect.")
 	flag.StringVar(&syslogd.LogRoot, "log-root", "/data/logs", "log path to store logs")
 	flag.BoolVar(&enablePublish, "enable-publish", false, "enable publishing to service discovery")
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
@@ -42,26 +44,46 @@ func main() {
 
 	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
 
-	// Wait for terminating signal
-	exitChan := make(chan os.Signal, 2)
+	signalChan := make(chan os.Signal, 1)
+	drainChan := make(chan *etcd.Response)
+	stopChan := make(chan bool)
+	exitChan := make(chan bool)
 	cleanupChan := make(chan bool)
-	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
 
-	go syslogd.Listen(exitChan, cleanupChan, fmt.Sprintf("%s:%d", logAddr, logPort))
-
-	if enablePublish {
-		go publishService(client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL).Seconds()))
+	// ensure the drain key exists in etcd.
+	if _, err := client.Get(publishPath+"/drain", false, false); err != nil {
+		setEtcd(client, publishPath+"/drain", drainURI, 0)
 	}
 
-	// Wait for the proper shutdown of the syslog server before exit
-	<-cleanupChan
+	go client.Watch(publishPath+"/drain", 0, false, drainChan, stopChan)
+	go syslogd.Listen(exitChan, cleanupChan, drainChan, fmt.Sprintf("%s:%d", logAddr, logPort))
+	if enablePublish {
+		go publishService(exitChan, client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL).Seconds()))
+	}
+
+	for {
+		select {
+		case <-signalChan:
+			close(exitChan)
+			stopChan <- true
+		case <-cleanupChan:
+			return
+		}
+	}
 }
 
-func publishService(client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
+func publishService(exitChan chan bool, client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
+	t := time.NewTicker(time.Duration(publishInterval))
+
 	for {
-		setEtcd(client, etcdPath+"/host", host, ttl)
-		setEtcd(client, etcdPath+"/port", port, ttl)
-		time.Sleep(time.Duration(publishInterval))
+		select {
+		case <-t.C:
+			setEtcd(client, etcdPath+"/host", host, ttl)
+			setEtcd(client, etcdPath+"/port", port, ttl)
+		case <-exitChan:
+			return
+		}
 	}
 }
 
