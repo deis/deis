@@ -275,6 +275,10 @@
           {
             "DeviceName" : "/dev/xvdf",
             "Ebs" : { "VolumeSize" : "100", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
+          },
+          {
+            "DeviceName" : "/dev/xvdg",
+            "Ebs" : { "VolumeSize" : "10", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           }
         ]
       }
