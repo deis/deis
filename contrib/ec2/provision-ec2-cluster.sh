@@ -23,6 +23,10 @@ if ! which aws > /dev/null; then
   exit 1
 fi
 
+if [ ! -z "$AWS_CLI_PROFILE" ]; then
+    EXTRA_AWS_CLI_ARGS+="--profile $AWS_CLI_PROFILE"
+fi
+
 if [ -z "$DEIS_NUM_INSTANCES" ]; then
     DEIS_NUM_INSTANCES=3
 fi
@@ -47,7 +51,8 @@ bailout() {
 aws cloudformation create-stack \
     --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $STACK_NAME \
-    --parameters "$(<$THIS_DIR/cloudformation.json)"
+    --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    $EXTRA_AWS_CLI_ARGS
 
 # loop until the instances are created
 ATTEMPTS=60
@@ -62,12 +67,13 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
         exit 1
     fi
 
-    STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus')
-    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then
+    STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus' $EXTRA_AWS_CLI_ARGS)
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \
-          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]'
+          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]' \
+          $EXTRA_AWS_CLI_ARGS
       bailout
       exit 1
     fi
@@ -75,7 +81,8 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
     INSTANCE_IDS=$(aws ec2 describe-instances \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
         --query 'Reservations[].Instances[].[ InstanceId ]' \
-        --output text)
+        --output text \
+        $EXTRA_AWS_CLI_ARGS)
 
     echo "Waiting for instances to be provisioned ($STACK_STATUS, $(expr 61 - $COUNTER)0s) ..."
     sleep $SLEEPTIME
@@ -100,7 +107,8 @@ until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
         --filters Name=instance-status.reachability,Values=passed \
         --instance-ids $INSTANCE_IDS \
         --query 'InstanceStatuses[].[ InstanceId ]' \
-        --output text)
+        --output text \
+        $EXTRA_AWS_CLI_ARGS)
     let COUNTER=COUNTER+1
 done
 
@@ -109,7 +117,8 @@ echo "Instances are available:"
 aws ec2 describe-instances \
     --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[InstanceId,PublicIpAddress,InstanceType,Placement.AvailabilityZone,State.Name]' \
-    --output text
+    --output text \
+    $EXTRA_AWS_CLI_ARGS
 
 # get ELB public DNS name through cloudformation
 # TODO: is "first output value" going to be reliable enough?
@@ -117,12 +126,14 @@ export ELB_DNS_NAME=$(aws cloudformation describe-stacks \
     --stack-name $STACK_NAME \
     --max-items 1 \
     --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
-    --output=text)
+    --output=text \
+    $EXTRA_AWS_CLI_ARGS)
 
 # get ELB friendly name through aws elb
 ELB_NAME=$(aws elb describe-load-balancers \
     --query 'LoadBalancerDescriptions[].[ DNSName,LoadBalancerName ]' \
-    --output=text | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
+    --output=text \
+    $EXTRA_AWS_CLI_ARGS | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
 echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"
 
 echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is started."
@@ -131,7 +142,8 @@ echo_green "Please continue to follow the instructions in the documentation."
 FIRST_INSTANCE=$(aws ec2 describe-instances \
     --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[PublicIpAddress]' \
-    --output text | head -1)
+    --output text \
+    $EXTRA_AWS_CLI_ARGS | head -1)
 export DEISCTL_TUNNEL=$FIRST_INSTANCE
 echo_green "Enabling proxy protocol"
 
