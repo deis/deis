@@ -53,21 +53,6 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.6.0'
-  - name: ntpdate.service
-    command: start
-  - name: timedate-ntp-synchronization.service
-    command: start
-    content: |
-      [Unit]
-      Description=Synchronize system clock
-      After=ntpdate.service
-
-      [Service]
-      ExecStart=/usr/bin/timedatectl set-timezone UTC
-      ExecStart=/usr/bin/timedatectl set-ntp true
-      ExecStart=/sbin/hwclock --systohc --utc
-      RemainAfterExit=yes
-      Type=oneshot
   - name: debug-etcd.service
     content: |
       [Unit]
@@ -191,8 +176,3 @@ write_files:
     content: |
       [Coredump]
       Storage=none
-  - path: /etc/systemd/system/ntpd.service.d/debug.conf
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=/usr/sbin/ntpd -g -n -f /var/lib/ntp/ntp.drift
