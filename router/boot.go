@@ -97,7 +97,7 @@ func launchCron() {
 	}
 
 	// run cron
-	cmd = exec.Command("cron")
+	cmd = exec.Command("crond")
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("cron terminated by error: %v", err)
 	}

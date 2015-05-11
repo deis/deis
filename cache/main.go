@@ -69,7 +69,7 @@ func replaceMaxmemoryInConfig(maxmemory string) {
 }
 
 func launchRedis() {
-	cmd := exec.Command("/app/bin/redis-server", redisConf)
+	cmd := exec.Command("redis-server", redisConf)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

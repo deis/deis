@@ -1,4 +1,6 @@
-FROM ubuntu-debootstrap:14.04
+FROM alpine:3.1
+
+RUN apk add --update-cache redis && rm -rf /var/cache/apk/*
 
 ADD . /app
 WORKDIR /app

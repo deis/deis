@@ -1,4 +1,4 @@
-FROM busybox
+FROM alpine:3.1
 
 ENV DOCKER_HOST unix:///tmp/docker.sock
 ENV ROUTESPATH /tmp
