@@ -18,33 +18,6 @@ coreos:
     # allow etcd to slow down at times
     etcd_request_timeout: 3.0
   units:
-  - name: etcd.service
-    command: start
-  - name: upgrade-fleet-091.service
-    command: start
-    content: |
-      [Unit]
-      Description=Upgrade fleet if system fleet is v0.9.1, which has a known bug
-      Before=fleet.service
-      ConditionPathIsSymbolicLink=!/etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf
-
-      [Service]
-      ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /opt/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /opt/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -sf /opt/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
-      RemainAfterExit=yes
-      Type=oneshot
-  - name: docker-tcp.socket
-    command: start
-    enable: true
-    content: |
-      [Unit]
-      Description=Docker Socket for the API
-
-      [Socket]
-      ListenStream=2375
-      BindIPv6Only=both
-      Service=docker.service
-      [Install]
-      WantedBy=sockets.target
   - name: stop-update-engine.service
     command: start
     content: |
@@ -55,40 +28,10 @@ coreos:
       Type=oneshot
       ExecStart=/usr/bin/systemctl stop update-engine.service
       ExecStartPost=/usr/bin/systemctl mask update-engine.service
-  - name: install-deisctl.service
-    command: start
-    content: |
-      [Unit]
-      Description=Install deisctl utility
-      ConditionPathExists=!/opt/bin/deisctl
-
-      [Service]
-      Type=oneshot
-      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.6.0'
   - name: ntpdate.service
     command: start
-  - name: timedate-ntp-synchronization.service
+  - name: ntpd.service
     command: start
-    content: |
-      [Unit]
-      Description=Synchronize system clock
-      After=ntpdate.service
-
-      [Service]
-      ExecStart=/usr/bin/timedatectl set-timezone UTC
-      ExecStart=/usr/bin/timedatectl set-ntp true
-      ExecStart=/sbin/hwclock --systohc --utc
-      RemainAfterExit=yes
-      Type=oneshot
-  - name: debug-etcd.service
-    content: |
-      [Unit]
-      Description=etcd debugging service
-
-      [Service]
-      ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
-      ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
-      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
   - name: increase-nf_conntrack-connections.service
     command: start
     content: |
@@ -108,6 +51,52 @@ coreos:
 
       [Service]
       ExecStart=/bin/bash -c "lsmod | grep overlay || modprobe overlay"
+  - name: docker-tcp.socket
+    command: start
+    enable: true
+    content: |
+      [Unit]
+      Description=Docker Socket for the API
+
+      [Socket]
+      ListenStream=2375
+      BindIPv6Only=both
+      Service=docker.service
+      [Install]
+      WantedBy=sockets.target
+  - name: upgrade-fleet-091.service
+    command: start
+    content: |
+      [Unit]
+      Description=Upgrade fleet if system fleet is v0.9.1, which has a known bug
+      Before=fleet.service
+      ConditionPathIsSymbolicLink=!/etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf
+
+      [Service]
+      ExecStart=/usr/bin/bash -c 'if fleetd --version | grep -q 0.9.1; then curl -sSL --retry 5 --retry-delay 2 -o /opt/bin/fleetd-0.9.2 https://s3-us-west-2.amazonaws.com/opdemand/fleetd-v0.9.2 && chmod +x /opt/bin/fleetd-0.9.2 && mkdir -p /etc/systemd/system/fleet.service.d/ && ln -sf /opt/conf/fleetd-092-custom-binary.conf /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; else rm -f /etc/systemd/system/fleet.service.d/99-upgrade-fleet-091.conf; fi'
+      RemainAfterExit=yes
+      Type=oneshot
+  - name: install-deisctl.service
+    command: start
+    content: |
+      [Unit]
+      Description=Install deisctl utility
+      ConditionPathExists=!/opt/bin/deisctl
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.6.0'
+  - name: debug-etcd.service
+    content: |
+      [Unit]
+      Description=etcd debugging service
+
+      [Service]
+      ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
+      ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
+      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
+  - name: etcd.service
+    command: start
   - name: fleet.service
     command: start
 write_files:
