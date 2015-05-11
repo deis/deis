@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"log"
-	"os"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -12,34 +12,40 @@ import (
 )
 
 const (
-	timeout time.Duration = 10 * time.Second
-	etcdTTL time.Duration = timeout * 2
+	defaultRefreshTime time.Duration = 10 * time.Second
+	defaultEtcdTTL     time.Duration = defaultRefreshTime * 2
+	defaultHost                      = "127.0.0.1"
+	defaultDockerHost                = "unix:///var/run/docker.sock"
+	defaultEtcdHost                  = "127.0.0.1"
+	defaultEtcdPort                  = "4001"
+	defaultLogLevel                  = "error"
 )
 
-func getopt(name, dfault string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		value = dfault
-	}
-	return value
-}
+var (
+	refreshDuration = flag.Duration("refresh-duration", defaultRefreshTime, "The time to wait between etcd refreshes.")
+	etcdTTL         = flag.Duration("etcd-ttl", defaultEtcdTTL, "The TTL for all of the keys in etcd.")
+	host            = flag.String("host", defaultHost, "The host where the publisher is running.")
+	dockerHost      = flag.String("docker-host", defaultDockerHost, "The host where to find docker.")
+	etcdHost        = flag.String("etcd-host", defaultEtcdHost, "The etcd host.")
+	etcdPort        = flag.String("etcd-port", defaultEtcdPort, "The etcd port.")
+	logLevel        = flag.String("log-level", defaultLogLevel, "Acceptable values: error, debug")
+)
 
 func main() {
-	endpoint := getopt("DOCKER_HOST", "unix:///var/run/docker.sock")
-	etcdHost := getopt("ETCD_HOST", "127.0.0.1")
+	flag.Parse()
 
-	client, err := docker.NewClient(endpoint)
+	dockerClient, err := docker.NewClient(*dockerHost)
 	if err != nil {
 		log.Fatal(err)
 	}
-	etcdClient := etcd.NewClient([]string{"http://" + etcdHost + ":4001"})
+	etcdClient := etcd.NewClient([]string{"http://" + *etcdHost + ":" + *etcdPort})
 
-	server := &server.Server{DockerClient: client, EtcdClient: etcdClient}
+	server := server.New(dockerClient, etcdClient, *host, *logLevel)
 
-	go server.Listen(etcdTTL)
+	go server.Listen(*etcdTTL)
 
 	for {
-		go server.Poll(etcdTTL)
-		time.Sleep(timeout)
+		go server.Poll(*etcdTTL)
+		time.Sleep(*refreshDuration)
 	}
 }

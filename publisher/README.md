@@ -7,10 +7,10 @@ service discovery.
 
 ## Running this Container
 
-Set $ETCD_HOST to be the IP address/hostname of the etcd endpoint you wish to target, and
-$HOST to be the IP address of the host running this container:
+Run the publisher with the --etcd-host set to be the IP address/hostname of the etcd endpint you wish to target, and --host to be the IP address of the host running this container:
 
-    $ docker run -d -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=192.168.0.1 -e HOST=192.168.0.1 deis/publisher
+
+    $ docker run -d -v /var/run/docker.sock:/tmp/docker.sock deis/publisher --etcd-host=192.168.0.1 --host=192.168.0.1
 
 ## Building from Source
 
