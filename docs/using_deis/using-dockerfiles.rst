@@ -22,7 +22,7 @@ Dockerfile Requirements
 In order to deploy Dockerfile applications, they must conform to the following requirements:
 
  * The Dockerfile must EXPOSE only one port
- * The exposed port must be an HTTP service that can be connected to an HTTP router
+ * The port must be listening for a HTTP connection
  * A default CMD must be specified for running the container
 
 .. note::

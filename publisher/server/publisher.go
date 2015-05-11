@@ -111,6 +111,8 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
 		dirPath := fmt.Sprintf("/deis/services/%s", appName)
 		for _, p := range container.Ports {
+			// lowest port wins (docker sorts the ports)
+			// TODO (bacongobbler): support multiple exposed ports
 			port := strconv.Itoa(int(p.PublicPort))
 			hostAndPort := s.host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
@@ -120,7 +122,6 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 				safeMap.data[container.ID] = appPath
 				safeMap.Unlock()
 			}
-			// TODO: support multiple exposed ports
 			break
 		}
 	}
