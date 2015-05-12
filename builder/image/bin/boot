@@ -62,6 +62,7 @@ fi
 
 # cheat
 cp /app/bin/apparmor_parser /sbin/apparmor_parser
+cp /app/bin/auplink /sbin/auplink
 
 # spawn a docker daemon to run builds
 docker -d --bip=172.19.42.1/16 $DRIVER_OVERRIDE --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 &
