@@ -18,6 +18,7 @@ rm -rf $KEY_PATH
 mkdir -p $CERT_PATH
 mkdir -p $KEY_PATH
 
+{{ if gt (len (lsdir "/deis/certs")) 0 }}
 while read etcd_path; do
   {{ range $cert := ls "/deis/certs" }}
   if [[ "$etcd_path" == "{{ $cert }}" ]]; then
@@ -29,4 +30,7 @@ EOF
 EOF
   fi{{ end }}
 done < /etc/ssl/deis_certs
+{{ else }}
+# there is no certificates to generate
+{{ end }}
 
