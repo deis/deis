@@ -129,6 +129,16 @@ class AuditedModel(models.Model):
         abstract = True
 
 
+def select_app_name():
+    """Select a unique randomly generated app name"""
+    name = utils.generate_app_name()
+
+    while App.objects.filter(id=name).exists():
+        name = utils.generate_app_name()
+
+    return name
+
+
 class UuidAuditedModel(AuditedModel):
     """Add a UUID primary key to an :class:`AuditedModel`."""
 
@@ -146,7 +156,7 @@ class App(UuidAuditedModel):
     """
 
     owner = models.ForeignKey(settings.AUTH_USER_MODEL)
-    id = models.SlugField(max_length=64, unique=True, default=utils.generate_app_name,
+    id = models.SlugField(max_length=64, unique=True, default=select_app_name,
                           validators=[validate_id_is_docker_compatible,
                                       validate_reserved_names])
     structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
