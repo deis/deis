@@ -44,9 +44,9 @@ RUN chown -R $GITUSER:$GITUSER $GITHOME
 # use VOLUME to remove /var/lib/docker from copy-on-write for performance
 # we don't want to stack overlay filesystems
 VOLUME /var/lib/docker
-WORKDIR /app
-ENTRYPOINT ["/app/bin/entry"]
-CMD ["/app/bin/boot"]
+
+ENTRYPOINT ["/bin/entry"]
+CMD ["/bin/boot"]
 EXPOSE 22
 RUN addgroup -g 2000 slug && adduser -D -u 2000 -G slug slug
 
@@ -57,8 +57,6 @@ RUN addgroup $GITUSER docker
 RUN addgroup $GITUSER slug
 RUN passwd -u git
 
-ADD etc /etc
-ADD . /app
-RUN chown -R root:root /app
+COPY . /
 
 ENV DEIS_RELEASE 1.7.0-dev
