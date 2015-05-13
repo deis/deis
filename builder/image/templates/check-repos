@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[[ $DEBUG ]] && set -x
+
 listcontains() {
     for word in $1; do
         [[ $word = $2 ]] && return 0

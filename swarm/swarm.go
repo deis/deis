@@ -13,7 +13,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/deis/deis/pkg/etcd"
 	"github.com/deis/deis/tests/utils"
 )
 
@@ -66,19 +66,6 @@ func getleaderHost() string {
 	return host
 }
 
-func publishService(client *etcd.Client, host string, ttl uint64) {
-	for {
-		setEtcd(client, swarmetcd, host, ttl)
-		time.Sleep(timeout)
-	}
-}
-
-func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
-	_, err := client.Set(key, value, ttl)
-	if err != nil {
-		log.Println(err)
-	}
-}
 func main() {
 	etcdproto := "etcd://" + getleaderHost() + swarmpath
 	etcdhost := os.Getenv("HOST")
@@ -88,7 +75,7 @@ func main() {
 	case "join":
 		run("./deis-swarm join " + addr + " " + etcdproto)
 	case "manage":
-		go publishService(client, etcdhost, uint64(ttl.Seconds()))
+		go etcd.PublishServiceInOneKey(client, etcdhost, swarmetcd, -1, uint64(ttl.Seconds()), timeout)
 		run("./deis-swarm manage " + etcdproto)
 	}
 }

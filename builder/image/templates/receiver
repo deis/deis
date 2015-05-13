@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
+[[ $DEBUG ]] && set -x
+
 repository=$1
 app=${1%.git}
 sha=$2

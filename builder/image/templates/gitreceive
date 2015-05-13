@@ -1,6 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
+[[ $DEBUG ]] && set -x
+
 # Places cursor at start of line, so that subsequent text replaces existing text. For example;
 # "remote: Updated branch 'master' of 'repo'. Deploying to dev." becomes
 # "Updated branch 'master' of 'repo'. Deploying to dev."

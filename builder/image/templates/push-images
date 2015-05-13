@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[[ $DEBUG ]] && set -x
+
 # wait until the docker image exists
 until docker history deis/slugrunner >/dev/null 2>&1; do
   sleep 2

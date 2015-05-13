@@ -19,6 +19,12 @@ build: check-docker
 	docker build -t $(IMAGE_PREFIX)store-base:$(BUILD_TAG) base/
 	$(foreach I, $(TEMPLATE_IMAGES), \
 		sed -e "s,#FROM is generated dynamically by the Makefile,FROM $(IMAGE_PREFIX)store-base:${BUILD_TAG}," $(I)/Dockerfile.template > $(I)/Dockerfile ; \
+		if [ -a $(I)/main.go ]; \
+		then \
+			go-bindata -pkg bindata -o $(I)/bindata/bindata.go $(I)/bash/; \
+			GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(I)/bin/boot $(I)/main.go || exit 1; \
+			$(call check-static-binary,$(I)/bin/boot); \
+		fi; \
 		docker build -t $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
 		rm $(I)/Dockerfile ; \
 	)

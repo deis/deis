@@ -50,10 +50,10 @@ func TestRouter(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
-			"-e", "LOG=debug",
+			"-e", "LOG_LEVEL=debug",
 			imageName)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-router running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-router: nginx running...")
 	if err != nil {
 		t.Fatal(err)
 	}

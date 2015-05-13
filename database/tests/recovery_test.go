@@ -27,7 +27,7 @@ func WaitForDatabase(t *testing.T, db *sql.DB) {
 		if err, ok := err.(*pq.Error); ok {
 			if err.Code.Name() == "cannot_connect_now" {
 				fmt.Println(err.Message)
-				time.Sleep(1000 * time.Millisecond)
+				time.Sleep(5000 * time.Millisecond)
 				continue
 			}
 			t.Fatal(err)
@@ -109,6 +109,7 @@ func TestDatabaseRecovery(t *testing.T) {
 			"-e", "ETCD_TTL=2",
 			"-e", "BACKUP_FREQUENCY=0",
 			"-e", "BACKUPS_TO_RETAIN=100",
+			"-e", "LOG_LEVEL=debug",
 			imageName)
 	}
 
@@ -120,6 +121,8 @@ func TestDatabaseRecovery(t *testing.T) {
 		_ = cli.CmdStop(name)
 		fmt.Println("Done")
 	}
+
+	defer stopDatabase()
 
 	//ACTION
 

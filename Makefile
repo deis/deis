@@ -7,7 +7,7 @@ include includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis
 
-GO_PACKAGES = pkg/time version
+GO_PACKAGES = pkg/time version pkg/confd pkg/docker pkg/etcd pkg/log pkg/net pkg/os
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENTS=builder cache controller database logger logspout publisher registry router store swarm
@@ -33,6 +33,8 @@ discovery-url:
 	sed -e "s,# discovery:,discovery:," -e "s,discovery: https://discovery.etcd.io/.*,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data.example > contrib/coreos/user-data
 
 build: check-docker
+	# generate go-extpoints code
+	#go generate pkg/boot/main.go
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build &&) echo done
 	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) build &&) echo done
 

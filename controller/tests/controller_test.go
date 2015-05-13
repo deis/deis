@@ -53,9 +53,10 @@ func TestController(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
+			"-e", "LOG_LEVEL=debug",
 			imageName)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-controller: running...")
 	if err != nil {
 		t.Fatal(err)
 	}

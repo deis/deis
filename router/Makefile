@@ -3,8 +3,8 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/router
 
-GO_FILES = boot.go
-GO_PACKAGES = logger tests
+GO_FILES = main.go
+GO_PACKAGES = tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))
@@ -14,17 +14,17 @@ BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	cp -pR ../Godeps .
+	# temporal
+	rm -rf Godeps
 	docker build -t $(BUILD_IMAGE) .
-	docker cp `docker run -d $(BUILD_IMAGE) /bin/bash`:/nginx.tgz image/
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot boot.go || exit 1
-	$(call check-static-binary,image/bin/boot)
+	docker cp `docker run -d $(BUILD_IMAGE) /bin/sh`:/nginx.tgz image/
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/boot main.go || exit 1
+	$(call check-static-binary,$(BINARY_DEST_DIR)/boot)
 	docker build -t $(IMAGE) image
 	rm image/nginx.tgz
 	rm image/bin/boot
 
 clean: check-docker check-registry
-	rm -rf Godeps
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry

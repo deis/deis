@@ -14,6 +14,9 @@ BINARIES := extract-domain extract-types extract-version generate-buildhook get-
 BINARY_DEST_DIR := image/bin
 
 build: check-docker
+	go-bindata -pkg bindata -o bindata/bindata.go bash/
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/boot bin/main.go || exit 1
+	$(call check-static-binary,$(BINARY_DEST_DIR)/boot)
 	for i in $(BINARIES); do \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go || exit 1; \
 		$(call check-static-binary,$(BINARY_DEST_DIR)/$$i) \

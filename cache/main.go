@@ -2,58 +2,83 @@ package main
 
 import (
 	"io/ioutil"
-	"log"
-	"net"
-	"os"
-	"os/exec"
-	"os/signal"
+	"strconv"
 	"strings"
-	"syscall"
-	"time"
 
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/deis/deis/pkg/boot"
+	"github.com/deis/deis/pkg/etcd"
+	logger "github.com/deis/deis/pkg/log"
+	"github.com/deis/deis/pkg/os"
+	"github.com/deis/deis/pkg/types"
 )
 
 const (
-	timeout         time.Duration = 10 * time.Second
-	ttl             time.Duration = timeout * 2
-	redisWait       time.Duration = 5 * time.Second
-	redisConf       string        = "/app/redis.conf"
-	ectdKeyNotFound int           = 100
-	defaultMemory   string        = "50mb"
+	redisConf     = "/app/redis.conf"
+	defaultMemory = "50mb"
+	servicePort   = 6379
 )
 
+var (
+	etcdPath     = os.Getopt("ETCD_PATH", "/deis/cache")
+	externalPort = os.Getopt("EXTERNAL_PORT", strconv.Itoa(servicePort))
+	log          = logger.New()
+	memory       string
+)
+
+func init() {
+	boot.RegisterComponent(new(CacheBoot), "deis-component")
+}
+
 func main() {
-	host := getopt("HOST", "127.0.0.1")
+	boot.Start(etcdPath, externalPort, false)
+}
 
-	etcdPort := getopt("ETCD_PORT", "4001")
-	etcdPath := getopt("ETCD_PATH", "/deis/cache")
+type CacheBoot struct{}
 
-	externalPort := getopt("EXTERNAL_PORT", "6379")
+func (cb *CacheBoot) MkdirsEtcd() []string {
+	return []string{etcdPath}
+}
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+func (cb *CacheBoot) EtcdDefaults() map[string]string {
+	return map[string]string{}
+}
 
-	var maxmemory string
-	result, err := client.Get("/deis/cache/maxmemory", false, false)
-	if err != nil {
-		if e, ok := err.(*etcd.EtcdError); ok && e.ErrorCode == ectdKeyNotFound {
-			maxmemory = defaultMemory
-		} else {
-			log.Fatalln(err)
-		}
-	} else {
-		maxmemory = result.Node.Key
+func (cb *CacheBoot) PreBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
+	return []*types.Script{}
+}
+
+func (cb *CacheBoot) PreBoot(currentBoot *types.CurrentBoot) {
+	log.Info("deis-cache: starting...")
+	memory := etcd.Get(currentBoot.EtcdClient, "/deis/cache/maxmemory")
+	if memory == "" {
+		memory = defaultMemory
 	}
-	replaceMaxmemoryInConfig(maxmemory)
+	replaceMaxmemoryInConfig(memory)
+}
 
-	go launchRedis()
+func (cb *CacheBoot) BootDaemons(currentBoot *types.CurrentBoot) []*types.ServiceDaemon {
+	cmd, args := os.BuildCommandFromString("redis-server " + redisConf)
+	return []*types.ServiceDaemon{&types.ServiceDaemon{Command: cmd, Args: args}}
+}
 
-	go publishService(client, host, etcdPath, externalPort, uint64(ttl.Seconds()))
+func (cb *CacheBoot) WaitForPorts() []int {
+	return []int{servicePort}
+}
 
-	// Wait for terminating signal
-	exitChan := make(chan os.Signal, 2)
-	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
-	<-exitChan
+func (cb *CacheBoot) PostBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
+	return []*types.Script{}
+}
+
+func (cb *CacheBoot) PostBoot(currentBoot *types.CurrentBoot) {
+	log.Info("deis-cache: redis is running...")
+}
+
+func (cb *CacheBoot) ScheduleTasks(currentBoot *types.CurrentBoot) []*types.Cron {
+	return []*types.Cron{}
+}
+
+func (cb *CacheBoot) UseConfd() bool {
+	return false
 }
 
 func replaceMaxmemoryInConfig(maxmemory string) {
@@ -66,54 +91,4 @@ func replaceMaxmemoryInConfig(maxmemory string) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-}
-
-func launchRedis() {
-	cmd := exec.Command("redis-server", redisConf)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Start()
-
-	if err != nil {
-		log.Printf("Error starting Redis: %v", err)
-		os.Exit(1)
-	}
-
-	// Wait until the redis server is available
-	for {
-		_, err := net.DialTimeout("tcp", "127.0.0.1:6379", redisWait)
-		if err == nil {
-			log.Println("deis-cache running...")
-			break
-		}
-	}
-
-	err = cmd.Wait()
-	log.Printf("Redis finished by error: %v", err)
-}
-
-func publishService(client *etcd.Client, host string, etcdPath string,
-	externalPort string, ttl uint64) {
-
-	for {
-		setEtcd(client, etcdPath+"/host", host, ttl)
-		setEtcd(client, etcdPath+"/port", externalPort, ttl)
-		time.Sleep(timeout)
-	}
-}
-
-func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
-	_, err := client.Set(key, value, ttl)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func getopt(name, dfault string) string {
-	value := os.Getenv(name)
-	if value == "" {
-		value = dfault
-	}
-	return value
 }

@@ -66,11 +66,12 @@ func TestBuilder(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "EXTERNAL_PORT="+port,
+			"-e", "LOG_LEVEL=debug",
 			"--privileged",
 			"-v", tmpfile.Name()+":/etc/environment_proxy",
 			imageName)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder running")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-builder: running...")
 	if err != nil {
 		t.Fatal(err)
 	}

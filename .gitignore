@@ -22,7 +22,9 @@ controller/.secret_key
 logs/
 
 # local binaries, installers, and artifacts
+builder/bindata/
 builder/Godeps/
+builder/image/bin/boot
 builder/image/bin/extract-domain
 builder/image/bin/extract-types
 builder/image/bin/extract-version
@@ -51,6 +53,9 @@ publisher/Godeps/
 publisher/image/bin/publisher
 router/Godeps/
 swarm/image/bin/
+
+# do not save go generated files
+**/bindata.go
 
 # coverage reports
 .coverage

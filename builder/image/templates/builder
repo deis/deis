@@ -5,6 +5,8 @@
 #
 set -eo pipefail
 
+[[ $DEBUG ]] && set -x
+
 ARGS=3
 
 indent() {

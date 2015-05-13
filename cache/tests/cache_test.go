@@ -32,9 +32,10 @@ func TestCache(t *testing.T) {
 			"-e", "EXTERNAL_PORT="+port,
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
+			"-e", "LOG_LEVEL=debug",
 			imageName)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "started")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "deis-cache: redis is running...")
 	if err != nil {
 		t.Fatal(err)
 	}
