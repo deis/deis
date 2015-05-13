@@ -49,7 +49,7 @@ APP_NAME="${REPO%.*}"
 cd $(dirname $0) # ensure we are in the root dir
 
 ROOT_DIR=$(pwd)
-DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
+DOCKERFILE_SHIM="/usr/local/share/shim.dockerfile"
 REPO_DIR="${ROOT_DIR}/${REPO}"
 BUILD_DIR="${REPO_DIR}/build"
 CACHE_DIR="${REPO_DIR}/cache"

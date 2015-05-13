@@ -57,7 +57,6 @@ RUN addgroup $GITUSER docker
 RUN addgroup $GITUSER slug
 RUN passwd -u git
 
-ADD templates/shim.dockerfile /home/git/
 ADD etc /etc
 ADD . /app
 RUN chown -R root:root /app
