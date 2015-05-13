@@ -4,7 +4,7 @@ include ../includes.mk
 repo_path = github.com/deis/deis/builder
 
 GO_FILES = types.go utils.go utils_test.go
-GO_PACKAGES = bin tests
+GO_PACKAGES = src tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))
@@ -15,7 +15,7 @@ BINARY_DEST_DIR := image/bin
 
 build: check-docker
 	for i in $(BINARIES); do \
-		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i bin/$$i.go || exit 1; \
+		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i src/$$i.go || exit 1; \
 		$(call check-static-binary,$(BINARY_DEST_DIR)/$$i) \
 	done
 	docker build -t $(IMAGE) image
