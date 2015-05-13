@@ -74,8 +74,8 @@ while [[ ! -e /var/run/docker.sock ]]; do
 done
 
 # build required images
-docker build -t deis/slugbuilder /app/slugbuilder/
-docker build -t deis/slugrunner /app/slugrunner/
+docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
+docker build -t deis/slugrunner /usr/local/src/slugrunner/
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
