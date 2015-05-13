@@ -58,4 +58,4 @@ ADD etc /etc
 ADD . /app
 RUN chown -R root:root /app
 
-ENV DEIS_RELEASE 1.6.0
+ENV DEIS_RELEASE 1.6.1
