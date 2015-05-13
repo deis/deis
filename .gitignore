@@ -22,14 +22,7 @@ controller/.secret_key
 logs/
 
 # local binaries, installers, and artifacts
-builder/rootfs/bin/extract-domain
-builder/rootfs/bin/extract-types
-builder/rootfs/bin/extract-version
-builder/rootfs/bin/generate-buildhook
-builder/rootfs/bin/get-app-config
-builder/rootfs/bin/get-app-values
-builder/rootfs/bin/publish-release-controller
-builder/rootfs/bin/yaml2json-procfile
+builder/rootfs/usr/bin
 cache/image/bin/
 client/dist/
 client/makeself/

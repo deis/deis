@@ -11,7 +11,7 @@ COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
 BINARIES := extract-domain extract-types extract-version generate-buildhook get-app-config get-app-values publish-release-controller yaml2json-procfile
-BINARY_DEST_DIR := rootfs/bin
+BINARY_DEST_DIR := rootfs/usr/bin
 
 build: check-docker
 	for i in $(BINARIES); do \
