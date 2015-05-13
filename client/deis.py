@@ -280,7 +280,7 @@ def dictify(args):
         try:
             var, val = arg.split('=', 1)
         except ValueError:
-            raise DocoptExit()
+            raise DocoptExit("not a key=val entry: \"{}\"".format(arg))
         # Try to coerce the value to an int since that's a common use case
         try:
             data[var] = int(val)
@@ -1302,6 +1302,19 @@ Make sure that the Controller URI is correct and the server is running.
         else:
             raise ResponseError(response)
 
+    def _load_env(self, envfile='.env'):
+        try:
+            # load from .env, if it exists
+            with open(envfile) as f:
+                for line in (l.strip().strip('\n') for l in f):
+                    if line.find('=') > 0:
+                        yield line.split('=', 1)
+                    # ignore blank lines, only report those without "key=value"
+                    elif line:
+                        self._logger.warning("removed invalid entry: \"{}\"".format(line))
+        except IOError:
+            pass  # it's ok if the file wasn't there
+
     def config_pull(self, args):
         """
         Extract all environment variables from an application for local use.
@@ -1325,14 +1338,7 @@ Make sure that the Controller URI is correct and the server is running.
         env_dict = {}
         if not app:
             app = self._session.app
-            try:
-                # load env_dict from existing .env, if it exists
-                with open('.env') as f:
-                    for line in f.readlines():
-                        k, v = line.split('=', 1)[0], line.split('=', 1)[1].strip('\n')
-                        env_dict[k] = v
-            except IOError:
-                pass
+            env_dict = dict(self._load_env())
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
         if response.status_code == requests.codes.ok:
             config = response.json()['values']
@@ -1375,7 +1381,9 @@ Make sure that the Controller URI is correct and the server is running.
         # read from .env
         try:
             with open(args.get('--path'), 'r') as f:
-                self._config_set(app, dictify([line.strip() for line in f]))
+                # ignore blank lines
+                lines = (line.strip() for line in f if line.strip())
+                self._config_set(app, dictify(lines))
         except IOError:
             self._logger.error('could not read env from ' + args.get('--path'))
             sys.exit(1)
