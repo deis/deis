@@ -41,7 +41,7 @@ FORMAT_ETCD_VOLUME = '''
 '''
 MOUNT_ETCD_VOLUME = '''
   [Unit]
-  Description=Formats and mounts the ephemeral drive
+  Description=Mounts the etcd volume
   Requires=format-etcd-volume.service
   After=format-etcd-volume.service
   [Mount]
