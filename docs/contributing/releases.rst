@@ -179,7 +179,7 @@ Patch Release
       docs/installing_deis/install-deisctl.rst \
       docs/installing_deis/install-platform.rst \
       docs/managing_deis/upgrading-deis.rst \
-      docs/reference/api-v1.1.rst \
+      docs/reference/api-v1.3.rst \
       docs/troubleshooting_deis/index.rst
 
   - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
