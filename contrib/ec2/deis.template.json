@@ -103,6 +103,21 @@
       "Default": "internet-facing",
       "AllowedValues" : [ "internet-facing", "internal" ],
       "ConstraintDescription" : "must be either 'internet-facing' for public use, or 'internal' for private use"
+    },
+    "RootVolumeSize": {
+      "Description": "Desired size of the root volume, in GB",
+      "Type": "Number",
+      "Default": "50"
+    },
+    "DockerVolumeSize": {
+      "Description": "Desired size of the Docker volume, in GB",
+      "Type": "Number",
+      "Default": "100"
+    },
+    "EtcdVolumeSize": {
+      "Description": "Desired size of the etcd volume, in GB",
+      "Type": "Number",
+      "Default": "10"
     }
   },
 
@@ -271,15 +286,15 @@
         "BlockDeviceMappings" : [
           {
             "DeviceName" : { "Fn::FindInMap": [ "RootDevices", { "Ref": "EC2VirtualizationType" }, "Name" ] },
-            "Ebs" : { "VolumeSize" : "50", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
+            "Ebs" : { "VolumeSize" : { "Ref": "RootVolumeSize" }, "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           },
           {
             "DeviceName" : "/dev/xvdf",
-            "Ebs" : { "VolumeSize" : "100", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
+            "Ebs" : { "VolumeSize" : { "Ref": "DockerVolumeSize" }, "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           },
           {
             "DeviceName" : "/dev/xvdg",
-            "Ebs" : { "VolumeSize" : "10", "VolumeType": { "Ref": "EC2EBSVolumeType" } }
+            "Ebs" : { "VolumeSize" : { "Ref": "EtcdVolumeSize" }, "VolumeType": { "Ref": "EC2EBSVolumeType" } }
           }
         ]
       }

@@ -79,7 +79,7 @@ Customize cloudformation.json
 -----------------------------
 
 Any of the parameter defaults defined in deis.template.json can be overridden by setting the value
-in `cloudformation.json`_. For example, to configure all of the optional settings:
+in `cloudformation.json`_. For example, to configure all of the options to non-default values:
 
 .. code-block:: console
 
@@ -102,11 +102,24 @@ in `cloudformation.json`_. For example, to configure all of the optional setting
     {
         "ParameterKey":     "ELBScheme",
         "ParameterValue":   "internal"
+    },
+    {
+        "ParameterKey":     "RootVolumeSize",
+        "ParameterValue":   "100"
+    },
+    {
+        "ParameterKey":     "DockerVolumeSize",
+        "ParameterValue":   "1000"
+    },
+    {
+        "ParameterKey":     "EtcdVolumeSize",
+        "ParameterValue":   "5"
     }
 
 
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`, which is
-already filled out. The defaults will be applied for the other settings.
+already filled out. The defaults will be applied for the other settings. The default values are
+defined in deis.template.json.
 
 If updated with update-ec2-cluster.sh, the InstanceType will only impact newly deployed instances
 (`#1758`_).
