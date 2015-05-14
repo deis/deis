@@ -1,5 +1,6 @@
 # Deis CLI requirements
 
+cryptography==0.8.2
 docopt==0.6.2
 ndg-httpsclient==0.3.3
 pyasn1==0.1.7
