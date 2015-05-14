@@ -14,14 +14,16 @@ fi
 [[ $DEBUG ]] && set -x
 
 # configure etcd
-export ETCD_PORT=${ETCD_PORT:-4001}
-export ETCD="$HOST:$ETCD_PORT"
+# if ETCDCTL_PEERS isn't already set, set it
+if [ -z "$ETCDCTL_PEERS" ]; then
+	export ETCDCTL_PEERS="http://${ETCD_HOST:-${HOST:-127.0.0.1}}:${ETCD_PORT:-4001}"
+fi
 export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-20}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
-	echo "waiting for etcd at $ETCD..."
+until etcdctl --no-sync ls >/dev/null 2>&1; do
+	echo "waiting for etcd at $ETCDCTL_PEERS..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -30,7 +32,7 @@ sleep $(($ETCD_TTL+1))
 
 function etcd_safe_mkdir {
 	set +e
-	ERROR="$(etcdctl --no-sync -C $ETCD mkdir $1 2>&1 >/dev/null)"
+	ERROR="$(etcdctl --no-sync mkdir $1 2>&1 >/dev/null)"
 	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
 		echo "etcd_safe_mkdir: an etcd error occurred ($ERROR)"
 		echo "aborting..."
@@ -42,13 +44,13 @@ function etcd_safe_mkdir {
 etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --log-level error; do
+until confd -onetime -log-level error; do
 	echo "builder: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --log-level error --interval 5 &
+confd --log-level error --interval 5 &
 CONFD_PID=$!
 
 # remove any pre-existing docker.sock
@@ -106,8 +108,8 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 
