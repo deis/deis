@@ -8,13 +8,6 @@ ETCD="$HOST:$ETCD_PORT"
 ETCD_PATH=${ETCD_PATH:-/deis/store}
 HOSTNAME=`hostname`
 
-# These defaults are for 3 hosts
-NUM_STORES=${NUM_STORES:-3}
-PG_NUM=${PG_NUM:-64}
-## We set this to the number of PGs before re-evaluating the PG count so users upgrading don't see the warning
-## Now, 12 pools * 64 pgs per pool = 768 PGs per OSD
-PGS_PER_OSD_WARNING=${PGS_PER_OSD_WARNING:-1536}
-
 function etcd_set_default {
   set +e
   etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 >/dev/null 2>&1
@@ -25,20 +18,24 @@ function etcd_set_default {
   set -e
 }
 
+# set some defaults in etcd - these are templated in ceph.conf
+# These defaults are sane for 3 hosts, and may need to be tweaked for larger clusters.
+etcd_set_default delayStart 15
+etcd_set_default size 3 # maintain 3 copies of all data
+etcd_set_default minSize 1 # since we have 3 copies of data, the cluster can operate with just one host up
+etcd_set_default pgNum 64 # this gives us a reasonable number of placement groups per host, assuming 3 hosts and 12 pools
+
+# New clusters use 768 PGs per host (12 pools * 64 PGs per pool = 768 PGs per OSD)
+# However, upgraded clusters may still use 128 PGs per pool, so we set this to 1536 PGs per host to suppress the
+# "too many placement groups per host" warning
+etcd_set_default maxPGsPerOSDWarning 1536
+
 if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&1 ; then
   echo "store-monitor: Ceph hasn't yet been deployed. Trying to deploy..."
   # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
   if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/monSetupLock $HOSTNAME >/dev/null 2>&1 \
   || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupLock` == "$HOSTNAME" ]] ; then
     echo "store-monitor: obtained the lock to proceed with setting up."
-
-    # set some defaults in etcd if they're not passed in as environment variables
-    # these are templated in ceph.conf
-    etcd_set_default delayStart 15
-    etcd_set_default maxPGsPerOSDWarning ${PGS_PER_OSD_WARNING}
-    etcd_set_default minSize 1
-    etcd_set_default pgNum ${PG_NUM}
-    etcd_set_default size ${NUM_STORES}
 
     # Generate administrator key
     ceph-authtool /etc/ceph/ceph.client.admin.keyring --create-keyring --gen-key -n client.admin --set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'
