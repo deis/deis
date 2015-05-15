@@ -580,6 +580,8 @@ Options:
 		"deis-store-metadata.service",
 		"deis-store-monitor.service",
 		"deis-store-volume.service",
+		"deis-swarm-manager.service",
+		"deis-swarm-node.service",
 	}
 	for _, unit := range units {
 		src := rootURL + tag + "/deisctl/units/" + unit
