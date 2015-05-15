@@ -86,7 +86,7 @@ For Deis to use your Procfile, add the Procfile to the root of your application,
            http://unisex-huntress.example.com
 
 For Docker image deployments, a Procfile in the current directory or specified by
-``deis push --procfile`` will define the default process types for the application.
+``deis pull --procfile`` will define the default process types for the application.
 
 Use ``deis scale web=3`` to increase ``web`` processes to 3, for example. Scaling a
 process type directly changes the number of :ref:`Containers <container>`
