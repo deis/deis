@@ -40,9 +40,20 @@ function etcd_set_default {
   set -e
 }
 
+function etcd_safe_mkdir {
+  set +e
+  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1
+  if [[ $? -ne 0 && $? -ne 4 ]]; then
+    echo "etcd_safe_mkdir: an etcd error occurred. aborting..."
+    exit 1
+  fi
+  set -e
+}
+
 # seed initial service configuration if necessary
 etcd_set_default protocol http
 etcd_set_default bucketName ${BUCKET_NAME}
+etcd_safe_mkdir /deis/cache
 
 # wait for confd to run once and install initial templates
 until confd -onetime -node $ETCD --confdir /app --log-level error; do
