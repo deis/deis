@@ -55,7 +55,7 @@ master_doc = 'toctree'
 
 # General information about the project.
 project = u'deis'
-copyright = u'2013, 2014 Engine Yard, Inc.'
+copyright = u'2013-2015 Engine Yard, Inc.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
