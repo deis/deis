@@ -35,7 +35,7 @@ download_buildpack https://github.com/heroku/heroku-buildpack-java.git          
 download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         v12
 download_buildpack https://github.com/heroku/heroku-buildpack-grails.git         1ef927d
 download_buildpack https://github.com/heroku/heroku-buildpack-play.git           v22
-download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v53
+download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v58
 download_buildpack https://github.com/heroku/heroku-buildpack-php.git            v57
 download_buildpack https://github.com/heroku/heroku-buildpack-clojure.git        v63
 download_buildpack https://github.com/heroku/heroku-buildpack-scala.git          v43
