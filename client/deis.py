@@ -1302,6 +1302,21 @@ Make sure that the Controller URI is correct and the server is running.
         else:
             raise ResponseError(response)
 
+    def _read_config_from_path(self, path):
+        env_dict = {}
+        with open(path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                if re.match(r'.+=.+', line) is None:
+                    self._logger.warning('could not parse config line: "%s"', line)
+                    continue
+                k, v = line.split('=', 1)
+                env_dict[k] = v
+
+        return env_dict
+
     def config_pull(self, args):
         """
         Extract all environment variables from an application for local use.
@@ -1327,10 +1342,7 @@ Make sure that the Controller URI is correct and the server is running.
             app = self._session.app
             try:
                 # load env_dict from existing .env, if it exists
-                with open('.env') as f:
-                    for line in f.readlines():
-                        k, v = line.split('=', 1)[0], line.split('=', 1)[1].strip('\n')
-                        env_dict[k] = v
+                env_dict = self._read_config_from_path('.env')
             except IOError:
                 pass
         response = self._dispatch('get', "/v1/apps/{}/config".format(app))
@@ -1374,8 +1386,8 @@ Make sure that the Controller URI is correct and the server is running.
 
         # read from .env
         try:
-            with open(args.get('--path'), 'r') as f:
-                self._config_set(app, dictify([line.strip() for line in f]))
+            env_dict = self._read_config_from_path(args.get('--path'))
+            self._config_set(app, env_dict)
         except IOError:
             self._logger.error('could not read env from ' + args.get('--path'))
             sys.exit(1)
