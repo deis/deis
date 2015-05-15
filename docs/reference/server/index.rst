@@ -11,7 +11,6 @@ Server Reference
 
 
     api.admin
-    api.exceptions
     api.fields
     api.models
     api.routers
