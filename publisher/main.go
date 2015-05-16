@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"time"
 
 	"github.com/coreos/go-etcd/etcd"
@@ -43,6 +45,10 @@ func main() {
 	server := server.New(dockerClient, etcdClient, *host, *logLevel)
 
 	go server.Listen(*etcdTTL)
+
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	for {
 		go server.Poll(*etcdTTL)
