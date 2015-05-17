@@ -123,12 +123,12 @@ class SwarmClient(object):
 
     def _get_portbindings(self, image):
         dictports = self.docker_cli.inspect_image(image)['ContainerConfig']['ExposedPorts']
-        for port, mapping in dictports.viewitems():
+        for port in dictports:
             dictports[port] = None
         return dictports
 
     def _get_ports(self, image):
         dictports = self.docker_cli.inspect_image(image)['ContainerConfig']['ExposedPorts']
-        return [int(port.split('/')[0]) for port in dictports.iterkeys()]
+        return [int(port.split('/')[0]) for port in dictports]
 
 SchedulerClient = SwarmClient

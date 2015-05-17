@@ -1357,7 +1357,7 @@ Make sure that the Controller URI is correct and the server is running.
             # write env_dict to .env
             try:
                 with open('.env', 'w') as f:
-                    for i in env_dict.keys():
+                    for i in env_dict:
                         f.write("{}={}\n".format(i, env_dict[i]))
             except IOError:
                 self._logger.error('could not write to local env')
@@ -1744,7 +1744,7 @@ Make sure that the Controller URI is correct and the server is running.
         c_map = {}
         for item in processes['results']:
             c_map.setdefault(item['type'], []).append(item)
-        for c_type in c_map.keys():
+        for c_type in c_map:
             self._logger.info("--- {c_type}: ".format(**locals()))
             for c in c_map[c_type]:
                 self._logger.info("{type}.{num} {state} ({release})".format(**c))

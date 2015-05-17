@@ -42,7 +42,7 @@ class AuthTest(TestCase):
         url = '/v1/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
-        for key in response.data.keys():
+        for key in response.data:
             self.assertIn(key, ['id', 'last_login', 'is_superuser', 'username', 'first_name',
                                 'last_name', 'email', 'is_active', 'is_superuser', 'is_staff',
                                 'date_joined', 'groups', 'user_permissions'])
@@ -122,7 +122,7 @@ class AuthTest(TestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(token))
 
         self.assertEqual(response.status_code, 201)
-        for key in response.data.keys():
+        for key in response.data:
             self.assertIn(key, ['id', 'last_login', 'is_superuser', 'username', 'first_name',
                                 'last_name', 'email', 'is_active', 'is_superuser', 'is_staff',
                                 'date_joined', 'groups', 'user_permissions'])

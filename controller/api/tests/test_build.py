@@ -95,7 +95,7 @@ class BuildTest(TransactionTestCase):
         body = {'image': 'autotest/example'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        for key in response.data.keys():
+        for key in response.data:
             self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'dockerfile',
                                 'image', 'procfile', 'sha'])
         expected = {

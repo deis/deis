@@ -39,7 +39,7 @@ class DomainTest(TestCase):
         response = self.client.post('/v1/apps/test/domains', json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        for key in response.data.keys():
+        for key in response.data:
             self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'domain'])
         expected = {
             'owner': self.user.username,
