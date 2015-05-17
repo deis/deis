@@ -93,7 +93,7 @@ class SwarmClient(object):
 
     def state(self, name):
         try:
-            for _ in range(30):
+            for _ in xrange(30):
                 return self._get_container_state(name)
                 time.sleep(1)
             # FIXME (smothiki): should be able to send JobState.crashed

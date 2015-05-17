@@ -51,7 +51,7 @@ class FleetHTTPClient(object):
         return self.conn.getresponse()
 
     def _get_unit(self, name):
-        for attempt in range(RETRIES):
+        for attempt in xrange(RETRIES):
             try:
                 resp = self._request_unit('GET', name)
                 data = resp.read()
@@ -65,7 +65,7 @@ class FleetHTTPClient(object):
                     raise
 
     def _put_unit(self, name, body):
-        for attempt in range(RETRIES):
+        for attempt in xrange(RETRIES):
             try:
                 resp = self._request_unit('PUT', name, body)
                 data = resp.read()
@@ -179,7 +179,7 @@ class FleetHTTPClient(object):
 
     def _wait_for_container_state(self, name):
         # wait for container to get scheduled
-        for _ in range(30):
+        for _ in xrange(30):
             states = self._get_state(name)
             if states and len(states.get('states', [])) == 1:
                 return states.get('states')[0]
@@ -196,7 +196,7 @@ class FleetHTTPClient(object):
 
     def _wait_for_job_state(self, name, state):
         # we bump to 20 minutes here to match the timeout on the router and in the app unit files
-        for _ in range(1200):
+        for _ in xrange(1200):
             if self.state(name) == state:
                 return
             time.sleep(1)
@@ -204,7 +204,7 @@ class FleetHTTPClient(object):
             raise RuntimeError('timeout waiting for job state: {}'.format(state))
 
     def _wait_for_destroy(self, name):
-        for _ in range(30):
+        for _ in xrange(30):
             if not self._get_state(name):
                 break
             time.sleep(1)
@@ -226,7 +226,7 @@ class FleetHTTPClient(object):
         self._wait_for_destroy(name)
 
     def _destroy_container(self, name):
-        for attempt in range(RETRIES):
+        for attempt in xrange(RETRIES):
             try:
                 self._delete_unit(name)
                 break
@@ -291,7 +291,7 @@ class FleetHTTPClient(object):
                 raise RuntimeError('failed to create container')
 
             # wait for container to start
-            for _ in range(2):
+            for _ in xrange(2):
                 _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
                 if _rc != 0:
                     raise RuntimeError('failed to inspect container')
@@ -304,7 +304,7 @@ class FleetHTTPClient(object):
                 raise RuntimeError('container failed to start')
 
             # wait for container to complete
-            for _ in range(1200):
+            for _ in xrange(1200):
                 _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
                 if _rc != 0:
                     raise RuntimeError('failed to inspect container')
