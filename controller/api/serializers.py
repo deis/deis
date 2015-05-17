@@ -141,7 +141,7 @@ class ConfigSerializer(ModelSerializer):
         model = models.Config
 
     def validate_memory(self, value):
-        for k, v in value.items():
+        for k, v in value.viewitems():
             if v is None:  # use NoneType to unset a value
                 continue
             if not re.match(PROCTYPE_MATCH, k):
@@ -152,7 +152,7 @@ class ConfigSerializer(ModelSerializer):
         return value
 
     def validate_cpu(self, value):
-        for k, v in value.items():
+        for k, v in value.viewitems():
             if v is None:  # use NoneType to unset a value
                 continue
             if not re.match(PROCTYPE_MATCH, k):
@@ -160,7 +160,7 @@ class ConfigSerializer(ModelSerializer):
             shares = re.match(CPUSHARE_MATCH, str(v))
             if not shares:
                 raise serializers.ValidationError("CPU shares must be an integer")
-            for v in shares.groupdict().values():
+            for v in shares.groupdict().viewvalues():
                 try:
                     i = int(v)
                 except ValueError:
@@ -170,7 +170,7 @@ class ConfigSerializer(ModelSerializer):
         return value
 
     def validate_tags(self, value):
-        for k, v in value.items():
+        for k, v in value.viewitems():
             if v is None:  # use NoneType to unset a value
                 continue
             if not re.match(TAGKEY_MATCH, k):

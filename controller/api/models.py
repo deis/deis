@@ -84,7 +84,7 @@ def validate_id_is_docker_compatible(value):
 def validate_app_structure(value):
     """Error if the dict values aren't ints >= 0."""
     try:
-        if any(int(v) < 0 for v in value.itervalues()):
+        if any(int(v) < 0 for v in value.viewvalues()):
             raise ValueError("Must be greater than or equal to zero")
     except ValueError, err:
         raise ValidationError(err)
@@ -665,7 +665,7 @@ class Config(UuidAuditedModel):
                     new_data = {}
                 data.update(new_data)
                 # remove config keys if we provided a null value
-                [data.pop(k) for k, v in new_data.items() if v is None]
+                [data.pop(k) for k, v in new_data.viewitems() if v is None]
                 setattr(self, attr, data)
         except Config.DoesNotExist:
             pass

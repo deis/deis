@@ -123,7 +123,7 @@ class SwarmClient(object):
 
     def _get_portbindings(self, image):
         dictports = self.docker_cli.inspect_image(image)['ContainerConfig']['ExposedPorts']
-        for port, mapping in dictports.items():
+        for port, mapping in dictports.viewitems():
             dictports[port] = None
         return dictports
 

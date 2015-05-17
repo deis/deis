@@ -153,7 +153,7 @@ class FleetHTTPClient(object):
         # prepare tags only if one was provided
         tags = kwargs.get('tags', {})
         if tags:
-            tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.items()])
+            tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.viewitems()])
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
                          "value": tagset})
         # post unit to fleet
