@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -211,7 +212,7 @@ func setDefaultEtcd(client *etcd.Client, key, value string) {
 
 func mkdirEtcd(client *etcd.Client, path string) {
 	_, err := client.CreateDir(path, 0)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "Key already exists") {
 		log.Warn(err)
 	}
 }
