@@ -90,7 +90,7 @@ def _api_call(endpoint, data=None, headers={}, cookies=None, request_type='GET')
     base_headers = {'user-agent': 'docker/1.0.0'}
     r = None
     if len(headers) > 0:
-        for header, value in headers.iteritems():
+        for header, value in headers.viewitems():
             base_headers[header] = value
     if request_type == 'GET':
         r = requests.get(endpoint, headers=base_headers)
@@ -170,7 +170,7 @@ def _construct_env(env, config):
             v = config.pop(k)
         new_env.append("{}={}".format(encode(k), encode(v)))
     # add other config ENV items
-    for k, v in config.items():
+    for k, v in config.viewitems():
         new_env.append("{}={}".format(encode(k), encode(v)))
     return new_env
 

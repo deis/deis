@@ -93,7 +93,7 @@ class SwarmClient(object):
 
     def state(self, name):
         try:
-            for _ in range(30):
+            for _ in xrange(30):
                 return self._get_container_state(name)
                 time.sleep(1)
             # FIXME (smothiki): should be able to send JobState.crashed
@@ -123,12 +123,12 @@ class SwarmClient(object):
 
     def _get_portbindings(self, image):
         dictports = self.docker_cli.inspect_image(image)['ContainerConfig']['ExposedPorts']
-        for port, mapping in dictports.items():
+        for port in dictports:
             dictports[port] = None
         return dictports
 
     def _get_ports(self, image):
         dictports = self.docker_cli.inspect_image(image)['ContainerConfig']['ExposedPorts']
-        return [int(port.split('/')[0]) for port in dictports.iterkeys()]
+        return [int(port.split('/')[0]) for port in dictports]
 
 SchedulerClient = SwarmClient

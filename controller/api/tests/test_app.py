@@ -72,7 +72,7 @@ class AppTest(TestCase):
         response = self.client.post('/v1/apps', json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        for key in response.data.keys():
+        for key in response.data:
             self.assertIn(key, ['uuid', 'created', 'updated', 'id', 'owner', 'url', 'structure'])
         expected = {
             'id': 'test',

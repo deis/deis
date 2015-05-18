@@ -134,7 +134,7 @@ class AppViewSet(BaseDeisViewSet):
         new_structure = {}
         app = self.get_object()
         try:
-            for target, count in request.data.items():
+            for target, count in request.data.viewitems():
                 new_structure[target] = int(count)
             models.validate_app_structure(new_structure)
             app.scale(request.user, new_structure)

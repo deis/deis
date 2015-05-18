@@ -232,7 +232,7 @@ class SchedulerTest(TransactionTestCase):
         self.assertEqual(states, set(['error']))
         # make sure we can cleanup after enough tries
         containers = 20
-        for _ in range(100):
+        for _ in xrange(100):
             url = "/v1/apps/{app_id}/scale".format(**locals())
             body = {'web': 0}
             response = self.client.post(url, json.dumps(body), content_type='application/json',

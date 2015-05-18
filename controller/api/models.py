@@ -84,7 +84,7 @@ def validate_id_is_docker_compatible(value):
 def validate_app_structure(value):
     """Error if the dict values aren't ints >= 0."""
     try:
-        if any(int(v) < 0 for v in value.itervalues()):
+        if any(int(v) < 0 for v in value.viewvalues()):
             raise ValueError("Must be greater than or equal to zero")
     except ValueError, err:
         raise ValidationError(err)
@@ -230,7 +230,7 @@ class App(UuidAuditedModel):
         release = self.release_set.latest()
         # test for available process types
         available_process_types = release.build.procfile or {}
-        for container_type in requested_structure.keys():
+        for container_type in requested_structure:
             if container_type == 'cmd':
                 continue  # allow docker cmd types in case we don't have the image source
             if container_type not in available_process_types:
@@ -242,6 +242,7 @@ class App(UuidAuditedModel):
         # iterate and scale by container type (web, worker, etc)
         changed = False
         to_add, to_remove = [], []
+        # iterate on a copy of the container_type keys
         for container_type in requested_structure.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
             # increment new container nums off the most recent container
@@ -613,8 +614,8 @@ class Build(UuidAuditedModel):
         try:
             previous_build = self.app.build_set.latest()
             to_destroy = []
-            for proctype in previous_build.procfile.keys():
-                if proctype not in self.procfile.keys():
+            for proctype in previous_build.procfile:
+                if proctype not in self.procfile:
                     for c in self.app.container_set.filter(type=proctype):
                         to_destroy.append(c)
             self.app._destroy_containers(to_destroy)
@@ -665,7 +666,7 @@ class Config(UuidAuditedModel):
                     new_data = {}
                 data.update(new_data)
                 # remove config keys if we provided a null value
-                [data.pop(k) for k, v in new_data.items() if v is None]
+                [data.pop(k) for k, v in new_data.viewitems() if v is None]
                 setattr(self, attr, data)
         except Config.DoesNotExist:
             pass
