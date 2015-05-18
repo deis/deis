@@ -41,13 +41,13 @@ function etcd_safe_mkdir {
 etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime -node $ETCD --log-level error; do
 	echo "builder: waiting for confd to write initial templates..."
 	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
+confd -node $ETCD --log-level error --interval 5 &
 CONFD_PID=$!
 
 # remove any pre-existing docker.sock
@@ -60,10 +60,6 @@ if [[ "$fstype" == "overlay" ]]; then
 	DRIVER_OVERRIDE="--storage-driver=overlay"
 fi
 
-# cheat
-cp /app/bin/apparmor_parser /sbin/apparmor_parser
-cp /app/bin/auplink /sbin/auplink
-
 # spawn a docker daemon to run builds
 docker -d --bip=172.19.42.1/16 $DRIVER_OVERRIDE --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 &
 DOCKER_PID=$!
@@ -74,8 +70,8 @@ while [[ ! -e /var/run/docker.sock ]]; do
 done
 
 # build required images
-docker build -t deis/slugbuilder /app/slugbuilder/
-docker build -t deis/slugrunner /app/slugrunner/
+docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
+docker build -t deis/slugrunner /usr/local/src/slugrunner/
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &

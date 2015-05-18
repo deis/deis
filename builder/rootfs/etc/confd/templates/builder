@@ -49,7 +49,7 @@ APP_NAME="${REPO%.*}"
 cd $(dirname $0) # ensure we are in the root dir
 
 ROOT_DIR=$(pwd)
-DOCKERFILE_SHIM="$ROOT_DIR/shim.dockerfile"
+DOCKERFILE_SHIM="/usr/local/share/shim.dockerfile"
 REPO_DIR="${ROOT_DIR}/${REPO}"
 BUILD_DIR="${REPO_DIR}/build"
 CACHE_DIR="${REPO_DIR}/cache"
@@ -77,7 +77,7 @@ fi
 
 # pull config from controller to be used during build
 URL="{{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/config"
-RESPONSE=$(/app/bin/get-app-config -url="$URL" -key="{{ getv "/deis/controller/builderKey" }}" -user=$USER -app=$APP_NAME)
+RESPONSE=$(get-app-config -url="$URL" -key="{{ getv "/deis/controller/builderKey" }}" -user=$USER -app=$APP_NAME)
 CODE=$?
 
 if [ $CODE -ne 0 ]; then
@@ -89,7 +89,7 @@ BUILD_OPTS=()
 BUILD_OPTS+='/usr/bin/docker'
 BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
 # get application configuration
-BUILD_OPTS+=$(echo $RESPONSE | /app/bin/get-app-values)
+BUILD_OPTS+=$(echo $RESPONSE | get-app-values)
 
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
@@ -136,15 +136,15 @@ echo
 
 # use Procfile if provided, otherwise try default process types from ./release
 if [ -f Procfile ]; then
-    PROCFILE=$(cat Procfile | /app/bin/yaml2json-procfile)
+    PROCFILE=$(cat Procfile | yaml2json-procfile)
 elif [ -f $TMP_DIR/slug.tgz ]; then
     # Sometimes, the buildpack will generate a Procfile instead of populating /bin/release
     # /bin/release was unofficially deprecated for declaring default process types
     if tar -tf $TMP_DIR/slug.tgz ./Procfile &> /dev/null;
     then
-        PROCFILE="$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./Procfile | /app/bin/yaml2json-procfile)"
+        PROCFILE="$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./Procfile | yaml2json-procfile)"
     else
-        PROCFILE=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | /app/bin/extract-types)
+        PROCFILE=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | extract-types)
     fi
 else
     PROCFILE="{}"
@@ -152,8 +152,8 @@ fi
 
 puts-step "Launching... "
 URL="{{ getv "/deis/controller/protocol" }}://{{ getv "/deis/controller/host" }}:{{ getv "/deis/controller/port" }}/v1/hooks/build"
-DATA=$(/app/bin/generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "$USING_DOCKERFILE")
-PUBLISH_RELEASE=$(echo "$DATA" | /app/bin/publish-release-controller -url=$URL -key={{ getv "/deis/controller/builderKey" }})
+DATA=$(generate-buildhook "$SHORT_SHA" "$USER" "$APP_NAME" "$APP_NAME" "$PROCFILE" "$USING_DOCKERFILE")
+PUBLISH_RELEASE=$(echo "$DATA" | publish-release-controller -url=$URL -key={{ getv "/deis/controller/builderKey" }})
 
 CODE=$?
 if [ $CODE -ne 0 ]; then
@@ -162,8 +162,8 @@ if [ $CODE -ne 0 ]; then
     exit 1
 fi
 
-RELEASE=$(echo $PUBLISH_RELEASE | /app/bin/extract-version)
-DOMAIN=$(echo $PUBLISH_RELEASE | /app/bin/extract-domain)
+RELEASE=$(echo $PUBLISH_RELEASE | extract-version)
+DOMAIN=$(echo $PUBLISH_RELEASE | extract-domain)
 indent "done, $APP_NAME:v$RELEASE deployed to Deis"
 echo
 indent "http://$DOMAIN"
