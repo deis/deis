@@ -77,7 +77,7 @@ import urllib3.contrib.pyopenssl
 __version__ = '1.7.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.3'
+__api_version__ = '1.4'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -396,7 +396,7 @@ Make sure that the Controller URI is correct and the server is running.
 
         if response.status_code != 401:
             raise EnvironmentError(error_message)
-        self.check_api_version(response.headers.get('X_DEIS_API_VERSION'))
+        self.check_api_version(response.headers.get('DEIS_API_VERSION'))
 
     def check_api_version(self, server_api_version):
         """
@@ -997,7 +997,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}".format(version))
         else:
             raise ResponseError(response)
@@ -1242,7 +1242,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
             values = config['values']
@@ -1288,7 +1288,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
             config = response.json()
             values = config['values']
@@ -1636,7 +1636,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
 
             self._print_limits(app, response.json())
@@ -1682,7 +1682,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
             self._print_limits(app, response.json())
         else:
@@ -1907,7 +1907,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
 
             self._print_tags(app, response.json())
@@ -1945,7 +1945,7 @@ Make sure that the Controller URI is correct and the server is running.
             progress.cancel()
             progress.join()
         if response.status_code == requests.codes.created:
-            version = response.headers['x-deis-release']
+            version = response.headers['Deis-Release']
             self._logger.info("done, v{}\n".format(version))
             self._print_tags(app, response.json())
         else:

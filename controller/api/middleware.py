@@ -24,7 +24,7 @@ class APIVersionMiddleware(object):
         doesn't match this controller's REST API major version (currently "1").
         """
         try:
-            client_version = request.META['HTTP_X_DEIS_VERSION']
+            client_version = request.META['HTTP_DEIS_VERSION']
             server_version = __version__.rsplit('.', 2)[0]
             if client_version != server_version:
                 message = {
@@ -46,5 +46,6 @@ class APIVersionMiddleware(object):
         a response header.
         """
         # clients shouldn't care about the patch release
-        response['X_DEIS_API_VERSION'] = __version__.rsplit('.', 1)[0]
+        response['DEIS_API_VERSION'] = __version__.rsplit('.', 1)[0]
+        response['X_DEIS_API_VERSION'] = response['DEIS_API_VERSION']  # DEPRECATED
         return response
