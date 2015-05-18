@@ -107,13 +107,13 @@ func TestDatabaseRecovery(t *testing.T) {
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "ETCD_TTL=2",
-			"-e", "BACKUP_FREQUENCY=0",
+			"-e", "BACKUP_FREQUENCY=1s",
 			"-e", "BACKUPS_TO_RETAIN=100",
 			imageName)
 	}
 
 	stopDatabase := func() {
-		fmt.Print("--- Stopping data-database... ")
+		fmt.Println("--- Stopping data-database... ")
 		if err = stdout.Close(); err != nil {
 			t.Fatal("Failed to closeStdout")
 		}
@@ -124,7 +124,7 @@ func TestDatabaseRecovery(t *testing.T) {
 	//ACTION
 
 	//STEP 1: start db with volume A and wait for init to complete
-	fmt.Print("--- Starting database with Volume A... ")
+	fmt.Println("--- Starting database with Volume A... ")
 	go startDatabase(databaseVolumeA)
 	dockercli.WaitForLine(t, stdout, "database: postgres is running...", true)
 	fmt.Println("Done")
@@ -148,7 +148,7 @@ func TestDatabaseRecovery(t *testing.T) {
 	execSql(t, db, "create table api_foo(t text)")
 
 	//STEP 2b: make sure we observed full backup cycle after forced checkpoint
-	fmt.Print("--- Waiting for the change to be backed up... ")
+	fmt.Println("--- Waiting for the change to be backed up... ")
 	dockercli.WaitForLine(t, stdout, "database: performing a backup...", true)
 	dockercli.WaitForLine(t, stdout, "database: backup has been completed.", true)
 	fmt.Println("Done")

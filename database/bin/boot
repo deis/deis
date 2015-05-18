@@ -16,10 +16,6 @@ export ETCD_PATH=${ETCD_PATH:-/deis/database}
 export ETCD_TTL=${ETCD_TTL:-20}
 
 export BUCKET_NAME=${BUCKET_NAME:-db_wal}
-export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
-
-# how many TTL/2 sleeps between backups -- 2160 is 3 hours
-export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-2160}
 
 # wait for etcd to be available
 until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
@@ -125,9 +121,10 @@ if [[ "${initial_backup}" == "1" ]] ; then
   sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
 fi
 
+sudo -Eu postgres /app/bin/backup &
+
 echo "database: postgres is running..."
 
-count=1
 # publish the service to etcd using the injected HOST and EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
 	# configure service discovery
@@ -143,23 +140,6 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
 		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
 		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-
-    # perform a backup whenever we hit BACKUP_FREQUENCY
-    # we really need cron :(
-    if [[ "${count}" -ge "${BACKUP_FREQUENCY}" ]] ; then
-      echo "database: performing a backup..."
-      if [[ -f /var/lib/postgresql/9.3/main/recovery.conf ]] ; then
-        echo "database: database is currently recovering from a backup. Will try again next loop..."
-      else
-        # perform a backup
-        sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
-        # only retain the latest BACKUPS_TO_RETAIN backups
-        sudo -u postgres envdir /etc/wal-e.d/env wal-e delete --confirm retain ${BACKUPS_TO_RETAIN}
-        count=0
-        echo "database: backup has been completed."
-      fi
-    fi
-    ((count++))
 		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
 	done
 

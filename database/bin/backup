@@ -1,0 +1,18 @@
+#!/bin/bash
+
+export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-3h}
+export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}
+
+while true; do
+    sleep "$BACKUP_FREQUENCY"
+    echo "database: performing a backup..."
+    if [[ -f /var/lib/postgresql/9.3/main/recovery.conf ]] ; then
+        echo "database: database is currently recovering from a backup. Will try again next loop..."
+    else
+        # perform a backup
+        envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+        # only retain the latest BACKUPS_TO_RETAIN backups
+        envdir /etc/wal-e.d/env wal-e delete --confirm retain $BACKUPS_TO_RETAIN
+        echo "database: backup has been completed."
+    fi
+done
