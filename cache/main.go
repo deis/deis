@@ -105,7 +105,7 @@ func publishService(client *etcd.Client, host string, etcdPath string,
 
 func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
 	_, err := client.Set(key, value, ttl)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "Key already exists") {
 		log.Println(err)
 	}
 }
