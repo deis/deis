@@ -91,7 +91,6 @@ class Session(requests.Session):
 
     def __init__(self):
         super(Session, self).__init__()
-        self.trust_env = False
         config_dir = os.path.expanduser('~/.deis')
         self.proxies = {
             "http": os.getenv("http_proxy"),
