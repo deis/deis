@@ -21,9 +21,11 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY?}
 pip install awscli boto docopt
 
 function cleanup_ec2 {
-    log_phase "Cleaning up"
-    aws cloudformation delete-stack --stack-name $STACK_NAME
-    python $DEIS_ROOT/contrib/ec2/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+    if [ "$SKIP_CLEANUP" != true ]; then
+        log_phase "Cleaning up"
+        aws cloudformation delete-stack --stack-name $STACK_NAME
+        python $DEIS_ROOT/contrib/ec2/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+    fi
 }
 
 # setup callbacks on process exit and error
