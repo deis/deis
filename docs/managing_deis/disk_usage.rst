@@ -43,11 +43,11 @@ The most alarming low-disk-space condition is when the Docker volume is nearly f
 component should remove unnecessary images after a build, and will also remove images after
 an application has been deleted.
 
-However, it some cases it may be necessary to manually prune old images using ``docker rmi``:
+However, in some cases it may be necessary to manually prune old images and containers:
 
 .. code-block:: console
 
-    $ docker images -aq | xargs -l10 docker rmi
+    $ /run/deis/bin/docker-cleanup
 
 .. note::
 

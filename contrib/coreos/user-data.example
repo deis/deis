@@ -176,3 +176,10 @@ write_files:
     content: |
       [Coredump]
       Storage=none
+  - path: /run/deis/bin/docker-cleanup
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      docker rm `docker ps -a --no-trunc | grep '\sExited\s' | grep -v '\sdeis-.*$' | awk '{print $1 }'`
+      docker run -v /var/run/docker.sock:/var/run/docker.sock -v /var/lib/docker:/var/lib/docker --rm martin/docker-cleanup-volumes:1.5.0
+      docker images -a --no-trunc | grep -v ^deis.*`(/run/deis/bin/get_image | sed -r "s/://")` | grep -v ^martin/docker-cleanup-volumes.*1.5.0 | awk '{print $3}' | xargs -l10 docker rmi
