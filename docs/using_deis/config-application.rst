@@ -20,10 +20,31 @@ Use ``deis config`` to modify environment variables for a deployed application.
     config:set         set environment variables for an app
     config:unset       unset environment variables for an app
     config:pull        extract environment variables to .env
+    config:push        set environment variables from .env
 
-    Use `deis help [command]` to learn more
+    Use `deis help [command]` to learn more.
 
 When config is changed, a new release is created and deployed automatically.
+
+You can set multiple environment variables with one ``deis config:set`` command,
+or with ``deis config:push`` and a local .env file.
+
+.. code-block:: console
+
+    $ deis config:set FOO=1 BAR=baz && deis config:pull
+    $ cat .env
+    FOO=1
+    BAR=baz
+    $ echo "TIDE=high" >> .env
+    $ deis config:push
+    Creating config... done, v4
+
+    === yuppie-earthman
+    DEIS_APP: yuppie-earthman
+    FOO: 1
+    BAR: baz
+    TIDE: high
+
 
 Attach to Backing Services
 --------------------------
