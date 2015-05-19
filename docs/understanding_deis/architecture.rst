@@ -72,3 +72,16 @@ For small deployments you can run the entire platform
 -- Control Plane, Data Plane and Router Mesh -- on just 3 servers.
 For larger deployments, you'll want to isolate the Control Plane and Router Mesh,
 then scale your data plane out to as many servers as you need.
+
+Deis Control Plane, Router Mesh, and Data Plane components all depend on etcd
+for service discovery.  For larger deployments, it is also recommended that etcd
+not run on greater than nine servers as doing so can greatly increase the time
+required for etcd nodes to build consensus, which can have a deleterious effect
+on a cluster's overall performance.
+
+Those building larger clusters should reference `CoreOS cluster architecture
+documentation`_.
+
+Also see :ref:`production_deployments` for more information.
+
+.. _`CoreOS cluster architecture documentation`: https://coreos.com/docs/cluster-management/setup/cluster-architectures/#production-cluster-with-central-services
