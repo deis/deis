@@ -87,13 +87,15 @@ ssh-add $DEIS_TEST_SSH_KEY
 
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
-    log_phase "Cleaning up"
-    set +e
-    ${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh
-    VBoxManage list vms | grep deis | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
-    vagrant global-status --prune
-    docker rm -f -v `docker ps | grep deis- | awk '{print $1}'` 2>/dev/null
-    log_phase "Test run complete"
+    if [ "$SKIP_CLEANUP" != true ]; then
+        log_phase "Cleaning up"
+        set +e
+        ${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh
+        VBoxManage list vms | grep deis | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
+        vagrant global-status --prune
+        docker rm -f -v `docker ps | grep deis- | awk '{print $1}'` 2>/dev/null
+        log_phase "Test run complete"
+    fi
 }
 
 function dump_logs {
