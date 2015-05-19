@@ -99,7 +99,8 @@ class ReleasableViewSet(AppResourceViewSet):
 
     def get_success_headers(self, data, **kwargs):
         headers = super(ReleasableViewSet, self).get_success_headers(data)
-        headers.update({'X-Deis-Release': self.release.version})
+        headers.update({'Deis-Release': self.release.version})
+        headers.update({'X-Deis-Release': self.release.version})  # DEPRECATED
         return headers
 
 
