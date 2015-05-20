@@ -83,7 +83,7 @@ if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
 __version__ = '1.8.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.4'
+__api_version__ = '1.5'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -737,6 +737,7 @@ Make sure that the Controller URI is correct and the server is running.
         auth:passwd            change the password for the current user
         auth:whoami            display the current user
         auth:cancel            remove the current user account
+        auth:regenerate        regenerate user tokens
 
         Use `deis help [command]` to learn more.
         """
@@ -962,6 +963,36 @@ Make sure that the Controller URI is correct and the server is running.
         else:
             self._logger.info(
                 'Not logged in. Use `deis login` or `deis register` to get started.')
+
+    def auth_regenerate(self, args):
+        """
+        Regenerates auth token, defaults to regenerating token for the current user.
+
+        Usage: deis auth:regenerate [options]
+
+        Options:
+          -u --username=<username>
+            specify user to regenerate. Requires admin privilages.
+          --all
+            regenerate token for every user. Requires admin privilages.
+        """
+        payload = {}
+
+        if args.get('--all'):
+            payload = {'all': True}
+        elif args.get('--username'):
+            payload = {'username': args.get('--username')}
+
+        response = self._dispatch('post', '/v1/auth/tokens/', json.dumps(payload))
+
+        if response.status_code == requests.codes.ok:
+            if '--username' not in args or '--all' not in args:
+                self._settings['token'] = response.json()['token']
+                self._settings.save()
+            self._logger.info('Token regenerated.')
+        else:
+            self._logger.info("Token regeneration failed: {}".format(response.text))
+            sys.exit(1)
 
     def builds(self, args):
         """

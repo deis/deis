@@ -129,3 +129,18 @@ class HasBuilderAuth(permissions.BasePermission):
         if not auth_header:
             return False
         return auth_header == settings.BUILDER_KEY
+
+
+class CanRegenerateToken(permissions.BasePermission):
+    """
+    Checks if a user can regenerate a token
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if 'username' in request.data or 'all' in request.data:
+            return request.user.is_superuser
+        else:
+            return True
