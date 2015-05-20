@@ -17,6 +17,7 @@ This documentation has the following resources:
    managing_deis/index
    troubleshooting_deis/index
    customizing_deis/index
+   roadmap/index
    contributing/index
    reference/index
    faq
