@@ -98,7 +98,7 @@ func TestSplitTarget(t *testing.T) {
 type stubFleetClient struct{}
 
 var (
-	units []*schema.Unit
+	testUnits []*schema.Unit
 )
 
 func (c stubFleetClient) Machines() ([]machine.MachineState, error) {
@@ -108,7 +108,7 @@ func (c stubFleetClient) Unit(string) (*schema.Unit, error) {
 	return nil, nil
 }
 func (c stubFleetClient) Units() ([]*schema.Unit, error) {
-	return units, nil
+	return testUnits, nil
 }
 func (c stubFleetClient) UnitStates() ([]*schema.UnitState, error) {
 	return []*schema.UnitState{}, nil
@@ -126,7 +126,7 @@ func (c stubFleetClient) DestroyUnit(string) error {
 var fc stubFleetClient
 
 func TestExpandTargets(t *testing.T) {
-	units = []*schema.Unit{
+	testUnits = []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",
 		},

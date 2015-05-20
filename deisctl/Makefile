@@ -4,7 +4,7 @@ include ../includes.mk
 repo_path = github.com/deis/deis/deisctl
 
 GO_FILES = deisctl.go deisctl_test.go
-GO_PACKAGES = backend client cmd config utils
+GO_PACKAGES = backend client cmd config units utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))

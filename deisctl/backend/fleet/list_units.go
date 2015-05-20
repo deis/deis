@@ -8,6 +8,7 @@ import (
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
+	"github.com/deis/deis/deisctl/units"
 )
 
 // initialize tabwriter on stdout
@@ -82,8 +83,11 @@ func (c *FleetClient) ListUnits() (err error) {
 	}
 
 	for _, us := range unitStates {
-		if strings.HasPrefix(us.Name, "deis-") {
-			states = append(states, us)
+		for _, prefix := range units.Names {
+			if strings.HasPrefix(us.Name, prefix) {
+				states = append(states, us)
+				break
+			}
 		}
 	}
 	printUnits(states)

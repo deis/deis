@@ -15,6 +15,7 @@ import (
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
+	"github.com/deis/deis/deisctl/units"
 	"github.com/deis/deis/deisctl/utils"
 
 	docopt "github.com/docopt/docopt-go"
@@ -564,27 +565,8 @@ Options:
 	// download and save the unit files to the specified path
 	rootURL := "https://raw.githubusercontent.com/deis/deis/"
 	tag := args["--tag"].(string)
-	units := []string{
-		"deis-builder.service",
-		"deis-cache.service",
-		"deis-controller.service",
-		"deis-database.service",
-		"deis-logger.service",
-		"deis-logspout.service",
-		"deis-publisher.service",
-		"deis-registry.service",
-		"deis-router.service",
-		"deis-store-admin.service",
-		"deis-store-daemon.service",
-		"deis-store-gateway.service",
-		"deis-store-metadata.service",
-		"deis-store-monitor.service",
-		"deis-store-volume.service",
-		"deis-swarm-manager.service",
-		"deis-swarm-node.service",
-	}
-	for _, unit := range units {
-		src := rootURL + tag + "/deisctl/units/" + unit
+	for _, unit := range units.Names {
+		src := rootURL + tag + "/deisctl/units/" + unit + ".service"
 		dest := filepath.Join(dir, unit)
 		res, err := http.Get(src)
 		if err != nil {
