@@ -32,6 +32,9 @@ switch(path) {
   case 'customizing_deis':
     $('.toctree-l1 > a:contains("Customizing Deis")').attr('state', 'open');
     break;
+  case 'roadmap':
+    $('.toctree-l1 > a:contains("Roadmap")').attr('state', 'open');
+    break;
   case 'contributing':
     $('.toctree-l1 > a:contains("Contributing")').attr('state', 'open');
     break;
