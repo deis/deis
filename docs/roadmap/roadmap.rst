@@ -5,18 +5,18 @@
 
 Deis Roadmap
 ============
-The Deis Roadmap is a community document created as part of our open :ref:`planning`.
-Each roadmap item describes a high-level capability or grouping of features we deem
+The Deis Roadmap is a community document created as part of the open :ref:`planning`.
+Each roadmap item describes a high-level capability or grouping of features that are deemed
 important to the future of Deis.
 
-Given our rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
+Given the project's rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
 direction over many releases.
 
 Update Service
 --------------
 Deis must support 100% automated, zero-downtime updates of the control plane.
 Like CoreOS, Deis clusters should be attached to an alpha, beta or stable channel and rely on an automatic update mechanism.
-To accomplish this, we plan to use the `Google Omaha Protocol`_ as implemented by `CoreUpdate`_.
+To accomplish this, Deis plans to use the `Google Omaha Protocol`_ as implemented by `CoreUpdate`_.
 
  - [ ] Update client/agent
  - [ ] Update server
@@ -25,11 +25,11 @@ To accomplish this, we plan to use the `Google Omaha Protocol`_ as implemented b
 Scheduling and Orchestration
 ----------------------------
 Today Deis uses `Fleet`_ for scheduling.  Unfortunately, Fleet does not support
-resource-based scheduling which results in poor cluster utilization at scale.
+resource-based scheduling, which results in poor cluster utilization at scale.
 
 Fortunately, Deis is composable and can easily hot-swap orchestration APIs.
 Because the most promising container orchestration solutions are under heavy development,
-we are currently focused on releasing "technology previews".
+the Deis project is focused on releasing "technology previews".
 
 These technology previews will help the community try different orchestration solutions easily,
 report their findings and help guide the future direction of Deis.
@@ -41,7 +41,7 @@ report their findings and help guide the future direction of Deis.
 TTY Broker
 ----------
 Today Deis cannot provide bi-directional streams needed for log tailing and interactive batch processes.
-By having the :ref:`Controller` drive a TTY Broker component, we can securely open WebSockets
+By having the :ref:`Controller` drive a TTY Broker component, Deis can securely open WebSockets
 through the routing mesh.
 
  - [ ] TTY Broker component
@@ -59,7 +59,7 @@ This works around a number of authentication issues with private registries and 
 Service Broker
 --------------
 In Deis, connections to :ref:`concepts_backing_services` are meant to be explicit and modeled as a series of environment variables.
-We believe the Cloud Foundry `Service Broker API`_ is the best embodiment of this today.
+Deis believes the Cloud Foundry `Service Broker API`_ is the best embodiment of this today.
 
  - [ ] Deis Addons CLI (deis addons)
  - [ ] PostgreSQL Service Broker
@@ -68,7 +68,7 @@ We believe the Cloud Foundry `Service Broker API`_ is the best embodiment of thi
 Monitoring & Telemetry
 ----------------------
 Deis installations today use custom solutions for monitoring, alerting and operational visibility.
-We will standardize the monitoring interfaces and provide open source agent(s) that can be used to ship telemetry to arbitrary endpoints.
+Deis will standardize the monitoring interfaces and provide open source agent(s) that can be used to ship telemetry to arbitrary endpoints.
 
  - [ ] Host Telemetry (cpu, memory, network, disk)
  - [ ] Container Telemetry (cpu, memory, network, disk)

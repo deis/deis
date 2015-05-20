@@ -5,7 +5,7 @@
 
 Planning Process
 ================
-Deis features a lightweight process that emphasizes openness and ensures every community member can be an integral part of the planning process.
+Deis features a lightweight process that emphasizes openness and ensures every community member can be an integral part of planning for the future.
 
 The Role of Maintainers
 -----------------------
@@ -25,7 +25,7 @@ The Roadmap gets delivered progressively via the :ref:`release_schedule`.  Relea
 
 Sprint Meetings
 ---------------
-Major decisions affecting the Roadmap are discussed during Sprint Meetings on the first Thursday of each month, aligned with our :ref:`release_schedule`.
+Major decisions affecting the Roadmap are discussed during Sprint Meetings on the first Thursday of each month, aligned with the :ref:`release_schedule`.
 
 Sprint meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 
