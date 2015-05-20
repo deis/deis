@@ -11,6 +11,7 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 
 New to Deis?  Learn more about Deis [Concepts](http://docs.deis.io/en/latest/understanding_deis/concepts/), [Architecture](http://docs.deis.io/en/latest/understanding_deis/architecture/) and how to [Deploy an Application](http://docs.deis.io/en/latest/using_deis/deploy-application/).
 
+
 # Installing Deis
 
 Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the [provider-specific documentation](http://docs.deis.io/en/latest/installing_deis/) for provisioning.
@@ -18,18 +19,14 @@ Deis is a set of Docker containers that can be deployed anywhere including publi
 Trying out Deis? Please follow the documentation on [getting set up with Vagrant](http://docs.deis.io/en/latest/installing_deis/vagrant/).
 Upgrading from a previous Deis release? See [Upgrading Deis](http://docs.deis.io/en/latest/managing_deis/upgrading-deis/) for additional information.
 
-## Testing the cluster
-
-Please follow the documentation on [testing Deis](http://docs.deis.io/en/latest/contributing/testing/).
-
-## Hacking on Deis
-
-Learn how to [hack on Deis](http://docs.deis.io/en/latest/contributing/hacking/) with a Docker-based development workflow.
-
 ## Troubleshooting
 
 See the [Troubleshooting Deis](http://docs.deis.io/en/latest/troubleshooting_deis/) documentation for
 assistance with common issues.
+
+## Contributing
+
+Interested in contributing to Deis?  Check out our [Open Roadmap](http://docs.deis.io/en/latest/roadmap/roadmap/) and [Planning Process](http://docs.deis.io/en/latest/roadmap/planning/) or jump right into [hacking on Deis](http://docs.deis.io/en/latest/contributing/hacking/) and [testing your Deis cluster](http://docs.deis.io/en/latest/contributing/testing/).
 
 ## License
 
