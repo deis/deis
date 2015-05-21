@@ -59,7 +59,7 @@ func GetGlobalConfig() *DeisTestConfig {
 	}
 	domain := os.Getenv("DEIS_TEST_DOMAIN")
 	if domain == "" {
-		domain = "local.deisapp.com"
+		domain = "local3.deisapp.com"
 	}
 	sshKey := os.Getenv("DEIS_TEST_SSH_KEY")
 	if sshKey == "" {

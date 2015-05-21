@@ -728,7 +728,7 @@ Make sure that the Controller URI is correct and the server is running.
 
         Arguments:
           <controller>
-            fully-qualified controller URI, e.g. `http://deis.local.deisapp.com/`
+            fully-qualified controller URI, e.g. `http://deis.local3.deisapp.com/`
 
         Options:
           --username=<username>
@@ -833,7 +833,7 @@ Make sure that the Controller URI is correct and the server is running.
 
         Arguments:
           <controller>
-            a fully-qualified controller URI, e.g. `http://deis.local.deisapp.com/`.
+            a fully-qualified controller URI, e.g. `http://deis.local3.deisapp.com/`.
 
         Options:
           --username=<username>
