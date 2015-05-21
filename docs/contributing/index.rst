@@ -15,6 +15,3 @@ Contributing
     standards
     community
     conduct
-    schedule
-    releases
-    test_plan

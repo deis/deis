@@ -26,3 +26,7 @@ a.viewcode-back {
 	margin-right: 6px;
 	vertical-align: super;
 }
+
+blockquote {
+    border-left: none;
+}
