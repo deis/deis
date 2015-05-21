@@ -47,20 +47,6 @@ Azure portal's Settings.
 
 Also copy the Azure subscription id from this table and save it for the cluster creation script below.
 
-Create Cluster Cloud Config
----------------------------
-
-Before we can create a cluster, we need to create a cloud config for it. The script
-``create-azure-user-data`` does this for you. This script takes the stock cluster instance config
-in ``../coreos/user-data.example``, customizes it for Azure, and inserts a unique cluster discovery
-endpoint:
-
-.. code-block:: console
-
-    $ ./create-azure-user-data $(curl -s https://discovery.etcd.io/new)
-
-This will create a azure-user-data cloud config file. We'll use this with the script in the next
-section during cluster creation.
 
 Create CoreOS Cluster
 ---------------------
@@ -70,6 +56,9 @@ With the management certificate and cloud config in place, we are ready to creat
 * Create a container called ``vhds`` within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
 * Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
 * Create an `affinity group`_ if you already don't have one. Supply it in quotes with the ``--affinity-group`` parameter. Although *using an affinity group is not mandatory*, it is **highly recommended** since it tells the Azure fabric to place all VMs in the cluster physically close to each other, reducing inter-node latency by a great deal. If you don't want ot use affinity groups, specify a `region`_ for Azure to use with a ``--location`` parameter. The default is ``"West US"``. If you specify both parameters, ``location`` will be ignored. Please note that the script *will not* create an affinity group by itself; it expects the affinity group exists.
+
+This script calls the ``./create-azure-user-data`` script which takes the stock cluster instance config in ``../coreos/user-data.example``, customizes it for Azure, and inserts a unique cluster discovery
+endpoint. It will then use the newly created CoreOS config on the newly provisioned cluster.
 
 With that, let's run the azure-coreos-cluster script which will create the CoreOS cluster. Fill in the bracketed values with the values for your deployment you created above.
 
