@@ -13,7 +13,7 @@ Maintainers lead the project. Their duties include proposing the Roadmap, review
 
 Open Roadmap
 ------------
-The :ref:`roadmap` is a community document. While Maintainers propose the Roadmap, it gets discussed and refined in Sprint Meetings.
+The :ref:`roadmap` is a community document. While Maintainers propose the Roadmap, it gets discussed and refined in Release Planning Meetings.
 
 Contributing to the Roadmap
 ---------------------------
@@ -21,13 +21,13 @@ Proposals and issues can be opened by anyone. Every member of the :ref:`communit
 
 Release Milestones
 ------------------
-The Roadmap gets delivered progressively via the :ref:`release_schedule`.  Releases are defined during Sprint Meetings and managed using GitHub Milestones which track specific deliverables and work-in-progress.
+The Roadmap gets delivered progressively via the :ref:`release_schedule`.  Releases are defined during Release Planning Meetings and managed using GitHub Milestones which track specific deliverables and work-in-progress.
 
-Sprint Meetings
----------------
-Major decisions affecting the Roadmap are discussed during Sprint Meetings on the first Thursday of each month, aligned with the :ref:`release_schedule`.
+Release Planning Meetings
+-------------------------
+Major decisions affecting the Roadmap are discussed during Release Planning Meetings on the first Thursday of each month, aligned with the :ref:`release_schedule`.
 
-Sprint meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
+Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 
 Credits
 -------
