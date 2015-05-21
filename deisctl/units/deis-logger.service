@@ -9,7 +9,8 @@ TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "docker inspect deis-logger >/dev/null 2>&1 && docker rm -f deis-logger || true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker create --name deis-logger -p 514:514/udp -e EXTERNAL_PORT=514 -e HOST=$COREOS_PRIVATE_IPV4 -v /var/lib/deis/store:/data $IMAGE"
 ExecStart=/usr/bin/docker start -a deis-logger
-ExecStop=/usr/bin/docker stop -t 2 deis-logger ; /usr/bin/docker rm -f deis-logger
+ExecStop=/usr/bin/docker stop -t 2 deis-logger
+ExecStopPost=/usr/bin/docker rm -f deis-logger
 Restart=on-failure
 RestartSec=5
 

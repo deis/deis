@@ -8,7 +8,8 @@ ExecStartPre=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || do
 ExecStartPre=/bin/sh -c "docker inspect deis-database >/dev/null 2>&1 && docker rm -f deis-database >/dev/null 2>&1 || true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker create --name deis-database --volumes-from=deis-database-data -p 5432:5432 -e EXTERNAL_PORT=5432 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 ExecStart=/usr/bin/docker start -a deis-database
-ExecStop=/usr/bin/docker stop -t 2 deis-database ; /usr/bin/docker rm -f deis-database
+ExecStop=/usr/bin/docker stop -t 2 deis-database
+ExecStopPost=/usr/bin/docker rm -f deis-database
 Restart=on-failure
 RestartSec=5
 

@@ -7,7 +7,8 @@ TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "docker inspect deis-store-metadata >/dev/null 2>&1 && docker rm -f deis-store-metadata || true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-metadata` && docker create --name deis-store-metadata -e HOST=$COREOS_PRIVATE_IPV4 --net host $IMAGE"
 ExecStart=/usr/bin/docker start -a deis-store-metadata
-ExecStop=/usr/bin/docker stop -t 2 deis-store-metadata ; /usr/bin/docker rm -f deis-store-metadata
+ExecStop=/usr/bin/docker stop -t 2 deis-store-metadata
+ExecStopPost=/usr/bin/docker rm -f deis-store-metadata
 Restart=on-failure
 RestartSec=5
 

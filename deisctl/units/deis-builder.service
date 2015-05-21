@@ -11,7 +11,8 @@ ExecStartPre=-/bin/sh -c "/sbin/losetup -f"
 ExecStart=/usr/bin/docker start -a deis-builder
 ExecStartPost=/bin/sh -c "echo 'Waiting for builder on 2223/tcp...' && until ncat $COREOS_PRIVATE_IPV4 2223 --exec '/usr/bin/echo dummy-value' >/dev/null 2>&1; do sleep 1; done"
 ExecStartPost=/usr/bin/docker exec deis-builder /usr/local/bin/push-images
-ExecStop=/usr/bin/docker stop -t 2 deis-builder ; /usr/bin/docker rm -f deis-builder
+ExecStop=/usr/bin/docker stop -t 2 deis-builder
+ExecStopPost=/usr/bin/docker rm -f deis-builder
 Restart=on-failure
 RestartSec=5
 

@@ -9,7 +9,8 @@ TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "docker inspect deis-logspout >/dev/null 2>&1 && docker rm -f deis-logspout || true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker create --name deis-logspout -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=$COREOS_PRIVATE_IPV4 -e HOST=$COREOS_PRIVATE_IPV4 -e DEBUG=1 $IMAGE"
 ExecStart=/usr/bin/docker start -a deis-logspout
-ExecStop=/usr/bin/docker stop -t 2 deis-logspout ; /usr/bin/docker rm -f deis-logspout
+ExecStop=/usr/bin/docker stop -t 2 deis-logspout
+ExecStopPost=/usr/bin/docker rm -f deis-logspout
 Restart=on-failure
 RestartSec=5
 

@@ -7,7 +7,8 @@ TimeoutStartSec=30m
 ExecStartPre=/bin/sh -c "docker inspect deis-registry >/dev/null 2>&1 && docker rm -f deis-registry || true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/registry` && docker create --name deis-registry -p 5000:5000 -e EXTERNAL_PORT=5000 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 ExecStart=/usr/bin/docker start -a deis-registry
-ExecStop=/usr/bin/docker stop -t 2 deis-registry ; /usr/bin/docker rm -f deis-registry
+ExecStop=/usr/bin/docker stop -t 2 deis-registry
+ExecStopPost=/usr/bin/docker rm -f deis-registry
 Restart=on-failure
 RestartSec=5
 
