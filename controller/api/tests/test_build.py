@@ -253,3 +253,48 @@ class BuildTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_new_build_does_not_scale_up_automatically(self):
+        """
+        After the first initial deploy, if the containers are scaled down to zero,
+        they should stay that way on a new release.
+        """
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example',
+                'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js',
+                                        'worker': 'node worker.js'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        url = "/v1/apps/{app_id}/containers/web".format(**locals())
+        response = self.client.get(url,
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+        # scale to zero
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 0}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        # post another build
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example',
+                'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js',
+                                        'worker': 'node worker.js'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        url = "/v1/apps/{app_id}/containers/web".format(**locals())
+        response = self.client.get(url,
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 0)
