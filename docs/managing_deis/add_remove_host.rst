@@ -284,3 +284,28 @@ This can be achieved by making a request to the etcd API. See `remove machines`_
 .. _`remove machines`: https://coreos.com/docs/distributed-configuration/etcd-api/#remove-machines
 .. _`removing monitors`: http://ceph.com/docs/hammer/rados/operations/add-or-rm-mons/#removing-monitors
 .. _`removing OSDs`: http://docs.ceph.com/docs/hammer/rados/operations/add-or-rm-osds/#removing-osds-manual
+
+Automatic Host Removal
+======================
+
+The ``contrib/user-data.example`` provides a unit which provides some experimental logic to clean-up a Deis
+node's Ceph and etcd membership before reboot, shutdown or halt events. Currently, the procedure will
+also be triggered if it is manually stopped via systemctl.
+
+The unit requires that the optional ``deis-store-admin`` component is installed.
+
+.. code-block:: console
+
+    root@deis-1:/# deisctl install store-admin
+    root@deis-1:/# deisctl start store-admin
+
+To enable the feature you must enable and start the unit:
+
+.. code-block:: console
+
+    root@deis-1:/# systemctl enable graceful-deis-shutdown
+    root@deis-1:/# systemctl start graceful-deis-shutdown
+
+The unit is now active and will now be stopped ahead of the store components, Docker and etcd.
+The script ``/opt/bin/graceful-shutdown.sh`` will determine if the Ceph cluster is healthy, and attempt
+to remove this node from the Deis store components if there are greater than 3 Ceph nodes in the cluster.
