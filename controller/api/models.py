@@ -275,7 +275,9 @@ class App(UuidAuditedModel):
         # save new structure to the database
         vals = self.container_set.exclude(type='run').values(
             'type').annotate(Count('pk')).order_by()
-        self.structure = {v['type']: v['pk__count'] for v in vals}
+        new_structure = structure.copy()
+        new_structure.update({v['type']: v['pk__count'] for v in vals})
+        self.structure = new_structure
         self.save()
         return changed
 
