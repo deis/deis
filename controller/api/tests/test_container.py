@@ -307,7 +307,8 @@ class ContainerTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, {'detail': 'Invalid scaling format'})
+        self.assertEqual(response.data, {'detail': "Invalid scaling format: invalid literal for "
+                                                   "int() with base 10: 'not_an_int'"})
         body = {'invalid': 1}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))

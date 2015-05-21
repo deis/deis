@@ -139,8 +139,8 @@ class AppViewSet(BaseDeisViewSet):
                 new_structure[target] = int(count)
             models.validate_app_structure(new_structure)
             app.scale(request.user, new_structure)
-        except (TypeError, ValueError):
-            return Response({'detail': 'Invalid scaling format'},
+        except (TypeError, ValueError) as e:
+            return Response({'detail': 'Invalid scaling format: {}'.format(e)},
                             status=status.HTTP_400_BAD_REQUEST)
         except (EnvironmentError, ValidationError) as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
