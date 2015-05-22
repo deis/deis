@@ -51,6 +51,8 @@ func doConfig(args map[string]interface{}) error {
 	var vals []string
 	if args["set"] == true {
 		vals, err = doConfigSet(client, rootPath, args["<key=val>"].([]string))
+	} else if args["rm"] == true {
+		vals, err = doConfigRm(client, rootPath, args["<key>"].([]string))
 	} else {
 		vals, err = doConfigGet(client, rootPath, args["<key>"].([]string))
 	}
@@ -100,6 +102,18 @@ func doConfigGet(client *etcdClient, root string, keys []string) ([]string, erro
 			return result, err
 		}
 		result = append(result, val)
+	}
+	return result, nil
+}
+
+func doConfigRm(client *etcdClient, root string, keys []string) ([]string, error) {
+	var result []string
+	for _, k := range keys {
+		err := client.Delete(root + k)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, k)
 	}
 	return result, nil
 }
