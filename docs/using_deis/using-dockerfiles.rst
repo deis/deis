@@ -97,14 +97,14 @@ Use ``git push deis master`` to deploy your application.
            Launching... done, v2
 
     -----> folksy-offshoot deployed to Deis
-           http://folksy-offshoot.local.deisapp.com
+           http://folksy-offshoot.local3.deisapp.com
 
            To learn more, use `deis help` or visit http://deis.io
 
-    To ssh://git@local.deisapp.com:2222/folksy-offshoot.git
+    To ssh://git@local3.deisapp.com:2222/folksy-offshoot.git
      * [new branch]      master -> master
 
-    $ curl -s http://folksy-offshoot.local.deisapp.com
+    $ curl -s http://folksy-offshoot.local3.deisapp.com
     Welcome to Deis!
     See the documentation at http://docs.deis.io/ for more information.
 

@@ -82,14 +82,14 @@ Use ``git push deis master`` to deploy your application.
            Launching... done, v2
 
     -----> unisex-huntress deployed to Deis
-           http://unisex-huntress.local.deisapp.com
+           http://unisex-huntress.local3.deisapp.com
 
            To learn more, use `deis help` or visit http://deis.io
 
-    To ssh://git@local.deisapp.com:2222/unisex-huntress.git
+    To ssh://git@local3.deisapp.com:2222/unisex-huntress.git
      * [new branch]      master -> master
 
-    $ curl -s http://unisex-huntress.local.deisapp.com
+    $ curl -s http://unisex-huntress.local3.deisapp.com
     Powered by Deis!
 
 Because a Heroku-style application is detected, the ``web`` process type is automatically scaled to 1 on first deploy.

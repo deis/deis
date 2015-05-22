@@ -95,7 +95,7 @@ somewhere in your $PATH.
 
 .. code-block:: console
 
-    $ deis register http://deis.local.deisapp.com
+    $ deis register http://deis.local3.deisapp.com
     $ deis keys:add
 
 
