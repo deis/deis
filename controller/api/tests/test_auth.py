@@ -21,6 +21,14 @@ class AuthTest(TestCase):
 
     """Tests user registration, authentication and authorization"""
 
+    def setUp(self):
+        self.admin = User.objects.get(username='autotest')
+        self.admin_token = Token.objects.get(user=self.admin).key
+        self.user1 = User.objects.get(username='autotest2')
+        self.user1_token = Token.objects.get(user=self.user1).key
+        self.user2 = User.objects.get(username='autotest3')
+        self.user2_token = Token.objects.get(user=self.user2).key
+
     def test_auth(self):
         """
         Test that a user can register using the API, login and logout
@@ -98,10 +106,6 @@ class AuthTest(TestCase):
     @override_settings(REGISTRATION_MODE="admin_only")
     def test_auth_registration_admin_only_works(self):
         """test that a superuser can register when registration is admin only."""
-
-        user = User.objects.get(username='autotest')
-        token = Token.objects.get(user=user)
-
         url = '/v1/auth/register'
 
         username, password = 'newuser_by_admin', 'password'
@@ -119,7 +123,7 @@ class AuthTest(TestCase):
             'is_staff': True,
         }
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(token))
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
 
         self.assertEqual(response.status_code, 201)
         for key in response.data:
@@ -235,4 +239,42 @@ class AuthTest(TestCase):
         payload = urllib.urlencode({'username': username, 'password': 'password2'})
         response = self.client.post(url, data=payload,
                                     content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 200)
+
+    def test_change_user_passwd(self):
+        """
+        Test that an administrator can change a user's password, while a regular user cannot.
+        """
+        # change password
+        url = '/v1/auth/passwd'
+        old_password = self.user1.password
+        new_password = 'password'
+        submit = {
+            'username': self.user1.username,
+            'password': old_password,
+            'new_password': new_password,
+        }
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+        self.assertEqual(response.status_code, 400)
+        # test login with old password
+        url = '/v1/auth/login/'
+        payload = urllib.urlencode({'username': self.user1.username, 'password': old_password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 400)
+        # test login with new password
+        payload = urllib.urlencode({'username': self.user1.username, 'password': new_password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
+        self.assertEqual(response.status_code, 200)
+        # try to change back password with a regular user
+        submit['password'], submit['new_password'] = submit['new_password'], submit['password']
+        url = '/v1/auth/passwd'
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.user2_token))
+        self.assertEqual(response.status_code, 403)
+        # however, targeting yourself should be fine.
+        response = self.client.post(url, json.dumps(submit), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.user1_token))
         self.assertEqual(response.status_code, 200)

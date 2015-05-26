@@ -16,5 +16,41 @@
         "email": "autotest@deis.io",
         "date_joined": "2013-05-10T16:08:09.357Z"
     }
+},
+{
+    "pk": 8,
+    "model": "auth.user",
+    "fields": {
+        "username": "autotest2",
+        "first_name": "Otto",
+        "last_name": "Test",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2013-05-10T16:08:09.357Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$10000$5Uoq7dl61vnN$gQhDpc2q2Rkn16VdPC+pNNEQcKpy+LGe29Zkad+2/m4=",
+        "email": "autotest@deis.io",
+        "date_joined": "2013-05-10T16:08:09.357Z"
+    }
+},
+{
+    "pk": 9,
+    "model": "auth.user",
+    "fields": {
+        "username": "autotest3",
+        "first_name": "Otto",
+        "last_name": "Test",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2013-05-10T16:08:09.357Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$10000$5Uoq7dl61vnN$gQhDpc2q2Rkn16VdPC+pNNEQcKpy+LGe29Zkad+2/m4=",
+        "email": "autotest@deis.io",
+        "date_joined": "2013-05-10T16:08:09.357Z"
+    }
 }
 ]

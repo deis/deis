@@ -12,6 +12,7 @@ This is the v1.4 REST API for the :ref:`Controller`.
 What's New
 ----------
 
+**New!** optional ``username`` argument for /v1/auth/passwd/
 **New!** Deprecate X prefixed headers
 ``X_DEIS_API_VERSION`` ->  ``DEIS_API_VERSION``
 ``X_DEIS_PLATFORM_VERSION`` -> ``DEIS_PLATFORM_VERSION``
@@ -114,6 +115,41 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
+    DEIS_API_VERSION: 1.4
+    DEIS_PLATFORM_VERSION: 1.6.1
+
+
+Change Password
+```````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/auth/passwd/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+    {
+        "password": "foo",
+        "new_password": "bar"
+    }
+
+Optional parameters:
+
+.. code-block:: console
+
+    {"username": "testuser"}
+
+.. note::
+
+    Using the ``username`` parameter requires administrative privileges
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.4
     DEIS_PLATFORM_VERSION: 1.6.1
 
