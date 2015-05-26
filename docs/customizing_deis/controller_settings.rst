@@ -41,6 +41,7 @@ setting                                   description
 ====================================      ======================================================
 /deis/controller/registrationMode         set registration to "enabled", "disabled", or "admin_only" (default: "enabled")
 /deis/controller/schedulerModule          scheduler backend (default: "fleet")
+/deis/controller/subdomain                subdomain used by the router for API requests (default: "deis")
 /deis/controller/webEnabled               enable controller web UI (default: 0)
 /deis/controller/workers                  number of web worker processes (default: CPU cores * 2 + 1)
 /deis/cache/host                          host of the cache component (set by cache)

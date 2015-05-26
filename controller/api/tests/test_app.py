@@ -156,10 +156,6 @@ class AppTest(TestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertContains(response, 'App IDs can only contain [a-z0-9-]', status_code=400)
         url = '/v1/apps'
-        body = {'id': 'deis'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertContains(response, 'deis is a reserved name.', status_code=400)
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -174,6 +170,20 @@ class AppTest(TestCase):
             response = self.client.get(url,
                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEquals(response.status_code, 404)
+
+    def test_app_reserved_names(self):
+        """Nobody should be able to create applications with names which are reserved."""
+        url = '/v1/apps'
+        reserved_names = ['foo', 'bar']
+        with self.settings(DEIS_RESERVED_NAMES=reserved_names):
+            for name in reserved_names:
+                body = {'id': name}
+                response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                            HTTP_AUTHORIZATION='token {}'.format(self.token))
+                self.assertContains(
+                    response,
+                    '{} is a reserved name.'.format(name),
+                    status_code=400)
 
     def test_app_structure_is_valid_json(self):
         """Application structures should be valid JSON objects."""

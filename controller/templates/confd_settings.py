@@ -49,6 +49,10 @@ WEB_ENABLED = bool({{ getv "/deis/controller/webEnabled" }})
 {{ end }}
 UNIT_HOSTNAME = '{{ if exists "/deis/controller/unitHostname" }}{{ getv "/deis/controller/unitHostname" }}{{ else }}default{{ end }}'
 
+{{ if exists "/deis/controller/subdomain" }}
+DEIS_RESERVED_NAMES = ['{{ getv "/deis/controller/subdomain" }}']
+{{ end }}
+
 # AUTH
 # LDAP
 {{ if exists "/deis/controller/auth/ldap/endpoint" }}

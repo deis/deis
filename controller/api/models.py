@@ -92,7 +92,7 @@ def validate_app_structure(value):
 
 def validate_reserved_names(value):
     """A value cannot use some reserved names."""
-    if value in ['deis']:
+    if value in settings.DEIS_RESERVED_NAMES:
         raise ValidationError('{} is a reserved name.'.format(value))
 
 
