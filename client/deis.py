@@ -1711,7 +1711,7 @@ Make sure that the Controller URI is correct and the server is running.
         Valid commands for processes:
 
         ps:list        list application processes
-        ps:restart     restart process types (e.g. web, worker)
+        ps:restart     restart an application or its process types
         ps:scale       scale processes (e.g. web=4 worker=2)
 
         Use `deis help [command]` to learn more.
@@ -1751,7 +1751,7 @@ Make sure that the Controller URI is correct and the server is running.
 
     def ps_restart(self, args):
         """
-        Restarts an application's processes by type.
+        Restart an application, a process type or a specific process.
 
         Usage: deis ps:restart [<type>] [options]
 
