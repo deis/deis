@@ -26,7 +26,7 @@ function parse_yaml {
 }
 
 if [[ $NUM_INSTANCES -ne 1 ]] ; then
-    parse_yaml $USER_DATA | grep -q coreos_etcd_discovery
+    parse_yaml $USER_DATA | grep -q coreos_etcd2_discovery
     if [[ $? -ne 0 ]]; then
         echo "No etcd discovery URL set in $USER_DATA"
         exit 1
