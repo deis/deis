@@ -958,8 +958,9 @@ Make sure that the Controller URI is correct and the server is running.
 
         Arguments:
           <image>
-            A fully-qualified docker image, either from Docker Hub (e.g. deis/example-go)
-            or from an in-house registry (e.g. myregistry.example.com:5000/example-go).
+            A fully-qualified docker image, either from Docker Hub (e.g. deis/example-go:latest)
+            or from an in-house registry (e.g. myregistry.example.com:5000/example-go:latest).
+            This image must include the tag.
 
         Options:
           -a --app=<app>
@@ -967,6 +968,9 @@ Make sure that the Controller URI is correct and the server is running.
           -p --procfile=<procfile>
             A YAML string used to supply a Procfile to the application.
         """
+        if ':' not in args['<image>']:
+            self._logger.error('<image> must contain a tag')
+            sys.exit(1)
         app = args.get('--app')
         if not app:
             app = self._session.app
