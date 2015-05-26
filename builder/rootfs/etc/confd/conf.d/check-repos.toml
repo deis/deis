@@ -5,7 +5,5 @@ uid = 0
 gid = 0
 mode  = "0755"
 keys = [
-  "/deis/services",
   "/deis/registry",
 ]
-reload_cmd = "/home/git/check-repos"
