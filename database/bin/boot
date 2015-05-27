@@ -48,11 +48,11 @@ etcd_set_default bucketName ${BUCKET_NAME}
 echo '#!/bin/sh' > /usr/local/bin/reload
 chmod 0755 /usr/local/bin/reload
 
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -confdir /app --log-level error; do
-	echo "database: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --confdir /app --log-level error; then
+  echo "database: confd failed to start. This is probably because another component is still booting."
+  exit 1
+fi
 
 # initialize database if one doesn't already exist
 # for example, in the case of a data container

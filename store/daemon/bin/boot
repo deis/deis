@@ -12,10 +12,11 @@ until etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&
   sleep 5
 done
 
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
-  echo "store-daemon: waiting for confd to write initial templates..."
-  sleep 5
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --confdir /app --log-level error; then
+  echo "store-daemon: FATAL - confd failed to start. This is probably because another component is still booting."
+  exit 1
+fi
 
 if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; then
   echo "store-daemon: creating OSD..."

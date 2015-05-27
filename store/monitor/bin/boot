@@ -63,10 +63,11 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/monSetupComplete >/dev/null 2>&
   fi
 fi
 
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
-  echo "store-monitor: waiting for confd to write initial templates..."
-  sleep 5
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --confdir /app --log-level error; then
+  echo "store-monitor: FATAL - confd failed to start. This is probably because another component is still booting."
+  exit 1
+fi
 
 # If we don't have a monitor keyring, this is a new monitor
 if [ ! -e /var/lib/ceph/mon/ceph-${HOSTNAME}/keyring ]; then

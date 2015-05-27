@@ -25,11 +25,11 @@ done
 # wait until etcd has discarded potentially stale values
 sleep $(($ETCD_TTL+1))
 
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
-    echo "store-gateway: waiting for confd to write initial templates..."
-    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --confdir /app --log-level error; then
+  echo "store-gateway: FATAL - confd failed to start. This is probably because another component is still booting."
+  exit 1
+fi
 
 # we generate a key for the gateway. we can do this because we have the client key templated out
 if ! etcdctl --no-sync -C $ETCD get /deis/store/gatewayKeyring >/dev/null 2>&1 ; then
