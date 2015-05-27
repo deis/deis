@@ -329,7 +329,7 @@ class App(UuidAuditedModel):
             log_event(self, err, logging.ERROR)
             raise RuntimeError(err)
 
-    def deploy(self, user, release, initial=False):
+    def deploy(self, user, release):
         """Deploy a new release to this application"""
         existing = self.container_set.exclude(type='run')
         new = []
@@ -345,7 +345,7 @@ class App(UuidAuditedModel):
             self._destroy_containers(existing)
 
         # perform default scaling if necessary
-        if initial:
+        if self.structure == {} and release.build is not None:
             self._default_scale(user, release)
 
     def _default_scale(self, user, release):
@@ -604,9 +604,8 @@ class Build(UuidAuditedModel):
                                          build=self,
                                          config=latest_release.config,
                                          source_version=source_version)
-        initial = True if self.app.structure == {} else False
         try:
-            self.app.deploy(user, new_release, initial=initial)
+            self.app.deploy(user, new_release)
             return new_release
         except RuntimeError:
             new_release.delete()
