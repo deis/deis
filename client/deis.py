@@ -895,9 +895,11 @@ Make sure that the Controller URI is correct and the server is running.
 
         Options:
           --password=<password>
-            provide the current password for the account.
+            the current password for the account.
           --new-password=<new-password>
-            provide a new password for the account.
+            the new password for the account.
+          --username=<username>
+            the account's username.
         """
         if not self._settings.get('token'):
             raise EnvironmentError(
@@ -912,7 +914,11 @@ Make sure that the Controller URI is correct and the server is running.
             if new_password != confirm:
                 self._logger.error('Password mismatch, not changing.')
                 sys.exit(1)
-        payload = {'password': password, 'new_password': new_password}
+        payload = {
+            'password': password,
+            'new_password': new_password,
+            'username': args.get('--username', self._settings['username']),
+        }
         response = self._dispatch('post', "/v1/auth/passwd", json.dumps(payload))
         if response.status_code == requests.codes.ok:
             self._logger.info('Password change succeeded.')
