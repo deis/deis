@@ -511,11 +511,13 @@ to a private key.
 Usage:
   deisctl config <target> get [<key>...]
   deisctl config <target> set <key=val>...
+  deisctl config <target> rm [<key>...]
 
 Examples:
   deisctl config platform set domain=mydomain.com
   deisctl config platform set sshPrivateKey=$HOME/.ssh/deis
   deisctl config controller get webEnabled
+  deisctl config controller rm webEnabled
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)

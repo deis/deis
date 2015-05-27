@@ -42,6 +42,11 @@ func (c *etcdClient) Get(key string) (string, error) {
 	return resp.Node.Value, nil
 }
 
+func (c *etcdClient) Delete(key string) error {
+	_, err := c.etcd.Delete(key, false)
+	return err
+}
+
 func (c *etcdClient) Set(key string, value string) (string, error) {
 	resp, err := c.etcd.Set(key, value, 0) // don't use TTLs
 	if err != nil {
