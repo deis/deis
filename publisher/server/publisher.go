@@ -2,13 +2,13 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"regexp"
 	"strconv"
 	"sync"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/fsouza/go-dockerclient"
 )
@@ -22,9 +22,8 @@ const (
 type Server struct {
 	DockerClient *docker.Client
 	EtcdClient   *etcd.Client
-
-	host     string
-	logLevel string
+	Host         string
+	PublishTTL   time.Duration
 }
 
 var safeMap = struct {
@@ -33,17 +32,23 @@ var safeMap = struct {
 }{data: make(map[string]string)}
 
 // New returns a new instance of Server.
-func New(dockerClient *docker.Client, etcdClient *etcd.Client, host, logLevel string) *Server {
+func New(dockerAddr, etcdAddr, host string, ttl time.Duration) (*Server, error) {
+	dockerClient, err := docker.NewClient(dockerAddr)
+	if err != nil {
+		return nil, err
+	}
+	etcdClient := etcd.NewClient([]string{etcdAddr})
+
 	return &Server{
 		DockerClient: dockerClient,
 		EtcdClient:   etcdClient,
-		host:         host,
-		logLevel:     logLevel,
-	}
+		Host:         host,
+		PublishTTL:   ttl,
+	}, nil
 }
 
 // Listen adds an event listener to the docker client and publishes containers that were started.
-func (s *Server) Listen(ttl time.Duration) {
+func (s *Server) Listen(stopChan chan bool) {
 	listener := make(chan *docker.APIEvents)
 	// TODO: figure out why we need to sleep for 10 milliseconds
 	// https://github.com/fsouza/go-dockerclient/blob/0236a64c6c4bd563ec277ba00e370cc753e1677c/event_test.go#L43
@@ -57,26 +62,33 @@ func (s *Server) Listen(ttl time.Duration) {
 			if event.Status == "start" {
 				container, err := s.getContainer(event.ID)
 				if err != nil {
-					log.Println(err)
+					log.Error(err)
 					continue
 				}
-				s.publishContainer(container, ttl)
+				s.publishContainer(container)
 			} else if event.Status == "stop" {
 				s.removeContainer(event.ID)
 			}
+		case <-stopChan:
+			// TODO (bacongobbler): With etcd v0.4.6 go-etcd is just an http client and all
+			// connections to the server are handled by go-etcd. When we bump to 2.0, we'll need
+			// to handle this ourselves and call EtcdClient.Close(). go-dockerclient is also an
+			// http library so we don't need to close the connection here either.
+			close(listener)
+			break
 		}
 	}
 }
 
-// Poll lists all containers from the docker client every time the TTL comes up and publishes them to etcd
-func (s *Server) Poll(ttl time.Duration) {
+// Publish lists all containers from the docker client every time the TTL comes up and publishes them to etcd
+func (s *Server) Publish() {
 	containers, err := s.DockerClient.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 	}
 	for _, container := range containers {
 		// send container to channel for processing
-		s.publishContainer(&container, ttl)
+		s.publishContainer(&container)
 	}
 }
 
@@ -96,7 +108,7 @@ func (s *Server) getContainer(id string) (*docker.APIContainers, error) {
 }
 
 // publishContainer publishes the docker container to etcd.
-func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Duration) {
+func (s *Server) publishContainer(container *docker.APIContainers) {
 	r := regexp.MustCompile(appNameRegex)
 	for _, name := range container.Names {
 		// HACK: remove slash from container name
@@ -114,10 +126,10 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			// lowest port wins (docker sorts the ports)
 			// TODO (bacongobbler): support multiple exposed ports
 			port := strconv.Itoa(int(p.PublicPort))
-			hostAndPort := s.host + ":" + port
+			hostAndPort := s.Host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
-				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
-				s.updateDir(dirPath, uint64(ttl.Seconds()))
+				s.setEtcd(keyPath, hostAndPort, uint64(s.PublishTTL.Seconds()))
+				s.updateDir(dirPath, uint64(s.PublishTTL.Seconds()))
 				safeMap.Lock()
 				safeMap.data[container.ID] = appPath
 				safeMap.Unlock()
@@ -135,7 +147,7 @@ func (s *Server) removeContainer(event string) {
 
 	if appPath != "" {
 		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
-		log.Printf("stopped %s\n", keyPath)
+		log.Infof("stopped %s\n", keyPath)
 		s.removeEtcd(keyPath, false)
 	}
 }
@@ -150,7 +162,7 @@ func (s *Server) IsPublishableApp(name string) bool {
 	appName := match[1]
 	version, err := strconv.Atoi(match[2])
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return false
 	}
 
@@ -196,7 +208,7 @@ func latestRunningVersion(client *etcd.Client, appName string) int {
 		}
 		version, err := strconv.Atoi(match[2])
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return 0
 		}
 		versions = append(versions, version)
@@ -217,31 +229,25 @@ func max(n []int) int {
 
 // setEtcd sets the corresponding etcd key with the value and ttl
 func (s *Server) setEtcd(key, value string, ttl uint64) {
+	log.Debugln("set", key, "->", value)
 	if _, err := s.EtcdClient.Set(key, value, ttl); err != nil {
-		log.Println(err)
-	}
-	if s.logLevel == "debug" {
-		log.Println("set", key, "->", value)
+		log.Error(err)
 	}
 }
 
 // removeEtcd removes the corresponding etcd key
 func (s *Server) removeEtcd(key string, recursive bool) {
+	log.Debugln("del", key)
 	if _, err := s.EtcdClient.Delete(key, recursive); err != nil {
 		log.Println(err)
-	}
-	if s.logLevel == "debug" {
-		log.Println("del", key)
 	}
 }
 
 // updateDir updates the given directory for a given ttl. It succeeds
 // only if the given directory already exists.
 func (s *Server) updateDir(directory string, ttl uint64) {
+	log.Debugln("updateDir", directory)
 	if _, err := s.EtcdClient.UpdateDir(directory, ttl); err != nil {
 		log.Println(err)
-	}
-	if s.logLevel == "debug" {
-		log.Println("updateDir", directory)
 	}
 }

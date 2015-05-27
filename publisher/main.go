@@ -2,56 +2,86 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
-	"github.com/coreos/go-etcd/etcd"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/Sirupsen/logrus"
 
 	"github.com/deis/deis/publisher/server"
 )
 
-const (
-	defaultRefreshTime time.Duration = 10 * time.Second
-	defaultEtcdTTL     time.Duration = defaultRefreshTime * 2
-	defaultHost                      = "127.0.0.1"
-	defaultDockerHost                = "unix:///var/run/docker.sock"
-	defaultEtcdHost                  = "127.0.0.1"
-	defaultEtcdPort                  = "4001"
-	defaultLogLevel                  = "error"
+var (
+	bindAddr   string
+	interval   time.Duration
+	publishTTL time.Duration
+	host       string
+	dockerAddr string
+	etcdAddr   string
+	log        = logrus.New()
+	logLevel   string
 )
 
-var (
-	refreshDuration = flag.Duration("refresh-duration", defaultRefreshTime, "The time to wait between etcd refreshes.")
-	etcdTTL         = flag.Duration("etcd-ttl", defaultEtcdTTL, "The TTL for all of the keys in etcd.")
-	host            = flag.String("host", defaultHost, "The host where the publisher is running.")
-	dockerHost      = flag.String("docker-host", defaultDockerHost, "The host where to find docker.")
-	etcdHost        = flag.String("etcd-host", defaultEtcdHost, "The etcd host.")
-	etcdPort        = flag.String("etcd-port", defaultEtcdPort, "The etcd port.")
-	logLevel        = flag.String("log-level", defaultLogLevel, "Acceptable values: error, debug")
-)
+func init() {
+	flag.StringVar(&bindAddr, "bind-addr", "localhost:6060", "address to listen for incoming HTTP requests")
+	flag.DurationVar(&interval, "interval", 10*time.Second, "backend polling interval")
+	flag.DurationVar(&publishTTL, "publish-ttl", interval*2, "backend TTL when publishing keys")
+	flag.StringVar(&host, "host", "127.0.0.1", "host address of the machine")
+	flag.StringVar(&dockerAddr, "docker-addr", "unix:///var/run/docker.sock", "address to a docker API")
+	flag.StringVar(&etcdAddr, "etcd-addr", "http://127.0.0.1:4001", "address to the etcd host")
+	flag.StringVar(&logLevel, "log-level", "error", "level which publisher should log messages")
+}
 
 func main() {
 	flag.Parse()
 
-	dockerClient, err := docker.NewClient(*dockerHost)
-	if err != nil {
-		log.Fatal(err)
-	}
-	etcdClient := etcd.NewClient([]string{"http://" + *etcdHost + ":" + *etcdPort})
+	signalChan := make(chan os.Signal, 2)
+	stopChan := make(chan bool)
+	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	server := server.New(dockerClient, etcdClient, *host, *logLevel)
+	log.Info("booting publisher...")
+	setLogLevel()
 
-	go server.Listen(*etcdTTL)
-
+	// run a profiler
 	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
+		if err := http.ListenAndServe(bindAddr, nil); err != nil {
+			log.Warningf("failed to run profiler (%s)", err)
+		} else {
+			log.Infof("profiler listening on %s", bindAddr)
+		}
 	}()
 
-	for {
-		go server.Poll(*etcdTTL)
-		time.Sleep(*refreshDuration)
+	server, err := server.New(dockerAddr, etcdAddr, host, publishTTL)
+	if err != nil {
+		log.Fatalf("failed to start (%s)", err)
 	}
+
+	// run Publish() once at boot to publish existing containers
+	go server.Publish()
+	go server.Listen(stopChan)
+
+	t := time.NewTicker(interval)
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			// we need to re-publish containers every interval so the TTL doesn't expire
+			go server.Publish()
+		case <-signalChan:
+			log.Info("shutting down publisher...")
+			stopChan <- true
+			break
+		}
+	}
+}
+
+func setLogLevel() {
+	lvl, err := logrus.ParseLevel(logLevel)
+	if err != nil {
+		log.Fatalf("failed to parse log level '%s' (%s)", logLevel, err)
+	}
+	logrus.SetLevel(lvl)
 }
