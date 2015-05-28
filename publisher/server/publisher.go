@@ -109,7 +109,6 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		appName := match[1]
 		appPath := fmt.Sprintf("%s/%s", appName, containerName)
 		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
-		dirPath := fmt.Sprintf("/deis/services/%s", appName)
 		for _, p := range container.Ports {
 			// lowest port wins (docker sorts the ports)
 			// TODO (bacongobbler): support multiple exposed ports
@@ -117,7 +116,6 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			hostAndPort := s.host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
-				s.updateDir(dirPath, uint64(ttl.Seconds()))
 				safeMap.Lock()
 				safeMap.data[container.ID] = appPath
 				safeMap.Unlock()
@@ -232,16 +230,5 @@ func (s *Server) removeEtcd(key string, recursive bool) {
 	}
 	if s.logLevel == "debug" {
 		log.Println("del", key)
-	}
-}
-
-// updateDir updates the given directory for a given ttl. It succeeds
-// only if the given directory already exists.
-func (s *Server) updateDir(directory string, ttl uint64) {
-	if _, err := s.EtcdClient.UpdateDir(directory, ttl); err != nil {
-		log.Println(err)
-	}
-	if s.logLevel == "debug" {
-		log.Println("updateDir", directory)
 	}
 }

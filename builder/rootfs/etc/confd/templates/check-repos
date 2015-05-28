@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 
-listcontains() {
-    for word in $1; do
-        [[ $word = $2 ]] && return 0
-    done
-    return 1
-}
+export ETCD=${ETCD:-$HOST:4001}
 
 cd $(dirname $0) # absolute path
 
-for repo in *.git;
+for repo in *.git
 do
     reponame="${repo%.*}"
-    appname="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$reponame"
-    if ! listcontains "{{ join (lsdir "/deis/services/*") " " }}" "$reponame";
+    if ! etcdctl -C $ETCD ls /deis/services/"$reponame" > /dev/null 2>&1
     then
         rm -rf "$repo"
+        appname="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$reponame"
         docker images | grep $appname | awk '{ print $3 }' | xargs -r docker rmi -f
         # remove any dangling images left over from the cleanup
         docker images --filter "dangling=true" | awk '{ print $3 }' | grep -v IMAGE | xargs -r docker rmi -f
