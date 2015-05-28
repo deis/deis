@@ -56,6 +56,12 @@ Vagrant setup, I've changed the lines to:
 
 We can now use ``s3cmd`` to back up and restore data from the store-gateway.
 
+.. note::
+
+    Some users have reported that the data transferred in this process can overwhelm the gateway
+    component, and that scaling up to multiple gateways with ``deisctl scale`` before both the backup
+    and restore alleviates this issue.
+
 Backing up
 ----------
 
@@ -205,6 +211,7 @@ use in the ``export`` command should correspond to the IP of the host machine wh
     [k.save() for k in Key.objects.all()]
     [a.save() for a in App.objects.all()]
     [d.save() for d in Domain.objects.all()]
+    [c.save() for c in Certificate.objects.all()]
     EOF
     $ exit
 
