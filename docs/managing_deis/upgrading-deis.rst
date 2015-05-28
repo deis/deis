@@ -188,7 +188,26 @@ While typically not recommended, it is possible to trigger an update of a CoreOS
 Deis releases may recommend a CoreOS upgrade - in these cases, the release notes for a Deis release
 will point to this documentation.
 
-To update CoreOS, run the following commands:
+Checking the CoreOS version
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can check the CoreOS version by running the following command on the CoreOS machine:
+
+.. code-block:: console
+
+    $ cat /etc/os-release
+
+Or from your local machine:
+
+.. code-block:: console
+
+    $ ssh core@<server ip> 'cat /etc/os-release'
+
+
+Triggering an upgrade
+^^^^^^^^^^^^^^^^^^^^^
+
+To upgrade CoreOS, run the following commands:
 
 .. code-block:: console
 
@@ -208,14 +227,32 @@ To update CoreOS, run the following commands:
   simultaneously can result in failure of the etcd cluster. Ensure the recently-rebooted host
   has returned to the cluster with ``fleetctl list-machines`` before moving on to the next host.
 
-You can check the CoreOS version by running the following command on the CoreOS machine:
+After the host reboots, ``update-engine.service`` should be unmasked and started once again:
 
 .. code-block:: console
 
-    $ cat /etc/os-release
+    $ systemctl unmask update-engine.service
+    $ systemctl start update-engine.service
 
-Or from your local machine:
+It may take a few minutes for CoreOS to recognize that the update has been applied successfully, and
+only then will it update the boot flags to use the new image on subsequent reboots. This can be confirmed
+by watching the ``update-engine`` journal:
 
 .. code-block:: console
 
-    $ ssh core@<server ip> 'cat /etc/os-release'
+    $ journalctl -fu update-engine
+
+Seeing a message like ``Updating boot flags...`` means that the update has finished, and the service
+should be stopped and masked once again:
+
+.. code-block:: console
+
+    $ systemctl stop update-engine.service
+    $ systemctl mask update-engine.service
+
+The update is now complete.
+
+.. note::
+
+    Users have reported that some cloud providers do not allow the boot partition to be updated,
+    resulting in CoreOS reverting to the originally installed version on a reboot.
