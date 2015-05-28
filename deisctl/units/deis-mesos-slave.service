@@ -1,0 +1,30 @@
+[Unit]
+Description=Mesos slave
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Restart=on-failure
+RestartSec=20
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill coreos-mesos-slave
+ExecStartPre=-/usr/bin/docker rm coreos-mesos-slave
+ExecStartPre=/usr/bin/docker pull aledbf/mesos-slave:0.22.1
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
+  --name=coreos-mesos-slave \
+  --net=host \
+  --privileged \
+  -e HOST=$COREOS_PRIVATE_IPV4 \
+  -v /sys:/sys \
+  -v /usr/bin/docker:/usr/bin/docker:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /lib64/libdevmapper.so.1.02:/lib/libdevmapper.so.1.02:ro \
+  aledbf/mesos-slave:0.22.1"
+ExecStop=/usr/bin/docker stop coreos-mesos-slave
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Global=true

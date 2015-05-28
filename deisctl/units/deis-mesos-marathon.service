@@ -1,0 +1,27 @@
+[Unit]
+Description=Mesosphere Marathon
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+Restart=on-failure
+RestartSec=20
+TimeoutStartSec=0
+ExecStartPre=-/bin/sh -c "etcdctl get /deis/scheduler/mesos/marathon >/dev/null 2>&1 || etcdctl mk /deis/scheduler/mesos/marathon"
+ExecStartPre=/bin/sh -c "etcdctl set /deis/scheduler/mesos/marathon $COREOS_PRIVATE_IPV4"
+ExecStartPre=-/usr/bin/docker kill coreos-mesos-marathon
+ExecStartPre=-/usr/bin/docker rm coreos-mesos-marathon
+ExecStartPre=/usr/bin/docker pull aledbf/mesos-marathon:0.22.1
+ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
+  --name=coreos-mesos-marathon \
+  --net=host \
+  -e HOST=$COREOS_PRIVATE_IPV4 \
+  aledbf/mesos-marathon:0.22.1"
+ExecStop=-/usr/bin/docker stop coreos-mesos-marathon
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+MachineOf=deis-mesos-master.service
