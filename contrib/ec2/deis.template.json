@@ -123,16 +123,16 @@
 
   "Mappings" : {
     "CoreOSAMIs" : {
-      "eu-central-1"   : { "PV" : "ami-3c764821", "HVM" : "ami-38764825" },
-      "ap-northeast-1" : { "PV" : "ami-9022eb90", "HVM" : "ami-8e22eb8e" },
-      "us-gov-west-1"  : { "PV" : "ami-cf0868ec", "HVM" : "ami-c90868ea" },
-      "sa-east-1"      : { "PV" : "ami-1113940c", "HVM" : "ami-1313940e" },
-      "ap-southeast-2" : { "PV" : "ami-6d83fc57", "HVM" : "ami-6383fc59" },
-      "ap-southeast-1" : { "PV" : "ami-8a546ad8", "HVM" : "ami-84546ad6" },
-      "us-east-1"      : { "PV" : "ami-e8657580", "HVM" : "ami-ea657582" },
-      "us-west-2"      : { "PV" : "ami-67427157", "HVM" : "ami-65427155" },
-      "us-west-1"      : { "PV" : "ami-75dd3331", "HVM" : "ami-77dd3333" },
-      "eu-west-1"      : { "PV" : "ami-4d1c763a", "HVM" : "ami-4b1c763c" }
+      "eu-central-1"   : { "PV" : "ami-fe6b52e3", "HVM" : "ami-f86b52e5" },
+      "ap-northeast-1" : { "PV" : "ami-9ec1119e", "HVM" : "ami-9cc1119c" },
+      "us-gov-west-1"  : { "PV" : "ami-854828a6", "HVM" : "ami-874828a4" },
+      "sa-east-1"      : { "PV" : "ami-d9b839c4", "HVM" : "ami-d5b839c8" },
+      "ap-southeast-2" : { "PV" : "ami-7985fc43", "HVM" : "ami-7b85fc41" },
+      "ap-southeast-1" : { "PV" : "ami-d4033b86", "HVM" : "ami-da033b88" },
+      "us-east-1"      : { "PV" : "ami-c16583aa", "HVM" : "ami-c36583a8" },
+      "us-west-2"      : { "PV" : "ami-995f60a9", "HVM" : "ami-975f60a7" },
+      "us-west-1"      : { "PV" : "ami-877a92c3", "HVM" : "ami-857a92c1" },
+      "eu-west-1"      : { "PV" : "ami-e38cfc94", "HVM" : "ami-e18cfc96" }
 
     },
     "RootDevices" : {
