@@ -39,6 +39,21 @@ function etcd_safe_mkdir {
 	set -e
 }
 
+function etcd_set_default_stdin {
+	set +e
+	ERROR=$(etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 2>&1 >/dev/null)
+	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+		echo "etcd_set_default_stdin: an etcd error occurred ($ERROR)"
+        echo "aborting..."
+		exit 1
+	fi
+	set -e
+}
+
+function etcd_get {
+	etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1
+}
+
 etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
@@ -67,12 +82,35 @@ DOCKER_PID=$!
 
 # wait for docker to start
 while [[ ! -e /var/run/docker.sock ]]; do
-  sleep 1
+	sleep 1
 done
 
 # build required images
 docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
 docker build -t deis/slugrunner /usr/local/src/slugrunner/
+
+function gen_host_keys {
+	if ! etcd_get sshHostKey; then
+		# generate the keys, then set them up in etcd
+		/usr/bin/ssh-keygen -A
+		for type in dsa ecdsa ed25519 rsa; do
+			cat "/etc/ssh/ssh_host_${type}_key" | etcd_set_default_stdin "sshHost${type}Key"
+			cat "/etc/ssh/ssh_host_${type}_key.pub" | etcd_set_default_stdin "sshHost${type}PubKey"
+		done
+		cat "etc/ssh/ssh_host_key" | etcd_set_default_stdin sshHostKey
+		cat "/etc/ssh/ssh_host_key.pub" | etcd_set_default_stdin sshHostPubKey
+	else
+		# pull the keys from etcd
+		for type in dsa ecdsa ed25519 rsa; do
+			etcd_get "sshHost${type}Key" > "/etc/ssh/ssh_host_${type}_key"
+			etcd_get "sshHost${type}PubKey" > "/etc/ssh/ssh_host_${type}_key.pub"
+		done
+		etcd_get sshHostKey > /etc/ssh/ssh_host_key
+		etcd_get sshHostPubKey > /etc/ssh/ssh_host_key.pub
+	fi
+}
+
+gen_host_keys
 
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &

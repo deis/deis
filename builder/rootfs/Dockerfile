@@ -31,7 +31,6 @@ RUN curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.5.0 -o /usr/bi
 
 # configure ssh server
 RUN mkdir -p /var/run/sshd && rm -rf /etc/ssh/ssh_host*
-RUN /usr/bin/ssh-keygen -A
 
 # install git and configure gituser
 ENV GITHOME /home/git
