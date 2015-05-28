@@ -28,6 +28,11 @@ MOUNT_DOCKER_VOLUME = '''
   Where=/var/lib/docker
   Type=ext4
 '''
+DOCKER_DROPIN = '''
+  [Unit]
+  Requires=var-lib-docker.mount
+  After=var-lib-docker.mount
+'''
 FORMAT_ETCD_VOLUME = '''
   [Unit]
   Description=Formats the etcd device
@@ -60,13 +65,20 @@ PREPARE_ETCD_DATA_DIRECTORY = '''
   RemainAfterExit=yes
   ExecStart=/usr/bin/chown -R etcd:etcd /media/etcd
 '''
+ETCD_DROPIN = '''
+  [Unit]
+  Requires=prepare-etcd-data-directory.service
+  After=prepare-etcd-data-directory.service
+'''
 
 new_units = [
   dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
   dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME}),
+  dict({'name': 'docker.service', 'drop-ins': [{'name': '90-after-docker-volume.conf', 'content': DOCKER_DROPIN}]}),
   dict({'name': 'format-etcd-volume.service', 'command': 'start', 'content': FORMAT_ETCD_VOLUME}),
   dict({'name': 'media-etcd.mount', 'command': 'start', 'content': MOUNT_ETCD_VOLUME}),
-  dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY})
+  dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}),
+  dict({'name': 'etcd.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
 ]
 
 data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
