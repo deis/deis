@@ -287,6 +287,9 @@ DEIS_DOMAIN = 'deisapp.local'
 # standard datetime format used for logging, model timestamps, etc.
 DEIS_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%S%Z'
 
+# names which apps cannot reserve for routing
+DEIS_RESERVED_NAMES = ['deis']
+
 # default scheduler settings
 SCHEDULER_MODULE = 'scheduler.mock'
 SCHEDULER_TARGET = ''  # path to scheduler endpoint (e.g. /var/run/fleet.sock)

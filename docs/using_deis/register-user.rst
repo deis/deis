@@ -29,6 +29,12 @@ Note that you always use ``deis.<domain>`` to communicate with the controller.
 
     For Vagrant clusters: ``deis register http://deis.local3.deisapp.com``
 
+.. note::
+
+    The subdomain can be customized by using ``deisctl config controller set subdomain=foo``. The
+    router will then route requests from ``foo.<domain>`` to the controller. See
+    :ref:`controller_settings` for more info on how to customize the controller.
+
 .. important::
 
     The first user to register with Deis receives "superuser" privileges. Additional users who
