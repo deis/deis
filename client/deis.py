@@ -296,6 +296,22 @@ def encode(obj):
         return obj
 
 
+def parse_repository_tag(repo):
+    """Parses a given docker image and splits the tag from the repository.
+
+    See github.com/docker/docker-py#be73aaf, lines 188-197
+    """
+    column_index = repo.rfind(':')
+    if column_index < 0:
+        return repo, None
+    tag = repo[column_index + 1:]
+    slash_index = tag.find('/')
+    if slash_index < 0:
+        return repo[:column_index], tag
+
+    return repo, None
+
+
 def readable_datetime(datetime_str):
     """
     Return a human-readable datetime string from an ECMA-262 (JavaScript)
@@ -964,8 +980,9 @@ Make sure that the Controller URI is correct and the server is running.
 
         Arguments:
           <image>
-            A fully-qualified docker image, either from Docker Hub (e.g. deis/example-go)
-            or from an in-house registry (e.g. myregistry.example.com:5000/example-go).
+            A fully-qualified docker image, either from Docker Hub (e.g. deis/example-go:latest)
+            or from an in-house registry (e.g. myregistry.example.com:5000/example-go:latest).
+            This image must include the tag.
 
         Options:
           -a --app=<app>
@@ -973,6 +990,10 @@ Make sure that the Controller URI is correct and the server is running.
           -p --procfile=<procfile>
             A YAML string used to supply a Procfile to the application.
         """
+        _, tag = parse_repository_tag(args['<image>'])
+        if tag is None:
+            self._logger.error('<image> must contain a tag')
+            sys.exit(1)
         app = args.get('--app')
         if not app:
             app = self._session.app
