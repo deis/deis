@@ -25,3 +25,10 @@ coreos:
         What=/dev/disk/by-id/scsi-0Google_PersistentDisk_coredocker
         Where=/var/lib/docker
         Type=ext4
+    - name: docker.service
+      drop-ins:
+        - name: 90-after-docker-volume.conf
+          content: |
+            [Unit]
+            Requires=var-lib-docker.mount
+            After=var-lib-docker.mount
