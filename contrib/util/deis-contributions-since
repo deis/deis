@@ -10,7 +10,7 @@ if date_since.nil? or date_since.empty?
 end
 
 # ignore project maintainers
-ignored_contributors = %w[bacongobbler carmstrong gabrtv mboersma]
+ignored_contributors = %w[bacongobbler carmstrong gabrtv kmala johanneswuerbach Joshua-Anderson mboersma smothiki technosophos]
 
 # make our GitHub calls here
 client = Octokit::Client.new(:access_token => ENV['GITHUB_ACCESS_TOKEN'])
@@ -50,13 +50,12 @@ puts
 # remove project maintainers from the list of contributors
 contributors.reject! {|k,v| ignored_contributors.include?(k) }
 
-puts '### Community Shout-Outs'
+puts '## Community Shout-Outs'
 puts
-puts 'We want to thank the following Deis community members for creating GitHub issues,
-providing support to others, and working on various Deis branches:'
+puts 'We want to thank the following Deis community members for creating GitHub issues, providing support to others, and working on various Deis branches:'
 puts
 contributors.sort_by {|k,v| k.downcase}.map do |author, titles|
-  puts "@#{author}: #{titles.join(", ")}"
+  puts "- @#{author}: #{titles.join(", ")}"
 end
 puts
 puts "The Deis community continues to grow, and Deis wouldn't be here without you! If we slighted your contribution to this release, please let us know so we can update."
