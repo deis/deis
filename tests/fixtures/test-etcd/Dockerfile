@@ -1,23 +1,13 @@
 FROM alpine:3.1
 
 # install common packages
-RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
+RUN apk add --update-cache curl tar && rm -rf /var/cache/apk/*
 
-# install etcdctl
-RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
-    && chmod +x /usr/local/bin/etcdctl
+ENV ETCD_VERSION v0.4.9
 
-# build etcd and then clean up
-RUN buildDeps='curl git-core'; \
-    set -x; \
-    apt-get update && apt-get install -y $buildDeps --no-install-recommends \
-    && curl -sSL https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -xz \
-    && git clone -q https://github.com/coreos/etcd.git /opt/etcd \
-    && cd /opt/etcd && git checkout -q v0.4.6 && PATH=/usr/local/go/bin:$PATH ./build \
-    && cp /opt/etcd/bin/etcd /usr/local/bin \
-    && cd && rm -rf /usr/local/go /opt/etcd \
-    && apt-get purge -y $buildDeps \
-    && apt-get autoremove -y && apt-get clean
+# install etcd and etcdctl
+RUN curl -sSL https://github.com/coreos/etcd/releases/download/$ETCD_VERSION/etcd-$ETCD_VERSION-linux-amd64.tar.gz \
+  | tar -vxz -C /usr/local/bin --strip=1
 
 EXPOSE 4001 7001
 CMD ["/usr/local/bin/etcd"]
