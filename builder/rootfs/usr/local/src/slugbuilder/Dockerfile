@@ -11,4 +11,4 @@ ADD ./builder/ /tmp/builder
 RUN /tmp/builder/install-buildpacks
 ENTRYPOINT ["/tmp/builder/build.sh"]
 
-ENV DEIS_RELEASE 1.7.0-dev
+ENV DEIS_RELEASE 1.7.0
