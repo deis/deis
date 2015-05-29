@@ -80,7 +80,7 @@ import signal
 if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-__version__ = '1.7.0-dev'
+__version__ = '1.7.0'
 
 # what version of the API is this client compatible with?
 __api_version__ = '1.4'

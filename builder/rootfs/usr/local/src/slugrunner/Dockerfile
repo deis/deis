@@ -17,4 +17,4 @@ USER slug
 ENV HOME /app
 ENTRYPOINT ["/runner/init"]
 
-ENV DEIS_RELEASE 1.7.0-dev
+ENV DEIS_RELEASE 1.7.0
