@@ -6,7 +6,25 @@ import (
 	"net"
 	"net/url"
 	"os"
+
+	"github.com/coreos/go-etcd/etcd"
 )
+
+func GetDrain() string {
+	host := getopt("HOST", "127.0.0.1")
+
+	etcdPort := getopt("ETCD_PORT", "4001")
+	etcdPath := getopt("ETCD_PATH", "/deis/logs")
+
+	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+
+	s, err := client.Get(etcdPath+"/drain", true, false)
+	if err != nil {
+		return ""
+	}
+
+	return s.Node.Value
+}
 
 func SendToDrain(m string, drain string) error {
 	u, err := url.Parse(drain)
