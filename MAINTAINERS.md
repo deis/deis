@@ -48,6 +48,7 @@ The duties of a core maintainer include:
 The current core maintainers of Deis:
 * Chris Armstrong - <carmstrong@engineyard.com> ([@carmstrong](https://github.com/carmstrong))
 * Matt Boersma - <mboersma@engineyard.com> ([@mboersma](https://github.com/mboersma))
+* Matt Butcher - <mbutcher@engineyard.com> ([@technosophos](https://github.com/technosophos))
 * Matthew Fisher - <mfisher@engineyard.com> ([@bacongobbler](https://github.com/bacongobbler))
 
 No pull requests can be merged until at least one core maintainer signs off with a [Code LGTM](http://docs.deis.io/en/latest/contributing/standards/#merge-approval). The other LGTM can come from either a core maintainer
