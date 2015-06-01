@@ -74,6 +74,11 @@ from tabulate import tabulate
 from termcolor import colored
 import urllib3.contrib.pyopenssl
 
+# Don't throw IOError when a pipe closes
+# https://github.com/deis/deis/issues/3764
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
+
 __version__ = '1.7.0-dev'
 
 # what version of the API is this client compatible with?
