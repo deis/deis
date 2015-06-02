@@ -44,6 +44,9 @@ func (backend stubBackend) Status(string) error {
 func (backend stubBackend) Journal(string) error {
 	return fmt.Errorf("Journal not implemented yet.")
 }
+func (backend stubBackend) SSH(string) error {
+	return fmt.Errorf("SSH not implemented yet.")
+}
 
 var b stubBackend
 
