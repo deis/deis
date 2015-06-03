@@ -53,6 +53,13 @@ Generate and upload a new keypair to AWS, ensuring that the name of the keypair 
     $ aws ec2 import-key-pair --key-name deis --public-key-material file://~/.ssh/deis.pub
 
 
+During installation, ``deisctl`` will make an SSH connection to the cluster.
+It will need to be able to use this key to connect.
+
+Most users use SSH agent (``ssh-agent``). If this is the case, run
+``ssh-agent add ~/.ssh/deis`` to add the key. Otherwise, you may prefer to
+modify ``~/.ssh/config`` to add the key to the IPs in AWS.
+
 Choose Number of Instances
 --------------------------
 
@@ -78,8 +85,12 @@ Generate a New Discovery URL
 Customize cloudformation.json
 -----------------------------
 
-Any of the parameter defaults defined in deis.template.json can be overridden by setting the value
-in `cloudformation.json`_. For example, to configure all of the options to non-default values:
+The configuration files and templates for AWS are located in the directory
+``contrib/ec2/`` in the Deis repository.
+
+Any of the parameter defaults defined in ``deis.template.json`` can be
+overridden by setting the value in `cloudformation.json`_. For example, to
+configure all of the options to non-default values:
 
 .. code-block:: console
 
@@ -119,12 +130,12 @@ in `cloudformation.json`_. For example, to configure all of the options to non-d
 
 The only entry in cloudformation.json required to launch your cluster is `KeyPair`, which is
 already filled out. The defaults will be applied for the other settings. The default values are
-defined in deis.template.json.
+defined in ``deis.template.json``.
 
-If updated with update-ec2-cluster.sh, the InstanceType will only impact newly deployed instances
+If updated with ``update-ec2-cluster.sh``, the InstanceType will only impact newly deployed instances
 (`#1758`_).
 
-NOTE: The smallest recommended instance size is `large`. Having not enough CPU or RAM will result
+NOTE: The smallest recommended instance size is ``large``. Having not enough CPU or RAM will result
 in numerous issues when using the cluster.
 
 
@@ -212,6 +223,10 @@ were created with `Proxy Protocol`_ enabled.
 
 Configure DNS
 -------------
+
+You will need a DNS entry that points to the ELB instance created above. Find
+the ELB name in the AWS web console or by running ``aws elb describe-load-balancers``
+and finding the Deis ELB.
 
 See :ref:`configure-dns` for more information on properly setting up your DNS records with Deis.
 
