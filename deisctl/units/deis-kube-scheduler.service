@@ -1,0 +1,15 @@
+[Unit]
+Description=Kubernetes Scheduler
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+Requires=deis-kube-apiserver.service
+After=deis-kube-apiserver.service
+[Service]
+EnvironmentFile=/etc/environment
+ExecStartPre=/usr/bin/wget -P /opt/bin https://storage.googleapis.com/kubernetes-release/release/v0.18.0/bin/linux/amd64/kube-scheduler
+ExecStartPre=/usr/bin/chmod +x /opt/bin/kube-scheduler
+ExecStart=/opt/bin/kube-scheduler \
+  --master=127.0.0.1:8080
+Restart=always
+RestartSec=10
+[X-Fleet]
+MachineOf=deis-kube-apiserver.service

@@ -1,0 +1,28 @@
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+Requires=etcd.service fleet.service docker.service flanneld.service
+After=etcd.service fleet.service docker.service flanneld.service
+[Service]
+EnvironmentFile=/etc/environment
+ExecStartPre=-/bin/sh -c "etcdctl get /deis/scheduler/k8s/master >/dev/null 2>&1 || etcdctl mk /deis/scheduler/k8s/master"
+ExecStartPre=/bin/sh -c "etcdctl set /deis/scheduler/k8s/master $COREOS_PRIVATE_IPV4"
+ExecStartPre=-/usr/bin/mkdir -p /opt/bin
+ExecStartPre=/usr/bin/wget -P /opt/bin https://storage.googleapis.com/kubernetes-release/release/v0.18.0/bin/linux/amd64/kube-apiserver
+ExecStartPre=/usr/bin/chmod +x /opt/bin/kube-apiserver
+ExecStart=/opt/bin/kube-apiserver \
+  --admission_control=NamespaceLifecycle,NamespaceAutoProvision,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
+  --allow_privileged=true \
+  --insecure_bind_address=0.0.0.0 \
+  --insecure_port=8080 \
+  --kubelet_https=true \
+  --secure_port=6443 \
+  --service-cluster-ip-range=10.100.0.0/16 \
+  --etcd_servers=http://127.0.0.1:4001 \
+  --public_address_override=${COREOS_PRIVATE_IPV4} \
+  --logtostderr=true \
+  --runtime_config=api/v1beta3
+Restart=always
+RestartSec=10
+[Install]
+WantedBy=multi-user.target

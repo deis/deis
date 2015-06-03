@@ -16,6 +16,8 @@ SWARM_HOST = '{{ if exists "/deis/scheduler/swarm/host" }}{{ getv "/deis/schedul
 
 MARATHON_HOST = '{{ if exists "/deis/scheduler/mesos/marathon" }}{{ getv "/deis/scheduler/mesos/marathon" }}{{ else }}127.0.0.1{{ end }}'
 
+K8S_MASTER = '{{ if exists "/deis/scheduler/k8s/master" }}{{ getv "/deis/scheduler/k8s/master" }}{{ else }}127.0.0.1{{ end }}'
+
 # base64-encoded SSH private key to facilitate current version of "deis run"
 SSH_PRIVATE_KEY = """{{ if exists "/deis/platform/sshPrivateKey" }}{{ getv "/deis/platform/sshPrivateKey" }}{{ else }}""{{end}}"""
 
