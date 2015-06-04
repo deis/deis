@@ -16,7 +16,7 @@ DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y curl net-tools sudo
 
 # install etcdctl
-curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
     && chmod +x /usr/local/bin/etcdctl
 
 # install confd
