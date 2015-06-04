@@ -94,16 +94,19 @@ need to make a minor editor to the boot2docker config:
 
 .. code-block:: console
 
+    $ boot2docker ip
+    192.168.59.103
     $ boot2docker ssh sudo vi /var/lib/boot2docker/profile
 
-Inside of the profile, you need to add one line:
+Inside of the profile, you need to add one line, making sure to set the IP
+address to whatever ``boot2docker ip`` printed.
 
 .. code-block:: console
 
     EXTRA_ARGS="--insecure-registry 192.168.59.103:5000"
 
 Once that line has been added, you can either restart boot2docker's docker
-server, or you can restart boot2docker. We recommend the later.
+server, or you can restart boot2docker. We recommend the latter.
 
 .. code-block:: console
 
@@ -130,7 +133,7 @@ in Go, the best place to put it is in ``$GOPATH/src/github.com/deis/``
 
 .. note::
 
-    By checking out the forked copy into the namespace `github.com/deis/deis`,
+    By checking out the forked copy into the namespace ``github.com/deis/deis``,
     we are tricking the Go toolchain into seeing our fork as the "official"
     Deis tree.
 
@@ -151,8 +154,24 @@ your Deis code:
 
 Throughout the rest of this document, ``$DEIS`` refers to that location.
 
-Building Deisctl
-----------------
+Alternative: Forking with a Pushurl
+```````````````````````````````````
+A number of Deis developers prefer to pull directly from ``deis/deis``, but
+push to ``<username>/deis``. If that workflow suits you better, you can set it
+up this way:
+
+.. code-block:: console
+
+    $ git clone git@github.com:deis/deis.git
+    $ cd deis
+    $ git config remote.origin.pushurl git@github.com:<username>/deis.git
+
+In this setup, fetching and pulling code will work directly with the upstream
+repository, while pushing code will send changes to your fork. This makes it
+easy to stay up to date, but also make changes and then issue pull requests.
+
+Build Deisctl
+-------------
 
 Deisctl is used for interacting with the Deis cluster. While you can use an
 existing ``deisctl`` build, we recommend that developers build it from source.
@@ -321,15 +340,16 @@ then run the platform.
 
 We'll do three steps together:
 
-- Build the source
-- Update our local cluster with a dev release
-- Start the platform
+- Build the source (``make build``)
+- Update our local cluster with a dev release (``make dev-release``)
+- Start the platform (``deisctl start platform``)
+
+Conveniently, we can accomplish all three in one step:
 
 .. code-block:: console
 
-    $ make build    # Build the entire codebase. This will take a while.
-    $ make dev-release  # Create a local dev release.
-    $ deisctl start platform
+    $ make deploy
+
 
 Running ``deisctl list`` should display all of the services that your Deis
 cluster is currently running.
