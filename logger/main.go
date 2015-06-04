@@ -46,7 +46,6 @@ func main() {
 	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
 
 	signalChan := make(chan os.Signal, 1)
-	drainRespChan := make(chan *etcd.Response)
 	drainChan := make(chan string)
 	stopChan := make(chan bool)
 	exitChan := make(chan bool)
@@ -58,18 +57,31 @@ func main() {
 		setEtcd(client, publishPath+"/drain", drainURI, 0)
 	}
 
-	go client.Watch(publishPath+"/drain", 0, false, drainRespChan, stopChan)
 	go syslogd.Listen(exitChan, cleanupChan, drainChan, fmt.Sprintf("%s:%d", logAddr, logPort))
 	if enablePublish {
 		go publishService(exitChan, client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL).Seconds()))
 	}
 
+	// HACK (bacongobbler): poll etcd for changes in the log drain value
+	// etcd's .Watch() implementation is broken when you use TTLs
+	//
+	// https://github.com/coreos/etcd/issues/2679
+	go func() {
+		for {
+			resp, err := client.Get(publishPath+"/drain", false, false)
+			if err != nil {
+				log.Printf("warning: could not retrieve drain URI from etcd: %v\n", err)
+				continue
+			}
+			if resp != nil && resp.Node != nil {
+				drainChan <- resp.Node.Value
+			}
+			time.Sleep(time.Duration(publishInterval))
+		}
+	}()
+
 	for {
 		select {
-		case dr := <-drainRespChan:
-			if dr != nil && dr.Node != nil {
-				drainChan <- dr.Node.Value
-			}
 		case <-signalChan:
 			close(exitChan)
 			stopChan <- true
