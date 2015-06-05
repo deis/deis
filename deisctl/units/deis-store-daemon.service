@@ -4,7 +4,7 @@ Description=deis-store-daemon
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon-data >/dev/null 2>&1 || docker run --name deis-store-daemon-data -v /var/lib/ceph/osd alpine:3.1 /bin/true"
+ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon-data >/dev/null 2>&1 || docker run --name deis-store-daemon-data -v /var/lib/ceph/osd alpine:3.2 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon >/dev/null 2>&1 && docker rm -f deis-store-daemon >/dev/null 2>&1 || true"
 ExecStartPre=/usr/bin/sleep 10

@@ -4,7 +4,7 @@ Description=deis-database
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || docker run --name deis-database-data -v /var/lib/postgresql alpine:3.1 /bin/true"
+ExecStartPre=/bin/sh -c "docker inspect deis-database-data >/dev/null 2>&1 || docker run --name deis-database-data -v /var/lib/postgresql alpine:3.2 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-database >/dev/null 2>&1 && docker rm -f deis-database >/dev/null 2>&1 || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/database` && docker run --name deis-database --rm --volumes-from=deis-database-data -p 5432:5432 -e EXTERNAL_PORT=5432 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"

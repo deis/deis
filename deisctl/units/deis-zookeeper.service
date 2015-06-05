@@ -8,7 +8,7 @@ EnvironmentFile=/etc/environment
 Restart=on-failure
 RestartSec=20
 TimeoutStartSec=0
-ExecStartPre=/bin/sh -c "docker inspect zookeeper-data >/dev/null 2>&1 || docker run --name zookeeper-data -v /opt/zookeeper-data alpine:3.1 /bin/true"
+ExecStartPre=/bin/sh -c "docker inspect zookeeper-data >/dev/null 2>&1 || docker run --name zookeeper-data -v /opt/zookeeper-data alpine:3.2 /bin/true"
 ExecStartPre=-/usr/bin/docker kill deis-zookeeper
 ExecStartPre=-/usr/bin/docker rm deis-zookeeper
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/zookeeper` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"

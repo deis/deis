@@ -1,4 +1,4 @@
-FROM alpine:3.1
+FROM alpine:3.2
 
 # install curl in the image so it is possible to get the runtime
 # profiling information without any additional package installation.
