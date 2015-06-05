@@ -12,15 +12,25 @@ important to the future of Deis.
 Given the project's rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
 direction over many releases.
 
-Update Service
---------------
-Deis must support 100% automated, zero-downtime updates of the control plane.
-Like CoreOS, Deis clusters should be attached to an alpha, beta or stable channel and rely on an automatic update mechanism.
-To accomplish this, Deis plans to use the `Google Omaha Protocol`_ as implemented by `CoreUpdate`_.
+Pluggable Storage Subsystem
+---------------------------
+Deis uses Ceph to provide a highly-available storage subsystem for stateful control plane components.
+While Ceph is the right default storage subsystem, it is tricky to operate and can result in control plane instability.
+Ceph should be optional, especially for users on AWS with direct access to services like S3.
 
- - [ ] Update client/agent
- - [ ] Update server
- - [ ] CI Integration
+ - [ ] Registry S3 configuration
+ - [ ] Database S3 configuration
+ - [ ] Stateless logger (in-memory ring buffer)
+
+TTY Broker
+----------
+Today Deis cannot provide bi-directional streams needed for log tailing and interactive batch processes.
+By having the :ref:`Controller` drive a TTY Broker component, Deis can securely open WebSockets
+through the routing mesh.
+
+ - [ ] TTY Broker component
+ - [ ] Interactive Deis Run (deis run bash)
+ - [ ] Log Tailing (deis logs -f)
 
 Scheduling and Orchestration
 ----------------------------
@@ -38,15 +48,41 @@ report their findings and help guide the future direction of Deis.
  - [ ] Mesos preview
  - [ ] Kubernetes preview
 
-TTY Broker
-----------
-Today Deis cannot provide bi-directional streams needed for log tailing and interactive batch processes.
-By having the :ref:`Controller` drive a TTY Broker component, Deis can securely open WebSockets
-through the routing mesh.
+Networking v2
+-------------
+To provide a better container networking experience, Deis must provide an overlay network
+that can facilitate SDN and improved service discovery.
 
- - [ ] TTY Broker component
- - [ ] Interactive Deis Run (deis run bash)
- - [ ] Log Tailing (deis logs -f)
+ - [ ] Overlay Network
+ - [ ] Internal Service Discovery
+ - [ ] Migration Strategy
+
+Update Service
+--------------
+Deis must support 100% automated, zero-downtime updates of the control plane.
+Like CoreOS, Deis clusters should be attached to an alpha, beta or stable channel and rely on an automatic update mechanism.
+To accomplish this, Deis plans to use the `Google Omaha Protocol`_ as implemented by `CoreUpdate`_.
+
+ - [ ] Update client/agent
+ - [ ] Update server
+ - [ ] CI Integration
+
+Etcd 2
+------
+A CP database like etcd is central to Deis, which requires a distributed lock service and key/value store.
+As problems with etcd directly impact platform stability, Deis must move to the more stable etcd2.
+
+ - [ ] Switch to etcd2
+ - [ ] Migration strategy for etcd 0.4.x -> etcd2
+
+User-defined Health Checks
+--------------------------
+Today Deis relies on TCP port checks as evidence of container readiness during deploys.
+To facilitate a better zero-downtime deploy experience, Deis should allow user-defined
+health checks that are respected during the rolling deploy process.
+
+ - [ ] HealthCheck API and CLI
+ - [ ] Publisher / HealthCheck integration
 
 Deis Push
 ---------
