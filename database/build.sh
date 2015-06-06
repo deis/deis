@@ -31,7 +31,7 @@ apk add /tmp/pv-1.6.0-r0.apk
 /etc/init.d/postgresql stop || true
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 # install wal-e
 cd /tmp

@@ -34,7 +34,7 @@ echo "You must reboot for the global $PATH changes to take effect."
 
 # install test suite requirements
 apt-get install -yq curl mercurial python-dev libffi-dev libpq-dev libyaml-dev git postgresql postgresql-client libldap2-dev libsasl2-dev
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 pip install virtualenv
 
 # create jenkins user and install node bootstrap script
