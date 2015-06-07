@@ -28,6 +28,14 @@ Release Planning Meetings
 Major decisions affecting the Roadmap are discussed during Release Planning Meetings on the first Thursday of each month, aligned with the :ref:`release_schedule`.
 
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
+Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
+
+June 2015 (Deis v1.8)
+~~~~~~~~~~~~~~~~~~~~~
+
+Roadmap items added: Pluggable Storage Subsystem, Networking V2, Etcd 2, User-defined Health Checks
+
+Archive: https://www.youtube.com/watch?v=nC-DyN1_II4
 
 Credits
 -------
