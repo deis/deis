@@ -33,7 +33,7 @@ with open('requirements.txt') as f:
 
 
 setup(name='deis',
-      version='1.7.0',
+      version='1.8.0-dev',
       license=APACHE_LICENSE,
       description='Command-line Client for Deis, the open PaaS',
       author='Engine Yard',
