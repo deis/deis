@@ -1,6 +1,6 @@
 
 build: setup-venv
-	venv/bin/pip install -r requirements.txt git+https://github.com/pyinstaller/pyinstaller@7413317
+	venv/bin/pip install -r requirements.txt git+https://github.com/pyinstaller/pyinstaller@32bbb954b355937ccfe377afbe56979db79a7b30
 	venv/bin/pyinstaller deis.spec
 	chmod +x dist/deis
 
