@@ -4,7 +4,7 @@ FROM alpine:3.1
 RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
 
 # install etcdctl
-RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/opdemand/etcdctl-v0.4.6 \
+RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
     && chmod +x /usr/local/bin/etcdctl
 
 # install confd

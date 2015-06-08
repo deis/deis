@@ -76,8 +76,9 @@ import urllib3.contrib.pyopenssl
 
 # Don't throw IOError when a pipe closes
 # https://github.com/deis/deis/issues/3764
-from signal import signal, SIGPIPE, SIG_DFL
-signal(SIGPIPE, SIG_DFL)
+import signal
+if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 __version__ = '1.7.0-dev'
 
