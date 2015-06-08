@@ -41,7 +41,7 @@ git clone https://github.com/wal-e/wal-e.git
 cd /tmp/wal-e
 git checkout c6dd4b1
 
-pip install . pbr==0.11.0
+pip install . oslo.config>=1.12.0
 
 # python port of daemontools
 pip install envdir
