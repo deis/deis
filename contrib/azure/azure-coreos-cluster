@@ -35,8 +35,8 @@ parser.add_argument('--affinity-group', default='',
                    help='optional, overrides location if specified')
 parser.add_argument('--ssh', default=22001, type=int,
                    help='optional, starts with 22001 and +1 for each machine in cluster')
-parser.add_argument('--coreos-image', default='2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-647.2.0',
-                   help='optional, [2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-647.2.0]')
+parser.add_argument('--coreos-image', default='2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-681.0.0',
+                   help='optional, [2b171e93f07c4903bcad35bda10acf22__CoreOS-Stable-681.0.0]')
 parser.add_argument('--num-nodes', default=3, type=int,
                    help='optional, number of nodes to create (or add), defaults to 3')
 parser.add_argument('--virtual-network-name',

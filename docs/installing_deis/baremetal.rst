@@ -104,8 +104,8 @@ Start the installation
 
 
 This will install the latest `CoreOS`_ stable release to disk. The Deis provision scripts for other
-platforms typically specify a CoreOS version - currently, ``647.2.0``. To specify a CoreOS
-version, append the ``-V`` parameter to the install command, e.g. ``-V 647.2.0``.
+platforms typically specify a CoreOS version - currently, ``681.0.0``. To specify a CoreOS
+version, append the ``-V`` parameter to the install command, e.g. ``-V 681.0.0``.
 
 After the installation has finished, reboot your server. Once your machine is back up, you should
 be able to log in as the `core` user using the `deis` ssh key.
