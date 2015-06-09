@@ -34,8 +34,8 @@ The rules included are from this project [doxi-rules](https://bitbucket.org/lazy
 
 Only these modules are enabled:
 
-|--|--|
-|File| |
+|File|Purpose|
+|----|-------|
 |web_app.rules       |detect exploit/misuse-attempts againts web-applications
 |web_server.rules    |generic rules to protect a webserver from misconfiguration and known mistakes / exploit-vectors
 |active-mode.rules   |rules to configure active-mode (block)
