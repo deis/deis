@@ -17,8 +17,6 @@ import (
 	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/deisctl/units"
 	"github.com/deis/deis/deisctl/utils"
-
-	docopt "github.com/docopt/docopt-go"
 )
 
 const (
@@ -28,16 +26,7 @@ const (
 )
 
 // ListUnits prints a list of installed units.
-func ListUnits(argv []string, b backend.Backend) error {
-	usage := `Prints a list of installed units.
-
-Usage:
-  deisctl list [options]
-`
-	// parse command-line arguments
-	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
-		return err
-	}
+func ListUnits(b backend.Backend) error {
 	return b.ListUnits()
 }
 
@@ -49,21 +38,7 @@ func ListUnitFiles(argv []string, b backend.Backend) error {
 
 // Scale grows or shrinks the number of running components.
 // Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
-func Scale(argv []string, b backend.Backend) error {
-	usage := `Grows or shrinks the number of running components.
-
-Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
-
-Usage:
-  deisctl scale [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-	targets := args["<target>"].([]string)
-
+func Scale(targets []string, b backend.Backend) error {
 	outchan := make(chan string)
 	errchan := make(chan error)
 	var wg sync.WaitGroup
@@ -88,21 +63,9 @@ Usage:
 }
 
 // Start activates the specified components.
-func Start(argv []string, b backend.Backend) error {
-	usage := `Activates the specified components.
-
-Usage:
-  deisctl start [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
+func Start(targets []string, b backend.Backend) error {
 
 	// if target is platform, install all services
-	targets := args["<target>"].([]string)
-
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
 			return StartPlatform(b)
@@ -190,18 +153,7 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 }
 
 // Stop deactivates the specified components.
-func Stop(argv []string, b backend.Backend) error {
-	usage := `Deactivates the specified components.
-
-Usage:
-  deisctl stop [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-	targets := args["<target>"].([]string)
+func Stop(targets []string, b backend.Backend) error {
 
 	// if target is platform, stop all services
 	if len(targets) == 1 {
@@ -257,40 +209,19 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 }
 
 // Restart stops and then starts the specified components.
-func Restart(argv []string, b backend.Backend) error {
-	usage := `Stops and then starts the specified components.
-
-Usage:
-  deisctl restart [<target>...] [options]
-`
-	// parse command-line arguments
-	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
-		return err
-	}
+func Restart(targets []string, b backend.Backend) error {
 
 	// act as if the user called "stop" and then "start"
-	argv[0] = "stop"
-	if err := Stop(argv, b); err != nil {
+	if err := Stop(targets, b); err != nil {
 		return err
 	}
-	argv[0] = "start"
-	return Start(argv, b)
+
+	return Start(targets, b)
 }
 
 // Status prints the current status of components.
-func Status(argv []string, b backend.Backend) error {
-	usage := `Prints the current status of components.
+func Status(targets []string, b backend.Backend) error {
 
-Usage:
-  deisctl status [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	targets := args["<target>"].([]string)
 	for _, target := range targets {
 		if err := b.Status(target); err != nil {
 			return err
@@ -300,19 +231,8 @@ Usage:
 }
 
 // Journal prints log output for the specified components.
-func Journal(argv []string, b backend.Backend) error {
-	usage := `Prints log output for the specified components.
+func Journal(targets []string, b backend.Backend) error {
 
-Usage:
-  deisctl journal [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	targets := args["<target>"].([]string)
 	for _, target := range targets {
 		if err := b.Journal(target); err != nil {
 			return err
@@ -323,26 +243,8 @@ Usage:
 
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
-func Install(argv []string, b backend.Backend) error {
-	usage := `Loads the definitions of components from local unit files.
+func Install(targets []string, b backend.Backend) error {
 
-After install, the components will be available to start.
-
-"deisctl install" looks for unit files in these directories, in this order:
-- the $DEISCTL_UNITS environment variable, if set
-- $HOME/.deis/units
-- /var/lib/deis/units
-
-Usage:
-  deisctl install [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	targets := args["<target>"].([]string)
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
@@ -392,22 +294,7 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 
 // Uninstall unloads the definitions of the specified components.
 // After Uninstall, the components will be unavailable until Install is called.
-func Uninstall(argv []string, b backend.Backend) error {
-	usage := `Unloads the definitions of the specified components.
-
-After uninstall, the components will be unavailable until install is called.
-
-Usage:
-  deisctl uninstall [<target>...] [options]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	// if target is platform, uninstall all services
-	targets := args["<target>"].([]string)
+func Uninstall(targets []string, b backend.Backend) error {
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
 			return UninstallPlatform(b)
@@ -508,34 +395,8 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 // A configuration value is stored and retrieved from a key/value store (in this case, etcd)
 // at /deis/<component>/<config>. Configuration values are typically used for component-level
 // configuration, such as enabling TLS for the routers.
-func Config(argv []string) error {
-	usage := `Gets or sets a configuration value from the cluster.
-
-A configuration value is stored and retrieved from a key/value store
-(in this case, etcd) at /deis/<component>/<config>. Configuration
-values are typically used for component-level configuration, such as
-enabling TLS for the routers.
-
-Note: "deisctl config platform set sshPrivateKey=" expects a path
-to a private key.
-
-Usage:
-  deisctl config <target> get [<key>...]
-  deisctl config <target> set <key=val>...
-  deisctl config <target> rm [<key>...]
-
-Examples:
-  deisctl config platform set domain=mydomain.com
-  deisctl config platform set sshPrivateKey=$HOME/.ssh/deis
-  deisctl config controller get webEnabled
-  deisctl config controller rm webEnabled
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-	if err := config.Config(args); err != nil {
+func Config(target string, action string, key []string) error {
+	if err := config.Config(target, action, key); err != nil {
 		return err
 	}
 	return nil
@@ -544,32 +405,7 @@ Examples:
 // RefreshUnits overwrites local unit files with those requested.
 // Downloading from the Deis project GitHub URL by tag or SHA is the only mechanism
 // currently supported.
-func RefreshUnits(argv []string) error {
-	usage := `Overwrites local unit files with those requested.
-
-Downloading from the Deis project GitHub URL by tag or SHA is the only mechanism
-currently supported.
-
-"deisctl install" looks for unit files in these directories, in this order:
-- the $DEISCTL_UNITS environment variable, if set
-- $HOME/.deis/units
-- /var/lib/deis/units
-
-Usage:
-  deisctl refresh-units [-p <target>] [-t <tag>]
-
-Options:
-  -p --path=<target>   where to save unit files [default: $HOME/.deis/units]
-  -t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
-                       [default: master]
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(2)
-	}
-	dir := args["--path"].(string)
+func RefreshUnits(dir string, tag string) error {
 	dir = utils.ResolvePath(dir)
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -577,7 +413,6 @@ Options:
 	}
 	// download and save the unit files to the specified path
 	rootURL := "https://raw.githubusercontent.com/deis/deis/"
-	tag := args["--tag"].(string)
 	for _, unit := range units.Names {
 		src := rootURL + tag + "/deisctl/units/" + unit + ".service"
 		dest := filepath.Join(dir, unit+".service")
@@ -602,19 +437,8 @@ Options:
 }
 
 // SSH opens an interactive shell on a machine in the cluster
-func SSH(argv []string, b backend.Backend) error {
-	usage := `Open an interactive shell on a machine in the cluster given a unit or machine id.
-
-Usage:
-  deisctl ssh <target>
-`
-	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
-	if err != nil {
-		return err
-	}
-
-	if err := b.SSH(args["<target>"].(string)); err != nil {
+func SSH(target string, b backend.Backend) error {
+	if err := b.SSH(target); err != nil {
 		return err
 	}
 

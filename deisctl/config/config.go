@@ -19,8 +19,8 @@ var fileKeys = []string{
 var b64Keys = []string{"/deis/platform/sshPrivateKey"}
 
 // Config runs the config subcommand
-func Config(args map[string]interface{}) error {
-	return doConfig(args)
+func Config(target string, action string, key []string) error {
+	return doConfig(target, action, key)
 }
 
 // CheckConfig looks for a value at a keyspace path
@@ -40,21 +40,21 @@ func CheckConfig(root string, k string) error {
 	return nil
 }
 
-func doConfig(args map[string]interface{}) error {
+func doConfig(target string, action string, key []string) error {
 	client, err := getEtcdClient()
 	if err != nil {
 		return err
 	}
 
-	rootPath := "/deis/" + args["<target>"].(string) + "/"
+	rootPath := "/deis/" + target + "/"
 
 	var vals []string
-	if args["set"] == true {
-		vals, err = doConfigSet(client, rootPath, args["<key=val>"].([]string))
-	} else if args["rm"] == true {
-		vals, err = doConfigRm(client, rootPath, args["<key>"].([]string))
+	if action == "set" {
+		vals, err = doConfigSet(client, rootPath, key)
+	} else if action == "rm" {
+		vals, err = doConfigRm(client, rootPath, key)
 	} else {
-		vals, err = doConfigGet(client, rootPath, args["<key>"].([]string))
+		vals, err = doConfigGet(client, rootPath, key)
 	}
 	if err != nil {
 		return err
