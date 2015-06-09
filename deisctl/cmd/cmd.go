@@ -589,3 +589,23 @@ Options:
 	}
 	return nil
 }
+
+// SSH opens an interactive shell on a machine in the cluster
+func SSH(argv []string, b backend.Backend) error {
+	usage := `Open an interactive shell on a machine in the cluster given a unit or machine id.
+
+Usage:
+  deisctl ssh <target>
+`
+	// parse command-line arguments
+	args, err := docopt.Parse(usage, argv, true, "", false)
+	if err != nil {
+		return err
+	}
+
+	if err := b.SSH(args["<target>"].(string)); err != nil {
+		return err
+	}
+
+	return nil
+}

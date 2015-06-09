@@ -39,6 +39,7 @@ Commands, use "deisctl help <command>" to learn more:
   journal           print the log output of a component
   config            set platform or component values
   refresh-units     refresh unit files from GitHub
+  ssh               open an interacive shell on a machine in the cluster
   help              show the help screen for a command
 
 Options:
@@ -106,6 +107,8 @@ Options:
 		err = c.Config(argv)
 	case "refresh-units":
 		err = c.RefreshUnits(argv)
+	case "ssh":
+		err = c.SSH(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0

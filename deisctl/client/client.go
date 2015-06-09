@@ -17,6 +17,7 @@ type DeisCtlClient interface {
 	RefreshUnits(argv []string) error
 	Restart(argv []string) error
 	Scale(argv []string) error
+	SSH(argv []string) error
 	Start(argv []string) error
 	Status(argv []string) error
 	Stop(argv []string) error
@@ -88,6 +89,11 @@ func (c *Client) Restart(argv []string) error {
 // Scale grows or shrinks the number of running components.
 func (c *Client) Scale(argv []string) error {
 	return cmd.Scale(argv, c.Backend)
+}
+
+// SSH opens an interactive shell with a machine in the cluster.
+func (c *Client) SSH(argv []string) error {
+	return cmd.SSH(argv, c.Backend)
 }
 
 // Start activates the specified components.
