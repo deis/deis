@@ -85,6 +85,9 @@ ssh-add -D || eval $(ssh-agent) && ssh-add -D
 ssh-add ~/.ssh/$DEIS_TEST_AUTH_KEY
 ssh-add $DEIS_TEST_SSH_KEY
 
+# clear the drink of choice in case the user has set it
+unset DEIS_DRINK_OF_CHOICE
+
 # wipe out all vagrants & deis virtualboxen
 function cleanup {
     if [ "$SKIP_CLEANUP" != true ]; then
