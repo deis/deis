@@ -278,3 +278,33 @@ class AuthTest(TestCase):
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.user1_token))
         self.assertEqual(response.status_code, 200)
+
+    def test_regenerate(self):
+        """ Test that token regeneration works"""
+
+        url = '/v1/auth/tokens/'
+
+        response = self.client.post(url, '{}', content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.data['token'], self.admin_token)
+
+        self.admin_token = Token.objects.get(user=self.admin)
+
+        response = self.client.post(url, '{"username" : "autotest2"}',
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.data['token'], self.user1_token)
+
+        response = self.client.post(url, '{"all" : "true"}',
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(url, '{}', content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+
+        self.assertEqual(response.status_code, 401)

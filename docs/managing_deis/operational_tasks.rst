@@ -52,28 +52,22 @@ Re-issuing User Authentication Tokens
 The controller API uses a simple token-based HTTP Authentication scheme. Token authentication is
 appropriate for client-server setups, such as native desktop and mobile clients. Each user of the
 platform is issued a token the first time that they sign up on the platform. If this token is
-compromised, you'll need to manually intervene to re-issue a new authentication token for the user.
-To do this, SSH into the node running the controller and drop into a Django shell:
+compromised, it will need to be regenerated.
+
+A user can regenerate their own token like this:
 
 .. code-block:: console
 
-    $ fleetctl ssh deis-controller
-    $ docker exec -it deis-controller python manage.py shell
-    >>>
+    $ deis auth:regenerate
 
-At this point, let's re-issue an auth token for this user. Let's assume that the name for the user
-is Bob (poor Bob):
+An administrator can also regenerate the token of another user like this:
 
 .. code-block:: console
 
-    >>> from django.contrib.auth.models import User
-    >>> from rest_framework.authtoken.models import Token
-    >>> bob = User.objects.get(username='bob')
-    >>> token = Token.objects.get(user=bob)
-    >>> token.delete()
-    >>> exit()
+    $ deis auth:regenerate -u test-user
 
-At this point, Bob will no longer be able to authenticate against the controller with his auth
+
+At this point, the user will no longer be able to authenticate against the controller with his auth
 token:
 
 .. code-block:: console
@@ -83,14 +77,10 @@ token:
     Detail:
     Invalid token
 
-For Bob to be able to use the API again, he will have to authenticate against the controller to be
-re-issued a new token:
+They will need to log back in to use their new auth token.
+
+If there is a cluster wide security breach, an administrator can regenerate everybody's auth token like this:
 
 .. code-block:: console
 
-    $ deis login http://deis.example.com
-    username: bob
-    password:
-    Logged in as bob
-    $ deis apps
-    === Apps
+    $ deis auth:regenerate --all=true

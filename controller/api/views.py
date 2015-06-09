@@ -13,6 +13,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.authtoken.models import Token
 
 from api import authentication, models, permissions, serializers, viewsets
 
@@ -49,6 +50,39 @@ class UserManagementViewSet(GenericViewSet,
         obj.set_password(request.data['new_password'])
         obj.save()
         return Response({'status': 'password set'})
+
+
+class TokenManagementViewSet(GenericViewSet,
+                             mixins.DestroyModelMixin):
+    serializer_class = serializers.UserSerializer
+    permission_classes = [permissions.CanRegenerateToken]
+
+    def get_queryset(self):
+        return User.objects.filter(pk=self.request.user.pk)
+
+    def get_object(self):
+        return self.get_queryset()[0]
+
+    def regenerate(self, request, **kwargs):
+        obj = self.get_object()
+
+        if 'all' in request.data:
+            for user in User.objects.all():
+                if not user.is_anonymous():
+                    token = Token.objects.get(user=user)
+                    token.delete()
+                    Token.objects.create(user=user)
+            return Response("")
+
+        if 'username' in request.data:
+            obj = get_object_or_404(User,
+                                    username=request.data['username'])
+            self.check_object_permissions(self.request, obj)
+
+        token = Token.objects.get(user=obj)
+        token.delete()
+        token = Token.objects.create(user=obj)
+        return Response({'token': token.key})
 
 
 class BaseDeisViewSet(viewsets.OwnerViewSet):

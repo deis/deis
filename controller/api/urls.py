@@ -87,6 +87,8 @@ urlpatterns = patterns(
         views.UserManagementViewSet.as_view({'post': 'passwd'})),
     url(r'^auth/login/',
         'rest_framework.authtoken.views.obtain_auth_token'),
+    url(r'^auth/tokens/',
+        views.TokenManagementViewSet.as_view({'post': 'regenerate'})),
     # admin sharing
     url(r'^admin/perms/(?P<username>[-_\w]+)/?',
         views.AdminPermsViewSet.as_view({'delete': 'destroy'})),
