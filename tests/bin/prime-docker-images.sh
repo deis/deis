@@ -11,6 +11,6 @@ docker rm -v `docker ps -a -q`
 docker rmi -f `docker images -q`
 
 # Pull Deis testing essentials
-docker pull alpine:3.1
+docker pull alpine:3.2
 docker pull deis/test-etcd:latest
 docker pull deis/test-postgresql:latest

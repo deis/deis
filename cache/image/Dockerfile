@@ -1,4 +1,4 @@
-FROM alpine:3.1
+FROM alpine:3.2
 
 RUN apk add --update-cache redis && rm -rf /var/cache/apk/*
 

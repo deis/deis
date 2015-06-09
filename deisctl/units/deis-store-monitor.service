@@ -4,7 +4,7 @@ Description=deis-store-monitor
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "docker inspect deis-store-monitor-data >/dev/null 2>&1 || docker run --name deis-store-monitor-data -v /etc/ceph -v /var/lib/ceph/mon alpine:3.1 /bin/true"
+ExecStartPre=/bin/sh -c "docker inspect deis-store-monitor-data >/dev/null 2>&1 || docker run --name deis-store-monitor-data -v /etc/ceph -v /var/lib/ceph/mon alpine:3.2 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "etcdctl set /deis/store/hosts/$COREOS_PRIVATE_IPV4 `hostname` >/dev/null"
 ExecStartPre=/bin/sh -c "docker inspect deis-store-monitor >/dev/null 2>&1 && docker rm -f deis-store-monitor >/dev/null 2>&1 || true"
