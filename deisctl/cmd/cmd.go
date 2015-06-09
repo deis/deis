@@ -83,6 +83,7 @@ Usage:
 		wg.Wait()
 	}
 	close(outchan)
+	close(errchan)
 	return nil
 }
 
@@ -119,6 +120,7 @@ Usage:
 	b.Start(targets, &wg, outchan, errchan)
 	wg.Wait()
 	close(outchan)
+	close(errchan)
 
 	return nil
 }
@@ -220,6 +222,7 @@ Usage:
 	b.Stop(targets, &wg, outchan, errchan)
 	wg.Wait()
 	close(outchan)
+	close(errchan)
 
 	return nil
 }
@@ -360,6 +363,7 @@ Usage:
 	wg.Wait()
 
 	close(outchan)
+	close(errchan)
 	return nil
 }
 
@@ -423,6 +427,7 @@ Usage:
 	b.Destroy(targets, &wg, outchan, errchan)
 	wg.Wait()
 	close(outchan)
+	close(errchan)
 
 	return nil
 }
@@ -458,20 +463,26 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	return nil
 }
 
-func printState(outchan chan string, errchan chan error, interval time.Duration) error {
+func printState(outchan chan string, errchan chan error, interval time.Duration) {
 	for {
 		select {
-		case out := <-outchan:
-			// done on closed channel
-			if out == "" {
-				return nil
+		case out, ok := <-outchan:
+			if !ok {
+				outchan = nil
 			}
-			fmt.Println(out)
-		case err := <-errchan:
+			if out != "" {
+				fmt.Println(out)
+			}
+		case err, ok := <-errchan:
+			if !ok {
+				errchan = nil
+			}
 			if err != nil {
 				fmt.Println(err.Error())
-				return err
 			}
+		}
+		if outchan == nil && errchan == nil {
+			break
 		}
 		time.Sleep(interval)
 	}
