@@ -580,7 +580,7 @@ Options:
 	tag := args["--tag"].(string)
 	for _, unit := range units.Names {
 		src := rootURL + tag + "/deisctl/units/" + unit + ".service"
-		dest := filepath.Join(dir, unit)
+		dest := filepath.Join(dir, unit+".service")
 		res, err := http.Get(src)
 		if err != nil {
 			return err
