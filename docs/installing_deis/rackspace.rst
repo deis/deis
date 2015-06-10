@@ -73,10 +73,8 @@ By default, the provision script will provision 3 servers. You can override this
 
     $ DEIS_NUM_INSTANCES=5 ./provision-rackspace-cluster.sh deis-key
 
-Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd number of members.
-For more information, see `etcd disaster recovery`_.
+A Deis cluster must have 3 or more nodes. See :ref:`cluster-size` for more details.
 
-Deis clusters of less than 3 nodes are unsupported.
 
 Run the Provision Script
 ------------------------
