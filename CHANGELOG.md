@@ -1,3 +1,9 @@
+### v1.7.0 -> v1.7.1
+
+#### Fixes
+
+ - [`e8df401`](https://github.com/deis/deis/commit/e8df4010f52378b2ebd6195581080d82f2b3acf9) deisctl: Add extension when refreshing units
+
 ### v1.6.1 -> v1.7.0
 
 #### Features
