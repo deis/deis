@@ -62,7 +62,7 @@ deploy: build dev-release restart
 test: test-style test-unit test-functional
 
 test-unit:
-	godep go test -v .
+	$(GOTEST) .
 
 test-functional:
 	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
