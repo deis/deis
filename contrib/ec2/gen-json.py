@@ -59,7 +59,7 @@ PREPARE_ETCD_DATA_DIRECTORY = '''
   Description=Prepares the etcd data directory
   Requires=media-etcd.mount
   After=media-etcd.mount
-  Before=etcd.service
+  Before=etcd2.service
   [Service]
   Type=oneshot
   RemainAfterExit=yes
@@ -88,7 +88,7 @@ data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
 data['coreos']['units'] = new_units + data['coreos']['units']
 
 # configure etcd to use its EBS volume
-data['coreos']['etcd']['data-dir'] = '/media/etcd'
+data['coreos']['etcd2']['data-dir'] = '/media/etcd'
 
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
