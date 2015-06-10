@@ -25,4 +25,4 @@ RUN DOCKER_BUILD=true /app/build.sh
 
 ADD . /app
 
-ENV DEIS_RELEASE 1.7.0
+ENV DEIS_RELEASE 1.7.1
