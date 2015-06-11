@@ -1,3 +1,9 @@
+### v1.7.1 -> v1.7.2
+
+#### Fixes
+
+- [`c73c8f7`](https://github.com/deis/deis/commit/c73c8f7e0fc96576f90a6cd4c2a66d08ba2dbae9) logger: adjust publish and ttl times to seconds
+
 ### v1.7.0 -> v1.7.1
 
 #### Fixes
