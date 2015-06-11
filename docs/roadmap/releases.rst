@@ -87,6 +87,7 @@ Major or Minor Release
         client/setup.py \
         controller/deis/__init__.py \
         deisctl/deis-version \
+        docs/reference/api-v1.5.rst \
         version/version.go
 
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
@@ -96,7 +97,6 @@ Major or Minor Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.4.rst \
         docs/troubleshooting_deis/index.rst
 
   - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
@@ -177,7 +177,7 @@ Patch Release
       docs/installing_deis/install-deisctl.rst \
       docs/installing_deis/install-platform.rst \
       docs/managing_deis/upgrading-deis.rst \
-      docs/reference/api-v1.3.rst \
+      docs/reference/api-v1.4.rst \
       docs/troubleshooting_deis/index.rst
 
   - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
