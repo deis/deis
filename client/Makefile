@@ -1,6 +1,6 @@
 
 build: setup-venv
-	venv/bin/pip install -r requirements.txt git+https://github.com/pyinstaller/pyinstaller@32bbb954b355937ccfe377afbe56979db79a7b30
+	venv/bin/pip install --disable-pip-version-check -r requirements.txt git+https://github.com/pyinstaller/pyinstaller@32bbb954b355937ccfe377afbe56979db79a7b30
 	venv/bin/pyinstaller deis.spec
 	chmod +x dist/deis
 
@@ -31,7 +31,7 @@ setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
 
 test-style: setup-venv
-	venv/bin/pip install -q flake8==2.4.0
+	venv/bin/pip install --disable-pip-version-check -q flake8==2.4.0
 	venv/bin/flake8
 
 test-unit:

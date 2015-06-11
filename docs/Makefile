@@ -69,7 +69,7 @@ server: dirhtml
 
 test: clean
 	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -q -r docs_requirements.txt
+	venv/bin/pip install --disable-pip-version-check -q -r docs_requirements.txt
 	venv/bin/$(SPHINXBUILD) -b dirhtml -N $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	grep -q \<h1\>Welcome _build/dirhtml/index.html || exit 1
 	@echo

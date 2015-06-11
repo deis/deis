@@ -36,7 +36,7 @@ mkdir -p /app && chown -R deis:deis /app
 mkdir -p /templates && chown -R deis:deis /templates
 
 # install dependencies
-pip install -r /app/requirements.txt
+pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt
 
 # cleanup.
 apk del --purge \

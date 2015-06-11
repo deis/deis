@@ -25,7 +25,7 @@ apk add --update-cache \
 curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 # workaround to python > 2.7.8 SSL issues
-pip install pyopenssl ndg-httpsclient pyasn1
+pip install --disable-pip-version-check --no-cache-dir pyopenssl ndg-httpsclient pyasn1
 
 # create a registry user
 adduser -D -s /bin/bash registry
@@ -36,13 +36,13 @@ git clone -b new-repository-import-v091 --single-branch https://github.com/deis/
 
 # install boto configuration
 cp /docker-registry/config/boto.cfg /etc/boto.cfg
-cd /docker-registry && pip install -r requirements/main.txt
+cd /docker-registry && pip install --disable-pip-version-check --no-cache-dir -r requirements/main.txt
 
 # Install core
-pip install /docker-registry/depends/docker-registry-core
+pip install --disable-pip-version-check --no-cache-dir /docker-registry/depends/docker-registry-core
 
 # Install registry
-pip install file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
+pip install --disable-pip-version-check --no-cache-dir file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
 
 patch \
   $(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py \

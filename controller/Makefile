@@ -69,7 +69,7 @@ test: test-unit test-functional
 
 setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
-	venv/bin/pip install -q -r requirements.txt -r dev_requirements.txt
+	venv/bin/pip install --disable-pip-version-check -q -r requirements.txt -r dev_requirements.txt
 
 test-style: setup-venv
 	venv/bin/flake8
