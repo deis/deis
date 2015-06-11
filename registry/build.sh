@@ -22,7 +22,7 @@ apk add --update-cache \
   xz-dev
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 # workaround to python > 2.7.8 SSL issues
 pip install pyopenssl ndg-httpsclient pyasn1

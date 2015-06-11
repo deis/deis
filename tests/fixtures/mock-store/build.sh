@@ -29,7 +29,7 @@ cd /app/mock-s3
 curl https://gist.githubusercontent.com/anonymous/c565f11a8d90d6e2d92b/raw/c5815f6c83aa5c2cfb7b0a34cfab4a075c97be16/mock-s3-post.diff|git apply
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 python setup.py install
 

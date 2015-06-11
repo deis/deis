@@ -24,7 +24,7 @@ apk add --update-cache \
   python-dev
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/6.1.1/contrib/get-pip.py | python -
+curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 # add a deis user
 adduser deis -D -h /app -s /bin/bash
