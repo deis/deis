@@ -31,9 +31,8 @@ func ListUnits(b backend.Backend) error {
 }
 
 // ListUnitFiles prints the contents of all defined unit files.
-func ListUnitFiles(argv []string, b backend.Backend) error {
-	err := b.ListUnitFiles()
-	return err
+func ListUnitFiles(b backend.Backend) error {
+	return b.ListUnitFiles()
 }
 
 // Scale grows or shrinks the number of running components.
@@ -50,9 +49,9 @@ func Scale(targets []string, b backend.Backend) error {
 		if err != nil {
 			return err
 		}
-		// the router is the only component that can scale at the moment
+		// the router, registry, and store-gateway are the only component that can scale at the moment
 		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") && !strings.Contains(component, "store-gateway") {
-			return fmt.Errorf("cannot scale %s components", component)
+			return fmt.Errorf("cannot scale %s component", component)
 		}
 		b.Scale(component, num, &wg, outchan, errchan)
 		wg.Wait()
@@ -88,8 +87,8 @@ func Start(targets []string, b backend.Backend) error {
 	return nil
 }
 
-// checkRequiredKeys exist in etcd
-func checkRequiredKeys() error {
+// CheckRequiredKeys exist in etcd
+func CheckRequiredKeys() error {
 	if err := config.CheckConfig("/deis/platform/", "domain"); err != nil {
 		return fmt.Errorf(`Missing platform domain, use:
 deisctl config platform set domain=<your-domain>`)
@@ -243,12 +242,12 @@ func Journal(targets []string, b backend.Backend) error {
 
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
-func Install(targets []string, b backend.Backend) error {
+func Install(targets []string, b backend.Backend, checkKeys func() error) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
-			return InstallPlatform(b)
+			return InstallPlatform(b, checkKeys)
 		}
 		if targets[0] == swarm {
 			return InstallSwarm(b)
@@ -290,6 +289,7 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
 	wg.Wait()
+
 }
 
 // Uninstall unloads the definitions of the specified components.
@@ -405,16 +405,15 @@ func Config(target string, action string, key []string) error {
 // RefreshUnits overwrites local unit files with those requested.
 // Downloading from the Deis project GitHub URL by tag or SHA is the only mechanism
 // currently supported.
-func RefreshUnits(dir string, tag string) error {
+func RefreshUnits(dir, tag, url string) error {
 	dir = utils.ResolvePath(dir)
 	// create the target dir if necessary
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 	// download and save the unit files to the specified path
-	rootURL := "https://raw.githubusercontent.com/deis/deis/"
 	for _, unit := range units.Names {
-		src := rootURL + tag + "/deisctl/units/" + unit + ".service"
+		src := fmt.Sprintf(url, tag, unit)
 		dest := filepath.Join(dir, unit+".service")
 		res, err := http.Get(src)
 		if err != nil {
