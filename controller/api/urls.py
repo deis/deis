@@ -56,6 +56,10 @@ urlpatterns = patterns(
         views.AppViewSet.as_view({'get': 'logs'})),
     url(r"^apps/(?P<id>{})/run/?".format(settings.APP_URL_REGEX),
         views.AppViewSet.as_view({'post': 'run'})),
+    url(r"^apps/(?P<id>{})/maintenance/on?".format(settings.APP_URL_REGEX),
+        views.AppViewSet.as_view({'post': 'maintenance_on'})),
+    url(r"^apps/(?P<id>{})/maintenance/off?".format(settings.APP_URL_REGEX),
+        views.AppViewSet.as_view({'post': 'maintenance_off'})),
     # apps sharing
     url(r"^apps/(?P<id>{})/perms/(?P<username>[-_\w]+)/?".format(settings.APP_URL_REGEX),
         views.AppPermsViewSet.as_view({'delete': 'destroy'})),

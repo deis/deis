@@ -210,6 +210,26 @@ class AppViewSet(BaseDeisViewSet):
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
+    def maintenance_on(self, request, **kwargs):
+        app = self.get_object
+        try:
+            success = app.maintenance_on(self.request.user)
+        except EnvironmentError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except RuntimeError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({'maintenance': 'on'}, status=status.HTTP_200_OK)
+
+    def maintenance_off(self, request, **kwargs):
+        app = self.get_object
+        try:
+            success = app.maintenance_off(self.request.user)
+        except EnvironmentError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except RuntimeError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({'maintenance': 'off'}, status=status.HTTP_200_OK)
+
 
 class BuildViewSet(ReleasableViewSet):
     """A viewset for interacting with Build objects."""
