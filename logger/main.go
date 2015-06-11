@@ -59,7 +59,7 @@ func main() {
 
 	go syslogd.Listen(exitChan, cleanupChan, drainChan, fmt.Sprintf("%s:%d", logAddr, logPort))
 	if enablePublish {
-		go publishService(exitChan, client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL).Seconds()))
+		go publishService(exitChan, client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL)*time.Second))
 	}
 
 	// HACK (bacongobbler): poll etcd for changes in the log drain value
@@ -76,7 +76,7 @@ func main() {
 			if resp != nil && resp.Node != nil {
 				drainChan <- resp.Node.Value
 			}
-			time.Sleep(time.Duration(publishInterval))
+			time.Sleep(time.Duration(publishInterval) * time.Second)
 		}
 	}()
 
@@ -91,14 +91,21 @@ func main() {
 	}
 }
 
-func publishService(exitChan chan bool, client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
-	t := time.NewTicker(time.Duration(publishInterval))
+// publishKeys sets relevant etcd keys with a time-to-live.
+func publishKeys(client *etcd.Client, host, etcdPath, port string, ttl uint64) {
+	setEtcd(client, etcdPath+"/host", host, ttl)
+	setEtcd(client, etcdPath+"/port", port, ttl)
+}
 
+// publishServices publishes keys immediately, then every publishInterval seconds until it receives
+// something on exitChan.
+func publishService(exitChan chan bool, client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
+	publishKeys(client, host, etcdPath, port, ttl)
+	t := time.NewTicker(time.Duration(publishInterval) * time.Second)
 	for {
 		select {
 		case <-t.C:
-			setEtcd(client, etcdPath+"/host", host, ttl)
-			setEtcd(client, etcdPath+"/port", port, ttl)
+			publishKeys(client, host, etcdPath, port, ttl)
 		case <-exitChan:
 			return
 		}
