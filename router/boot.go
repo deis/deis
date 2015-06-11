@@ -75,7 +75,7 @@ func main() {
 	// FIXME: have to launch cron first so generate-certs will generate the files nginx requires
 	go launchCron()
 
-	waitForInitialConfd(host+":"+etcdPort, timeout)
+	runInitialConfd(host + ":" + etcdPort)
 
 	go launchConfd(host + ":" + etcdPort)
 
@@ -110,25 +110,22 @@ func cleanOnExit(exitChan chan os.Signal) {
 	}
 }
 
-// Wait until the compilation of the templates
-func waitForInitialConfd(etcd string, timeout time.Duration) {
-	for {
-		var buffer bytes.Buffer
-		output := bufio.NewWriter(&buffer)
-		log.Debugf("Connecting to etcd server %s", etcd)
-		cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "-onetime", "--log-level", "error")
-		cmd.Stdout = output
-		cmd.Stderr = output
+// Try running confd, failing fast if it fails to run
+func runInitialConfd(etcd string) {
+	var buffer bytes.Buffer
+	output := bufio.NewWriter(&buffer)
+	log.Debugf("Connecting to etcd server %s", etcd)
+	cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "-onetime", "--log-level", "error")
+	cmd.Stdout = output
+	cmd.Stderr = output
 
-		err := cmd.Run()
-		output.Flush()
-		if err == nil {
-			break
-		}
+	err := cmd.Run()
+	output.Flush()
 
-		log.Info("waiting for confd to write initial templates...")
-		log.Debugf("\n%s", buffer.String())
-		time.Sleep(timeout)
+	log.Debugf("%s\n", buffer.String())
+
+	if err != nil {
+		log.Fatal("confd failed to start. This is probably because another component is still booting.")
 	}
 }
 

@@ -41,11 +41,11 @@ function etcd_safe_mkdir {
 
 etcd_safe_mkdir $ETCD_PATH/users
 
-# wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --log-level error; do
-	echo "builder: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --log-level error; then
+	echo "builder: confd failed to start. This is probably because another component is still booting."
+	exit 1
+fi
 
 # spawn confd in the background to update services based on etcd changes
 confd -node $ETCD --log-level error --interval 5 &

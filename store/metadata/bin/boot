@@ -8,10 +8,11 @@ ETCD_PATH=${ETCD_PATH:-/deis/store}
 HOSTNAME=`hostname`
 MDS_NAME=$HOSTNAME
 
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
-  echo "store-metadata: waiting for confd to write initial templates..."
-  sleep 5
-done
+# let confd run once and install initial templates
+if ! confd -onetime -node $ETCD --confdir /app --log-level error; then
+  echo "store-metdata: FATAL - confd failed to start. This is probably because another component is still booting."
+  exit 1
+fi
 
 if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/filesystemSetupComplete >/dev/null 2>&1 ; then
   echo "store-metadata: The Ceph filesystem hasn't been created. Trying to obtain the lock to set up..."
