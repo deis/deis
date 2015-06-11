@@ -123,9 +123,33 @@ log_phase "etcd available after $WAIT_TIME seconds"
 
 log_phase "Publishing release from source tree"
 
-# TODO: detect where IMAGE_PREFIX=deis/ and DEV_REGISTRY=registry.hub.docker.com
-# and disallow it so we can't pollute the production account.
-make dev-release
+set +e
+trap - ERR
+
+RETRY_COUNT=1
+
+while [ $RETRY_COUNT -le 3 ]; do
+  # TODO: detect where IMAGE_PREFIX=deis/ and DEV_REGISTRY=registry.hub.docker.com
+  # and disallow it so we can't pollute the production account.
+  make dev-release
+  RESULT=$?
+
+  if [ $RESULT -ne 0 ]; then
+    echo "Docker Hub push failed. Attempt $RETRY_COUNT of 3."
+  else
+    break
+  fi
+
+  (( RETRY_COUNT += 1 ))
+done
+
+set -e
+trap dump_logs ERR
+
+if [ $RETRY_COUNT -gt 3 ]; then
+  echo "Docker Hub push failed the maximum number of times, aborting."
+  false
+fi
 
 log_phase "Provisioning Deis"
 
