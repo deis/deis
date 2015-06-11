@@ -59,4 +59,4 @@ RUN passwd -u git
 
 COPY . /
 
-ENV DEIS_RELEASE 1.7.1
+ENV DEIS_RELEASE 1.7.2

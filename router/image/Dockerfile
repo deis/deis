@@ -33,4 +33,4 @@ ADD nginx.tgz /opt/nginx
 
 RUN rm nginx.tgz
 
-ENV DEIS_RELEASE 1.7.1
+ENV DEIS_RELEASE 1.7.2

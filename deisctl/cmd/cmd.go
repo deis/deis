@@ -550,7 +550,7 @@ Usage:
 Options:
   -p --path=<target>   where to save unit files [default: $HOME/.deis/units]
   -t --tag=<tag>       git tag, branch, or SHA to use when downloading unit files
-                       [default: v1.7.1]
+                       [default: v1.7.2]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
