@@ -4,7 +4,7 @@ export ETCD=${ETCD:-$HOST:4001}
 
 cd $(dirname $0) # absolute path
 
-for repo in *.git
+for repo in $(ls | grep .git)
 do
     reponame="${repo%.*}"
     if ! etcdctl -C $ETCD ls /deis/services/"$reponame" > /dev/null 2>&1
