@@ -64,6 +64,7 @@ setting                                      description
 /deis/router/serverNameHashBucketSize        nginx server_names_hash_bucket_size (default: 64)
 /deis/router/sslCert                         cluster-wide SSL certificate
 /deis/router/sslKey                          cluster-wide SSL private key
+/deis/router/sslDhparam                      cluster-wide SSL dhparam
 /deis/router/workerProcesses                 nginx number of worker processes to start (default: auto i.e. available CPU cores)
 /deis/router/proxyProtocol                   nginx PROXY protocol enabled
 /deis/router/proxyRealIpCidr                 nginx IP with CIDR used by the load balancer in front of deis-router (default: 10.0.0.0/8)
