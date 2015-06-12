@@ -52,7 +52,7 @@ var b stubBackend
 
 // Start units
 func TestStart(t *testing.T) {
-	Start([]string{"start", "router@1", "router@2"}, b)
+	Start([]string{"router@1", "router@2"}, b)
 
 	if !reflect.DeepEqual(startedUnits, []string{"router@1", "router@2"}) {
 		t.Error(startedUnits)
@@ -61,7 +61,7 @@ func TestStart(t *testing.T) {
 
 // Stop units
 func TestStop(t *testing.T) {
-	Stop([]string{"stop", "router@1", "router@2"}, b)
+	Stop([]string{"router@1", "router@2"}, b)
 
 	if !reflect.DeepEqual(stoppedUnits, []string{"router@1", "router@2"}) {
 		t.Error(stoppedUnits)
@@ -70,7 +70,7 @@ func TestStop(t *testing.T) {
 
 // Restart units
 func TestRestart(t *testing.T) {
-	Restart([]string{"restart", "router@4", "router@5"}, b)
+	Restart([]string{"router@4", "router@5"}, b)
 
 	if !reflect.DeepEqual(stoppedUnits, []string{"router@4", "router@5"}) {
 		t.Error(stoppedUnits)
