@@ -60,6 +60,7 @@ setting                                      description
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
 /deis/router/maxWorkerConnections            maximum number of simultaneous connections that can be opened by a worker process (default: 768)
+/deis/router/secondsToEnforceHSTS            maximum time to observe HSTS when enforceHTTPS is enabled (default: 2628000)
 /deis/router/serverNameHashMaxSize           nginx server_names_hash_max_size setting (default: 512)
 /deis/router/serverNameHashBucketSize        nginx server_names_hash_bucket_size (default: 64)
 /deis/router/sslCert                         cluster-wide SSL certificate
