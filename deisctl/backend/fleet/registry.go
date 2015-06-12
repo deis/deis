@@ -9,7 +9,6 @@ import (
 
 	"github.com/coreos/fleet/client"
 	"github.com/coreos/fleet/etcd"
-	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/pkg"
 	"github.com/coreos/fleet/registry"
 	"github.com/coreos/fleet/ssh"
@@ -40,13 +39,6 @@ recommended to upgrade fleetctl to prevent incompatibility issues.
 ####################################################################
 `
 )
-
-// global API client used by commands
-var cAPI client.API
-
-// used to cache MachineStates
-var machineStates map[string]*machine.MachineState
-var requestTimeout = time.Duration(10) * time.Second
 
 func getTunnelFlag() string {
 	tun := Flags.Tunnel

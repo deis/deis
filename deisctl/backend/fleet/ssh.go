@@ -18,7 +18,7 @@ func (c *FleetClient) SSH(name string) (err error) {
 
 	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
 
-	ms, err := machineState(name)
+	ms, err := machineState(c, name)
 	if err != nil {
 		return err
 	}
@@ -31,13 +31,13 @@ func (c *FleetClient) SSH(name string) (err error) {
 			return err
 		}
 
-		machID, err := findUnit(units[0])
+		machID, err := findUnit(c, units[0])
 
 		if err != nil {
 			return err
 		}
 
-		ms, err = machineState(machID)
+		ms, err = machineState(c, machID)
 
 		if err != nil || ms == nil {
 			return err
@@ -62,7 +62,7 @@ func (c *FleetClient) SSH(name string) (err error) {
 
 // runCommand will attempt to run a command on a given machine. It will attempt
 // to SSH to the machine if it is identified as being remote.
-func runCommand(cmd string, machID string) (retcode int) {
+func runCommand(c *FleetClient, cmd string, machID string) (retcode int) {
 	var err error
 	if machine.IsLocalMachineID(machID) {
 		retcode, err = runLocalCommand(cmd)
@@ -70,7 +70,7 @@ func runCommand(cmd string, machID string) (retcode int) {
 			fmt.Printf("Error running local command: %v\n", err)
 		}
 	} else {
-		ms, err := machineState(machID)
+		ms, err := machineState(c, machID)
 		if err != nil || ms == nil {
 			fmt.Printf("Error getting machine IP: %v\n", err)
 		} else {
@@ -125,8 +125,8 @@ func runRemoteCommand(cmd string, addr string, timeout time.Duration) (exit int,
 }
 
 // findUnits returns the machine ID of a running unit
-func findUnit(name string) (machID string, err error) {
-	u, err := cAPI.Unit(name)
+func findUnit(c *FleetClient, name string) (machID string, err error) {
+	u, err := c.Fleet.Unit(name)
 	if err != nil {
 		return "", fmt.Errorf("Error retrieving Unit %s: %v", name, err)
 	}
@@ -142,8 +142,8 @@ func findUnit(name string) (machID string, err error) {
 	return u.MachineID, nil
 }
 
-func machineState(machID string) (*machine.MachineState, error) {
-	machines, err := cAPI.Machines()
+func machineState(c *FleetClient, machID string) (*machine.MachineState, error) {
+	machines, err := c.Fleet.Machines()
 	if err != nil {
 		return nil, err
 	}
@@ -158,16 +158,16 @@ func machineState(machID string) (*machine.MachineState, error) {
 // cachedMachineState makes a best-effort to retrieve the MachineState of the given machine ID.
 // It memoizes MachineState information for the life of a fleetctl invocation.
 // Any error encountered retrieving the list of machines is ignored.
-func cachedMachineState(machID string) (ms *machine.MachineState) {
-	if machineStates == nil {
-		machineStates = make(map[string]*machine.MachineState)
-		ms, err := cAPI.Machines()
+func cachedMachineState(c *FleetClient, machID string) (ms *machine.MachineState) {
+	if c.machineStates == nil {
+		c.machineStates = make(map[string]*machine.MachineState)
+		ms, err := c.Fleet.Machines()
 		if err != nil {
 			return nil
 		}
 		for i, m := range ms {
-			machineStates[m.ID] = &ms[i]
+			c.machineStates[m.ID] = &ms[i]
 		}
 	}
-	return machineStates[machID]
+	return c.machineStates[machID]
 }

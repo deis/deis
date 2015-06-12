@@ -11,19 +11,19 @@ func (c *FleetClient) Journal(target string) (err error) {
 		return
 	}
 	for _, unit := range units {
-		runJournal(unit)
+		runJournal(c, unit)
 	}
 	return
 }
 
 // runJournal tails the systemd journal for a given unit
-func runJournal(name string) (exit int) {
-	machineID, err := findUnit(name)
+func runJournal(c *FleetClient, name string) (exit int) {
+	machineID, err := findUnit(c, name)
 
 	if err != nil {
 		return 1
 	}
 
 	command := fmt.Sprintf("journalctl --unit %s --no-pager -n 40 -f", name)
-	return runCommand(command, machineID)
+	return runCommand(c, command, machineID)
 }

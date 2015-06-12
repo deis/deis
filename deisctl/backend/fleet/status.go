@@ -12,15 +12,15 @@ func (c *FleetClient) Status(target string) (err error) {
 		return
 	}
 	for _, unit := range units {
-		printUnitStatus(unit)
+		printUnitStatus(c, unit)
 		fmt.Println()
 	}
 	return
 }
 
 // printUnitStatus displays the systemd status for a given unit
-func printUnitStatus(name string) int {
-	u, err := cAPI.Unit(name)
+func printUnitStatus(c *FleetClient, name string) int {
+	u, err := c.Fleet.Unit(name)
 	if suToGlobal(*u) {
 		fmt.Fprintf(os.Stderr, "Unable to get status for global unit %s. Check the status on the host using systemctl.\n", name)
 		return 1
@@ -37,5 +37,5 @@ func printUnitStatus(name string) int {
 		return 1
 	}
 	cmd := fmt.Sprintf("systemctl status -l %s", name)
-	return runCommand(cmd, u.MachineID)
+	return runCommand(c, cmd, u.MachineID)
 }
