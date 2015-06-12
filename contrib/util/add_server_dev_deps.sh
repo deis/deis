@@ -6,7 +6,7 @@ echo "which coverage > /dev/null" | ./dshell deis-controller
 if [ $? -ne 0 ]; then
 	cat <<-EOF | ./dshell deis-controller
 		cd /app
-		pip install -r dev_requirements.txt
+		pip install --disable-pip-version-check -r dev_requirements.txt
 	EOF
 else
 	echo "Deis server development dependencies already installed."

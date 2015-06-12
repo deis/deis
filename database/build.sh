@@ -41,10 +41,10 @@ git clone https://github.com/wal-e/wal-e.git
 cd /tmp/wal-e
 git checkout c6dd4b1
 
-pip install . oslo.config>=1.12.0
+pip install --disable-pip-version-check --no-cache-dir . oslo.config>=1.12.0
 
 # python port of daemontools
-pip install envdir
+pip install --disable-pip-version-check --no-cache-dir envdir
 
 mkdir -p /etc/wal-e.d/env /etc/postgresql/main /var/lib/postgresql
 

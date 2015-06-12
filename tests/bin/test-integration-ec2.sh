@@ -18,7 +18,7 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID?}
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY?}
 
 # install python requirements for this script
-pip install awscli boto docopt
+pip install --disable-pip-version-check awscli boto docopt
 
 function cleanup_ec2 {
     if [ "$SKIP_CLEANUP" != true ]; then
