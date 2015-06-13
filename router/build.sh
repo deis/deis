@@ -10,7 +10,7 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
-export VERSION_NGINX=nginx-1.9.0
+export VERSION_NGINX=nginx-1.9.1
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
 
 export BUILD_PATH=/tmp/build
