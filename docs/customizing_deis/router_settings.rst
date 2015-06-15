@@ -60,7 +60,7 @@ setting                                      description
 /deis/router/gzipDisable                     nginx gzipDisable setting (default: "msie6")
 /deis/router/gzipTypes                       nginx gzipTypes setting (default: "application/x-javascript application/xhtml+xml application/xml application/xml+rss application/json text/css text/javascript text/plain text/xml")
 /deis/router/hsts/enabled                    enable HTTP Strict Transport Security headers for HTTPS requests (default: false)
-/deis/router/hsts/maxAge                     maximum number of seconds user agents should observe HSTS rewrites (default: 2628000)
+/deis/router/hsts/maxAge                     maximum number of seconds user agents should observe HSTS rewrites (default: 10886400)
 /deis/router/hsts/includeSubDomains          enforce HSTS for requests on all subdomains (default: false)
 /deis/router/hsts/preload                    allow the domain to be included in the HSTS preload list (default: false)
 /deis/router/maxWorkerConnections            maximum number of simultaneous connections that can be opened by a worker process (default: 768)
