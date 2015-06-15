@@ -8,6 +8,7 @@ import (
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/backend/fleet"
 	"github.com/deis/deis/deisctl/cmd"
+	"github.com/deis/deis/deisctl/units"
 
 	docopt "github.com/docopt/docopt-go"
 )
@@ -126,7 +127,7 @@ Usage:
 		return err
 	}
 
-	return cmd.Install(args["<target>"].([]string), c.Backend)
+	return cmd.Install(args["<target>"].([]string), c.Backend, cmd.CheckRequiredKeys)
 }
 
 // Journal prints log output for the specified components.
@@ -186,7 +187,7 @@ Options:
 		os.Exit(2)
 	}
 
-	return cmd.RefreshUnits(args["--path"].(string), args["--tag"].(string))
+	return cmd.RefreshUnits(args["--path"].(string), args["--tag"].(string), units.URL)
 }
 
 // Restart stops and then starts components.

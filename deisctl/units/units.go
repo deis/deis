@@ -20,3 +20,6 @@ var Names = []string{
 	"deis-swarm-manager",
 	"deis-swarm-node",
 }
+
+// URL is the GitHub url where these units can be refreshed from
+var URL = "https://raw.githubusercontent.com/deis/deis/%s/deisctl/units/%s.service"

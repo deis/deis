@@ -11,9 +11,9 @@ import (
 
 // InstallPlatform loads all components' definitions from local unit files.
 // After InstallPlatform, all components will be available for StartPlatform.
-func InstallPlatform(b backend.Backend) error {
+func InstallPlatform(b backend.Backend, checkKeys func() error) error {
 
-	if err := checkRequiredKeys(); err != nil {
+	if err := checkKeys(); err != nil {
 		return err
 	}
 
