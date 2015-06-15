@@ -7,4 +7,4 @@ RUN apk add --update-cache curl && rm -rf /var/cache/apk/*
 ADD bin/publisher /usr/local/bin/publisher
 ENTRYPOINT ["/usr/local/bin/publisher"]
 
-ENV DEIS_RELEASE 1.7.2
+ENV DEIS_RELEASE 1.7.3

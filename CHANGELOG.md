@@ -1,3 +1,9 @@
+### v1.7.2 -> v1.7.3
+
+#### Fixes
+
+ - [`87d2ba3`](https://github.com/deis/deis/commit/87d2ba3caaafe89b911589ff149a932f31e31cf4) builder: call ls rather than using a wildcard
+
 ### v1.7.1 -> v1.7.2
 
 #### Fixes
