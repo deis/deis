@@ -1,10 +1,16 @@
 package fleet
 
-import "github.com/coreos/fleet/client"
+import (
+	"github.com/coreos/fleet/client"
+	"github.com/coreos/fleet/machine"
+)
 
 // FleetClient used to wrap Fleet API calls
 type FleetClient struct {
 	Fleet client.API
+
+	// used to cache MachineStates
+	machineStates map[string]*machine.MachineState
 }
 
 // NewClient returns a client used to communicate with Fleet
@@ -14,7 +20,5 @@ func NewClient() (*FleetClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	// set global client
-	cAPI = client
 	return &FleetClient{Fleet: client}, nil
 }

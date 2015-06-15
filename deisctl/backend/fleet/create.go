@@ -60,7 +60,7 @@ func doCreate(c *FleetClient, unit *schema.Unit, wg *sync.WaitGroup, outchan cha
 outerLoop:
 	for {
 		time.Sleep(250 * time.Millisecond)
-		unitStates, err := cAPI.UnitStates()
+		unitStates, err := c.Fleet.UnitStates()
 		if err != nil {
 			errchan <- err
 		}

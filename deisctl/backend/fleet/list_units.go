@@ -22,46 +22,46 @@ const (
 	defaultListUnitsFields = "unit,machine,load,active,sub"
 )
 
-type usToField func(us *schema.UnitState, full bool) string
+type usToField func(c *FleetClient, us *schema.UnitState, full bool) string
 
 var (
 	out             *tabwriter.Writer
 	listUnitsFields = map[string]usToField{
-		"unit": func(us *schema.UnitState, full bool) string {
+		"unit": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil {
 				return "-"
 			}
 			return us.Name
 		},
-		"load": func(us *schema.UnitState, full bool) string {
+		"load": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil {
 				return "-"
 			}
 			return us.SystemdLoadState
 		},
-		"active": func(us *schema.UnitState, full bool) string {
+		"active": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil {
 				return "-"
 			}
 			return us.SystemdActiveState
 		},
-		"sub": func(us *schema.UnitState, full bool) string {
+		"sub": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil {
 				return "-"
 			}
 			return us.SystemdSubState
 		},
-		"machine": func(us *schema.UnitState, full bool) string {
+		"machine": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil || us.MachineID == "" {
 				return "-"
 			}
-			ms := cachedMachineState(us.MachineID)
+			ms := cachedMachineState(c, us.MachineID)
 			if ms == nil {
 				ms = &machine.MachineState{ID: us.MachineID}
 			}
 			return machineFullLegend(*ms, full)
 		},
-		"hash": func(us *schema.UnitState, full bool) string {
+		"hash": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil || us.Hash == "" {
 				return "-"
 			}
@@ -77,7 +77,7 @@ var (
 func (c *FleetClient) ListUnits() (err error) {
 	var states []*schema.UnitState
 
-	unitStates, err := cAPI.UnitStates()
+	unitStates, err := c.Fleet.UnitStates()
 	if err != nil {
 		return err
 	}
@@ -90,12 +90,12 @@ func (c *FleetClient) ListUnits() (err error) {
 			}
 		}
 	}
-	printUnits(states)
+	printUnits(c, states)
 	return
 }
 
 // printUnits writes units to stdout using a tabwriter
-func printUnits(states []*schema.UnitState) {
+func printUnits(client *FleetClient, states []*schema.UnitState) {
 	cols := strings.Split(defaultListUnitsFields, ",")
 	for _, s := range cols {
 		if _, ok := listUnitsFields[s]; !ok {
@@ -106,7 +106,7 @@ func printUnits(states []*schema.UnitState) {
 	for _, us := range states {
 		var f []string
 		for _, c := range cols {
-			f = append(f, listUnitsFields[c](us, false))
+			f = append(f, listUnitsFields[c](client, us, false))
 		}
 		fmt.Fprintln(out, strings.Join(f, "\t"))
 	}

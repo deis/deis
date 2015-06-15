@@ -46,7 +46,7 @@ func doDestroy(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan s
 outerLoop:
 	for {
 		time.Sleep(250 * time.Millisecond)
-		unitStates, err := cAPI.UnitStates()
+		unitStates, err := c.Fleet.UnitStates()
 		if err != nil {
 			errchan <- err
 		}
