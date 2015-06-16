@@ -140,11 +140,11 @@ if [ -f Procfile ]; then
 elif [ -f $TMP_DIR/slug.tgz ]; then
     # Sometimes, the buildpack will generate a Procfile instead of populating /bin/release
     # /bin/release was unofficially deprecated for declaring default process types
-    if tar -tf $TMP_DIR/slug.tgz ./Procfile &> /dev/null;
+    if tar -tzf $TMP_DIR/slug.tgz ./Procfile &> /dev/null;
     then
-        PROCFILE="$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./Procfile | yaml2json-procfile)"
+        PROCFILE="$(tar --to-stdout -xzf $TMP_DIR/slug.tgz ./Procfile | yaml2json-procfile)"
     else
-        PROCFILE=$(tar --to-stdout -xf $TMP_DIR/slug.tgz ./.release | extract-types)
+        PROCFILE=$(tar --to-stdout -xzf $TMP_DIR/slug.tgz ./.release | extract-types)
     fi
 else
     PROCFILE="{}"
