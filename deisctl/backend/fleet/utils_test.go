@@ -3,9 +3,9 @@ package fleet
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 
-	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
 )
 
@@ -15,46 +15,102 @@ func TestNextComponent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 1 {
-		t.Fatal("Invalid component number")
+	expected := 1
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 	// test next component
 	num, err = nextUnitNum([]string{"deis-router@1.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 2 {
-		t.Fatal("Invalid component number")
+	expected = 2
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 	// test last component
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 3 {
-		t.Fatal("Invalid component number")
+	expected = 3
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 	// test middle component
 	num, err = nextUnitNum([]string{"deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 1 {
-		t.Fatal("Invalid component number")
+	expected = 1
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 2 {
-		t.Fatalf("Invalid component number: %v", num)
+	expected = 2
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if num != 4 {
-		t.Fatal("Invalid component number")
+	expected = 4
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+	}
+}
+
+func TestLastComponent(t *testing.T) {
+	num, err := lastUnitNum([]string{})
+	errorf := fmt.Sprintf("%v", err)
+	expectedErr := "Component not found"
+	if errorf != expectedErr {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expectedErr, errorf))
+	}
+	num, err = lastUnitNum([]string{"deis-router@1.service"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := 1
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+	}
+	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@2.service"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected = 2
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+	}
+	// test middle component
+	num, err = lastUnitNum([]string{"deis-router@3.service"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected = 3
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+	}
+	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@3.service"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected = 3
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+	}
+	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected = 3
+	if num != expected {
+		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
 	}
 }
 
@@ -95,38 +151,8 @@ func TestSplitTarget(t *testing.T) {
 
 }
 
-type stubFleetClient struct{}
-
-var (
-	testUnits []*schema.Unit
-)
-
-func (c stubFleetClient) Machines() ([]machine.MachineState, error) {
-	return []machine.MachineState{}, nil
-}
-func (c stubFleetClient) Unit(string) (*schema.Unit, error) {
-	return nil, nil
-}
-func (c stubFleetClient) Units() ([]*schema.Unit, error) {
-	return testUnits, nil
-}
-func (c stubFleetClient) UnitStates() ([]*schema.UnitState, error) {
-	return []*schema.UnitState{}, nil
-}
-func (c stubFleetClient) SetUnitTargetState(name, target string) error {
-	return fmt.Errorf("SetUnitTargetState not implemented yet.")
-}
-func (c stubFleetClient) CreateUnit(*schema.Unit) error {
-	return fmt.Errorf("CreateUnit not implemented yet.")
-}
-func (c stubFleetClient) DestroyUnit(string) error {
-	return fmt.Errorf("DestroyUnit not implemented yet.")
-}
-
-var fc stubFleetClient
-
 func TestExpandTargets(t *testing.T) {
-	testUnits = []*schema.Unit{
+	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",
 		},
@@ -149,10 +175,10 @@ func TestExpandTargets(t *testing.T) {
 			Name: "registry_v2.cmd.1.service",
 		},
 	}
-	c := &FleetClient{Fleet: fc}
+	c := &FleetClient{Fleet: &stubFleetClient{testUnits: testUnits, unitsMutex: &sync.Mutex{}}}
 
 	targets := []string{"router@*", "deis-store-gateway@1", "deis-controller", "registry@*"}
-	expandedTargets, err := expandTargets(c, targets)
+	expandedTargets, err := c.expandTargets(targets)
 	if err != nil {
 		t.Fatal(err)
 	}

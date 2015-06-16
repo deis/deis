@@ -11,13 +11,6 @@ import (
 	"github.com/coreos/fleet/unit"
 )
 
-// path hierarchy for finding systemd service templates
-var templatePaths = []string{
-	os.Getenv("DEISCTL_UNITS"),
-	path.Join(os.Getenv("HOME"), ".deis", "units"),
-	"/var/lib/deis/units",
-}
-
 // Units returns a list of units filtered by target
 func (c *FleetClient) Units(target string) (units []string, err error) {
 	allUnits, err := c.Fleet.Units()
@@ -63,8 +56,8 @@ func (c *FleetClient) lastUnit(component string) (num int, err error) {
 
 // NewUnit takes a component type and returns a Fleet unit
 // that includes the relevant systemd service template
-func NewUnit(component string) (uf *unit.UnitFile, err error) {
-	template, err := readTemplate(component)
+func NewUnit(component string, templatePaths []string) (uf *unit.UnitFile, err error) {
+	template, err := readTemplate(component, templatePaths)
 	if err != nil {
 		return
 	}
@@ -86,7 +79,7 @@ func formatUnitName(component string, num int) (unitName string, err error) {
 }
 
 // readTemplate returns the contents of a systemd template for the given component
-func readTemplate(component string) (out []byte, err error) {
+func readTemplate(component string, templatePaths []string) (out []byte, err error) {
 	templateName := "deis-" + component + ".service"
 	var templateFile string
 
