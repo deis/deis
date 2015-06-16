@@ -21,8 +21,8 @@ installer:
 		dist/deisctl-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run "Deis Control Utility" \
 		"./deisctl refresh-units \
 		&& echo \
-		&& echo '\033[0;36mdeisctl\033[0m is in the current directory and unit files are' \
-		&& echo 'in \$$HOME/.deis/units. Please move \033[0;36mdeisctl\033[0m to a' \
+		&& echo 'deisctl is in the current directory and unit files are' \
+		&& echo 'in \$$HOME/.deis/units. Please move deisctl to a' \
 		&& echo 'directory in your search PATH.' \
 		&& echo \
 		&& echo 'See http://docs.deis.io/ for documentation.' \

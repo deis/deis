@@ -21,8 +21,8 @@ installer: build
 	PATH=./makeself:$$PATH BINARY=deis makeself.sh --bzip2 --current --nox11 dist \
 		dist/deis-cli-`grep '__version__\ =\ ' deis.py | cut -d' ' -f3 | tr -d \'`-`go env GOOS`-`go env GOARCH`.run \
 		"Deis CLI" "echo \
-		&& echo '\033[0;36mdeis\033[0m is in the current directory. Please' \
-		&& echo 'move \033[0;36mdeis\033[0m to a directory in your search PATH.' \
+		&& echo 'deis is in the current directory. Please' \
+		&& echo 'move deis to a directory in your search PATH.' \
 		&& echo \
 		&& echo 'See http://docs.deis.io/ for documentation.' \
 		&& echo"
