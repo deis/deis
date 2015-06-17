@@ -31,7 +31,7 @@ setup-venv:
 	@if [ ! -d venv ]; then virtualenv venv; fi
 
 test-style: setup-venv
-	venv/bin/pip install --disable-pip-version-check -q flake8==2.4.0
+	venv/bin/pip install --disable-pip-version-check -q flake8==2.4.1
 	venv/bin/flake8
 
 test-unit:
