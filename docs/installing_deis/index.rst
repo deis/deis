@@ -25,6 +25,7 @@ information on how to get set up with CoreOS.
     azure
     digitalocean
     gce
+    linode
     rackspace
     vagrant
     baremetal
