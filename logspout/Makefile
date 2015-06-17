@@ -3,7 +3,7 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/logspout
 
-GO_FILES = attacher.go logspout.go routes.go types.go
+GO_FILES = $(wildcard *.go)
 GO_PACKAGES = utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 

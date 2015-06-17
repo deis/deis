@@ -3,7 +3,7 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/deisctl
 
-GO_FILES = deisctl.go deisctl_test.go
+GO_FILES = $(wildcard *.go)
 GO_PACKAGES = backend client cmd config units utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
