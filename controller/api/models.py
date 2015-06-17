@@ -292,6 +292,7 @@ class App(UuidAuditedModel):
         if any(c.state != 'created' for c in to_add):
             err = 'aborting, failed to create some containers'
             log_event(self, err, logging.ERROR)
+            self._destroy_containers(to_add)
             raise RuntimeError(err)
         [t.start() for t in start_threads]
         [t.join() for t in start_threads]

@@ -75,10 +75,7 @@ class SchedulerTest(TransactionTestCase):
         url = "/v1/apps/{app_id}/containers".format(**locals())
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 20)
-        # make sure some failed
-        states = set([c['state'] for c in response.data['results']])
-        self.assertEqual(states, set(['error', 'created']))
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_start_chaos(self):
         url = '/v1/apps'
@@ -304,7 +301,6 @@ class SchedulerTest(TransactionTestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 20)
-
         # make sure all old containers are still up
         states = set([c['state'] for c in response.data['results']])
         self.assertEqual(states, set(['up']))

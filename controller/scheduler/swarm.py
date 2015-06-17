@@ -33,7 +33,8 @@ class SwarmClient(object):
                 mem = mem[:-1]
         cpu = kwargs.get('cpu', {}).get(l['c_type'])
         self.docker_cli.create_container(image=cimage, name=name,
-                                         command=command.encode('utf-8'), mem_limit=mem,
+                                         command=command.encode('utf-8'),
+                                         mem_limit=mem,
                                          cpu_shares=cpu,
                                          environment=[affinity],
                                          host_config={'PublishAllPorts': True})
