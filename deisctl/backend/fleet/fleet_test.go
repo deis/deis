@@ -116,7 +116,7 @@ func logState(outchan chan string, errchan chan error, errOutput *string, mutex 
 			}
 			if err != nil {
 				mutex.Lock()
-				*errOutput += fmt.Sprintf("%v\n", err)
+				*errOutput += err.Error()
 				mutex.Unlock()
 			}
 		}

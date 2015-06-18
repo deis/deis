@@ -147,7 +147,7 @@ func TestScaleError(t *testing.T) {
 	close(errchan)
 	close(outchan)
 
-	expected := "cannot scale below 0\n"
+	expected := "cannot scale below 0"
 
 	logMutex.Lock()
 	if errOutput != expected {

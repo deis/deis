@@ -133,7 +133,7 @@ func TestRefreshUnitsError(t *testing.T) {
 	defer server.Close()
 
 	err = RefreshUnits(name, "foo", server.URL+"/%s/%s.service")
-	result := fmt.Sprintf("%v", err)
+	result := err.Error()
 	expected := "404 Not Found"
 
 	if result != expected {
@@ -171,7 +171,7 @@ func TestScaling(t *testing.T) {
 func TestScalingNonScalableComponent(t *testing.T) {
 	b := backendStub{}
 	expected := "cannot scale controller component"
-	err := fmt.Sprintf("%v", Scale([]string{"controller=2"}, &b))
+	err := Scale([]string{"controller=2"}, &b).Error()
 
 	if err != expected {
 		t.Error(fmt.Errorf("Expected '%v', Got '%v'", expected, err))
@@ -181,7 +181,7 @@ func TestScalingNonScalableComponent(t *testing.T) {
 func TestScalingInvalidFormat(t *testing.T) {
 	b := backendStub{}
 	expected := "Could not parse: controller2"
-	err := fmt.Sprintf("%v", Scale([]string{"controller2"}, &b))
+	err := Scale([]string{"controller2"}, &b).Error()
 
 	if err != expected {
 		t.Error(fmt.Errorf("Expected '%v', Got '%v'", expected, err))
@@ -300,7 +300,7 @@ func TestStatusError(t *testing.T) {
 	b := backendStub{}
 
 	expected := "Test Error"
-	err := fmt.Sprintf("%v", Status([]string{"blah"}, &b))
+	err := Status([]string{"blah"}, &b).Error()
 
 	if err != expected {
 		t.Error(fmt.Errorf("Expected '%v', Got '%v'", expected, err))
@@ -319,7 +319,7 @@ func TestJournalError(t *testing.T) {
 	b := backendStub{}
 
 	expected := "Test Error"
-	err := fmt.Sprintf("%v", Journal([]string{"blah"}, &b))
+	err := Journal([]string{"blah"}, &b).Error()
 
 	if err != expected {
 		t.Error(fmt.Errorf("Expected '%v', Got '%v'", expected, err))
