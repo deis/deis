@@ -61,10 +61,7 @@ Options:
 	// give docopt an optional final false arg so it doesn't call os.Exit()
 	args, err := docopt.Parse(usage, argv, false, version.Version, true, false)
 	if err != nil || len(args) == 0 {
-		if helpFlag {
-			fmt.Print(usage)
-			return 0
-		} else if argv[0] == "--version" {
+		if argv[0] == "--version" {
 			return 0
 		}
 		return 1
