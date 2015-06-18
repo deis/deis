@@ -63,6 +63,7 @@ setting                                      description
 /deis/router/serverNameHashMaxSize           nginx server_names_hash_max_size setting (default: 512)
 /deis/router/serverNameHashBucketSize        nginx server_names_hash_bucket_size (default: 64)
 /deis/router/sslCert                         cluster-wide SSL certificate
+/deis/router/sslCiphers                      cluster-wide enabled SSL ciphers
 /deis/router/sslKey                          cluster-wide SSL private key
 /deis/router/workerProcesses                 nginx number of worker processes to start (default: auto i.e. available CPU cores)
 /deis/router/proxyProtocol                   nginx PROXY protocol enabled
