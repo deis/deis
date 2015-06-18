@@ -95,9 +95,7 @@ Generate a New Discovery URL
 Choose number of instances
 --------------------------
 
-For scheduling to work properly, clusters must consist of at least 3 nodes and always have an odd
-number of members. Please refer to :ref:`system-requirements` for more information about cluster
-size requirements.
+A Deis cluster must have 3 or more nodes. See :ref:`cluster-size` for more details.
 
 Instruct the provision script to launch the desired number of nodes:
 

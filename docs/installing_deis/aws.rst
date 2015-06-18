@@ -70,10 +70,7 @@ By default, the script will provision 3 servers. You can override this by settin
 
     $ export DEIS_NUM_INSTANCES=5
 
-Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always
-have an odd number of members. For more information, see `etcd disaster recovery`_.
-
-Deis clusters of less than 3 nodes are unsupported.
+A Deis cluster must have 3 or more nodes. See :ref:`cluster-size` for more details.
 
 
 Generate a New Discovery URL

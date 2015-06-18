@@ -28,13 +28,17 @@ applications.
 Running smaller machines will likely result in increased system load and has been known to result
 in component failures, issues with etcd/fleet, and other problems.
 
+.. _cluster-size:
+
 Cluster size
 ------------
 
-For scheduling to work properly, clusters must consist of at least three nodes and always
-have an odd number of members. This is mostly because the underlying CoreOS cluster must always
-be able to obtain a quorum (see `etcd disaster recovery`_). Additionally, the :ref:`Store`
-component keeps three replicas of stored data, so it requires at least three nodes.
+For :ref:`scheduling <choosing_a_scheduler>` and the :ref:`deis-store <Store>` components
+to work properly, clusters must have at least three nodes. The ``etcd`` service must always
+be able to obtain a quorum, and the Ceph data store must maintain at least three replicas
+of persistent data.
+
+See `optimal etcd cluster size`_ and `etcd disaster recovery`_ for further information.
 
 .. important::
 
@@ -50,5 +54,6 @@ Network
 .. include:: ../_includes/_private-network.rst
 
 .. _`dokku`: https://github.com/progrium/dokku
+.. _`optimal etcd cluster size`: https://coreos.com/docs/cluster-management/scaling/etcd-optimal-cluster-size/
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`sponsored`: http://deis.io/deis-sponsors-dokku/

@@ -76,12 +76,11 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
          --data-disk
          --custom-data azure-user-data
 
-This script will by default provision a 3 node cluster but you can increase this with the
+This script will by default provision a 3-node cluster, but you can increase this with the
 ``--num-nodes`` parameter. Likewise, you can increase the VM size using ``--vm-size``.
 It is not recommended that you use smaller than Large (A3) sized instances.
 
-Note that for scheduling to work properly, clusters must consist of at least 3 nodes and always
-have an odd number of members. For more information, see `etcd disaster recovery`_.
+A Deis cluster must have 3 or more nodes. See :ref:`cluster-size` for more details.
 
 
 Configure DNS
