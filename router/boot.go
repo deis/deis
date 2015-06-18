@@ -59,6 +59,7 @@ func main() {
 	mkdirEtcd(client, "/deis/builder")
 	mkdirEtcd(client, "/deis/certs")
 	mkdirEtcd(client, "/deis/router/hosts")
+	mkdirEtcd(client, "/deis/router/hsts")
 
 	setDefaultEtcd(client, etcdPath+"/gzip", "on")
 
