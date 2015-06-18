@@ -3,7 +3,7 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/logger
 
-GO_FILES = main.go
+GO_FILES = $(wildcard *.go)
 GO_PACKAGES = syslog syslogd tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GO_TESTABLE_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,syslog syslogd)

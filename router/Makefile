@@ -3,7 +3,7 @@ include ../includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis/router
 
-GO_FILES = boot.go
+GO_FILES = $(wildcard *.go)
 GO_PACKAGES = logger tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
