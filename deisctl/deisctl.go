@@ -64,7 +64,7 @@ Options:
 		if helpFlag {
 			fmt.Print(usage)
 			return 0
-		} else if argv[0] == "--version" {
+		} else if len(argv) == 0 || argv[0] == "--version" {
 			return 0
 		}
 		return 1
