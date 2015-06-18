@@ -84,6 +84,8 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 }
 
 func TestRefreshUnits(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl")
 
 	if err != nil {
@@ -122,6 +124,8 @@ func TestRefreshUnits(t *testing.T) {
 }
 
 func TestRefreshUnitsError(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl")
 
 	if err != nil {
@@ -142,6 +146,8 @@ func TestRefreshUnitsError(t *testing.T) {
 }
 
 func TestListUnits(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{installedUnits: []string{"router@1", "router@2"}}
 
 	if ListUnits(&b) != nil {
@@ -150,6 +156,8 @@ func TestListUnits(t *testing.T) {
 }
 
 func TestListUnitFiles(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 
 	if ListUnitFiles(&b) != nil {
@@ -158,6 +166,8 @@ func TestListUnitFiles(t *testing.T) {
 }
 
 func TestScaling(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{expected: false}
 	scale := []string{"registry=4", "router=3"}
 
@@ -169,6 +179,8 @@ func TestScaling(t *testing.T) {
 }
 
 func TestScalingNonScalableComponent(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := "cannot scale controller component"
 	err := fmt.Sprintf("%v", Scale([]string{"controller=2"}, &b))
@@ -179,6 +191,8 @@ func TestScalingNonScalableComponent(t *testing.T) {
 }
 
 func TestScalingInvalidFormat(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := "Could not parse: controller2"
 	err := fmt.Sprintf("%v", Scale([]string{"controller2"}, &b))
@@ -189,6 +203,8 @@ func TestScalingInvalidFormat(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@1", "router@2"}
 
@@ -200,6 +216,8 @@ func TestStart(t *testing.T) {
 }
 
 func TestStartPlatform(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"store-monitor", "store-daemon", "store-metadata", "store-gateway@*",
 		"store-volume", "logger", "logspout", "database", "registry@*", "controller",
@@ -214,6 +232,8 @@ func TestStartPlatform(t *testing.T) {
 }
 
 func TestStartSwarm(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"swarm-node", "swarm-manager"}
 
@@ -225,6 +245,8 @@ func TestStartSwarm(t *testing.T) {
 }
 
 func TestStop(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@1", "router@2"}
 	Stop(expected, &b)
@@ -235,6 +257,8 @@ func TestStop(t *testing.T) {
 }
 
 func TestStopPlatform(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@*", "publisher", "controller", "builder", "database",
 		"registry@*", "logger", "logspout", "store-volume", "store-gateway@*",
@@ -247,6 +271,8 @@ func TestStopPlatform(t *testing.T) {
 }
 
 func TestStopSwarm(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"swarm-node", "swarm-manager"}
 	Stop([]string{"swarm"}, &b)
@@ -257,6 +283,8 @@ func TestStopSwarm(t *testing.T) {
 }
 
 func TestRestart(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@4", "router@5"}
 
@@ -271,6 +299,8 @@ func TestRestart(t *testing.T) {
 }
 
 func TestSSH(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	err := SSH("controller", &b)
 
@@ -280,6 +310,8 @@ func TestSSH(t *testing.T) {
 }
 
 func TestSSHError(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	err := SSH("registry", &b)
 
@@ -289,6 +321,8 @@ func TestSSHError(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 
 	if Status([]string{"controller", "builder"}, &b) != nil {
@@ -297,6 +331,8 @@ func TestStatus(t *testing.T) {
 }
 
 func TestStatusError(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 
 	expected := "Test Error"
@@ -308,6 +344,8 @@ func TestStatusError(t *testing.T) {
 }
 
 func TestJournal(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 
 	if Journal([]string{"controller", "builder"}, &b) != nil {
@@ -316,6 +354,8 @@ func TestJournal(t *testing.T) {
 }
 
 func TestJournalError(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 
 	expected := "Test Error"
@@ -327,6 +367,8 @@ func TestJournalError(t *testing.T) {
 }
 
 func TestInstall(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@1", "router@2"}
 
@@ -338,6 +380,8 @@ func TestInstall(t *testing.T) {
 }
 
 func TestInstallPlatform(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"store-daemon", "store-monitor", "store-metadata", "store-volume",
 		"store-gateway@1", "logger", "logspout", "database", "registry@1",
@@ -351,6 +395,8 @@ func TestInstallPlatform(t *testing.T) {
 }
 
 func TestInstallSwarm(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"swarm-node", "swarm-manager"}
 
@@ -362,6 +408,8 @@ func TestInstallSwarm(t *testing.T) {
 }
 
 func TestUninstall(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@3", "router@4"}
 
@@ -373,6 +421,8 @@ func TestUninstall(t *testing.T) {
 }
 
 func TestUninstallPlatform(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"router@*", "publisher", "controller", "builder", "database",
 		"registry@*", "logger", "logspout", "store-volume", "store-gateway@*",
@@ -386,6 +436,8 @@ func TestUninstallPlatform(t *testing.T) {
 }
 
 func TestUninstallSwarm(t *testing.T) {
+	t.Parallel()
+
 	b := backendStub{}
 	expected := []string{"swarm-node", "swarm-manager"}
 

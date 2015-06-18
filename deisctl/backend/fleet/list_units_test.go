@@ -12,6 +12,7 @@ import (
 )
 
 func TestListUnits(t *testing.T) {
+	t.Parallel()
 
 	testUnitStates := []*schema.UnitState{
 		&schema.UnitState{

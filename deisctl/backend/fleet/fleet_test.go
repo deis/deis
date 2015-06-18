@@ -127,6 +127,8 @@ func logState(outchan chan string, errchan chan error, errOutput *string, mutex 
 }
 
 func TestNewClient(t *testing.T) {
+	t.Parallel()
+
 	// set required flags
 	Flags.Endpoint = "http://127.0.0.1:4001"
 

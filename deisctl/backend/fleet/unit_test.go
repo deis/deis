@@ -13,6 +13,8 @@ import (
 )
 
 func TestUnits(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",
@@ -41,6 +43,8 @@ func TestUnits(t *testing.T) {
 }
 
 func TestNextUnit(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",
@@ -66,6 +70,8 @@ func TestNextUnit(t *testing.T) {
 }
 
 func TestLastUnit(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",
@@ -91,6 +97,8 @@ func TestLastUnit(t *testing.T) {
 }
 
 func TestFormatUnitName(t *testing.T) {
+	t.Parallel()
+
 	unitName, err := formatUnitName("router", 1)
 	if err != nil {
 		t.Fatal(err)
@@ -102,6 +110,8 @@ func TestFormatUnitName(t *testing.T) {
 }
 
 func TestNewUnit(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl-fleetctl")
 	unitFile := `[Unit]
 Description=deis-controller`
@@ -124,6 +134,8 @@ Description=deis-controller`
 }
 
 func TestReadTemplate(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl-fleetctl")
 	expected := []byte("test")
 
@@ -146,6 +158,8 @@ func TestReadTemplate(t *testing.T) {
 }
 
 func TestReadTemplateError(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl-fleetctl")
 
 	if err != nil {

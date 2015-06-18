@@ -11,6 +11,8 @@ import (
 )
 
 func TestScaleUp(t *testing.T) {
+	t.Parallel()
+
 	name, err := ioutil.TempDir("", "deisctl-fleetctl")
 
 	if err != nil {
@@ -71,6 +73,8 @@ func TestScaleUp(t *testing.T) {
 }
 
 func TestScaleDown(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name:         "deis-router@1.service",
@@ -130,6 +134,8 @@ func TestScaleDown(t *testing.T) {
 }
 
 func TestScaleError(t *testing.T) {
+	t.Parallel()
+
 	c := &FleetClient{Fleet: &stubFleetClient{}}
 
 	var errOutput string

@@ -6,6 +6,8 @@ import (
 )
 
 func TestGetTunnelFlag(t *testing.T) {
+	t.Parallel()
+
 	flag := getTunnelFlag()
 	if flag != "" {
 		t.Fatalf("got %v, expected \"\"", flag)
@@ -23,6 +25,8 @@ func TestGetTunnelFlag(t *testing.T) {
 }
 
 func TestGetChecker(t *testing.T) {
+	t.Parallel()
+
 	Flags.StrictHostKeyChecking = false
 	checker := getChecker()
 	if checker != nil {
@@ -31,6 +35,8 @@ func TestGetChecker(t *testing.T) {
 }
 
 func TestFakeClient(t *testing.T) {
+	t.Parallel()
+
 	_, err := getFakeClient()
 	if err != nil {
 		t.Fatal(err)
@@ -38,6 +44,8 @@ func TestFakeClient(t *testing.T) {
 }
 
 func TestRegistryClient(t *testing.T) {
+	t.Parallel()
+
 	Flags.Tunnel = ""
 	Flags.Endpoint = "http://127.0.0.1:4001"
 	_, err := getRegistryClient()

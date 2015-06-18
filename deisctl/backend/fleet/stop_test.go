@@ -9,6 +9,8 @@ import (
 )
 
 func TestStop(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name:         "deis-controller.service",
