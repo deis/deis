@@ -20,7 +20,13 @@ import (
 )
 
 // Deis points to the CLI used to run tests.
-var Deis = "deis "
+var Deis = os.Getenv("DEIS_BINARY") + " "
+
+func init() {
+	if Deis == "" {
+		Deis = "deis "
+	}
+}
 
 // DeisTestConfig allows tests to be repeated against different
 // targets, with different example apps, using specific credentials, and so on.
