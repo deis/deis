@@ -15,7 +15,8 @@ import (
 var fileKeys = []string{
 	"/deis/platform/sshPrivateKey",
 	"/deis/router/sslCert",
-	"/deis/router/sslKey"}
+	"/deis/router/sslKey",
+	"/deis/router/sslDhparam"}
 
 // b64Keys define config keys to be base64 encoded before stored
 var b64Keys = []string{"/deis/platform/sshPrivateKey"}
