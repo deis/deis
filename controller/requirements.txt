@@ -18,4 +18,4 @@ setproctitle==1.1.8
 static==1.1.1
 South==1.0.2
 python-ldap==2.4.19
-marathon
+marathon==0.6.15

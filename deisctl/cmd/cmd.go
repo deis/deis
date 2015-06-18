@@ -75,8 +75,7 @@ func Start(targets []string, b backend.Backend) error {
 			return StartPlatform(b, true)
 		} else if targets[0] == swarm {
 			return StartSwarm(b)
-		}
-		if targets[0] == mesos {
+		} else if targets[0] == mesos {
 			return StartMesos(b)
 		}
 	}
@@ -184,8 +183,7 @@ func Stop(targets []string, b backend.Backend) error {
 			return StopPlatform(b, true)
 		} else if targets[0] == swarm {
 			return StopSwarm(b)
-		}
-		if targets[0] == mesos {
+		} else if targets[0] == mesos {
 			return StopMesos(b)
 		}
 	}
@@ -289,8 +287,7 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 			return InstallPlatform(b, checkKeys, true)
 		} else if targets[0] == swarm {
 			return InstallSwarm(b)
-		}
-		if targets[0] == mesos {
+		} else if targets[0] == mesos {
 			return InstallMesos(b)
 		}
 	}
@@ -353,8 +350,7 @@ func Uninstall(targets []string, b backend.Backend) error {
 			return UninstallPlatform(b, true)
 		} else if targets[0] == swarm {
 			return UnInstallSwarm(b)
-		}
-		if targets[0] == mesos {
+		} else if targets[0] == mesos {
 			return UninstallMesos(b)
 		}
 	}

@@ -12,9 +12,14 @@ of your app. For example, a command such as ``deis scale web=3`` tells the
 scheduler to run three containers from the Docker image for your app.
 
 Deis defaults to using the `Fleet Scheduler`_. A tech preview of the `Swarm Scheduler`_
-is available for testing. Work is ongoing on `Kubernetes`_ and `Mesos`_-based
-schedulers with the intent to test those alternatives in future releases of Deis.
+and `Mesos with Marathon framework`_ is available for testing. Work is ongoing on `Kubernetes`_-based
+scheduler with the intent to test those alternatives in future releases of Deis. Keep watching `dynamic metadata fleet PR 1077`_
+for support of runtime changes to metadata.
 
+.. note::
+
+    If you are using a scheduler other than fleet app containers will not be rescheduled if deis-registry is unavailable.
+    For more information look at `deis-registry issue 3619`.
 
 Settings set by scheduler
 -------------------------
@@ -23,12 +28,13 @@ The following etcd keys are set by the scheduler module of the controller compon
 
 Some keys will exist only if a particular ``schedulerModule`` backend is enabled.
 
-=============================            ================================================
-setting                                  description
-=============================            ================================================
-/deis/scheduler/swarm/host               the swarm manager's host IP address
-/deis/scheduler/swarm/node               used to identify other nodes in the cluster
-=============================            ================================================
+===================================            ======================================================
+setting                                        description
+===================================            ======================================================
+/deis/scheduler/swarm/host                     the swarm manager's host IP address
+/deis/scheduler/swarm/node                     used to identify other nodes in the cluster
+/deis/scheduler/mesos/marathon                 used to identify Marathon framework's host IP address
+===================================            ======================================================
 
 
 Settings used by scheduler
@@ -39,8 +45,8 @@ The following etcd keys are used by the scheduler module of the controller compo
 ====================================      ===============================================
 setting                                   description
 ====================================      ===============================================
-/deis/controller/schedulerModule          scheduler backend, either "fleet" or "swarm"
-                                          (default: "fleet")
+/deis/controller/schedulerModule          scheduler backend, either "fleet" or "swarm" or
+                                          mesos_marathon (default: "fleet")
 ====================================      ===============================================
 
 
@@ -97,10 +103,7 @@ to `enable the remote API`_.
     **Known Issues**
 
     - It is not yet possible to change the default affinity filter.
-    - If swarm can't create all the containers requested, Deis returns an error
-      and leaves some containers in the "created" state. Until this behavior is fixed,
-      be mindful of resource limitations on your cluster.
-    - App containers will not be rescheduled if deis-registry is unavailable.
+    - If swarm can't create all the containers requested during scale, deis rolls back the scale operation.
 
 To test the Swarm Scheduler backend, first install and start the swarm components:
 
@@ -132,9 +135,68 @@ component, or spy on Docker events directly on the swarm-manager machine:
     2015-04-30T17:31 61e59c: (from 172.17.8.100:5000/hungry-variable:v5 node:deis-02) start
 
 
+Mesos with Marathon framework
+-----------------------------
+
+.. important::
+
+    The Mesos with Marathon framework Scheduler is a technology preview and is not recommended for
+    production use.
+
+`Mesos`_ is a distributed system kernel:
+
+    Mesos provides APIs for resource management and scheduling. A framework interacts with Mesos master
+    and schedules and task. A Zookeeper cluster elects Mesos master node. Mesos slaves are installed on
+    each node and they communicate to master with available resources.
+
+`Marathon`_ is a Mesos_ framework for long running applications:
+
+    Marathon provides a Paas like feel for long running applications and features like high-availablilty, host constraints,
+    service discovery, load balancing and REST API to control your Apps.
+
+Deis uses the Marathon framework to schedule containers. Since Marathon is a framework for long-running
+jobs, Deis uses the `Fleet Scheduler`_ to run batch processing jobs. ``deisctl`` installs a standalone Mesos
+cluster. To install an HA Mesos cluster, follow the directions at `aledbf-mesos`_, and set the etcd key
+``/deis/scheduler/mesos/marathon`` to any Marathon node IP address. If a request is received by a regular
+Marathon node, it is proxied to the master Marathon node.
+
+To test the Marathon Scheduler backend, first install and start the mesos components:
+
+.. code-block:: console
+
+    $ deisctl install mesos && deisctl start mesos
+
+Then set the controller's ``schedulerModule`` to "mesos_marathon":
+
+.. code-block:: console
+
+    $ deisctl config controller set schedulerModule=mesos_marathon
+
+The Marathon framework is now active. Commands such as ``deis destroy`` or
+``deis scale web=9`` will use `Marathon`_ to manage app containers.
+
+Deis starts Marathon on port 8180. You can manage apps through the Marathon UI, which is accessible at http://<Marathon-node-IP>:8180
+
+.. note::
+
+    **Known Issues**
+
+    - deisctl installs a standalone mesos cluster as fleet doesn't support runtime change to metadata.
+      You can specify this in cloud-init during the deployment of the node. keep watching `dynamic metadata fleet PR 1077`_.
+    - If you want to access Marathon UI, you'll have to expose port 8180 in the security group settings.
+      This is blocked off by default for security purposes.
+    - Deis does not yet use Marathon's docker container API to create containers.
+    - CPU shares are integers representing the number of CPUs. Memory limits should be specified in MB.
+
+
 .. _Kubernetes: http://kubernetes.io/
-.. _Mesos: http://mesos.apache.org/
+.. _Mesos: http://mesos.apache.org
+.. _Marathon: https://github.com/mesosphere/marathon
 .. _fleet: https://github.com/coreos/fleet#fleet---a-distributed-init-system
 .. _swarm: https://github.com/docker/swarm#swarm-a-docker-native-clustering-system
 .. _`soft affinity`: https://docs.docker.com/swarm/scheduler/filter/#soft-affinitiesconstraints
 .. _`enable the remote API`: https://coreos.com/docs/launching-containers/building/customizing-docker/
+.. _`deis-kubernetes issue 3850`: https://github.com/deis/deis/issues/3850
+.. _`dynamic metadata fleet PR 1077`: https://github.com/coreos/fleet/pull/1077
+.. _`aledbf-mesos`: https://github.com/aledbf/coreos-mesos-zookeeper
+.. _`deis-registry issue 3619`: https://github.com/deis/deis/issues/3619

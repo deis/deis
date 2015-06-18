@@ -8,11 +8,11 @@ EnvironmentFile=/etc/environment
 Restart=on-failure
 RestartSec=20
 TimeoutStartSec=0
-ExecStartPre=-/usr/bin/docker kill coreos-mesos-slave
-ExecStartPre=-/usr/bin/docker rm coreos-mesos-slave
-ExecStartPre=/usr/bin/docker pull aledbf/mesos-slave:0.22.1
-ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
-  --name=coreos-mesos-slave \
+ExecStartPre=-/usr/bin/docker kill deis-mesos-slave
+ExecStartPre=-/usr/bin/docker rm deis-mesos-slave
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/mesos-slave` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStart=/usr/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/mesos-slave` && docker run \
+  --name=deis-mesos-slave \
   --net=host \
   --privileged \
   -e HOST=$COREOS_PRIVATE_IPV4 \
@@ -20,7 +20,7 @@ ExecStart=/usr/bin/sh -c "/usr/bin/docker run \
   -v /usr/bin/docker:/usr/bin/docker:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /lib64/libdevmapper.so.1.02:/lib/libdevmapper.so.1.02:ro \
-  aledbf/mesos-slave:0.22.1"
+  $IMAGE"
 ExecStop=/usr/bin/docker stop coreos-mesos-slave
 
 [Install]
