@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -47,8 +48,9 @@ func TestHelp(t *testing.T) {
 // TestUsage ensures that deisctl prints a short usage string when no arguments were provided.
 func TestUsage(t *testing.T) {
 	out := commandOutput(nil)
-	if out != "Usage: deisctl [options] <command> [<args>...]\n" {
-		t.Error(out)
+	expected := "Usage: deisctl [options] <command> [<args>...]\n"
+	if out != expected {
+		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expected, out))
 	}
 }
 

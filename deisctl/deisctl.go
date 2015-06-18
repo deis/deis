@@ -60,15 +60,16 @@ Options:
 	argv, helpFlag := parseArgs(argv)
 	// give docopt an optional final false arg so it doesn't call os.Exit()
 	args, err := docopt.Parse(usage, argv, false, version.Version, true, false)
-	if err != nil || len(args) == 0 {
-		if helpFlag {
-			fmt.Print(usage)
-			return 0
-		} else if argv[0] == "--version" {
-			return 0
-		}
+
+	if err != nil && err.Error() != "" {
+		fmt.Println(err)
 		return 1
 	}
+
+	if len(args) == 0 {
+		return 0
+	}
+
 	command := args["<command>"]
 	setTunnel := true
 	// "--help" and "refresh-units" doesn't need SSH tunneling
