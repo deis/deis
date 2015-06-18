@@ -11,7 +11,7 @@ import (
 // Start units and wait for their desiredState
 func (c *FleetClient) Start(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 	// expand @* targets
-	expandedTargets, err := expandTargets(c, targets)
+	expandedTargets, err := c.expandTargets(targets)
 	if err != nil {
 		errchan <- err
 		return

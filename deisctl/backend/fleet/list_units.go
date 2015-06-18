@@ -2,20 +2,12 @@ package fleet
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
 	"github.com/deis/deis/deisctl/units"
 )
-
-// initialize tabwriter on stdout
-func init() {
-	out = new(tabwriter.Writer)
-	out.Init(os.Stdout, 0, 8, 1, '\t', 0)
-}
 
 const (
 	//defaultListUnitFields  = "unit,state,load,active,sub,machine"
@@ -25,7 +17,6 @@ const (
 type usToField func(c *FleetClient, us *schema.UnitState, full bool) string
 
 var (
-	out             *tabwriter.Writer
 	listUnitsFields = map[string]usToField{
 		"unit": func(c *FleetClient, us *schema.UnitState, full bool) string {
 			if us == nil {
@@ -55,7 +46,7 @@ var (
 			if us == nil || us.MachineID == "" {
 				return "-"
 			}
-			ms := cachedMachineState(c, us.MachineID)
+			ms := c.cachedMachineState(us.MachineID)
 			if ms == nil {
 				ms = &machine.MachineState{ID: us.MachineID}
 			}
@@ -90,27 +81,22 @@ func (c *FleetClient) ListUnits() (err error) {
 			}
 		}
 	}
-	printUnits(c, states)
+	c.printUnits(states)
 	return
 }
 
 // printUnits writes units to stdout using a tabwriter
-func printUnits(client *FleetClient, states []*schema.UnitState) {
+func (c *FleetClient) printUnits(states []*schema.UnitState) {
 	cols := strings.Split(defaultListUnitsFields, ",")
-	for _, s := range cols {
-		if _, ok := listUnitsFields[s]; !ok {
-			fmt.Fprintf(os.Stderr, "Invalid key in output format: %q\n", s)
-		}
-	}
-	fmt.Fprintln(out, strings.ToUpper(strings.Join(cols, "\t")))
+	fmt.Fprintln(c.out, strings.ToUpper(strings.Join(cols, "\t")))
 	for _, us := range states {
 		var f []string
-		for _, c := range cols {
-			f = append(f, listUnitsFields[c](client, us, false))
+		for _, col := range cols {
+			f = append(f, listUnitsFields[col](c, us, false))
 		}
-		fmt.Fprintln(out, strings.Join(f, "\t"))
+		fmt.Fprintln(c.out, strings.Join(f, "\t"))
 	}
-	out.Flush()
+	c.out.Flush()
 }
 
 func machineIDLegend(ms machine.MachineState, full bool) string {

@@ -92,7 +92,7 @@ func (c *FleetClient) createServiceUnit(component string, num int) (name string,
 	if err != nil {
 		return "", nil, err
 	}
-	uf, err = NewUnit(component)
+	uf, err = NewUnit(component, c.templatePaths)
 	if err != nil {
 		return
 	}

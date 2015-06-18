@@ -86,7 +86,7 @@ func splitTarget(target string) (component string, num int, err error) {
 }
 
 // expand a target to all installed units
-func expandTargets(c *FleetClient, targets []string) (expandedTargets []string, err error) {
+func (c *FleetClient) expandTargets(targets []string) (expandedTargets []string, err error) {
 	for _, t := range targets {
 		// ensure unit name starts with "deis-"
 		if !strings.HasPrefix(t, "deis-") {
@@ -94,7 +94,7 @@ func expandTargets(c *FleetClient, targets []string) (expandedTargets []string, 
 		}
 		if strings.HasSuffix(t, "@*") {
 			var targets []string
-			targets, err = expandTarget(c, strings.TrimSuffix(t, "@*"))
+			targets, err = c.Units(strings.TrimSuffix(t, "@*"))
 			if err != nil {
 				return
 			}
@@ -104,11 +104,6 @@ func expandTargets(c *FleetClient, targets []string) (expandedTargets []string, 
 		}
 
 	}
-	return
-}
-
-func expandTarget(c *FleetClient, target string) (targets []string, err error) {
-	targets, err = c.Units(target)
 	return
 }
 

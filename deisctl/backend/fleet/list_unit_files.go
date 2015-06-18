@@ -2,7 +2,6 @@ package fleet
 
 import (
 	"fmt"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -34,7 +33,7 @@ var (
 			if suToGlobal(u) || u.MachineID == "" {
 				return "-"
 			}
-			ms := cachedMachineState(c, u.MachineID)
+			ms := c.cachedMachineState(u.MachineID)
 			if ms == nil {
 				ms = &machine.MachineState{ID: u.MachineID}
 			}
@@ -84,28 +83,23 @@ func (c *FleetClient) ListUnitFiles() (err error) {
 		}
 	}
 	sortable.Sort()
-	printUnitFiles(c, units, sortable)
+	c.printUnitFiles(units, sortable)
 	return
 }
 
 // printUnitFiles writes unit files to stdout using a tabwriter
-func printUnitFiles(client *FleetClient, units map[string]*schema.Unit, sortable sort.StringSlice) {
+func (c *FleetClient) printUnitFiles(units map[string]*schema.Unit, sortable sort.StringSlice) {
 	cols := strings.Split(defaultListUnitFilesFields, ",")
-	for _, s := range cols {
-		if _, ok := listUnitsFields[s]; !ok {
-			fmt.Fprintf(os.Stderr, "Invalid key in output format: %q\n", s)
-		}
-	}
-	fmt.Fprintln(out, strings.ToUpper(strings.Join(cols, "\t")))
+	fmt.Fprintln(c.out, strings.ToUpper(strings.Join(cols, "\t")))
 	for _, name := range sortable {
 		var f []string
 		u := units[name]
-		for _, c := range cols {
-			f = append(f, listUnitFilesFields[c](client, *u, false))
+		for _, col := range cols {
+			f = append(f, listUnitFilesFields[col](c, *u, false))
 		}
-		fmt.Fprintln(out, strings.Join(f, "\t"))
+		fmt.Fprintln(c.out, strings.Join(f, "\t"))
 	}
-	out.Flush()
+	c.out.Flush()
 }
 
 // suToGlobal returns whether or not a schema.Unit refers to a global unit

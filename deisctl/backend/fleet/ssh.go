@@ -18,7 +18,7 @@ func (c *FleetClient) SSH(name string) (err error) {
 
 	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
 
-	ms, err := machineState(c, name)
+	ms, err := c.machineState(name)
 	if err != nil {
 		return err
 	}
@@ -31,13 +31,13 @@ func (c *FleetClient) SSH(name string) (err error) {
 			return err
 		}
 
-		machID, err := findUnit(c, units[0])
+		machID, err := c.findUnit(units[0])
 
 		if err != nil {
 			return err
 		}
 
-		ms, err = machineState(c, machID)
+		ms, err = c.machineState(machID)
 
 		if err != nil || ms == nil {
 			return err
@@ -62,30 +62,37 @@ func (c *FleetClient) SSH(name string) (err error) {
 
 // runCommand will attempt to run a command on a given machine. It will attempt
 // to SSH to the machine if it is identified as being remote.
-func runCommand(c *FleetClient, cmd string, machID string) (retcode int) {
+func (c *FleetClient) runCommand(cmd string, machID string) (retcode int) {
 	var err error
 	if machine.IsLocalMachineID(machID) {
-		retcode, err = runLocalCommand(cmd)
+		retcode, err = c.runner.LocalCommand(cmd)
 		if err != nil {
-			fmt.Printf("Error running local command: %v\n", err)
+			fmt.Fprintf(c.errWriter, "Error running local command: %v\n", err)
 		}
 	} else {
-		ms, err := machineState(c, machID)
+		ms, err := c.machineState(machID)
 		if err != nil || ms == nil {
-			fmt.Printf("Error getting machine IP: %v\n", err)
+			fmt.Fprintf(c.errWriter, "Error getting machine IP: %v\n", err)
 		} else {
 			sshTimeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
-			retcode, err = runRemoteCommand(cmd, ms.PublicIP, sshTimeout)
+			retcode, err = c.runner.RemoteCommand(cmd, ms.PublicIP, sshTimeout)
 			if err != nil {
-				fmt.Printf("Error running remote command: %v\n", err)
+				fmt.Fprintf(c.errWriter, "Error running remote command: %v\n", err)
 			}
 		}
 	}
 	return
 }
 
+type commandRunner interface {
+	LocalCommand(string) (int, error)
+	RemoteCommand(string, string, time.Duration) (int, error)
+}
+
+type sshCommandRunner struct{}
+
 // runLocalCommand runs the given command locally and returns any error encountered and the exit code of the command
-func runLocalCommand(cmd string) (int, error) {
+func (sshCommandRunner) LocalCommand(cmd string) (int, error) {
 	cmdSlice := strings.Split(cmd, " ")
 	osCmd := exec.Command(cmdSlice[0], cmdSlice[1:]...)
 	osCmd.Stderr = os.Stderr
@@ -107,7 +114,7 @@ func runLocalCommand(cmd string) (int, error) {
 
 // runRemoteCommand runs the given command over SSH on the given IP, and returns
 // any error encountered and the exit status of the command
-func runRemoteCommand(cmd string, addr string, timeout time.Duration) (exit int, err error) {
+func (sshCommandRunner) RemoteCommand(cmd string, addr string, timeout time.Duration) (exit int, err error) {
 	var sshClient *ssh.SSHForwardingClient
 	if tun := getTunnelFlag(); tun != "" {
 		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
@@ -125,7 +132,7 @@ func runRemoteCommand(cmd string, addr string, timeout time.Duration) (exit int,
 }
 
 // findUnits returns the machine ID of a running unit
-func findUnit(c *FleetClient, name string) (machID string, err error) {
+func (c *FleetClient) findUnit(name string) (machID string, err error) {
 	u, err := c.Fleet.Unit(name)
 	if err != nil {
 		return "", fmt.Errorf("Error retrieving Unit %s: %v", name, err)
@@ -142,7 +149,7 @@ func findUnit(c *FleetClient, name string) (machID string, err error) {
 	return u.MachineID, nil
 }
 
-func machineState(c *FleetClient, machID string) (*machine.MachineState, error) {
+func (c *FleetClient) machineState(machID string) (*machine.MachineState, error) {
 	machines, err := c.Fleet.Machines()
 	if err != nil {
 		return nil, err
@@ -158,7 +165,7 @@ func machineState(c *FleetClient, machID string) (*machine.MachineState, error) 
 // cachedMachineState makes a best-effort to retrieve the MachineState of the given machine ID.
 // It memoizes MachineState information for the life of a fleetctl invocation.
 // Any error encountered retrieving the list of machines is ignored.
-func cachedMachineState(c *FleetClient, machID string) (ms *machine.MachineState) {
+func (c *FleetClient) cachedMachineState(machID string) (ms *machine.MachineState) {
 	if c.machineStates == nil {
 		c.machineStates = make(map[string]*machine.MachineState)
 		ms, err := c.Fleet.Machines()
