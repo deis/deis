@@ -69,7 +69,7 @@ func TestFindUnit(t *testing.T) {
 
 	_, err := c.findUnit("foo")
 
-	actualErr := fmt.Sprintf("%v", err)
+	actualErr := err.Error()
 
 	if actualErr != expectedErr {
 		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr))
@@ -79,7 +79,7 @@ func TestFindUnit(t *testing.T) {
 
 	_, err = c.findUnit("deis-router@2.service")
 
-	actualErr = fmt.Sprintf("%v", err)
+	actualErr = err.Error()
 
 	if actualErr != expectedErr {
 		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr))

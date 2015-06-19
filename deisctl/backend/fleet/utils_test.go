@@ -66,7 +66,7 @@ func TestNextComponent(t *testing.T) {
 
 func TestLastComponent(t *testing.T) {
 	num, err := lastUnitNum([]string{})
-	errorf := fmt.Sprintf("%v", err)
+	errorf := err.Error()
 	expectedErr := "Component not found"
 	if errorf != expectedErr {
 		t.Fatal(fmt.Errorf("Expected %d, Got %d", expectedErr, errorf))

@@ -154,7 +154,7 @@ func TestReadTemplateError(t *testing.T) {
 
 	_, err = readTemplate("foo", []string{name})
 	expected := "Could not find unit template for foo"
-	errorf := fmt.Sprintf("%v", err)
+	errorf := err.Error()
 
 	if errorf != expected {
 		t.Error(fmt.Errorf("Expected %s, Got %s", expected, errorf))

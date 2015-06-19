@@ -81,7 +81,7 @@ func TestStatus(t *testing.T) {
 	c.runner = mockStatusCommandRunner{validUnits: []string{}}
 	err = c.Status("foo")
 
-	actualErr := fmt.Sprintf("%v", err)
+	actualErr := err.Error()
 	expectedErr := "could not find unit: foo"
 
 	if actualErr != expectedErr {
