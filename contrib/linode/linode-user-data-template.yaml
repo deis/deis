@@ -1,0 +1,46 @@
+#cloud-config
+hostname: $hostname
+coreos:
+  fleet:
+    metadata: name=%H
+  units:
+  - name: 00-eth0.network
+    runtime: false
+    content: |
+      [Match]
+      Name=eth0
+
+      [Network]
+      Address=$public_ipv4/24
+      Address=$private_ipv4/17
+      Gateway=$gateway.1
+      DNS=72.14.179.5
+      DNS=8.8.8.8
+      DNS=208.67.222.222
+  - name: disable-ipv6.service
+    command: start
+    content: |
+      [Unit]
+      Description=Disable IPv6. The notion of a security group does not exist on Linode. To make firewalling each Linode easier, disable IPv6.
+      Before=network.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/sh -c "sysctl -w net.ipv6.conf.all.disable_ipv6=1"
+    # use ntpd rather than timesyncd. timesyncd was not keeping the nodes close enough to keep ceph happy
+  - name: systemd-timesyncd.service
+    command: stop
+    mask: true
+  - name: ntpd.service
+    command: start
+    enable: true
+write_files:
+  - path: /etc/environment
+    content: |
+      COREOS_PUBLIC_IPV4=$public_ipv4
+      COREOS_PRIVATE_IPV4=$private_ipv4
+  - path: /etc/systemd/system/ntpd.service.d/debug.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/sbin/ntpd -g -n -f /var/lib/ntp/ntp.drift
