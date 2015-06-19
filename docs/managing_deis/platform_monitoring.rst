@@ -121,7 +121,7 @@ The Deis community's own Johannes Würbach has developed a fleet service for New
 SPM Performance Monitoring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`SPM for Docker`_ provides Monitoring, Anomaly Detection and Alerting. Detailed metrics are collected for the host machine and running containers (cpu, memory, IO, network, limits etc.). The SPM agent runs in a Docker container.
+`SPM for Docker`_ provides Monitoring, Anomaly Detection and Alerting. Detailed metrics and events are collected for the host machine and running containers (e.g. cpu, memory, IO, network, limits). The SPM agent runs in a Docker container.
 
 `Create a new SPM App`_ of type "Docker" and copy the Application Token 
 
