@@ -118,6 +118,71 @@ unless those containers have been built with a Dockerfile that installs their ow
 The Deis community's own Johannes Würbach has developed a fleet service for New Relic in his
 `newrelic-sysmond`_ repository.
 
+SPM Performance Monitoring
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`SPM for Docker`_ provides Monitoring, Anomaly Detection and Alerting. Detailed metrics and events are collected for the host machine and running containers (e.g. cpu, memory, IO, network, limits). The SPM agent runs in a Docker container.
+
+`Create a new SPM App`_ of type "Docker" and copy the Application Token 
+
+Set the Application Token (SPM_TOKEN) via etcd to make it available in the cluster.
+
+.. code-block:: console
+
+    etcdctl set /SPM_TOKEN YOUR_SPM_APP_TOKEN
+
+SPM Docker Agent can be run using Docker as follows (assuming the SPM_TOKEN is set via etcdctl):
+
+.. code-block:: console
+
+    docker run -d --name spm-agent -e SPM_TOKEN=`etcdctl get SPM_TOKEN` -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker
+    
+
+To activate SPM Docker Agent for the entire cluster submit this unit file to fleet
+
+.. code-block:: console
+
+    [Unit]
+    Description=SPM Docker Agent
+    After=docker.service
+    Requires=docker.service
+
+    [Service]
+    TimeoutStartSec=0
+    EnvironmentFile=/etc/environment
+    Restart=always
+    RestartSec=30s
+    ExecStartPre=-/usr/bin/docker kill spm-agent
+    ExecStartPre=-/usr/bin/docker rm spm-agent
+    ExecStartPre=/usr/bin/docker pull sematext/spm-agent-docker:latest
+    ExecStart=/bin/sh -c 'set -ex; /usr/bin/docker run -d --name spm-agent -e SPM_TOKEN=$(etcdctl get SPM_TOKEN) -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker'
+    ExecStop=/usr/bin/docker stop spm-agent
+
+    [Install]
+    WantedBy=multi-user.target
+    
+    [X-Fleet]
+    Global=true
+
+Save the file as ``spm-agent.service``. 
+
+.. code-block:: console
+
+    wget https://raw.githubusercontent.com/sematext/spm-agent-docker/master/coreos/spm-agent.service
+
+Load and start the service with
+
+.. code-block:: console
+
+    fleetctl load spm-agent.service && fleetctl start spm-agent.service 
+
+After one minute, you should see metrics in SPM. 
+
+Documentation, source code and support information is available here:
+`https://github.com/sematext/spm-agent-docker`_. 
+
+
+
 .. _`cadvisor`: https://github.com/google/cadvisor
 .. _`Datadog`: https://www.datadoghq.com
 .. _`Datadog agent`: https://github.com/DataDog/docker-dd-agent
@@ -125,3 +190,6 @@ The Deis community's own Johannes Würbach has developed a fleet service for New
 .. _`this blog post`: https://www.datadoghq.com/2014/06/monitor-docker-datadog/
 .. _`New Relic`: http://newrelic.com/
 .. _`newrelic-sysmond`: https://github.com/johanneswuerbach/newrelic-sysmond-service
+.. _`SPM for Docker`: http://sematext.com/spm/integrations/docker-monitoring.html
+.. _`Create a new SPM App`: https://apps.sematext.com/spm-reports/registerApplication.do
+.. _`https://github.com/sematext/spm-agent-docker`: https://github.com/sematext/spm-agent-docker
