@@ -15,6 +15,11 @@
 			"Rev": "068b72961a6bc5b4a82cf4fc14ccc724c0cfa73a"
 		},
 		{
+			"ImportPath": "github.com/Masterminds/cookoo",
+			"Comment": "v1.2.0-5-g110a04f",
+			"Rev": "110a04ff7dc3e7c9b86c1a2413906a16a2bb65cb"
+		},
+		{
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.5.1-35-g2e36101",
 			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"

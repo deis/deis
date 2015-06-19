@@ -8,9 +8,8 @@ ExecStartPre=/bin/sh -c "docker inspect deis-builder-data >/dev/null 2>&1 || doc
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-builder >/dev/null 2>&1 && docker rm -f deis-builder || true"
 ExecStartPre=-/bin/sh -c "/sbin/losetup -f"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:22 --volumes-from=deis-builder-data -c 800 -e EXTERNAL_PORT=2223 -e HOST=$COREOS_PRIVATE_IPV4 --privileged -v /etc/environment_proxy:/etc/environment_proxy $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/builder` && docker run --name deis-builder --rm -p 2223:2223 --volumes-from=deis-builder-data -c 800 -e EXTERNAL_PORT=2223 -e HOST=$COREOS_PRIVATE_IPV4 --privileged -v /etc/environment_proxy:/etc/environment_proxy $IMAGE"
 ExecStartPost=/bin/sh -c "echo 'Waiting for builder on 2223/tcp...' && until ncat $COREOS_PRIVATE_IPV4 2223 --exec '/usr/bin/echo dummy-value' >/dev/null 2>&1; do sleep 1; done"
-ExecStartPost=/usr/bin/docker exec deis-builder /usr/local/bin/push-images
 Restart=on-failure
 RestartSec=5
 
