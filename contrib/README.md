@@ -30,6 +30,7 @@ Please add to this list by opening a pull request!
 
 ### CoreOS Unit Files
 * [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) by [@ianblenke](https://github.com/ianblenke) - Unit files to launch various services on CoreOS hosts
+* [Deis Backup and Restore](https://github.com/myriadmobile/deis-backup-restore) by [@croemmich](https://github.com/croemmich) - Container to backup and restore etcd, database, registry, and logs to/from any S3 compatible store
 * [deis-backup-service](https://github.com/mozilla/deis-backup-service) by [@glogiotatidis](https://github.com/glogiotatidis) - Unit Files to automatically backup to S3 database and registry data.
 * [Docker S3 Cleaner](https://github.com/myriadmobile/docker-s3-cleaner) by [@croemmich](https://github.com/croemmich) - Unit file to remove orphaned image layers from S3 backed private docker registries
 * [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) by [@lorieri](https://github.com/lorieri) - A global unit to launch New Relic sysmond
