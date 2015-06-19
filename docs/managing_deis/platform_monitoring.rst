@@ -155,7 +155,7 @@ To activate SPM Docker Agent for the entire cluster submit this unit file to fle
     ExecStartPre=-/usr/bin/docker kill spm-agent
     ExecStartPre=-/usr/bin/docker rm spm-agent
     ExecStartPre=/usr/bin/docker pull sematext/spm-agent-docker:latest
-    ExecStart=/bin/sh -c 'set -ex; /usr/bin/docker run -d --name spm-agent -e SPM_TOKEN=$(etcdctl get SPM_TOKEN) -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker'
+    ExecStart=/bin/sh -c 'set -ex; /usr/bin/docker run --name spm-agent -e SPM_TOKEN=$(etcdctl get SPM_TOKEN) -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker'
     ExecStop=/usr/bin/docker stop spm-agent
 
     [Install]
