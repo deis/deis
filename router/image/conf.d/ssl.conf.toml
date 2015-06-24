@@ -1,0 +1,10 @@
+[template]
+src   = "ssl.conf"
+dest  = "/opt/nginx/conf/ssl.conf"
+uid = 0
+gid = 0
+mode  = "0644"
+keys = [
+  "/deis/router",
+]
+reload_cmd = "/opt/nginx/sbin/nginx -s reload"
