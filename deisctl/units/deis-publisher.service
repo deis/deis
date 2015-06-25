@@ -9,7 +9,6 @@ TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/publisher` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-publisher >/dev/null 2>&1 && docker rm -f deis-publisher || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/publisher` && docker run --name deis-publisher --rm -v /var/run/docker.sock:/var/run/docker.sock $IMAGE --host=$COREOS_PRIVATE_IPV4 --etcd-host=$COREOS_PRIVATE_IPV4"
-ExecStopPost=-/usr/bin/docker rm -f deis-publisher
 Restart=on-failure
 RestartSec=5
 
