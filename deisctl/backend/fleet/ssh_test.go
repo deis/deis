@@ -26,6 +26,8 @@ func (mockCommandRunner) RemoteCommand(cmd string, addr string, timeout time.Dur
 }
 
 func TestRunCommand(t *testing.T) {
+	t.Parallel()
+
 	expected := machine.MachineState{
 		ID:       "test-1",
 		PublicIP: "1.1.1.1",
@@ -51,6 +53,8 @@ func TestRunCommand(t *testing.T) {
 }
 
 func TestFindUnit(t *testing.T) {
+	t.Parallel()
+
 	expectedID := "testing"
 
 	testUnits := []*schema.Unit{
@@ -97,6 +101,8 @@ func TestFindUnit(t *testing.T) {
 }
 
 func TestMachineState(t *testing.T) {
+	t.Parallel()
+
 	expected := machine.MachineState{
 		ID:       "test-1",
 		PublicIP: "1.1.1.1",

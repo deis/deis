@@ -48,6 +48,7 @@ func (m mockClient) Delete(key string) (err error) {
 }
 
 func TestGetConfig(t *testing.T) {
+	t.Parallel()
 
 	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
 	testWriter := bytes.Buffer{}
@@ -66,6 +67,8 @@ func TestGetConfig(t *testing.T) {
 }
 
 func TestGetConfigError(t *testing.T) {
+	t.Parallel()
+
 	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}}}
 	testWriter := bytes.Buffer{}
 
@@ -77,6 +80,8 @@ func TestGetConfigError(t *testing.T) {
 }
 
 func TestSetConfig(t *testing.T) {
+	t.Parallel()
+
 	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
@@ -94,6 +99,8 @@ func TestSetConfig(t *testing.T) {
 }
 
 func TestDeleteConfig(t *testing.T) {
+	t.Parallel()
+
 	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
@@ -112,6 +119,7 @@ func TestDeleteConfig(t *testing.T) {
 
 // TestConfigSSHPrivateKey ensures private keys are base64 encoded from file path
 func TestConfigSSHPrivateKey(t *testing.T) {
+	t.Parallel()
 
 	f, err := writeTempFile("private-key")
 	if err != nil {
@@ -131,6 +139,7 @@ func TestConfigSSHPrivateKey(t *testing.T) {
 }
 
 func TestConfigRouterKey(t *testing.T) {
+	t.Parallel()
 
 	f, err := writeTempFile("router-key")
 	if err != nil {
@@ -149,6 +158,7 @@ func TestConfigRouterKey(t *testing.T) {
 }
 
 func TestConfigRouterCert(t *testing.T) {
+	t.Parallel()
 
 	f, err := writeTempFile("router-cert")
 	if err != nil {

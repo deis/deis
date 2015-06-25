@@ -10,6 +10,8 @@ import (
 )
 
 func TestNextComponent(t *testing.T) {
+	t.Parallel()
+
 	// test first component
 	num, err := nextUnitNum([]string{})
 	if err != nil {
@@ -65,6 +67,8 @@ func TestNextComponent(t *testing.T) {
 }
 
 func TestLastComponent(t *testing.T) {
+	t.Parallel()
+
 	num, err := lastUnitNum([]string{})
 	errorf := err.Error()
 	expectedErr := "Component not found"
@@ -115,6 +119,8 @@ func TestLastComponent(t *testing.T) {
 }
 
 func TestSplitJobName(t *testing.T) {
+	t.Parallel()
+
 	c, num, err := splitJobName("deis-router@1.service")
 	if err != nil {
 		t.Fatal(err)
@@ -125,6 +131,8 @@ func TestSplitJobName(t *testing.T) {
 }
 
 func TestSplitTarget(t *testing.T) {
+	t.Parallel()
+
 	c, num, err := splitTarget("router")
 	if err != nil {
 		t.Fatal(err)
@@ -152,6 +160,8 @@ func TestSplitTarget(t *testing.T) {
 }
 
 func TestExpandTargets(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-router@1.service",

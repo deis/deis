@@ -9,6 +9,8 @@ import (
 )
 
 func TestDestroy(t *testing.T) {
+	t.Parallel()
+
 	testUnits := []*schema.Unit{
 		&schema.Unit{
 			Name: "deis-registry.service",

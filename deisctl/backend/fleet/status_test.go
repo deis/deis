@@ -34,6 +34,8 @@ func (m mockStatusCommandRunner) RemoteCommand(cmd string, addr string, timeout 
 }
 
 func TestStatus(t *testing.T) {
+	t.Parallel()
+
 	testMachines := []machine.MachineState{
 		machine.MachineState{
 			ID:       "test-1",

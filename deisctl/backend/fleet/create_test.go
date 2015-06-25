@@ -11,6 +11,7 @@ import (
 )
 
 func TestCreate(t *testing.T) {
+	t.Parallel()
 
 	unitFiles := []string{"deis-controller.service", "deis-builder.service",
 		"deis-router.service"}
