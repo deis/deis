@@ -217,6 +217,13 @@ use in the ``export`` command should correspond to the IP of the host machine wh
 
 That's it! The cluster should be fully restored.
 
+Tools
+-----
+
+Various community members have developed tools to assist in automating the backup and restore process outlined above.
+Information on the tools can be found on the `Community Contributions`_ page.
+
 .. _`Ceph`: http://ceph.com
 .. _`download s3cmd`: http://s3tools.org/download
+.. _`Community Contributions`: https://github.com/deis/deis/blob/master/contrib/README.md#backup-tools
 .. _`s3cmd`: http://s3tools.org/
