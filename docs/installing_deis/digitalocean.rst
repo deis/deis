@@ -75,8 +75,10 @@ If you want to use the script:
     $ docl regions --metadata --private-networking
     Amsterdam 2 (ams2)
     Amsterdam 3 (ams3)
+    Frankfurt 1 (fra1)
     London 1 (lon1)
     New York 3 (nyc3)
+    San Francisco 1 (sfo1)
     Singapore 1 (sgp1)
     $ ./contrib/digitalocean/provision-do-cluster.sh nyc3 12345 4GB
 
