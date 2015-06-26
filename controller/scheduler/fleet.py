@@ -325,6 +325,7 @@ class FleetHTTPClient(object):
             _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
             if _rc != 0:
                 raise RuntimeError('could not determine exit code')
+            print(_output)
             container = json.loads(_output)
             rc = container[0]["State"]["ExitCode"]
 
