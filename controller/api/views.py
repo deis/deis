@@ -287,6 +287,7 @@ class CertificateViewSet(BaseDeisViewSet):
 class KeyViewSet(BaseDeisViewSet):
     """A viewset for interacting with Key objects."""
     model = models.Key
+    permission_classes = [IsAuthenticated, permissions.IsOwner]
     serializer_class = serializers.KeySerializer
 
 
