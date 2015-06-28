@@ -295,6 +295,8 @@ class FleetHTTPClient(object):
                 _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
                 if _rc != 0:
                     raise RuntimeError('failed to inspect container')
+                print(1)
+                print(_output)
                 _container = json.loads(_output)
                 started_at = _container[0]["State"]["StartedAt"]
                 if not started_at.startswith('0001'):
@@ -308,6 +310,8 @@ class FleetHTTPClient(object):
                 _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
                 if _rc != 0:
                     raise RuntimeError('failed to inspect container')
+                print(2)
+                print(_output)
                 _container = json.loads(_output)
                 finished_at = _container[0]["State"]["FinishedAt"]
                 if not finished_at.startswith('0001'):
@@ -325,6 +329,7 @@ class FleetHTTPClient(object):
             _rc, _output = _do_ssh('docker inspect {name}'.format(**locals()))
             if _rc != 0:
                 raise RuntimeError('could not determine exit code')
+            print(3)
             print(_output)
             container = json.loads(_output)
             rc = container[0]["State"]["ExitCode"]
