@@ -11,6 +11,7 @@ In this tutorial, we will show you how to set up your own 3-node cluster on Amaz
 Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/ec2`_
 while following this documentation.
 
+.. include:: ../_includes/_deis-pro.rst
 
 Install the AWS Command Line Interface
 --------------------------------------
