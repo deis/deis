@@ -85,9 +85,14 @@ while [[ ! -e /var/run/docker.sock ]]; do
 	sleep 1
 done
 
-# build required images
-docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
-docker build -t deis/slugrunner /usr/local/src/slugrunner/
+# build required images if they don't already exist
+if ! docker history deis/slugbuilder >/dev/null 2>&1; then
+	docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
+fi
+
+if ! docker history deis/slugrunner >/dev/null 2>&1; then
+	docker build -t deis/slugrunner /usr/local/src/slugrunner/
+fi
 
 function gen_host_keys {
 	if ! etcd_get sshHostKey; then
