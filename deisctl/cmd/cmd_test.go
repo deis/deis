@@ -423,6 +423,23 @@ func TestInstallPlatform(t *testing.T) {
 	}
 }
 
+func TestInstallPlatformWithCustomRouterMeshSize(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"store-daemon", "store-monitor", "store-metadata", "store-volume",
+		"store-gateway@1", "logger", "logspout", "database", "registry@1",
+		"controller", "builder", "publisher", "router@1", "router@2", "router@3", "router@4", "router@5"}
+	RouterMeshSize = 5
+
+	Install([]string{"platform"}, &b, fakeCheckKeys)
+	RouterMeshSize = DefaultRouterMeshSize
+
+	if !reflect.DeepEqual(b.installedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
+	}
+}
+
 func TestInstallStatelessPlatform(t *testing.T) {
 	t.Parallel()
 
