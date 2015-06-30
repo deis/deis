@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Send SIGHUP to gunicorn in general, since we didn't launch it with `--pid`
-pkill -HUP -u gunicorn
+sudo -u registry pkill -HUP -f gunicorn || true
