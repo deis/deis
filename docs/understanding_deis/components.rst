@@ -49,10 +49,17 @@ The builder component uses a `Git`_ server to process
  #. Builds a new `Docker` image from the updated git repository
  #. Adds the latest :ref:`Config` to the resulting Docker image
  #. Pushes the new Docker image to the platform's :ref:`Registry`
- #. Creates a new :ref:`Release` on the :ref:`Controller`
+ #. Triggers a new :ref:`Release` through the :ref:`Controller`
 
-Once a new :ref:`Release` is generated, a new set of containers
-is deployed across the platform automatically.
+.. note::
+
+    The builder component does not incorporate :ref:`Config` directly into the
+    images it produces.   A :ref:`Release` is a pairing of an application image
+    with application configuration maintained separately in the Deis
+    :ref:`Database`.
+
+    Once a new :ref:`Release` is generated, a new set of containers
+    is deployed across the platform automatically.
 
 .. _registry:
 

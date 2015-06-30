@@ -14,6 +14,17 @@
 import os
 import sys
 
+from mock import MagicMock
+
+# Mock out modules that can't be installed at ReadTheDocs.org.
+class MockModule(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+            return MockModule()
+
+MOCK_MODULES = ['django_auth_ldap', 'django_auth_ldap.config', 'django_auth_ldap.models', 'ldap']
+sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
