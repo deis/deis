@@ -332,7 +332,7 @@ class FleetHTTPClient(object):
             if _rc != 0:
                 raise RuntimeError('could not determine exit code')
             try:
-                _container = json.loads(_output)
+                container = json.loads(_output)
             except:
                 raise ValueError(_output)
             rc = container[0]["State"]["ExitCode"]
