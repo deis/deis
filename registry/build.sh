@@ -31,7 +31,7 @@ pip install --disable-pip-version-check --no-cache-dir pyopenssl ndg-httpsclient
 adduser -D -s /bin/bash registry
 
 # add the docker registry source from github
-git clone -b new-repository-import-v091 --single-branch https://github.com/deis/docker-registry /docker-registry && \
+git clone -b new-repository-import-master --single-branch https://github.com/deis/docker-registry /docker-registry && \
   chown -R registry:registry /docker-registry
 
 # install boto configuration
