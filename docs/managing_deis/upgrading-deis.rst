@@ -53,11 +53,23 @@ Finally, update ``deisctl`` to the new version and reinstall:
     In-place upgrades incur approximately 10-30 minutes of downtime for deployed applications, the router mesh
     and the platform control plane.  Please plan your maintenance windows accordingly.
 
+.. note::
+
+    When upgrading an Amazon EC2 cluster older than Deis v1.6, a :ref:`migration_upgrade` is
+    preferable.
+
+    On Amazon EC2, Deis enables the :ref:`PROXY protocol <proxy_protocol>` by default.
+    If an in-place upgrade is required, run ``deisctl config router set proxyProtocol=1``,
+    enable PROXY protocol for ports 80 and 443 on the ELB, add a ``TCP 443:443`` listener, and
+    change existing targets and health checks from HTTP to TCP.
+
 Upgrade Deis clients
 ^^^^^^^^^^^^^^^^^^^^
 As well as upgrading ``deisctl``, make sure to upgrade the :ref:`deis client <install-client>` to
 match the new version of Deis.
 
+
+.. _migration_upgrade:
 
 Migration Upgrade
 -----------------
