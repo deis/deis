@@ -9,6 +9,14 @@ Production deployments
 Many Deis users are running Deis quite successfully in production. When readying a Deis deployment
 for production workloads, there are some additional (but optional) recommendations.
 
+Removing Ceph dependency
+------------------------
+
+.. include:: ../_includes/_ceph-dependency-description.rst
+
+See :ref:`remove-ceph-dependency` for details on removing this operational
+complexity.
+
 Preseeding containers
 ---------------------
 
