@@ -34,14 +34,7 @@ apk add /tmp/pv-1.6.0-r0.apk
 curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 
 # install wal-e
-cd /tmp
-git clone https://github.com/wal-e/wal-e.git
-
-# get a post-v0.8.0 commit which includes a busybox fix
-cd /tmp/wal-e
-git checkout c6dd4b1
-
-pip install --disable-pip-version-check --no-cache-dir . oslo.config>=1.12.0
+pip install --disable-pip-version-check --no-cache-dir wal-e==0.8.1 oslo.config>=1.12.0
 
 # python port of daemontools
 pip install --disable-pip-version-check --no-cache-dir envdir
