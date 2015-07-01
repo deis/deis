@@ -99,8 +99,12 @@ Deis. Specifically, ensure that it sets and reads appropriate etcd keys.
 
 .. _`stock router image`: https://github.com/deis/deis/tree/master/router
 
+
+.. _proxy_protocol:
+
 PROXY Protocol
----------------
+--------------
+
 PROXY is a simple protocol supported by nginx, HAProxy, Amazon ELB, and others. It provides a method
 to obtain information about the original requests IP address sent to a load
 balancer in front of Deis :ref:`router`.
