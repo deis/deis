@@ -26,7 +26,7 @@ func SendToDrain(m string, drain string) error {
 func sendToSyslogDrain(m string, drain string) error {
 	conn, err := net.Dial("udp", drain)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
 	}
 	defer conn.Close()
 	fmt.Fprintf(conn, m)
