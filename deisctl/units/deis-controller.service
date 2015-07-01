@@ -1,6 +1,6 @@
 [Unit]
 Description=deis-controller
-Requires=deis-store-volume.service
+Wants=deis-store-volume.service
 After=deis-store-volume.service
 
 [Service]
