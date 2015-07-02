@@ -231,6 +231,21 @@ func TestStartPlatform(t *testing.T) {
 	}
 }
 
+func TestStartStatelessPlatform(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"logspout", "registry@*", "controller",
+		"builder", "publisher", "router@*", "registry@*", "controller",
+		"builder", "publisher", "router@*"}
+
+	Start([]string{"stateless-platform"}, &b)
+
+	if !reflect.DeepEqual(b.startedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+}
+
 func TestStartSwarm(t *testing.T) {
 	t.Parallel()
 
@@ -264,6 +279,19 @@ func TestStopPlatform(t *testing.T) {
 		"registry@*", "logger", "logspout", "store-volume", "store-gateway@*",
 		"store-metadata", "store-daemon", "store-monitor"}
 	Stop([]string{"platform"}, &b)
+
+	if !reflect.DeepEqual(b.stoppedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
+	}
+}
+
+func TestStopStatelessPlatform(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"router@*", "publisher", "controller", "builder",
+		"registry@*", "logspout"}
+	Stop([]string{"stateless-platform"}, &b)
 
 	if !reflect.DeepEqual(b.stoppedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
@@ -394,6 +422,20 @@ func TestInstallPlatform(t *testing.T) {
 	}
 }
 
+func TestInstallStatelessPlatform(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"logspout", "registry@1",
+		"controller", "builder", "publisher", "router@1", "router@2", "router@3"}
+
+	Install([]string{"stateless-platform"}, &b, fakeCheckKeys)
+
+	if !reflect.DeepEqual(b.installedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
+	}
+}
+
 func TestInstallSwarm(t *testing.T) {
 	t.Parallel()
 
@@ -429,6 +471,20 @@ func TestUninstallPlatform(t *testing.T) {
 		"store-metadata", "store-daemon", "store-monitor"}
 
 	Uninstall([]string{"platform"}, &b)
+
+	if !reflect.DeepEqual(b.uninstalledUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.uninstalledUnits))
+	}
+}
+
+func TestUninstallStatelessPlatform(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"router@*", "publisher", "controller", "builder",
+		"registry@*", "logspout"}
+
+	Uninstall([]string{"stateless-platform"}, &b)
 
 	if !reflect.DeepEqual(b.uninstalledUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.uninstalledUnits))

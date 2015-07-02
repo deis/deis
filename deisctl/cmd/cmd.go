@@ -22,7 +22,9 @@ import (
 const (
 	// PlatformCommand is shorthand for "all the Deis components."
 	PlatformCommand string = "platform"
-	swarm           string = "swarm"
+	// StatelessPlatformCommand is shorthand for the components except store-*, database, and logger.
+	StatelessPlatformCommand string = "stateless-platform"
+	swarm                    string = "swarm"
 )
 
 // ListUnits prints a list of installed units.
@@ -67,9 +69,10 @@ func Start(targets []string, b backend.Backend) error {
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
-			return StartPlatform(b)
-		}
-		if targets[0] == swarm {
+			return StartPlatform(b, false)
+		} else if targets[0] == StatelessPlatformCommand {
+			return StartPlatform(b, true)
+		} else if targets[0] == swarm {
 			return StartSwarm(b)
 		}
 	}
@@ -102,7 +105,7 @@ deisctl config platform set sshPrivateKey=<path-to-key>
 	return nil
 }
 
-func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	// create separate channels for background tasks
 	_outchan := make(chan string)
@@ -110,34 +113,49 @@ func startDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	var _wg sync.WaitGroup
 
 	// wait for groups to come up
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Start([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
+	if !stateless {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
 
-	// we start gateway first to give metadata time to come up for volume
-	b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Start([]string{"store-volume"}, wg, outchan, errchan)
-	wg.Wait()
+		// we start gateway first to give metadata time to come up for volume
+		b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Start([]string{"store-volume"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	// start logging subsystem first to collect logs from other components
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Start([]string{"logger"}, wg, outchan, errchan)
-	wg.Wait()
+	if !stateless {
+		b.Start([]string{"logger"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 	b.Start([]string{"logspout"}, wg, outchan, errchan)
 	wg.Wait()
 
-	b.Start([]string{
-		"database", "registry@*", "controller", "builder",
-		"publisher", "router@*"},
-		&_wg, _outchan, _errchan)
+	if stateless {
+		b.Start([]string{
+			"registry@*", "controller", "builder",
+			"publisher", "router@*"},
+			&_wg, _outchan, _errchan)
+	} else {
+		b.Start([]string{
+			"database", "registry@*", "controller", "builder",
+			"publisher", "router@*"},
+			&_wg, _outchan, _errchan)
+	}
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
+	if stateless {
+		b.Start([]string{"registry@*", "controller"}, wg, outchan, errchan)
+	} else {
+		b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 	b.Start([]string{"builder"}, wg, outchan, errchan)
 	wg.Wait()
@@ -157,9 +175,10 @@ func Stop(targets []string, b backend.Backend) error {
 	// if target is platform, stop all services
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
-			return StopPlatform(b)
-		}
-		if targets[0] == swarm {
+			return StopPlatform(b, false)
+		} else if targets[0] == StatelessPlatformCommand {
+			return StopPlatform(b, true)
+		} else if targets[0] == swarm {
 			return StopSwarm(b)
 		}
 	}
@@ -178,7 +197,7 @@ func Stop(targets []string, b backend.Backend) error {
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Stop([]string{"router@*"}, wg, outchan, errchan)
@@ -189,22 +208,33 @@ func stopDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan str
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	if stateless {
+		b.Stop([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+	} else {
+		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if stateless {
+		b.Stop([]string{"logspout"}, wg, outchan, errchan)
+	} else {
+		b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
+	if !stateless {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+	}
+
 }
 
 // Restart stops and then starts the specified components.
@@ -247,9 +277,10 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
-			return InstallPlatform(b, checkKeys)
-		}
-		if targets[0] == swarm {
+			return InstallPlatform(b, checkKeys, false)
+		} else if targets[0] == StatelessPlatformCommand {
+			return InstallPlatform(b, checkKeys, true)
+		} else if targets[0] == swarm {
 			return InstallSwarm(b)
 		}
 	}
@@ -268,18 +299,28 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 	return nil
 }
 
-func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
-	wg.Wait()
+	if !stateless {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if stateless {
+		b.Create([]string{"logspout"}, wg, outchan, errchan)
+	} else {
+		b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+	if stateless {
+		b.Create([]string{"registry@1", "controller", "builder"}, wg, outchan, errchan)
+	} else {
+		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Data plane...")
@@ -297,9 +338,10 @@ func installDefaultServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 func Uninstall(targets []string, b backend.Backend) error {
 	if len(targets) == 1 {
 		if targets[0] == PlatformCommand {
-			return UninstallPlatform(b)
-		}
-		if targets[0] == swarm {
+			return UninstallPlatform(b, false)
+		} else if targets[0] == StatelessPlatformCommand {
+			return UninstallPlatform(b, true)
+		} else if targets[0] == swarm {
 			return UnInstallSwarm(b)
 		}
 	}
@@ -319,7 +361,7 @@ func Uninstall(targets []string, b backend.Backend) error {
 	return nil
 }
 
-func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
 
 	outchan <- fmt.Sprintf("Routing mesh...")
 	b.Destroy([]string{"router@*"}, wg, outchan, errchan)
@@ -330,22 +372,32 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Control plane...")
-	b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	if stateless {
+		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+	} else {
+		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Logging subsystem...")
-	b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	if stateless {
+		b.Destroy([]string{"logspout"}, wg, outchan, errchan)
+	} else {
+		b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Storage subsystem...")
-	b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
-	wg.Wait()
-	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
-	wg.Wait()
+	if !stateless {
+		outchan <- fmt.Sprintf("Storage subsystem...")
+		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
+		wg.Wait()
+		b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+		wg.Wait()
+	}
 
 	return nil
 }

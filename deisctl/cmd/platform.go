@@ -11,10 +11,16 @@ import (
 
 // InstallPlatform loads all components' definitions from local unit files.
 // After InstallPlatform, all components will be available for StartPlatform.
-func InstallPlatform(b backend.Backend, checkKeys func() error) error {
+func InstallPlatform(b backend.Backend, checkKeys func() error, stateless bool) error {
 
 	if err := checkKeys(); err != nil {
 		return err
+	}
+
+	if stateless {
+		fmt.Println("Warning: With a stateless control plane, `deis logs` will be unavailable.")
+		fmt.Println("Additionally, components will need to be configured to use external persistent stores.")
+		fmt.Println("See the official Deis documentation for details on running a stateless control plane.")
 	}
 
 	outchan := make(chan string)
@@ -25,19 +31,23 @@ func InstallPlatform(b backend.Backend, checkKeys func() error) error {
 
 	outchan <- utils.DeisIfy("Installing Deis...")
 
-	installDefaultServices(b, &wg, outchan, errchan)
+	installDefaultServices(b, stateless, &wg, outchan, errchan)
 
 	wg.Wait()
 	close(outchan)
 
 	fmt.Println("Done.")
 	fmt.Println()
-	fmt.Println("Please run `deisctl start platform` to boot up Deis.")
+	if stateless {
+		fmt.Println("Please run `deisctl start stateless-platform` to boot up Deis.")
+	} else {
+		fmt.Println("Please run `deisctl start platform` to boot up Deis.")
+	}
 	return nil
 }
 
 // StartPlatform activates all components.
-func StartPlatform(b backend.Backend) error {
+func StartPlatform(b backend.Backend, stateless bool) error {
 
 	outchan := make(chan string)
 	errchan := make(chan error)
@@ -47,7 +57,7 @@ func StartPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Starting Deis...")
 
-	startDefaultServices(b, &wg, outchan, errchan)
+	startDefaultServices(b, stateless, &wg, outchan, errchan)
 
 	wg.Wait()
 	close(outchan)
@@ -59,7 +69,7 @@ func StartPlatform(b backend.Backend) error {
 }
 
 // StopPlatform deactivates all components.
-func StopPlatform(b backend.Backend) error {
+func StopPlatform(b backend.Backend, stateless bool) error {
 
 	outchan := make(chan string)
 	errchan := make(chan error)
@@ -69,20 +79,24 @@ func StopPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Stopping Deis...")
 
-	stopDefaultServices(b, &wg, outchan, errchan)
+	stopDefaultServices(b, stateless, &wg, outchan, errchan)
 
 	wg.Wait()
 	close(outchan)
 
 	fmt.Println("Done.")
 	fmt.Println()
-	fmt.Println("Please run `deisctl start platform` to restart Deis.")
+	if stateless {
+		fmt.Println("Please run `deisctl start stateless-platform` to restart Deis.")
+	} else {
+		fmt.Println("Please run `deisctl start platform` to restart Deis.")
+	}
 	return nil
 }
 
 // UninstallPlatform unloads all components' definitions.
 // After UninstallPlatform, all components will be unavailable.
-func UninstallPlatform(b backend.Backend) error {
+func UninstallPlatform(b backend.Backend, stateless bool) error {
 
 	outchan := make(chan string)
 	errchan := make(chan error)
@@ -92,7 +106,7 @@ func UninstallPlatform(b backend.Backend) error {
 
 	outchan <- utils.DeisIfy("Uninstalling Deis...")
 
-	uninstallAllServices(b, &wg, outchan, errchan)
+	uninstallAllServices(b, stateless, &wg, outchan, errchan)
 
 	wg.Wait()
 	close(outchan)
