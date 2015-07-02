@@ -113,6 +113,8 @@ function gen_host_keys {
 		etcd_get sshHostKey > /etc/ssh/ssh_host_key
 		etcd_get sshHostPubKey > /etc/ssh/ssh_host_key.pub
 	fi
+	# set private key permissions to 0600
+	chmod 0600 /etc/ssh/ssh_host_*key
 }
 
 gen_host_keys
