@@ -346,6 +346,8 @@ func uninstallAllServices(b backend.Backend, wg *sync.WaitGroup, outchan chan st
 	wg.Wait()
 	b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
 	wg.Wait()
+	b.Destroy([]string{"store-admin"}, wg, outchan, errchan)
+	wg.Wait()
 
 	return nil
 }
