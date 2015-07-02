@@ -3,6 +3,12 @@
 scheduler
 =========
 
+scheduler.chaos
+---------------
+.. contents::
+    :local:
+.. automodule:: scheduler.chaos
+
 scheduler.fleet
 ---------------
 .. contents::
@@ -15,8 +21,14 @@ scheduler.mock
     :local:
 .. automodule:: scheduler.mock
 
-scheduler.chaos
+scheduler.states
+----------------
+.. contents::
+    :local:
+.. automodule:: scheduler.states
+
+scheduler.swarm
 ---------------
 .. contents::
     :local:
-.. automodule:: scheduler.chaos
+.. automodule:: scheduler.swarm
