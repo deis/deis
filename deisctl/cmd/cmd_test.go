@@ -426,7 +426,7 @@ func TestUninstallPlatform(t *testing.T) {
 	b := backendStub{}
 	expected := []string{"router@*", "publisher", "controller", "builder", "database",
 		"registry@*", "logger", "logspout", "store-volume", "store-gateway@*",
-		"store-metadata", "store-daemon", "store-monitor"}
+		"store-metadata", "store-daemon", "store-monitor", "store-admin"}
 
 	Uninstall([]string{"platform"}, &b)
 
