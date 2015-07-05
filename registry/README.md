@@ -3,7 +3,7 @@
 A Docker image registry for use in the [Deis](http://deis.io) open source PaaS.
 
 This Docker image is based on the official
-[ubuntu-debootstrap:14.04](https://registry.hub.docker.com/_/ubuntu/) image.
+[alpine:3.1](https://registry.hub.docker.com/_/alpine/) image.
 
 Please add any [issues](https://github.com/deis/deis/issues) you find with this software to
 the [Deis Project](https://github.com/deis/deis).
