@@ -10,7 +10,7 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 COMPONENT = $(notdir $(repo_path))
 DOCKER_IMAGE := $(IMAGE_PREFIX)$(COMPONENT)
 RELEASE_IMAGE := $(DOCKER_IMAGE):$(BUILD_TAG)
-DEV_DOCKER_IMAGE := $(DEV_REGISTRY)/$(RELEASE_IMAGE)
+DEV_DOCKER_IMAGE := $(REGISTRY)$(RELEASE_IMAGE)
 
 build: check-docker
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o image/logspout

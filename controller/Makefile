@@ -6,7 +6,7 @@ all: build run
 
 COMPONENT = controller
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
-DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+DEV_IMAGE = $(REGISTRY)$(IMAGE)
 
 build: check-docker
 	docker build -t $(IMAGE) .

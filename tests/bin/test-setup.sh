@@ -59,7 +59,7 @@ export DEIS_PROFILE=test-$DEIS_TEST_ID
 rm -f $HOME/.deis/test-$DEIS_TEST_ID.json
 
 # bail if registry is not accessible
-if ! curl -s $DEV_REGISTRY; then
+if ! curl -s $DEV_REGISTRY && ! curl -s https://$DEV_REGISTRY; then
   echo "DEV_REGISTRY is not accessible, exiting..."
   exit 1
 fi
