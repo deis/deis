@@ -8,7 +8,7 @@ GOVET = $(GO) vet
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 DOCKER_HOST = $(shell echo $$DOCKER_HOST)
-REGISTRY = $(shell echo $$DEV_REGISTRY)
+REGISTRY = $(shell if [ "$$DEV_REGISTRY" == "registry.hub.docker.com" ]; then echo; else echo $$DEV_REGISTRY/; fi)
 GIT_SHA = $(shell git rev-parse --short HEAD)
 
 ifndef IMAGE_PREFIX

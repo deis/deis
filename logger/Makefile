@@ -10,7 +10,7 @@ GO_TESTABLE_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,syslog syslogd)
 
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
-DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+DEV_IMAGE = $(REGISTRY)$(IMAGE)
 BINARY_DEST_DIR = image/bin
 
 build: check-docker

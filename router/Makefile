@@ -9,7 +9,7 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
-DEV_IMAGE = $(DEV_REGISTRY)/$(IMAGE)
+DEV_IMAGE = $(REGISTRY)$(IMAGE)
 BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
