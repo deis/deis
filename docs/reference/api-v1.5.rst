@@ -739,7 +739,9 @@ Example Response:
     {
         "owner": "test",
         "app": "example-go",
-        "values": {},
+        "values": {
+          "PLATFORM": "deis"
+        },
         "memory": {},
         "cpu": {},
         "tags": {},
@@ -761,7 +763,7 @@ Example Request:
     Content-Type: application/json
     Authorization: token abc123
 
-    {"values": {"HELLO": "world", "PLATFORM: "deis"}}
+    {"values": {"HELLO": "world", "PLATFORM": "deis"}}
 
 Example Response:
 
