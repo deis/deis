@@ -40,13 +40,13 @@ Patch Release
         controller/deis/__init__.py \
         controller/Dockerfile \
         database/Dockerfile \
-        deisctl/cmd/cmd.go \
+        deisctl/client/client.go \
         deisctl/deis-version \
         docs/_includes/_get-the-source.rst \
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.4.rst \
+        docs/reference/api-v1.5.rst \
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
@@ -99,7 +99,7 @@ Major or Minor Release
         docs/managing_deis/upgrading-deis.rst \
         docs/troubleshooting_deis/index.rst
 
-  - Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
+  - Edit deisctl/client/client.go and change the default in the RefreshUnits usage string
     (near the bottom of the file) from ``[master]`` to ``[vA.B.D]``.
 
   - Find and replace "A.B.D-dev" with "A.B.D" in all project Dockerfiles.
@@ -154,12 +154,6 @@ Any Release
   - remove the oldest version from the list of published builds
   - rebuild all published versions so their "Versions" index links update
 
-- Update the Homebrew install recipes for ``deis`` and ``deisctl`` with PRs
-
-  - https://github.com/Homebrew/homebrew/blob/master/Library/Formula/deis.rb
-    (check for updated python requirements too)
-  - https://github.com/Homebrew/homebrew/pull/34967
-
 - Update #deis IRC channel topic to reference new version
 
 
@@ -177,7 +171,7 @@ Patch Release
       docs/installing_deis/install-deisctl.rst \
       docs/installing_deis/install-platform.rst \
       docs/managing_deis/upgrading-deis.rst \
-      docs/reference/api-v1.4.rst \
+      docs/reference/api-v1.5.rst \
       docs/troubleshooting_deis/index.rst
 
   - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
@@ -193,7 +187,7 @@ Patch Release
 Major or Minor Release
 ----------------------
 
-- Edit deisctl/cmd/cmd.go and change the default in the RefreshUnits usage string
+- Edit deisctl/client/client.go and change the default in the RefreshUnits usage string
   (near the bottom of the file) from ``[vA.B.D]`` to ``[master]``
 - Bump the version numbers in master to the next planned with ``-dev``
 

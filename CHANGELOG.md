@@ -1,3 +1,76 @@
+### v1.7.3 -> v1.8.0
+
+#### Features
+
+ - [`59ff8d2`](https://github.com/deis/deis/commit/59ff8d2e979e4eae7feee06c63da838e4587f259) publisher: check app config for HTTP health check
+ - [`247276e`](https://github.com/deis/deis/commit/247276e7ef9bb1b9e4b00b13a75a88c3db387991) deisctl: support stateless control plane without Ceph
+ - [`ea003a2`](https://github.com/deis/deis/commit/ea003a2a0e8af439de9d13730f2e23d0522deb80) contrib/linode: add Linode provision scripts and docs
+ - [`11a6698`](https://github.com/deis/deis/commit/11a6698af073242bdde24e3850a43e867e5894e8) router: enable HSTS when enforceHTTPS is set
+ - [`a4f0bbc`](https://github.com/deis/deis/commit/a4f0bbc4a27beec594a9f0cd6c9da7fae0bdedc4) router: add Diffie-Hellman parameter for DHE ciphersuites
+ - [`fc8d2a6`](https://github.com/deis/deis/commit/fc8d2a6a51f652ffb59929598ae857360ebbdbfb) router: read list of preferred ciphers
+ - [`02364d8`](https://github.com/deis/deis/commit/02364d879802dd7cc3650cc1e34abad85c765b34) router: use new reuseport option
+ - [`c074db5`](https://github.com/deis/deis/commit/c074db5a034f010a97b9864994ae5f39766b0dfd) tests: retry push to dockerhub
+ - [`70cd4c6`](https://github.com/deis/deis/commit/70cd4c697ddf9ab51d503f259a874eac5af4e84e) controller: Add endpoint to regenerate tokens
+ - [`95d3a2e`](https://github.com/deis/deis/commit/95d3a2e8f901f36f77cd559de66359f3bf5567de) deisctl: Add deisctl ssh
+
+#### Fixes
+
+ - [`b6e7c2b`](https://github.com/deis/deis/commit/b6e7c2b92fa49314fd984dd9f73657681ab5616d) controller: revert HTTP healthcheck feature
+ - [`4ca4f73`](https://github.com/deis/deis/commit/4ca4f738b043dea40979b8d90083abd79b5eba1a) publisher: display http error if connection failed
+ - [`e9d4ef1`](https://github.com/deis/deis/commit/e9d4ef1e26dc9d5b340ed3118b8e32c0e33a53d8) builder: ignore etcdctl stdout in cleanup script
+ - [`6943459`](https://github.com/deis/deis/commit/6943459a4e2d1ed7dd4163575bb12f8c50147fd6) builder: set private key perms to 0600
+ - [`5faa404`](https://github.com/deis/deis/commit/5faa404250757e9eb6dd27cf36bcfae60eafe92c) controller: test that RC is available before accesing it
+ - [`3250dee`](https://github.com/deis/deis/commit/3250dee80bde2e896d113d161942149f7112aeb0) tests: check https://$DEV_REGISTRY
+ - [`4e2204e`](https://github.com/deis/deis/commit/4e2204ee303f569dda81cfc3d1e0f5e2a9d964cd) logger: reduce severity of log failure
+ - [`b7cf655`](https://github.com/deis/deis/commit/b7cf6555356d6d3f6a080985eb2151c26f269e33) builder: only build slugbuilder/slugrunner when necessary
+ - [`07db8f0`](https://github.com/deis/deis/commit/07db8f08be2257ab97c860cd6326e5273713be24) registry: run pkill as registry user, removing "-u"
+ - [`47606ac`](https://github.com/deis/deis/commit/47606acd09256387abf4588880f40bc3d5079a92) docs: mock out python ldap modules
+ - [`ba9899e`](https://github.com/deis/deis/commit/ba9899e714b0e60073aa72161c2dd319b66d4c62) docs: Correct and clarify description of builder component
+ - [`428ecc5`](https://github.com/deis/deis/commit/428ecc5990acff7741372026c74a3e8bdd93c35f) client+deisctl: remove colors from installer messages
+ - [`3f79281`](https://github.com/deis/deis/commit/3f79281212bed10433a70cdb67c647bc3c1bc94d) builder: generate key on boot
+ - [`5f7e4fd`](https://github.com/deis/deis/commit/5f7e4fd5678fc4aef4d90d9340004d5a075444fc) controller: Roll back scale on failure
+ - [`94a7562`](https://github.com/deis/deis/commit/94a7562abed99206fe59d88adcc56f59c0745872) builder: add "z" flag for compressed tar archives
+ - [`59237fe`](https://github.com/deis/deis/commit/59237fe343cdb10798c4677fad6aace32581e9c1) deisctl: return 0 when only printing version
+ - [`70cff5b`](https://github.com/deis/deis/commit/70cff5bf2375ceaf27e4c13b5e7c6fa8e3d16ff3) deisctl: avoid blocking if output is empty
+ - [`5765871`](https://github.com/deis/deis/commit/5765871615ded4a43c4ab35689033df1a4fac9b8) tests: fix assertions on default beverage 
+- [`c6c65d1`](https://github.com/deis/deis/commit/c6c65d1461247bb20516355a3daae8e6a13d31be) router: set_random belongs in a `location` block
+ - [`daa4e69`](https://github.com/deis/deis/commit/daa4e69cd77add58242c130919d724bd130a0dca) router: fix markdown table rendering
+ - [`1cc6021`](https://github.com/deis/deis/commit/1cc6021bbe323171f21bbc447b0dfa717a34bdcf) client: Bump pyinstaller to fix pyinstaller/pyinstaller#152
+ - [`bbe2a29`](https://github.com/deis/deis/commit/bbe2a29d168787367eec48ddd98f1bbdf9eb4b45) database: avoid pbr runtime error by pinning oslo-config
+
+#### Documentation
+
+ - [`26f6a3c`](https://github.com/deis/deis/commit/26f6a3cc5db5b619fde47b162d2cda27f4e61e03) managing_deis: rename stateless platform docs
+ - [`8e44f76`](https://github.com/deis/deis/commit/8e44f76eb73abeb66873b2b77fdc1e4b21095624) roadmap: add July 2015 planning meeting
+ - [`d6bea8d`](https://github.com/deis/deis/commit/d6bea8da8e8fdf79eba5ec5a5fd873394a3e8c67) reference: Fix response of /v1/apps/<app id>/run endpoint
+ - [`4931308`](https://github.com/deis/deis/commit/4931308d0c10fad49faacd22ba6dc329b6d81b7c) reference: Fix GET /v1/keys/ response
+ - [`bedd3ef`](https://github.com/deis/deis/commit/bedd3efee4c232660ccfde3dc80d5e4b59aec16d) reference: fix config list and set examples
+ - [`8affe35`](https://github.com/deis/deis/commit/8affe35b2f9739bb3ac047729f635b950f8ebd8a) (all): update references to the new base image, alpine
+ - [`3449a9d`](https://github.com/deis/deis/commit/3449a9d6d2dd43bb0e7120237d7eaec54cf28942) reference: add missing packages to autodoc
+ - [`fa17b49`](https://github.com/deis/deis/commit/fa17b494315ea80aa51be77f195e55ed944271bb) router+upgrading: clarify EC2 PROXY protocol use
+ - [`dcbb706`](https://github.com/deis/deis/commit/dcbb70656a77809179d96420133c07effdb919ae) installing_deis: include Deis Pro in AWS docs
+ - [`714a669`](https://github.com/deis/deis/commit/714a6691eb142c12e4a93561d4073a77ea883e1b) installing_deis: update DO supported regions
+ - [`3cc3baf`](https://github.com/deis/deis/commit/3cc3baf0fe7084bfe11b1dad47dc377879a14a2d) backing_up_data: Add community tools for reference
+ - [`00e47e6`](https://github.com/deis/deis/commit/00e47e65149c774e6521d16825570ce981b17368) manage_deis: - add SPM Performance Monitoring
+ - [`a135bbc`](https://github.com/deis/deis/commit/a135bbcba8ec7c0d15f34d474128b48a5080a9e2) installing_deis: add Engine Yard
+ - [`3d96f64`](https://github.com/deis/deis/commit/3d96f64c4025f77eb9d3b0774eb3b00113c0a771) contrib: add link to Deis Backup and Restore
+ - [`ddee95f`](https://github.com/deis/deis/commit/ddee95f13f8653a59a52c9a67851390ef87c3123) installing_deis: etcd doesn't require an odd # of nodes
+ - [`1536bfc`](https://github.com/deis/deis/commit/1536bfcccb1853d56b151b6e58fa9568ecdbb72f) roadmap: update release checklist
+ - [`467a07d`](https://github.com/deis/deis/commit/467a07d31464336c39c8ae4729c4af23e913bbbe) hacking, aws: Update to latest installation process.
+
+#### Maintenance
+
+ - [`075cebe`](https://github.com/deis/deis/commit/075cebe468778bb2c66a461dc1065ceb3c095ced) (all): revert CoreOS to 647.2.0
+ - [`b02d089`](https://github.com/deis/deis/commit/b02d08931c94334a3d41f126ed7322c7fb50940d) registry: use updated registry V1 fork
+ - [`990b123`](https://github.com/deis/deis/commit/990b12365d94598c347ec0ed4d01ef1c2b5a7dea) database: update wal-e to 0.8.1
+ - [`d09f128`](https://github.com/deis/deis/commit/d09f128f4a9634dd4ec85df77004d51e53afc6fb) (all): update confd to v0.10.0
+ - [`322658f`](https://github.com/deis/deis/commit/322658f07082d16b984703faa2f92085734001e7) contrib/ec2: add m4 instance types
+ - [`8b60afb`](https://github.com/deis/deis/commit/8b60afb5f87a46e648dcd1029eb6689feb468bd4) (all): bump CoreOS to 681.2.0
+ - [`ab4544b`](https://github.com/deis/deis/commit/ab4544b4918ff4b87f864086f8fe8ae0dee22e89) client+controller: update flake8 to 2.4.1
+ - [`7dfa369`](https://github.com/deis/deis/commit/7dfa3694ff715a18441be0eba2c318ca9f29d3a3) controller: update psycopg2 to 2.6.1
+ - [`909df2d`](https://github.com/deis/deis/commit/909df2d495aab768eb9e17e5aa1019abf7804ce7) (all): update python installer tool pip to 7.0.3
+ - [`27ea62f`](https://github.com/deis/deis/commit/27ea62f12d1a1f1166bb4b1acd80008130ef80b6) (all): bump CoreOS to 681.0.0
+
 ### v1.7.2 -> v1.7.3
 
 #### Fixes
