@@ -16,7 +16,7 @@ machine running entirely from RAM. Then, you can `install CoreOS to disk`_.
 
 .. important::
 
-    Deis runs on CoreOS version 494.5.0 or later in the Stable channel.
+    Deis runs on CoreOS version 717.1.0 or later in the Stable channel.
 
 
 Check System Requirements
@@ -104,8 +104,8 @@ Start the installation
 
 
 This will install the latest `CoreOS`_ stable release to disk. The Deis provision scripts for other
-platforms typically specify a CoreOS version - currently, ``681.2.0``. To specify a CoreOS
-version, append the ``-V`` parameter to the install command, e.g. ``-V 681.2.0``.
+platforms typically specify a CoreOS version - currently, ``717.1.0``. To specify a CoreOS
+version, append the ``-V`` parameter to the install command, e.g. ``-V 717.1.0``.
 
 After the installation has finished, reboot your server. Once your machine is back up, you should
 be able to log in as the `core` user using the `deis` ssh key.
