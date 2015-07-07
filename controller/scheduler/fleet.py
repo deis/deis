@@ -271,14 +271,14 @@ class FleetHTTPClient(object):
             tran = ssh.get_transport()
 
             def _do_ssh(cmd):
-                chan = tran.open_session()
-                # get a pty so stdout/stderr look right
-                chan.get_pty()
-                out = chan.makefile()
-                chan.exec_command(cmd)
-                output = out.read()
-                rc = chan.recv_exit_status()
-                return rc, output
+                with tran.open_session() as chan:
+                    chan.exec_command(cmd)
+                    while not chan.exit_status_ready():
+                        time.sleep(1)
+                    out = chan.makefile()
+                    output = out.read()
+                    rc = chan.recv_exit_status()
+                    return rc, output
 
             # wait for container to launch
             # we loop indefinitely here, as we have no idea how long the docker pull will take
