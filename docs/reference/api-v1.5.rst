@@ -365,7 +365,7 @@ Example Response:
     DEIS_PLATFORM_VERSION: 1.8.0-dev
     Content-Type: application/json
 
-    {"rc": 0, "output": "hi"}
+    [0, "hi\n"]
 
 
 Certificates
