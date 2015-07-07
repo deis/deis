@@ -299,6 +299,45 @@ class App(UuidAuditedModel):
         if set([c.state for c in to_add]) != set(['up']):
             err = 'warning, some containers failed to start'
             log_event(self, err, logging.WARNING)
+        # if the user specified a health check, try checking to see if it's running
+        try:
+            config = self.config_set.latest()
+            if 'HEALTHCHECK_URL' in config.values.keys():
+                # check the app to see if it's healthy
+                try:
+                    self._do_healthcheck(config)
+                except Exception as e:
+                    log_event(self, str(e), logging.ERROR)
+                    self._destroy_containers(to_add)
+                    raise
+        except Config.DoesNotExist:
+            pass
+
+    def _do_healthcheck(self, config):
+        timeout = time.time() + 60  # 1 minute from now
+        while True:
+            if time.time() > timeout:
+                raise RuntimeError(
+                    'app failed to respond to health check within 60 seconds of launch')
+            try:
+                response = requests.get(
+                    'http://{}{}'.format(
+                        self.url,
+                        config.values['HEALTHCHECK_URL']),
+                    timeout=5)
+                expected_status_code = config.values['HEALTHCHECK_STATUS_CODE'] if \
+                    'HEALTHCHECK_STATUS_CODE' in config.values.keys() else \
+                    settings.DEIS_HEALTHCHECK_STATUS_CODE
+                if str(response.status_code) != str(expected_status_code):
+                    err = "aborting, app failed health check (got '{}', expected: '{}')".format(
+                        response.status_code,
+                        expected_status_code)
+                    raise RuntimeError(err)
+                break
+            except requests.exceptions.ConnectionError:
+                continue
+            except requests.exceptions.Timeout:
+                continue
 
     def _restart_containers(self, to_restart):
         """Restarts containers via the scheduler"""
@@ -1004,6 +1043,34 @@ def _etcd_purge_app(**kwargs):
         pass
 
 
+def _etcd_publish_config(**kwargs):
+    config = kwargs['instance']
+    # we purge all existing config when adding the newest instance. This is because
+    # deis config:unset would remove an existing value, but not delete the
+    # old config object
+    try:
+        _etcd_client.delete('/deis/services/{}/config'.format(config.app),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
+    if kwargs['created']:
+        for k, v in config.values.iteritems():
+            _etcd_client.write(
+                '/deis/services/{}/config/{}'.format(
+                    config.app,
+                    unicode(k).encode('utf-8').lower()),
+                unicode(v).encode('utf-8'))
+
+
+def _etcd_purge_config(**kwargs):
+    config = kwargs['instance']
+    try:
+        _etcd_client.delete('/deis/services/{}/config'.format(config.app),
+                            prevExist=True, dir=True, recursive=True)
+    except KeyError:
+        pass
+
+
 def _etcd_publish_cert(**kwargs):
     cert = kwargs['instance']
     if kwargs['created']:
@@ -1069,3 +1136,5 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
     post_save.connect(_etcd_publish_cert, sender=Certificate, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_cert, sender=Certificate, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_config, sender=Config, dispatch_uid='api.models')
+    post_delete.connect(_etcd_purge_config, sender=Config, dispatch_uid='api.models')
