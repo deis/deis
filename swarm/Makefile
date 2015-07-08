@@ -15,10 +15,10 @@ BINARY_DEST_DIR = image/bin
 
 build: check-docker
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/swarm || exit 1
-	@$(call check-static-binary,$(BINARY_DEST_DIR)/swarm)
+	$(call check-static-binary,$(BINARY_DEST_DIR)/swarm)
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE)`:/go/src/github.com/docker/swarm/deis-swarm $(BINARY_DEST_DIR)/
-	@$(call check-static-binary,$(BINARY_DEST_DIR)/deis-swarm)
+	$(call check-static-binary,$(BINARY_DEST_DIR)/deis-swarm)
 	docker build -t $(IMAGE) image
 
 clean: check-docker check-registry
