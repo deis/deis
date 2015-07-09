@@ -186,7 +186,7 @@ func (s *Server) IsPortOpen(hostAndPort string) bool {
 func (s *Server) HealthCheckOK(url string, expectedStatusCode int) bool {
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("healthcheck failed for %s (expected %d, got %v)\n", url, expectedStatusCode, err)
+		log.Printf("healthcheck failed for %s (%v)\n", url, err)
 		return false
 	}
 	if resp.StatusCode == expectedStatusCode {
