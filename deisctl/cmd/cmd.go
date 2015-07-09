@@ -2,11 +2,8 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,6 +15,7 @@ import (
 	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/deisctl/units"
 	"github.com/deis/deis/deisctl/utils"
+	"github.com/deis/deis/deisctl/utils/net"
 )
 
 const (
@@ -462,19 +460,7 @@ func RefreshUnits(dir, tag, url string) error {
 	for _, unit := range units.Names {
 		src := fmt.Sprintf(url, tag, unit)
 		dest := filepath.Join(dir, unit+".service")
-		res, err := http.Get(src)
-		if err != nil {
-			return err
-		}
-		if res.StatusCode != 200 {
-			return errors.New(res.Status)
-		}
-		defer res.Body.Close()
-		data, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return err
-		}
-		if err = ioutil.WriteFile(dest, data, 0644); err != nil {
+		if err := net.Download(src, dest); err != nil {
 			return err
 		}
 		fmt.Printf("Refreshed %s from %s\n", unit, tag)
