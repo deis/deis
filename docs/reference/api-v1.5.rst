@@ -1154,9 +1154,12 @@ Example Response:
 
 .. code-block:: console
 
-    {
+    HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.5
     DEIS_PLATFORM_VERSION: 1.8.0-dev
+    Content-Type: application/json
+
+    {
         "count": 1,
         "next": null,
         "previous": null,
