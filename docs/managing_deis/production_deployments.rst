@@ -9,12 +9,12 @@ Production deployments
 Many Deis users are running Deis quite successfully in production. When readying a Deis deployment
 for production workloads, there are some additional (but optional) recommendations.
 
-Running a stateless control plane
----------------------------------
+Running Deis without Ceph
+-------------------------
 
 .. include:: ../_includes/_ceph-dependency-description.rst
 
-See :ref:`running-stateless-cluster` for details on removing this operational
+See :ref:`running-deis-without-ceph` for details on removing this operational
 complexity.
 
 Preseeding containers
