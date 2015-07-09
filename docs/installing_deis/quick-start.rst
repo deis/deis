@@ -51,7 +51,6 @@ Choose one of the following providers and deploy a new cluster:
 - :ref:`deis_on_azure`
 - :ref:`deis_on_linode`
 - :ref:`deis_on_openstack`
-- :ref:`deis_on_rackspace`
 - :ref:`deis_on_vagrant`
 
 

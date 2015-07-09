@@ -29,7 +29,6 @@ information on how to get set up with CoreOS.
     linode
     azure
     openstack
-    rackspace
     vagrant
     install-deisctl
     install-platform

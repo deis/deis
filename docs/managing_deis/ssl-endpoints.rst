@@ -38,9 +38,7 @@ routers. For EC2, you'll also need to add port 443 in the security group setting
 balancer.
 
 See your vendor's specific instructions on installing SSL on your load balancer. For EC2, see their
-documentation on `installing an SSL cert for load balancing`_. For Rackspace, see their
-`Product FAQ`_.
-
+documentation on `installing an SSL cert for load balancing`_.
 
 .. _router_ssl:
 
@@ -76,4 +74,3 @@ This is achieved with ``deisctl``:
 
 
 .. _`installing an SSL cert for load balancing`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/ssl-server-cert.html
-.. _`Product FAQ`: http://www.rackspace.com/knowledge_center/product-faq/cloud-load-balancers
