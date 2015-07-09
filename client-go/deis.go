@@ -79,6 +79,8 @@ Use 'git push deis master' to deploy to an application.
 	switch command {
 	case "auth":
 		err = parser.Auth(argv)
+	case "ps":
+		err = parser.Ps(argv)
 	case "apps":
 		err = parser.Apps(argv)
 	case "keys":

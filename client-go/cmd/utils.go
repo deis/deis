@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -65,4 +66,14 @@ func load(appID string) (*client.Client, string, error) {
 	}
 
 	return c, appID, nil
+}
+
+func drinkOfChoice() string {
+	drink := os.Getenv("DEIS_DRINK_OF_CHOICE")
+
+	if drink == "" {
+		drink = "coffee"
+	}
+
+	return drink
 }
