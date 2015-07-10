@@ -23,6 +23,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('time.sleep', lambda func: func)
 class HookTest(TransactionTestCase):
 
     """Tests API hooks used to trigger actions from external components"""

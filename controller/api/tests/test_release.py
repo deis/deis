@@ -24,6 +24,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('time.sleep', lambda func: func)
 class ReleaseTest(TransactionTestCase):
 
     """Tests push notification from build system"""

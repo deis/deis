@@ -7,6 +7,7 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import mock
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -16,6 +17,7 @@ from rest_framework.authtoken.models import Token
 from scheduler import chaos
 
 
+@mock.patch('time.sleep', lambda func: func)
 class SchedulerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 

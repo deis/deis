@@ -25,6 +25,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('time.sleep', lambda func: func)
 class ContainerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 

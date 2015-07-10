@@ -314,6 +314,15 @@ class App(UuidAuditedModel):
             pass
 
     def _do_healthcheck(self, config):
+        # HACK (bacongobbler): sleep until publisher has hit the refresh interval. Publisher may
+        # take up to 20 seconds before it refreshes the keyspace containers, which we want to make
+        # sure that they're responding before performing the health check and/or recycle the old
+        # containers.
+        #
+        # The FIXME here would be to utilize confd --watch in both publisher and the router, but
+        # that is blocked dueto an issue upstream with etcd:
+        # https://github.com/coreos/etcd/issues/2679
+        time.sleep(20)
         timeout = time.time() + 60  # 1 minute from now
         while True:
             if time.time() > timeout:
@@ -1049,14 +1058,14 @@ def _etcd_publish_config(**kwargs):
     # deis config:unset would remove an existing value, but not delete the
     # old config object
     try:
-        _etcd_client.delete('/deis/services/{}/config'.format(config.app),
+        _etcd_client.delete('/deis/config/{}'.format(config.app),
                             prevExist=True, dir=True, recursive=True)
     except KeyError:
         pass
     if kwargs['created']:
         for k, v in config.values.iteritems():
             _etcd_client.write(
-                '/deis/services/{}/config/{}'.format(
+                '/deis/config/{}/{}'.format(
                     config.app,
                     unicode(k).encode('utf-8').lower()),
                 unicode(v).encode('utf-8'))
@@ -1065,7 +1074,7 @@ def _etcd_publish_config(**kwargs):
 def _etcd_purge_config(**kwargs):
     config = kwargs['instance']
     try:
-        _etcd_client.delete('/deis/services/{}/config'.format(config.app),
+        _etcd_client.delete('/deis/config/{}'.format(config.app),
                             prevExist=True, dir=True, recursive=True)
     except KeyError:
         pass

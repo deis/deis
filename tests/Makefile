@@ -23,6 +23,7 @@ test-full: test-style
 	godep go test -tags integration -v -run TestBuilds
 	godep go test -tags integration -v -run TestConfig
 	godep go test -tags integration -v -run TestDomains
+	godep go test -tags integration -v -run TestHealthcheck
 	godep go test -tags integration -v -run TestKeys
 	godep go test -tags integration -v -run TestPerms
 	godep go test -tags integration -v -run TestPs

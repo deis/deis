@@ -47,6 +47,7 @@ def mock_time(*args, **kwargs):
     return mock_time.counter
 
 
+@mock.patch('time.sleep', lambda func: func)
 class ConfigTest(TransactionTestCase):
 
     """Tests setting and updating config values"""

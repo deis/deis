@@ -116,7 +116,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			port := strconv.Itoa(int(p.PublicPort))
 			hostAndPort := s.host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
-				configKey := fmt.Sprintf("/deis/services/%s/config/", appName)
+				configKey := fmt.Sprintf("/deis/config/%s/", appName)
 				// check if the user specified an upcheck URL
 				healthcheckURL := s.getEtcd(configKey + "healthcheck_url")
 				var healthcheckStatusCode int
