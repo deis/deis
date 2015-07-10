@@ -21,7 +21,7 @@ Managing Deis
     platform_monitoring
     production_deployments
     recovering-ceph-quorum
-    running-stateless-cluster
+    running-deis-without-ceph
     security_considerations
     ssl-endpoints
     upgrading-deis

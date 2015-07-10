@@ -1,10 +1,10 @@
-:title: Running a stateless cluster
+:title: Running Deis without Ceph
 :description: Configuring the cluster to remove Ceph from the control plane.
 
-.. _running-stateless-cluster:
+.. _running-deis-without-ceph:
 
-Running a stateless cluster
-===========================
+Running Deis without Ceph
+=========================
 
 .. include:: ../_includes/_ceph-dependency-description.rst
 
