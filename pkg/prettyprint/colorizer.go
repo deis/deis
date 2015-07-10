@@ -85,7 +85,7 @@ func Logo() string {
 // not support colors.
 func NoColor(msg string) string {
 	empties := make(map[string]string, len(Colors))
-	for k, _ := range Colors {
+	for k := range Colors {
 		empties[k] = ""
 	}
 	return colorize(msg, empties)
@@ -160,4 +160,38 @@ func Overwrite(msg string) string {
 // See `Overwrite` for details.
 func Overwritef(msg string, args ...interface{}) string {
 	return Overwrite(fmt.Sprintf(msg, args...))
+}
+
+// PrettyTabs formats a map with with alligned keys and values.
+//
+// Example:
+// test := map[string]string {
+//    "test": "testing",
+//    "foo": "bar",
+//  }
+//
+// Prettytabs(test, 5)
+//
+// This will return a formatted string.
+// The previous example would return:
+// test     testing
+// foo      bar
+func PrettyTabs(msg map[string]string, spaces int) string {
+	max := 0
+
+	for key := range msg {
+		if len(key) > max {
+			max = len(key)
+		}
+	}
+
+	max += spaces
+
+	var output string
+
+	for key, value := range msg {
+		output += fmt.Sprintf("%s%s%s\n", key, strings.Repeat(" ", max-len(key)), value)
+	}
+
+	return output
 }

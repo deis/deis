@@ -8,6 +8,7 @@ import (
 
 	"github.com/deis/deis/pkg/prettyprint"
 
+	"github.com/deis/deis/client-go/controller/api"
 	"github.com/deis/deis/client-go/controller/client"
 	"github.com/deis/deis/client-go/controller/models/apps"
 	"github.com/deis/deis/client-go/controller/models/config"
@@ -31,10 +32,12 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	fmt.Printf("done, created %s\n", app.ID)
 
 	if buildpack != "" {
-		configValues := map[string]string{
-			"BUILDPACK_URL": buildpack,
+		configValues := api.Config{
+			Values: map[string]interface{}{
+				"BUILDPACK_URL": buildpack,
+			},
 		}
-		if err = config.Set(c, app.ID, configValues); err != nil {
+		if _, err = config.Set(c, app.ID, configValues); err != nil {
 			return err
 		}
 	}

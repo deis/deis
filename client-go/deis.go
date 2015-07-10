@@ -81,6 +81,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Auth(argv)
 	case "apps":
 		err = parser.Apps(argv)
+	case "config":
+		err = parser.Config(argv)
 	case "domains":
 		err = parser.Domains(argv)
 	case "keys":
