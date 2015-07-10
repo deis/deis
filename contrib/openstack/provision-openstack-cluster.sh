@@ -9,12 +9,12 @@
 
 set -e
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname $0)"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 DEIS_NETWORK=${DEIS_NETWORK:-deis}
 DEIS_SECGROUP=${DEIS_SECGROUP:-deis}
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR"/utils.sh
 
 if [ -z "$2" ]; then
   echo_red 'Usage: provision-openstack-cluster.sh <coreos image name/id> <key pair name> [flavor]'
@@ -69,7 +69,7 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."

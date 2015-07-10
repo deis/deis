@@ -12,8 +12,8 @@ listcontains() {
   return 1
 }
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname $0)"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
 REGION_SLUG=$1
 SSH_ID=$2
@@ -24,7 +24,7 @@ if [ -z "$PREFIX" ]; then
   PREFIX="deis"
 fi
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR"/utils.sh
 
 if [ -z "$3" ]; then
   echo_red 'Usage: provision-do-cluster.sh <REGION_SLUG> <SSH_ID> <SIZE> [PREFIX]'
@@ -51,7 +51,7 @@ then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 # TODO: Make it follow a specific ID once circumstances allow us to do so.
 BASE_IMAGE_ID='coreos-stable'
@@ -65,7 +65,7 @@ fi
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     NAME="$PREFIX-$i"
     echo_yellow "Provisioning ${NAME}..."
-    docl create $NAME $BASE_IMAGE_ID $SIZE $REGION_SLUG --key=$SSH_ID --private-networking --user-data=$CONTRIB_DIR/coreos/user-data --wait
+    docl create $NAME $BASE_IMAGE_ID $SIZE $REGION_SLUG --key=$SSH_ID --private-networking --user-data="$CONTRIB_DIR"/coreos/user-data --wait
     ((i = i + 1)) ; \
 done
 

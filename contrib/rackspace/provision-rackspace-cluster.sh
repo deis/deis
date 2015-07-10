@@ -5,10 +5,10 @@
 
 set -e
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname $0)"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR"/utils.sh
 
 if [ -z "$1" ]; then
   echo_red 'Usage: provision-rackspace-cluster.sh <key pair name> [flavor] [environment]'
@@ -44,13 +44,13 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
     # This image is CoreOS 633.1.0 in the stable channel
     # TODO: Update to 681.2.0 when it's available in the stable channel
-    supernova $ENV boot --image a41d8b7c-d41b-4369-a180-0734f3b1cd8c --flavor $FLAVOR --key-name $1 --user-data $CONTRIB_DIR/coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
+    supernova $ENV boot --image a41d8b7c-d41b-4369-a180-0734f3b1cd8c --flavor $FLAVOR --key-name $1 --user-data "$CONTRIB_DIR"/coreos/user-data --no-service-net --nic net-id=$NETWORK_ID --config-drive true deis-$i ; \
     ((i = i + 1)) ; \
 done
 

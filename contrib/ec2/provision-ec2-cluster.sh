@@ -12,10 +12,10 @@ fi
 
 set -e
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname $0)"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR"/utils.sh
 
 # check for EC2 API tools in $PATH
 if ! which aws > /dev/null; then
@@ -40,7 +40,7 @@ if [ -n "$VPC_ID" ]; then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 # Prepare bailout function to prevent us polluting the namespace
 bailout() {
