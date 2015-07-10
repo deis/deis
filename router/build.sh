@@ -12,6 +12,8 @@ fi
 
 export VERSION_NGINX=nginx-1.9.2
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
+export VERSION_NDK=0.2.19
+export VERSION_SETMISC=0.29
 
 export BUILD_PATH=/tmp/build
 
@@ -37,13 +39,11 @@ apk add --update-cache \
   zlib \
   zlib-dev
 
-# grab the source files
-curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
-curl -sSL https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz -o $BUILD_PATH/$VERSION_NAXSI.tar.gz
-
-# expand the source files
-tar xzf $VERSION_NGINX.tar.gz
-tar xzf $VERSION_NAXSI.tar.gz
+# download and extract the source files
+curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz | tar xz
+curl -sSL https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz | tar xz
+curl -sSL https://github.com/simpl/ngx_devel_kit/archive/v$VERSION_NDK.tar.gz | tar xz
+curl -sSL https://github.com/openresty/set-misc-nginx-module/archive/v$VERSION_SETMISC.tar.gz | tar xz
 
 # build nginx
 cd $BUILD_PATH/$VERSION_NGINX
@@ -68,6 +68,8 @@ cd $BUILD_PATH/$VERSION_NGINX
   --with-mail_ssl_module \
   --with-stream \
   --add-module=$BUILD_PATH/naxsi-$VERSION_NAXSI/naxsi_src \
+  --add-module=$BUILD_PATH/ngx_devel_kit-$VERSION_NDK \
+  --add-module=$BUILD_PATH/set-misc-nginx-module-$VERSION_SETMISC \
   && make && make install
 
 mv /tmp/firewall /opt/nginx/firewall
