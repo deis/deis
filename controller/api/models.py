@@ -179,14 +179,14 @@ class App(UuidAuditedModel):
     def url(self):
         return self.id + '.' + settings.DEIS_DOMAIN
 
-    def _get_job_id(self,container_type):
+    def _get_job_id(self, container_type):
         app = self.id
         release = self.release_set.latest()
         version = "v{}".format(release.version)
         job_id = "{app}_{version}.{container_type}".format(**locals())
         return job_id
 
-    def _get_command(self,container_type):
+    def _get_command(self, container_type):
         try:
             # if this is not procfile-based app, ensure they cannot break out
             # and run arbitrary commands on the host
@@ -294,9 +294,9 @@ class App(UuidAuditedModel):
                 diff -= 1
 
         if changed:
-            if "scale" in dir(self._scheduler) :
-                self._scale_containers(scale_types,to_remove)
-            else :
+            if "scale" in dir(self._scheduler):
+                self._scale_containers(scale_types, to_remove)
+            else:
                 if to_add:
                     self._start_containers(to_add)
                 if to_remove:
@@ -310,9 +310,9 @@ class App(UuidAuditedModel):
         self.save()
         return changed
 
-    def _scale_containers(self,scale_types,to_remove) :
+    def _scale_containers(self, scale_types, to_remove):
         release = self.release_set.latest()
-        for scale_type in scale_types :
+        for scale_type in scale_types:
             image = release.image
             version = "v{}".format(release.version)
             kwargs = {'memory': release.config.memory,
@@ -389,16 +389,15 @@ class App(UuidAuditedModel):
         existing = self.container_set.exclude(type='run')
         new = []
         scale_types = set()
-        old_name = ''
         for e in existing:
             n = e.clone(release)
             n.save()
             new.append(n)
             scale_types.add(e.type)
 
-        if new and "deploy" in dir(self._scheduler) :
-            self._deploy_app(scale_types,release,existing)
-        else :
+        if new and "deploy" in dir(self._scheduler):
+            self._deploy_app(scale_types, release, existing)
+        else:
             self._start_containers(new)
 
             # destroy old containers
@@ -409,8 +408,8 @@ class App(UuidAuditedModel):
         if self.structure == {} and release.build is not None:
             self._default_scale(user, release)
 
-    def _deploy_app(self,scale_types,release,existing) :
-        for scale_type in scale_types :
+    def _deploy_app(self, scale_types, release, existing):
+        for scale_type in scale_types:
             image = release.image
             version = "v{}".format(release.version)
             kwargs = {'memory': release.config.memory,
@@ -418,7 +417,7 @@ class App(UuidAuditedModel):
                       'tags': release.config.tags,
                       'aname': self.id,
                       'num': 0,
-                      'version':version}
+                      'version': version}
             job_id = self._get_job_id(scale_type)
             command = self._get_command(scale_type)
             try:

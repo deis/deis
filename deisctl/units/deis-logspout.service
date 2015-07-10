@@ -1,7 +1,7 @@
 [Unit]
 Description=deis-logspout
-Requires=docker.socket etcd.service
-After=docker.socket etcd.service
+Requires=docker.socket etcd2.service
+After=docker.socket etcd2.service
 
 [Service]
 EnvironmentFile=/etc/environment

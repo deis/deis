@@ -1,8 +1,8 @@
 [Unit]
 Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
-Requires=etcd.service fleet.service docker.service flanneld.service
-After=etcd.service fleet.service docker.service flanneld.service
+Requires=etcd2.service fleet.service docker.service flanneld.service
+After=etcd2.service fleet.service docker.service flanneld.service
 [Service]
 EnvironmentFile=/etc/environment
 ExecStartPre=-/bin/sh -c "etcdctl get /deis/scheduler/k8s/master >/dev/null 2>&1 || etcdctl mk /deis/scheduler/k8s/master"
