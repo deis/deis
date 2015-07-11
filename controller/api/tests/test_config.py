@@ -15,36 +15,14 @@ from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 from rest_framework.authtoken.models import Token
 
-from api.models import App, Config
+from api.models import Config
 
 
-def mock_status_ok(*args, **kwargs):
+def mock_import_repository_task(*args, **kwargs):
     resp = requests.Response()
     resp.status_code = 200
     resp._content_consumed = True
     return resp
-
-
-def mock_status_not_found(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 404
-    resp._content_consumed = True
-    return resp
-
-
-def mock_request_timed_out(*args, **kwargs):
-    raise requests.exceptions.Timeout()
-
-
-def mock_request_connection_error(*args, **kwargs):
-    raise requests.exceptions.ConnectionError()
-
-
-def mock_time(*args, **kwargs):
-    if not hasattr(mock_time, "counter"):
-        mock_time.counter = 0  # it doesn't exist yet, so initialize it
-    mock_time.counter += 1
-    return mock_time.counter
 
 
 class ConfigTest(TransactionTestCase):
@@ -57,7 +35,7 @@ class ConfigTest(TransactionTestCase):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config(self):
         """
         Test that config is auto-created for a new app and that
@@ -129,7 +107,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 405)
         return config5
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_response_data(self):
         """Test that the serialized response contains only relevant data."""
         body = {'id': 'test'}
@@ -154,7 +132,7 @@ class ConfigTest(TransactionTestCase):
         }
         self.assertDictContainsSubset(expected, response.data)
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_same_key(self):
         """
         Test that config sets on the same key function properly
@@ -178,7 +156,7 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('PORT', response.data['values'])
         self.assertEqual(response.data['values']['PORT'], '5001')
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_unicode(self):
         """
         Test that config sets with unicode values are accepted.
@@ -209,14 +187,14 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('INTEGER', response.data['values'])
         self.assertEqual(response.data['values']['INTEGER'], 1)
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
         """Test the text representation of a node."""
         config5 = self.test_config()
         config = Config.objects.get(uuid=config5['uuid'])
         self.assertEqual(str(config), "{}-{}".format(config5['app'], config5['uuid'][:7]))
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_admin_can_create_config_on_other_apps(self):
         """If a non-admin creates an app, an administrator should be able to set config
         values for that app.
@@ -236,7 +214,7 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('PORT', response.data['values'])
         return response
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_limit_memory(self):
         """
         Test that limit is auto-created for a new app and that
@@ -324,7 +302,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 405)
         return limit4
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_limit_cpu(self):
         """
         Test that CPU limits can be set
@@ -395,7 +373,7 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 405)
         return limit4
 
-    @mock.patch('requests.post', mock_status_ok)
+    @mock.patch('requests.post', mock_import_repository_task)
     def test_tags(self):
         """
         Test that tags can be set on an application
@@ -499,73 +477,3 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
-
-    def _test_app_healthcheck(self):
-        url = '/v1/apps'
-        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']
-        # post a new build, expecting it to pass as usual
-        url = "/v1/apps/{app_id}/builds".format(**locals())
-        body = {'image': 'autotest/example'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-        # set an initial healthcheck url.
-        url = "/v1/apps/{app_id}/config".format(**locals())
-        body = {'values': json.dumps({'HEALTHCHECK_URL': '/'})}
-        return self.client.post(url, json.dumps(body), content_type='application/json',
-                                HTTP_AUTHORIZATION='token {}'.format(self.token))
-
-    @mock.patch('requests.get', mock_status_not_found)
-    def test_app_healthcheck_good(self):
-        """
-        If a user deploys an app with a config value set for HEALTHCHECK_URL, the controller
-        should check that the application is up. If it's down, the app should be rolled back.
-        """
-        response = self._test_app_healthcheck()
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(
-            response.data,
-            {
-                'detail':
-                "aborting, app failed health check (got '404', expected: '200')"
-            })
-        # add in the expected app healthcheck status, which will result in a successful deployment
-        app_id = App.objects.all()[0]
-        url = "/v1/apps/{app_id}/config".format(**locals())
-        body = {'values': json.dumps({'HEALTHCHECK_STATUS_CODE': '404'})}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
-                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 201)
-
-    @mock.patch('requests.get', mock_request_timed_out)
-    @mock.patch('time.time', mock_time)
-    def test_app_healthcheck_timeout(self):
-        """
-        If a user deploys an app with a config value set for HEALTHCHECK_URL but the app
-        times out, the controller should continue checking until either the app
-        responds or the app fails to respond within the timeout.
-        """
-        response = self._test_app_healthcheck()
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(
-            response.data,
-            {'detail': 'app failed to respond to health check within 60 seconds of launch'})
-
-    @mock.patch('requests.get', mock_request_connection_error)
-    @mock.patch('time.time', mock_time)
-    def test_app_healthcheck_connection_error(self):
-        """
-        If a user deploys an app with a config value set for HEALTHCHECK_URL but the app
-        returns a connection error, the controller should continue checking until either the app
-        responds or the app fails to respond within the timeout.
-
-        NOTE (bacongobbler): the Docker userland proxy listens for connections and returns a
-        ConnectionError, hence the unit test.
-        """
-        response = self._test_app_healthcheck()
-        self.assertEqual(response.status_code, 503)
-        self.assertEqual(
-            response.data,
-            {'detail': 'app failed to respond to health check within 60 seconds of launch'})

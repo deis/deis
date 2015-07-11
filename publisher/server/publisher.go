@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"regexp"
 	"strconv"
 	"sync"
@@ -116,19 +115,6 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			port := strconv.Itoa(int(p.PublicPort))
 			hostAndPort := s.host + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
-				configKey := fmt.Sprintf("/deis/services/%s/config/", appName)
-				// check if the user specified an upcheck URL
-				healthcheckURL := s.getEtcd(configKey + "healthcheck_url")
-				var healthcheckStatusCode int
-				healthcheckStatusCode, err := strconv.Atoi(s.getEtcd(configKey + "healthcheck_status_code"))
-				if err != nil {
-					healthcheckStatusCode = 200
-				}
-				if healthcheckURL != "" {
-					if !s.HealthCheckOK("http://"+hostAndPort+healthcheckURL, healthcheckStatusCode) {
-						continue
-					}
-				}
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
 				safeMap.Lock()
 				safeMap.data[container.ID] = appPath
@@ -183,19 +169,6 @@ func (s *Server) IsPortOpen(hostAndPort string) bool {
 	return portOpen
 }
 
-func (s *Server) HealthCheckOK(url string, expectedStatusCode int) bool {
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Printf("healthcheck failed for %s (%v)\n", url, err)
-		return false
-	}
-	if resp.StatusCode == expectedStatusCode {
-		return true
-	}
-	log.Printf("healthcheck failed for %s (expected %d, got %d)\n", url, expectedStatusCode, resp.StatusCode)
-	return false
-}
-
 // latestRunningVersion retrieves the highest version of the application published
 // to etcd. If no app has been published, returns 0.
 func latestRunningVersion(client *etcd.Client, appName string) int {
@@ -238,21 +211,6 @@ func max(n []int) int {
 		}
 	}
 	return val
-}
-
-// getEtcd retrieves the etcd key's value. Returns an empty string if the key was not found.
-func (s *Server) getEtcd(key string) string {
-	if s.logLevel == "debug" {
-		log.Println("get", key)
-	}
-	resp, err := s.EtcdClient.Get(key, false, false)
-	if err != nil {
-		return ""
-	}
-	if resp != nil && resp.Node != nil {
-		return resp.Node.Value
-	}
-	return ""
 }
 
 // setEtcd sets the corresponding etcd key with the value and ttl
