@@ -3,10 +3,13 @@
 # This script is designed to be run inside the container
 #
 
-ETCD_PORT=${ETCD_PORT:-4001}
-ETCD="$HOST:$ETCD_PORT"
+# configure etcd
+# if ETCDCTL_PEERS isn't already set, set it
+if [ -z "$ETCDCTL_PEERS" ]; then
+	export ETCDCTL_PEERS="http://${ETCD_HOST:-${HOST:-127.0.0.1}}:${ETCD_PORT:-4001}"
+fi
 
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
+confd --confdir /app --log-level error --interval 5 &
 
 # loop forever until the container is stopped
 while true; do

@@ -1,26 +1,30 @@
 #!/bin/bash
 # Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
 
-ETCD_PORT=${ETCD_PORT:-4001}
-ETCD="$HOST:$ETCD_PORT"
+# configure etcd
+# configuring ETCDCTL_PEERS will enable etcdctl and confd elsewhere in this boot script
+if [ -z "$ETCDCTL_PEERS" ]; then
+	export ETCDCTL_PEERS="http://${ETCD_HOST:-${HOST:-127.0.0.1}}:${ETCD_PORT:-4001}"
+fi
+
 ETCD_PATH=${ETCD_PATH:-/deis/store}
 
 HOSTNAME=`hostname`
 MDS_NAME=$HOSTNAME
 
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime --confdir /app --log-level error; do
   echo "store-metadata: waiting for confd to write initial templates..."
   sleep 5
 done
 
-if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/filesystemSetupComplete >/dev/null 2>&1 ; then
+if ! etcdctl --no-sync get ${ETCD_PATH}/filesystemSetupComplete >/dev/null 2>&1 ; then
   echo "store-metadata: The Ceph filesystem hasn't been created. Trying to obtain the lock to set up..."
   # let's rock and roll. we need to obtain a lock so we can ensure only one machine is trying to deploy the cluster
-  if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/filesystemSetupLock $HOSTNAME >/dev/null 2>&1 \
-  || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/filesystemSetupLock` == "$HOSTNAME" ]] ; then
+  if etcdctl --no-sync mk ${ETCD_PATH}/filesystemSetupLock $HOSTNAME >/dev/null 2>&1 \
+  || [[ `etcdctl --no-sync get ${ETCD_PATH}/filesystemSetupLock` == "$HOSTNAME" ]] ; then
     echo "store-metadata: obtained the lock to proceed with setting up."
 
-    PG_NUM=`etcdctl --no-sync -C $ETCD get /deis/store/pgNum`
+    PG_NUM=`etcdctl --no-sync get /deis/store/pgNum`
 
     # even though we know setup hasn't completed, we could be upgrading an older cluster which
     # has the pools but not the filesystemSetupComplete key
@@ -38,9 +42,9 @@ if ! etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/filesystemSetupComplete >/dev/n
 
     # mark setup as complete
     echo "store-metadata: filesystem setup complete."
-    etcdctl --no-sync -C $ETCD set ${ETCD_PATH}/filesystemSetupComplete youBetcha >/dev/null
+    etcdctl --no-sync set ${ETCD_PATH}/filesystemSetupComplete youBetcha >/dev/null
   else
-    until etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/filesystemSetupComplete >/dev/null 2>&1 ; do
+    until etcdctl --no-sync get ${ETCD_PATH}/filesystemSetupComplete >/dev/null 2>&1 ; do
       echo "store-metadata: waiting for another metadata to complete setup..."
       sleep 5
     done

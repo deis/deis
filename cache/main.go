@@ -26,12 +26,21 @@ const (
 func main() {
 	host := getopt("HOST", "127.0.0.1")
 
+	etcdPeersStr := getopt("ETCDCTL_PEERS", "")
+	etcdHost := getopt("ETCD_HOST", host)
 	etcdPort := getopt("ETCD_PORT", "4001")
 	etcdPath := getopt("ETCD_PATH", "/deis/cache")
 
 	externalPort := getopt("EXTERNAL_PORT", "6379")
 
-	client := etcd.NewClient([]string{"http://" + host + ":" + etcdPort})
+	var etcdPeers []string
+	if etcdPeersStr == "" {
+		etcdPeers = []string{"http://" + etcdHost + ":" + etcdPort}
+	} else {
+		etcdPeers = strings.Split(etcdPeersStr, ",")
+	}
+
+	client := etcd.NewClient(etcdPeers)
 
 	var maxmemory string
 	result, err := client.Get("/deis/cache/maxmemory", false, false)

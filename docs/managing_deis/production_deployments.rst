@@ -64,3 +64,84 @@ Enable TLS
 
 Using TLS to encrypt traffic (including Deis client traffic, such as login credentials) is crucial.
 See :ref:`platform_ssl`.
+
+Large-scale cluster architecture
+--------------------------------
+
+Deis Control Plane, Router Mesh, and Data Plane components all depend on etcd
+for service discovery.  For larger deployments, it is recommended that etcd
+not run on greater than nine servers as doing so can greatly increase the time
+required for etcd nodes to build consensus, which can have a deleterious effect
+on a cluster's overall performance.
+
+Those building larger clusters should reference `CoreOS cluster architecture
+documentation`_.  This is considered an advanced use case, and as such Deis'
+provisioning scripts do not address this concern directly.  The remainder
+of this section addresses the means by which an operator might construct such
+a large-scale cluster.
+
+To realize such a topology, it is necessary to provide different cloud-config
+for those servers that will run etcd and for those that will not.  By extension,
+that process will involve a customized provisioning process.
+
+For a small, fixed number of servers running etcd and satisfying the "central
+services" role (as described in the CoreOS documentation), the cloud-config
+provided with Deis is sufficient.
+
+For servers not running etcd, satisfying the "worker" role (as described in the
+CoreOS documentation), cloud-config must be tweaked to account for the following
+considerations:
+
+1. Etcd must be disabled.
+2. Fleet must be configured to use remote etcd servers.
+3. The ``ETCDCTL_PEERS`` environment variable must be set with the addresses of the remote etcd servers.
+4. The ``ETCDCTL_PEERS`` environment variable must be added to ``/etc/environment``.  This will enable the use of etcdctl and derivative utilities such as Deis' ``get_image`` script from within the .service files that are used to launch each Deis component.
+
+For example:
+
+.. code-block:: yaml
+
+  coreos:
+    fleet:
+      # allow etcd to slow down at times
+      etcd_request_timeout: 3.0
+      etcd_servers: "http://10.0.0.101:4001,http://10.0.0.102:4001,http://10.0.0.103:4001,http://10.0.0.104:4001,http://10.0.0.105:4001"
+    # ...
+    units:
+      - name: etcd.service
+        mask: true
+      - name: setup-etcdctl-env.service
+        command: start
+        content: |
+          [Unit]
+          Description=Setup etcdctl env vars
+          Wants=coreos-setup-environment.service
+          After=coreos-setup-environment.service
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=true
+          ExecStart=/bin/bash -c "source /etc/profile.d/etcdctl.sh; env | grep ETCDCTL_PEERS >> /etc/environment"
+
+          [Install]
+          WantedBy=multi-user.target
+    # ...
+    write_files:
+      - path: /etc/profile.d/etcdctl.sh
+        permissions: 0644
+        owner: core
+        content: |
+          export ETCDCTL_PEERS="http://10.0.0.101:4001,http://10.0.0.102:4001,http://10.0.0.103:4001,http://10.0.0.104:4001,http://10.0.0.105:4001"
+      - path: /etc/profile.d/fleetctl.sh
+        permissions: 0644
+        owner: core
+        content: |
+          export FLEETCTL_ENDPOINT=unix:///var/run/fleet.sock
+          export FLEETCTL_EXPERIMENTAL_API=true
+
+In the example above, the sample IPs obviously must be replaced with the actual
+IPs of the "central services" nodes.  The means of accomplishing that
+programmatically at the time of provisioning will vary from one cloud provider
+to the next.
+
+.. _`CoreOS cluster architecture documentation`: https://coreos.com/docs/cluster-management/setup/cluster-architectures/#production-cluster-with-central-services

@@ -21,6 +21,7 @@ var (
 	drainURI        string
 	enablePublish   bool
 	publishHost     string
+	publishPeersStr string
 	publishPath     string
 	publishPort     string
 	publishInterval int
@@ -33,7 +34,8 @@ func init() {
 	flag.StringVar(&drainURI, "drain-uri", "", "default drainURI, once set in etcd, this has no effect.")
 	flag.StringVar(&syslogd.LogRoot, "log-root", "/data/logs", "log path to store logs")
 	flag.BoolVar(&enablePublish, "enable-publish", false, "enable publishing to service discovery")
-	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
+	flag.StringVar(&publishHost, "publish-host", getopt("ETCD_HOST", getopt("HOST", "127.0.0.1")), "service discovery hostname")
+	flag.StringVar(&publishPeersStr, "publish-peers", getopt("ETCDCTL_PEERS", ""), "service discovery peers")
 	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
 	flag.StringVar(&publishPath, "publish-path", getopt("ETCD_PATH", "/deis/logs"), "path to publish host/port information")
 	flag.StringVar(&publishPort, "publish-port", getopt("ETCD_PORT", "4001"), "service discovery port")
@@ -43,7 +45,14 @@ func init() {
 func main() {
 	flag.Parse()
 
-	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
+	var publishPeers []string
+	if publishPeersStr == "" {
+		publishPeers = []string{"http://" + publishHost + ":" + publishPort}
+	} else {
+		publishPeers = strings.Split(publishPeersStr, ",")
+	}
+
+	client := etcd.NewClient(publishPeers)
 
 	signalChan := make(chan os.Signal, 1)
 	drainChan := make(chan string)

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -50,11 +51,11 @@ func run(cmd string) {
 	}
 }
 
-func getleaderHost() string {
+func getleaderHost(etcdHost string) string {
 	var response []Response
 	var host string
 	client := &http.Client{}
-	resp, _ := client.Get("http://" + os.Getenv("HOST") + ":7001/v2/admin/machines")
+	resp, _ := client.Get("http://" + etcdHost + ":7001/v2/admin/machines")
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
 	json.Unmarshal(body, &response)
@@ -80,15 +81,37 @@ func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
 	}
 }
 func main() {
-	etcdproto := "etcd://" + getleaderHost() + swarmpath
-	etcdhost := os.Getenv("HOST")
-	addr := "--addr=" + etcdhost + ":2375"
-	client := etcd.NewClient([]string{"http://" + etcdhost + ":" + etcdport})
+	etcdPeersStr := os.Getenv("ETCDCTL_PEERS")
+	etcdHost := getopt("ETCD_HOST", getopt("HOST", "127.0.01"))
+	etcdPort := getopt("ETCD_PORT", "4001")
+
+	var etcdPeers []string
+	if etcdPeersStr == "" {
+		etcdPeers = []string{"http://" + etcdHost + ":" + etcdPort}
+	} else {
+		etcdPeers = strings.Split(etcdPeersStr, ",")
+	}
+
+	etcdUrl, _ := url.Parse(etcdPeers[0])
+	etcdHost = strings.Split(etcdUrl.Host, ":")[0]
+
+	etcdproto := "etcd://" + getleaderHost(etcdHost) + swarmpath
+	host := os.Getenv("HOST")
+	addr := "--addr=" + host + ":2375"
+	client := etcd.NewClient(etcdPeers)
 	switch os.Args[1] {
 	case "join":
 		run("./deis-swarm join " + addr + " " + etcdproto)
 	case "manage":
-		go publishService(client, etcdhost, uint64(ttl.Seconds()))
+		go publishService(client, host, uint64(ttl.Seconds()))
 		run("./deis-swarm manage " + etcdproto)
 	}
+}
+
+func getopt(name, dfault string) string {
+	value := os.Getenv(name)
+	if value == "" {
+		value = dfault
+	}
+	return value
 }
