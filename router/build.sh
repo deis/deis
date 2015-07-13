@@ -11,6 +11,7 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 export VERSION_NGINX=nginx-1.9.2
+export SHA256_NGINX=80b6425be14a005c8cb15115f3c775f4bc06bf798aa1affaee84ed9cf641ed78
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
 
 export BUILD_PATH=/tmp/build
@@ -39,6 +40,7 @@ apk add --update-cache \
 
 # grab the source files
 curl -sSL http://nginx.org/download/$VERSION_NGINX.tar.gz -o $BUILD_PATH/$VERSION_NGINX.tar.gz
+echo "$SHA256_NGINX *$VERSION_NGINX.tar.gz" | sha256sum -c - || exit 10
 curl -sSL https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz -o $BUILD_PATH/$VERSION_NAXSI.tar.gz
 
 # expand the source files
