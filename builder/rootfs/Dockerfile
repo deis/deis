@@ -58,4 +58,4 @@ RUN passwd -u git
 
 COPY . /
 
-ENV DEIS_RELEASE 1.8.0
+ENV DEIS_RELEASE 1.9.0-dev

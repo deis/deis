@@ -6,4 +6,4 @@ CMD ["/bin/logspout"]
 
 ADD logspout /bin/logspout
 
-ENV DEIS_RELEASE 1.8.0
+ENV DEIS_RELEASE 1.9.0-dev
