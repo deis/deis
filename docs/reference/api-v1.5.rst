@@ -987,6 +987,16 @@ Example Request:
 
     {"image": "deis/example-go:latest"}
 
+Optional Parameters:
+
+.. code-block:: console
+
+    {
+        "procfile": {
+          "web": "./cmd"
+        }
+    }
+
 Example Response:
 
 .. code-block:: console
