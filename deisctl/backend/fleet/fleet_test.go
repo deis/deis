@@ -45,6 +45,26 @@ func (c *stubFleetClient) UnitStates() ([]*schema.UnitState, error) {
 
 	return c.testUnitStates, nil
 }
+
+type failingFleetClient struct {
+	stubFleetClient
+}
+
+func (c *failingFleetClient) SetUnitTargetState(name, target string) error {
+	if err := c.stubFleetClient.SetUnitTargetState(name, target); err != nil {
+		return err
+	}
+
+	last := len(c.testUnitStates) - 1
+	c.testUnitStates[last] = &schema.UnitState{
+		Name:               name,
+		SystemdSubState:    "failed",
+		SystemdActiveState: "failed",
+	}
+
+	return nil
+}
+
 func (c *stubFleetClient) SetUnitTargetState(name, target string) error {
 
 	var activeState string
@@ -148,31 +168,6 @@ func (s *syncBuffer) Bytes() []byte {
 	defer s.mx.RUnlock()
 	return s.Buffer.Bytes()
 }
-
-/*
-func logState(outchan chan string, errchan chan error, errOutput *string, mutex *sync.Mutex) {
-	for {
-		select {
-		case _, ok := <-outchan:
-			if !ok {
-				outchan = nil
-			}
-		case err, ok := <-errchan:
-			if !ok {
-				errchan = nil
-			}
-			if err != nil {
-				mutex.Lock()
-				*errOutput += err.Error()
-				mutex.Unlock()
-			}
-		}
-		if outchan == nil && errchan == nil {
-			break
-		}
-	}
-}
-*/
 
 func TestNewClient(t *testing.T) {
 	t.Parallel()

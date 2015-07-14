@@ -1,6 +1,7 @@
 package fleet
 
 import (
+	"strings"
 	"sync"
 	"testing"
 
@@ -67,4 +68,38 @@ func TestStop(t *testing.T) {
 			t.Errorf("Expected Unit %s not found in Unit States", expectedUnit)
 		}
 	}
+}
+
+var stopTestUnits = []*schema.Unit{
+	&schema.Unit{
+		Name:         "deis-controller.service",
+		DesiredState: "launched",
+	},
+	&schema.Unit{
+		Name:         "deis-builder.service",
+		DesiredState: "launched",
+	},
+	&schema.Unit{
+		Name:         "deis-publisher.service",
+		DesiredState: "launch",
+	},
+}
+
+func TestStopFail(t *testing.T) {
+	fc := &failingFleetClient{stubFleetClient{
+		testUnits:       stopTestUnits,
+		unitStatesMutex: &sync.Mutex{},
+		unitsMutex:      &sync.Mutex{},
+	}}
+	var wg sync.WaitGroup
+	c := &FleetClient{Fleet: fc}
+
+	var b syncBuffer
+	c.Stop([]string{"deis-builder.service"}, &wg, &b, &b)
+	wg.Wait()
+
+	if !strings.Contains(b.String(), "failed while stopping") {
+		t.Errorf("Expected 'failed while stopping'. Got '%s'", b.String())
+	}
+
 }

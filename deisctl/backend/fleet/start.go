@@ -86,6 +86,12 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, out, ew io.Write
 		}
 
 		lastSubState = currentState.SystemdSubState
+
+		if lastSubState == "failed" {
+			o := prettyprint.Colorize("{{.Red}}The service '%s' failed while starting.{{.Default}}\n")
+			fmt.Fprintf(ew, o, target)
+			return
+		}
 		time.Sleep(250 * time.Millisecond)
 	}
 }
