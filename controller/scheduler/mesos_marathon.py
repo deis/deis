@@ -1,10 +1,12 @@
 import re
 import time
+
 from django.conf import settings
 from marathon import MarathonClient
 from marathon.models import MarathonApp
-from .states import JobState
 from docker import Client
+
+from .states import JobState
 from .fleet import FleetHTTPClient
 
 # turn down standard marathon logging
@@ -12,6 +14,8 @@ from .fleet import FleetHTTPClient
 MATCH = re.compile(
     '(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z-_]+)?.(?P<c_num>[0-9]+)')
 RETRIES = 3
+POLL_ATTEMPTS = 30
+POLL_WAIT = 100
 
 
 class MarathonHTTPClient(object):
@@ -47,12 +51,10 @@ class MarathonHTTPClient(object):
         cpu = kwargs.get('cpu', {}).get(l['c_type'])
         if cpu:
             c = cpu
-        cpu = kwargs.get('cpu', {}).get(l['c_type'])
-        self.client.create_app(app_id,
-                               MarathonApp(cmd="docker run --name "+name+" -P "+image+" "+command,
-                                           mem=m, cpus=c))
+        cmd = "docker run --name {name} -P {image} {command}".format(**locals())
+        self.client.create_app(app_id, MarathonApp(cmd=cmd, mem=m, cpus=c))
         self.client.scale_app(app_id, 0, force=True)
-        for _ in xrange(30):
+        for _ in xrange(POLL_ATTEMPTS):
             if self.client.get_app(self._app_id(name)).tasks_running == 0:
                 return
             time.sleep(1)
@@ -60,11 +62,12 @@ class MarathonHTTPClient(object):
     def start(self, name):
         """Start a container"""
         self.client.scale_app(self._app_id(name), 1, force=True)
-        for _ in xrange(30):
+        for _ in xrange(POLL_ATTEMPTS):
             if self.client.get_app(self._app_id(name)).tasks_running == 1:
-                return
+                break
             time.sleep(1)
-        raise RuntimeError("App Not Started")
+        host = self.client.get_app(self._app_id(name)).tasks[0].host
+        self._waitforcontainer(host, name)
 
     def stop(self, name):
         """Stop a container"""
@@ -79,13 +82,25 @@ class MarathonHTTPClient(object):
         except:
             self.client.delete_app(self._app_id(name), force=True)
 
-    def _delete_container(self, host, name):
+    def _get_container_state(self, host, name):
         docker_cli = Client("tcp://{}:2375".format(host), timeout=1200, version='1.17')
         try:
-            if docker_cli.inspect_container(name)['State']:
-                docker_cli.remove_container(name, force=True)
+            if docker_cli.inspect_container(name)['State']['Running']:
+                return JobState.up
         except:
-            pass
+            return JobState.destroyed
+
+    def _waitforcontainer(self, host, name):
+        for _ in xrange(POLL_WAIT):
+            if self._get_container_state(host, name) == JobState.up:
+                return
+            time.sleep(1)
+        raise RuntimeError("App container Not Started")
+
+    def _delete_container(self, host, name):
+        docker_cli = Client("tcp://{}:2375".format(host), timeout=1200, version='1.17')
+        if docker_cli.inspect_container(name)['State']:
+            docker_cli.remove_container(name, force=True)
 
     def run(self, name, image, entrypoint, command):  # noqa
         """Run a one-off command"""
@@ -93,7 +108,7 @@ class MarathonHTTPClient(object):
 
     def state(self, name):
         try:
-            for _ in xrange(30):
+            for _ in xrange(POLL_ATTEMPTS):
                 if self.client.get_app(self._app_id(name)).tasks_running == 1:
                     return JobState.up
                 elif self.client.get_app(self._app_id(name)).tasks_running == 0:

@@ -103,7 +103,6 @@ to `enable the remote API`_.
     **Known Issues**
 
     - It is not yet possible to change the default affinity filter.
-    - If swarm can't create all the containers requested during scale, deis rolls back the scale operation.
 
 To test the Swarm Scheduler backend, first install and start the swarm components:
 

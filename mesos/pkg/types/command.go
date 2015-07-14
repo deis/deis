@@ -5,6 +5,7 @@ import (
 	"os/exec"
 )
 
+// Command struct to execute commands.
 type Command struct {
 	Stdout, Stderr io.Writer
 

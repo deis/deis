@@ -3,7 +3,7 @@ package main
 import (
 	"strings"
 
-	"github.com/deis/deis/mesos/pkg/boot/mesos/marathon/bindata"
+	"github.com/deis/deis/mesos/bindata/marathon"
 
 	"github.com/deis/deis/mesos/pkg/boot"
 	"github.com/deis/deis/mesos/pkg/etcd"
@@ -29,16 +29,20 @@ func main() {
 	boot.Start(etcdPath, mesosPort)
 }
 
+// MesosBoot struct for mesos boot.
 type MesosBoot struct{}
 
+// MkdirsEtcd creates a directory in  etcd.
 func (mb *MesosBoot) MkdirsEtcd() []string {
 	return []string{etcdPath}
 }
 
+// EtcdDefaults returns default values for etcd.
 func (mb *MesosBoot) EtcdDefaults() map[string]string {
 	return map[string]string{}
 }
 
+// PreBootScripts runs preboot scripts.
 func (mb *MesosBoot) PreBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	params := make(map[string]string)
 	params["HOST"] = currentBoot.Host.String()
@@ -50,36 +54,44 @@ func (mb *MesosBoot) PreBootScripts(currentBoot *types.CurrentBoot) []*types.Scr
 	return []*types.Script{}
 }
 
+// PreBoot to log starting of marathon.
 func (mb *MesosBoot) PreBoot(currentBoot *types.CurrentBoot) {
 	log.Info("mesos-marathon: starting...")
 }
 
+// BootDaemons starts marathon.
 func (mb *MesosBoot) BootDaemons(currentBoot *types.CurrentBoot) []*types.ServiceDaemon {
 	args := gatherArgs(currentBoot.EtcdClient)
 	log.Infof("mesos marathon args: %v", args)
 	return []*types.ServiceDaemon{&types.ServiceDaemon{Command: "/marathon/bin/start", Args: args}}
 }
 
+// WaitForPorts returns an array of ports.
 func (mb *MesosBoot) WaitForPorts() []int {
 	return []int{}
 }
 
+// PostBootScripts returns type script.
 func (mb *MesosBoot) PostBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	return []*types.Script{}
 }
 
+// PostBoot returns type script.
 func (mb *MesosBoot) PostBoot(currentBoot *types.CurrentBoot) {
 	log.Info("mesos-marathon: running...")
 }
 
+// ScheduleTasks returns a cron job.
 func (mb *MesosBoot) ScheduleTasks(currentBoot *types.CurrentBoot) []*types.Cron {
 	return []*types.Cron{}
 }
 
+// UseConfd uses confd.
 func (mb *MesosBoot) UseConfd() (bool, bool) {
 	return false, false
 }
 
+// PreShutdownScripts returns type script.
 func (mb *MesosBoot) PreShutdownScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	return []*types.Script{}
 }

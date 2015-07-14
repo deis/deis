@@ -115,6 +115,7 @@ func Hostname() (name string, err error) {
 	return os.Hostname()
 }
 
+// CopyFile copies a source file to a destination.
 func CopyFile(src string, dst string) error {
 	data, err := ioutil.ReadFile(src)
 	if err != nil {

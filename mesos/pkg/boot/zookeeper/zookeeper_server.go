@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// ZkServer struct to execute zookeeper commands.
 type ZkServer struct {
 	Stdout, Stderr io.Writer
 

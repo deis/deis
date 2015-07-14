@@ -1,5 +1,6 @@
 package types
 
+// Script struct to specify a script.
 type Script struct {
 	Name    string
 	Params  map[string]string

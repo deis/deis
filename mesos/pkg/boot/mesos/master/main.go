@@ -27,24 +27,30 @@ func main() {
 	boot.Start(etcdPath, mesosPort)
 }
 
+// MesosBoot struct to boot mesos.
 type MesosBoot struct{}
 
+// MkdirsEtcd creates a directory in  etcd.
 func (mb *MesosBoot) MkdirsEtcd() []string {
 	return []string{etcdPath}
 }
 
+// EtcdDefaults returns default values for etcd.
 func (mb *MesosBoot) EtcdDefaults() map[string]string {
 	return map[string]string{}
 }
 
+// PreBootScripts runs preboot scripts.
 func (mb *MesosBoot) PreBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	return []*types.Script{}
 }
 
+// PreBoot to log starting of marathon.
 func (mb *MesosBoot) PreBoot(currentBoot *types.CurrentBoot) {
 	log.Info("mesos-master: starting...")
 }
 
+// BootDaemons starts mesos-master.
 func (mb *MesosBoot) BootDaemons(currentBoot *types.CurrentBoot) []*types.ServiceDaemon {
 	args := gatherArgs(currentBoot.EtcdClient)
 	args = append(args, "--ip="+currentBoot.Host.String())
@@ -53,26 +59,32 @@ func (mb *MesosBoot) BootDaemons(currentBoot *types.CurrentBoot) []*types.Servic
 	return []*types.ServiceDaemon{&types.ServiceDaemon{Command: "mesos-master", Args: args}}
 }
 
+// WaitForPorts returns an array of ports.
 func (mb *MesosBoot) WaitForPorts() []int {
 	return []int{}
 }
 
+// PostBootScripts returns type script.
 func (mb *MesosBoot) PostBootScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	return []*types.Script{}
 }
 
+// PostBoot returns type script.
 func (mb *MesosBoot) PostBoot(currentBoot *types.CurrentBoot) {
 	log.Info("mesos-master: running...")
 }
 
+// ScheduleTasks returns a cron job.
 func (mb *MesosBoot) ScheduleTasks(currentBoot *types.CurrentBoot) []*types.Cron {
 	return []*types.Cron{}
 }
 
+// UseConfd uses confd.
 func (mb *MesosBoot) UseConfd() (bool, bool) {
 	return false, false
 }
 
+// PreShutdownScripts returns type script.
 func (mb *MesosBoot) PreShutdownScripts(currentBoot *types.CurrentBoot) []*types.Script {
 	return []*types.Script{}
 }

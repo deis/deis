@@ -6,8 +6,6 @@ COPY marathon-assembly.jar /marathon-assembly.jar
 
 COPY build-marathon.sh /tmp/build.sh
 
-RUN chmod 777 /tmp/build.sh
-
 COPY bin/marathon-boot /app/bin/boot
 
 RUN DOCKER_BUILD=true MARATHON_VERSION=#MARATHON_VERSION# /tmp/build.sh

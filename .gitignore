@@ -44,6 +44,10 @@ publisher/Godeps/
 publisher/image/bin/publisher
 router/Godeps/
 swarm/image/bin/
+mesos/**/bin/
+mesos/**/bindata/
+mesos/Dockerfile
+mesos/marathon-assembly.jar
 
 # coverage reports
 .coverage

@@ -4,6 +4,7 @@ package boot
 
 import (
 	"net/http"
+	_ "net/http/pprof" //pprof is used for profiling servers
 	"os"
 	"os/signal"
 	"runtime"
@@ -13,16 +14,13 @@ import (
 	"time"
 
 	"github.com/deis/deis/mesos/pkg/boot/extpoints"
-
-	_ "net/http/pprof"
-
 	"github.com/deis/deis/mesos/pkg/confd"
 	"github.com/deis/deis/mesos/pkg/etcd"
 	logger "github.com/deis/deis/mesos/pkg/log"
 	"github.com/deis/deis/mesos/pkg/net"
 	oswrapper "github.com/deis/deis/mesos/pkg/os"
 	"github.com/deis/deis/mesos/pkg/types"
-	"github.com/deis/deis/mesos/version"
+	"github.com/deis/deis/version"
 	"github.com/robfig/cron"
 )
 

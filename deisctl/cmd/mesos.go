@@ -34,7 +34,7 @@ func InstallMesos(b backend.Backend) error {
 func installMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Create([]string{"mesos-zk"}, wg, outchan, errchan)
+	b.Create([]string{"zookeeper"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Mesos Master...")
@@ -85,7 +85,7 @@ func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Destroy([]string{"mesos-zk"}, wg, outchan, errchan)
+	b.Destroy([]string{"zookeeper"}, wg, outchan, errchan)
 	wg.Wait()
 
 	return nil
@@ -116,7 +116,7 @@ func StartMesos(b backend.Backend) error {
 func startMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
 
 	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Start([]string{"mesos-zk"}, wg, outchan, errchan)
+	b.Start([]string{"zookeeper"}, wg, outchan, errchan)
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Mesos Master...")
@@ -169,6 +169,6 @@ func stopMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan strin
 	wg.Wait()
 
 	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Stop([]string{"mesos-zk"}, wg, outchan, errchan)
+	b.Stop([]string{"zookeeper"}, wg, outchan, errchan)
 	wg.Wait()
 }

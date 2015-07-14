@@ -10,14 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/deis/deis/mesos/pkg/boot/zookeeper/bindata"
-
+	"github.com/deis/deis/mesos/bindata/zookeeper"
 	"github.com/deis/deis/mesos/pkg/boot/zookeeper"
 	"github.com/deis/deis/mesos/pkg/confd"
 	"github.com/deis/deis/mesos/pkg/etcd"
 	logger "github.com/deis/deis/mesos/pkg/log"
 	oswrapper "github.com/deis/deis/mesos/pkg/os"
-	"github.com/deis/deis/mesos/version"
+	"github.com/deis/deis/version"
 )
 
 var (
