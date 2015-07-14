@@ -97,3 +97,6 @@ test-style:
 		$(GOLINT) $$i; \
 	done
 	@$(foreach C, tests $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
+
+commit-hook:
+	cp contrib/util/commit-msg .git/hooks/commit-msg

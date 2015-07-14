@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# This hook verifies that the commit message follows deis commit style
+# To install this hook run the following command from the deis git root
+# cp contrib/util/commit-msg .git/hooks/commit-msg
+set -eo pipefail
+
+RED=$(tput setaf 1)
+NORMAL=$(tput sgr0)
+subject_regex="^(feat|fix|docs|style|ref|test|chore)\(.+\): [\w\s\d]*"
+capital_regex="^.+\): [a-z][\w\s\d]*"
+
+MESSAGE[1]="file"
+
+i=1 # the first array variable is at index 1
+while read line
+do
+	MESSAGE[$i]=$line
+	let i++
+done < "$1"
+
+SUBJECT=${MESSAGE[1]}
+
+if ! [[ $SUBJECT =~ $subject_regex ]]; then
+	echo "${RED}ERROR - Invalid subject line."
+	echo ""
+	echo "$SUBJECT"
+	echo ""
+	echo "It must be in the format: {type}({scope}): {subject}"
+	echo ""
+	echo "The following {type}s are allowed:"
+	echo "feat"
+	echo "fix"
+	echo "docs"
+	echo "style"
+	echo "ref"
+	echo "test"
+	echo "chore"
+	echo ""
+	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+	exit 1
+fi
+
+if ! [[ $SUBJECT =~ $capital_regex ]]; then
+	echo "${RED}ERROR - Don't the capitalize commit message."
+	echo ""
+	echo "$SUBJECT"
+	echo ""
+	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+	exit 1
+fi
+
+if [[ ${#SUBJECT} -gt 50 ]]; then
+	echo "${RED}ERROR - Subject can't be longer than 50 characters."
+	echo ""
+	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+	exit 1
+fi
+
+if [[ ${#MESSAGE[2]} -gt 0 ]]; then
+	echo "${RED}ERROR - Second line must be blank"
+	echo ""
+	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+	exit 1
+fi
+
+cnt=${#MESSAGE[@]}
+for (( i = 3 ; i <= cnt ; i++ ))
+do
+		if [[ ${#MESSAGE[$i]} -gt 72 ]]; then
+			echo "${RED}ERROR on line $i -  can't be longer than 72 characters."
+			echo ""
+			echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+			exit 1
+		fi
+done
+
+echo "Your commit message follows the deis commit style"
+
+exit 0
