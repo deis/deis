@@ -44,14 +44,11 @@ This is a rough outline of what a contributor's workflow looks like:
 
 Thanks for your contributions!
 
-### Design Proposals
+### Design Documents
 
-When considering a design proposal, we are looking for:
-
-- A description of the problem this design proposal solves
-- A pull request that modifies the documentation, describing the feature you are proposing
-- Prefix your pull request with `Proposal:` in the title
-- Please review the existing Proposals before reporting a new one.
+Most substantial changes to Deis should follow a [Design Document](http://docs.deis.io/en/latest/contributing/design-documents/)
+describing the proposed changes and how they are tested and verified before they
+are accepted into the project.
 
 ### Commit Style Guideline
 

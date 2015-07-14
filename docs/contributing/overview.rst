@@ -24,6 +24,8 @@ Contribute Code
 We are always looking for help improving the core framework, modules, tooling and test coverage.
 Interested in contributing code? Let’s chat in IRC. Make sure to check out issues tagged `easy-fix`_.
 
+When you're ready to begin writing code, review :ref:`design-documents` and :ref:`hacking`.
+
 Share your Experience
 ---------------------
 Interact with the community on our user mailing list or live in our IRC channel,

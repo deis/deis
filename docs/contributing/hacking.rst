@@ -2,8 +2,8 @@
 
 .. _hacking:
 
-Hacking on Deis
-===============
+Development Environment
+=======================
 
 This document is for developers who are interested in working directly on the
 Deis codebase. In this guide, we walk you through the process of setting up
