@@ -25,7 +25,7 @@ func (c *FleetClient) printUnitStatus(name string) int {
 		return 1
 	}
 	if err != nil {
-		fmt.Fprintf(c.errWriter, "Error retrieving Unit %s: %v", name, err)
+		fmt.Fprintf(c.errWriter, "Error retrieving Unit %s: %v\n", name, err)
 		return 1
 	}
 	if u == nil {

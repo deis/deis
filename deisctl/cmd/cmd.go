@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/config"
@@ -37,14 +38,16 @@ func ListUnitFiles(b backend.Backend) error {
 	return b.ListUnitFiles()
 }
 
+// Location to write standard output. By default, this is the os.Stdout.
+var Stdout io.Writer = os.Stderr
+
+// Location to write standard error information. By default, this is the os.Stderr.
+var Stderr io.Writer = os.Stdout
+
 // Scale grows or shrinks the number of running components.
 // Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
 func Scale(targets []string, b backend.Backend) error {
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
-
-	go printState(outchan, errchan, 500*time.Millisecond)
 
 	for _, target := range targets {
 		component, num, err := splitScaleTarget(target)
@@ -55,11 +58,9 @@ func Scale(targets []string, b backend.Backend) error {
 		if !strings.Contains(component, "router") && !strings.Contains(component, "registry") && !strings.Contains(component, "store-gateway") {
 			return fmt.Errorf("cannot scale %s component", component)
 		}
-		b.Scale(component, num, &wg, outchan, errchan)
+		b.Scale(component, num, &wg, Stdout, Stderr)
 		wg.Wait()
 	}
-	close(outchan)
-	close(errchan)
 	return nil
 }
 
@@ -76,16 +77,10 @@ func Start(targets []string, b backend.Backend) error {
 			return StartSwarm(b)
 		}
 	}
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	b.Start(targets, &wg, outchan, errchan)
+	b.Start(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
@@ -105,67 +100,65 @@ deisctl config platform set sshPrivateKey=<path-to-key>
 	return nil
 }
 
-func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
-	// create separate channels for background tasks
-	_outchan := make(chan string)
-	_errchan := make(chan error)
-	var _wg sync.WaitGroup
-
-	// wait for groups to come up
+	// Wait for groups to come up.
+	// If we're running in stateless mode, we start only a subset of services.
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Start([]string{"store-monitor"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Start([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Start([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Start([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
 
 		// we start gateway first to give metadata time to come up for volume
-		b.Start([]string{"store-gateway@*"}, wg, outchan, errchan)
+		b.Start([]string{"store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Start([]string{"store-volume"}, wg, outchan, errchan)
+		b.Start([]string{"store-volume"}, wg, out, err)
 		wg.Wait()
 	}
 
 	// start logging subsystem first to collect logs from other components
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if !stateless {
-		b.Start([]string{"logger"}, wg, outchan, errchan)
+		b.Start([]string{"logger"}, wg, out, err)
 		wg.Wait()
 	}
-	b.Start([]string{"logspout"}, wg, outchan, errchan)
+	b.Start([]string{"logspout"}, wg, out, err)
 	wg.Wait()
 
-	if stateless {
-		b.Start([]string{
-			"registry@*", "controller", "builder",
-			"publisher", "router@*"},
-			&_wg, _outchan, _errchan)
-	} else {
-		b.Start([]string{
-			"database", "registry@*", "controller", "builder",
-			"publisher", "router@*"},
-			&_wg, _outchan, _errchan)
+	// Start these in parallel. This section can probably be removed now.
+	var bgwg sync.WaitGroup
+	var trash bytes.Buffer
+	batch := []string{
+		"database", "registry@*", "controller", "builder",
+		"publisher", "router@*",
 	}
-
-	outchan <- fmt.Sprintf("Control plane...")
 	if stateless {
-		b.Start([]string{"registry@*", "controller"}, wg, outchan, errchan)
-	} else {
-		b.Start([]string{"database", "registry@*", "controller"}, wg, outchan, errchan)
+		batch = []string{"registry@*", "controller", "builder", "publisher", "router@*"}
 	}
-	wg.Wait()
-	b.Start([]string{"builder"}, wg, outchan, errchan)
+	b.Start(batch, &bgwg, &trash, &trash)
+	// End background stuff.
+
+	fmt.Fprintln(Stdout, "Control plane...")
+	batch = []string{"database", "registry@*", "controller"}
+	if stateless {
+		batch = []string{"registry@*", "controller"}
+	}
+	b.Start(batch, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Start([]string{"publisher"}, wg, outchan, errchan)
+	b.Start([]string{"builder"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Start([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Start([]string{"publisher"}, wg, out, err)
+	wg.Wait()
+
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Start([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 }
 
@@ -183,55 +176,49 @@ func Stop(targets []string, b backend.Backend) error {
 		}
 	}
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
-	b.Stop(targets, &wg, outchan, errchan)
+	b.Stop(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
 
-func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Stop([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Stop([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Stop([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Stop([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Stop([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+		b.Stop([]string{"controller", "builder", "registry@*"}, wg, out, err)
 	} else {
-		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+		b.Stop([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Stop([]string{"logspout"}, wg, outchan, errchan)
+		b.Stop([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Stop([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Stop([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Stop([]string{"store-volume", "store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Stop([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Stop([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Stop([]string{"store-monitor"}, wg, outchan, errchan)
+		b.Stop([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
 	}
 
@@ -284,51 +271,45 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 			return InstallSwarm(b)
 		}
 	}
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
 	// otherwise create the specific targets
-	b.Create(targets, &wg, outchan, errchan)
+	b.Create(targets, &wg, Stdout, Stderr)
 	wg.Wait()
 
-	close(outchan)
-	close(errchan)
 	return nil
 }
 
-func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Create([]string{"store-daemon", "store-monitor", "store-metadata", "store-volume", "store-gateway@1"}, wg, out, err)
 		wg.Wait()
 	}
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Create([]string{"logspout"}, wg, outchan, errchan)
+		b.Create([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Create([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Create([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Create([]string{"registry@1", "controller", "builder"}, wg, outchan, errchan)
+		b.Create([]string{"registry@1", "controller", "builder"}, wg, out, err)
 	} else {
-		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, outchan, errchan)
+		b.Create([]string{"database", "registry@1", "controller", "builder"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Create([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Create([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Create([]string{"router@1", "router@2", "router@3"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Create([]string{"router@1", "router@2", "router@3"}, wg, out, err)
 	wg.Wait()
 
 }
@@ -346,85 +327,54 @@ func Uninstall(targets []string, b backend.Backend) error {
 		}
 	}
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
-
 	// uninstall the specific target
-	b.Destroy(targets, &wg, outchan, errchan)
+	b.Destroy(targets, &wg, Stdout, Stderr)
 	wg.Wait()
-	close(outchan)
-	close(errchan)
 
 	return nil
 }
 
-func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) error {
 
-	outchan <- fmt.Sprintf("Routing mesh...")
-	b.Destroy([]string{"router@*"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Routing mesh...")
+	b.Destroy([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Data plane...")
-	b.Destroy([]string{"publisher"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Data plane...")
+	b.Destroy([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Control plane...")
+	fmt.Fprintln(out, "Control plane...")
 	if stateless {
-		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, outchan, errchan)
+		b.Destroy([]string{"controller", "builder", "registry@*"}, wg, out, err)
 	} else {
-		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, outchan, errchan)
+		b.Destroy([]string{"controller", "builder", "database", "registry@*"}, wg, out, err)
 	}
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Logging subsystem...")
+	fmt.Fprintln(out, "Logging subsystem...")
 	if stateless {
-		b.Destroy([]string{"logspout"}, wg, outchan, errchan)
+		b.Destroy([]string{"logspout"}, wg, out, err)
 	} else {
-		b.Destroy([]string{"logger", "logspout"}, wg, outchan, errchan)
+		b.Destroy([]string{"logger", "logspout"}, wg, out, err)
 	}
 	wg.Wait()
 
 	if !stateless {
-		outchan <- fmt.Sprintf("Storage subsystem...")
-		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, outchan, errchan)
+		fmt.Fprintln(out, "Storage subsystem...")
+		b.Destroy([]string{"store-volume", "store-gateway@*"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-metadata"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-metadata"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-daemon"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-daemon"}, wg, out, err)
 		wg.Wait()
-		b.Destroy([]string{"store-monitor"}, wg, outchan, errchan)
+		b.Destroy([]string{"store-monitor"}, wg, out, err)
 		wg.Wait()
 	}
 
 	return nil
-}
-
-func printState(outchan chan string, errchan chan error, interval time.Duration) {
-	for {
-		select {
-		case out, ok := <-outchan:
-			if !ok {
-				outchan = nil
-			}
-			if out != "" {
-				fmt.Println(out)
-			}
-		case err, ok := <-errchan:
-			if !ok {
-				errchan = nil
-			}
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-		}
-		if outchan == nil && errchan == nil {
-			break
-		}
-		time.Sleep(interval)
-	}
 }
 
 func splitScaleTarget(target string) (c string, num int, err error) {

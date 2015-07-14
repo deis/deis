@@ -10,7 +10,7 @@ import (
 
 	"github.com/deis/deis/deisctl/backend/fleet"
 	"github.com/deis/deis/deisctl/client"
-	"github.com/deis/deis/deisctl/utils"
+	"github.com/deis/deis/pkg/prettyprint"
 	"github.com/deis/deis/version"
 
 	docopt "github.com/docopt/docopt-go"
@@ -24,7 +24,7 @@ func main() {
 
 // Command executes the given deisctl command line.
 func Command(argv []string) int {
-	deisctlMotd := utils.DeisIfy("Deis Control Utility")
+	deisctlMotd := prettyprint.DeisIfy("Deis Control Utility")
 	usage := deisctlMotd + `
 Usage: deisctl [options] <command> [<args>...]
 

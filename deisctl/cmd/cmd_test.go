@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -22,19 +23,19 @@ type backendStub struct {
 	expected         bool
 }
 
-func (backend *backendStub) Create(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (backend *backendStub) Create(targets []string, wg *sync.WaitGroup, out, ew io.Writer) {
 	backend.installedUnits = append(backend.installedUnits, targets...)
 }
-func (backend *backendStub) Destroy(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (backend *backendStub) Destroy(targets []string, wg *sync.WaitGroup, out, ew io.Writer) {
 	backend.uninstalledUnits = append(backend.uninstalledUnits, targets...)
 }
-func (backend *backendStub) Start(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (backend *backendStub) Start(targets []string, wg *sync.WaitGroup, out, ew io.Writer) {
 	backend.startedUnits = append(backend.startedUnits, targets...)
 }
-func (backend *backendStub) Stop(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (backend *backendStub) Stop(targets []string, wg *sync.WaitGroup, out, ew io.Writer) {
 	backend.stoppedUnits = append(backend.stoppedUnits, targets...)
 }
-func (backend *backendStub) Scale(component string, num int, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (backend *backendStub) Scale(component string, num int, wg *sync.WaitGroup, out, ew io.Writer) {
 	if component == "router" && num == 3 {
 		backend.expected = true
 	} else if component == "registry" && num == 4 {
