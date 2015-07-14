@@ -139,7 +139,7 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`Google Omaha Protocol`: https://code.google.com/p/omaha/wiki/ServerProtocol
 .. _`Interactive Deis Run`: https://github.com/deis/deis/issues/117
 .. _`Internal Service Discovery`: https://github.com/deis/deis/issues/3072
-.. _`Kubernetes preview`: https://github.com/deis/deis/issues/2744
+.. _`Kubernetes preview`: https://github.com/deis/deis/issues/3850
 .. _`like CoreOS`: https://coreos.com/releases/
 .. _`Log Tailing`: https://github.com/deis/deis/issues/465
 .. _`Mesos preview`: https://github.com/deis/deis/issues/3809
