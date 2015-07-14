@@ -90,7 +90,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.trigger.before :up do
-    if !File.exists?(CLOUD_CONFIG_PATH) || File.readlines(CLOUD_CONFIG_PATH).grep(/#\s*discovery:/).any?
+    if !File.exists?(CLOUD_CONFIG_PATH) || File.readlines(CLOUD_CONFIG_PATH).grep(/\s*discovery #DISCOVERY_URL/).any?
       raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
     end
   end

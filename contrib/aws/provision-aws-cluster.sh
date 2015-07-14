@@ -147,6 +147,21 @@ FIRST_INSTANCE=$(aws ec2 describe-instances \
 export DEISCTL_TUNNEL=$FIRST_INSTANCE
 echo_green "Enabling proxy protocol"
 
+# loop until etcd is up and running
+COUNTER=1
+until deisctl list >/dev/null; do
+    if [ $COUNTER -gt $ATTEMPTS ];
+        then echo "Timeout waiting for etcd2, giving up"
+        echo "Destroying stack $STACK_NAME"
+        bailout
+        exit 1
+    fi
+
+    echo "Waiting until etcd2 is up and running ..."
+    sleep 5
+    let COUNTER=COUNTER+1
+done
+
 if ! deisctl config router set proxyProtocol=1; then
     echo_red "#"
     echo_red "# Enabling proxy protocol failed, please enable proxy protocol "
