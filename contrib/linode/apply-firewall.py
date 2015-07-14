@@ -47,7 +47,7 @@ def get_discovery_url_from_user_data():
         current_dir = os.path.dirname(__file__)
         user_data_file = file(os.path.abspath(os.path.join(current_dir, name)), 'r')
         user_data = yaml.safe_load(user_data_file)
-        return user_data['coreos']['etcd']['discovery']
+        return user_data['coreos']['etcd2']['discovery']
     except:
         raise IOError('Could not load discovery url from ' + name)
 

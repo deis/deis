@@ -136,17 +136,29 @@ ELB_NAME=$(aws elb describe-load-balancers \
     $EXTRA_AWS_CLI_ARGS | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
 echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"
 
-echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is started."
-echo_green "Please continue to follow the instructions in the documentation."
-
 FIRST_INSTANCE=$(aws ec2 describe-instances \
     --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[PublicIpAddress]' \
     --output text \
     $EXTRA_AWS_CLI_ARGS | head -1)
 export DEISCTL_TUNNEL=$FIRST_INSTANCE
-echo_green "Enabling proxy protocol"
 
+# loop until etcd2 / fleet are up and running
+COUNTER=1
+until deisctl list >/dev/null; do
+    if [ $COUNTER -gt $ATTEMPTS ];
+        then echo_red "Timed out waiting for fleet, giving up"
+        break
+    fi
+    echo "Waiting until fleet is up and running ..."
+    sleep 5
+    let COUNTER=COUNTER+1
+done
+
+echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is started."
+echo_green "Please continue to follow the instructions in the documentation."
+
+echo_green "Enabling proxy protocol"
 if ! deisctl config router set proxyProtocol=1; then
     echo_red "#"
     echo_red "# Enabling proxy protocol failed, please enable proxy protocol "

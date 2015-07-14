@@ -1,16 +1,6 @@
 #cloud-config
 ---
 coreos:
-  etcd:
-    # generate a new token for each unique cluster from https://discovery.etcd.io/new
-    # uncomment the following line and replace it with your discovery URL
-    # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
-    # give etcd more time if it's under heavy load - prevent leader election thrashing
-    peer-election-timeout: 2000
-    # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
-    peer-heartbeat-interval: 500
   fleet:
     # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
     # will all publish the same private IP. This is harmless for cloud providers.
@@ -19,7 +9,41 @@ coreos:
     etcd_request_timeout: 3.0
   units:
   - name: etcd.service
+    mask: true
+  - name: etcd2.service
     command: start
+    content: |
+      [Unit]
+      Description=etcd2 container
+      Requires=early-docker.service
+      After=early-docker.service
+      Before=early-docker.target
+
+      [Service]
+      User=etcd
+      PermissionsStartOnly=true
+      Restart=always
+      RestartSec=10s
+      EnvironmentFile=/etc/environment
+      Environment="ETCD_IMAGE=quay.io/coreos/etcd:v2.0.13"
+      Environment="DOCKER_HOST=unix:///var/run/early-docker.sock"
+      LimitNOFILE=40000
+      ExecStartPre=/bin/sh -c "docker history $ETCD_IMAGE >/dev/null 2>&1 || docker pull $ETCD_IMAGE"
+      ExecStartPre=/bin/sh -c "docker inspect etcd2 >/dev/null 2>&1 && docker rm -f etcd2 || true"
+      ExecStart=/usr/bin/docker run --net=host --rm \
+        --volume=/var/lib/etcd2:/var/lib/etcd2 \
+        --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
+        -p 4001:4001 -p 2380:2380 -p 2379:2379 -p 7001:7001 \
+        --name etcd2 \
+        ${ETCD_IMAGE} \
+        -name %m \
+        -data-dir /var/lib/etcd2 \
+        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379,http://${COREOS_PRIVATE_IPV4}:4001 \
+        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
+        -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
+        --discovery #DISCOVERY_URL
+      ExecStop=-/usr/bin/docker stop etcd2
   - name: docker-tcp.socket
     command: start
     enable: true
@@ -48,8 +72,8 @@ coreos:
       [Unit]
       Description=Clean up
       DefaultDependencies=no
-      After=fleet.service etcd.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
-      Requires=fleet.service etcd.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
+      After=fleet.service etcd2.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
+      Requires=fleet.service etcd2.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
 
       [Install]
       WantedBy=shutdown.target halt.target reboot.target

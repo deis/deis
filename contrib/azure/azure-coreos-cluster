@@ -68,7 +68,7 @@ coreos:
     addr: $private_ipv4:4001
     peer-addr: $private_ipv4:7001
   units:
-    - name: etcd.service
+    - name: etcd2.service
       command: start
     - name: fleet.service
       command: start
