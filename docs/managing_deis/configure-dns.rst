@@ -6,7 +6,7 @@
 Configure DNS
 =============
 
-For Deis clusters on EC2, GCE, Azure, DigitalOcean, Rackspace, OpenStack, or bare metal,
+For Deis clusters on EC2, GCE, Azure, DigitalOcean, OpenStack, or bare metal,
 :ref:`DNS records <dns_records>` must be created. The cluster runs multiple routers in
 front of the Deis controller and apps you deploy, so a
 :ref:`load balancer <configure-load-balancers>` is recommended.

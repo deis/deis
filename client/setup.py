@@ -41,7 +41,7 @@ setup(name='deis',
       url='https://github.com/deis/deis',
       keywords=[
           'opdemand', 'deis', 'paas', 'cloud', 'coreos', 'docker', 'heroku',
-          'aws', 'ec2', 'rackspace', 'digitalocean', 'gce'
+          'aws', 'ec2', 'digitalocean', 'gce'
       ],
       classifiers=[
           'Development Status :: 5 - Production/Stable',
