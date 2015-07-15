@@ -44,7 +44,7 @@ func main() {
 	flag.Parse()
 
 	client := etcd.NewClient([]string{"http://" + publishHost + ":" + publishPort})
-
+	ticker := time.NewTicker(time.Duration(publishInterval) * time.Second)
 	signalChan := make(chan os.Signal, 1)
 	drainChan := make(chan string)
 	stopChan := make(chan bool)
@@ -59,15 +59,19 @@ func main() {
 
 	go syslogd.Listen(exitChan, cleanupChan, drainChan, fmt.Sprintf("%s:%d", logAddr, logPort))
 	if enablePublish {
-		go publishService(exitChan, client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL)*time.Second))
+		publishKeys(client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL)*time.Second))
 	}
 
-	// HACK (bacongobbler): poll etcd for changes in the log drain value
-	// etcd's .Watch() implementation is broken when you use TTLs
-	//
-	// https://github.com/coreos/etcd/issues/2679
-	go func() {
-		for {
+	for {
+		select {
+		case <-ticker.C:
+			if enablePublish {
+				publishKeys(client, publishHost, publishPath, strconv.Itoa(logPort), uint64(time.Duration(publishTTL)*time.Second))
+			}
+			// HACK (bacongobbler): poll etcd every publishInterval for changes in the log drain value.
+			// etcd's .Watch() implementation is broken when you use TTLs
+			//
+			// https://github.com/coreos/etcd/issues/2679
 			resp, err := client.Get(publishPath+"/drain", false, false)
 			if err != nil {
 				log.Printf("warning: could not retrieve drain URI from etcd: %v\n", err)
@@ -76,16 +80,11 @@ func main() {
 			if resp != nil && resp.Node != nil {
 				drainChan <- resp.Node.Value
 			}
-			time.Sleep(time.Duration(publishInterval) * time.Second)
-		}
-	}()
-
-	for {
-		select {
 		case <-signalChan:
 			close(exitChan)
 			stopChan <- true
 		case <-cleanupChan:
+			ticker.Stop()
 			return
 		}
 	}
@@ -95,21 +94,6 @@ func main() {
 func publishKeys(client *etcd.Client, host, etcdPath, port string, ttl uint64) {
 	setEtcd(client, etcdPath+"/host", host, ttl)
 	setEtcd(client, etcdPath+"/port", port, ttl)
-}
-
-// publishServices publishes keys immediately, then every publishInterval seconds until it receives
-// something on exitChan.
-func publishService(exitChan chan bool, client *etcd.Client, host string, etcdPath string, port string, ttl uint64) {
-	publishKeys(client, host, etcdPath, port, ttl)
-	t := time.NewTicker(time.Duration(publishInterval) * time.Second)
-	for {
-		select {
-		case <-t.C:
-			publishKeys(client, host, etcdPath, port, ttl)
-		case <-exitChan:
-			return
-		}
-	}
 }
 
 func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
