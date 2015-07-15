@@ -11,3 +11,6 @@ function echo_red {
 function echo_green {
   echo -e "\033[0;32m$1\033[0m"
 }
+
+COREOS_CHANNEL=${COREOS_CHANNEL:-stable}
+COREOS_VERSION=${COREOS_VERSION:-647.2.0}
