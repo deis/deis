@@ -62,7 +62,7 @@ def main():
     configuration = combine_dicts(configuration_coreos_template,
                                   configuration_gce_template)
 
-    configuration["coreos"]["etcd"]["discovery"] = url
+    configuration["coreos"]["etcd2"]["discovery"] = url
 
     with gce_user_data as outfile:
         try:
