@@ -25,8 +25,8 @@ lightweight and flexible.
 Deis comes with out-of-the-box support for Ruby, Python, Node.js, Java,
 Clojure, Scala, Play, PHP, Perl, Dart and Go. However, Deis can deploy
 anything using Docker images or Heroku Buildpacks. Deis is designed to work
-with any cloud provider. Currently Amazon EC2, DigitalOcean, and
-Google Compute Engine are supported.
+with any cloud provider. Currently Amazon Web Services, Azure, DigitalOcean,
+Google Compute Engine, Linode, OpenStack, and bare metal deployments are supported.
 
 
 Why Deis?
