@@ -49,7 +49,7 @@ bailout() {
 
 # create an EC2 cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
-    --template-body "$($THIS_DIR/gen-json.py)" \
+    --template-body "$($THIS_DIR/gen-json.py --channel $COREOS_CHANNEL --version $COREOS_VERSION)" \
     --stack-name $STACK_NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)" \
     $EXTRA_AWS_CLI_ARGS
@@ -68,7 +68,7 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
     fi
 
     STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus' $EXTRA_AWS_CLI_ARGS)
-    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \

@@ -1,7 +1,16 @@
 #!/usr/bin/env python
+import argparse
 import json
 import os
+import urllib
 import yaml
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--channel', help='the CoreOS channel to use', default='stable')
+parser.add_argument('--version', help='the CoreOS version to use', default='current')
+args = vars(parser.parse_args())
+
+amis = json.load(urllib.urlopen("http://%(channel)s.release.core-os.net/amd64-usr/%(version)s/coreos_production_ami_all.json" % args))
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -97,6 +106,7 @@ template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'),'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = [ "\n", header + dump.split("\n") ]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
+template['Mappings']['CoreOSAMIs'] = dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
 
 VPC_ID = os.getenv('VPC_ID', None)
 VPC_SUBNETS = os.getenv('VPC_SUBNETS', None)
