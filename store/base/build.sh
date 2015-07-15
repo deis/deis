@@ -16,8 +16,9 @@ DEBIAN_FRONTEND=noninteractive
 apt-get update && apt-get install -y curl net-tools sudo
 
 # install etcdctl
-curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
-    && chmod +x /usr/local/bin/etcdctl
+ETCD_VERSION=2.0.13
+curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
+  tar zxv -C /usr/local/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl && ln -s /usr/local/bin/etcd-v${ETCD_VERSION}-linux-amd64/etcdctl /usr/local/bin && chmod +x /usr/local/bin/etcdctl
 
 # install confd
 CONFD_VERSION=0.10.0
