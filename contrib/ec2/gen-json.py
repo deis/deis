@@ -106,7 +106,7 @@ template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'),'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = [ "\n", header + dump.split("\n") ]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
-template['Mappings']['CoreOSAMIs'] = map((lambda n: dict({n['name']: dict({'PV': n['pv'], 'HVM': n['hvm']})})), amis['amis'])
+template['Mappings']['CoreOSAMIs'] = dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
 
 VPC_ID = os.getenv('VPC_ID', None)
 VPC_SUBNETS = os.getenv('VPC_SUBNETS', None)
