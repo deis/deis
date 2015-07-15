@@ -24,25 +24,31 @@ coreos:
       PermissionsStartOnly=true
       Restart=always
       RestartSec=10s
+      LimitNOFILE=40000
       EnvironmentFile=/etc/environment
       Environment="ETCD_VERSION=v2.0.13"
+      Environment="ETCD_ELECTION_TIMEOUT=2000"
+      Environment="ETCD_HEARTBEAT_INTERVAL=400"
+      Environment="ETCD_DATA_DIR=/var/lib/etcd2"
+      Environment="ETCD_NAME=%m"
       Environment="DOCKER_HOST=unix:///var/run/early-docker.sock"
-      LimitNOFILE=40000
       ExecStartPre=-/usr/bin/docker kill etcd2
       ExecStartPre=-/usr/bin/docker rm etcd2
       ExecStartPre=/usr/bin/docker pull quay.io/coreos/etcd:${ETCD_VERSION}
       ExecStart=/usr/bin/docker run --net=host --rm \
-        --volume=/var/lib/etcd2:/var/lib/etcd2 \
+        --volume=${ETCD_DATA_DIR}:/var/lib/etcd2 \
         --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
         -p 4001:4001 -p 2380:2380 -p 2379:2379 -p 7001:7001 \
         --name etcd2 \
         quay.io/coreos/etcd:${ETCD_VERSION} \
-        -name %m \
+        -name ${ETCD_NAME} \
         -data-dir /var/lib/etcd2 \
         -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379,http://${COREOS_PRIVATE_IPV4}:4001 \
         -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
         -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
         -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
+        --heartbeat-interval ${ETCD_HEARTBEAT_INTERVAL} \
+        --election-timeout ${ETCD_ELECTION_TIMEOUT} \
         --discovery #DISCOVERY_URL
       ExecStop=/usr/bin/docker stop etcd2
   - name: docker-tcp.socket
