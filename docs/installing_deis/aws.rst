@@ -8,7 +8,7 @@ Amazon AWS
 
 In this tutorial, we will show you how to set up your own 3-node cluster on Amazon Web Services.
 
-Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/ec2`_
+Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/aws`_
 while following this documentation.
 
 .. include:: ../_includes/_deis-pro.rst
@@ -22,7 +22,7 @@ In order to start working with Amazon's API, let's install `awscli`_:
 
     $ pip install awscli
 
-We'll also need `PyYAML`_ for the Deis EC2 provision script to run:
+We'll also need `PyYAML`_ for the Deis AWS provision script to run:
 
 .. code-block:: console
 
@@ -84,7 +84,7 @@ Customize cloudformation.json
 -----------------------------
 
 The configuration files and templates for AWS are located in the directory
-``contrib/ec2/`` in the Deis repository.
+``contrib/aws/`` in the Deis repository.
 
 Any of the parameter defaults defined in ``deis.template.json`` can be
 overridden by setting the value in `cloudformation.json`_. For example, to
@@ -130,7 +130,7 @@ The only entry in cloudformation.json required to launch your cluster is `KeyPai
 already filled out. The defaults will be applied for the other settings. The default values are
 defined in ``deis.template.json``.
 
-If updated with ``update-ec2-cluster.sh``, the InstanceType will only impact newly deployed instances
+If updated with ``update-aws-cluster.sh``, the InstanceType will only impact newly deployed instances
 (`#1758`_).
 
 NOTE: The smallest recommended instance size is ``large``. Having not enough CPU or RAM will result
@@ -187,8 +187,8 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
 
 .. code-block:: console
 
-    $ cd contrib/ec2
-    $ ./provision-ec2-cluster.sh
+    $ cd contrib/aws
+    $ ./provision-aws-cluster.sh
     Creating CloudFormation stack deis
     {
         "StackId": "arn:aws:cloudformation:us-east-1:69326027886:stack/deis/1e9916b0-d7ea-11e4-a0be-50d2020578e0"
@@ -209,7 +209,7 @@ Run the cloudformation provision script to spawn a new CoreOS cluster:
 .. note::
 
     The default name of the CloudFormation stack will be ``deis``. You can specify a different name
-    with ``./provision-ec2-cluster.sh <name>``.
+    with ``./provision-aws-cluster.sh <name>``.
 
 Remote IPs behind your ELB
 --------------------------
@@ -239,7 +239,7 @@ CloudFormation Updates
 ----------------------
 
 To use CloudFormation to perform update operations to your stack, there is another script:
-`update_ec2_cluster.sh`_. Depending on the parameters that you have changed, CloudFormation
+`update-aws-cluster.sh`_. Depending on the parameters that you have changed, CloudFormation
 may replace the EC2 instances in your stack.
 
 The following parameters can be changed without replacing all instances in a stack:
@@ -255,11 +255,11 @@ Please reference the AWS documentation for `more information about CloudFormatio
 
 .. _`#1758`: https://github.com/deis/deis/issues/1758
 .. _`awscli`: https://github.com/aws/aws-cli
-.. _`contrib/ec2`: https://github.com/deis/deis/tree/master/contrib/ec2
-.. _`cloudformation.json`: https://github.com/deis/deis/blob/master/contrib/ec2/cloudformation.json
+.. _`contrib/aws`: https://github.com/deis/deis/tree/master/contrib/aws
+.. _`cloudformation.json`: https://github.com/deis/deis/blob/master/contrib/aws/cloudformation.json
 .. _`etcd`: https://github.com/coreos/etcd
 .. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
 .. _`PyYAML`: http://pyyaml.org/
-.. _`update_ec2_cluster.sh`: https://github.com/deis/deis/blob/master/contrib/ec2/update-ec2-cluster.sh
+.. _`update-aws-cluster.sh`: https://github.com/deis/deis/blob/master/contrib/aws/update-aws-cluster.sh
 .. _`More information about CloudFormation stack updates`: http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks.html
 .. _`Proxy Protocol`: http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-proxy-protocol.html

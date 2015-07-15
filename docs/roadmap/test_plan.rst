@@ -188,7 +188,7 @@ Risks and Contingencies
 -----------------------
 
 Automated tests do not yet extend to all cloud providers, and it is possible
-that manual testing could miss something. We will address this by adding EC2_
+that manual testing could miss something. We will address this by adding AWS_
 and other testing flavors soon.
 
 Resources are limited, and contention between development needs and testing
@@ -211,4 +211,4 @@ pull requests against this documentation.
 .. _`source code`: https://github.com/deis/deis
 .. _test-integration.sh: https://github.com/deis/deis/blob/master/tests/bin/test-integration.sh
 .. _setup-node.sh: https://github.com/deis/deis/blob/master/tess/bin/setup-node.sh
-.. _EC2: http://aws.amazon.com/
+.. _AWS: http://aws.amazon.com/

@@ -66,8 +66,8 @@ contrib/coreos/user-data
 # Local controller settings file
 controller/deis/local_settings.py
 
-# EC2 CloudFormation Setup
-contrib/ec2/cloudformation.json
+# AWS CloudFormation Setup
+contrib/aws/cloudformation.json
 
 # GCE generated user-data
 contrib/gce/gce-user-data

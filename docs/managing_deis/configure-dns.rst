@@ -6,10 +6,17 @@
 Configure DNS
 =============
 
+<<<<<<< HEAD
 For Deis clusters on Amazon Web Services, Azure, DigitalOcean, Google Compute Engine,
 Linode, OpenStack, or bare metal, :ref:`DNS records <dns_records>` must be created.
 The cluster runs multiple routers infront of the Deis controller and apps
 you deploy, so a :ref:`load balancer <configure-load-balancers>` is recommended.
+=======
+For Deis clusters on AWS, GCE, Azure, DigitalOcean, OpenStack, or bare metal,
+:ref:`DNS records <dns_records>` must be created. The cluster runs multiple routers in
+front of the Deis controller and apps you deploy, so a
+:ref:`load balancer <configure-load-balancers>` is recommended.
+>>>>>>> chore(contrib/ec2): rename ec2 to aws
 
 Vagrant
 -------
@@ -36,7 +43,7 @@ apps will live under:
 
 Apps can then be accessed by browsers at ``appname.myapps.com``, and the controller will be available to the Deis client at ``deis.myapps.com``.
 
-`EC2 recommends`_ against creating "A" record entries; instead, create a wildcard "CNAME" record entry for the load balancer's DNS name, or use Amazon `Route 53`_.
+`AWS recommends`_ against creating "A" record entries; instead, create a wildcard "CNAME" record entry for the load balancer's DNS name, or use Amazon `Route 53`_.
 
 These records are necessary for all deployments of Deis other than Vagrant clusters.
 
@@ -52,8 +59,8 @@ An alternative to configuring your own DNS records is to use `xip`_ to reference
 
 You would then create the cluster with ``10.21.12.2.xip.io`` as the cluster domain.
 
-Note that xip does not seem to work for EC2 ELBs - you will have to use an actual DNS record.
+Note that xip does not seem to work for AWS ELBs - you will have to use an actual DNS record.
 
-.. _`EC2 recommends`: https://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/using-domain-names-with-elb.html
+.. _`AWS recommends`: https://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/using-domain-names-with-elb.html
 .. _`Route 53`: http://aws.amazon.com/route53/
 .. _`xip`: http://xip.io/

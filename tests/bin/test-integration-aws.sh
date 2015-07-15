@@ -20,16 +20,16 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY?}
 # install python requirements for this script
 pip install --disable-pip-version-check awscli boto docopt
 
-function cleanup_ec2 {
+function cleanup_aws {
     if [ "$SKIP_CLEANUP" != true ]; then
         log_phase "Cleaning up"
         aws cloudformation delete-stack --stack-name $STACK_NAME
-        python $DEIS_ROOT/contrib/ec2/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+        python $DEIS_ROOT/contrib/aws/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
     fi
 }
 
 # setup callbacks on process exit and error
-trap cleanup_ec2 EXIT
+trap cleanup_aws EXIT
 trap dump_logs ERR
 
 log_phase "Running style tests"
@@ -71,7 +71,7 @@ fi
 make discovery-url
 
 # customize cloudformation.json to use m3.medium instances
-cat > $DEIS_ROOT/contrib/ec2/cloudformation.json <<EOF
+cat > $DEIS_ROOT/contrib/aws/cloudformation.json <<EOF
 [
     {
         "ParameterKey":     "KeyPair",
@@ -88,10 +88,10 @@ EOF
 STACK_TAG=${STACK_TAG:-test}-$DEIS_TEST_ID
 STACK_NAME=deis-$STACK_TAG
 echo "Creating CloudFormation stack $STACK_NAME"
-$DEIS_ROOT/contrib/ec2/provision-ec2-cluster.sh $STACK_NAME
+$DEIS_ROOT/contrib/aws/provision-aws-cluster.sh $STACK_NAME
 
 # discard changes to cloudformation.json
-git checkout -- $DEIS_ROOT/contrib/ec2/cloudformation.json
+git checkout -- $DEIS_ROOT/contrib/aws/cloudformation.json
 
 # use the first cluster node for now
 INSTANCE_IDS=$(aws ec2 describe-instances \
@@ -178,7 +178,7 @@ echo "Using ELB $ELB_NAME"
 
 # add or update a route53 alias record set to route queries to the ELB
 # this python script won't return until the wildcard domain is accessible
-python $DEIS_ROOT/contrib/ec2/route53-wildcard.py create $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+python $DEIS_ROOT/contrib/aws/route53-wildcard.py create $DEIS_TEST_DOMAIN $ELB_DNS_NAME
 
 # loop until at least one instance is "in service" with the ELB
 ATTEMPTS=45
