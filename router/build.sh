@@ -16,7 +16,7 @@ function get_src {
   f=$(basename $url)
 
   curl -sSL $url -o $f
-  echo "$hash $f" | sha256sum -c - || exit 10
+  echo "$hash  $f" | sha256sum -c - || exit 10
   tar xzf $f
   rm $f
 }
