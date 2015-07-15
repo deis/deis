@@ -122,6 +122,9 @@ Example
         umVEX-8 series artifacts will need to be updated to umVX format
         with the consortium or vendor toolset.
 
+.. note::
+
+  You can install a git hook that checks your commit message format with ``make commit-hook`` 
 
 Subject Line
 """"""""""""
