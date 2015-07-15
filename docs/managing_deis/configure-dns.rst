@@ -6,10 +6,10 @@
 Configure DNS
 =============
 
-For Deis clusters on EC2, GCE, Azure, DigitalOcean, OpenStack, or bare metal,
-:ref:`DNS records <dns_records>` must be created. The cluster runs multiple routers in
-front of the Deis controller and apps you deploy, so a
-:ref:`load balancer <configure-load-balancers>` is recommended.
+For Deis clusters on Amazon Web Services, Azure, DigitalOcean, Google Compute Engine,
+Linode, OpenStack, or bare metal, :ref:`DNS records <dns_records>` must be created.
+The cluster runs multiple routers infront of the Deis controller and apps
+you deploy, so a :ref:`load balancer <configure-load-balancers>` is recommended.
 
 Vagrant
 -------
