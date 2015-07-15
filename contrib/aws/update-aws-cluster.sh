@@ -32,7 +32,7 @@ $CONTRIB_DIR/util/check-user-data.sh
 
 # update the AWS CloudFormation stack
 aws cloudformation update-stack \
-    --template-body "$($THIS_DIR/gen-json.py)" \
+    --template-body "$($THIS_DIR/gen-json.py --channel $COREOS_CHANNEL --version $COREOS_VERSION)" \
     --stack-name $NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)" \
     $EXTRA_AWS_CLI_ARGS
