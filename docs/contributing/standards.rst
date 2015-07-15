@@ -4,19 +4,26 @@
 
 .. _standards:
 
-PR Checklist
-============
+Submitting a Pull Request
+=========================
 
 Proposed changes to Deis are made as GitHub `pull requests`_.
 
 Please make sure your PR follows this checklist:
 
-1. `Single Issue`_
-2. `Include Tests`_
-3. `Include Docs`_
-4. `Code Standards`_
-5. `Commit Style`_
+1. `Design Document`_
+2. `Single Issue`_
+3. `Include Tests`_
+4. `Include Docs`_
+5. `Code Standards`_
+6. `Commit Style`_
 
+Design Document
+---------------
+
+Before opening a pull request, ensure your change also references a design
+document if the contribution is substantial. For more information, see
+:ref:`design-documents`.
 
 Single Issue
 ------------
@@ -81,18 +88,6 @@ Python code should always adhere to PEP8_, the python code style guide, with
 the exception that lines of code may be up to 99 characters long. Docstrings and
 tests are required for all public methods, although the flake8_ tool used by
 Deis does not enforce this.
-
-
-Design Proposals
-----------------
-
-When considering a design proposal, we are looking for:
-
-- A description of the problem this design proposal solves
-- A pull request that modifies the documentation, describing the feature you are proposing
-- Prefix your pull request with ``Proposal:`` in the title
-- Please review the existing Proposals before reporting a new one.
-
 
 .. _commit_style_guide:
 

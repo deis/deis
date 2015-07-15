@@ -10,6 +10,7 @@ Contributing
 .. toctree::
 
     overview
+    design-documents
     hacking
     testing
     standards
