@@ -1,15 +1,10 @@
 {
 	"ImportPath": "github.com/deis/deis",
-	"GoVersion": "go1.4.1",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
-		{
-			"ImportPath": "code.google.com/p/go.net/websocket",
-			"Comment": "null-173",
-			"Rev": "4231557d7c726df4cf9a4e8cdd8a417c8c200bdb"
-		},
 		{
 			"ImportPath": "code.google.com/p/google-api-go-client/googleapi",
 			"Comment": "release-101",
@@ -343,6 +338,10 @@
 		{
 			"ImportPath": "golang.org/x/crypto/ssh",
 			"Rev": "f7445b17d61953e333441674c2d11e91ae4559d3"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "d9558e5c97f85372afee28cf2b6059d7d3818919"
 		},
 		{
 			"ImportPath": "gopkg.in/tomb.v1",
