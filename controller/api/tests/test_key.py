@@ -152,3 +152,13 @@ class KeyTest(TestCase):
     def test_rsa_key_fingerprint(self):
         fp = fingerprint(RSA_PUBKEY)
         self.assertEquals(fp, '54:6d:da:1f:91:b5:2b:6f:a2:83:90:c4:f9:73:76:f5')
+
+    def test_key_api_with_non_superuser_rsa(self):
+        self.user = User.objects.get(username='autotest2')
+        self.token = self.user.auth_token.key
+        self._check_key(RSA_PUBKEY)
+
+    def test_key_api_with_non_superuser_ecdsa(self):
+        self.user = User.objects.get(username='autotest2')
+        self.token = self.user.auth_token.key
+        self._check_key(ECDSA_PUBKEY)
