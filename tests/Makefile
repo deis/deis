@@ -29,14 +29,6 @@ test-full: test-style
 	godep go test -tags integration -v -run TestReleases
 	godep go test -tags integration -v -run TestUsers
 
-setup-root-gotools:
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
-	sudo rm -rf /tmp/tmpGOPATH
-
-setup-gotools:
-	go get -v github.com/golang/lint/golint
-
 mock-store:
 	docker build -t $(MOCK_STORE_IMAGE) fixtures/mock-store/
 

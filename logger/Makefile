@@ -55,14 +55,6 @@ release:
 
 deploy: build dev-release restart
 
-setup-root-gotools:
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
-	sudo rm -rf /tmp/tmpGOPATH
-
-setup-gotools:
-	go get -v github.com/golang/lint/golint
-
 test: test-style test-unit test-functional
 
 test-functional:

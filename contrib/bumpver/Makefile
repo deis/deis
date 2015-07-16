@@ -7,17 +7,6 @@ upx:
 clean:
 	rm -f bumpver
 
-setup-gotools-sudo:
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
-	sudo rm -rf /tmp/tmpGOPATH
-	@echo 'Please ensure that $$GOPATH/bin is in your $$PATH.'
-
-setup-gotools:
-	go get github.com/tools/godep
-	go get github.com/golang/lint/golint
-	@echo 'Please ensure that $$GOPATH/bin is in your $$PATH.'
-
 test-style:
 	go vet -x ./...
 	-golint .
