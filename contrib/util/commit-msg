@@ -67,7 +67,7 @@ fi
 cnt=${#MESSAGE[@]}
 for (( i = 3 ; i <= cnt ; i++ ))
 do
-		if [[ ${#MESSAGE[$i]} -gt 72 ]]; then
+		if [[ ${#MESSAGE[$i]} -gt 72 ]] && [[ ${MESSAGE[$i]:0:1} != '#' ]]; then
 			echo "${RED}ERROR on line $i -  can't be longer than 72 characters."
 			echo ""
 			echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
@@ -75,6 +75,6 @@ do
 		fi
 done
 
-echo "Your commit message follows the deis commit style"
+echo "Your commit message follows the deis commit style."
 
 exit 0
