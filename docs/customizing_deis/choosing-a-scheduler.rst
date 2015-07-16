@@ -11,9 +11,8 @@ The :ref:`scheduler` creates, starts, stops, and destroys each :ref:`container`
 of your app. For example, a command such as ``deis scale web=3`` tells the
 scheduler to run three containers from the Docker image for your app.
 
-Deis defaults to using the `Fleet Scheduler`_. A tech preview of the `Swarm Scheduler`_
-and `Mesos with Marathon framework`_ is available for testing. Work is ongoing on `Kubernetes`_-based
-scheduler with the intent to test those alternatives in future releases of Deis. Keep watching `dynamic metadata fleet PR 1077`_
+Deis defaults to using the `Fleet Scheduler`_. The Tech previews of the `Swarm Scheduler`_,
+`Mesos`_ and `Kubernetes`_ are available for testing. Keep watching `dynamic metadata fleet PR 1077`_
 for support of runtime changes to metadata.
 
 .. note::
@@ -28,13 +27,14 @@ The following etcd keys are set by the scheduler module of the controller compon
 
 Some keys will exist only if a particular ``schedulerModule`` backend is enabled.
 
-===================================            ======================================================
+===================================            ==========================================================
 setting                                        description
-===================================            ======================================================
+===================================            ==========================================================
 /deis/scheduler/swarm/host                     the swarm manager's host IP address
 /deis/scheduler/swarm/node                     used to identify other nodes in the cluster
 /deis/scheduler/mesos/marathon                 used to identify Marathon framework's host IP address
-===================================            ======================================================
+/deis/scheduler/k8s/master                     used to identify host IP address of kubernetes ApiService
+===================================            ==========================================================
 
 
 Settings used by scheduler
@@ -46,7 +46,7 @@ The following etcd keys are used by the scheduler module of the controller compo
 setting                                   description
 ====================================      ===============================================
 /deis/controller/schedulerModule          scheduler backend, either "fleet" or "swarm" or
-                                          mesos_marathon (default: "fleet")
+                                          "mesos_marathon" or "k8s" (default: "fleet")
 ====================================      ===============================================
 
 
@@ -122,16 +122,49 @@ The Swarm Scheduler is now active. Commands such as ``deis destroy`` or
 To monitor Swarm Scheduler operations, watch the logs of the swarm-manager
 component, or spy on Docker events directly on the swarm-manager machine:
 
+Kubernetes Scheduler
+--------------------
+
+.. important::
+
+    The Kubernetes Scheduler is a technology preview and is not recommended for
+    production use.
+
+`Kubernetes`_ orchestration system for docker containers:
+
+    Kubernetes provides APIs to manage, deploy and scale docker containers. Kubernetes deploys docker containers as `PODS`_,
+    unique entity across a cluster. Containers inside a POD share the same namespaces. More information about `PODS`_.
+
+To run kubernetes on CoreOS requires `flannel`_ which provides subnet to each host for use with containers runtimes.
+Deis repository provides a new user-data file to bootstrap CoreOs machines on the cluster with flannel.
+
+To test the Kubernetes Scheduler, first install and start the kubernetes components:
+
 .. code-block:: console
 
-    $ deisctl journal swarm-manager
-    $ docker -H 172.17.8.102:2395 events
-    2015-04-30T17:31 172.17.8.100:5000/hungry-variable:v5: (from  node:deis-01) pull
-    2015-04-30T17:31 172.17.8.100:5000/hungry-variable:v5: (from  node:deis-02) pull
-    2015-04-30T17:31 02a570: (from 172.17.8.100:5000/hungry-variable:v5 node:deis-01) create
-    2015-04-30T17:31 02a570: (from 172.17.8.100:5000/hungry-variable:v5 node:deis-01) start
-    2015-04-30T17:31 61e59c: (from 172.17.8.100:5000/hungry-variable:v5 node:deis-02) create
-    2015-04-30T17:31 61e59c: (from 172.17.8.100:5000/hungry-variable:v5 node:deis-02) start
+    $deisctl install k8s && deisctl start k8s
+
+Then set the controller's ``schedulerModule`` to "k8s":
+
+.. code-block:: console
+
+    $ deisctl config controller set schedulerModule=k8s
+
+The Kubernetes scheduler is now active. Commands such as ``deis destroy`` or
+``deis scale web=9`` will use kubernetes ApiServer to manage app PODS.
+
+For each App deis creates a replication controller which manages application PODS and a kubernetes service which acts as a proxy and routes traffic to the PODS associated with the App. A new release uses rolling deploy mechanism. If you are using
+kubernetes scheduler for Deis you can avoid publisher component.
+
+.. note::
+
+    **Known Issues**
+
+    - Kubernetes ApiServer is not HA. If ApiServer is rescheduled it will reschedule all the kubernetes units.
+    - Kubernetes does resource based scheduling. Specifying limits will create reservation of the specified resource on the node.
+    - Installing flannel is not backwards compatible as it changes Docker bridge which requires restarting
+      Docker Engine.
+    - Docker Engine is started with arguments ``--iptables=false --ip-masq=false`` for the docker not to create IP masquerading rule and use the one created by flannel.
 
 
 Mesos with Marathon framework
@@ -191,6 +224,8 @@ Deis starts Marathon on port 8180. You can manage apps through the Marathon UI, 
 .. _Kubernetes: http://kubernetes.io/
 .. _Mesos: http://mesos.apache.org
 .. _Marathon: https://github.com/mesosphere/marathon
+.. _PODS: https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/user-guide/pods.md
+.. _flannel: https://github.com/coreos/flannel
 .. _fleet: https://github.com/coreos/fleet#fleet---a-distributed-init-system
 .. _swarm: https://github.com/docker/swarm#swarm-a-docker-native-clustering-system
 .. _`soft affinity`: https://docs.docker.com/swarm/scheduler/filter/#soft-affinitiesconstraints

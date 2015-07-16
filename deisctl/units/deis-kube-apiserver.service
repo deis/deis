@@ -19,10 +19,11 @@ ExecStart=/bin/bash -c "/opt/bin/kube-apiserver \
   --kubelet_https=true \
   --secure_port=6443 \
   --service-cluster-ip-range=10.100.0.0/16 \
-  --etcd_servers=http://$(curl -s 127.0.0.1:4001/v2/machines | sed 's/ //g') \
+  --etcd_servers=$(curl -s 127.0.0.1:4001/v2/machines | sed 's/ //g') \
   --public_address_override=${COREOS_PRIVATE_IPV4} \
   --logtostderr=true \
   --runtime_config=api/v1"
+ExecStartPost=/bin/bash -c "fleetctl stop deis-kube-scheduler deis-kube-controller-manager deis-kube-kubelet deis-kube-proxy; sleep 2; fleetctl start deis-kube-scheduler deis-kube-controller-manager deis-kube-kubelet deis-kube-proxy"
 Restart=always
 RestartSec=10
 [Install]
