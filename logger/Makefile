@@ -56,8 +56,8 @@ release:
 deploy: build dev-release restart
 
 setup-root-gotools:
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v code.google.com/p/go.tools/cmd/vet
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
 	sudo rm -rf /tmp/tmpGOPATH
 
 setup-gotools:

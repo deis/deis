@@ -8,8 +8,8 @@ clean:
 	rm -f bumpver
 
 setup-gotools-sudo:
-	sudo GOPATH=/tmp/tmpGOPATH go get code.google.com/p/go.tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get code.google.com/p/go.tools/cmd/vet
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
+	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
 	sudo rm -rf /tmp/tmpGOPATH
 	@echo 'Please ensure that $$GOPATH/bin is in your $$PATH.'
 
