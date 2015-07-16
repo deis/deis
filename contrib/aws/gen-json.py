@@ -5,7 +5,7 @@ import yaml
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
-# Add EC2-specific units to the shared user-data
+# Add AWS-specific units to the shared user-data
 FORMAT_DOCKER_VOLUME = '''
   [Unit]
   Description=Formats the added EBS volume for Docker

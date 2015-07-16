@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Usage: ./provision-ec2-cluster.sh [name]
+# Usage: ./provision-aws-cluster.sh [name]
 # The [name] is the CloudFormation stack name, and defaults to 'deis'
 
 if [ -z "$1" ]
@@ -17,7 +17,7 @@ CONTRIB_DIR=$(dirname $THIS_DIR)
 
 source $CONTRIB_DIR/utils.sh
 
-# check for EC2 API tools in $PATH
+# check for AWS API tools in $PATH
 if ! which aws > /dev/null; then
   echo_red 'Please install the AWS command-line tool and ensure it is in your $PATH.'
   exit 1
@@ -47,7 +47,7 @@ bailout() {
   aws cloudformation delete-stack --stack-name $STACK_NAME
 }
 
-# create an EC2 cloudformation stack based on CoreOS's default template
+# create an AWS cloudformation stack based on CoreOS's default template
 aws cloudformation create-stack \
     --template-body "$($THIS_DIR/gen-json.py)" \
     --stack-name $STACK_NAME \
@@ -68,7 +68,7 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
     fi
 
     STACK_STATUS=$(aws --output text cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[].StackStatus' $EXTRA_AWS_CLI_ARGS)
-    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then 
+    if [ $STACK_STATUS != "CREATE_IN_PROGRESS" -a $STACK_STATUS != "CREATE_COMPLETE" ] ; then
       echo "error creating stack: "
       aws --output text cloudformation describe-stack-events \
           --stack-name $STACK_NAME \

@@ -17,7 +17,7 @@ location                 purpose                              considerations
 /var/lib/etcd            etcd snapshot data                   etcd writes a relatively small amount of snapshot data here, so access should be as fast as possible (cloud providers use fast, local disks)
 /var/lib/docker          Docker image/volume storage          should be large - on cloud providers with external storage (AWS, GCE, Azure) this is a separate 100GB volume
 /var/lib/deis/store      mounted CephFS for deis-store        none - this is a virtually-mounted filesystem, and the "real" Ceph data lives in a Docker volume (so it's stored in /var/lib/docker)
-/                        everything else (logs, etc.)         should be adequately large enough to prevent out-of-space issues causing service failure (on EC2 this is a 50GB volume)
+/                        everything else (logs, etc.)         should be adequately large enough to prevent out-of-space issues causing service failure (on AWS this is a 50GB volume)
 ===================      =============================        ============================================================================================================================================
 
 Identifying low disk space

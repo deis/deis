@@ -55,10 +55,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. note::
 
-    When upgrading an Amazon EC2 cluster older than Deis v1.6, a :ref:`migration_upgrade` is
+    When upgrading an AWS cluster older than Deis v1.6, a :ref:`migration_upgrade` is
     preferable.
 
-    On Amazon EC2, Deis enables the :ref:`PROXY protocol <proxy_protocol>` by default.
+    On AWS, Deis enables the :ref:`PROXY protocol <proxy_protocol>` by default.
     If an in-place upgrade is required, run ``deisctl config router set proxyProtocol=1``,
     enable PROXY protocol for ports 80 and 443 on the ELB, add a ``TCP 443:443`` listener, and
     change existing targets and health checks from HTTP to TCP.
