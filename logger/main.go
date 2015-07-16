@@ -47,7 +47,6 @@ func main() {
 	ticker := time.NewTicker(time.Duration(publishInterval) * time.Second)
 	signalChan := make(chan os.Signal, 1)
 	drainChan := make(chan string)
-	stopChan := make(chan bool)
 	exitChan := make(chan bool)
 	cleanupChan := make(chan bool)
 	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
@@ -82,7 +81,6 @@ func main() {
 			}
 		case <-signalChan:
 			close(exitChan)
-			stopChan <- true
 		case <-cleanupChan:
 			ticker.Stop()
 			return
