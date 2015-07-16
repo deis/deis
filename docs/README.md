@@ -18,9 +18,6 @@ Please add any issues you find with this documentation to the
     (docs)$ pip install -r docs_requirements.txt
     ```
 
-    See comments at the top of the ``docs_requirements.txt`` file if you
-    have problems with this step on Mac OS X Mavericks.
-
 2. Build the documentation and host it on a local web server:
 
     ```console
