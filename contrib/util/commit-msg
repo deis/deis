@@ -6,6 +6,7 @@
 set -eo pipefail
 
 RED=$(tput setaf 1)
+YELLOW=$(tput setaf 3)
 NORMAL=$(tput sgr0)
 subject_regex="^(feat|fix|docs|style|ref|test|chore)\(.+\): [\w\s\d]*"
 capital_regex="^.+\): [a-z][\w\s\d]*"
@@ -51,10 +52,9 @@ if ! [[ $SUBJECT =~ $capital_regex ]]; then
 fi
 
 if [[ ${#SUBJECT} -gt 50 ]]; then
-	echo "${RED}ERROR - Subject can't be longer than 50 characters."
+	echo "${YELLOW}WARNING - Subject shouldn't be longer than 50 characters."
 	echo ""
 	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
-	exit 1
 fi
 
 if [[ ${#MESSAGE[2]} -gt 0 ]]; then
