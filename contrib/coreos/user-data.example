@@ -7,7 +7,7 @@ coreos:
     public-ip: $private_ipv4
     # allow etcd to slow down at times
     etcd_request_timeout: 3.0
-    etcd_servers: http://$private_ipv4:2379
+    etcd_servers: http://127.0.0.1:2379
   units:
   - name: etcd.service
     mask: true
@@ -39,15 +39,15 @@ coreos:
       ExecStart=/usr/bin/docker run --net=host --rm \
         --volume=${ETCD_DATA_DIR}:/var/lib/etcd2 \
         --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
-        -p 2380:2380 -p 2379:2379 \
+        -p 4001:4001 -p 2380:2380 -p 2379:2379 -p 7001:7001 \
         --name etcd2 \
         quay.io/coreos/etcd:${ETCD_VERSION} \
         -name ${ETCD_NAME} \
         -data-dir /var/lib/etcd2 \
-        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379 \
-        -listen-client-urls http://0.0.0.0:2379 \
-        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380 \
-        -listen-peer-urls http://0.0.0.0:2380 \
+        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379,http://${COREOS_PRIVATE_IPV4}:4001 \
+        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
+        -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
         --heartbeat-interval ${ETCD_HEARTBEAT_INTERVAL} \
         --election-timeout ${ETCD_ELECTION_TIMEOUT} \
         --discovery #DISCOVERY_URL
