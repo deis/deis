@@ -7,6 +7,7 @@ coreos:
     public-ip: $private_ipv4
     # allow etcd to slow down at times
     etcd_request_timeout: 3.0
+    etcd_servers: http://$private_ipv4:2379
   units:
   - name: etcd.service
     mask: true
