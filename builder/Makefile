@@ -16,7 +16,9 @@ BINARY_DEST_DIR := rootfs/usr/bin
 build: check-docker
 	for i in $(BINARIES); do \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i src/$$i.go || exit 1; \
-		$(call check-static-binary,$(BINARY_DEST_DIR)/$$i) \
+	done
+	@for i in $(BINARIES); do \
+		$(call check-static-binary,$(BINARY_DEST_DIR)/$$i); \
 	done
 	docker build -t $(IMAGE) rootfs
 
