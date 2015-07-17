@@ -274,9 +274,16 @@ write_files:
         /usr/bin/docker exec deis-store-admin ceph mon remove `hostname -f` # fixme
         /usr/bin/docker stop deis-store-metadata || true
       fi
-      NODE=$(curl -L http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`)
-      # remove from etcd cluster
-      if [ $NODE != 'null' ]; then
-        /usr/bin/curl -L -XDELETE http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`
+
+      # TODO: remove the next check once etcdctl is using etcd2
+      ETCDCTL=/usr/bin/etcdctl
+      if ! $ETCDCTL --version | grep -q "etcdctl version 2.0."; then
+        ETCD_VERSION=2.0.13
+        curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
+          tar zxv -C /opt/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl --strip=1
+        ETCDCTL="/opt/bin/etcdctl"
       fi
+      # removing the node from etcd
+      NODE=$($ETCDCTL member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
+      $ETCDCTL member remove $NODE
 manage_etc_hosts: localhost
