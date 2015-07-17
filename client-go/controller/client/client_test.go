@@ -32,9 +32,7 @@ func createTempProfile(contents string) error {
 }
 
 func TestLoadSave(t *testing.T) {
-	err := createTempProfile(sFile)
-
-	if err != nil {
+	if err := createTempProfile(sFile); err != nil {
 		t.Fatal(err)
 	}
 

@@ -30,13 +30,11 @@ func TestChooseSettingsFileUsingProfile(t *testing.T) {
 }
 
 func TestDeleteSettings(t *testing.T) {
-	err := createTempProfile("")
-
-	if err != nil {
+	if err := createTempProfile(""); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = deleteSettings(); err != nil {
+	if err := deleteSettings(); err != nil {
 		t.Fatal(err)
 	}
 

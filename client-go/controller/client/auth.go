@@ -101,9 +101,7 @@ func Login(controllerURL url.URL, username string, password string, sslVerify bo
 
 // Logout from a Deis controller by deleting config file.
 func Logout() error {
-	err := deleteSettings()
-
-	if err != nil {
+	if err := deleteSettings(); err != nil {
 		return err
 	}
 
