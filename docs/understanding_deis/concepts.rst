@@ -103,7 +103,7 @@ See Also
 * :ref:`Architecture`
 * :ref:`Using Deis <using_deis>`
 * :ref:`Managing Deis <managing_deis>`
-* The `Twelve-Factor App`_
+* `Twelve-Factor App`_
 
 
 .. _`Twelve-Factor App`: http://12factor.net/
