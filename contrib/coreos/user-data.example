@@ -38,15 +38,15 @@ coreos:
       ExecStart=/usr/bin/docker run --net=host --rm \
         --volume=${ETCD_DATA_DIR}:/var/lib/etcd2 \
         --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
-        -p 4001:4001 -p 2380:2380 -p 2379:2379 -p 7001:7001 \
+        -p 2380:2380 -p 2379:2379 \
         --name etcd2 \
         quay.io/coreos/etcd:${ETCD_VERSION} \
         -name ${ETCD_NAME} \
         -data-dir /var/lib/etcd2 \
-        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379,http://${COREOS_PRIVATE_IPV4}:4001 \
-        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
-        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
-        -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
+        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379 \
+        -listen-client-urls http://0.0.0.0:2379 \
+        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380 \
+        -listen-peer-urls http://0.0.0.0:2380 \
         --heartbeat-interval ${ETCD_HEARTBEAT_INTERVAL} \
         --election-timeout ${ETCD_ELECTION_TIMEOUT} \
         --discovery #DISCOVERY_URL
@@ -108,7 +108,7 @@ coreos:
       [Service]
       ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
       ExecStartPre=/usr/bin/chmod +x /opt/bin/jq
-      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
+      ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:2379/v2/stats/leader | /opt/bin/jq . ; sleep 1 ; done"
   - name: increase-nf_conntrack-connections.service
     command: start
     content: |
@@ -275,9 +275,16 @@ write_files:
         /usr/bin/docker exec deis-store-admin ceph mon remove `hostname -f` # fixme
         /usr/bin/docker stop deis-store-metadata || true
       fi
-      NODE=$(curl -L http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`)
-      # remove from etcd cluster
-      if [ $NODE != 'null' ]; then
-        /usr/bin/curl -L -XDELETE http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`
+
+      # TODO: remove the next check once etcdctl is using etcd2
+      ETCDCTL=/usr/bin/etcdctl
+      if ! $ETCDCTL --version | grep -q "etcdctl version 2.0."; then
+        ETCD_VERSION=2.0.13
+        curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
+          tar zxv -C /opt/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl --strip=1
+        ETCDCTL="/opt/bin/etcdctl"
       fi
+      # removing the node from etcd
+      NODE=$($ETCDCTL member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
+      $ETCDCTL member remove $NODE
 manage_etc_hosts: localhost
