@@ -167,7 +167,7 @@ func main() {
 	// HACK: if we are connecting to etcd, get the logger's connection
 	// details from there
 	if etcdHost := os.Getenv("ETCD_HOST"); etcdHost != "" {
-		connectionString := []string{"http://" + etcdHost + ":4001"}
+		connectionString := []string{"http://" + etcdHost + ":2379"}
 		debug("etcd:", connectionString[0])
 		etcd := etcd.NewClient(connectionString)
 		etcd.SetDialTimeout(3 * time.Second)

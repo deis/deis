@@ -8,7 +8,7 @@ RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
 # install etcdctl
 ENV ETCD_VERSION=2.0.13
 RUN curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
-    tar zxv -C /usr/local/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl && ln -s /usr/local/bin/etcd-v${ETCD_VERSION}-linux-amd64/etcdctl /usr/local/bin && chmod +x /usr/local/bin/etcdctl
+    tar zxv -C /usr/local/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl && ln -s /usr/local/bin/etcd-v${ETCD_VERSION}-linux-amd64/etcdctl /usr/local/bin
 
 # install confd
 RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 \

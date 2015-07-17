@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export ETCD=${ETCD:-$HOST:4001}
+export ETCD=${ETCD:-$HOST:2379}
 
 while true
 do

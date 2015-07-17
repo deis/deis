@@ -28,7 +28,7 @@ type Response struct {
 const (
 	swarmpath               = "/deis/scheduler/swarm/node"
 	swarmetcd               = "/deis/scheduler/swarm/host"
-	etcdport                = "4001"
+	etcdport                = "2379"
 	timeout   time.Duration = 3 * time.Second
 	ttl       time.Duration = timeout * 2
 )

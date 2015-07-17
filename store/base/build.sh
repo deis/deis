@@ -18,7 +18,7 @@ apt-get update && apt-get install -y curl net-tools sudo
 # install etcdctl
 ETCD_VERSION=2.0.13
 curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
-  tar zxv -C /usr/local/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl && ln -s /usr/local/bin/etcd-v${ETCD_VERSION}-linux-amd64/etcdctl /usr/local/bin && chmod +x /usr/local/bin/etcdctl
+  tar zxv -C /usr/local/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl && ln -s /usr/local/bin/etcd-v${ETCD_VERSION}-linux-amd64/etcdctl /usr/local/bin
 
 # install confd
 CONFD_VERSION=0.10.0

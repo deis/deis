@@ -36,7 +36,7 @@ func init() {
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
 	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
 	flag.StringVar(&publishPath, "publish-path", getopt("ETCD_PATH", "/deis/logs"), "path to publish host/port information")
-	flag.StringVar(&publishPort, "publish-port", getopt("ETCD_PORT", "4001"), "service discovery port")
+	flag.StringVar(&publishPort, "publish-port", getopt("ETCD_PORT", "2379"), "service discovery port")
 	flag.IntVar(&publishTTL, "publish-ttl", publishInterval*2, "publish TTL in seconds")
 }
 

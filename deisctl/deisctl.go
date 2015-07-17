@@ -44,7 +44,7 @@ Commands, use "deisctl help <command>" to learn more:
 
 Options:
   -h --help                   show this help screen
-  --endpoint=<url>            etcd endpoint for fleet [default: http://127.0.0.1:4001]
+  --endpoint=<url>            etcd endpoint for fleet [default: http://127.0.0.1:2379]
   --etcd-cafile=<path>        etcd CA file authentication [default: ]
   --etcd-certfile=<path>      etcd cert file authentication [default: ]
   --etcd-key-prefix=<path>    keyspace for fleet data in etcd [default: /_coreos.com/fleet/]

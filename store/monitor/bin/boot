@@ -3,7 +3,7 @@
 
 set -e
 
-ETCD_PORT=${ETCD_PORT:-4001}
+ETCD_PORT=${ETCD_PORT:-2379}
 ETCD="$HOST:$ETCD_PORT"
 ETCD_PATH=${ETCD_PATH:-/deis/store}
 HOSTNAME=`hostname`

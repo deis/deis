@@ -19,7 +19,7 @@ const (
 	defaultHost                      = "127.0.0.1"
 	defaultDockerHost                = "unix:///var/run/docker.sock"
 	defaultEtcdHost                  = "127.0.0.1"
-	defaultEtcdPort                  = "4001"
+	defaultEtcdPort                  = "2379"
 	defaultLogLevel                  = "error"
 )
 

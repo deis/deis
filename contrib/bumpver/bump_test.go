@@ -232,8 +232,8 @@ coreos:
     # generate a new token for each unique cluster from https://discovery.etcd.io/new
     # uncomment the following line and replace it with your discovery URL
     # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
+    addr: $private_ipv4:2379
+    peer-addr: $private_ipv4:2380
     # give etcd more time if it's under heavy load - prevent leader election thrashing
     peer-election-timeout: 2000
     # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
@@ -263,8 +263,8 @@ coreos:
     # generate a new token for each unique cluster from https://discovery.etcd.io/new
     # uncomment the following line and replace it with your discovery URL
     # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
+    addr: $private_ipv4:2379
+    peer-addr: $private_ipv4:2380
     # give etcd more time if it's under heavy load - prevent leader election thrashing
     peer-election-timeout: 2000
     # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
