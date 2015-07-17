@@ -101,6 +101,7 @@ wait_for_update deis-3 &
 update3=$!
 wait update1 update2 update3
 
-log_phase "Running end-to-end integration test"
+log_phase "Running end-to-end integration test with Python client"
 
+export DEIS_BINARY="$DEIS_ROOT/client/dist/deis"
 time make test-integration

@@ -26,6 +26,7 @@ builder/rootfs/usr/bin
 cache/image/bin/
 client/dist/
 client/makeself/
+client-go/deis
 contrib/azure/azure-user-data
 contrib/bumpver/bumpver
 deisctl/deisctl
