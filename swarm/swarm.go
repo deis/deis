@@ -17,12 +17,18 @@ import (
 	"github.com/deis/deis/tests/utils"
 )
 
-//Response struct
-type Response struct {
-	ClientURL string `json:"clientURL"`
-	Name      string `json:"name"`
-	PeerURL   string `json:"peerURL"`
-	State     string `json:"state"`
+// EtcdCluster information about the nodes in the etcd cluster
+type EtcdCluster struct {
+	Members []etcd.Member `json:"members"`
+}
+
+// NodeStat information about the local node in etcd
+type NodeStats struct {
+	LeaderInfo struct {
+		Name      string    `json:"leader"`
+		Uptime    string    `json:"uptime"`
+		StartTime time.Time `json:"startTime"`
+	} `json:"leaderInfo"`
 }
 
 const (
@@ -51,19 +57,29 @@ func run(cmd string) {
 }
 
 func getleaderHost() string {
-	var response []Response
-	var host string
+	var nodeStats NodeStats
 	client := &http.Client{}
-	resp, _ := client.Get("http://" + os.Getenv("HOST") + ":7001/v2/admin/machines")
-	defer resp.Body.Close()
+	resp, _ := client.Get("http://" + os.Getenv("HOST") + ":2379/v2/stats/self")
+
 	body, _ := ioutil.ReadAll(resp.Body)
-	json.Unmarshal(body, &response)
-	for _, node := range response {
-		if node.State == "leader" {
-			host = strings.Split(node.ClientURL, "//")[1]
+	json.Unmarshal(body, &nodeStats)
+
+	etcdLeaderID := nodeStats.LeaderInfo.Name
+
+	var etcdCluster EtcdCluster
+	resp, _ = client.Get("http://" + os.Getenv("HOST") + ":2379/v2/members")
+	defer resp.Body.Close()
+
+	body, _ = ioutil.ReadAll(resp.Body)
+	json.Unmarshal(body, &etcdCluster)
+
+	for _, node := range etcdCluster.Members {
+		if node.ID == etcdLeaderID {
+			return node.ClientURLs[0]
 		}
 	}
-	return host
+
+	return ""
 }
 
 func publishService(client *etcd.Client, host string, ttl uint64) {
