@@ -12,7 +12,7 @@ IMAGE =  $(IMAGE_PREFIX)/$(COMPONENT):$(BUILD_TAG)
 
 build:
 	CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o deis .
-	$(call check-static-binary,deis) 
+	@$(call check-static-binary,deis) 
 
 install:
 	godep go install -v .
