@@ -40,9 +40,7 @@ Requires admin privilages.
 Usage: deis users:list
 `
 
-	_, err := docopt.Parse(usage, argv, true, "", false, true)
-
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 

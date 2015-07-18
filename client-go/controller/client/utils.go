@@ -21,9 +21,7 @@ func locateSettingsFile() string {
 func deleteSettings() error {
 	filename := locateSettingsFile()
 
-	_, err := os.Stat(filename)
-
-	if err != nil {
+	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
 			return nil
 		}
@@ -31,7 +29,7 @@ func deleteSettings() error {
 		return err
 	}
 
-	if err = os.Remove(filename); err != nil {
+	if err := os.Remove(filename); err != nil {
 		return err
 	}
 

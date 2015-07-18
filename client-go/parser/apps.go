@@ -93,9 +93,7 @@ Lists applications visible to the current user.
 
 Usage: deis apps:list
 `
-	_, err := docopt.Parse(usage, argv, true, "", false, true)
-
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 

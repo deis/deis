@@ -45,9 +45,7 @@ Lists SSH keys for the logged in user.
 Usage: deis keys:list
 `
 
-	_, err := docopt.Parse(usage, argv, true, "", false, true)
-
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 

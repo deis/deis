@@ -133,9 +133,7 @@ Logs out from a controller and clears the user session.
 Usage: deis auth:logout
 `
 
-	_, err := docopt.Parse(usage, argv, true, "", false, true)
-
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 
@@ -177,9 +175,7 @@ Displays the currently logged in user.
 Usage: deis auth:whoami
 `
 
-	_, err := docopt.Parse(usage, argv, true, "", false, true)
-
-	if err != nil {
+	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 

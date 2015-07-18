@@ -147,7 +147,9 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	err := createTempProfile("")
+	if err := createTempProfile(""); err != nil {
+		t.Fatal(err)
+	}
 
 	handler := fakeAuthHTTPServer{}
 	server := httptest.NewServer(handler)
@@ -190,13 +192,11 @@ func TestLogin(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	err := createTempProfile(sFile)
-
-	if err != nil {
+	if err := createTempProfile(sFile); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Logout(); err != nil {
+	if err := Logout(); err != nil {
 		t.Fatal(err)
 	}
 
@@ -213,13 +213,11 @@ func TestPasswd(t *testing.T) {
 	defer server.Close()
 
 	sF := fmt.Sprintf(`{"username":"t","ssl_verify":false,"controller":"%s","token":"a"}`, server.URL)
-	err := createTempProfile(sF)
-
-	if err != nil {
+	if err := createTempProfile(sF); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Passwd("test", "old", "new"); err != nil {
+	if err := Passwd("test", "old", "new"); err != nil {
 		t.Error(err)
 	}
 }
@@ -231,17 +229,15 @@ func TestCancel(t *testing.T) {
 	defer server.Close()
 
 	sF := fmt.Sprintf(`{"username":"t","ssl_verify":false,"controller":"%s","token":"a"}`, server.URL)
-	err := createTempProfile(sF)
-
-	if err != nil {
+	if err := createTempProfile(sF); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Regenerate("", true); err != nil {
+	if err := Regenerate("", true); err != nil {
 		t.Error(err)
 	}
 
-	if err = Cancel(); err != nil {
+	if err := Cancel(); err != nil {
 		t.Error(err)
 	}
 
@@ -259,21 +255,19 @@ func TestRegenerate(t *testing.T) {
 	defer server.Close()
 
 	sF := fmt.Sprintf(`{"username":"t","ssl_verify":false,"controller":"%s","token":"a"}`, server.URL)
-	err := createTempProfile(sF)
-
-	if err != nil {
+	if err := createTempProfile(sF); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = Regenerate("", true); err != nil {
+	if err := Regenerate("", true); err != nil {
 		t.Error(err)
 	}
 
-	if err = Regenerate("test", false); err != nil {
+	if err := Regenerate("test", false); err != nil {
 		t.Error(err)
 	}
 
-	if err = Regenerate("", false); err != nil {
+	if err := Regenerate("", false); err != nil {
 		t.Error(err)
 	}
 

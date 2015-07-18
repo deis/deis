@@ -39,9 +39,7 @@ type settingsFile struct {
 func New() (*Client, error) {
 	filename := locateSettingsFile()
 
-	_, err := os.Stat(filename)
-
-	if err != nil {
+	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
 			return nil, errors.New("Not logged in. Use 'deis login' or 'deis register' to get started.")
 		}
