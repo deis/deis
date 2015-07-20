@@ -87,9 +87,9 @@ func (c Client) BasicRequest(method string, path string, body []byte) (string, i
 	if err != nil {
 		return "", -1, err
 	}
+	defer res.Body.Close()
 
 	resBody, err := ioutil.ReadAll(res.Body)
-	defer res.Body.Close()
 
 	if err != nil {
 		return "", -1, err
@@ -114,12 +114,12 @@ Make sure that the Controller URI is correct and the server is running.`
 	}
 
 	res, err := client.Do(req)
-	defer res.Body.Close()
 
 	if err != nil {
 		fmt.Printf(errorMessage+"\n", baseURL)
 		return err
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != 401 {
 		return fmt.Errorf(errorMessage, baseURL)
