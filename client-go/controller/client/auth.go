@@ -37,11 +37,11 @@ func Register(controllerURL url.URL, username string, password string, email str
 	addUserAgent(&headers)
 
 	res, err := rawRequest(client, "POST", controllerURL.String(), bytes.NewBuffer(body), headers, 201)
-	defer res.Body.Close()
 
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
 	fmt.Printf("Registered %s\n", username)
 
@@ -72,11 +72,11 @@ func Login(controllerURL url.URL, username string, password string, sslVerify bo
 	addUserAgent(&headers)
 
 	res, err := rawRequest(client, "POST", controllerURL.String(), bytes.NewBuffer(body), headers, 200)
-	defer res.Body.Close()
 
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
 	resBody, err := ioutil.ReadAll(res.Body)
 
