@@ -7,7 +7,7 @@ include includes.mk
 # the filepath to this repository, relative to $GOPATH/src
 repo_path = github.com/deis/deis
 
-GO_PACKAGES = pkg/time version
+GO_PACKAGES = version
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENTS=builder cache controller database logger logspout publisher registry router store swarm
@@ -92,7 +92,7 @@ test-functional:
 
 test-unit:
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) test-unit &&) echo done
-	@$(foreach C, $(CLIENTS), $(MAKE) -C $(C) test-unit &&) echo done
+	@$(foreach C, pkg $(CLIENTS), $(MAKE) -C $(C) test-unit &&) echo done
 
 test-integration:
 	$(MAKE) -C tests/ test-full
@@ -108,7 +108,7 @@ test-style:
 	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
 		$(GOLINT) $$i; \
 	done
-	@$(foreach C, tests $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
+	@$(foreach C, tests pkg $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
 
 commit-hook:
 	cp contrib/util/commit-msg .git/hooks/commit-msg

@@ -60,3 +60,23 @@ func TestLogo(t *testing.T) {
 		t.Errorf("Expected \n%s\n, Got\n%s\n", Colors["Deis"], Logo())
 	}
 }
+
+func TestPrettyTabs(t *testing.T) {
+	test := map[string]string{
+		"test": "testing",
+		"foo":  "bar",
+	}
+
+	expected := `test testing
+foo  bar
+`
+	otherExpected := `foo  bar
+test testing
+`
+
+	output := PrettyTabs(test, 1)
+
+	if !(output == expected || output == otherExpected) {
+		t.Errorf("Expected '%s', Got '%s'", expected, output)
+	}
+}
