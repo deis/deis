@@ -16,6 +16,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 var serverAddr string
@@ -338,4 +339,114 @@ func TestSmallBuffer(t *testing.T) {
 		t.Errorf("Echo: expected %q got %q", msg[len(small_msg):], second_msg)
 	}
 	conn.Close()
+}
+
+var parseAuthorityTests = []struct {
+	in  *url.URL
+	out string
+}{
+	{
+		&url.URL{
+			Scheme: "ws",
+			Host:   "www.google.com",
+		},
+		"www.google.com:80",
+	},
+	{
+		&url.URL{
+			Scheme: "wss",
+			Host:   "www.google.com",
+		},
+		"www.google.com:443",
+	},
+	{
+		&url.URL{
+			Scheme: "ws",
+			Host:   "www.google.com:80",
+		},
+		"www.google.com:80",
+	},
+	{
+		&url.URL{
+			Scheme: "wss",
+			Host:   "www.google.com:443",
+		},
+		"www.google.com:443",
+	},
+	// some invalid ones for parseAuthority. parseAuthority doesn't
+	// concern itself with the scheme unless it actually knows about it
+	{
+		&url.URL{
+			Scheme: "http",
+			Host:   "www.google.com",
+		},
+		"www.google.com",
+	},
+	{
+		&url.URL{
+			Scheme: "http",
+			Host:   "www.google.com:80",
+		},
+		"www.google.com:80",
+	},
+	{
+		&url.URL{
+			Scheme: "asdf",
+			Host:   "127.0.0.1",
+		},
+		"127.0.0.1",
+	},
+	{
+		&url.URL{
+			Scheme: "asdf",
+			Host:   "www.google.com",
+		},
+		"www.google.com",
+	},
+}
+
+func TestParseAuthority(t *testing.T) {
+	for _, tt := range parseAuthorityTests {
+		out := parseAuthority(tt.in)
+		if out != tt.out {
+			t.Errorf("got %v; want %v", out, tt.out)
+		}
+	}
+}
+
+type closerConn struct {
+	net.Conn
+	closed int // count of the number of times Close was called
+}
+
+func (c *closerConn) Close() error {
+	c.closed++
+	return c.Conn.Close()
+}
+
+func TestClose(t *testing.T) {
+	once.Do(startServer)
+
+	conn, err := net.Dial("tcp", serverAddr)
+	if err != nil {
+		t.Fatal("dialing", err)
+	}
+
+	cc := closerConn{Conn: conn}
+
+	client, err := NewClient(newConfig(t, "/echo"), &cc)
+	if err != nil {
+		t.Fatalf("WebSocket handshake: %v", err)
+	}
+
+	// set the deadline to ten minutes ago, which will have expired by the time
+	// client.Close sends the close status frame.
+	conn.SetDeadline(time.Now().Add(-10 * time.Minute))
+
+	if err := client.Close(); err == nil {
+		t.Errorf("ws.Close(): expected error, got %v", err)
+	}
+	if cc.closed < 1 {
+		t.Fatalf("ws.Close(): expected underlying ws.rwc.Close to be called > 0 times, got: %v", cc.closed)
+	}
 }

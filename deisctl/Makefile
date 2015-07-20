@@ -31,16 +31,6 @@ installer:
 install:
 	godep go install -v .
 
-setup-root-gotools:
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
-	sudo rm -rf /tmp/tmpGOPATH
-
-setup-gotools:
-	go get -u github.com/golang/lint/golint
-	go get -u golang.org/x/tools/cmd/cover
-	go get -u golang.org/x/tools/cmd/vet
-
 test: test-style test-unit
 
 test-style:
