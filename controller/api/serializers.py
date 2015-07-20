@@ -24,15 +24,56 @@ TAGVAL_MATCH = re.compile(r'^\w+$')
 
 
 class JSONFieldSerializer(serializers.Field):
+    """
+    A Django REST framework serializer for JSON data.
+    """
+
     def to_representation(self, obj):
+        """Serialize the field's JSON data, for read operations."""
         return obj
 
     def to_internal_value(self, data):
+        """Deserialize the field's JSON data, for write operations."""
         try:
             val = json.loads(data)
         except TypeError:
             val = data
         return val
+
+
+class JSONIntFieldSerializer(JSONFieldSerializer):
+    """
+    A JSON serializer that coerces its data to integers.
+    """
+
+    def to_internal_value(self, data):
+        """Deserialize the field's JSON integer data."""
+        field = super(JSONIntFieldSerializer, self).to_internal_value(data)
+
+        for k, v in field.viewitems():
+            if v is not None:  # NoneType is used to unset a value
+                try:
+                    field[k] = int(v)
+                except ValueError:
+                    field[k] = v
+                    # Do nothing, the validator will catch this later
+        return field
+
+
+class JSONStringFieldSerializer(JSONFieldSerializer):
+    """
+    A JSON serializer that coerces its data to strings.
+    """
+
+    def to_internal_value(self, data):
+        """Deserialize the field's JSON string data."""
+        field = super(JSONStringFieldSerializer, self).to_internal_value(data)
+
+        for k, v in field.viewitems():
+            if v is not None:  # NoneType is used to unset a value
+                field[k] = unicode(v)
+
+        return field
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -129,10 +170,10 @@ class ConfigSerializer(ModelSerializer):
 
     app = serializers.SlugRelatedField(slug_field='id', queryset=models.App.objects.all())
     owner = serializers.ReadOnlyField(source='owner.username')
-    values = JSONFieldSerializer(required=False)
-    memory = JSONFieldSerializer(required=False)
-    cpu = JSONFieldSerializer(required=False)
-    tags = JSONFieldSerializer(required=False)
+    values = JSONStringFieldSerializer(required=False)
+    memory = JSONStringFieldSerializer(required=False)
+    cpu = JSONIntFieldSerializer(required=False)
+    tags = JSONStringFieldSerializer(required=False)
     created = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
     updated = serializers.DateTimeField(format=settings.DEIS_DATETIME_FORMAT, read_only=True)
 
