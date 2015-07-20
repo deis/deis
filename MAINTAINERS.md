@@ -47,6 +47,7 @@ The duties of a core maintainer include:
 
 The current core maintainers of Deis:
 * Chris Armstrong - <carmstrong@engineyard.com> ([@carmstrong](https://github.com/carmstrong))
+* Kent Rancourt - <krancourt@engineyard.com> ([@krancour](https://github.com/krancour))
 * Matt Boersma - <mboersma@engineyard.com> ([@mboersma](https://github.com/mboersma))
 * Matt Butcher - <mbutcher@engineyard.com> ([@technosophos](https://github.com/technosophos))
 * Matthew Fisher - <mfisher@engineyard.com> ([@bacongobbler](https://github.com/bacongobbler))
