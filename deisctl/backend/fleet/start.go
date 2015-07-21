@@ -2,40 +2,42 @@ package fleet
 
 import (
 	"fmt"
+	"io"
 	"sync"
 	"time"
 
 	"github.com/coreos/fleet/schema"
+	"github.com/deis/deis/pkg/prettyprint"
 )
 
 // Start units and wait for their desiredState
-func (c *FleetClient) Start(targets []string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func (c *FleetClient) Start(targets []string, wg *sync.WaitGroup, out, ew io.Writer) {
 	// expand @* targets
 	expandedTargets, err := c.expandTargets(targets)
 	if err != nil {
-		errchan <- err
+		io.WriteString(ew, err.Error())
 		return
 	}
 
 	for _, target := range expandedTargets {
 		wg.Add(1)
-		go doStart(c, target, wg, outchan, errchan)
+		go doStart(c, target, wg, out, ew)
 	}
 	return
 }
 
-func doStart(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func doStart(c *FleetClient, target string, wg *sync.WaitGroup, out, ew io.Writer) {
 	defer wg.Done()
 
 	// prepare string representation
 	component, num, err := splitTarget(target)
 	if err != nil {
-		errchan <- err
+		io.WriteString(ew, err.Error())
 		return
 	}
 	name, err := formatUnitName(component, num)
 	if err != nil {
-		errchan <- err
+		io.WriteString(ew, err.Error())
 		return
 	}
 
@@ -43,7 +45,7 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan str
 	desiredState := "running"
 
 	if err := c.Fleet.SetUnitTargetState(name, requestState); err != nil {
-		errchan <- err
+		io.WriteString(ew, err.Error())
 		return
 	}
 
@@ -54,7 +56,7 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan str
 		// poll for unit states
 		states, err := c.Fleet.UnitStates()
 		if err != nil {
-			errchan <- err
+			io.WriteString(ew, err.Error())
 			return
 		}
 
@@ -67,18 +69,19 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, outchan chan str
 			}
 		}
 		if currentState == nil {
-			errchan <- fmt.Errorf("could not find unit: %v", name)
+			fmt.Fprintf(ew, "Could not find unit: %v\n", name)
 			return
 		}
 
 		// if subState changed, send it across the output channel
 		if lastSubState != currentState.SystemdSubState {
-			outchan <- fmt.Sprintf("\033[0;33m%v:\033[0m %v/%v                                 \r",
-				name, currentState.SystemdActiveState, currentState.SystemdSubState)
+			l := prettyprint.Overwritef(stateFmt, name, currentState.SystemdActiveState, currentState.SystemdSubState)
+			fmt.Fprintf(out, l)
 		}
 
 		// break when desired state is reached
 		if currentState.SystemdSubState == desiredState {
+			fmt.Fprintln(out)
 			return
 		}
 

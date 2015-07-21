@@ -2,7 +2,6 @@ package fleet
 
 import (
 	"bytes"
-	"fmt"
 	"sync"
 	"testing"
 	"text/tabwriter"
@@ -80,6 +79,6 @@ deis-router@1.service	1182ecf	launched	launched	654321.../2.2.2.2
 	actual := testWriter.String()
 
 	if expected != actual {
-		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expected, actual))
+		t.Errorf("Expected '%s', Got '%s'", expected, actual)
 	}
 }

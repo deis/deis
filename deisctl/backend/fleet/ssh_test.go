@@ -48,7 +48,7 @@ func TestRunCommand(t *testing.T) {
 
 	err := testWriter.String()
 	if err != "" || code != 0 {
-		t.Error(fmt.Errorf("Error: %v, Returned %d", err, code))
+		t.Errorf("Error: %v, Returned %d", err, code)
 	}
 }
 
@@ -76,7 +76,7 @@ func TestFindUnit(t *testing.T) {
 	actualErr := err.Error()
 
 	if actualErr != expectedErr {
-		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr))
+		t.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr)
 	}
 
 	expectedErr = "Unit deis-router@2.service does not appear to be running.\n"
@@ -86,7 +86,7 @@ func TestFindUnit(t *testing.T) {
 	actualErr = err.Error()
 
 	if actualErr != expectedErr {
-		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr))
+		t.Errorf("Expected '%s', Got '%s'", expectedErr, actualErr)
 	}
 
 	result, err := c.findUnit("deis-router@1.service")
@@ -96,7 +96,7 @@ func TestFindUnit(t *testing.T) {
 	}
 
 	if result != expectedID {
-		t.Error(fmt.Errorf("Expected %s, Got %s", expectedID, result))
+		t.Errorf("Expected %s, Got %s", expectedID, result)
 	}
 }
 
@@ -128,6 +128,6 @@ func TestMachineState(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(*result, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, *result))
+		t.Errorf("Expected %v, Got %v", expected, *result)
 	}
 }

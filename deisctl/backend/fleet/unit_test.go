@@ -1,7 +1,6 @@
 package fleet
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path"
 	"reflect"
@@ -38,7 +37,7 @@ func TestUnits(t *testing.T) {
 	expected := []string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"}
 
 	if !reflect.DeepEqual(targets, expected) {
-		t.Fatal(fmt.Errorf("Expected %v, Got %v", expected, targets))
+		t.Fatalf("Expected %v, Got %v", expected, targets)
 	}
 }
 
@@ -65,7 +64,7 @@ func TestNextUnit(t *testing.T) {
 	expected := 2
 
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 }
 
@@ -92,7 +91,7 @@ func TestLastUnit(t *testing.T) {
 	expected := 3
 
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 }
 
@@ -129,7 +128,7 @@ Description=deis-controller`
 	result := uf.Contents["Unit"]["Description"][0]
 	expected := unitFile[19:]
 	if result != expected {
-		t.Error(fmt.Errorf("Expected: %s, Got %s", expected))
+		t.Errorf("Expected: %s, Got %s", expected)
 	}
 }
 
@@ -152,7 +151,7 @@ func TestReadTemplate(t *testing.T) {
 		}
 
 		if string(output) != string(expected) {
-			t.Error(fmt.Errorf("Unit %s: Expected %s, Got %s", unit, expected, output))
+			t.Errorf("Unit %s: Expected %s, Got %s", unit, expected, output)
 		}
 	}
 }
@@ -171,6 +170,6 @@ func TestReadTemplateError(t *testing.T) {
 	errorf := err.Error()
 
 	if errorf != expected {
-		t.Error(fmt.Errorf("Expected %s, Got %s", expected, errorf))
+		t.Errorf("Expected %s, Got %s", expected, errorf)
 	}
 }

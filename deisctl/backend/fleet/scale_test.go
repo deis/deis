@@ -1,9 +1,9 @@
 package fleet
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path"
+	"strings"
 	"sync"
 	"testing"
 
@@ -33,19 +33,15 @@ func TestScaleUp(t *testing.T) {
 	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
+	se := newOutErr()
 
-	c.Scale("router", 3, &wg, outchan, errchan)
+	c.Scale("router", 3, &wg, se.out, se.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	logMutex.Lock()
 	if errOutput != "" {
@@ -67,7 +63,7 @@ func TestScaleUp(t *testing.T) {
 		}
 
 		if !found {
-			t.Error(fmt.Errorf("Expected Unit %s not found in Unit States", expectedUnit))
+			t.Errorf("Expected Unit %s not found in Unit States", expectedUnit)
 		}
 	}
 }
@@ -95,19 +91,14 @@ func TestScaleDown(t *testing.T) {
 	c := &FleetClient{Fleet: &testFleetClient}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
-
-	c.Scale("router", 1, &wg, outchan, errchan)
+	se := newOutErr()
+	c.Scale("router", 1, &wg, se.out, se.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	logMutex.Lock()
 	if errOutput != "" {
@@ -128,7 +119,7 @@ func TestScaleDown(t *testing.T) {
 		}
 
 		if !found {
-			t.Error(fmt.Errorf("Expected Unit %s not found in Unit States", expectedUnit))
+			t.Errorf("Expected Unit %s not found in Unit States", expectedUnit)
 		}
 	}
 }
@@ -139,25 +130,21 @@ func TestScaleError(t *testing.T) {
 	c := &FleetClient{Fleet: &stubFleetClient{}}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
-
-	c.Scale("router", -1, &wg, outchan, errchan)
+	se := newOutErr()
+	c.Scale("router", -1, &wg, se.out, se.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	expected := "cannot scale below 0"
+	errOutput = strings.TrimSpace(se.ew.String())
 
 	logMutex.Lock()
 	if errOutput != expected {
-		t.Error(fmt.Errorf("Expected %s, Got %s", expected, errOutput))
+		t.Errorf("Expected '%s', Got '%s'", expected, errOutput)
 	}
 	logMutex.Unlock()
 }

@@ -1,7 +1,6 @@
 package fleet
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path"
 	"sync"
@@ -34,19 +33,14 @@ func TestCreate(t *testing.T) {
 	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
-
-	c.Create([]string{"controller", "builder", "router@1"}, &wg, outchan, errchan)
+	se := newOutErr()
+	c.Create([]string{"controller", "builder", "router@1"}, &wg, se.out, se.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	logMutex.Lock()
 	if errOutput != "" {
@@ -68,7 +62,7 @@ func TestCreate(t *testing.T) {
 		}
 
 		if !found {
-			t.Error(fmt.Errorf("Expected Unit %s not found in Unit States", expectedUnit))
+			t.Errorf("Expected Unit %s not found in Unit States", expectedUnit)
 		}
 	}
 }

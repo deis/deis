@@ -1,14 +1,17 @@
 package backend
 
-import "sync"
+import (
+	"io"
+	"sync"
+)
 
 // Backend interface is used to interact with the cluster control plane
 type Backend interface {
-	Create([]string, *sync.WaitGroup, chan string, chan error)
-	Destroy([]string, *sync.WaitGroup, chan string, chan error)
-	Start([]string, *sync.WaitGroup, chan string, chan error)
-	Stop([]string, *sync.WaitGroup, chan string, chan error)
-	Scale(string, int, *sync.WaitGroup, chan string, chan error)
+	Create([]string, *sync.WaitGroup, io.Writer, io.Writer)
+	Destroy([]string, *sync.WaitGroup, io.Writer, io.Writer)
+	Start([]string, *sync.WaitGroup, io.Writer, io.Writer)
+	Stop([]string, *sync.WaitGroup, io.Writer, io.Writer)
+	Scale(string, int, *sync.WaitGroup, io.Writer, io.Writer)
 	SSH(string) error
 	ListUnits() error
 	ListUnitFiles() error

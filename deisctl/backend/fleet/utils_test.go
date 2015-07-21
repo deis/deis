@@ -1,7 +1,6 @@
 package fleet
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 	"testing"
@@ -19,7 +18,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected := 1
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	// test next component
 	num, err = nextUnitNum([]string{"deis-router@1.service"})
@@ -28,7 +27,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected = 2
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	// test last component
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service"})
@@ -37,7 +36,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected = 3
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	// test middle component
 	num, err = nextUnitNum([]string{"deis-router@3.service"})
@@ -46,7 +45,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected = 1
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@3.service"})
 	if err != nil {
@@ -54,7 +53,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected = 2
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	num, err = nextUnitNum([]string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"})
 	if err != nil {
@@ -62,7 +61,7 @@ func TestNextComponent(t *testing.T) {
 	}
 	expected = 4
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 }
 
@@ -73,7 +72,7 @@ func TestLastComponent(t *testing.T) {
 	errorf := err.Error()
 	expectedErr := "Component not found"
 	if errorf != expectedErr {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expectedErr, errorf))
+		t.Fatalf("Expected %d, Got %d", expectedErr, errorf)
 	}
 	num, err = lastUnitNum([]string{"deis-router@1.service"})
 	if err != nil {
@@ -81,7 +80,7 @@ func TestLastComponent(t *testing.T) {
 	}
 	expected := 1
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@2.service"})
 	if err != nil {
@@ -89,7 +88,7 @@ func TestLastComponent(t *testing.T) {
 	}
 	expected = 2
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	// test middle component
 	num, err = lastUnitNum([]string{"deis-router@3.service"})
@@ -98,7 +97,7 @@ func TestLastComponent(t *testing.T) {
 	}
 	expected = 3
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@3.service"})
 	if err != nil {
@@ -106,7 +105,7 @@ func TestLastComponent(t *testing.T) {
 	}
 	expected = 3
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 	num, err = lastUnitNum([]string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"})
 	if err != nil {
@@ -114,7 +113,7 @@ func TestLastComponent(t *testing.T) {
 	}
 	expected = 3
 	if num != expected {
-		t.Fatal(fmt.Errorf("Expected %d, Got %d", expected, num))
+		t.Fatalf("Expected %d, Got %d", expected, num)
 	}
 }
 

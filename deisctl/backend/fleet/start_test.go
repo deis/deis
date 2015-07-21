@@ -1,7 +1,6 @@
 package fleet
 
 import (
-	"fmt"
 	"sync"
 	"testing"
 
@@ -32,19 +31,14 @@ func TestStart(t *testing.T) {
 	c := &FleetClient{Fleet: &testFleetClient}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
-
-	c.Start([]string{"controller", "builder", "publisher"}, &wg, outchan, errchan)
+	se := newOutErr()
+	c.Start([]string{"controller", "builder", "publisher"}, &wg, se.out, se.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	logMutex.Lock()
 	if errOutput != "" {
@@ -62,7 +56,7 @@ func TestStart(t *testing.T) {
 				found = true
 
 				if unit.SystemdSubState != "running" {
-					t.Error(fmt.Errorf("Unit %s is %s, expected running", unit.Name, unit.SystemdSubState))
+					t.Errorf("Unit %s is %s, expected running", unit.Name, unit.SystemdSubState)
 				}
 
 				break
@@ -70,7 +64,7 @@ func TestStart(t *testing.T) {
 		}
 
 		if !found {
-			t.Error(fmt.Errorf("Expected Unit %s not found in Unit States", expectedUnit))
+			t.Errorf("Expected Unit %s not found in Unit States", expectedUnit)
 		}
 	}
 }

@@ -87,7 +87,7 @@ func TestStatus(t *testing.T) {
 	expectedErr := "could not find unit: foo"
 
 	if actualErr != expectedErr {
-		t.Error(fmt.Errorf("Expected %s, Got %s"), expectedErr, actualErr)
+		t.Errorf("Expected %s, Got %s", expectedErr, actualErr)
 	}
 
 	err = c.Status("controller")
@@ -100,6 +100,6 @@ func TestStatus(t *testing.T) {
 	commandErr = testWriter.String()
 
 	if commandErr != expectedErr {
-		t.Error(fmt.Errorf("Expected '%s', Got '%s'", expectedErr, commandErr))
+		t.Errorf("Expected '%s', Got '%s'", expectedErr, commandErr)
 	}
 }

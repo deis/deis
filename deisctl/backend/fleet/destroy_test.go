@@ -1,7 +1,6 @@
 package fleet
 
 import (
-	"fmt"
 	"sync"
 	"testing"
 
@@ -28,19 +27,14 @@ func TestDestroy(t *testing.T) {
 	c := &FleetClient{Fleet: &testFleetClient}
 
 	var errOutput string
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
 	logMutex := sync.Mutex{}
 
-	go logState(outchan, errchan, &errOutput, &logMutex)
-
-	c.Destroy([]string{"controller", "registry", "router@1"}, &wg, outchan, errchan)
+	oe := newOutErr()
+	c.Destroy([]string{"controller", "registry", "router@1"}, &wg, oe.out, oe.ew)
 
 	wg.Wait()
-	close(errchan)
-	close(outchan)
 
 	logMutex.Lock()
 	if errOutput != "" {
@@ -49,6 +43,6 @@ func TestDestroy(t *testing.T) {
 	logMutex.Unlock()
 
 	if len(testFleetClient.testUnits) != 1 || testFleetClient.testUnits[0].Name != "deis-builder.service" {
-		t.Error(fmt.Errorf("Got %d Units (want 1), first unit %s (want builder)", len(testFleetClient.testUnits), testFleetClient.testUnits[0].Name))
+		t.Errorf("Got %d Units (want 1), first unit %s (want builder)", len(testFleetClient.testUnits), testFleetClient.testUnits[0].Name)
 	}
 }

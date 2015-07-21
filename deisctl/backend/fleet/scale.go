@@ -1,7 +1,8 @@
 package fleet
 
 import (
-	"errors"
+	"fmt"
+	"io"
 	"math"
 	"strconv"
 	"strings"
@@ -10,10 +11,10 @@ import (
 
 // Scale creates or destroys units to match the desired number
 func (c *FleetClient) Scale(
-	component string, requested int, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	component string, requested int, wg *sync.WaitGroup, out, ew io.Writer) {
 
 	if requested < 0 {
-		errchan <- errors.New("cannot scale below 0")
+		fmt.Fprintln(ew, "cannot scale below 0")
 		return
 	}
 	// check how many currently exist
@@ -21,7 +22,7 @@ func (c *FleetClient) Scale(
 	if err != nil {
 		// skip checking the first time; we just want a tally
 		if !strings.Contains(err.Error(), "could not find unit") {
-			errchan <- err
+			fmt.Fprintln(ew, err.Error())
 			return
 		}
 	}
@@ -31,29 +32,29 @@ func (c *FleetClient) Scale(
 		return
 	}
 	if requested-len(components) > 0 {
-		c.scaleUp(component, len(components), timesToScale, wg, outchan, errchan)
+		c.scaleUp(component, len(components), timesToScale, wg, out, ew)
 	} else {
-		c.scaleDown(component, len(components), timesToScale, wg, outchan, errchan)
+		c.scaleDown(component, len(components), timesToScale, wg, out, ew)
 	}
 }
 
 func (c *FleetClient) scaleUp(component string, numExistingContainers, numTimesToScale int,
-	wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	wg *sync.WaitGroup, out, ew io.Writer) {
 	for i := 0; i < numTimesToScale; i++ {
 		target := component + "@" + strconv.Itoa(numExistingContainers+i+1)
-		c.Create([]string{target}, wg, outchan, errchan)
+		c.Create([]string{target}, wg, out, ew)
 	}
 	wg.Wait()
 	for i := 0; i < numTimesToScale; i++ {
 		target := component + "@" + strconv.Itoa(numExistingContainers+i+1)
-		c.Start([]string{target}, wg, outchan, errchan)
+		c.Start([]string{target}, wg, out, ew)
 	}
 }
 
 func (c *FleetClient) scaleDown(component string, numExistingContainers, numTimesToScale int,
-	wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+	wg *sync.WaitGroup, out, ew io.Writer) {
 	for i := 0; i < numTimesToScale; i++ {
 		target := component + "@" + strconv.Itoa(numExistingContainers-i)
-		c.Destroy([]string{target}, wg, outchan, errchan)
+		c.Destroy([]string{target}, wg, out, ew)
 	}
 }
