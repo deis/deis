@@ -350,6 +350,27 @@
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "eca94c41d994ae2215d455ce578ae6e2dc6ee516"
+		},
+		{
+			"ImportPath": "github.com/robfig/cron",
+			"Comment": "v1-2-g67823cd",
+			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
+		},
+		{
+			"ImportPath": "github.com/progrium/go-basher",
+			"Rev": "ca3b97b3bd2a7eda303716f56916684771b79942"
+		},
+		{
+			"ImportPath": "github.com/leeor/etcd-sync",
+			"Rev": "1b8ac808160f955a5a2cdf21809e968698b07e8d"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "10a0e3c4f6267b0f903197acf80d194bab3eb8cb"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
 		}
 	]
 }

@@ -1,0 +1,2 @@
+{{ range $node := lsdir "/zookeeper/nodes" }}server.{{ getv (printf "/zookeeper/nodes/%s/id" $node) }}={{ $node }}:2181:2888:participant;{{ $node }}:3888
+{{ end }}

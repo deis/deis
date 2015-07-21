@@ -25,6 +25,7 @@ const (
 	// StatelessPlatformCommand is shorthand for the components except store-*, database, and logger.
 	StatelessPlatformCommand string = "stateless-platform"
 	swarm                    string = "swarm"
+	mesos                    string = "mesos"
 )
 
 // ListUnits prints a list of installed units.
@@ -74,6 +75,8 @@ func Start(targets []string, b backend.Backend) error {
 			return StartPlatform(b, true)
 		} else if targets[0] == swarm {
 			return StartSwarm(b)
+		} else if targets[0] == mesos {
+			return StartMesos(b)
 		}
 	}
 	outchan := make(chan string)
@@ -180,6 +183,8 @@ func Stop(targets []string, b backend.Backend) error {
 			return StopPlatform(b, true)
 		} else if targets[0] == swarm {
 			return StopSwarm(b)
+		} else if targets[0] == mesos {
+			return StopMesos(b)
 		}
 	}
 
@@ -282,6 +287,8 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 			return InstallPlatform(b, checkKeys, true)
 		} else if targets[0] == swarm {
 			return InstallSwarm(b)
+		} else if targets[0] == mesos {
+			return InstallMesos(b)
 		}
 	}
 	outchan := make(chan string)
@@ -343,6 +350,8 @@ func Uninstall(targets []string, b backend.Backend) error {
 			return UninstallPlatform(b, true)
 		} else if targets[0] == swarm {
 			return UnInstallSwarm(b)
+		} else if targets[0] == mesos {
+			return UninstallMesos(b)
 		}
 	}
 

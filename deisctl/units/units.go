@@ -19,6 +19,10 @@ var Names = []string{
 	"deis-store-volume",
 	"deis-swarm-manager",
 	"deis-swarm-node",
+	"deis-mesos-marathon",
+	"deis-mesos-master",
+	"deis-mesos-slave",
+	"deis-mesos-zk@1",
 }
 
 // URL is the GitHub url where these units can be refreshed from

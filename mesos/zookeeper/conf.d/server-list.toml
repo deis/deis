@@ -1,0 +1,6 @@
+[template]
+src   = "server.list"
+dest  = "/opt/zookeeper/conf/server.list"
+keys = [
+  "/zookeeper/nodes",
+]
