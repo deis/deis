@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eo pipefail
+
+export THIS_DIR="$(cd "$(dirname $0)"; pwd)"
+cd "${THIS_DIR}"
+
+RERUN_EXTRACT="${THIS_DIR}/tmp"
+RERUN_HOME="${RERUN_EXTRACT}/rerun"
+
+if [ ! -f "${RERUN_EXTRACT}/rerun.tar.gz" ]; then
+  mkdir -p "tmp"
+  
+  echo "Downloading rerun from GitHub..."
+  (
+    cd tmp
+    curl -sSLo rerun.tar.gz https://github.com/rerun/rerun/tarball/master
+    tar -xzvf rerun.tar.gz 2> /dev/null
+    mv rerun-rerun* rerun
+  )
+fi
+
+export RERUN_COLOR=true
+export RERUN_MODULES="${THIS_DIR}:${THIS_DIR}/tmp/rerun/modules"
+
+"${RERUN_HOME}/rerun" $@
