@@ -2,90 +2,80 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"sync"
-	"time"
 
 	"github.com/deis/deis/deisctl/backend"
-	"github.com/deis/deis/deisctl/utils"
+	"github.com/deis/deis/pkg/prettyprint"
 )
 
 // InstallMesos loads all Mesos units for StartMesos
 func InstallMesos(b backend.Backend) error {
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
+	io.WriteString(Stdout, prettyprint.DeisIfy("Installing Mesos..."))
 
-	outchan <- utils.DeisIfy("Installing Mesos...")
-
-	installMesosServices(b, &wg, outchan, errchan)
+	installMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
-	close(outchan)
 
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please run `deisctl start mesos` to boot up Mesos.")
+	fmt.Fprintln(Stdout, "Done.")
+	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Please run `deisctl start mesos` to boot up Mesos.")
 	return nil
 }
 
-func installMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func installMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Create([]string{"zookeeper"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Zookeeper...")
+	b.Create([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Master...")
-	b.Create([]string{"mesos-master"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Master...")
+	b.Create([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Slave...")
-	b.Create([]string{"mesos-slave"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Slave...")
+	b.Create([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Marathon Framework...")
-	b.Create([]string{"mesos-marathon"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Marathon Framework...")
+	b.Create([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 }
 
 // UninstallMesos unloads and uninstalls all Mesos component definitions
 func UninstallMesos(b backend.Backend) error {
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
+	io.WriteString(Stdout, prettyprint.DeisIfy("Uninstalling Mesos..."))
 
-	outchan <- utils.DeisIfy("Uninstalling Mesos...")
-
-	uninstallMesosServices(b, &wg, outchan, errchan)
+	uninstallMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
-	close(outchan)
 
-	fmt.Println("Done.")
+	fmt.Fprintln(Stdout, "Done.")
 	return nil
 }
 
-func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) error {
+func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) error {
 
-	outchan <- fmt.Sprintf("Marathon Framework...")
-	b.Destroy([]string{"mesos-marathon"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Marathon Framework...")
+	b.Destroy([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Slave...")
-	b.Destroy([]string{"mesos-slave"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Slave...")
+	b.Destroy([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Master...")
-	b.Destroy([]string{"mesos-master"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Master...")
+	b.Destroy([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Destroy([]string{"zookeeper"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Zookeeper...")
+	b.Destroy([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 
 	return nil
@@ -94,81 +84,71 @@ func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan 
 // StartMesos activates all Mesos components.
 func StartMesos(b backend.Backend) error {
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
+	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Mesos..."))
 
-	outchan <- utils.DeisIfy("Starting Mesos...")
-
-	startMesosServices(b, &wg, outchan, errchan)
+	startMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
-	close(outchan)
 
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please use `deisctl config controller set schedulerModule=mesos_marathon`")
+	fmt.Fprintln(Stdout, "Done.")
+	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Please use `deisctl config controller set schedulerModule=mesos_marathon`")
 	return nil
 }
 
-func startMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func startMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Start([]string{"zookeeper"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Zookeeper...")
+	b.Start([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Master...")
-	b.Start([]string{"mesos-master"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Master...")
+	b.Start([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Slave...")
-	b.Start([]string{"mesos-slave"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Slave...")
+	b.Start([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Marathon Framework...")
-	b.Start([]string{"mesos-marathon"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Marathon Framework...")
+	b.Start([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 }
 
 // StopMesos deactivates all Mesos components.
 func StopMesos(b backend.Backend) error {
 
-	outchan := make(chan string)
-	errchan := make(chan error)
 	var wg sync.WaitGroup
 
-	go printState(outchan, errchan, 500*time.Millisecond)
+	io.WriteString(Stdout, prettyprint.DeisIfy("Stopping Mesos..."))
 
-	outchan <- utils.DeisIfy("Stopping Mesos...")
-
-	stopMesosServices(b, &wg, outchan, errchan)
+	stopMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
-	close(outchan)
 
-	fmt.Println("Done.")
-	fmt.Println()
-	fmt.Println("Please run `deisctl start mesos` to restart Mesos.")
+	fmt.Fprintln(Stdout, "Done.")
+	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Please run `deisctl start mesos` to restart Mesos.")
 	return nil
 }
 
-func stopMesosServices(b backend.Backend, wg *sync.WaitGroup, outchan chan string, errchan chan error) {
+func stopMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	outchan <- fmt.Sprintf("Marathon Framework...")
-	b.Stop([]string{"mesos-marathon"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Marathon Framwork...")
+	b.Stop([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Slave...")
-	b.Stop([]string{"mesos-slave"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Slave...")
+	b.Stop([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Mesos Master...")
-	b.Stop([]string{"mesos-master"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Mesos Master...")
+	b.Stop([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
 
-	outchan <- fmt.Sprintf("Zookeeper...")
-	b.Stop([]string{"zookeeper"}, wg, outchan, errchan)
+	fmt.Fprintln(out, "Zookeeper...")
+	b.Stop([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 }
