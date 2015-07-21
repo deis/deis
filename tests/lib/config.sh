@@ -1,0 +1,4 @@
+PROVIDER_DIR="${RERUN_MODULE_DIR}/options/provider"
+BIN_DIR="${RERUN_MODULE_DIR}/bin"
+DEIS_ROOT="${RERUN_MODULE_DIR}/../"
+TEST_ROOT="/tmp/deis-tests"
