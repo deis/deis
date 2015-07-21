@@ -3,15 +3,28 @@ package client
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os/exec"
 	"strings"
 )
 
 // CreateRemote adds a git remote in the current directory.
 func (c Client) CreateRemote(remote, appID string) error {
-	_, err := exec.Command("git", "remote", "add", remote, c.RemoteURL(appID)).Output()
+	cmd := exec.Command("git", "remote", "add", remote, c.RemoteURL(appID))
+	stderr, err := cmd.StderrPipe()
 
 	if err != nil {
+		return err
+	}
+
+	if err = cmd.Start(); err != nil {
+		return err
+	}
+
+	output, _ := ioutil.ReadAll(stderr)
+	fmt.Print(string(output))
+
+	if err := cmd.Wait(); err != nil {
 		return err
 	}
 
