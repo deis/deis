@@ -93,6 +93,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Tags(argv)
 	case "keys":
 		err = parser.Keys(argv)
+	case "perms":
+		err = parser.Perms(argv)
 	case "git":
 		err = parser.Git(argv)
 	case "users":
