@@ -28,7 +28,24 @@ setting                                  description
 
 Settings used by logger
 -------------------------
-The logger component uses no keys from etcd.
+The following etcd keys are used by the logger component.
+
+====================================      ======================================================
+setting                                   description
+====================================      ======================================================
+/deis/logs/handlertype                    Type of handler 'standard' or 'ringbuffer'
+====================================      ======================================================
+
+In memory ring buffer
+-----------------------
+In case of cephless clusters logger can store some logs in memory.
+To enable ring buffer logger mode set /deis/logs/handlertype to 'ringbuffer'
+
+By default logger will try to write all logs to file system (ceph mount),
+in case of ring buffer logger store by default 1000 lines of log for each appication in own memory.
+
+Also logger will start web service on 8088 port which uses controller to handle
+user requests for application logs.
 
 Using a custom logger image
 ---------------------------

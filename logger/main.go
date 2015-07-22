@@ -32,6 +32,9 @@ func init() {
 	flag.IntVar(&logPort, "log-port", 514, "bind port for the logger")
 	flag.StringVar(&drainURI, "drain-uri", "", "default drainURI, once set in etcd, this has no effect.")
 	flag.StringVar(&syslogd.LogRoot, "log-root", "/data/logs", "log path to store logs")
+	flag.StringVar(&syslogd.HandlerType, "handler-type", "standard", "Syslog handler type, 'standard' or 'ringbuffer'")
+	flag.IntVar(&syslogd.RingBufferSize, "ring-buffer-size", 1000, "Size of log buffer for each application")
+	flag.IntVar(&syslogd.WebServicePort, "web-service-port", 8088, "Port of web service where controller can get applications logs")
 	flag.BoolVar(&enablePublish, "enable-publish", false, "enable publishing to service discovery")
 	flag.StringVar(&publishHost, "publish-host", getopt("HOST", "127.0.0.1"), "service discovery hostname")
 	flag.IntVar(&publishInterval, "publish-interval", 10, "publish interval in seconds")
@@ -54,6 +57,13 @@ func main() {
 	// ensure the drain key exists in etcd.
 	if _, err := client.Get(publishPath+"/drain", false, false); err != nil {
 		setEtcd(client, publishPath+"/drain", drainURI, 0)
+	}
+
+	// get handler type from etcd if it exist
+	if resp, err := client.Get(publishPath+"/handlertype", false, false); err == nil {
+		if resp != nil && resp.Node != nil {
+			syslogd.HandlerType = fmt.Sprint(resp.Node.Value)
+		}
 	}
 
 	go syslogd.Listen(exitChan, cleanupChan, drainChan, fmt.Sprintf("%s:%d", logAddr, logPort))
