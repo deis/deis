@@ -1,7 +1,8 @@
 [Unit]
 Description=deis-publisher
-Requires=docker.socket etcd2.service
-After=docker.socket etcd2.service
+Requires=docker.socket
+RequiresOverridable=etcd2.service etcd.service
+After=docker.socket etcd2.service etcd.service
 
 [Service]
 EnvironmentFile=/etc/environment
