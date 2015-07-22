@@ -18,7 +18,7 @@ install, and start **deis/database**.
 * **BUCKET_NAME** store component bucket used for database WAL logs and backups (default: db_wal)
 * **DEBUG** enables verbose output if set
 * **ETCD_PORT** sets the TCP port on which to connect to the local etcd
-  daemon (default: *4001*)
+  daemon (default: *2379*)
 * **ETCD_PATH** sets the etcd directory where the database announces
   its configuration (default: */deis/database*)
 * **ETCD_TTL** sets the time-to-live before etcd purges a configuration

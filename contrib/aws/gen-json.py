@@ -59,7 +59,7 @@ PREPARE_ETCD_DATA_DIRECTORY = '''
   Description=Prepares the etcd data directory
   Requires=media-etcd.mount
   After=media-etcd.mount
-  Before=etcd.service
+  Before=etcd2.service
   [Service]
   Type=oneshot
   RemainAfterExit=yes
@@ -78,7 +78,7 @@ new_units = [
   dict({'name': 'format-etcd-volume.service', 'command': 'start', 'content': FORMAT_ETCD_VOLUME}),
   dict({'name': 'media-etcd.mount', 'command': 'start', 'content': MOUNT_ETCD_VOLUME}),
   dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}),
-  dict({'name': 'etcd.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
+  dict({'name': 'etcd2.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
 ]
 
 data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
@@ -87,11 +87,12 @@ data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
 # are started
 data['coreos']['units'] = new_units + data['coreos']['units']
 
-# configure etcd to use its EBS volume
-data['coreos']['etcd']['data-dir'] = '/media/etcd'
-
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
+
+# configure etcd to use its EBS volume
+dump = dump.replace('-data-dir /var/lib/etcd2', '-data-dir /media/etcd')
+dump = dump.replace('--volume=/var/lib/etcd2', '--volume=/media/etcd')
 
 template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'),'r'))
 

@@ -17,7 +17,7 @@ install, and start **deis/registry**.
 
 * **DEBUG** enables verbose output if set
 * **ETCD_PORT** sets the TCP port on which to connect to the local etcd
-  daemon (default: *4001*)
+  daemon (default: *2379*)
 * **ETCD_PATH** sets the etcd directory where the registry announces
   its configuration (default: */deis/registry*)
 * **ETCD_TTL** sets the time-to-live before etcd purges a configuration

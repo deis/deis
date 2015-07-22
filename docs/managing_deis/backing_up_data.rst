@@ -205,7 +205,7 @@ use in the ``export`` command should correspond to the IP of the host machine wh
 
     $ nse deis-controller
     $ cd /app
-    $ export ETCD=172.17.8.100:4001
+    $ export ETCD=172.17.8.100:2379
     ./manage.py shell <<EOF
     from api.models import *
     [k.save() for k in Key.objects.all()]

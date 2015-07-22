@@ -26,7 +26,7 @@ const (
 func main() {
 	host := getopt("HOST", "127.0.0.1")
 
-	etcdPort := getopt("ETCD_PORT", "4001")
+	etcdPort := getopt("ETCD_PORT", "2379")
 	etcdPath := getopt("ETCD_PATH", "/deis/cache")
 
 	externalPort := getopt("EXTERNAL_PORT", "6379")

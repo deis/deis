@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ETCD_PORT=${ETCD_PORT:-4001}
+ETCD_PORT=${ETCD_PORT:-2379}
 ETCD="$HOST:$ETCD_PORT"
 ETCDCTL="etcdctl -C $ETCD"
 

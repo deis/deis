@@ -17,7 +17,7 @@ install, and start **deis/cache**.
 
 * **DEBUG** enables verbose output if set
 * **ETCD_PORT** sets the TCP port on which to connect to the local etcd
-  daemon (default: *4001*)
+  daemon (default: *2379*)
 * **ETCD_PATH** sets the etcd directory where the cache announces its
   configuration (default: */deis/cache*)
 * **PORT** sets the TCP port on which the cache listens (default: *6379*)
