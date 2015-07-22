@@ -1,4 +1,4 @@
-FROM deis/mesos-template:#VERSION#
+FROM #PREFIX#mesos-template:#VERSION#
 
 COPY bin/master-boot /app/bin/boot
 
