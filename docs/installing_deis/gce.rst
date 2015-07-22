@@ -115,8 +115,8 @@ Launch 3 instances. You can choose another starting CoreOS image from the listin
       gcloud compute instances create core${num} \
       --zone us-central1-c \
       --machine-type n1-standard-2 \
-      --metadata-from-file user-data=gce-user-data sshKeys=~/.ssh/deis.pub \
-      --disk name=cored${num} device-name=coredocker \
+      --metadata-from-file user-data=gce-user-data,sshKeys=$HOME/.ssh/deis.pub \
+      --disk name=cored${num},device-name=coredocker \
       --tags deis \
       --image coreos-stable-647-2-0-v20150528 \
       --image-project coreos-cloud;
@@ -142,7 +142,7 @@ We will need to load balance the Deis routers so we can get to Deis services (co
 
     $ gcloud compute http-health-checks create basic-check --request-path /health-check
     $ gcloud compute target-pools create deis --health-check basic-check --session-affinity CLIENT_IP_PROTO --region us-central1
-    $ gcloud compute target-pools add-instances deis --instances core1 core2 core3
+    $ gcloud compute target-pools add-instances deis --instances core1,core2,core3
     $ gcloud compute forwarding-rules create deisapp --target-pool deis --region us-central1
 
     NAME    REGION      IP_ADDRESS     IP_PROTOCOL TARGET
@@ -152,7 +152,7 @@ Note the forwarding rule external IP address. We will use it as the Deis login e
 
 .. code-block:: console
 
-    $ gcloud compute firewall-rules create deis-router --target-tags deis --allow tcp:80 tcp:443 tcp:2222
+    $ gcloud compute firewall-rules create deis-router --target-tags deis --allow tcp:80,tcp:443,tcp:2222
 
 
 Configure DNS
@@ -163,7 +163,7 @@ be using the domain name `deisdemo.io`. Create the zone:
 
 .. code-block:: console
 
-    $ gcloud dns managed-zone create --dns_name deisdemo.io. --description "Example Deis cluster domain name" deisdemoio
+    $ gcloud dns managed-zones create --dns-name deisdemo.io. --description "Example Deis cluster domain name" deisdemoio
     Creating {'dnsName': 'deisdemo.io.', 'name': 'deisdemoio', 'description':
     'Example Deis cluster domain name'} in eco-theater-654
 
@@ -184,85 +184,72 @@ be using the domain name `deisdemo.io`. Create the zone:
         ]
     }
 
-Note the `nameServers` array from the JSON output. We will need to setup our upstream domain name
+Note the `nameServers` array from the output. We will need to setup our upstream domain name
 servers to these.
 
 Now edit the zone to add the Deis endpoint and wildcard DNS:
 
 .. code-block:: console
 
-    $ gcloud dns records --zone deisdemoio edit
-    {
-        "additions": [
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "deisdemo.io.",
-                "rrdatas": [
-                    "ns-cloud-d1.googledomains.com. dns-admin.google.com. 2 21600 3600 1209600 300"
-                ],
-                "ttl": 21600,
-                "type": "SOA"
-            }
-        ],
-        "deletions": [
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "deisdemo.io.",
-                "rrdatas": [
-                    "ns-cloud-d1.googledomains.com. dns-admin.google.com. 1 21600 3600 1209600 300"
-                ],
-                "ttl": 21600,
-                "type": "SOA"
-            }
-        ]
-    }
+    $ gcloud dns record-sets --zone deisdemoio transaction start
 
-You will want to add two records as JSON objects. Here is an example edit for the two A record additions:
+This exports a `transaction.yaml` file.
 
 .. code-block:: console
 
-    {
-        "additions": [
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "deisdemo.io.",
-                "rrdatas": [
-                    "ns-cloud-d1.googledomains.com. dns-admin.google.com. 2 21600 3600 1209600 300"
-                ],
-                "ttl": 21600,
-                "type": "SOA"
-            },
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "deis.deisdemo.io.",
-                "rrdatas": [
-                    "23.251.153.6"
-                ],
-                "ttl": 21600,
-                "type": "A"
-            },
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "*.dev.deisdemo.io.",
-                "rrdatas": [
-                    "23.251.153.6"
-                ],
-                "ttl": 21600,
-                "type": "A"
-            }
-        ],
-        "deletions": [
-            {
-                "kind": "dns#resourceRecordSet",
-                "name": "deisdemo.io.",
-                "rrdatas": [
-                    "ns-cloud-d1.googledomains.com. dns-admin.google.com. 1 21600 3600 1209600 300"
-                ],
-                "ttl": 21600,
-                "type": "SOA"
-            }
-        ]
-    }
+    ---
+    additions:
+    - kind: dns#resourceRecordSet
+      name: deisdemo.io.
+      rrdatas:
+      - ns-cloud1.googledomains.com. dns-admin.google.com. 1 21600 3600 1209600 300
+      ttl: 21600
+      type: SOA
+    deletions:
+    - kind: dns#resourceRecordSet
+      name: deisdemo.io.
+      rrdatas:
+      - ns-cloud1.googledomains.com. dns-admin.google.com. 0 21600 3600 1209600 300
+      ttl: 21600
+      type: SOA
+
+You will want to add two records as YAML objects. Here is an example edit for the two A record additions:
+
+.. code-block:: console
+
+    ---
+    additions:
+    - kind: dns#resourceRecordSet
+      name: deisdemo.io.
+      rrdatas:
+      - ns-cloud1.googledomains.com. dns-admin.google.com. 1 21600 3600 1209600 300
+      ttl: 21600
+      type: SOA
+    - kind: dns#resourceRecordSet
+      name: deis.deisdemo.io.
+      rrdatas:
+      - 23.251.153.6
+      ttl: 21600
+      type: A
+    - kind: dns#resourceRecordSet
+      name: *.dev.deisdemo.io.
+      rrdatas:
+      - 23.251.153.6
+      ttl: 21600
+      type: A
+    deletions:
+    - kind: dns#resourceRecordSet
+      name: deisdemo.io.
+      rrdatas:
+      - ns-cloud1.googledomains.com. dns-admin.google.com. 0 21600 3600 1209600 300
+      ttl: 21600
+      type: SOA
+
+And finaly execute the transaction.
+
+.. code-block:: console
+
+    $ gcloud dns record-sets --zone deisdemoio transaction execute
 
 
 Install Deis Platform
