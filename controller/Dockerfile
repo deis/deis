@@ -1,7 +1,5 @@
 FROM alpine:3.1
 
-ENV DEBIAN_FRONTEND noninteractive
-
 # install common packages
 RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
 

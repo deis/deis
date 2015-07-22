@@ -1,5 +1,6 @@
 FROM deis/mesos-template:#VERSION#
 
+ENV DEBIAN_FRONTEND noninteractive
 ENV MARATHON_VERSION=#MARATHON_VERSION#
 
 COPY build-marathon-jar.sh /tmp/build.sh
