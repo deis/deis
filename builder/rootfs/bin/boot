@@ -119,6 +119,12 @@ function gen_host_keys {
 
 gen_host_keys
 
+# wait until confd generates the push-images script
+while [[ ! -e /usr/local/bin/push-images ]]; do
+	echo "waiting for confd to generate '/usr/local/bin/push-images'..."
+	sleep 1
+done
+
 # start an SSH daemon to process `git push` requests
 /usr/sbin/sshd -D -e &
 SSHD_PID=$!
