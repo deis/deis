@@ -73,7 +73,7 @@ PREPARE_ETCD_DATA_DIRECTORY = '''
   Description=Prepares the etcd data directory
   Requires=media-etcd.mount
   After=media-etcd.mount
-  Before=etcd2.service
+  Before=etcd.service
   [Service]
   Type=oneshot
   RemainAfterExit=yes

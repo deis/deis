@@ -9,8 +9,6 @@ coreos:
     etcd_request_timeout: 3.0
   units:
   - name: etcd.service
-    mask: true
-  - name: etcd2.service
     command: start
     content: |
       [Unit]
@@ -50,6 +48,8 @@ coreos:
         --election-timeout ${ETCD_ELECTION_TIMEOUT} \
         --discovery #DISCOVERY_URL
       ExecStop=-/usr/bin/docker stop $ETCD_NAME
+  - name: etcd2.service
+    mask: true
   - name: docker-tcp.socket
     command: start
     enable: true
@@ -78,8 +78,8 @@ coreos:
       [Unit]
       Description=Clean up
       DefaultDependencies=no
-      After=fleet.service etcd2.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
-      Requires=fleet.service etcd2.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
+      After=fleet.service etcd.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
+      Requires=fleet.service etcd.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
 
       [Install]
       WantedBy=shutdown.target halt.target reboot.target
