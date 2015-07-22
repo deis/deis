@@ -115,7 +115,7 @@ Launch 3 instances. You can choose another starting CoreOS image from the listin
       gcloud compute instances create core${num} \
       --zone us-central1-c \
       --machine-type n1-standard-2 \
-      --metadata-from-file user-data=gce-user-data,sshKeys=~/.ssh/deis.pub \
+      --metadata-from-file user-data=gce-user-data,sshKeys=$HOME/.ssh/deis.pub \
       --disk name=cored${num},device-name=coredocker \
       --tags deis \
       --image coreos-stable-647-2-0-v20150528 \
