@@ -2,9 +2,7 @@ include ../includes.mk
 
 REPO = deis
 MESOS = 0.22.1-1.0.ubuntu1404
-MESOS_VERSION = v1.9.0
 ZOOKEEPER_VERSION = 3.5.0
-
 MARATHON_VERSION = 0.8.2-RC3
 
 repo_path = github.com/deis/deis/mesos
@@ -86,21 +84,21 @@ mesos-go: setup-gotools
 
 mesos-template:
 	sed "s/#VERSION#/$(MESOS)/g" template > Dockerfile
-	docker build -t $(IMAGE_PREFIX)$@:$(MESOS_VERSION) .
+	docker build -t $(IMAGE_PREFIX)$@:$(BUILD_TAG) .
 	rm -f Dockerfile
 
 mesos-master: mesos-go mesos-template
-	sed "s/#VERSION#/$(MESOS_VERSION)/g" master > Dockerfile
+	sed "s@#PREFIX#@$(IMAGE_PREFIX)@;s/#VERSION#/$(BUILD_TAG)/g" master > Dockerfile
 	docker build -t $(IMAGE_PREFIX)$@:$(BUILD_TAG) .
 	rm -f Dockerfile
 
 mesos-slave: mesos-go mesos-template
-	sed "s/#VERSION#/$(MESOS_VERSION)/g" slave > Dockerfile
+	sed "s@#PREFIX#@$(IMAGE_PREFIX)@;s/#VERSION#/$(BUILD_TAG)/g" slave > Dockerfile
 	docker build -t $(IMAGE_PREFIX)$@:$(BUILD_TAG) .
 	rm -f Dockerfile
 
 build-mesos-marathon: mesos-template
-	sed "s/#MARATHON_VERSION#/$(MARATHON_VERSION)/;s/#VERSION#/$(MESOS_VERSION)/" build-marathon > Dockerfile
+	sed "s/#MARATHON_VERSION#/$(MARATHON_VERSION)/;s@#PREFIX#@$(IMAGE_PREFIX)@;s/#VERSION#/$(BUILD_TAG)/g" build-marathon > Dockerfile
 	docker build -t $(IMAGE_PREFIX)$@:$(BUILD_TAG) .
 	rm -f Dockerfile
 
@@ -108,7 +106,7 @@ mesos-marathon: mesos-go build-mesos-marathon
 	cp marathon Dockerfile
 	docker cp `docker create $(IMAGE_PREFIX)build-mesos-marathon:$(BUILD_TAG) /bin/bash`:/marathon/target/marathon-assembly-$(MARATHON_VERSION).jar .
 	mv marathon-assembly-$(MARATHON_VERSION).jar marathon-assembly.jar
-	sed "s/#MARATHON_VERSION#/$(MARATHON_VERSION)/;s/#VERSION#/$(MESOS_VERSION)/" marathon > Dockerfile
+	sed "s/#MARATHON_VERSION#/$(MARATHON_VERSION)/;s@#PREFIX#@$(IMAGE_PREFIX)@;s/#VERSION#/$(BUILD_TAG)/" marathon > Dockerfile
 	docker build -t $(IMAGE_PREFIX)$@:$(BUILD_TAG) .
 	rm -f Dockerfile
 

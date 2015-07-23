@@ -1,4 +1,4 @@
-FROM deis/mesos-template:#VERSION#
+FROM #PREFIX#mesos-template:#VERSION#
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV MARATHON_VERSION=#MARATHON_VERSION#

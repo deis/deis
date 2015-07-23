@@ -5,3 +5,5 @@ ENV DEBIAN_FRONTEND noninteractive
 COPY build-mesos.sh /tmp/build.sh
 
 RUN DOCKER_BUILD=true MESOS="#VERSION#" /tmp/build.sh
+
+ENV DEIS_RELEASE 1.9.0-dev
