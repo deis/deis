@@ -14,7 +14,6 @@ BUILD_IMAGE = $(COMPONENT)-build
 BINARY_DEST_DIR = image/bin
 
 build: check-docker
-	cp -pR ../Godeps .
 	docker build -t $(BUILD_IMAGE) .
 	docker cp `docker run -d $(BUILD_IMAGE) /bin/bash`:/nginx.tgz image/
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix -v -ldflags '-s' -o $(BINARY_DEST_DIR)/boot boot.go || exit 1
@@ -24,7 +23,6 @@ build: check-docker
 	rm image/bin/boot
 
 clean: check-docker check-registry
-	rm -rf Godeps
 	docker rmi $(IMAGE)
 
 full-clean: check-docker check-registry
