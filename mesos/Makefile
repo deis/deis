@@ -77,9 +77,12 @@ setup-gotools:
 
 mesos-go: setup-gotools
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o bin/master-boot pkg/boot/mesos/master/main.go
+	@$(call check-static-binary,bin/master-boot)
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o bin/slave-boot pkg/boot/mesos/slave/main.go
+	@$(call check-static-binary,bin/slave-boot)
 	go-bindata -pkg bindata -o bindata/marathon/bindata.go pkg/boot/mesos/marathon/bash/; \
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o bin/marathon-boot pkg/boot/mesos/marathon/main.go
+	@$(call check-static-binary,bin/marathon-boot)
 
 mesos-template:
 	sed "s/#VERSION#/$(MESOS)/g" template > Dockerfile
@@ -116,6 +119,7 @@ zookeeper-go:
 	echo "Building..."
 	go-bindata -pkg bindata -o bindata/zookeeper/bindata.go pkg/boot/zookeeper/bash/; \
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o zookeeper/bin/boot pkg/boot/zookeeper/main/boot.go
+	@$(call check-static-binary,zookeeper/bin/boot)
 
 test: mesos-go zookeeper-go
 	@$(GOFMT) -timeout 10s $(GO_PACKAGES)
