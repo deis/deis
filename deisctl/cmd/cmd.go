@@ -28,8 +28,8 @@ const (
 	swarm                    string = "swarm"
 	mesos                    string = "mesos"
 	// DefaultRouterMeshSize defines the default number of routers to be loaded when installing the platform.
-	DefaultRouterMeshSize uint8 = 3
-	k8s                      string = "k8s"
+	DefaultRouterMeshSize uint8  = 3
+	k8s                   string = "k8s"
 )
 
 // ListUnits prints a list of installed units.
@@ -85,8 +85,7 @@ func Start(targets []string, b backend.Backend) error {
 			return StartMesos(b)
 		case swarm:
 			return StartSwarm(b)
-		}
-		if targets[0] == k8s {
+		case k8s:
 			return StartK8s(b)
 		}
 	}
@@ -189,8 +188,7 @@ func Stop(targets []string, b backend.Backend) error {
 			return StopMesos(b)
 		case swarm:
 			return StopSwarm(b)
-		}
-		if targets[0] == k8s {
+		case k8s:
 			return StopK8s(b)
 		}
 	}
@@ -291,8 +289,7 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 			return InstallMesos(b)
 		case swarm:
 			return InstallSwarm(b)
-		}
-		if targets[0] == k8s {
+		case k8s:
 			return InstallK8s(b)
 		}
 	}
@@ -360,8 +357,7 @@ func Uninstall(targets []string, b backend.Backend) error {
 			return UninstallMesos(b)
 		case swarm:
 			return UnInstallSwarm(b)
-		}
-		if targets[0] == k8s {
+		case k8s:
 			return UnInstallK8s(b)
 		}
 	}

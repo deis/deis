@@ -23,6 +23,11 @@ var Names = []string{
 	"deis-mesos-master",
 	"deis-mesos-slave",
 	"deis-zookeeper",
+	"deis-kube-apiserver",
+	"deis-kube-controller-manager",
+	"deis-kube-kubelet",
+	"deis-kube-proxy",
+	"deis-kube-scheduler",
 }
 
 // URL is the GitHub url where these units can be refreshed from

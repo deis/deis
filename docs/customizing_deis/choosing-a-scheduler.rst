@@ -132,10 +132,10 @@ Kubernetes Scheduler
 
 `Kubernetes`_ orchestration system for docker containers:
 
-    Kubernetes provides APIs to manage, deploy and scale docker containers. Kubernetes deploys docker containers as `PODS`_,
-    unique entity across a cluster. Containers inside a POD share the same namespaces. More information about `PODS`_.
+    Kubernetes provides APIs to manage, deploy and scale docker containers. Kubernetes deploys docker containers as `pods`_,
+    unique entity across a cluster. Containers inside a pod share the same namespaces. More information about `pods`_.
 
-To run kubernetes on CoreOS requires `flannel`_ which provides subnet to each host for use with containers runtimes.
+Kubernetes requires overlay network so that each pod can get a unique IP across the cluster which is achieved by using `flannel`_.
 Deis repository provides a new user-data file to bootstrap CoreOs machines on the cluster with flannel.
 
 To test the Kubernetes Scheduler, first install and start the kubernetes components:
@@ -151,10 +151,11 @@ Then set the controller's ``schedulerModule`` to "k8s":
     $ deisctl config controller set schedulerModule=k8s
 
 The Kubernetes scheduler is now active. Commands such as ``deis destroy`` or
-``deis scale web=9`` will use kubernetes ApiServer to manage app PODS.
+``deis scale web=9`` will use kubernetes ApiServer to manage app pods.
 
-For each App deis creates a replication controller which manages application PODS and a kubernetes service which acts as a proxy and routes traffic to the PODS associated with the App. A new release uses rolling deploy mechanism. If you are using
-kubernetes scheduler for Deis you can avoid publisher component.
+Deis creates a `replication controller`_ to manage pods and a `service`_ which acts as a proxy and routes traffic to the pods associated with the App.
+A new release uses rolling deploy mechanism where in we create and replace the pod with the new release one by one until all the pods are replaced properly or rollback to the older release
+if any error occurs which differs from the existing schedulers where we create all the containers at a time and replace them with the old ones.
 
 .. note::
 
@@ -224,7 +225,9 @@ Deis starts Marathon on port 8180. You can manage apps through the Marathon UI, 
 .. _Kubernetes: http://kubernetes.io/
 .. _Mesos: http://mesos.apache.org
 .. _Marathon: https://github.com/mesosphere/marathon
-.. _PODS: https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/user-guide/pods.md
+.. _pods: https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/user-guide/pods.md
+.. _replication controller: https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/user-guide/replication-controller.md
+.. _service: https://github.com/GoogleCloudPlatform/kubernetes/blob/master/docs/user-guide/services.md
 .. _flannel: https://github.com/coreos/flannel
 .. _fleet: https://github.com/coreos/fleet#fleet---a-distributed-init-system
 .. _swarm: https://github.com/docker/swarm#swarm-a-docker-native-clustering-system
