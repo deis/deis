@@ -42,7 +42,6 @@ logspout/image/logspout
 logspout/Godeps/
 publisher/Godeps/
 publisher/image/bin/publisher
-router/Godeps/
 swarm/image/bin/
 mesos/**/bin/
 mesos/**/bindata/
