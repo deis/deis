@@ -1,7 +1,21 @@
 #!/usr/bin/env python
+import argparse
 import json
 import os
+import urllib
 import yaml
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--channel', help='the CoreOS channel to use', default='stable')
+parser.add_argument('--version', help='the CoreOS version to use', default='current')
+args = vars(parser.parse_args())
+
+url = "http://{channel}.release.core-os.net/amd64-usr/{version}/coreos_production_ami_all.json".format(**args)
+try:
+    amis = json.load(urllib.urlopen(url))
+except (IOError, ValueError):
+    print "The URL {} is invalid.".format(url)
+    raise
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -72,13 +86,13 @@ ETCD_DROPIN = '''
 '''
 
 new_units = [
-  dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
-  dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME}),
-  dict({'name': 'docker.service', 'drop-ins': [{'name': '90-after-docker-volume.conf', 'content': DOCKER_DROPIN}]}),
-  dict({'name': 'format-etcd-volume.service', 'command': 'start', 'content': FORMAT_ETCD_VOLUME}),
-  dict({'name': 'media-etcd.mount', 'command': 'start', 'content': MOUNT_ETCD_VOLUME}),
-  dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}),
-  dict({'name': 'etcd.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
+    dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
+    dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME}),
+    dict({'name': 'docker.service', 'drop-ins': [{'name': '90-after-docker-volume.conf', 'content': DOCKER_DROPIN}]}),
+    dict({'name': 'format-etcd-volume.service', 'command': 'start', 'content': FORMAT_ETCD_VOLUME}),
+    dict({'name': 'media-etcd.mount', 'command': 'start', 'content': MOUNT_ETCD_VOLUME}),
+    dict({'name': 'prepare-etcd-data-directory.service', 'command': 'start', 'content': PREPARE_ETCD_DATA_DIRECTORY}),
+    dict({'name': 'etcd.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
 ]
 
 data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
@@ -93,10 +107,11 @@ data['coreos']['etcd']['data-dir'] = '/media/etcd'
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
 
-template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'),'r'))
+template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
-template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = [ "\n", header + dump.split("\n") ]
+template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = ["\n", header + dump.split("\n")]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
+template['Mappings']['CoreOSAMIs'] = dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
 
 VPC_ID = os.getenv('VPC_ID', None)
 VPC_SUBNETS = os.getenv('VPC_SUBNETS', None)
@@ -104,26 +119,26 @@ VPC_PRIVATE_SUBNETS = os.getenv('VPC_PRIVATE_SUBNETS', VPC_SUBNETS)
 VPC_ZONES = os.getenv('VPC_ZONES', None)
 
 if VPC_ID and VPC_SUBNETS and VPC_ZONES and len(VPC_SUBNETS.split(',')) == len(VPC_ZONES.split(',')):
-  # skip VPC, subnet, route, and internet gateway creation
-  del template['Resources']['VPC']
-  del template['Resources']['Subnet1']
-  del template['Resources']['Subnet2']
-  del template['Resources']['Subnet1RouteTableAssociation']
-  del template['Resources']['Subnet2RouteTableAssociation']
-  del template['Resources']['InternetGateway']
-  del template['Resources']['GatewayToInternet']
-  del template['Resources']['PublicRouteTable']
-  del template['Resources']['PublicRoute']
-  del template['Resources']['CoreOSServerLaunchConfig']['DependsOn']
-  del template['Resources']['DeisWebELB']['DependsOn']
+    # skip VPC, subnet, route, and internet gateway creation
+    del template['Resources']['VPC']
+    del template['Resources']['Subnet1']
+    del template['Resources']['Subnet2']
+    del template['Resources']['Subnet1RouteTableAssociation']
+    del template['Resources']['Subnet2RouteTableAssociation']
+    del template['Resources']['InternetGateway']
+    del template['Resources']['GatewayToInternet']
+    del template['Resources']['PublicRouteTable']
+    del template['Resources']['PublicRoute']
+    del template['Resources']['CoreOSServerLaunchConfig']['DependsOn']
+    del template['Resources']['DeisWebELB']['DependsOn']
 
-  # update VpcId fields
-  template['Resources']['DeisWebELBSecurityGroup']['Properties']['VpcId'] = VPC_ID
-  template['Resources']['VPCSecurityGroup']['Properties']['VpcId'] = VPC_ID
+    # update VpcId fields
+    template['Resources']['DeisWebELBSecurityGroup']['Properties']['VpcId'] = VPC_ID
+    template['Resources']['VPCSecurityGroup']['Properties']['VpcId'] = VPC_ID
 
-  # update subnets and zones
-  template['Resources']['CoreOSServerAutoScale']['Properties']['AvailabilityZones'] = VPC_ZONES.split(',')
-  template['Resources']['CoreOSServerAutoScale']['Properties']['VPCZoneIdentifier'] = VPC_PRIVATE_SUBNETS.split(',')
-  template['Resources']['DeisWebELB']['Properties']['Subnets'] = VPC_SUBNETS.split(',')
+    # update subnets and zones
+    template['Resources']['CoreOSServerAutoScale']['Properties']['AvailabilityZones'] = VPC_ZONES.split(',')
+    template['Resources']['CoreOSServerAutoScale']['Properties']['VPCZoneIdentifier'] = VPC_PRIVATE_SUBNETS.split(',')
+    template['Resources']['DeisWebELB']['Properties']['Subnets'] = VPC_SUBNETS.split(',')
 
 print json.dumps(template)
