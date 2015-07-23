@@ -114,7 +114,7 @@ class ConfigTest(TransactionTestCase):
         response = self.client.post('/v1/apps', json.dumps(body),
                                     content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        url = "/v1/apps/test/config".format()
+        url = "/v1/apps/test/config"
         # set an initial config value
         body = {'values': json.dumps({'PORT': '5000'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -131,6 +131,38 @@ class ConfigTest(TransactionTestCase):
             'tags': {}
         }
         self.assertDictContainsSubset(expected, response.data)
+
+    @mock.patch('requests.post', mock_import_repository_task)
+    def test_response_data_types_converted(self):
+        """Test that config data is converted into the correct type."""
+        body = {'id': 'test'}
+        response = self.client.post('/v1/apps', json.dumps(body),
+                                    content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = "/v1/apps/test/config"
+
+        body = {'values': json.dumps({'PORT': 5000}), 'cpu': json.dumps({'web': '1024'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        for key in response.data:
+            self.assertIn(key, ['uuid', 'owner', 'created', 'updated', 'app', 'values', 'memory',
+                                'cpu', 'tags'])
+        expected = {
+            'owner': self.user.username,
+            'app': 'test',
+            'values': {'PORT': '5000'},
+            'memory': {},
+            'cpu': {'web': 1024},
+            'tags': {}
+        }
+        self.assertDictContainsSubset(expected, response.data)
+
+        body = {'cpu': json.dumps({'web': 'this will fail'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('CPU shares must be an integer', response.data['cpu'])
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_set_same_key(self):
@@ -185,7 +217,7 @@ class ConfigTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         self.assertIn('INTEGER', response.data['values'])
-        self.assertEqual(response.data['values']['INTEGER'], 1)
+        self.assertEqual(response.data['values']['INTEGER'], '1')
 
     @mock.patch('requests.post', mock_import_repository_task)
     def test_config_str(self):
@@ -333,7 +365,7 @@ class ConfigTest(TransactionTestCase):
         self.assertIn('cpu', response.data)
         cpu = response.data['cpu']
         self.assertIn('web', cpu)
-        self.assertEqual(cpu['web'], '1024')
+        self.assertEqual(cpu['web'], 1024)
         # set an additional value
         body = {'cpu': json.dumps({'worker': '512'})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
@@ -343,9 +375,9 @@ class ConfigTest(TransactionTestCase):
         self.assertNotEqual(limit1['uuid'], limit2['uuid'])
         cpu = response.data['cpu']
         self.assertIn('worker', cpu)
-        self.assertEqual(cpu['worker'], '512')
+        self.assertEqual(cpu['worker'], 512)
         self.assertIn('web', cpu)
-        self.assertEqual(cpu['web'], '1024')
+        self.assertEqual(cpu['web'], 1024)
         # read the limit again
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
@@ -353,9 +385,9 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(limit2, limit3)
         cpu = response.data['cpu']
         self.assertIn('worker', cpu)
-        self.assertEqual(cpu['worker'], '512')
+        self.assertEqual(cpu['worker'], 512)
         self.assertIn('web', cpu)
-        self.assertEqual(cpu['web'], '1024')
+        self.assertEqual(cpu['web'], 1024)
         # unset a value
         body = {'memory': json.dumps({'worker': None})}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
