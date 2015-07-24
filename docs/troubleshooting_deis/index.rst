@@ -24,6 +24,33 @@ To open a interactive shell on a machine in your cluster:
 
     $ deisctl ssh <unit>
 
+For example, to open a shell session on the machine that is running Controller,
+you can run this:
+
+.. code-block:: console
+
+    $ deisctl ssh controller
+
+You can execute just a single command instead of opening a shell:
+
+.. code-block:: console
+
+    $ deisctl ssh <unit> <command>
+
+You can also connect directly to the Docker instance of that unit:
+
+.. code-block:: console
+
+    $ deisctl dock <unit> <command>
+
+For example, to start a Bash session on the Builder Docker container, you can
+run the following command:
+
+.. code-block:: console
+
+    $ deisctl dock builder bash`
+
+
 Troubleshooting etcd
 --------------------
 

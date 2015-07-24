@@ -12,6 +12,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/units"
 )
 
@@ -69,6 +70,14 @@ func (backend *backendStub) SSH(target string) error {
 	}
 	return errors.New("Error")
 }
+func (backend *backendStub) SSHExec(target, command string) error {
+	if target == "controller" && command == "sh" {
+		return nil
+	}
+	return errors.New("Error")
+}
+
+var _ backend.Backend = &backendStub{}
 
 func fakeCheckKeys() error {
 	return nil
@@ -332,7 +341,17 @@ func TestSSH(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
-	err := SSH("controller", &b)
+	err := SSH("controller", []string{}, &b)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
+func TestSSHExec(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	err := SSH("controller", []string{"sh"}, &b)
 
 	if err != nil {
 		t.Error(err)
@@ -343,7 +362,7 @@ func TestSSHError(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
-	err := SSH("registry", &b)
+	err := SSH("registry", []string{}, &b)
 
 	if err == nil {
 		t.Error("Error expected")

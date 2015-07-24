@@ -229,16 +229,45 @@ Usage:
 func (c *Client) SSH(argv []string) error {
 	usage := `Open an interactive shell on a machine in the cluster given a unit or machine id.
 
+If an optional <command> is provided, that command is run remotely, and the results returned.
+
 Usage:
-  deisctl ssh <target>
+  deisctl ssh <target> [<command>...]
 `
 	// parse command-line arguments
-	args, err := docopt.Parse(usage, argv, true, "", false)
+	args, err := docopt.Parse(usage, argv, true, "", true)
 	if err != nil {
 		return err
 	}
 
-	return cmd.SSH(args["<target>"].(string), c.Backend)
+	var vargs []string
+	if v, ok := args["<command>"]; ok {
+		vargs = v.([]string)
+	}
+
+	return cmd.SSH(args["<target>"].(string), vargs, c.Backend)
+}
+
+func (c *Client) Dock(argv []string) error {
+	usage := `Connect to the named docker container and run commands on it.
+
+This is equivalent to running 'docker exec -it <target> <command>'.
+
+Usage:
+  deisctl dock <target> [<command>...]
+`
+	// parse command-line arguments
+	args, err := docopt.Parse(usage, argv, true, "", true)
+	if err != nil {
+		return err
+	}
+
+	var vargs []string
+	if v, ok := args["<command>"]; ok {
+		vargs = v.([]string)
+	}
+
+	return cmd.Dock(args["<target>"].(string), vargs, c.Backend)
 }
 
 // Start activates the specified components.

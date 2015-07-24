@@ -451,10 +451,24 @@ func RefreshUnits(dir, tag, url string) error {
 }
 
 // SSH opens an interactive shell on a machine in the cluster
-func SSH(target string, b backend.Backend) error {
-	if err := b.SSH(target); err != nil {
-		return err
+func SSH(target string, cmd []string, b backend.Backend) error {
+
+	if len(cmd) > 0 {
+		return b.SSHExec(target, strings.Join(cmd, " "))
 	}
 
-	return nil
+	return b.SSH(target)
+}
+
+// Dock connects to the appropriate host and runs 'docker exec -it'.
+func Dock(target string, cmd []string, b backend.Backend) error {
+
+	c := "sh"
+	if len(cmd) > 0 {
+		c = strings.Join(cmd, " ")
+	}
+
+	execit := fmt.Sprintf("docker exec -it %s %s", target, c)
+
+	return b.SSHExec(target, execit)
 }

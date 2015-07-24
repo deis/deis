@@ -112,6 +112,8 @@ Options:
 		err = c.RefreshUnits(argv)
 	case "ssh":
 		err = c.SSH(argv)
+	case "dock":
+		err = c.Dock(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0
