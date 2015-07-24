@@ -7,6 +7,6 @@ ARGUMENTS=true
 REQUIRED=false
 SHORT=
 LONG=to
-DEFAULT=
+DEFAULT=master
 EXPORT=false
 

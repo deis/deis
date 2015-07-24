@@ -69,9 +69,6 @@ function deploy-deis {
   if is-released-version "${version}"; then
     deisctl config platform set version="v${version}"
   else
-    export DEV_REGISTRY="registry.hub.docker.com"
-    export IMAGE_PREFIX="deisci/"
-
     make build dev-release
   fi
 

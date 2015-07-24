@@ -7,6 +7,6 @@ ARGUMENTS=true
 REQUIRED=true
 SHORT=
 LONG=version
-DEFAULT=dev
+DEFAULT=master
 EXPORT=false
 
