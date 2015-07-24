@@ -79,7 +79,7 @@ trap destroy-cluster EXIT
 
 setup-provider-dependencies
 
-destroy-cluster
+destroy-cluster || true
 
 setup-clients "${FROM}"
 
