@@ -525,6 +525,9 @@ Make sure that the Controller URI is correct and the server is running.
 
         if args.get('--no-remote'):
             hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+            git_hostname = self._settings['git_hostname']
+            if git_hostname:
+                hostname = git_hostname
             git_remote = "ssh://git@{hostname}:2222/{app_id}.git".format(**locals())
             self._logger.info('remote available at {}'.format(git_remote))
         else:
@@ -762,6 +765,8 @@ Make sure that the Controller URI is correct and the server is running.
             provide an email address.
           --ssl-verify=false
             disables SSL certificate verification for API requests
+          --git-hostname=<git repository hostname>
+            provide git repository hostname if it differs from controller
         """
         controller = args['<controller>']
         ssl_verify = True
@@ -790,6 +795,11 @@ Make sure that the Controller URI is correct and the server is running.
         payload = {'username': username, 'password': password, 'email': email}
         headers = {}
 
+        git_hostname = None
+        git_option = args.get('--git-hostname')
+        if git_option:
+            git_hostname = git_option
+
         token = self._settings.get('token')
         if token:
             headers.update({'Authorization': 'token {}'.format(token)})
@@ -798,6 +808,8 @@ Make sure that the Controller URI is correct and the server is running.
                                       verify=ssl_verify, headers=headers)
         if response.status_code == requests.codes.created:
             self._settings['controller'] = controller
+            if git_hostname:
+                self._settings['git_hostname'] = git_hostname
             self._settings.save()
             self._logger.info("Registered {}".format(username))
             login_args = {'--username': username, '--password': password,
@@ -865,6 +877,9 @@ Make sure that the Controller URI is correct and the server is running.
             provide a password for the account.
           --ssl-verify=false
             disables SSL certificate verification for API requests
+          --git-hostname=<git repository hostname>
+            provide git repository hostname if it differs from controller
+
         """
         controller = args['<controller>']
         ssl_verify = True
@@ -873,6 +888,11 @@ Make sure that the Controller URI is correct and the server is running.
             ssl_verify = False
         if not urlparse.urlparse(controller).scheme:
             controller = "http://{}".format(controller)
+
+        git_hostname = None
+        git_option = args.get('--git-hostname')
+        if git_option:
+            git_hostname = git_option
 
         self.check_connection(controller, ssl_verify)
 
@@ -889,6 +909,8 @@ Make sure that the Controller URI is correct and the server is running.
                                       verify=ssl_verify)
         if response.status_code == requests.codes.ok:
             # retrieve and save the API token for future requests
+            if git_hostname:
+                self._settings['git_hostname'] = git_hostname
             self._settings['controller'] = controller
             self._settings['username'] = username
             self._settings['token'] = response.json()['token']
@@ -905,7 +927,7 @@ Make sure that the Controller URI is correct and the server is running.
 
         Usage: deis auth:logout
         """
-        for i in ['controller', 'username', 'token', 'ssl_verify']:
+        for i in ['controller', 'username', 'token', 'ssl_verify', 'git_hostname']:
             self._settings[i] = None
         self._settings.save()
         self._logger.info('Logged out')
@@ -1600,6 +1622,9 @@ Make sure that the Controller URI is correct and the server is running.
         Adds a git_remote to the current repository. Sets up a git root if necessary.
         """
         hostname = urlparse.urlparse(self._settings['controller']).netloc.split(':')[0]
+        git_hostname = self._settings['git_hostname']
+        if git_hostname:
+            hostname = git_hostname
         git_remote = "ssh://git@{hostname}:2222/{app}.git".format(**locals())
         try:
             self._session.git_root()
