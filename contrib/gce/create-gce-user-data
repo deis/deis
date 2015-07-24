@@ -62,14 +62,13 @@ def main():
     configuration = combine_dicts(configuration_coreos_template,
                                   configuration_gce_template)
 
-    configuration["coreos"]["etcd"]["discovery"] = url
+    dump = yaml.dump(configuration, default_flow_style=False,
+                     default_style='|')
+    dump = dump.replace('#DISCOVERY_URL', url)
 
     with gce_user_data as outfile:
         try:
-            outfile.write("#cloud-config\n\n" +
-                          yaml.safe_dump(configuration,
-                                         default_flow_style=False,
-                                         default_style='|'))
+            outfile.write("#cloud-config\n\n" + dump)
         except (IOError, ValueError):
             print "There was an issue writing to file " + gce_user_data.name
             return 1

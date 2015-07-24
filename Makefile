@@ -30,7 +30,7 @@ dev-cluster: discovery-url
 	deisctl install platform
 
 discovery-url:
-	sed -e "s,# discovery:,discovery:," -e "s,discovery: https://discovery.etcd.io/.*,discovery: $$(curl -s -w '\n' https://discovery.etcd.io/new)," contrib/coreos/user-data.example > contrib/coreos/user-data
+	sed -e "s,discovery #DISCOVERY_URL,discovery $$(curl -s -w '\n' https://discovery.etcd.io/new?size=$$DEIS_NUM_INSTANCES)," contrib/coreos/user-data.example > contrib/coreos/user-data
 
 build: check-docker
 	@$(foreach C, $(COMPONENTS), $(MAKE) -C $(C) build &&) echo done

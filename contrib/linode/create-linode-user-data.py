@@ -71,11 +71,13 @@ def main():
     configuration_coreos_template = yaml.safe_load(coreos_template)
 
     configuration = combine_dicts(configuration_coreos_template, configuration_linode_template)
-    configuration['coreos']['etcd']['discovery'] = 'https://discovery.etcd.io/' + str(etcd_token)
     configuration['ssh_authorized_keys'] = public_keys
 
+    dump = yaml.dump(configuration, default_flow_style=False, default_style='|')
+    dump = dump.replace('#DISCOVERY_URL', 'https://discovery.etcd.io/' + str(etcd_token))
+
     with linode_user_data as outfile:
-        outfile.write("#cloud-config\n\n" + yaml.safe_dump(configuration, default_flow_style=False, default_style='|'))
+        outfile.write("#cloud-config\n\n" + dump)
         log_success('Wrote Linode user data to ' + linode_user_data.name)
 
 

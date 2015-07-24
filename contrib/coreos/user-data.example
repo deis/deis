@@ -1,16 +1,6 @@
 #cloud-config
 ---
 coreos:
-  etcd:
-    # generate a new token for each unique cluster from https://discovery.etcd.io/new
-    # uncomment the following line and replace it with your discovery URL
-    # discovery: https://discovery.etcd.io/12345693838asdfasfadf13939923
-    addr: $private_ipv4:4001
-    peer-addr: $private_ipv4:7001
-    # give etcd more time if it's under heavy load - prevent leader election thrashing
-    peer-election-timeout: 2000
-    # heartbeat interval should ideally be 1/4 or 1/5 of peer election timeout
-    peer-heartbeat-interval: 500
   fleet:
     # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
     # will all publish the same private IP. This is harmless for cloud providers.
@@ -20,6 +10,46 @@ coreos:
   units:
   - name: etcd.service
     command: start
+    content: |
+      [Unit]
+      Description=etcd2 container
+      Requires=early-docker.service
+      After=early-docker.service
+      Before=early-docker.target
+
+      [Service]
+      User=etcd
+      PermissionsStartOnly=true
+      Restart=always
+      RestartSec=10s
+      LimitNOFILE=40000
+      EnvironmentFile=/etc/environment
+      Environment="ETCD_IMAGE=quay.io/coreos/etcd:v2.0.13"
+      Environment="ETCD_ELECTION_TIMEOUT=2000"
+      Environment="ETCD_HEARTBEAT_INTERVAL=400"
+      Environment="ETCD_DATA_DIR=/var/lib/etcd2"
+      Environment="ETCD_NAME=%m"
+      Environment="DOCKER_HOST=unix:///var/run/early-docker.sock"
+      ExecStartPre=/bin/sh -c "docker history $ETCD_IMAGE >/dev/null 2>&1 || docker pull $ETCD_IMAGE"
+      ExecStartPre=/bin/sh -c "docker inspect $ETCD_NAME >/dev/null 2>&1 && docker rm -f $ETCD_NAME || true"
+      ExecStart=/usr/bin/docker run --net=host --rm \
+        --volume=${ETCD_DATA_DIR}:/var/lib/etcd2 \
+        --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
+        -p 4001:4001 -p 2380:2380 -p 2379:2379 -p 7001:7001 \
+        --name ${ETCD_NAME} \
+        ${ETCD_IMAGE} \
+        -name ${ETCD_NAME} \
+        -data-dir /var/lib/etcd2 \
+        -advertise-client-urls http://${COREOS_PRIVATE_IPV4}:2379,http://${COREOS_PRIVATE_IPV4}:4001 \
+        -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
+        -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
+        -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
+        --heartbeat-interval ${ETCD_HEARTBEAT_INTERVAL} \
+        --election-timeout ${ETCD_ELECTION_TIMEOUT} \
+        --discovery #DISCOVERY_URL
+      ExecStop=-/usr/bin/docker stop $ETCD_NAME
+  - name: etcd2.service
+    mask: true
   - name: docker-tcp.socket
     command: start
     enable: true
@@ -244,9 +274,16 @@ write_files:
         /usr/bin/docker exec deis-store-admin ceph mon remove `hostname -f` # fixme
         /usr/bin/docker stop deis-store-metadata || true
       fi
-      NODE=$(curl -L http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`)
-      # remove from etcd cluster
-      if [ $NODE != 'null' ]; then
-        /usr/bin/curl -L -XDELETE http://127.0.0.1:7001/v2/admin/machines/`cat /etc/machine-id`
+
+      # TODO: remove the next check once etcdctl is using etcd2
+      ETCDCTL=/usr/bin/etcdctl
+      if ! $ETCDCTL --version | grep -q "etcdctl version 2.0."; then
+        ETCD_VERSION=2.0.13
+        curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
+          tar zxv -C /opt/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl --strip=1
+        ETCDCTL="/opt/bin/etcdctl"
       fi
+      # removing the node from etcd
+      NODE=$($ETCDCTL member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
+      $ETCDCTL member remove $NODE
 manage_etc_hosts: localhost

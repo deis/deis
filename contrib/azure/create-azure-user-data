@@ -62,11 +62,12 @@ def main():
     configuration = combine_dicts(configuration_coreos_template,
                                   configuration_azure_template)
 
-    configuration["coreos"]["etcd"]["discovery"] = url
+    dump = yaml.dump(configuration, default_flow_style=False)
+    dump = dump.replace('#DISCOVERY_URL', url)
 
     with azure_user_data as outfile:
         try:
-            outfile.write("#cloud-config\n\n" + yaml.dump(configuration, default_flow_style=False))
+            outfile.write("#cloud-config\n\n" + dump)
         except (IOError, ValueError):
             print "There was an issue writing to file " + azure_user_data.name
             return 1

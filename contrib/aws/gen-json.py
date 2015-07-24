@@ -101,11 +101,12 @@ data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
 # are started
 data['coreos']['units'] = new_units + data['coreos']['units']
 
-# configure etcd to use its EBS volume
-data['coreos']['etcd']['data-dir'] = '/media/etcd'
-
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
+
+# configure etcd to use its EBS volume
+dump = dump.replace('-data-dir /var/lib/etcd2', '-data-dir /media/etcd')
+dump = dump.replace('--volume=/var/lib/etcd2', '--volume=/media/etcd')
 
 template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
