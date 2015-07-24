@@ -112,8 +112,9 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		for _, p := range container.Ports {
 			// lowest port wins (docker sorts the ports)
 			// TODO (bacongobbler): support multiple exposed ports
-			port := strconv.Itoa(int(p.PublicPort))
-			hostAndPort := s.host + ":" + port
+			port := strconv.Itoa(int(p.PrivatePort))
+			apiContainer, _ := s.DockerClient.InspectContainer(container.ID)
+			hostAndPort := apiContainer.NetworkSettings.IPAddress + ":" + port
 			if s.IsPublishableApp(containerName) && s.IsPortOpen(hostAndPort) {
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
 				safeMap.Lock()
