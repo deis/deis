@@ -1,15 +1,16 @@
-import cStringIO
 import base64
 import copy
+import cStringIO
 import httplib
 import json
 import paramiko
-import socket
 import re
+import socket
 import time
 
 from django.conf import settings
 
+from . import AbstractSchedulerClient
 from .states import JobState
 
 
@@ -32,13 +33,10 @@ class UHTTPConnection(httplib.HTTPConnection):
         self.sock = sock
 
 
-class FleetHTTPClient(object):
+class FleetHTTPClient(AbstractSchedulerClient):
 
     def __init__(self, target, auth, options, pkey):
-        self.target = target
-        self.auth = auth
-        self.options = options
-        self.pkey = pkey
+        super(FleetHTTPClient, self).__init__(target, auth, options, pkey)
         # single global connection
         self.conn = UHTTPConnection(self.target)
 
@@ -119,7 +117,7 @@ class FleetHTTPClient(object):
     # container api
 
     def create(self, name, image, command='', template=None, **kwargs):
-        """Create a container"""
+        """Create a container."""
         self._create_container(name, image, command,
                                template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)
 
@@ -173,7 +171,7 @@ class FleetHTTPClient(object):
             raise RuntimeError('Unsupported hostname: ' + hostname)
 
     def start(self, name):
-        """Start a container"""
+        """Start a container."""
         self._put_unit(name, {'desiredState': 'launched'})
         self._wait_for_container_running(name)
 
@@ -212,12 +210,12 @@ class FleetHTTPClient(object):
             raise RuntimeError('timeout on container destroy')
 
     def stop(self, name):
-        """Stop a container"""
+        """Stop a container."""
         self._put_unit(name, {"desiredState": "loaded"})
         self._wait_for_job_state(name, JobState.created)
 
     def destroy(self, name):
-        """Destroy a container"""
+        """Destroy a container."""
         # call all destroy functions, ignoring any errors
         try:
             self._destroy_container(name)
@@ -235,7 +233,7 @@ class FleetHTTPClient(object):
                     raise
 
     def run(self, name, image, entrypoint, command):  # noqa
-        """Run a one-off command"""
+        """Run a one-off command."""
         self._create_container(name, image, command, copy.deepcopy(RUN_TEMPLATE),
                                entrypoint=entrypoint)
         # launch the container
@@ -337,13 +335,14 @@ class FleetHTTPClient(object):
         return rc, output
 
     def state(self, name):
+        """Display the given job's running state."""
         systemdActiveStateMap = {
-            "active": "up",
-            "reloading": "down",
-            "inactive": "created",
-            "failed": "crashed",
-            "activating": "down",
-            "deactivating": "down",
+            'active': 'up',
+            'reloading': 'down',
+            'inactive': 'created',
+            'failed': 'crashed',
+            'activating': 'down',
+            'deactivating': 'down',
         }
         try:
             # NOTE (bacongobbler): this call to ._get_unit() acts as a pre-emptive check to
@@ -354,9 +353,8 @@ class FleetHTTPClient(object):
             # FIXME (bacongobbler): when fleet loads a job, sometimes it'll automatically start and
             # stop the container, which in our case will return as 'failed', even though
             # the container is perfectly fine.
-            if activeState == 'failed':
-                if state['systemdLoadState'] == 'loaded':
-                    return JobState.created
+            if activeState == 'failed' and state['systemdLoadState'] == 'loaded':
+                return JobState.created
             return getattr(JobState, systemdActiveStateMap[activeState])
         except KeyError:
             # failed retrieving a proper response from the fleet API
@@ -365,12 +363,6 @@ class FleetHTTPClient(object):
             # failed to retrieve a response from the fleet API,
             # which means it does not exist
             return JobState.destroyed
-
-    def attach(self, name):
-        """
-        Attach to a job's stdin, stdout and stderr
-        """
-        raise NotImplementedError
 
 SchedulerClient = FleetHTTPClient
 

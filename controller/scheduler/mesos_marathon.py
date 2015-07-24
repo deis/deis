@@ -2,12 +2,13 @@ import re
 import time
 
 from django.conf import settings
+from docker import Client
 from marathon import MarathonClient
 from marathon.models import MarathonApp
-from docker import Client
 
-from .states import JobState
+from . import AbstractSchedulerClient
 from .fleet import FleetHTTPClient
+from .states import JobState
 
 # turn down standard marathon logging
 
@@ -18,13 +19,11 @@ POLL_ATTEMPTS = 30
 POLL_WAIT = 100
 
 
-class MarathonHTTPClient(object):
+class MarathonHTTPClient(AbstractSchedulerClient):
 
     def __init__(self, target, auth, options, pkey):
+        super(MarathonHTTPClient, self).__init__(target, auth, options, pkey)
         self.target = settings.MARATHON_HOST
-        self.auth = auth
-        self.options = options
-        self.pkey = pkey
         self.registry = settings.REGISTRY_HOST + ':' + settings.REGISTRY_PORT
         self.client = MarathonClient('http://'+self.target+':8180')
         self.fleet = FleetHTTPClient('/var/run/fleet.sock', auth, options, pkey)
@@ -35,7 +34,7 @@ class MarathonHTTPClient(object):
 
     # container api
     def create(self, name, image, command='', **kwargs):
-        """Create a container"""
+        """Create a new container"""
         app_id = self._app_id(name)
         l = locals().copy()
         l.update(re.match(MATCH, name).groupdict())
@@ -60,7 +59,7 @@ class MarathonHTTPClient(object):
             time.sleep(1)
 
     def start(self, name):
-        """Start a container"""
+        """Start a container."""
         self.client.scale_app(self._app_id(name), 1, force=True)
         for _ in xrange(POLL_ATTEMPTS):
             if self.client.get_app(self._app_id(name)).tasks_running == 1:
@@ -69,12 +68,8 @@ class MarathonHTTPClient(object):
         host = self.client.get_app(self._app_id(name)).tasks[0].host
         self._waitforcontainer(host, name)
 
-    def stop(self, name):
-        """Stop a container"""
-        raise NotImplementedError
-
     def destroy(self, name):
-        """Destroy a container"""
+        """Destroy a container."""
         try:
             host = self.client.get_app(self._app_id(name)).tasks[0].host
             self.client.delete_app(self._app_id(name), force=True)
@@ -103,10 +98,11 @@ class MarathonHTTPClient(object):
             docker_cli.remove_container(name, force=True)
 
     def run(self, name, image, entrypoint, command):  # noqa
-        """Run a one-off command"""
+        """Run a one-off command."""
         return self.fleet.run(name, image, entrypoint, command)
 
     def state(self, name):
+        """Display the given job's running state."""
         try:
             for _ in xrange(POLL_ATTEMPTS):
                 if self.client.get_app(self._app_id(name)).tasks_running == 1:
@@ -116,11 +112,5 @@ class MarathonHTTPClient(object):
                 time.sleep(1)
         except:
             return JobState.destroyed
-
-    def attach(self, name):
-        """
-        Attach to a job's stdin, stdout and stderr
-        """
-        raise NotImplementedError
 
 SchedulerClient = MarathonHTTPClient
