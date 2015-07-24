@@ -68,7 +68,7 @@ function setup-deisctl-client {
     popd
 
     export DEISCTL_UNITS="${DEIS_ROOT}/deisctl/units"
-    export PATH="${client_dir}/deisctl:${PATH}"
+    export PATH="${DEIS_ROOT}/deisctl:${PATH}"
     deisctl refresh-units
   fi
 }

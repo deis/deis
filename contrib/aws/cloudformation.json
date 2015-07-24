@@ -1,10 +1,6 @@
-  [
-      {
-          "ParameterKey":     "KeyPair",
-          "ParameterValue":   "deis"
-      },
-      {
-          "ParameterKey":     "InstanceType",
-          "ParameterValue":   "m3.medium"
-      }
-  ]
+[
+    {
+        "ParameterKey":     "KeyPair",
+        "ParameterValue":   "deis"
+    }
+]
