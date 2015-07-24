@@ -63,6 +63,41 @@ coreos:
       Service=docker.service
       [Install]
       WantedBy=sockets.target
+  - name: flanneld.service
+    command: start
+    content: |
+      [Unit]
+      Description=Network fabric for containers
+      Documentation=https://github.com/coreos/flannel
+      Requires=early-docker.service etcd.service
+      After=etcd.service early-docker.service
+      Before=early-docker.target
+
+      [Service]
+      Type=notify
+      Restart=always
+      RestartSec=5
+      Environment="TMPDIR=/var/tmp/"
+      Environment="DOCKER_HOST=unix:///var/run/early-docker.sock"
+      Environment="FLANNEL_VER=0.5.1"
+      LimitNOFILE=40000
+      LimitNPROC=1048576
+      ExecStartPre=/sbin/modprobe ip_tables
+      ExecStartPre=/usr/bin/mkdir -p /run/flannel
+      ExecStartPre=/usr/bin/touch /run/flannel/options.env
+      ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network":"10.244.0.0/16", "SubnetLen": 24, "SubnetMin":"10.244.0.0", "Backend": {"Type": "vxlan"}}'
+      ExecStart=/usr/libexec/sdnotify-proxy /run/flannel/sd.sock \
+        /usr/bin/docker run --net=host --privileged=true --rm \
+        --volume=/run/flannel:/run/flannel \
+        --env=NOTIFY_SOCKET=/run/flannel/sd.sock \
+        --env-file=/run/flannel/options.env \
+        --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
+        quay.io/coreos/flannel:${FLANNEL_VER} /opt/bin/flanneld --iface=eth0 --ip-masq=true
+
+      # Update docker options
+      ExecStartPost=/usr/bin/docker run --net=host --rm -v /run:/run \
+        quay.io/coreos/flannel:${FLANNEL_VER} \
+        /opt/bin/mk-docker-opts.sh -d /run/flannel_docker_opts.env -i
   - name: stop-update-engine.service
     command: start
     content: |
@@ -143,9 +178,13 @@ write_files:
       }
   - path: /etc/systemd/system/docker.service.d/50-insecure-registry.conf
     content: |
-        [Service]
-        EnvironmentFile=/etc/environment_proxy
-        Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
+      [Unit]
+      Requires=flanneld.service
+      After=flanneld.service
+
+      [Service]
+      EnvironmentFile=/etc/environment_proxy
+      Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
   - path: /run/deis/bin/get_image
     permissions: '0755'
     content: |
