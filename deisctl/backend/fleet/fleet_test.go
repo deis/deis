@@ -70,10 +70,11 @@ func (c *stubFleetClient) SetUnitTargetState(name, target string) error {
 	var activeState string
 	var subState string
 
-	if target == "loaded" {
+	switch target {
+	case "loaded":
 		activeState = "inactive"
 		subState = "dead"
-	} else if target == "launched" {
+	case "launched":
 		activeState = "active"
 		subState = "running"
 	}

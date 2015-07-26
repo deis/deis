@@ -20,18 +20,17 @@ func (c *FleetClient) Status(target string) (err error) {
 // printUnitStatus displays the systemd status for a given unit
 func (c *FleetClient) printUnitStatus(name string) int {
 	u, err := c.Fleet.Unit(name)
-	if suToGlobal(*u) {
+	switch {
+	case suToGlobal(*u):
 		fmt.Fprintf(c.errWriter, "Unable to get status for global unit %s. Check the status on the host using systemctl.\n", name)
 		return 1
-	}
-	if err != nil {
+	case err != nil:
 		fmt.Fprintf(c.errWriter, "Error retrieving Unit %s: %v\n", name, err)
 		return 1
-	}
-	if u == nil {
+	case u == nil:
 		fmt.Fprintf(c.errWriter, "Unit %s does not exist.\n", name)
 		return 1
-	} else if u.CurrentState == "" {
+	case u.CurrentState == "":
 		fmt.Fprintf(c.errWriter, "Unit %s does not appear to be running.\n", name)
 		return 1
 	}
