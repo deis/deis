@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/backend/fleet"
@@ -110,7 +111,7 @@ Examples:
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
 func (c *Client) Install(argv []string) error {
-	usage := `Loads the definitions of components from local unit files.
+	usage := fmt.Sprintf(`Loads the definitions of components from local unit files.
 
 After install, the components will be available to start.
 
@@ -121,12 +122,23 @@ After install, the components will be available to start.
 
 Usage:
   deisctl install [<target>...] [options]
-`
+
+Options:
+  --router-mesh-size=<num>  Number of routers to be loaded when installing the platform [default: %d].
+`, cmd.DefaultRouterMeshSize)
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
 	if err != nil {
 		return err
 	}
+
+	meshSizeArg, _ := args["--router-mesh-size"].(string)
+	parsedValue, err := strconv.ParseUint(meshSizeArg, 0, 8)
+	if err != nil || parsedValue < 1 {
+		fmt.Print("Error: argument --router-mesh-size: invalid value, make sure the value is an integer between 1 and 255.\n")
+		return err
+	}
+	cmd.RouterMeshSize = uint8(parsedValue)
 
 	return cmd.Install(args["<target>"].([]string), c.Backend, cmd.CheckRequiredKeys)
 }

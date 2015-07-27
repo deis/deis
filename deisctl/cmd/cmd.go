@@ -27,6 +27,8 @@ const (
 	StatelessPlatformCommand string = "stateless-platform"
 	swarm                    string = "swarm"
 	mesos                    string = "mesos"
+	// DefaultRouterMeshSize defines the default number of routers to be loaded when installing the platform.
+	DefaultRouterMeshSize uint8 = 3
 )
 
 // ListUnits prints a list of installed units.
@@ -44,6 +46,9 @@ var Stdout io.Writer = os.Stderr
 
 // Location to write standard error information. By default, this is the os.Stderr.
 var Stderr io.Writer = os.Stdout
+
+// Number of routers to be installed. By default, it's DefaultRouterMeshSize.
+var RouterMeshSize = DefaultRouterMeshSize
 
 // Scale grows or shrinks the number of running components.
 // Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
@@ -319,9 +324,17 @@ func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 	wg.Wait()
 
 	fmt.Fprintln(out, "Routing mesh...")
-	b.Create([]string{"router@1", "router@2", "router@3"}, wg, out, err)
+	b.Create(getRouters(), wg, out, err)
 	wg.Wait()
 
+}
+
+func getRouters() []string {
+	routers := make([]string, RouterMeshSize)
+	for i := uint8(0); i < RouterMeshSize; i++ {
+		routers[i] = fmt.Sprintf("router@%d", i+1)
+	}
+	return routers
 }
 
 // Uninstall unloads the definitions of the specified components.
