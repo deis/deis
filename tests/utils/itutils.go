@@ -23,7 +23,7 @@ import (
 var Deis = os.Getenv("DEIS_BINARY") + " "
 
 func init() {
-	if Deis == "" {
+	if Deis == " " {
 		Deis = "deis "
 	}
 }
