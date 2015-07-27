@@ -70,14 +70,15 @@ func Start(targets []string, b backend.Backend) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return StartPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return StartPlatform(b, true)
-		} else if targets[0] == swarm {
-			return StartSwarm(b)
-		} else if targets[0] == mesos {
+		case mesos:
 			return StartMesos(b)
+		case swarm:
+			return StartSwarm(b)
 		}
 	}
 	var wg sync.WaitGroup
@@ -170,14 +171,15 @@ func Stop(targets []string, b backend.Backend) error {
 
 	// if target is platform, stop all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return StopPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return StopPlatform(b, true)
-		} else if targets[0] == swarm {
-			return StopSwarm(b)
-		} else if targets[0] == mesos {
+		case mesos:
 			return StopMesos(b)
+		case swarm:
+			return StopSwarm(b)
 		}
 	}
 
@@ -268,14 +270,15 @@ func Install(targets []string, b backend.Backend, checkKeys func() error) error 
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return InstallPlatform(b, checkKeys, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return InstallPlatform(b, checkKeys, true)
-		} else if targets[0] == swarm {
-			return InstallSwarm(b)
-		} else if targets[0] == mesos {
+		case mesos:
 			return InstallMesos(b)
+		case swarm:
+			return InstallSwarm(b)
 		}
 	}
 	var wg sync.WaitGroup
@@ -325,14 +328,15 @@ func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 // After Uninstall, the components will be unavailable until Install is called.
 func Uninstall(targets []string, b backend.Backend) error {
 	if len(targets) == 1 {
-		if targets[0] == PlatformCommand {
+		switch targets[0] {
+		case PlatformCommand:
 			return UninstallPlatform(b, false)
-		} else if targets[0] == StatelessPlatformCommand {
+		case StatelessPlatformCommand:
 			return UninstallPlatform(b, true)
-		} else if targets[0] == swarm {
-			return UnInstallSwarm(b)
-		} else if targets[0] == mesos {
+		case mesos:
 			return UninstallMesos(b)
+		case swarm:
+			return UnInstallSwarm(b)
 		}
 	}
 

@@ -54,11 +54,12 @@ func doConfig(target string, action string, key []string, client Client, w io.Wr
 	var vals []string
 	var err error
 
-	if action == "set" {
-		vals, err = doConfigSet(client, rootPath, key)
-	} else if action == "rm" {
+	switch action {
+	case "rm":
 		vals, err = doConfigRm(client, rootPath, key)
-	} else {
+	case "set":
+		vals, err = doConfigSet(client, rootPath, key)
+	default:
 		vals, err = doConfigGet(client, rootPath, key)
 	}
 	if err != nil {

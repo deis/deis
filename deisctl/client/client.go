@@ -92,13 +92,14 @@ Examples:
 	var action string
 	var key []string
 
-	if args["set"] == true {
+	switch {
+	case args["set"] == true:
 		action = "set"
 		key = args["<key=val>"].([]string)
-	} else if args["rm"] == true {
+	case args["rm"] == true:
 		action = "rm"
 		key = args["<key>"].([]string)
-	} else {
+	default:
 		action = "get"
 		key = args["<key>"].([]string)
 	}

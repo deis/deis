@@ -134,15 +134,14 @@ func (sshCommandRunner) RemoteCommand(cmd string, addr string, timeout time.Dura
 // findUnits returns the machine ID of a running unit
 func (c *FleetClient) findUnit(name string) (machID string, err error) {
 	u, err := c.Fleet.Unit(name)
-	if err != nil {
+	switch {
+	case err != nil:
 		return "", fmt.Errorf("Error retrieving Unit %s: %v", name, err)
-	}
-	if suToGlobal(*u) {
+	case suToGlobal(*u):
 		return "", fmt.Errorf("Unable to connect to global unit %s.\n", name)
-	}
-	if u == nil {
+	case u == nil:
 		return "", fmt.Errorf("Unit %s does not exist.\n", name)
-	} else if u.CurrentState == "" {
+	case u.CurrentState == "":
 		return "", fmt.Errorf("Unit %s does not appear to be running.\n", name)
 	}
 

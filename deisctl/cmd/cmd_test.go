@@ -36,11 +36,12 @@ func (backend *backendStub) Stop(targets []string, wg *sync.WaitGroup, out, ew i
 	backend.stoppedUnits = append(backend.stoppedUnits, targets...)
 }
 func (backend *backendStub) Scale(component string, num int, wg *sync.WaitGroup, out, ew io.Writer) {
-	if component == "router" && num == 3 {
+	switch {
+	case component == "router" && num == 3:
 		backend.expected = true
-	} else if component == "registry" && num == 4 {
+	case component == "registry" && num == 4:
 		backend.expected = true
-	} else {
+	default:
 		backend.expected = false
 	}
 }

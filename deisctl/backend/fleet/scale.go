@@ -28,12 +28,12 @@ func (c *FleetClient) Scale(
 	}
 
 	timesToScale := int(math.Abs(float64(requested - len(components))))
-	if timesToScale == 0 {
+	switch {
+	case timesToScale == 0:
 		return
-	}
-	if requested-len(components) > 0 {
+	case requested-len(components) > 0:
 		c.scaleUp(component, len(components), timesToScale, wg, out, ew)
-	} else {
+	default:
 		c.scaleDown(component, len(components), timesToScale, wg, out, ew)
 	}
 }
