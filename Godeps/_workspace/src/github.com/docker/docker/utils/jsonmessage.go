@@ -44,12 +44,15 @@ func (p *JSONProgress) String() string {
 	if p.Current <= 0 && p.Total <= 0 {
 		return ""
 	}
-	current := units.HumanSize(int64(p.Current))
+	current := units.HumanSize(float64(p.Current))
 	if p.Total <= 0 {
 		return fmt.Sprintf("%8v", current)
 	}
-	total := units.HumanSize(int64(p.Total))
+	total := units.HumanSize(float64(p.Total))
 	percentage := int(float64(p.Current)/float64(p.Total)*100) / 2
+	if percentage > 50 {
+		percentage = 50
+	}
 	if width > 110 {
 		// this number can't be negetive gh#7136
 		numSpaces := 0
@@ -97,7 +100,7 @@ func (jm *JSONMessage) Display(out io.Writer, isTerminal bool) error {
 		// <ESC>[2K = erase entire current line
 		fmt.Fprintf(out, "%c[2K\r", 27)
 		endl = "\r"
-	} else if jm.Progress != nil { //disable progressbar in non-terminal
+	} else if jm.Progress != nil && jm.Progress.String() != "" { //disable progressbar in non-terminal
 		return nil
 	}
 	if jm.Time != 0 {
@@ -109,7 +112,7 @@ func (jm *JSONMessage) Display(out io.Writer, isTerminal bool) error {
 	if jm.From != "" {
 		fmt.Fprintf(out, "(from %s) ", jm.From)
 	}
-	if jm.Progress != nil {
+	if jm.Progress != nil && isTerminal {
 		fmt.Fprintf(out, "%s %s%s", jm.Status, jm.Progress.String(), endl)
 	} else if jm.ProgressMessage != "" { //deprecated
 		fmt.Fprintf(out, "%s %s%s", jm.Status, jm.ProgressMessage, endl)

@@ -42,44 +42,37 @@ func ParsePort(rawPort string) (int, error) {
 }
 
 func (p Port) Proto() string {
-	parts := strings.Split(string(p), "/")
-	if len(parts) == 1 {
-		return "tcp"
-	}
-	return parts[1]
+	proto, _ := SplitProtoPort(string(p))
+	return proto
 }
 
 func (p Port) Port() string {
-	return strings.Split(string(p), "/")[0]
+	_, port := SplitProtoPort(string(p))
+	return port
 }
 
 func (p Port) Int() int {
-	i, err := ParsePort(p.Port())
+	port, err := ParsePort(p.Port())
 	if err != nil {
 		panic(err)
 	}
-	return i
+	return port
 }
 
 // Splits a port in the format of proto/port
 func SplitProtoPort(rawPort string) (string, string) {
-	var port string
-	var proto string
-
 	parts := strings.Split(rawPort, "/")
-
-	if len(parts) == 0 || parts[0] == "" { // we have "" or ""/
-		port = ""
-		proto = ""
-	} else { // we have # or #/  or #/...
-		port = parts[0]
-		if len(parts) > 1 && parts[1] != "" {
-			proto = parts[1] // we have #/...
-		} else {
-			proto = "tcp" // we have # or #/
-		}
+	l := len(parts)
+	if len(rawPort) == 0 || l == 0 || len(parts[0]) == 0 {
+		return "", ""
 	}
-	return proto, port
+	if l == 1 {
+		return "tcp", rawPort
+	}
+	if len(parts[1]) == 0 {
+		return "tcp", parts[0]
+	}
+	return parts[1], parts[0]
 }
 
 func validateProto(proto string) bool {
@@ -129,31 +122,48 @@ func ParsePortSpecs(ports []string) (map[Port]struct{}, map[Port][]PortBinding, 
 		if containerPort == "" {
 			return nil, nil, fmt.Errorf("No port specified: %s<empty>", rawPort)
 		}
-		if _, err := strconv.ParseUint(containerPort, 10, 16); err != nil {
+
+		startPort, endPort, err := parsers.ParsePortRange(containerPort)
+		if err != nil {
 			return nil, nil, fmt.Errorf("Invalid containerPort: %s", containerPort)
 		}
-		if _, err := strconv.ParseUint(hostPort, 10, 16); hostPort != "" && err != nil {
-			return nil, nil, fmt.Errorf("Invalid hostPort: %s", hostPort)
+
+		var startHostPort, endHostPort uint64 = 0, 0
+		if len(hostPort) > 0 {
+			startHostPort, endHostPort, err = parsers.ParsePortRange(hostPort)
+			if err != nil {
+				return nil, nil, fmt.Errorf("Invalid hostPort: %s", hostPort)
+			}
+		}
+
+		if hostPort != "" && (endPort-startPort) != (endHostPort-startHostPort) {
+			return nil, nil, fmt.Errorf("Invalid ranges specified for container and host Ports: %s and %s", containerPort, hostPort)
 		}
 
 		if !validateProto(proto) {
 			return nil, nil, fmt.Errorf("Invalid proto: %s", proto)
 		}
 
-		port := NewPort(proto, containerPort)
-		if _, exists := exposedPorts[port]; !exists {
-			exposedPorts[port] = struct{}{}
-		}
+		for i := uint64(0); i <= (endPort - startPort); i++ {
+			containerPort = strconv.FormatUint(startPort+i, 10)
+			if len(hostPort) > 0 {
+				hostPort = strconv.FormatUint(startHostPort+i, 10)
+			}
+			port := NewPort(proto, containerPort)
+			if _, exists := exposedPorts[port]; !exists {
+				exposedPorts[port] = struct{}{}
+			}
 
-		binding := PortBinding{
-			HostIp:   rawIp,
-			HostPort: hostPort,
+			binding := PortBinding{
+				HostIp:   rawIp,
+				HostPort: hostPort,
+			}
+			bslice, exists := bindings[port]
+			if !exists {
+				bslice = []PortBinding{}
+			}
+			bindings[port] = append(bslice, binding)
 		}
-		bslice, exists := bindings[port]
-		if !exists {
-			bslice = []PortBinding{}
-		}
-		bindings[port] = append(bslice, binding)
 	}
 	return exposedPorts, bindings, nil
 }

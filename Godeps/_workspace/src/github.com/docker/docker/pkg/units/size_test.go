@@ -7,15 +7,25 @@ import (
 	"testing"
 )
 
+func TestBytesSize(t *testing.T) {
+	assertEquals(t, "1 KiB", BytesSize(1024))
+	assertEquals(t, "1 MiB", BytesSize(1024*1024))
+	assertEquals(t, "1 MiB", BytesSize(1048576))
+	assertEquals(t, "2 MiB", BytesSize(2*MiB))
+	assertEquals(t, "3.42 GiB", BytesSize(3.42*GiB))
+	assertEquals(t, "5.372 TiB", BytesSize(5.372*TiB))
+	assertEquals(t, "2.22 PiB", BytesSize(2.22*PiB))
+}
+
 func TestHumanSize(t *testing.T) {
 	assertEquals(t, "1 kB", HumanSize(1000))
 	assertEquals(t, "1.024 kB", HumanSize(1024))
 	assertEquals(t, "1 MB", HumanSize(1000000))
 	assertEquals(t, "1.049 MB", HumanSize(1048576))
 	assertEquals(t, "2 MB", HumanSize(2*MB))
-	assertEquals(t, "3.42 GB", HumanSize(3.42*GB))
-	assertEquals(t, "5.372 TB", HumanSize(5.372*TB))
-	assertEquals(t, "2.22 PB", HumanSize(2.22*PB))
+	assertEquals(t, "3.42 GB", HumanSize(float64(3.42*GB)))
+	assertEquals(t, "5.372 TB", HumanSize(float64(5.372*TB)))
+	assertEquals(t, "2.22 PB", HumanSize(float64(2.22*PB)))
 }
 
 func TestFromHumanSize(t *testing.T) {

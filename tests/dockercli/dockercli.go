@@ -118,9 +118,9 @@ func NewClient() (
 		}
 		// Avoid fallback to SSL protocols < TLS1.0
 		tlsConfig.MinVersion = tls.VersionTLS10
-		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, &tlsConfig)
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, "", proto, addr, &tlsConfig)
 	} else {
-		cli = client.NewDockerCli(nil, stdoutPipe, nil, nil, proto, addr, nil)
+		cli = client.NewDockerCli(nil, stdoutPipe, nil, "", proto, addr, nil)
 	}
 	return
 }

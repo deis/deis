@@ -1,17 +1,18 @@
+// +build linux
+
 package graph
 
 import (
 	"encoding/json"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/engine"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/chrootarchive"
-	"github.com/docker/docker/pkg/log"
 	"github.com/docker/docker/utils"
 )
 
@@ -25,23 +26,9 @@ func (s *TagStore) CmdLoad(job *engine.Job) engine.Status {
 	defer os.RemoveAll(tmpImageDir)
 
 	var (
-		repoTarFile = path.Join(tmpImageDir, "repo.tar")
-		repoDir     = path.Join(tmpImageDir, "repo")
+		repoDir = path.Join(tmpImageDir, "repo")
 	)
 
-	tarFile, err := os.Create(repoTarFile)
-	if err != nil {
-		return job.Error(err)
-	}
-	if _, err := io.Copy(tarFile, job.Stdin); err != nil {
-		return job.Error(err)
-	}
-	tarFile.Close()
-
-	repoFile, err := os.Open(repoTarFile)
-	if err != nil {
-		return job.Error(err)
-	}
 	if err := os.Mkdir(repoDir, os.ModeDir); err != nil {
 		return job.Error(err)
 	}
@@ -55,7 +42,7 @@ func (s *TagStore) CmdLoad(job *engine.Job) engine.Status {
 		excludes[i] = k
 		i++
 	}
-	if err := chrootarchive.Untar(repoFile, repoDir, &archive.TarOptions{Excludes: excludes}); err != nil {
+	if err := chrootarchive.Untar(job.Stdin, repoDir, &archive.TarOptions{ExcludePatterns: excludes}); err != nil {
 		return job.Error(err)
 	}
 
@@ -124,7 +111,7 @@ func (s *TagStore) recursiveLoad(eng *engine.Engine, address, tmpImageDir string
 				}
 			}
 		}
-		if err := s.graph.Register(img, imageJson, layer); err != nil {
+		if err := s.graph.Register(img, layer); err != nil {
 			return err
 		}
 	}

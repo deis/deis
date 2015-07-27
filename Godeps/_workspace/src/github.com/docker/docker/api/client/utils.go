@@ -8,20 +8,18 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
 	gosignal "os/signal"
 	"strconv"
 	"strings"
-	"syscall"
-	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/api"
 	"github.com/docker/docker/dockerversion"
 	"github.com/docker/docker/engine"
-	"github.com/docker/docker/pkg/log"
+	"github.com/docker/docker/pkg/signal"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/docker/pkg/term"
 	"github.com/docker/docker/registry"
@@ -33,22 +31,7 @@ var (
 )
 
 func (cli *DockerCli) HTTPClient() *http.Client {
-	tr := &http.Transport{
-		TLSClientConfig: cli.tlsConfig,
-		Dial: func(network, addr string) (net.Conn, error) {
-			// Why 32? See issue 8035
-			return net.DialTimeout(cli.proto, cli.addr, 32*time.Second)
-		},
-	}
-	if cli.proto == "unix" {
-		// XXX workaround for net/http Transport which caches connections, but is
-		// intended for tcp connections, not unix sockets.
-		tr.DisableKeepAlives = true
-
-		// no need in compressing for local communications
-		tr.DisableCompression = true
-	}
-	return &http.Client{Transport: tr}
+	return &http.Client{Transport: cli.transport}
 }
 
 func (cli *DockerCli) encodeData(data interface{}) (*bytes.Buffer, error) {
@@ -83,7 +66,7 @@ func (cli *DockerCli) call(method, path string, data interface{}, passAuthInfo b
 	if passAuthInfo {
 		cli.LoadConfigFile()
 		// Resolve the Auth config relevant for this server
-		authConfig := cli.configFile.ResolveAuthConfig(registry.IndexServerAddress())
+		authConfig := cli.configFile.Configs[registry.IndexServerAddress()]
 		getHeaders := func(authConfig registry.AuthConfig) (map[string][]string, error) {
 			buf, err := json.Marshal(authConfig)
 			if err != nil {
@@ -106,14 +89,19 @@ func (cli *DockerCli) call(method, path string, data interface{}, passAuthInfo b
 	if data != nil {
 		req.Header.Set("Content-Type", "application/json")
 	} else if method == "POST" {
-		req.Header.Set("Content-Type", "plain/text")
+		req.Header.Set("Content-Type", "text/plain")
 	}
 	resp, err := cli.HTTPClient().Do(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "connection refused") {
 			return nil, -1, ErrConnectionRefused
 		}
-		return nil, -1, err
+
+		if cli.tlsConfig == nil {
+			return nil, -1, fmt.Errorf("%v. Are you trying to connect to a TLS-enabled daemon without TLS?", err)
+		}
+		return nil, -1, fmt.Errorf("An error occurred trying to connect: %v", err)
+
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
@@ -147,7 +135,7 @@ func (cli *DockerCli) streamHelper(method, path string, setRawTerminal bool, in 
 	req.URL.Host = cli.addr
 	req.URL.Scheme = cli.scheme
 	if method == "POST" {
-		req.Header.Set("Content-Type", "plain/text")
+		req.Header.Set("Content-Type", "text/plain")
 	}
 
 	if headers != nil {
@@ -228,7 +216,7 @@ func waitForExit(cli *DockerCli, containerId string) (int, error) {
 // getExitCode perform an inspect on the container. It returns
 // the running state and the exit code.
 func getExitCode(cli *DockerCli, containerId string) (bool, int, error) {
-	steam, _, err := cli.call("GET", "/containers/"+containerId+"/json", nil, false)
+	stream, _, err := cli.call("GET", "/containers/"+containerId+"/json", nil, false)
 	if err != nil {
 		// If we can't connect, then the daemon probably died.
 		if err != ErrConnectionRefused {
@@ -238,7 +226,7 @@ func getExitCode(cli *DockerCli, containerId string) (bool, int, error) {
 	}
 
 	var result engine.Env
-	if err := result.Decode(steam); err != nil {
+	if err := result.Decode(stream); err != nil {
 		return false, -1, err
 	}
 
@@ -246,11 +234,31 @@ func getExitCode(cli *DockerCli, containerId string) (bool, int, error) {
 	return state.GetBool("Running"), state.GetInt("ExitCode"), nil
 }
 
+// getExecExitCode perform an inspect on the exec command. It returns
+// the running state and the exit code.
+func getExecExitCode(cli *DockerCli, execId string) (bool, int, error) {
+	stream, _, err := cli.call("GET", "/exec/"+execId+"/json", nil, false)
+	if err != nil {
+		// If we can't connect, then the daemon probably died.
+		if err != ErrConnectionRefused {
+			return false, -1, err
+		}
+		return false, -1, nil
+	}
+
+	var result engine.Env
+	if err := result.Decode(stream); err != nil {
+		return false, -1, err
+	}
+
+	return result.GetBool("Running"), result.GetInt("ExitCode"), nil
+}
+
 func (cli *DockerCli) monitorTtySize(id string, isExec bool) error {
 	cli.resizeTty(id, isExec)
 
 	sigchan := make(chan os.Signal, 1)
-	gosignal.Notify(sigchan, syscall.SIGWINCH)
+	gosignal.Notify(sigchan, signal.SIGWINCH)
 	go func() {
 		for _ = range sigchan {
 			cli.resizeTty(id, isExec)
