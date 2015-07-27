@@ -8,12 +8,12 @@ if [[ "$($ETCDCTL get /deis/migrations/data/0001 2> /dev/null)" != "done" ]];
 then
     for i in $($ETCDCTL ls /deis/domains 2> /dev/null);
     do
-        for j in $($ETCDCTL get $i);
+        for j in $($ETCDCTL get "$i");
         do
-            $ETCDCTL set /deis/domains/$j "$(basename $i)" 1> /dev/null;
+            $ETCDCTL set "/deis/domains/$j" "$(basename "$i")" 1> /dev/null;
             echo "migrated $j"
         done;
-        $ETCDCTL rm $i;
+        $ETCDCTL rm "$i";
     done
     $ETCDCTL set /deis/migrations/data/0001 "done"
 fi

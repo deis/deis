@@ -1,6 +1,6 @@
 #!/bin/bash
 
 # gracefully reload gunicorn
-kill -HUP $(cat /tmp/gunicorn.pid)
+kill -HUP "$(cat /tmp/gunicorn.pid)"
 
 exit 0
