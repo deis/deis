@@ -30,53 +30,53 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/client",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/etcd",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/job",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/log",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/machine",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/pkg",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/registry",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/schema",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/ssh",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/unit",
-			"Comment": "v0.9.0",
-			"Rev": "2d5c6bb0751ad3a50c0a219158439071a59e549f"
+			"Comment": "v0.9.2",
+			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
