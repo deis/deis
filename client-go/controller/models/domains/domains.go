@@ -2,7 +2,6 @@ package domains
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/deis/deis/client-go/controller/api"
@@ -12,14 +11,10 @@ import (
 // List domains registered with an app.
 func List(c *client.Client, appID string) ([]api.Domain, error) {
 	u := fmt.Sprintf("/v1/apps/%s/domains/", appID)
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return []api.Domain{}, err
-	}
-
-	if status != 200 {
-		return []api.Domain{}, errors.New(body)
 	}
 
 	domains := api.Domains{}
@@ -42,14 +37,10 @@ func New(c *client.Client, appID string, domain string) (api.Domain, error) {
 		return api.Domain{}, err
 	}
 
-	resBody, status, err := c.BasicRequest("POST", u, body)
+	resBody, err := c.BasicRequest("POST", u, body)
 
 	if err != nil {
 		return api.Domain{}, err
-	}
-
-	if status != 201 {
-		return api.Domain{}, errors.New(resBody)
 	}
 
 	res := api.Domain{}
@@ -63,15 +54,6 @@ func New(c *client.Client, appID string, domain string) (api.Domain, error) {
 // Delete removes a domain from an app.
 func Delete(c *client.Client, appID string, domain string) error {
 	u := fmt.Sprintf("/v1/apps/%s/domains/%s", appID, domain)
-	body, status, err := c.BasicRequest("DELETE", u, nil)
-
-	if err != nil {
-		return err
-	}
-
-	if status != 204 {
-		return errors.New(body)
-	}
-
-	return nil
+	_, err := c.BasicRequest("DELETE", u, nil)
+	return err
 }

@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/deis/deis/client-go/controller/api"
@@ -13,14 +12,10 @@ import (
 func List(c *client.Client, app string) (api.Config, error) {
 	u := fmt.Sprintf("/v1/apps/%s/config/", app)
 
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return api.Config{}, err
-	}
-
-	if status != 200 {
-		return api.Config{}, errors.New(body)
 	}
 
 	config := api.Config{}
@@ -41,14 +36,10 @@ func Set(c *client.Client, app string, config api.Config) (api.Config, error) {
 
 	u := fmt.Sprintf("/v1/apps/%s/config/", app)
 
-	resBody, status, err := c.BasicRequest("POST", u, body)
+	resBody, err := c.BasicRequest("POST", u, body)
 
 	if err != nil {
 		return api.Config{}, err
-	}
-
-	if status != 201 {
-		return api.Config{}, errors.New(resBody)
 	}
 
 	newConfig := api.Config{}

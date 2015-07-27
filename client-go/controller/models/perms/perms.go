@@ -2,7 +2,6 @@ package perms
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/deis/deis/client-go/controller/api"
@@ -48,14 +47,10 @@ func ListAdmins(c *client.Client) ([]string, error) {
 }
 
 func doList(c *client.Client, u string) (string, error) {
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return "", err
-	}
-
-	if status != 200 {
-		return "", errors.New(body)
 	}
 
 	return body, nil
@@ -80,14 +75,10 @@ func doNew(c *client.Client, u string, username string) error {
 		return err
 	}
 
-	body, status, err := c.BasicRequest("POST", u, reqBody)
+	_, err = c.BasicRequest("POST", u, reqBody)
 
 	if err != nil {
 		return err
-	}
-
-	if status != 201 {
-		return errors.New(body)
 	}
 
 	return nil
@@ -104,15 +95,6 @@ func DeleteAdmin(c *client.Client, username string) error {
 }
 
 func doDelete(c *client.Client, u string) error {
-	body, status, err := c.BasicRequest("DELETE", u, nil)
-
-	if err != nil {
-		return err
-	}
-
-	if status != 204 {
-		return errors.New(body)
-	}
-
-	return nil
+	_, err := c.BasicRequest("DELETE", u, nil)
+	return err
 }

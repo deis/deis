@@ -3,12 +3,14 @@ package client
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 
 	"github.com/deis/deis/version"
@@ -41,7 +43,7 @@ func rawRequest(client *http.Client, method string, url string, body io.Reader, 
 		if err != nil {
 			return nil, err
 		}
-		return nil, errors.New(string(resBody))
+		return nil, checkForErrors(res, string(resBody))
 	}
 
 	return res, nil
@@ -81,20 +83,57 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 }
 
 // BasicRequest makes a simple http request on the controller.
-func (c Client) BasicRequest(method string, path string, body []byte) (string, int, error) {
+func (c Client) BasicRequest(method string, path string, body []byte) (string, error) {
 	res, err := c.Request(method, path, body)
 
 	if err != nil {
-		return "", -1, err
+		return "", err
 	}
 	defer res.Body.Close()
 
 	resBody, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
-		return "", -1, err
+		return "", err
 	}
-	return string(resBody), res.StatusCode, nil
+	return string(resBody), checkForErrors(res, string(resBody))
+}
+
+func checkForErrors(res *http.Response, body string) error {
+	switch res.StatusCode {
+	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
+		return nil
+	}
+
+	bodyMap := make(map[string]interface{})
+
+	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
+		return err
+	}
+
+	errorMessage := "\n"
+	for key, value := range bodyMap {
+		switch v := value.(type) {
+		case string:
+			errorMessage += key + ": " + v + "\n"
+		case []interface{}:
+			for _, subValue := range v {
+				switch sv := subValue.(type) {
+				case string:
+					errorMessage += key + ": " + sv + "\n"
+				default:
+					fmt.Printf("Unexpected type in %s error message array. Contents: %v",
+						reflect.TypeOf(value), sv)
+				}
+			}
+		default:
+			fmt.Printf("Cannot handle key %s in error message, type %s. Contents: %v",
+				key, reflect.TypeOf(value), bodyMap[key])
+		}
+	}
+
+	errorMessage += res.Status + "\n"
+	return errors.New(errorMessage)
 }
 
 // CheckConection checks that the user is connected to a network and the URL points to a valid controller.

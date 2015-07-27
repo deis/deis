@@ -2,7 +2,6 @@ package ps
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -13,14 +12,10 @@ import (
 // List an app's processes.
 func List(c *client.Client, appID string) ([]api.Process, error) {
 	u := fmt.Sprintf("/v1/apps/%s/containers/", appID)
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return []api.Process{}, err
-	}
-
-	if status != 200 {
-		return []api.Process{}, errors.New(body)
 	}
 
 	procs := api.Processes{}
@@ -41,17 +36,8 @@ func Scale(c *client.Client, appID string, targets map[string]int) error {
 		return err
 	}
 
-	resBody, status, err := c.BasicRequest("POST", u, body)
-
-	if err != nil {
-		return err
-	}
-
-	if status != 204 {
-		return errors.New(resBody)
-	}
-
-	return nil
+	_, err = c.BasicRequest("POST", u, body)
+	return err
 }
 
 // Restart an app's processes.
@@ -68,14 +54,10 @@ func Restart(c *client.Client, appID string, procType string, num int) ([]api.Pr
 		}
 	}
 
-	body, status, err := c.BasicRequest("POST", u, nil)
+	body, err := c.BasicRequest("POST", u, nil)
 
 	if err != nil {
 		return []api.Process{}, err
-	}
-
-	if status != 200 {
-		return []api.Process{}, errors.New(body)
 	}
 
 	procs := []api.Process{}
