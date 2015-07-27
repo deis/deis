@@ -37,8 +37,6 @@ func (c Client) CreateRemote(remote, appID string) error {
 func (c Client) DeleteRemote(appID string) error {
 	name, err := remoteNameFromAppID(appID)
 
-	fmt.Printf("'%s'\n", name)
-
 	if err != nil {
 		return err
 	}
