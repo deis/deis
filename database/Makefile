@@ -1,5 +1,7 @@
 include ../includes.mk
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard bin/*)
+
 COMPONENT = database
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -49,7 +51,7 @@ test-unit:
 	@echo no unit tests
 
 test-style:
-	@echo no style tests
+	shellcheck $(SHELL_SCRIPTS)
 
 test-functional:
 	@docker history deis/mock-store >/dev/null 2>&1 || $(MAKE) -C ../tests/ mock-store
