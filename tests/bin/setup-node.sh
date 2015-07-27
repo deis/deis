@@ -37,6 +37,15 @@ apt-get install -yq curl mercurial python-dev libffi-dev libpq-dev libyaml-dev g
 curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 pip install virtualenv
 
+# Use cabal (Haskell installer) to build and install ShellCheck
+apt-get install -yq cabal-install
+cabal update
+cd /tmp
+git clone --branch v0.3.8 --single-branch https://github.com/koalaman/shellcheck.git
+cd shellcheck
+cabal install --global
+apt-get purge -yq cabal-install
+
 # create jenkins user and install node bootstrap script
 useradd -G docker,vboxusers -s /bin/bash --system -m jenkins
 mkdir -p /home/jenkins/bin
