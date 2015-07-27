@@ -22,7 +22,7 @@ var Names = []string{
 	"deis-mesos-marathon",
 	"deis-mesos-master",
 	"deis-mesos-slave",
-	"deis-mesos-zk@1",
+	"deis-zookeeper",
 }
 
 // URL is the GitHub url where these units can be refreshed from
