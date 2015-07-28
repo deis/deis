@@ -119,15 +119,6 @@ coreos:
       [Service]
       Type=oneshot
       ExecStart=/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.8.0'
-  - name: debug-etcd.service
-    content: |
-      [Unit]
-      Description=Debug etcd
-
-      [Service]
-      ExecStartPre=/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
-      ExecStartPre=/bin/chmod +x /opt/bin/jq
-      ExecStart=/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/leader | /opt/bin/jq .; sleep 1; done"
   - name: nf_conntrack_max.service
     command: start
     content: |
