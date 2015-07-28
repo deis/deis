@@ -2,17 +2,17 @@
 ---
 coreos:
   fleet:
-    # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
-    # will all publish the same private IP. This is harmless for cloud providers.
+    # Set public-ip or all vagrant VMs publish the same private IP.
+    # Harmless for cloud providers.
     public-ip: $private_ipv4
-    # allow etcd to slow down at times
+    # Let etcd slow down at times.
     etcd_request_timeout: 3.0
   units:
   - name: etcd.service
     command: start
     content: |
       [Unit]
-      Description=etcd2 container
+      Description=etcd2
       Requires=early-docker.service
       After=early-docker.service
       Before=early-docker.target
@@ -55,7 +55,7 @@ coreos:
     enable: true
     content: |
       [Unit]
-      Description=Docker Socket for the API
+      Description=Docker API
 
       [Socket]
       ListenStream=2375
@@ -67,8 +67,7 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=Network fabric for containers
-      Documentation=https://github.com/coreos/flannel
+      Description=Network Fabric
       Requires=early-docker.service etcd.service
       After=etcd.service early-docker.service
       Before=early-docker.target
@@ -93,8 +92,6 @@ coreos:
         --env-file=/run/flannel/options.env \
         --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
         quay.io/coreos/flannel:${FLANNEL_VER} /opt/bin/flanneld --iface=eth0 --ip-masq=true
-
-      # Update docker options
       ExecStartPost=/usr/bin/docker run --net=host --rm -v /run:/run \
         quay.io/coreos/flannel:${FLANNEL_VER} \
         /opt/bin/mk-docker-opts.sh -d /run/flannel_docker_opts.env -i
@@ -102,7 +99,7 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=stop update-engine
+      Description=Stop Updates
 
       [Service]
       Type=oneshot
@@ -111,7 +108,7 @@ coreos:
   - name: graceful-deis-shutdown.service
     content: |
       [Unit]
-      Description=Clean up
+      Description=Clean Up
       DefaultDependencies=no
       After=fleet.service etcd.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
       Requires=fleet.service etcd.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
@@ -128,7 +125,7 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=Install deisctl utility
+      Description=Install deisctl
       ConditionPathExists=!/opt/bin/deisctl
 
       [Service]
@@ -137,7 +134,7 @@ coreos:
   - name: debug-etcd.service
     content: |
       [Unit]
-      Description=etcd debugging service
+      Description=Debug etcd
 
       [Service]
       ExecStartPre=/usr/bin/curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
@@ -147,7 +144,7 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=Increase the number of connections in nf_conntrack. default is 65536
+      Description=Increase nf_conntrack Max
 
       [Service]
       Type=oneshot
@@ -157,7 +154,7 @@ coreos:
     command: start
     content: |
       [Unit]
-      Description=Load overlay module before docker start
+      Description=Load Overlay Module
       Before=docker.service
 
       [Service]
@@ -186,11 +183,11 @@ write_files:
       # usage: get_image <component_path>
       IMAGE=`etcdctl get $1/image 2>/dev/null`
 
-      # if no image was set in etcd, we use the default plus the release string
+      # no image in etcd, so use default + release string
       if [ $? -ne 0 ]; then
         RELEASE=`etcdctl get /deis/platform/version 2>/dev/null`
 
-        # if no release was set in etcd, use the default provisioned with the server
+        # no release in etcd, so use the provisioned default
         if [ $? -ne 0 ]; then
           source /etc/deis-release
           RELEASE=$DEIS_RELEASE
@@ -199,7 +196,7 @@ write_files:
         IMAGE=$1:$RELEASE
       fi
 
-      # remove leading slash
+      # remove leading /
       echo ${IMAGE#/}
   - path: /run/deis/bin/preseed
     permissions: '0755'
@@ -263,14 +260,13 @@ write_files:
         echo "command must be run as: $0 --really"
         exit 1
       fi
-      # procedure requires the store-admin
       ADMIN_RUNNING=$(docker inspect --format="{{ .State.Running }}" deis-store-admin)
       if [ $? -eq 1 ] || [ "$ADMIN_RUNNING" == "false" ]; then
         echo "deis-store-admin container is required for graceful shutdown"
         exit 2
       fi
       set -e -x -o pipefail
-      # determine osd id
+      # find osd id
       CURRENT_STATUS=$(/usr/bin/docker exec deis-store-admin ceph health | awk '{print $1}')
       OSD_HOSTS=($(/usr/bin/etcdctl ls /deis/store/hosts/| awk -F'/' '{print $5}'))
       for HOST in "${OSD_HOSTS[@]}"
@@ -281,7 +277,7 @@ write_files:
           break
         fi
       done
-      # if we own an osd and its healthy, try to gracefully remove it
+      # try to remove any healthy osd
       if [ ! -z "$OSD_ID" ] && [[ "$CURRENT_STATUS" == *"HEALTH_OK"* ]] && [ ${#OSD_HOSTS[@]} -gt "3" ]; then
         /usr/bin/docker exec deis-store-admin ceph osd out $OSD_ID
         sleep 30
@@ -308,7 +304,7 @@ write_files:
         /usr/bin/docker stop deis-store-metadata || true
       fi
 
-      # TODO: remove the next check once etcdctl is using etcd2
+      # TODO: remove this check once etcdctl==etcd2
       ETCDCTL=/usr/bin/etcdctl
       if ! $ETCDCTL --version | grep -q "etcdctl version 2.0."; then
         ETCD_VERSION=2.0.13
@@ -316,7 +312,7 @@ write_files:
           tar zxv -C /opt/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl --strip=1
         ETCDCTL="/opt/bin/etcdctl"
       fi
-      # removing the node from etcd
+      # remove node from etcd
       NODE=$($ETCDCTL member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
       $ETCDCTL member remove $NODE
 manage_etc_hosts: localhost
