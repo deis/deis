@@ -10,26 +10,29 @@ set -eo pipefail
 [[ $DEBUG ]] && set -x
 
 # configure etcd
-export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD_PORT="${ETCD_PORT:-4001}"
 export ETCD="$HOST:$ETCD_PORT"
-export ETCD_PATH=${ETCD_PATH:-/deis/database}
-export ETCD_TTL=${ETCD_TTL:-20}
+export ETCD_PATH="${ETCD_PATH:-/deis/database}"
+export ETCD_TTL="${ETCD_TTL:-20}"
 
 export BUCKET_NAME=${BUCKET_NAME:-db_wal}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
-	echo "database: waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
+  echo "database: waiting for etcd at $ETCD..."
+  sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+sleep $((ETCD_TTL+1))
 
 function etcd_set_default {
   set +e
-  ERROR="$(etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 2>&1 >/dev/null)"
-  if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+  ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
+
+  # We're not compairing output with -n so error doesn't apply
+  # shellcheck disable=SC2143
+  if [[ $? -ne 0 && $(echo "$ERROR" | grep -ive "key already exists") ]]; then
     echo "etcd_set_default: an etcd error occurred ($ERROR)"
     echo "aborting..."
     exit 1
@@ -38,33 +41,33 @@ function etcd_set_default {
 }
 
 etcd_set_default engine postgresql_psycopg2
-etcd_set_default adminUser ${PG_ADMIN_USER:-postgres}
-etcd_set_default adminPass ${PG_ADMIN_PASS:-changeme123}
-etcd_set_default user ${PG_USER_NAME:-deis}
-etcd_set_default password ${PG_USER_PASS:-changeme123}
-etcd_set_default name ${PG_USER_DB:-deis}
-etcd_set_default bucketName ${BUCKET_NAME}
+etcd_set_default adminUser "${PG_ADMIN_USER:-postgres}"
+etcd_set_default adminPass "${PG_ADMIN_PASS:-changeme123}"
+etcd_set_default user "${PG_USER_NAME:-deis}"
+etcd_set_default password "${PG_USER_PASS:-changeme123}"
+etcd_set_default name "${PG_USER_DB:-deis}"
+etcd_set_default bucketName "${BUCKET_NAME}"
 
 # stub out the confd reload script before it gets templated
 echo '#!/bin/sh' > /usr/local/bin/reload
 chmod 0755 /usr/local/bin/reload
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD -confdir /app --log-level error; do
-	echo "database: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+until confd -onetime -node "$ETCD" -confdir /app --log-level error; do
+  echo "database: waiting for confd to write initial templates..."
+  sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # initialize database if one doesn't already exist
 # for example, in the case of a data container
 if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
-	chown -R postgres:postgres /var/lib/postgresql
-	sudo -u postgres /usr/bin/initdb -D /var/lib/postgresql/9.3/main
+  chown -R postgres:postgres /var/lib/postgresql
+  sudo -u postgres /usr/bin/initdb -D /var/lib/postgresql/9.3/main
 fi
 
 # ensure WAL log bucket exists
-envdir /etc/wal-e.d/env /app/bin/create_bucket ${BUCKET_NAME}
-INIT_ID=$(etcdctl get $ETCD_PATH/initId 2> /dev/null || echo none)
+envdir /etc/wal-e.d/env /app/bin/create_bucket "${BUCKET_NAME}"
+INIT_ID=$(etcdctl get "$ETCD_PATH/initId" 2> /dev/null || echo none)
 echo "database: expecting initialization id: $INIT_ID"
 
 initial_backup=0
@@ -72,7 +75,7 @@ if [[ "$(cat /var/lib/postgresql/9.3/main/initialized 2> /dev/null)" != "$INIT_I
   echo "database: no existing database found or it is outdated."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
-  if [[ `envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l` -gt "1" ]]; then
+  if [[ $(envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l) -gt "1" ]]; then
     echo "database: restoring from backup..."
     rm -rf /var/lib/postgresql/9.3/main
     sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
@@ -85,16 +88,16 @@ if [[ "$(cat /var/lib/postgresql/9.3/main/initialized 2> /dev/null)" != "$INIT_I
   fi
   # either way, we mark the database as initialized
   INIT_ID=$(cat /proc/sys/kernel/random/uuid)
-  echo $INIT_ID > /var/lib/postgresql/9.3/main/initialized
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/initId $INIT_ID >/dev/null
+  echo "$INIT_ID" > /var/lib/postgresql/9.3/main/initialized
+  etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/initId" "$INIT_ID" >/dev/null
 else
   echo "database: existing data directory found. Starting postgres..."
 fi
 
 # run the service in the background
 sudo -i -u postgres /usr/bin/postgres \
-                    -c config-file=${PG_CONFIG:-/etc/postgresql/main/postgresql.conf} \
-                    -c listen-addresses=${PG_LISTEN:-*} &
+                    -c config-file="${PG_CONFIG:-/etc/postgresql/main/postgresql.conf}" \
+                    -c listen-addresses="${PG_LISTEN:-*}" &
 
 SERVICE_PID=$!
 
@@ -107,8 +110,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD -confdir /app --log-level error --interval 5 &
-CONFD_PID=$!
+confd -node "$ETCD" -confdir /app --log-level error --interval 5 &
 
 # wait for the service to become available
 sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\" && \$1 ~ \"tcp.?\"") ]] ; do sleep 1; done
@@ -128,24 +130,24 @@ echo "database: postgres is running..."
 
 # publish the service to etcd using the injected HOST and EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
-	# configure service discovery
-	PORT=${PORT:-5432}
-	PROTO=${PROTO:-tcp}
+  # configure service discovery
+  PORT=${PORT:-5432}
+  PROTO=${PROTO:-tcp}
 
-	set +e
+  set +e
 
-	# wait for the service to become available on PORT
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+  # wait for the service to become available on PORT
+  sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
-	# while the port is listening, publish to etcd
-	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
-	done
+  # while the port is listening, publish to etcd
+  while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+    etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+    sleep $((ETCD_TTL/2)) # sleep for half the TTL
+  done
 
-	# if the loop quits, something went wrong
-	exit 1
+  # if the loop quits, something went wrong
+  exit 1
 
 fi
 

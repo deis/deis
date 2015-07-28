@@ -12,7 +12,7 @@ while true; do
         # perform a backup
         envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
         # only retain the latest BACKUPS_TO_RETAIN backups
-        envdir /etc/wal-e.d/env wal-e delete --confirm retain $BACKUPS_TO_RETAIN
+        envdir /etc/wal-e.d/env wal-e delete --confirm retain "$BACKUPS_TO_RETAIN"
         echo "database: backup has been completed."
     fi
 done
