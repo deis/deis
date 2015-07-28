@@ -137,15 +137,6 @@ coreos:
       Type=oneshot
       ExecStartPre=/sbin/modprobe nf_conntrack
       ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
-  - name: load-overlay-module.service
-    command: start
-    content: |
-      [Unit]
-      Description=Load Overlay Module
-      Before=docker.service
-
-      [Service]
-      ExecStart=/bin/bash -c "lsmod | grep overlay || modprobe overlay"
   - name: fleet.service
     command: start
 write_files:
