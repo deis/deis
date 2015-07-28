@@ -7,6 +7,8 @@ GO_FILES = $(wildcard *.go)
 GO_PACKAGES = logger tests
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard image/bin/*)
+
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -70,6 +72,7 @@ test-style:
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
 	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
 	$(GOLINT) ./...
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit:
 	@echo no unit tests
