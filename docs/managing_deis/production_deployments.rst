@@ -9,6 +9,13 @@ Production deployments
 Many Deis users are running Deis quite successfully in production. When readying a Deis deployment
 for production workloads, there are some additional (but optional) recommendations.
 
+Isolating the Planes
+--------------------
+
+.. include:: ../_includes/_isolating-planes-description.rst
+
+See :ref:`isolating-planes` for further details.
+
 Isolating etcd
 --------------
 

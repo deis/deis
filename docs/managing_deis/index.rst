@@ -20,6 +20,7 @@ Managing Deis
     platform_logging
     platform_monitoring
     production_deployments
+    isolating-planes
     isolating-etcd
     recovering-ceph-quorum
     running-deis-without-ceph
