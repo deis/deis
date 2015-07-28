@@ -251,12 +251,11 @@ class AuthTest(TestCase):
         new_password = 'password'
         submit = {
             'username': self.user1.username,
-            'password': old_password,
             'new_password': new_password,
         }
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         # test login with old password
         url = '/v1/auth/login/'
         payload = urllib.urlencode({'username': self.user1.username, 'password': old_password})
@@ -268,15 +267,21 @@ class AuthTest(TestCase):
         response = self.client.post(url, data=payload,
                                     content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 200)
-        # try to change back password with a regular user
-        submit['password'], submit['new_password'] = submit['new_password'], submit['password']
+        # Non-admins can't change another user's password
+        submit['password'], submit['new_password'] = submit['new_password'], old_password
         url = '/v1/auth/passwd'
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.user2_token))
         self.assertEqual(response.status_code, 403)
-        # however, targeting yourself should be fine.
+        # change back password with a regular user
         response = self.client.post(url, json.dumps(submit), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.user1_token))
+        self.assertEqual(response.status_code, 200)
+        # test login with new password
+        url = '/v1/auth/login/'
+        payload = urllib.urlencode({'username': self.user1.username, 'password': old_password})
+        response = self.client.post(url, data=payload,
+                                    content_type='application/x-www-form-urlencoded')
         self.assertEqual(response.status_code, 200)
 
     def test_regenerate(self):

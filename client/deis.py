@@ -83,7 +83,7 @@ if hasattr(signal, 'SIGPIPE') and hasattr(signal, 'SIG_DFL'):
 __version__ = '1.9.0-dev'
 
 # what version of the API is this client compatible with?
-__api_version__ = '1.5'
+__api_version__ = '1.6'
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -928,7 +928,7 @@ Make sure that the Controller URI is correct and the server is running.
             raise EnvironmentError(
                 'Could not find token. Use `deis login` or `deis register` to get started.')
         password = args.get('--password')
-        if not password:
+        if not password and not args.get('--username'):
             password = getpass('current password: ')
         new_password = args.get('--new-password')
         if not new_password:
@@ -938,10 +938,13 @@ Make sure that the Controller URI is correct and the server is running.
                 self._logger.error('Password mismatch, not changing.')
                 sys.exit(1)
         payload = {
-            'password': password,
             'new_password': new_password,
             'username': args.get('--username', self._settings['username']),
         }
+
+        if password:
+            payload['password'] = password
+
         response = self._dispatch('post', "/v1/auth/passwd", json.dumps(payload))
         if response.status_code == requests.codes.ok:
             self._logger.info('Password change succeeded.')

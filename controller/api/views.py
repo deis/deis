@@ -37,18 +37,20 @@ class UserManagementViewSet(GenericViewSet,
         return self.get_queryset()[0]
 
     def passwd(self, request, **kwargs):
-        obj = self.get_object()
+        caller_obj = self.get_object()
+        target_obj = self.get_object()
         if request.data.get('username'):
             # if you "accidentally" target yourself, that should be fine
-            if obj.username == request.data['username'] or obj.is_superuser:
-                obj = get_object_or_404(User, username=request.data['username'])
+            if caller_obj.username == request.data['username'] or caller_obj.is_superuser:
+                target_obj = get_object_or_404(User, username=request.data['username'])
             else:
                 raise PermissionDenied()
-        if not obj.check_password(request.data['password']):
-            return Response({'detail': 'Current password does not match'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        obj.set_password(request.data['new_password'])
-        obj.save()
+        if request.data.get('password') or not caller_obj.is_superuser:
+            if not target_obj.check_password(request.data['password']):
+                return Response({'detail': 'Current password does not match'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        target_obj.set_password(request.data['new_password'])
+        target_obj.save()
         return Response({'status': 'password set'})
 
 

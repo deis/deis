@@ -21,7 +21,7 @@ type AuthLoginResponse tokenResponse
 // AuthPasswdRequest is the definition of POST /v1/auth/passwd/.
 type AuthPasswdRequest struct {
 	Username    string `json:"username,omitempty"`
-	Password    string `json:"password"`
+	Password    string `json:"password,omitempty"`
 	NewPassword string `json:"new_password"`
 }
 

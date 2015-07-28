@@ -20,3 +20,4 @@ Reference Guide
     api-v1.3
     api-v1.4
     api-v1.5
+    api-v1.6
