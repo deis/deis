@@ -16,18 +16,20 @@ export ETCD_PATH=${ETCD_PATH:-/deis/controller}
 export ETCD_TTL=${ETCD_TTL:-20}
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+sleep $((ETCD_TTL+1))
 
 function etcd_set_default {
 	set +e
-	ERROR="$(etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 2>&1 >/dev/null)"
-	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+	ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
+	# We're not compairing output with -n so error doesn't apply
+	# shellcheck disable=SC2143
+	if [[ $? -ne 0 && $(echo "$ERROR" | grep -ive "key already exists") ]]; then
 		echo "etcd_set_default: an etcd error occurred ($ERROR)"
 		echo "aborting..."
 		exit 1
@@ -37,8 +39,10 @@ function etcd_set_default {
 
 function etcd_safe_mkdir {
 	set +e
-	ERROR="$(etcdctl --no-sync -C $ETCD mkdir $1 2>&1 >/dev/null)"
-	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+	ERROR="$(etcdctl --no-sync -C "$ETCD" mkdir "$1" 2>&1 >/dev/null)"
+	# We're not compairing output with -n so error doesn't apply
+	# shellcheck disable=SC2143
+	if [[ $? -ne 0 && $(echo "$ERROR" | grep -ive "key already exists") ]]; then
 		echo "etcd_safe_mkdir: an etcd error occurred ($ERROR)"
 		echo "aborting..."
 		exit 1
@@ -46,9 +50,9 @@ function etcd_safe_mkdir {
 	set -e
 }
 
-etcd_set_default protocol ${DEIS_PROTOCOL:-http}
-etcd_set_default secretKey ${DEIS_SECRET_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
-etcd_set_default builderKey ${DEIS_BUILDER_KEY:-`openssl rand -base64 64 | tr -d '\n'`}
+etcd_set_default protocol "${DEIS_PROTOCOL:-http}"
+etcd_set_default secretKey "${DEIS_SECRET_KEY:-$(openssl rand -base64 64 | tr -d '\n')}"
+etcd_set_default builderKey "${DEIS_BUILDER_KEY:-$(openssl rand -base64 64 | tr -d '\n')}"
 etcd_set_default registrationMode "enabled"
 etcd_set_default webEnabled 0
 etcd_set_default unitHostname default
@@ -61,16 +65,16 @@ etcd_safe_mkdir /deis/services
 
 # run etcd data migrations
 echo "controller: running etcd data migrations..."
-for script in $(ls /app/migrations/data/*.sh);
+for script in /app/migrations/data/*.sh;
 do
-    . $script;
+    . "$script";
 done
 echo "controller: done running etcd data migrations."
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
 	echo "controller: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 cd /app
@@ -87,15 +91,14 @@ sudo -E -u deis gunicorn -c deis/gconf.py deis.wsgi &
 # smart shutdown on SIGTERM (SIGINT is handled by gunicorn)
 function on_exit() {
 	GUNICORN_PID=$(cat /tmp/gunicorn.pid)
-	kill -TERM $GUNICORN_PID 2>/dev/null
-	wait $GUNICORN_PID 2>/dev/null
+	kill -TERM "$GUNICORN_PID" 2>/dev/null
+	wait "$GUNICORN_PID" 2>/dev/null
 	exit 0
 }
 trap on_exit TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
-CONFD_PID=$!
+confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
 
 echo deis-controller running...
 
@@ -113,9 +116,9 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+		etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+		etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+		sleep $((ETCD_TTL/2)) # sleep for half the TTL
 	done
 
 	# if the loop quits, something went wrong

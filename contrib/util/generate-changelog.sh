@@ -16,9 +16,9 @@ retrieve() {
     while read commit hash message
     do
         # Extract the subsystem where type(subsystem): message
-        SUBSYSTEM=$(echo $message | cut -d'(' -f2 | cut -d')' -f1 | sed 's/\*/\(all\)/g')
+        SUBSYSTEM=$(echo "$message" | cut -d'(' -f2 | cut -d')' -f1 | sed 's/\*/\(all\)/g')
         # Extract the message where type(subsystem): message
-        MESSAGE=$(echo $message | awk -F ")" '{ print $2}' | sed 's/://' | cut -f2- -d' ')
+        MESSAGE=$(echo "$message" | awk -F ")" '{ print $2}' | sed 's/://' | cut -f2- -d' ')
         # Generate a link to the full legal commit on GitHub
         LINK="$REPOROOT/commit/$hash"
         # Echo all this in a way that makes the commit hash and message a link
@@ -61,7 +61,7 @@ main() {
     FROM=$1
     TO=${2:-"HEAD"}
 
-    printf "### $FROM -> $TO\n\n"
+    printf "### %s -> %s\n\n", "$FROM", "$TO"
 
     # Iterate over the types of messages specified
     for LEGALTYPE in $TYPES
@@ -69,14 +69,14 @@ main() {
         SHORT=$(echo "$LEGALTYPE" | cut -f1 -d';')
         LONG=$(echo "$LEGALTYPE" | cut -f2 -d';')
 
-        subheading $LONG $SHORT
+        subheading "$LONG" "$SHORT"
     done
 }
 
-if (( $SHLVL == 2 ))
+if (( SHLVL == 2 ))
 then
     # If this is being run as a command
-    main $*
+    main "$*"
     exit
 else
     # Otherwise this is being sourced

@@ -3,10 +3,10 @@
 # This script is designed to be run inside the container
 #
 
-ETCD_PORT=${ETCD_PORT:-4001}
+ETCD_PORT="${ETCD_PORT:-4001}"
 ETCD="$HOST:$ETCD_PORT"
 
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
+confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
 
 # loop forever until the container is stopped
 while true; do

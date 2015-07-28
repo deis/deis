@@ -8,10 +8,11 @@
 set -eo pipefail
 
 # absolute path to current directory
-export THIS_DIR=$(cd $(dirname $0); pwd)
+THIS_DIR=$(cd "$(dirname "$0")"; pwd)
+export THIS_DIR
 
 # setup the test environment
-source $THIS_DIR/test-setup.sh
+source "$THIS_DIR/test-setup.sh"
 
 # setup callbacks on process exit and error
 trap cleanup EXIT
@@ -32,7 +33,7 @@ log_phase "Building from current source tree"
 make build
 
 # use the built client binaries
-export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+export PATH="$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH"
 
 log_phase "Running functional tests"
 
@@ -53,14 +54,14 @@ done
 log_phase "Provisioning Deis on old release"
 
 function set_release {
-  deisctl config $1 set image=deis/$1:$2
+  deisctl config "$1" set image="deis/$1:$2"
 }
-set_release logger ${OLD_TAG}
-set_release cache ${OLD_TAG}
-set_release router ${OLD_TAG}
-set_release database ${OLD_TAG}
-set_release controller ${OLD_TAG}
-set_release registry ${OLD_TAG}
+set_release logger "${OLD_TAG}"
+set_release cache "${OLD_TAG}"
+set_release router "${OLD_TAG}"
+set_release database "${OLD_TAG}"
+set_release controller "${OLD_TAG}"
+set_release registry "${OLD_TAG}"
 
 deisctl install platform
 time deisctl start platform
@@ -75,21 +76,21 @@ time make release
 
 log_phase "Updating channel with new release"
 
-updateservicectl channel update --app-id=${APP_ID} --channel=${CHANNEL} --version=${BUILD_TAG} --publish=true
+updateservicectl channel update --app-id="${APP_ID}" --channel="${CHANNEL}" --version="${BUILD_TAG}" --publish=true
 
 log_phase "Waiting for upgrade to complete"
 
 # configure platform settings
-deisctl config platform set domain=$DEIS_TEST_DOMAIN
-deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
-deisctl config platform channel=${CHANNEL} autoupdate=true
+deisctl config platform set domain="$DEIS_TEST_DOMAIN"
+deisctl config platform set sshPrivateKey="$DEIS_TEST_SSH_KEY"
+deisctl config platform channel="${CHANNEL}" autoupdate=true
 
 function wait_for_update {
   set -x
-  vagrant ssh $1 -c "journalctl -n 500 -u deis-updater.service -f" &
-  pid_$1=$!
-  vagrant ssh $1 -c "/bin/sh -c \"while [[ \"\$(cat /etc/deis-version)\" != \"${BUILD_TAG}\" ]]; do echo waiting for update to complete...; sleep 5; done\""
-  kill $pid_$1
+  vagrant ssh "$1" -c "journalctl -n 500 -u deis-updater.service -f" &
+  pid=$!
+  vagrant ssh "$1" -c "/bin/sh -c \"while [[ \"\$(cat /etc/deis-version)\" != \"${BUILD_TAG}\" ]]; do echo waiting for update to complete...; sleep 5; done\""
+  kill "$pid"
   set +x
 }
 
@@ -99,7 +100,7 @@ wait_for_update deis-2 &
 update2=$!
 wait_for_update deis-3 &
 update3=$!
-wait update1 update2 update3
+wait $update1 $update2 $update3
 
 log_phase "Running end-to-end integration test with Python client"
 

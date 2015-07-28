@@ -12,14 +12,14 @@ fi
 
 set -e
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR/utils.sh"
 
 # check for AWS API tools in $PATH
 if ! which aws > /dev/null; then
-  echo_red 'Please install the AWS command-line tool and ensure it is in your $PATH.'
+  echo_red 'Please install the AWS command-line tool and ensure it is in your PATH.'
   exit 1
 fi
 
@@ -28,13 +28,15 @@ if [ ! -z "$AWS_CLI_PROFILE" ]; then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 # update the AWS CloudFormation stack
+# Don't warn about EXTRA_AWS_CLI_ARGS being unquoted
+# shellcheck disable=SC2086
 aws cloudformation update-stack \
-    --template-body "$($THIS_DIR/gen-json.py --channel $COREOS_CHANNEL --version $COREOS_VERSION)" \
-    --stack-name $NAME \
-    --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    --template-body "$("$THIS_DIR/gen-json.py" --channel "$COREOS_CHANNEL" --version "$COREOS_VERSION")" \
+    --stack-name "$NAME" \
+    --parameters "$(<"$THIS_DIR/cloudformation.json")" \
     $EXTRA_AWS_CLI_ARGS
 
 echo_green "Your Deis cluster on AWS CloudFormation has been successfully updated."

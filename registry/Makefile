@@ -1,5 +1,7 @@
 include ../includes.mk
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard bin/*)
+
 COMPONENT = registry
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -51,7 +53,7 @@ test-functional:
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 test-style:
-	@echo no style tests
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit:
 	@echo no unit tests

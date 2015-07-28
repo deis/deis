@@ -42,10 +42,12 @@ cd /docker-registry && pip install --disable-pip-version-check --no-cache-dir -r
 pip install --disable-pip-version-check --no-cache-dir /docker-registry/depends/docker-registry-core
 
 # Install registry
+# I'm not sure is this a bash or pip range, but it seems to be a pip one.
+# shellcheck disable=SC2102
 pip install --disable-pip-version-check --no-cache-dir file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]
 
 patch \
-  $(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py \
+  "$(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py" \
   < /docker-registry/contrib/boto_header_patch.diff
 
 # cleanup. indicate that python is a required package.

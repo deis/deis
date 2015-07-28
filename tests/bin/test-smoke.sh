@@ -8,10 +8,11 @@
 set -eo pipefail
 
 # absolute path to current directory
-export THIS_DIR=$(cd $(dirname $0); pwd)
+THIS_DIR=$(cd "$(dirname "$0")"; pwd)
+export THIS_DIR
 
 # setup the test environment
-source $THIS_DIR/test-setup.sh
+source "$THIS_DIR/test-setup.sh"
 
 # setup callbacks on process exit and error
 trap cleanup EXIT
@@ -32,7 +33,7 @@ log_phase "Building from current source tree"
 make build
 
 # use the built client binaries
-export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+export PATH="$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH"
 
 log_phase "Running functional tests"
 
@@ -57,8 +58,8 @@ make dev-release
 log_phase "Provisioning Deis"
 
 # configure platform settings
-deisctl config platform set domain=$DEIS_TEST_DOMAIN
-deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
+deisctl config platform set domain="$DEIS_TEST_DOMAIN"
+deisctl config platform set sshPrivateKey="$DEIS_TEST_SSH_KEY"
 
 time deisctl install platform
 time deisctl start platform

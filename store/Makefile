@@ -14,6 +14,13 @@ METADATA_DEV_IMAGE = $(REGISTRY)$(METADATA_IMAGE)
 MONITOR_IMAGE = $(IMAGE_PREFIX)store-monitor:$(BUILD_TAG)
 MONITOR_DEV_IMAGE = $(REGISTRY)$(MONITOR_IMAGE)
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') \
+								$(wildcard admin/bin/*) \
+								$(wildcard daemon/bin/*) \
+								$(wildcard gateway/bin/*) \
+								$(wildcard metadata/bin/*) \
+								$(wildcard monitor/bin/*)
+
 build: check-docker
 	@# Build base as normal
 	docker build -t $(IMAGE_PREFIX)store-base:$(BUILD_TAG) base/
@@ -104,7 +111,7 @@ test-functional:
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 test-style:
-	@echo no style tests
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit:
 	@echo no unit tests

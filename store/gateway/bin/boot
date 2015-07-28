@@ -7,40 +7,40 @@
 set -eo pipefail
 
 # set debug based on envvar
-[[ $DEBUG ]] && set -x
+[[ "$DEBUG" ]] && set -x
 
 # configure etcd
-export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD_PORT="${ETCD_PORT:-4001}"
 export ETCD="$HOST:$ETCD_PORT"
-export ETCD_PATH=${ETCD_PATH:-/deis/store/gateway}
-export HOST_ETCD_PATH=${HOST_ETCD_PATH:-/deis/store/gateway/hosts/$HOST}
-export ETCD_TTL=${ETCD_TTL:-20}
+export ETCD_PATH="${ETCD_PATH:-/deis/store/gateway}"
+export HOST_ETCD_PATH="${HOST_ETCD_PATH:-/deis/store/gateway/hosts/$HOST}"
+export ETCD_TTL="${ETCD_TTL:-20}"
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
     echo "waiting for etcd at $ETCD..."
-    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+    sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+sleep $((ETCD_TTL+1))
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
     echo "store-gateway: waiting for confd to write initial templates..."
-    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+    sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # we generate a key for the gateway. we can do this because we have the client key templated out
-if ! etcdctl --no-sync -C $ETCD get /deis/store/gatewayKeyring >/dev/null 2>&1 ; then
+if ! etcdctl --no-sync -C "$ETCD" get /deis/store/gatewayKeyring >/dev/null 2>&1 ; then
   ceph-authtool --create-keyring /etc/ceph/ceph.client.radosgw.keyring
   chmod +r /etc/ceph/ceph.client.radosgw.keyring
   ceph-authtool /etc/ceph/ceph.client.radosgw.keyring -n client.radosgw.gateway --gen-key
   ceph-authtool -n client.radosgw.gateway --cap osd 'allow rwx' --cap mon 'allow rwx' /etc/ceph/ceph.client.radosgw.keyring
   ceph -k /etc/ceph/ceph.client.admin.keyring auth add client.radosgw.gateway -i /etc/ceph/ceph.client.radosgw.keyring
-  etcdctl --no-sync -C $ETCD set /deis/store/gatewayKeyring < /etc/ceph/ceph.client.radosgw.keyring >/dev/null
+  etcdctl --no-sync -C "$ETCD" set /deis/store/gatewayKeyring < /etc/ceph/ceph.client.radosgw.keyring >/dev/null
 else
-  etcdctl --no-sync -C $ETCD get /deis/store/gatewayKeyring > /etc/ceph/ceph.client.radosgw.keyring
+  etcdctl --no-sync -C "$ETCD" get /deis/store/gatewayKeyring > /etc/ceph/ceph.client.radosgw.keyring
   chmod +r /etc/ceph/ceph.client.radosgw.keyring
 fi
 
@@ -50,10 +50,10 @@ fi
 
 radosgw-admin user info --uid=deis >/etc/ceph/user.json
 # store the access key and secret key for consumption by other services
-ACCESS_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["access_key"]);' | tr -d '"'`
-SECRET_KEY=`cat /etc/ceph/user.json | python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["secret_key"]);' | tr -d '"'`
-etcdctl --no-sync -C $ETCD set $ETCD_PATH/accessKey ${ACCESS_KEY} >/dev/null
-etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
+ACCESS_KEY=$(python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["access_key"]);' < /etc/ceph/user.json | tr -d '"')
+SECRET_KEY=$(python -c 'import json,sys;obj=json.load(sys.stdin);print json.dumps(obj["keys"][0]["secret_key"]);' < /etc/ceph/user.json | tr -d '"')
+etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/accessKey" "${ACCESS_KEY}" >/dev/null
+etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/secretKey" "${SECRET_KEY}" >/dev/null
 
 # spawn the service in the background
 echo "Starting RADOS gateway..."
@@ -67,17 +67,16 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
-CONFD_PID=$!
+confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
 
 echo deis-store-gateway running...
 
 # publish the service to etcd using the injected EXTERNAL_PORT
-if [[ ! -z $EXTERNAL_PORT ]]; then
+if [[ ! -z "$EXTERNAL_PORT" ]]; then
 
   # configure service discovery
-  PORT=${PORT:-8888}
-  PROTO=${PROTO:-tcp}
+  PORT="${PORT:-8888}"
+  PROTO="${PROTO:-tcp}"
 
   set +e
 
@@ -86,15 +85,15 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-    if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/masterLock $HOST --ttl $ETCD_TTL >/dev/null 2>&1 \
-    || [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/masterLock` == "$HOST" ]] ; then
-      etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-      etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-      etcdctl --no-sync -C $ETCD update ${ETCD_PATH}/masterLock $HOST --ttl $ETCD_TTL >/dev/null
+    if etcdctl --no-sync -C "$ETCD" mk "${ETCD_PATH}/masterLock" "$HOST" --ttl "$ETCD_TTL" >/dev/null 2>&1 \
+    || [[ $(etcdctl --no-sync -C "$ETCD" get "${ETCD_PATH}/masterLock") == "$HOST" ]] ; then
+      etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+      etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+      etcdctl --no-sync -C "$ETCD" update "${ETCD_PATH}/masterLock" "$HOST" --ttl "$ETCD_TTL" >/dev/null
     fi
-    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-    etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-    sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+    etcdctl --no-sync -C "$ETCD" set "$HOST_ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+    etcdctl --no-sync -C "$ETCD" set "$HOST_ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+    sleep $((ETCD_TTL/2)) # sleep for half the TTL
   done
 
   # if the loop quits, something went wrong

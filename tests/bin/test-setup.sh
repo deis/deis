@@ -11,79 +11,79 @@ function log_phase {
 log_phase "Preparing test environment"
 
 # use GOPATH to determine project root
-export DEIS_ROOT=${GOPATH?}/src/github.com/deis/deis
+export DEIS_ROOT="${GOPATH?}/src/github.com/deis/deis"
 echo "DEIS_ROOT=$DEIS_ROOT"
 
 # prepend GOPATH/bin to PATH
-export PATH=${GOPATH}/bin:$PATH
+export PATH="${GOPATH}/bin:$PATH"
 
 # the application under test
-export DEIS_TEST_APP=${DEIS_TEST_APP:-example-dockerfile-http}
+export DEIS_TEST_APP="${DEIS_TEST_APP:-example-dockerfile-http}"
 echo "DEIS_TEST_APP=$DEIS_TEST_APP"
 
 # SSH key name used for testing
-export DEIS_TEST_AUTH_KEY=${DEIS_TEST_AUTH_KEY:-deis-test}
+export DEIS_TEST_AUTH_KEY="${DEIS_TEST_AUTH_KEY:-deis-test}"
 echo "DEIS_TEST_AUTH_KEY=$DEIS_TEST_AUTH_KEY"
 
 # SSH key used for deisctl tunneling
-export DEIS_TEST_SSH_KEY=${DEIS_TEST_SSH_KEY:-~/.vagrant.d/insecure_private_key}
+export DEIS_TEST_SSH_KEY="${DEIS_TEST_SSH_KEY:-~/.vagrant.d/insecure_private_key}"
 echo "DEIS_TEST_SSH_KEY=$DEIS_TEST_SSH_KEY"
 
 # domain used for wildcard DNS
-export DEIS_TEST_DOMAIN=${DEIS_TEST_DOMAIN:-local3.deisapp.com}
+export DEIS_TEST_DOMAIN="${DEIS_TEST_DOMAIN:-local3.deisapp.com}"
 echo "DEIS_TEST_DOMAIN=$DEIS_TEST_DOMAIN"
 
 # SSH tunnel used by deisctl
-export DEISCTL_TUNNEL=${DEISCTL_TUNNEL:-127.0.0.1:2222}
+export DEISCTL_TUNNEL="${DEISCTL_TUNNEL:-127.0.0.1:2222}"
 echo "DEISCTL_TUNNEL=$DEISCTL_TUNNEL"
 
 # set units used by deisctl
-export DEISCTL_UNITS=${DEISCTL_UNITS:-$DEIS_ROOT/deisctl/units}
+export DEISCTL_UNITS="${DEISCTL_UNITS:-$DEIS_ROOT/deisctl/units}"
 echo "DEISCTL_UNITS=$DEISCTL_UNITS"
 
 # ip address for docker containers to communicate in functional tests
-export HOST_IPADDR=${HOST_IPADDR?}
+export HOST_IPADDR="${HOST_IPADDR?}"
 echo "HOST_IPADDR=$HOST_IPADDR"
 
 # the registry used to host dev-release images
 # must be accessible to local Docker engine and Deis cluster
-export DEV_REGISTRY=${DEV_REGISTRY?}
+export DEV_REGISTRY="${DEV_REGISTRY?}"
 echo "DEV_REGISTRY=$DEV_REGISTRY"
 
 # random 10-char (5-byte) hex string to identify a test run
-export DEIS_TEST_ID=${DEIS_TEST_ID:-$(openssl rand -hex 5)}
+export DEIS_TEST_ID="${DEIS_TEST_ID:-$(openssl rand -hex 5)}"
 echo "DEIS_TEST_ID=$DEIS_TEST_ID"
 
 # give this session a unique ~/.deis/<client>.json file
-export DEIS_PROFILE=test-$DEIS_TEST_ID
-rm -f $HOME/.deis/test-$DEIS_TEST_ID.json
+export DEIS_PROFILE="test-$DEIS_TEST_ID"
+rm -f "$HOME/.deis/test-$DEIS_TEST_ID.json"
 
 # bail if registry is not accessible
-if ! curl -s $DEV_REGISTRY && ! curl -s https://$DEV_REGISTRY; then
+if ! curl -s "$DEV_REGISTRY" && ! curl -s "https://$DEV_REGISTRY"; then
   echo "DEV_REGISTRY is not accessible, exiting..."
   exit 1
 fi
 echo ; echo
 
 # disable git+ssh host key checking
-export GIT_SSH=$DEIS_ROOT/tests/bin/git-ssh-nokeycheck.sh
+export GIT_SSH="$DEIS_ROOT/tests/bin/git-ssh-nokeycheck.sh"
 
 # install required go dependencies
 go get -v github.com/golang/lint/golint
 go get -v github.com/tools/godep
 
 # cleanup any stale example applications
-rm -rf $DEIS_ROOT/tests/example-*
+rm -rf "$DEIS_ROOT"/tests/example-*
 
 # generate ssh keys if they don't already exist
-test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUTH_KEY -N ''
+test -e "$HOME/.ssh/$DEIS_TEST_AUTH_KEY" || ssh-keygen -t rsa -f "$HOME/.ssh/$DEIS_TEST_AUTH_KEY" -N ''
 # TODO: parameterize this key required for keys_test.go?
 test -e ~/.ssh/deiskey || ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 
 # prepare the SSH agent
-ssh-add -D || eval $(ssh-agent) && ssh-add -D
-ssh-add ~/.ssh/$DEIS_TEST_AUTH_KEY
-ssh-add $DEIS_TEST_SSH_KEY
+ssh-add -D || eval "$(ssh-agent)" && ssh-add -D
+ssh-add "$HOME/.ssh/$DEIS_TEST_AUTH_KEY"
+ssh-add "$DEIS_TEST_SSH_KEY"
 
 # clear the drink of choice in case the user has set it
 unset DEIS_DRINK_OF_CHOICE
@@ -93,27 +93,27 @@ function cleanup {
     if [ "$SKIP_CLEANUP" != true ]; then
         log_phase "Cleaning up"
         set +e
-        ${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh
+        "${GOPATH}/src/github.com/deis/deis/tests/bin/destroy-all-vagrants.sh"
         VBoxManage list vms | grep deis | sed -n -e 's/^.* {\(.*\)}/\1/p' | xargs -L1 -I {} VBoxManage unregistervm {} --delete
         vagrant global-status --prune
-        docker rm -f -v `docker ps | grep deis- | awk '{print $1}'` 2>/dev/null
+        docker rm -f -v "$(docker ps | grep deis- | awk '{print $1}')" 2>/dev/null
         log_phase "Test run complete"
     fi
 }
 
 function dump_logs {
   log_phase "Error detected, dumping logs"
-  TIMESTAMP=`date +%Y-%m-%d-%H%M%S`
-  FAILED_LOGS_DIR=$HOME/deis-test-failure-$TIMESTAMP
-  mkdir -p $FAILED_LOGS_DIR
+  TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
+  FAILED_LOGS_DIR="$HOME/deis-test-failure-$TIMESTAMP"
+  mkdir -p "$FAILED_LOGS_DIR"
   set +e
-  export FLEETCTL_TUNNEL=$DEISCTL_TUNNEL
+  export FLEETCTL_TUNNEL="$DEISCTL_TUNNEL"
   fleetctl -strict-host-key-checking=false list-units
   # application unit logs
-  for APP in `fleetctl -strict-host-key-checking=false list-units --no-legend --fields=unit | grep -v "deis-"`;do
-    CURRENT_APP=$(echo $APP | sed "s/\.service//")
+  for APP in $(fleetctl -strict-host-key-checking=false list-units --no-legend --fields=unit | grep -v "deis-");do
+    CURRENT_APP=${APP//".service"/}
     #echo "$CURRENT_APP"
-    get_journal_logs $CURRENT_APP
+    get_journal_logs "$CURRENT_APP"
   done
   # etcd keyspace
   get_logs deis-controller "etcdctl ls / --recursive" etcdctl-dump
@@ -143,21 +143,21 @@ function dump_logs {
 
   # get debug-etcd logs
   fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u etcd \
-    > $FAILED_LOGS_DIR/debug-etcd-1.log
+    > "$FAILED_LOGS_DIR/debug-etcd-1.log"
   fleetctl -strict-host-key-checking=false ssh deis-router@2 journalctl --no-pager -u etcd \
-    > $FAILED_LOGS_DIR/debug-etcd-2.log
+    > "$FAILED_LOGS_DIR/debug-etcd-2.log"
   fleetctl -strict-host-key-checking=false ssh deis-router@3 journalctl --no-pager -u etcd \
-    > $FAILED_LOGS_DIR/debug-etcd-3.log
+    > "$FAILED_LOGS_DIR/debug-etcd-3.log"
 
   # tarball logs
-  BUCKET=jenkins-failure-logs
-  FILENAME=deis-test-failure-$TIMESTAMP.tar.gz
-  cd $FAILED_LOGS_DIR && tar -czf $FILENAME *.log && mv $FILENAME .. && cd ..
-  rm -rf $FAILED_LOGS_DIR
-  if [ `which s3cmd` ] && [ -f $HOME/.s3cfg ]; then
+  BUCKET="jenkins-failure-logs"
+  FILENAME="deis-test-failure-$TIMESTAMP.tar.gz"
+  cd "$FAILED_LOGS_DIR" && tar -czf "$FILENAME" ./*.log && mv "$FILENAME" .. && cd ..
+  rm -rf "$FAILED_LOGS_DIR"
+  if [ "$(which s3cmd)" ] && [ -f "$HOME/.s3cfg" ]; then
     echo "configured s3cmd found in path. Attempting to upload logs to S3"
-    s3cmd put $HOME/$FILENAME s3://$BUCKET
-    rm $HOME/$FILENAME
+    s3cmd put "$HOME/$FILENAME" "s3://$BUCKET"
+    rm "$HOME/$FILENAME"
     echo "Logs are accessible at https://s3.amazonaws.com/$BUCKET/$FILENAME"
   else
     echo "Logs are accessible at $HOME/$FILENAME"
@@ -170,15 +170,15 @@ function get_logs {
   CONTAINER="$2"
   FILENAME="$3"
   if [ -z "$CONTAINER" ]; then
-    CONTAINER=$TARGET
+    CONTAINER="$TARGET"
   fi
   if [ -z "$FILENAME" ]; then
-    FILENAME=$TARGET
+    FILENAME="$TARGET"
   fi
-  fleetctl -strict-host-key-checking=false ssh "$TARGET" docker logs "$CONTAINER" > $FAILED_LOGS_DIR/$FILENAME.log
+  fleetctl -strict-host-key-checking=false ssh "$TARGET" docker logs "$CONTAINER" > "$FAILED_LOGS_DIR/$FILENAME.log"
 }
 
 function get_journal_logs {
   TARGET="$1"
-  fleetctl -strict-host-key-checking=false journal --lines=1000 "$TARGET" > $FAILED_LOGS_DIR/$TARGET.log
+  fleetctl -strict-host-key-checking=false journal --lines=1000 "$TARGET" > "$FAILED_LOGS_DIR/$TARGET.log"
 }

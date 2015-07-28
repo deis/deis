@@ -1,26 +1,26 @@
 #!/bin/bash
 # Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
 
-ETCD_PORT=${ETCD_PORT:-4001}
+ETCD_PORT="${ETCD_PORT:-4001}"
 ETCD="$HOST:$ETCD_PORT"
 
-HOSTNAME=`hostname`
+HOSTNAME=$(hostname)
 OSD_ID=''
 
-until etcdctl --no-sync -C $ETCD get /deis/store/monSetupComplete >/dev/null 2>&1 ; do
+until etcdctl --no-sync -C "$ETCD" get /deis/store/monSetupComplete >/dev/null 2>&1 ; do
   echo "store-daemon: waiting for monitor setup to complete..."
   sleep 5
 done
 
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
   echo "store-daemon: waiting for confd to write initial templates..."
   sleep 5
 done
 
-if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; then
+if ! etcdctl --no-sync -C "$ETCD" get "/deis/store/osds/$HOST" >/dev/null 2>&1 ; then
   echo "store-daemon: creating OSD..."
 
-  OSD_ID=`ceph osd create 2>/dev/null`
+  OSD_ID=$(ceph osd create 2>/dev/null)
 
   if ! [[ "${OSD_ID}" =~ ^-?[0-9]+$ ]] ; then
     echo "store-daemon: FATAL - We have an OSD ID that isn't an integer"
@@ -30,28 +30,28 @@ if ! etcdctl --no-sync -C $ETCD get /deis/store/osds/$HOST >/dev/null 2>&1 ; the
   fi
 
   echo "store-daemon: created OSD ${OSD_ID}"
-  etcdctl --no-sync -C $ETCD set /deis/store/osds/$HOST ${OSD_ID} >/dev/null
+  etcdctl --no-sync -C "$ETCD" set "/deis/store/osds/$HOST" "${OSD_ID}" >/dev/null
 fi
 
 if [ -z "${OSD_ID}" ]; then
-  OSD_ID=`etcdctl --no-sync -C $ETCD get /deis/store/osds/${HOST}`
+  OSD_ID=$(etcdctl --no-sync -C "$ETCD" get "/deis/store/osds/${HOST}")
 fi
 
 # Make sure osd directory exists
-mkdir -p /var/lib/ceph/osd/ceph-${OSD_ID}
+mkdir -p "/var/lib/ceph/osd/ceph-${OSD_ID}"
 
 # Check to see if our OSD has been initialized
-if [ ! -e /var/lib/ceph/osd/ceph-${OSD_ID}/keyring ]; then
+if [ ! -e "/var/lib/ceph/osd/ceph-${OSD_ID}/keyring" ]; then
   echo "store-daemon: OSD not yet initialized. Initializing..."
-  ceph-osd -i $OSD_ID --mkfs --mkjournal --osd-journal /var/lib/ceph/osd/ceph-${OSD_ID}/journal
-  ceph auth get-or-create osd.${OSD_ID} osd 'allow *' mon 'allow profile osd' -o /var/lib/ceph/osd/ceph-${OSD_ID}/keyring
-  ceph osd crush add ${OSD_ID} 1.0 root=default host=${HOSTNAME}
+  ceph-osd -i "$OSD_ID" --mkfs --mkjournal --osd-journal "/var/lib/ceph/osd/ceph-${OSD_ID}/journal"
+  ceph auth get-or-create "osd.${OSD_ID}" osd 'allow *' mon 'allow profile osd' -o "/var/lib/ceph/osd/ceph-${OSD_ID}/keyring"
+  ceph osd crush add "${OSD_ID}" 1.0 root=default host="${HOSTNAME}"
 fi
 
 echo "store-daemon: starting daemon on ${HOSTNAME}..."
 
-if [ $1 == 'ceph-osd' ]; then
-  exec ceph-osd -d -i ${OSD_ID} -k /var/lib/ceph/osd/ceph-${OSD_ID}/keyring
+if [ "$1" == 'ceph-osd' ]; then
+  exec ceph-osd -d -i "${OSD_ID}" -k "/var/lib/ceph/osd/ceph-${OSD_ID}/keyring"
 else
-  exec $@
+  exec "$@"
 fi

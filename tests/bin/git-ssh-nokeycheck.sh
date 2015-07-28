@@ -5,5 +5,6 @@
 # then run git commands as usual:
 # $ export GIT_SSH=$HOME/bin/git-ssh-nokeycheck.sh
 
-SSH_ORIGINAL_COMMAND="ssh $@"
+# We want the $@ to expand client side
+# shellcheck disable=SC2029
 ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$@"

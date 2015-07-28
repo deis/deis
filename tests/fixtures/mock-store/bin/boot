@@ -7,29 +7,29 @@
 set -eo pipefail
 
 # set debug based on envvar
-[[ $DEBUG ]] && set -x
+[[ "$DEBUG" ]] && set -x
 
 # configure etcd
-export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD_PORT="${ETCD_PORT:-4001}"
 export ETCD="$HOST:$ETCD_PORT"
-export ETCD_PATH=${ETCD_PATH:-/deis/store/gateway}
-export ETCD_TTL=${ETCD_TTL:-20}
+export ETCD_PATH="${ETCD_PATH:-/deis/store/gateway}"
+export ETCD_TTL="${ETCD_TTL:-20}"
 
-export EXTERNAL_PORT=${EXTERNAL_PORT:-8888}
-export STORAGE_DIRECTORY=${STORAGE_DIRECTORY:-/app/storage}
+export EXTERNAL_PORT="${EXTERNAL_PORT:-8888}"
+export STORAGE_DIRECTORY="${STORAGE_DIRECTORY:-/app/storage}"
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
     echo "waiting for etcd at $ETCD..."
-    sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+    sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+sleep $((ETCD_TTL+1))
 
 function etcd_safe_mkdir {
   set +e
-  etcdctl --no-sync -C $ETCD mkdir $1 >/dev/null 2>&1
+  etcdctl --no-sync -C "$ETCD" mkdir "$1" >/dev/null 2>&1
   if [[ $? -ne 0 && $? -ne 4 ]]; then
     echo "etcd_safe_mkdir: an etcd error occurred. aborting..."
     exit 1
@@ -37,22 +37,22 @@ function etcd_safe_mkdir {
   set -e
 }
 
-etcd_safe_mkdir $ETCD_PATH
+etcd_safe_mkdir "$ETCD_PATH"
 
 # store the access key and secret key for consumption by other services
-ACCESS_KEY=`etcdctl --no-sync -C $ETCD get $ETCD_PATH/accessKey 2>/dev/null || openssl rand -base64 21 | tr -d '\n'`
-SECRET_KEY=`etcdctl --no-sync -C $ETCD get $ETCD_PATH/secretKey 2>/dev/null || openssl rand -base64 64 | tr -d '\n'`
-etcdctl --no-sync -C $ETCD set $ETCD_PATH/accessKey ${ACCESS_KEY} >/dev/null
-etcdctl --no-sync -C $ETCD set $ETCD_PATH/secretKey ${SECRET_KEY} >/dev/null
+ACCESS_KEY=$(etcdctl --no-sync -C "$ETCD" get "$ETCD_PATH/accessKey" 2>/dev/null || openssl rand -base64 21 | tr -d '\n')
+SECRET_KEY=$(etcdctl --no-sync -C "$ETCD" get "$ETCD_PATH/secretKey" 2>/dev/null || openssl rand -base64 64 | tr -d '\n')
+etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/accessKey" "${ACCESS_KEY}" >/dev/null
+etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/secretKey" "${SECRET_KEY}" >/dev/null
 
 mkdir -p /app/storage
 
-mock_s3 --hostname 0.0.0.0 --port $EXTERNAL_PORT --root $STORAGE_DIRECTORY &
+mock_s3 --hostname 0.0.0.0 --port "$EXTERNAL_PORT" --root "$STORAGE_DIRECTORY" &
 
 echo deis-store-gateway running...
 
 # configure service discovery
-PROTO=${PROTO:-tcp}
+PROTO="${PROTO:-tcp}"
 
 set +e
 
@@ -61,9 +61,9 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBL
 
 # while the port is listening, publish to etcd
 while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PUBLISH\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-  etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-  sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+  etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+  etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+  sleep $((ETCD_TTL/2)) # sleep for half the TTL
 done
 
 # if the loop quits, something went wrong

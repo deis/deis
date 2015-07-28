@@ -8,14 +8,15 @@
 set -eo pipefail
 
 # absolute path to current directory
-export THIS_DIR=$(cd $(dirname $0); pwd)
+THIS_DIR=$(cd "$(dirname "$0")"; pwd)
+export THIS_DIR
 
 # setup the test environment
-source $THIS_DIR/test-setup.sh
+source "$THIS_DIR/test-setup.sh"
 
 # AWS credentials required for aws cli and boto
-export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID?}
-export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY?}
+export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID?}"
+export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY?}"
 
 # install python requirements for this script
 pip install --disable-pip-version-check awscli boto docopt
@@ -23,8 +24,8 @@ pip install --disable-pip-version-check awscli boto docopt
 function cleanup_aws {
     if [ "$SKIP_CLEANUP" != true ]; then
         log_phase "Cleaning up"
-        aws cloudformation delete-stack --stack-name $STACK_NAME
-        python $DEIS_ROOT/contrib/aws/route53-wildcard.py delete $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+        aws cloudformation delete-stack --stack-name "$STACK_NAME"
+        python "$DEIS_ROOT/contrib/aws/route53-wildcard.py" delete "$DEIS_TEST_DOMAIN" "$ELB_DNS_NAME"
     fi
 }
 
@@ -51,7 +52,7 @@ log_phase "Building from current source tree"
 make build
 
 # use the built client binaries
-export PATH=$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH
+export PATH="$DEIS_ROOT/deisctl:$DEIS_ROOT/client/dist:$PATH"
 
 log_phase "Running functional tests"
 
@@ -64,14 +65,14 @@ log_phase "Provisioning $DEIS_NUM_INSTANCES-node CoreOS"
 if ! aws ec2 describe-key-pairs --key-names "deis" >/dev/null ; then
     echo "Importing $DEIS_TEST_AUTH_KEY keypair to EC2"
     aws ec2 import-key-pair --key-name deis \
-        --public-key-material file://~/.ssh/$DEIS_TEST_AUTH_KEY.pub \
+        --public-key-material "file://~/.ssh/$DEIS_TEST_AUTH_KEY.pub" \
         --output text
 fi
 
 make discovery-url
 
 # customize cloudformation.json to use m3.medium instances
-cat > $DEIS_ROOT/contrib/aws/cloudformation.json <<EOF
+cat > "$DEIS_ROOT/contrib/aws/cloudformation.json" <<EOF
 [
     {
         "ParameterKey":     "KeyPair",
@@ -85,25 +86,32 @@ cat > $DEIS_ROOT/contrib/aws/cloudformation.json <<EOF
 EOF
 
 # add random characters after STACK_TAG to avoid collisions
-STACK_TAG=${STACK_TAG:-test}-$DEIS_TEST_ID
-STACK_NAME=deis-$STACK_TAG
+STACK_TAG="${STACK_TAG:-test}-$DEIS_TEST_ID"
+STACK_NAME="deis-$STACK_TAG"
 echo "Creating CloudFormation stack $STACK_NAME"
-$DEIS_ROOT/contrib/aws/provision-aws-cluster.sh $STACK_NAME
+"$DEIS_ROOT/contrib/aws/provision-aws-cluster.sh" "$STACK_NAME"
 
 # discard changes to cloudformation.json
-git checkout -- $DEIS_ROOT/contrib/aws/cloudformation.json
+git checkout -- "$DEIS_ROOT/contrib/aws/cloudformation.json"
 
 # use the first cluster node for now
 INSTANCE_IDS=$(aws ec2 describe-instances \
-    --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
+    --filters Name=tag:aws:cloudformation:stack-name,Values="$STACK_NAME" Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[ InstanceId ]' \
     --output text)
-export INSTANCE_ID=$(cut -d " " -f1 <<< $INSTANCE_IDS)
-export DEISCTL_TUNNEL=$(aws ec2 describe-instances \
-    --instance-ids=$INSTANCE_ID \
-    --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
+
+# Don't warn about INSTANCE_IDS being unquoted
+# shellcheck disable=SC2086
+INSTANCE_ID=$(cut -d " " -f1 <<< $INSTANCE_IDS)
+export INSTANCE_ID
+
+DEISCTL_TUNNEL=$(aws ec2 describe-instances \
+    --instance-ids="$INSTANCE_ID" \
+    --filters Name=tag:aws:cloudformation:stack-name,Values="$STACK_NAME" Name=instance-state-name,Values=running \
     --query 'Reservations[].Instances[].[ PublicDnsName ]' \
     --output text)
+
+export DEISCTL_TUNNEL
 
 log_phase "Waiting for etcd/fleet at $DEISCTL_TUNNEL"
 
@@ -153,11 +161,11 @@ fi
 
 log_phase "Provisioning Deis"
 
-export DEIS_TEST_DOMAIN=$STACK_TAG.$DEIS_TEST_DOMAIN
+export DEIS_TEST_DOMAIN="$STACK_TAG.$DEIS_TEST_DOMAIN"
 
 # configure platform settings
-deisctl config platform set domain=$DEIS_TEST_DOMAIN
-deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
+deisctl config platform set domain="$DEIS_TEST_DOMAIN"
+deisctl config platform set sshPrivateKey="$DEIS_TEST_SSH_KEY"
 
 time deisctl install platform
 time deisctl start platform
@@ -165,7 +173,7 @@ time deisctl start platform
 # get ELB public DNS name through cloudformation
 # TODO: is "first output value" going to be reliable enough?
 ELB_DNS_NAME=$(aws cloudformation describe-stacks \
-    --stack-name $STACK_NAME \
+    --stack-name "$STACK_NAME" \
     --max-items 1 \
     --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
     --output=text)
@@ -173,12 +181,12 @@ ELB_DNS_NAME=$(aws cloudformation describe-stacks \
 # get ELB friendly name through aws elb
 ELB_NAME=$(aws elb describe-load-balancers \
     --query 'LoadBalancerDescriptions[].[ DNSName,LoadBalancerName ]' \
-    --output=text | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
+    --output=text | grep -F "$ELB_DNS_NAME" | head -n1 | cut -f2)
 echo "Using ELB $ELB_NAME"
 
 # add or update a route53 alias record set to route queries to the ELB
 # this python script won't return until the wildcard domain is accessible
-python $DEIS_ROOT/contrib/aws/route53-wildcard.py create $DEIS_TEST_DOMAIN $ELB_DNS_NAME
+python "$DEIS_ROOT/contrib/aws/route53-wildcard.py" create "$DEIS_TEST_DOMAIN" "$ELB_DNS_NAME"
 
 # loop until at least one instance is "in service" with the ELB
 ATTEMPTS=45
@@ -189,10 +197,11 @@ until [ $IN_SERVICE -ge 1 ]; do
     if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
     echo "Waiting for ELB to see an instance in service..."
+
     IN_SERVICE=$(aws elb describe-instance-health \
-        --load-balancer-name $ELB_NAME \
+        --load-balancer-name "$ELB_NAME" \
         --query 'InstanceStates[].State' \
-        | grep InService | wc -l)
+        | grep -c InService)
 done
 
 log_phase "Running integration suite with Python Client"

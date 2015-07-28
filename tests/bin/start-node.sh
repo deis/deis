@@ -5,4 +5,4 @@
 # administrative interface.
 
 wget -N https://ci.deis.io/jnlpJars/slave.jar
-java -jar slave.jar -jnlpUrl https://ci.deis.io/computer/${NODE_NAME?}/slave-agent.jnlp -secret ${NODE_SECRET?} &
+java -jar slave.jar -jnlpUrl "https://ci.deis.io/computer/${NODE_NAME?}/slave-agent.jnlp" -secret "${NODE_SECRET?}" &

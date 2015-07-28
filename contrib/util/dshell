@@ -7,5 +7,5 @@
 # `./dshell deis-controller` gives an interactive prompt
 # echo "ls" | `./dshell deis-controller` lists the contents of the root home folder
 
-ID=$(docker inspect $1 | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[0]["ID"]')
-lxc-attach -n $ID $2
+ID=$(docker inspect "$1" | python -c 'import json,sys;obj=json.load(sys.stdin);print obj[0]["ID"]')
+lxc-attach -n "$ID" "$2"

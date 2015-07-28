@@ -1,10 +1,12 @@
-#!/usr/bin/env bash -e
+#!/usr/bin/env bash
 
 # This code is kept in a separate file from `reste-db.sh` for no other reason than to not have to deal
 # with the nightmare of double escaping all these commands through `vagrant ssh -c "\\\\\\\\\AGH!"`
 
 # NB. Command for exporting fixtures
 # `./manage.py dumpdata --natural --indent=4 -e sessions -e admin -e contenttypes -e auth.Permission -e south > /app/deis/api/fixtures/dev.json`
+
+set -e
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2

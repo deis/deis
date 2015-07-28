@@ -10,30 +10,33 @@ set -eo pipefail
 [[ $DEBUG ]] && set -x
 
 # configure etcd
-export ETCD_PORT=${ETCD_PORT:-4001}
+export ETCD_PORT="${ETCD_PORT:-4001}"
 export ETCD="$HOST:$ETCD_PORT"
-export ETCD_PATH=${ETCD_PATH:-/deis/registry}
-export HOST_ETCD_PATH=${HOST_ETCD_PATH:-/deis/registry/hosts/$HOST}
-export ETCD_TTL=${ETCD_TTL:-20}
+export ETCD_PATH="${ETCD_PATH:-/deis/registry}"
+export HOST_ETCD_PATH="${HOST_ETCD_PATH:-/deis/registry/hosts/$HOST}"
+export ETCD_TTL="${ETCD_TTL:-20}"
 
 # run.sh requires $REGISTRY_PORT
-export REGISTRY_PORT=${PORT:-5000}
+export REGISTRY_PORT="${PORT:-5000}"
 
-export BUCKET_NAME=${BUCKET_NAME:-registry}
+export BUCKET_NAME="${BUCKET_NAME:-registry}"
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
 	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+sleep $((ETCD_TTL+1))
 
 function etcd_set_default {
   set +e
-  ERROR="$(etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 $2 2>&1 >/dev/null)"
-  if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+  ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
+
+  # We're not compairing output with -n so error doesn't apply
+  # shellcheck disable=SC2143
+  if [[ $? -ne 0 && $(echo "$ERROR" | grep -ive "key already exists") ]]; then
     echo "etcd_set_default: an etcd error occurred ($ERROR)"
     echo "aborting..."
     exit 1
@@ -43,12 +46,12 @@ function etcd_set_default {
 
 # seed initial service configuration if necessary
 etcd_set_default protocol http
-etcd_set_default bucketName ${BUCKET_NAME}
+etcd_set_default bucketName "${BUCKET_NAME}"
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --confdir /app --log-level error; do
+until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
 	echo "registry: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # ensure registry bucket exists
@@ -68,8 +71,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
-CONFD_PID=$!
+confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
 
 echo deis-registry running...
 
@@ -87,16 +89,16 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		if etcdctl --no-sync -C $ETCD mk ${ETCD_PATH}/masterLock $HOSTNAME --ttl $ETCD_TTL >/dev/null 2>&1 \
-		|| [[ `etcdctl --no-sync -C $ETCD get ${ETCD_PATH}/masterLock` == "$HOSTNAME" ]] ; then
-			etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-			etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-			etcdctl --no-sync -C $ETCD update ${ETCD_PATH}/masterLock $HOSTNAME --ttl $ETCD_TTL >/dev/null
+		if etcdctl --no-sync -C "$ETCD" mk "${ETCD_PATH}/masterLock" "$HOSTNAME" --ttl "$ETCD_TTL" >/dev/null 2>&1 \
+		|| [[ $(etcdctl --no-sync -C "$ETCD" get "${ETCD_PATH}/masterLock") == "$HOSTNAME" ]] ; then
+			etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+			etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
+			etcdctl --no-sync -C "$ETCD" update "${ETCD_PATH}/masterLock" "$HOSTNAME" --ttl "$ETCD_TTL" >/dev/null
 		fi
-		etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $HOST_ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		etcdctl --no-sync -C "$ETCD" set "$HOST_ETCD_PATH/host" "$HOST" --ttl "$ETCD_TTL" >/dev/null
+		etcdctl --no-sync -C "$ETCD" set "$HOST_ETCD_PATH/port" "$EXTERNAL_PORT" --ttl "$ETCD_TTL" >/dev/null
 
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+		sleep $((ETCD_TTL/2)) # sleep for half the TTL
 	done
 
 	# if the loop quits, something went wrong

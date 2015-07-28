@@ -10,6 +10,7 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
+# shellcheck disable=SC2034
 DEBIAN_FRONTEND=noninteractive
 
 apt-get update && apt-get install -yq radosgw radosgw-agent
@@ -19,4 +20,3 @@ apt-get clean -y && \
   rm -Rf /usr/share/man /usr/share/doc && \
   rm -rf /tmp/* /var/tmp/* && \
   rm -rf /var/lib/apt/lists/*
-

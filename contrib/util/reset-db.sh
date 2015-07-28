@@ -1,4 +1,4 @@
-#/bin/bash -e
+#!/bin/bash -e
 
 VP_HOST="$(hostname | sed -e 's/^ *//g' -e 's/ *$//g').local"
 VP_USER=$(whoami | sed -e 's/^ *//g' -e 's/ *$//g')

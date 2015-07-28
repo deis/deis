@@ -9,12 +9,12 @@
 
 set -e
 
-THIS_DIR=$(cd $(dirname $0); pwd) # absolute path
-CONTRIB_DIR=$(dirname $THIS_DIR)
+THIS_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
+CONTRIB_DIR=$(dirname "$THIS_DIR")
 DEIS_NETWORK=${DEIS_NETWORK:-deis}
 DEIS_SECGROUP=${DEIS_SECGROUP:-deis}
 
-source $CONTRIB_DIR/utils.sh
+source "$CONTRIB_DIR/utils.sh"
 
 if [ -z "$2" ]; then
   echo_red 'Usage: provision-openstack-cluster.sh <coreos image name/id> <key pair name> [flavor]'
@@ -24,12 +24,12 @@ COREOS_IMAGE=$1
 KEYPAIR=$2
 
 if ! which nova > /dev/null; then
-  echo_red 'Please install nova and ensure it is in your $PATH.'
+  echo_red 'Please install nova and ensure it is in your PATH.'
   exit 1
 fi
 
 if ! which neutron > /dev/null; then
-  echo_red 'Please install neutron and ensure it is in your $PATH.'
+  echo_red 'Please install neutron and ensure it is in your PATH.'
   exit 1
 fi
 
@@ -44,24 +44,24 @@ if [ -z "$OS_AUTH_URL" ]; then
   exit 1
 fi
 
-if neutron net-list|grep -q $DEIS_NETWORK &>/dev/null; then
+if neutron net-list|grep -q "$DEIS_NETWORK" &>/dev/null; then
   NETWORK_ID=$(neutron net-list | grep internal | awk -F'| ' '{print $2}')
 else
   echo_yellow "Creating deis private network..."
   CIDR=${DEIS_CIDR:-10.21.12.0/24}
   SUBNET_OPTIONS=""
-  [ ! -z "$DEIS_DNS" ] && SUBNET_OPTIONS=$(echo $DEIS_DNS|awk -F "," '{for (i=1; i<=NF; i++) printf "--dns-nameserver %s ", $i}')
-  NETWORK_ID=$(neutron net-create $DEIS_NETWORK | awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
+  [ ! -z "$DEIS_DNS" ] && SUBNET_OPTIONS=$(echo "$DEIS_DNS"|awk -F "," '{for (i=1; i<=NF; i++) printf "--dns-nameserver %s ", $i}')
+  NETWORK_ID=$(neutron net-create "$DEIS_NETWORK" | awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
   echo "DBG: SUBNET_OPTIONS=$SUBNET_OPTIONS"
-  SUBNET_ID=$(neutron subnet-create --name deis_subnet $SUBNET_OPTIONS $NETWORK_ID $CIDR| awk '{ printf "%s", ($2 == "id" ? $4 : "")}')
+  neutron subnet-create --name deis_subnet "$SUBNET_OPTIONS" "$NETWORK_ID" "$CIDR"
 fi
 
-if ! neutron security-group-list | grep -q $DEIS_SECGROUP &>/dev/null; then
-  neutron security-group-create $DEIS_SECGROUP
-  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 22 --port-range-max 22 $DEIS_SECGROUP
-  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 2222 --port-range-max 22222 $DEIS_SECGROUP
-  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 80 --port-range-max 80 $DEIS_SECGROUP
-  neutron security-group-rule-create --protocol icmp --remote-ip-prefix 0/0 $DEIS_SECGROUP
+if ! neutron security-group-list | grep -q "$DEIS_SECGROUP" &>/dev/null; then
+  neutron security-group-create "$DEIS_SECGROUP"
+  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 22 --port-range-max 22 "$DEIS_SECGROUP"
+  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 2222 --port-range-max 22222 "$DEIS_SECGROUP"
+  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 80 --port-range-max 80 "$DEIS_SECGROUP"
+  neutron security-group-rule-create --protocol icmp --remote-ip-prefix 0/0 "$DEIS_SECGROUP"
 fi
 
 if [ -z "$DEIS_NUM_INSTANCES" ]; then
@@ -69,13 +69,13 @@ if [ -z "$DEIS_NUM_INSTANCES" ]; then
 fi
 
 # check that the CoreOS user-data file is valid
-$CONTRIB_DIR/util/check-user-data.sh
+"$CONTRIB_DIR/util/check-user-data.sh"
 
 i=1 ; while [[ $i -le $DEIS_NUM_INSTANCES ]] ; do \
     echo_yellow "Provisioning deis-$i..."
-    nova boot --image $COREOS_IMAGE --flavor $FLAVOR --key-name $KEYPAIR  \
-      --security-groups $DEIS_SECGROUP --user-data ../coreos/user-data \
-      --nic net-id=$NETWORK_ID deis-$i ; \
+    nova boot --image "$COREOS_IMAGE" --flavor "$FLAVOR" --key-name "$KEYPAIR"  \
+      --security-groups "$DEIS_SECGROUP" --user-data ../coreos/user-data \
+      --nic net-id="$NETWORK_ID" deis-$i ; \
     ((i = i + 1)) ; \
 done
 

@@ -7,6 +7,10 @@ GO_FILES = $(wildcard *.go)
 GO_PACKAGES = dockercli etcdutils mock utils
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
+SHELL_SCRIPTS = $(wildcard bin/*) \
+								$(wildcard fixtures/mock-store/bin/*) \
+								$(wildcard fixtures/test-postgresql/rootfs/*/*)
+
 MOCK_STORE_IMAGE = $(IMAGE_PREFIX)mock-store:latest
 TEST_ETCD_IMAGE = $(IMAGE_PREFIX)test-etcd:latest
 TEST_POSTGRESQL_IMAGE = $(IMAGE_PREFIX)test-postgresql:latest
@@ -44,6 +48,7 @@ test-style:
 	@$(GOFMT) $(GO_PACKAGES) $(GO_FILES) | read; if [ $$? == 0 ]; then echo "gofmt check failed."; exit 1; fi
 	$(GOVET) $(repo_path) $(GO_PACKAGES_REPO_PATH)
 	$(GOLINT) ./...
+	shellcheck $(SHELL_SCRIPTS)
 
 nuke_from_orbit:
 	-docker kill `docker ps -q`

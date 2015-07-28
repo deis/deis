@@ -6,7 +6,7 @@
 
 VMS=$(vagrant global-status | grep deis | awk '{ print $5 }')
 for dir in $VMS; do
-    cd $dir && vagrant destroy --force
+    cd "$dir" && vagrant destroy --force
 done
 
 # optional commands to remove all VirtualBox vms, since sometimes they are orphaned

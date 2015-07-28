@@ -17,6 +17,8 @@ COMPONENT = $(notdir $(repo_path))
 GO_PACKAGES = pkg/boot pkg/confd pkg/etcd pkg/fleet pkg/log pkg/net pkg/os pkg/types
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
+SHELL_SCRIPTS = $(shell find "." -name '*.sh')
+
 MASTER_IMAGE = $(IMAGE_PREFIX)mesos-master:$(BUILD_TAG)
 MASTER_DEV_IMAGE = $(REGISTRY)$(MASTER_IMAGE)
 MARATHON_IMAGE = $(IMAGE_PREFIX)mesos-marathon:$(BUILD_TAG)
@@ -129,3 +131,4 @@ test-style:
 	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
 		$(GOLINT) $$i; \
 	done
+	shellcheck $(SHELL_SCRIPTS)

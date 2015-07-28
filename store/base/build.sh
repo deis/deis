@@ -10,6 +10,7 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
+# shellcheck disable=SC2034
 DEBIAN_FRONTEND=noninteractive
 
 # install common packages

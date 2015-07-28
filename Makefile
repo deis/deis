@@ -108,7 +108,8 @@ test-style:
 	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
 		$(GOLINT) $$i; \
 	done
-	@$(foreach C, tests pkg $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
+
+	@$(foreach C, tests contrib pkg mesos $(CLIENTS) $(COMPONENTS), $(MAKE) -C $(C) test-style &&) echo done
 
 commit-hook:
 	cp contrib/util/commit-msg .git/hooks/commit-msg

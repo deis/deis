@@ -29,13 +29,25 @@ dpkg -i vagrant_1.7.2_x86_64.deb && rm vagrant_1.7.2_x86_64.deb
 
 # install go
 wget -nv -O- https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -xz
+
+# Command deliberately put in single quotes
+# shellcheck disable=SC2016
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
-echo "You must reboot for the global $PATH changes to take effect."
+echo "You must reboot for the global PATH changes to take effect."
 
 # install test suite requirements
 apt-get install -yq curl mercurial python-dev libffi-dev libpq-dev libyaml-dev git postgresql postgresql-client libldap2-dev libsasl2-dev
 curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
 pip install virtualenv
+
+# Use cabal (Haskell installer) to build and install ShellCheck
+apt-get install -yq cabal-install
+cabal update
+cd /tmp
+git clone --single-branch https://github.com/koalaman/shellcheck.git
+cd shellcheck
+cabal install --global
+apt-get purge cabal-install
 
 # create jenkins user and install node bootstrap script
 useradd -G docker,vboxusers -s /bin/bash --system -m jenkins
