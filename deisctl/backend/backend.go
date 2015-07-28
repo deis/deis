@@ -13,6 +13,7 @@ type Backend interface {
 	Stop([]string, *sync.WaitGroup, io.Writer, io.Writer)
 	Scale(string, int, *sync.WaitGroup, io.Writer, io.Writer)
 	SSH(string) error
+	SSHExec(string, string) error
 	ListUnits() error
 	ListUnitFiles() error
 	Status(string) error
