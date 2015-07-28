@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/deis/deis/pkg/prettyprint"
 
@@ -195,7 +196,7 @@ func AppDestroy(appID, confirm string) error {
  !    This command will destroy the application: %s
  !    To proceed, type "%s" or re-run this command with --confirm=%s
 
->`, appID, appID, appID)
+> `, appID, appID, appID)
 
 		fmt.Scanln(&confirm)
 	}
@@ -204,11 +205,14 @@ func AppDestroy(appID, confirm string) error {
 		return fmt.Errorf("App %s does not match confirm %s, aborting.", appID, confirm)
 	}
 
-	fmt.Printf("Destroying %s...", appID)
+	startTime := time.Now()
+	fmt.Printf("Destroying %s...\n", appID)
 
 	if err = apps.Delete(c, appID); err != nil {
 		return err
 	}
+
+	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	if gitSession {
 		return c.DeleteRemote(appID)
