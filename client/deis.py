@@ -1093,7 +1093,6 @@ Make sure that the Controller URI is correct and the server is running.
 
         certs:list            list SSL certificates for an app
         certs:add             add an SSL certificate to an app
-        certs:update          update an existing certifcate for an app
         certs:remove          remove an SSL certificate from an app
 
         Use `deis help [command]` to learn more.
