@@ -57,20 +57,10 @@ Change Registration Mode
 ------------------------
 
 Changing the registration process is highly recommended in production.  By default, registrations for a
-new cluster are open to anyone with the proper URL.  Once the admin user has registered on a new cluster,
-it is recommended that you either turn off registrations entirely or enable the adminOnly registration feature.
+new cluster are open to anyone with the proper URL.  Once the admin user has registered with a new cluster,
+it is recommended that you either turn off registrations entirely or enable the admin only registration feature.
 
-Turn off registrations:
-
-.. code-block:: console
-
-   $ deisctl config platform set registrationMode=disable
-
-Turn on admin only registrations:
-
-.. code-block:: console
-
-   $ deisctl config platform set registrationMode=adminOnly
+Please see the following documentation:  :ref:`controller_settings`
 
 Configure logging and monitoring
 --------------------------------
