@@ -30,9 +30,7 @@ function etcd_set_default {
   set +e
   ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
 
-  # We're not compairing output with -n so error doesn't apply
-  # shellcheck disable=SC2143
-  if [[ $? -ne 0 && $(echo "$ERROR" | grep -ive "key already exists") ]]; then
+  if [[ $? -ne 0 ]] && echo "$ERROR" | grep -iqve "key already exists"; then
     echo "etcd_set_default: an etcd error occurred ($ERROR)"
     echo "aborting..."
     exit 1
