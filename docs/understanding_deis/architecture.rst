@@ -72,3 +72,10 @@ For small deployments you can run the entire platform
 -- Control Plane, Data Plane and Router Mesh -- on just 3 servers.
 For larger deployments, you'll want to isolate the Control Plane and Router Mesh,
 then scale your data plane out to as many servers as you need.
+
+The Deis Control Plane, Data Plane, and Router Mesh components all depend on an
+etcd cluster for service discovery and configuration. For larger deployments,
+you'll want to isolate this as well.
+
+Those building larger clusters should reference :ref:`isolating-etcd` for
+further details.
