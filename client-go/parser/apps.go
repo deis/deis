@@ -91,13 +91,25 @@ func appsList(argv []string) error {
 	usage := `
 Lists applications visible to the current user.
 
-Usage: deis apps:list
+Usage: deis apps:list [options]
+
+Options:
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
 		return err
 	}
 
-	return cmd.AppsList()
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.AppsList(results)
 }
 
 func appInfo(argv []string) error {

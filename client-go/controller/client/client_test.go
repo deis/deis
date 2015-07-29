@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://d.t","token":"a"}`
+const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://d.t","token":"a","response_limit": 50}`
 
 func createTempProfile(contents string) error {
 	name, err := ioutil.TempDir("", "client")
@@ -62,9 +62,15 @@ func TestLoadSave(t *testing.T) {
 		t.Errorf("Expected %s, Got %s", expected, client.ControllerURL.String())
 	}
 
+	expectedI := 50
+	if client.ResponseLimit != expectedI {
+		t.Errorf("Expected %d, Got %d", expectedI, client.ResponseLimit)
+	}
+
 	client.SSLVerify = true
 	client.Token = "b"
 	client.Username = "c"
+	client.ResponseLimit = 0
 
 	u, err := url.Parse("http://deis.test")
 
@@ -98,6 +104,11 @@ func TestLoadSave(t *testing.T) {
 	expected = "http://deis.test"
 	if client.ControllerURL.String() != expected {
 		t.Errorf("Expected %s, Got %s", expected, client.ControllerURL.String())
+	}
+
+	expectedI = 100
+	if client.ResponseLimit != expectedI {
+		t.Errorf("Expected %d, Got %d", expectedI, client.ResponseLimit)
 	}
 }
 

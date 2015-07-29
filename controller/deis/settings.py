@@ -199,6 +199,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
     'PAGINATE_BY': 100,
+    'PAGINATE_BY_PARAM': 'page_size',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 

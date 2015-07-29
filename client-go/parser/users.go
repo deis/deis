@@ -37,12 +37,24 @@ func usersList(argv []string) error {
 Lists all registered users.
 Requires admin privilages.
 
-Usage: deis users:list
+Usage: deis users:list [options]
+
+Options:
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
 
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
 		return err
 	}
 
-	return cmd.UsersList()
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.UsersList(results)
 }

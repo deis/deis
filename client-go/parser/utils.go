@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // docopt expects commands to be in the proper format, but we split them apart for
@@ -19,6 +20,14 @@ func safeGetValue(args map[string]interface{}, key string) string {
 		return ""
 	}
 	return args[key].(string)
+}
+
+func responseLimit(limit string) (int, error) {
+	if limit == "" {
+		return -1, nil
+	}
+
+	return strconv.Atoi(limit)
 }
 
 // PrintUsage runs if no matching command is found.

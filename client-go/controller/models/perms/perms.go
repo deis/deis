@@ -10,13 +10,13 @@ import (
 
 // List users that can access an app.
 func List(c *client.Client, appID string) ([]string, error) {
-	body, err := doList(c, fmt.Sprintf("/v1/apps/%s/perms/", appID))
+	body, err := c.BasicRequest("GET", fmt.Sprintf("/v1/apps/%s/perms/", appID), nil)
 
 	if err != nil {
 		return []string{}, err
 	}
 
-	users := api.PermsAppResponse{}
+	var users api.PermsAppResponse
 	if err = json.Unmarshal([]byte(body), &users); err != nil {
 		return []string{}, err
 	}
@@ -25,35 +25,25 @@ func List(c *client.Client, appID string) ([]string, error) {
 }
 
 // ListAdmins lists administrators.
-func ListAdmins(c *client.Client) ([]string, error) {
-	body, err := doList(c, "/v1/admin/perms/")
+func ListAdmins(c *client.Client, results int) ([]string, int, error) {
+	body, count, err := c.LimitedRequest("/v1/admin/perms/", results)
 
 	if err != nil {
-		return []string{}, err
+		return []string{}, -1, err
 	}
 
-	users := api.PermsAdminResponse{}
+	var users []api.PermsRequest
 	if err = json.Unmarshal([]byte(body), &users); err != nil {
-		return []string{}, err
+		return []string{}, -1, err
 	}
 
 	usersList := []string{}
 
-	for _, user := range users.Users {
+	for _, user := range users {
 		usersList = append(usersList, user.Username)
 	}
 
-	return usersList, nil
-}
-
-func doList(c *client.Client, u string) (string, error) {
-	body, err := c.BasicRequest("GET", u, nil)
-
-	if err != nil {
-		return "", err
-	}
-
-	return body, nil
+	return usersList, count, nil
 }
 
 // New adds a user to an app.

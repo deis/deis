@@ -26,13 +26,21 @@ type Client struct {
 
 	// Username is the name of the user performing requests against the API.
 	Username string
+
+	// ResponseLimit is the number of results to return on requests that can be limited.
+	ResponseLimit int
 }
+
+// DefaultResponseLimit is the default number of responses to return on requests that can
+// be limited.
+var DefaultResponseLimit = 100
 
 type settingsFile struct {
 	Username   string `json:"username"`
 	SslVerify  bool   `json:"ssl_verify"`
 	Controller string `json:"controller"`
 	Token      string `json:"token"`
+	Limit      int    `json:"response_limit"`
 }
 
 // New creates a new client from a settings file.
@@ -62,15 +70,23 @@ func New() (*Client, error) {
 		return nil, err
 	}
 
+	if settings.Limit <= 0 {
+		settings.Limit = DefaultResponseLimit
+	}
+
 	return &Client{HTTPClient: CreateHTTPClient(settings.SslVerify), SSLVerify: settings.SslVerify,
-		ControllerURL: *u, Token: settings.Token, Username: settings.Username}, nil
+		ControllerURL: *u, Token: settings.Token, Username: settings.Username,
+		ResponseLimit: settings.Limit}, nil
 }
 
 // Save settings to a file
 func (c Client) Save() error {
-	settings := settingsFile{Username: c.Username,
-		SslVerify:  c.SSLVerify,
-		Controller: c.ControllerURL.String(), Token: c.Token}
+	settings := settingsFile{Username: c.Username, SslVerify: c.SSLVerify,
+		Controller: c.ControllerURL.String(), Token: c.Token, Limit: c.ResponseLimit}
+
+	if settings.Limit <= 0 {
+		settings.Limit = DefaultResponseLimit
+	}
 
 	settingsContents, err := json.Marshal(settings)
 

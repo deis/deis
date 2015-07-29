@@ -7,20 +7,24 @@ import (
 )
 
 // DomainsList lists domains registered with an app.
-func DomainsList(appID string) error {
+func DomainsList(appID string, results int) error {
 	c, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	domains, err := domains.List(c, appID)
+	if results == defaultLimit {
+		results = c.ResponseLimit
+	}
+
+	domains, count, err := domains.List(c, appID, results)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Domains\n", appID)
+	fmt.Printf("=== %s Domains%s", appID, limitCount(len(domains), count))
 
 	for _, domain := range domains {
 		fmt.Println(domain.Domain)

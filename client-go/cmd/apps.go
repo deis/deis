@@ -55,20 +55,24 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 }
 
 // AppsList lists apps on the Deis controller.
-func AppsList() error {
+func AppsList(results int) error {
 	c, err := client.New()
 
 	if err != nil {
 		return err
 	}
 
-	apps, err := apps.List(c)
+	if results == defaultLimit {
+		results = c.ResponseLimit
+	}
+
+	apps, count, err := apps.List(c, results)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("=== Apps")
+	fmt.Printf("=== Apps%s", limitCount(len(apps), count))
 
 	for _, app := range apps {
 		fmt.Println(app.ID)

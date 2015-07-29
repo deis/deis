@@ -8,17 +8,17 @@ import (
 )
 
 // List users registered with the controller.
-func List(c *client.Client) ([]api.User, error) {
-	body, err := c.BasicRequest("GET", "/v1/users/", nil)
+func List(c *client.Client, results int) ([]api.User, int, error) {
+	body, count, err := c.LimitedRequest("/v1/users/", results)
 
 	if err != nil {
-		return []api.User{}, err
+		return []api.User{}, -1, err
 	}
 
-	users := api.Users{}
+	var users []api.User
 	if err = json.Unmarshal([]byte(body), &users); err != nil {
-		return []api.User{}, err
+		return []api.User{}, -1, err
 	}
 
-	return users.Users, nil
+	return users, count, nil
 }

@@ -9,19 +9,19 @@ import (
 )
 
 // List keys on a controller.
-func List(c *client.Client) ([]api.Key, error) {
-	body, err := c.BasicRequest("GET", "/v1/keys/", nil)
+func List(c *client.Client, results int) ([]api.Key, int, error) {
+	body, count, err := c.LimitedRequest("/v1/keys/", results)
 
 	if err != nil {
-		return []api.Key{}, err
+		return []api.Key{}, -1, err
 	}
 
-	keys := api.Keys{}
+	var keys []api.Key
 	if err = json.Unmarshal([]byte(body), &keys); err != nil {
-		return []api.Key{}, err
+		return []api.Key{}, -1, err
 	}
 
-	return keys.Keys, nil
+	return keys, count, nil
 }
 
 // New creates a new key.

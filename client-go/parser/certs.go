@@ -42,14 +42,26 @@ func certsList(argv []string) error {
 	usage := `
 Show certificate information for an SSL application.
 
-Usage: deis certs:list
+Usage: deis certs:list [options]
+
+Options:
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
 
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
 		return err
 	}
 
-	return cmd.CertsList()
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.CertsList(results)
 }
 
 func certAdd(argv []string) error {

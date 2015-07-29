@@ -104,7 +104,7 @@ func TestCertsList(t *testing.T) {
 
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	actual, err := List(&client)
+	actual, _, err := List(&client, 100)
 
 	if err != nil {
 		t.Fatal(err)

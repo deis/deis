@@ -10,14 +10,6 @@ type App struct {
 	UUID    string `json:"uuid"`
 }
 
-// Apps is the definition of GET /v1/apps/.
-type Apps struct {
-	Count    int   `json:"count"`
-	Next     int   `json:"next"`
-	Previous int   `json:"previous"`
-	Apps     []App `json:"results"`
-}
-
 // AppCreateRequest is the definition of POST /v1/apps/.
 type AppCreateRequest struct {
 	ID string `json:"id,omitempty"`

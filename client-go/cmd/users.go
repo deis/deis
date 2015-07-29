@@ -8,20 +8,24 @@ import (
 )
 
 // UsersList lists users registered with the controller.
-func UsersList() error {
+func UsersList(results int) error {
 	c, err := client.New()
 
 	if err != nil {
 		return err
 	}
 
-	users, err := users.List(c)
+	if results == defaultLimit {
+		results = c.ResponseLimit
+	}
+
+	users, count, err := users.List(c, results)
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("=== Users")
+	fmt.Printf("=== Users%s", limitCount(len(users), count))
 
 	for _, user := range users {
 		fmt.Println(user.Username)

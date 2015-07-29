@@ -12,11 +12,3 @@ type Process struct {
 	Num     int    `json:"num"`
 	State   string `json:"state"`
 }
-
-// Processes defines the structure of processes.
-type Processes struct {
-	Count     int       `json:"count"`
-	Next      int       `json:"next"`
-	Previous  int       `json:"previous"`
-	Processes []Process `json:"results"`
-}

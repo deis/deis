@@ -9,16 +9,20 @@ import (
 )
 
 // ReleasesList lists an app's releases.
-func ReleasesList(appID string) error {
+func ReleasesList(appID string, results int) error {
 	c, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	releases, err := releases.List(c, appID)
+	if results == defaultLimit {
+		results = c.ResponseLimit
+	}
 
-	fmt.Printf("=== %s Releases\n", appID)
+	releases, count, err := releases.List(c, appID, results)
+
+	fmt.Printf("=== %s Releases%s", appID, limitCount(len(releases), count))
 
 	w := new(tabwriter.Writer)
 

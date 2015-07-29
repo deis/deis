@@ -10,6 +10,8 @@ import (
 	"github.com/deis/deis/client-go/pkg/git"
 )
 
+var defaultLimit = -1
+
 func progress() chan bool {
 	frames := []string{"...", "o..", ".o.", "..o"}
 	backspaces := strings.Repeat("\b", 3)
@@ -77,4 +79,12 @@ func drinkOfChoice() string {
 	}
 
 	return drink
+}
+
+func limitCount(objs, total int) string {
+	if objs == total {
+		return "\n"
+	}
+
+	return fmt.Sprintf(" (%d of %d)\n", objs, total)
 }

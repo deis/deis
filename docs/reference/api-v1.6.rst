@@ -16,6 +16,8 @@ What's New
 
 **New!** administrators no longer have to supply a password when deleting another user.
 
+**New!** ``?page_size`` query parameter for paginated requests to set the number of results per page.
+
 Authentication
 --------------
 
