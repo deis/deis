@@ -39,7 +39,7 @@ if ! [[ $SUBJECT =~ $subject_regex ]]; then
 	echo "chore"
 	echo ""
 	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
-	exit 1
+	exit 0
 fi
 
 if ! [[ $SUBJECT =~ $capital_regex ]]; then
@@ -48,20 +48,21 @@ if ! [[ $SUBJECT =~ $capital_regex ]]; then
 	echo "$SUBJECT"
 	echo ""
 	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
-	exit 1
+	exit 0
 fi
 
 if [[ ${#SUBJECT} -gt 50 ]]; then
 	echo "${YELLOW}WARNING - Subject shouldn't be longer than 50 characters."
 	echo ""
 	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
+	exit 0
 fi
 
 if [[ ${#MESSAGE[2]} -gt 0 ]]; then
 	echo "${RED}ERROR - Second line must be blank"
 	echo ""
 	echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
-	exit 1
+	exit 0
 fi
 
 cnt=${#MESSAGE[@]}
@@ -71,7 +72,7 @@ do
 			echo "${RED}ERROR on line $i -  can't be longer than 72 characters."
 			echo ""
 			echo "Read more at http://docs.deis.io/en/latest/contributing/standards/$NORMAL"
-			exit 1
+			exit 0
 		fi
 done
 
