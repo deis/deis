@@ -10,21 +10,17 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"regexp"
 	"strings"
 	"time"
 
-	"github.com/docker/docker/pkg/log"
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/utils"
 )
 
 var (
-	ErrAlreadyExists         = errors.New("Image already exists")
-	ErrInvalidRepositoryName = errors.New("Invalid repository name (ex: \"registry.domain.tld/myrepos\")")
-	ErrDoesNotExist          = errors.New("Image does not exist")
-	errLoginRequired         = errors.New("Authentication is required.")
-	validNamespace           = regexp.MustCompile(`^([a-z0-9_]{4,30})$`)
-	validRepo                = regexp.MustCompile(`^([a-z0-9-_.]+)$`)
+	ErrAlreadyExists = errors.New("Image already exists")
+	ErrDoesNotExist  = errors.New("Image does not exist")
+	errLoginRequired = errors.New("Authentication is required.")
 )
 
 type TimeoutType uint32
@@ -35,15 +31,12 @@ const (
 	ConnectTimeout
 )
 
-func newClient(jar http.CookieJar, roots *x509.CertPool, cert *tls.Certificate, timeout TimeoutType, secure bool) *http.Client {
+func newClient(jar http.CookieJar, roots *x509.CertPool, certs []tls.Certificate, timeout TimeoutType, secure bool) *http.Client {
 	tlsConfig := tls.Config{
 		RootCAs: roots,
 		// Avoid fallback to SSL protocols < TLS1.0
-		MinVersion: tls.VersionTLS10,
-	}
-
-	if cert != nil {
-		tlsConfig.Certificates = append(tlsConfig.Certificates, *cert)
+		MinVersion:   tls.VersionTLS10,
+		Certificates: certs,
 	}
 
 	if !secure {
@@ -60,7 +53,9 @@ func newClient(jar http.CookieJar, roots *x509.CertPool, cert *tls.Certificate, 
 	case ConnectTimeout:
 		httpTransport.Dial = func(proto string, addr string) (net.Conn, error) {
 			// Set the connect timeout to 5 seconds
-			conn, err := net.DialTimeout(proto, addr, 5*time.Second)
+			d := net.Dialer{Timeout: 5 * time.Second, DualStack: true}
+
+			conn, err := d.Dial(proto, addr)
 			if err != nil {
 				return nil, err
 			}
@@ -70,7 +65,9 @@ func newClient(jar http.CookieJar, roots *x509.CertPool, cert *tls.Certificate, 
 		}
 	case ReceiveTimeout:
 		httpTransport.Dial = func(proto string, addr string) (net.Conn, error) {
-			conn, err := net.Dial(proto, addr)
+			d := net.Dialer{DualStack: true}
+
+			conn, err := d.Dial(proto, addr)
 			if err != nil {
 				return nil, err
 			}
@@ -89,7 +86,7 @@ func newClient(jar http.CookieJar, roots *x509.CertPool, cert *tls.Certificate, 
 func doRequest(req *http.Request, jar http.CookieJar, timeout TimeoutType, secure bool) (*http.Response, *http.Client, error) {
 	var (
 		pool  *x509.CertPool
-		certs []*tls.Certificate
+		certs []tls.Certificate
 	)
 
 	if secure && req.URL.Scheme == "https" {
@@ -132,7 +129,7 @@ func doRequest(req *http.Request, jar http.CookieJar, timeout TimeoutType, secur
 				if err != nil {
 					return nil, nil, err
 				}
-				certs = append(certs, &cert)
+				certs = append(certs, cert)
 			}
 			if strings.HasSuffix(f.Name(), ".key") {
 				keyName := f.Name()
@@ -154,68 +151,9 @@ func doRequest(req *http.Request, jar http.CookieJar, timeout TimeoutType, secur
 		return res, client, nil
 	}
 
-	for i, cert := range certs {
-		client := newClient(jar, pool, cert, timeout, secure)
-		res, err := client.Do(req)
-		// If this is the last cert, otherwise, continue to next cert if 403 or 5xx
-		if i == len(certs)-1 || err == nil && res.StatusCode != 403 && res.StatusCode < 500 {
-			return res, client, err
-		}
-	}
-
-	return nil, nil, nil
-}
-
-func validateRepositoryName(repositoryName string) error {
-	var (
-		namespace string
-		name      string
-	)
-	nameParts := strings.SplitN(repositoryName, "/", 2)
-	if len(nameParts) < 2 {
-		namespace = "library"
-		name = nameParts[0]
-
-		// the repository name must not be a valid image ID
-		if err := utils.ValidateID(name); err == nil {
-			return fmt.Errorf("Invalid repository name (%s), cannot specify 64-byte hexadecimal strings", name)
-		}
-	} else {
-		namespace = nameParts[0]
-		name = nameParts[1]
-	}
-	if !validNamespace.MatchString(namespace) {
-		return fmt.Errorf("Invalid namespace name (%s), only [a-z0-9_] are allowed, size between 4 and 30", namespace)
-	}
-	if !validRepo.MatchString(name) {
-		return fmt.Errorf("Invalid repository name (%s), only [a-z0-9-_.] are allowed", name)
-	}
-	return nil
-}
-
-// Resolves a repository name to a hostname + name
-func ResolveRepositoryName(reposName string) (string, string, error) {
-	if strings.Contains(reposName, "://") {
-		// It cannot contain a scheme!
-		return "", "", ErrInvalidRepositoryName
-	}
-	nameParts := strings.SplitN(reposName, "/", 2)
-	if len(nameParts) == 1 || (!strings.Contains(nameParts[0], ".") && !strings.Contains(nameParts[0], ":") &&
-		nameParts[0] != "localhost") {
-		// This is a Docker Index repos (ex: samalba/hipache or ubuntu)
-		err := validateRepositoryName(reposName)
-		return IndexServerAddress(), reposName, err
-	}
-	hostname := nameParts[0]
-	reposName = nameParts[1]
-	if strings.Contains(hostname, "index.docker.io") {
-		return "", "", fmt.Errorf("Invalid repository name, try \"%s\" instead", reposName)
-	}
-	if err := validateRepositoryName(reposName); err != nil {
-		return "", "", err
-	}
-
-	return hostname, reposName, nil
+	client := newClient(jar, pool, certs, timeout, secure)
+	res, err := client.Do(req)
+	return res, client, err
 }
 
 func trustedLocation(req *http.Request) bool {

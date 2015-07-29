@@ -12,11 +12,11 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/daemon/graphdriver"
 	"github.com/docker/docker/dockerversion"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/pkg/archive"
-	"github.com/docker/docker/pkg/log"
 	"github.com/docker/docker/pkg/truncindex"
 	"github.com/docker/docker/runconfig"
 	"github.com/docker/docker/utils"
@@ -72,7 +72,7 @@ func (graph *Graph) restore() error {
 // FIXME: Implement error subclass instead of looking at the error text
 // Note: This is the way golang implements os.IsNotExists on Plan9
 func (graph *Graph) IsNotExist(err error) bool {
-	return err != nil && (strings.Contains(err.Error(), "does not exist") || strings.Contains(err.Error(), "No such"))
+	return err != nil && (strings.Contains(strings.ToLower(err.Error()), "does not exist") || strings.Contains(strings.ToLower(err.Error()), "no such"))
 }
 
 // Exists returns true if an image is registered at the given id.
@@ -88,7 +88,7 @@ func (graph *Graph) Exists(id string) bool {
 func (graph *Graph) Get(name string) (*image.Image, error) {
 	id, err := graph.idIndex.Get(name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not find image: %v", err)
 	}
 	img, err := image.LoadImage(graph.ImageRoot(id))
 	if err != nil {
@@ -132,14 +132,14 @@ func (graph *Graph) Create(layerData archive.ArchiveReader, containerID, contain
 		img.ContainerConfig = *containerConfig
 	}
 
-	if err := graph.Register(img, nil, layerData); err != nil {
+	if err := graph.Register(img, layerData); err != nil {
 		return nil, err
 	}
 	return img, nil
 }
 
 // Register imports a pre-existing image into the graph.
-func (graph *Graph) Register(img *image.Image, jsonData []byte, layerData archive.ArchiveReader) (err error) {
+func (graph *Graph) Register(img *image.Image, layerData archive.ArchiveReader) (err error) {
 	defer func() {
 		// If any error occurs, remove the new dir from the driver.
 		// Don't check for errors since the dir might not have been created.
@@ -181,7 +181,7 @@ func (graph *Graph) Register(img *image.Image, jsonData []byte, layerData archiv
 	}
 	// Apply the diff/layer
 	img.SetGraph(graph)
-	if err := image.StoreImage(img, jsonData, layerData, tmp); err != nil {
+	if err := image.StoreImage(img, layerData, tmp); err != nil {
 		return err
 	}
 	// Commit
@@ -196,7 +196,7 @@ func (graph *Graph) Register(img *image.Image, jsonData []byte, layerData archiv
 //   The archive is stored on disk and will be automatically deleted as soon as has been read.
 //   If output is not nil, a human-readable progress bar will be written to it.
 //   FIXME: does this belong in Graph? How about MktempFile, let the caller use it for archives?
-func (graph *Graph) TempLayerArchive(id string, compression archive.Compression, sf *utils.StreamFormatter, output io.Writer) (*archive.TempArchive, error) {
+func (graph *Graph) TempLayerArchive(id string, sf *utils.StreamFormatter, output io.Writer) (*archive.TempArchive, error) {
 	image, err := graph.Get(id)
 	if err != nil {
 		return nil, err
@@ -221,6 +221,28 @@ func (graph *Graph) Mktemp(id string) (string, error) {
 		return "", err
 	}
 	return dir, nil
+}
+
+func (graph *Graph) newTempFile() (*os.File, error) {
+	tmp, err := graph.Mktemp("")
+	if err != nil {
+		return nil, err
+	}
+	return ioutil.TempFile(tmp, "")
+}
+
+func bufferToFile(f *os.File, src io.Reader) (int64, error) {
+	n, err := io.Copy(f, src)
+	if err != nil {
+		return n, err
+	}
+	if err = f.Sync(); err != nil {
+		return n, err
+	}
+	if _, err := f.Seek(0, 0); err != nil {
+		return n, err
+	}
+	return n, nil
 }
 
 // setupInitLayer populates a directory with mountpoints suitable

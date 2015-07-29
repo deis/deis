@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/docker/docker/pkg/log"
+	log "github.com/Sirupsen/logrus"
 )
 
 // VersionInfo is used to model entities which has a version.
@@ -132,6 +132,10 @@ func NewHTTPRequestFactory(d ...HTTPRequestDecorator) *HTTPRequestFactory {
 
 func (self *HTTPRequestFactory) AddDecorator(d ...HTTPRequestDecorator) {
 	self.decorators = append(self.decorators, d...)
+}
+
+func (self *HTTPRequestFactory) GetDecorators() []HTTPRequestDecorator {
+	return self.decorators
 }
 
 // NewRequest() creates a new *http.Request,

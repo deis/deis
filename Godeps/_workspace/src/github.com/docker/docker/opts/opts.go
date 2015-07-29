@@ -3,15 +3,15 @@ package opts
 import (
 	"fmt"
 	"net"
-	"net/url"
 	"os"
-	"path/filepath"
+	"path"
 	"regexp"
 	"strings"
 
 	"github.com/docker/docker/api"
 	flag "github.com/docker/docker/pkg/mflag"
 	"github.com/docker/docker/pkg/parsers"
+	"github.com/docker/docker/utils"
 )
 
 var (
@@ -39,8 +39,8 @@ func IPVar(value *net.IP, names []string, defaultValue, usage string) {
 	flag.Var(NewIpOpt(value, defaultValue), names, usage)
 }
 
-func MirrorListVar(values *[]string, names []string, usage string) {
-	flag.Var(newListOptsRef(values, ValidateMirror), names, usage)
+func LabelListVar(values *[]string, names []string, usage string) {
+	flag.Var(newListOptsRef(values, ValidateLabel), names, usage)
 }
 
 // ListOpts type
@@ -123,6 +123,7 @@ func (opts *ListOpts) Len() int {
 
 // Validators
 type ValidatorFctType func(val string) (string, error)
+type ValidatorFctListType func(val string) ([]string, error)
 
 func ValidateAttach(val string) (string, error) {
 	s := strings.ToLower(val)
@@ -151,13 +152,13 @@ func ValidatePath(val string) (string, error) {
 	splited := strings.SplitN(val, ":", 2)
 	if len(splited) == 1 {
 		containerPath = splited[0]
-		val = filepath.Clean(splited[0])
+		val = path.Clean(splited[0])
 	} else {
 		containerPath = splited[1]
-		val = fmt.Sprintf("%s:%s", splited[0], filepath.Clean(splited[1]))
+		val = fmt.Sprintf("%s:%s", splited[0], path.Clean(splited[1]))
 	}
 
-	if !filepath.IsAbs(containerPath) {
+	if !path.IsAbs(containerPath) {
 		return val, fmt.Errorf("%s is not an absolute path", containerPath)
 	}
 	return val, nil
@@ -166,6 +167,9 @@ func ValidatePath(val string) (string, error) {
 func ValidateEnv(val string) (string, error) {
 	arr := strings.Split(val, "=")
 	if len(arr) > 1 {
+		return val, nil
+	}
+	if !utils.DoesEnvExist(val) {
 		return val, nil
 	}
 	return fmt.Sprintf("%s=%s", val, os.Getenv(val)), nil
@@ -210,20 +214,9 @@ func ValidateExtraHost(val string) (string, error) {
 	return val, nil
 }
 
-// Validates an HTTP(S) registry mirror
-func ValidateMirror(val string) (string, error) {
-	uri, err := url.Parse(val)
-	if err != nil {
-		return "", fmt.Errorf("%s is not a valid URI", val)
+func ValidateLabel(val string) (string, error) {
+	if strings.Count(val, "=") != 1 {
+		return "", fmt.Errorf("bad attribute format: %s", val)
 	}
-
-	if uri.Scheme != "http" && uri.Scheme != "https" {
-		return "", fmt.Errorf("Unsupported scheme %s", uri.Scheme)
-	}
-
-	if uri.Path != "" || uri.RawQuery != "" || uri.Fragment != "" {
-		return "", fmt.Errorf("Unsupported path/query/fragment at end of the URI")
-	}
-
-	return fmt.Sprintf("%s://%s/v1/", uri.Scheme, uri.Host), nil
+	return val, nil
 }
