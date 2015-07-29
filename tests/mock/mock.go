@@ -18,7 +18,7 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()
 	done := make(chan bool, 1)
-	dbImage := "deis/test-postgresql:latest"
+	dbImage := utils.ImagePrefix() + "test-postgresql:" + utils.BuildTag()
 	ipaddr := utils.HostAddress()
 	done <- true
 	go func() {
@@ -53,7 +53,7 @@ func RunMockDatabase(t *testing.T, tag string, etcdPort string, dbPort string) {
 // RunMockCeph runs a container used to mock a Ceph storage cluster
 func RunMockCeph(t *testing.T, name string, cli *client.DockerCli, etcdPort string) {
 
-	storeImage := utils.ImagePrefix() + "mock-store:latest"
+	storeImage := utils.ImagePrefix() + "mock-store:" + utils.BuildTag()
 	etcdutils.SetSingle(t, "/deis/store/hosts/"+utils.HostAddress(), utils.HostAddress(), etcdPort)
 	var err error
 	cli, stdout, stdoutPipe := dockercli.NewClient()

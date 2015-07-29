@@ -67,7 +67,7 @@ test-unit:
 	$(GOTEST) .
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ test-etcd
 	godep go test -v ./tests/...
 
 test-style:

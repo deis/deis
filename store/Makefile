@@ -100,7 +100,7 @@ deploy: build dev-release restart
 test: test-style test-unit test-functional
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ test-etcd
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
 
 test-style:

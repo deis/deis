@@ -67,5 +67,5 @@ test-style:
 	$(GOLINT) ./...
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ test-etcd
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...
