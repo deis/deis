@@ -9,6 +9,13 @@ Production deployments
 Many Deis users are running Deis quite successfully in production. When readying a Deis deployment
 for production workloads, there are some additional (but optional) recommendations.
 
+Isolating etcd
+--------------
+
+.. include:: ../_includes/_isolating-etcd-description.rst
+
+See :ref:`isolating-etcd` for further details.
+
 Running Deis without Ceph
 -------------------------
 
