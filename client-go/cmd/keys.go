@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path"
 	"regexp"
 	"strconv"
@@ -129,7 +128,7 @@ func chooseKey() (api.KeyCreateRequest, error) {
 }
 
 func listKeys() ([]api.KeyCreateRequest, error) {
-	folder := path.Join(os.Getenv("HOME"), ".ssh")
+	folder := path.Join(client.FindHome(), ".ssh")
 	files, err := ioutil.ReadDir(folder)
 
 	if err != nil {

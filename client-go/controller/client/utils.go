@@ -15,7 +15,7 @@ func locateSettingsFile() string {
 		filename = "client"
 	}
 
-	return path.Join(os.Getenv("HOME"), ".deis", filename+".json")
+	return path.Join(FindHome(), ".deis", filename+".json")
 }
 
 func deleteSettings() error {
