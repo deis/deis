@@ -4,6 +4,7 @@ import time
 from django.conf import settings
 from docker import Client
 
+from . import AbstractSchedulerClient
 from .states import JobState
 
 
@@ -11,9 +12,10 @@ MATCH = re.compile(
     r'(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z-_]+)?.(?P<c_num>[0-9]+)')
 
 
-class SwarmClient(object):
+class SwarmClient(AbstractSchedulerClient):
 
     def __init__(self, target, auth, options, pkey):
+        super(SchedulerClient, self).__init__(target, auth, options, pkey)
         self.target = settings.SWARM_HOST
         # single global connection
         self.registry = settings.REGISTRY_HOST + ':' + settings.REGISTRY_PORT
@@ -21,7 +23,7 @@ class SwarmClient(object):
                                  timeout=1200, version='1.17')
 
     def create(self, name, image, command='', template=None, **kwargs):
-        """Create a container"""
+        """Create a new container."""
         cimage = self.registry + '/' + image
         affinity = "affinity:container!=~/{}*/".format(re.split(r'_v\d.', name)[0])
         l = locals().copy()
@@ -40,28 +42,20 @@ class SwarmClient(object):
                                          host_config={'PublishAllPorts': True})
 
     def start(self, name):
-        """
-        Start a container
-        """
+        """Start a container."""
         self.docker_cli.start(name)
 
     def stop(self, name):
-        """
-        Stop a container
-        """
+        """Stop a container."""
         self.docker_cli.stop(name)
 
     def destroy(self, name):
-        """
-        Destroy a container
-        """
+        """Destroy a container."""
         self.stop(name)
         self.docker_cli.remove_container(name)
 
     def run(self, name, image, entrypoint, command):
-        """
-        Run a one-off command
-        """
+        """Run a one-off command."""
         cimage = self.registry + '/' + image
         # use affinity for nodes that already have the image
         affinity = "affinity:image==~{}".format(cimage)
@@ -93,6 +87,7 @@ class SwarmClient(object):
             return JobState.destroyed
 
     def state(self, name):
+        """Display the given job's running state."""
         try:
             for _ in xrange(30):
                 return self._get_container_state(name)
@@ -102,12 +97,6 @@ class SwarmClient(object):
             return JobState.error
         except RuntimeError:
             return JobState.destroyed
-
-    def attach(self, name):
-        """
-        Attach to a job's stdin, stdout and stderr
-        """
-        raise NotImplementedError
 
     def _get_hostname(self, application_name):
         hostname = settings.UNIT_HOSTNAME

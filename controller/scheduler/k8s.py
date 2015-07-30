@@ -1,13 +1,16 @@
 import copy
-import json
 import httplib
-import time
+import json
+import random
 import re
 import string
+import time
+
 from django.conf import settings
-from .states import JobState
 from docker import Client
-import random
+from .states import JobState
+from . import AbstractSchedulerClient
+
 
 POD_TEMPLATE = '''{
   "kind": "Pod",
@@ -95,9 +98,10 @@ MATCH = re.compile(
     r'(?P<app>[a-z0-9-]+)_?(?P<version>v[0-9]+)?\.?(?P<c_type>[a-z-_]+)')
 
 
-class KubeHTTPClient():
+class KubeHTTPClient(AbstractSchedulerClient):
 
     def __init__(self, target, auth, options, pkey):
+        super(KubeHTTPClient, self).__init__(target, auth, options, pkey)
         self.target = settings.K8S_MASTER
         self.port = "8080"
         self.registry = settings.REGISTRY_HOST+":"+settings.REGISTRY_PORT
@@ -343,6 +347,7 @@ class KubeHTTPClient():
         return json.loads(data)
 
     def create(self, name, image, command, **kwargs):
+        """Create a container."""
         self._create_rc(name, image, command, **kwargs)
         app_type = name.split(".")[1]
         name = name.replace(".", "-")
@@ -433,16 +438,12 @@ class KubeHTTPClient():
             raise RuntimeError(errmsg)
 
     def start(self, name):
-        """
-        Start a container
-        """
-        return
+        """Start a container."""
+        pass
 
     def stop(self, name):
-        """
-        Stop a container
-        """
-        return
+        """Stop a container."""
+        pass
 
     def _delete_rc(self, name):
         headers = {'Content-Type': 'application/json'}
@@ -460,9 +461,7 @@ class KubeHTTPClient():
             raise RuntimeError(errmsg)
 
     def destroy(self, name):
-        """
-        Destroy a the app
-        """
+        """Destroy a container."""
         name = name.split(".")
         name = name[0]+'-'+name[1]
         name = name.replace("_", "-")
@@ -586,9 +585,7 @@ class KubeHTTPClient():
         return log_data
 
     def run(self, name, image, entrypoint, command):
-        """
-        Run a one-off command
-        """
+        """Run a one-off command."""
         name = name.replace(".", "-")
         name = name.replace("_", "-")
         l = {}
@@ -666,17 +663,12 @@ class KubeHTTPClient():
             return JobState.destroyed
 
     def state(self, name):
+        """Display the given job's running state."""
         try:
             return self._get_pod_state(name)
         except KeyError:
             return JobState.error
         except RuntimeError:
             return JobState.destroyed
-
-    def attach(self, name):
-        """
-        Attach to a job's stdin, stdout and stderr
-        """
-        return NotImplementedError
 
 SchedulerClient = KubeHTTPClient
