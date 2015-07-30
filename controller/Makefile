@@ -4,6 +4,8 @@ include ../includes.mk
 
 all: build run
 
+SHELL_SCRIPTS = $(wildcard bin/*) $(shell find "." -name '*.sh')
+
 COMPONENT = controller
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
@@ -73,6 +75,7 @@ setup-venv:
 
 test-style: setup-venv
 	venv/bin/flake8
+	shellcheck $(SHELL_SCRIPTS)
 
 test-unit: setup-venv test-style
 	venv/bin/coverage run manage.py test --noinput api
