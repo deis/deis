@@ -1,6 +1,8 @@
 bind = '0.0.0.0'
 try:
     workers = int({{ if exists "/deis/controller/workers" }}{{ getv "/deis/controller/workers" }}{{ else }}"not set"{{end}})
+    if workers < 1:
+        raise ValueError()
 except (NameError, ValueError):
     import multiprocessing
     try:
