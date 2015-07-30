@@ -170,27 +170,56 @@ class AuthTest(TestCase):
         """Test that a registered user can cancel her account."""
         # test registration workflow
         username, password = 'newuser', 'password'
-        first_name, last_name = 'Otto', 'Test'
-        email = 'autotest@deis.io'
         submit = {
             'username': username,
             'password': password,
-            'first_name': first_name,
-            'last_name': last_name,
-            'email': email,
+            'first_name': 'Otto',
+            'last_name': 'Test',
+            'email': 'autotest@deis.io',
             # try to abuse superuser/staff level perms
             'is_superuser': True,
             'is_staff': True,
         }
+
+        other_username, other_password = 'newuser2', 'password'
+        other_submit = {
+            'username': other_username,
+            'password': other_password,
+            'first_name': 'Test',
+            'last_name': 'Tester',
+            'email': 'autotest-2@deis.io',
+            'is_superuser': False,
+            'is_staff': False,
+        }
         url = '/v1/auth/register'
         response = self.client.post(url, json.dumps(submit), content_type='application/json')
         self.assertEqual(response.status_code, 201)
+
         # cancel the account
         url = '/v1/auth/cancel'
         user = User.objects.get(username=username)
         token = Token.objects.get(user=user).key
         response = self.client.delete(url,
                                       HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 204)
+
+        url = '/v1/auth/register'
+        response = self.client.post(url, json.dumps(other_submit), content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+
+        # normal user can't delete another user
+        url = '/v1/auth/cancel'
+        other_user = User.objects.get(username=other_username)
+        other_token = Token.objects.get(user=other_user).key
+        response = self.client.delete(url, json.dumps({'username': self.admin.username}),
+                                      content_type='application/json',
+                                      HTTP_AUTHORIZATION='token {}'.format(other_token))
+        self.assertEqual(response.status_code, 403)
+
+        # admin can delete another user
+        response = self.client.delete(url, json.dumps({'username': other_username}),
+                                      content_type='application/json',
+                                      HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
         self.assertEqual(response.status_code, 204)
 
     def test_passwd(self):

@@ -44,8 +44,20 @@ func Login(c *client.Client, username, password string) (string, error) {
 }
 
 // Delete deletes a user.
-func Delete(c *client.Client) error {
-	_, err := c.BasicRequest("DELETE", "/v1/auth/cancel/", nil)
+func Delete(c *client.Client, username string) error {
+	var body []byte
+	var err error
+
+	if username != "" {
+		req := api.AuthCancelRequest{Username: username}
+		body, err = json.Marshal(req)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = c.BasicRequest("DELETE", "/v1/auth/cancel/", body)
 	return err
 }
 

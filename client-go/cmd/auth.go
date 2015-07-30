@@ -199,10 +199,12 @@ func Cancel(username string, password string, yes bool) error {
 		return err
 	}
 
-	fmt.Println("Please log in again in order to cancel this account")
+	if username == "" || password != "" {
+		fmt.Println("Please log in again in order to cancel this account")
 
-	if err = Login(c.ControllerURL.String(), username, password, c.SSLVerify); err != nil {
-		return err
+		if err = Login(c.ControllerURL.String(), username, password, c.SSLVerify); err != nil {
+			return err
+		}
 	}
 
 	if yes == false {
@@ -214,7 +216,13 @@ func Cancel(username string, password string, yes bool) error {
 			return err
 		}
 
-		fmt.Printf("cancel account %s at %s? (y/N): ", c.Username, c.ControllerURL.String())
+		deletedUser := username
+
+		if deletedUser == "" {
+			deletedUser = c.Username
+		}
+
+		fmt.Printf("cancel account %s at %s? (y/N): ", deletedUser, c.ControllerURL.String())
 		fmt.Scanln(&confirm)
 
 		if strings.ToLower(confirm) == "y" {
@@ -227,14 +235,17 @@ func Cancel(username string, password string, yes bool) error {
 		return nil
 	}
 
-	err = auth.Delete(c)
+	err = auth.Delete(c, username)
 
 	if err != nil {
 		return err
 	}
 
-	if err := client.Delete(); err != nil {
-		return err
+	// If user targets themselves, logout.
+	if username != "" || c.Username == username {
+		if err := client.Delete(); err != nil {
+			return err
+		}
 	}
 
 	fmt.Println("Account cancelled")

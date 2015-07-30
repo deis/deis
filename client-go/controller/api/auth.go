@@ -31,6 +31,11 @@ type AuthRegenerateRequest struct {
 	All  bool   `json:"all,omitempty"`
 }
 
+// AuthCancelRequest is the definition of POST /v1/auth/cancel/.
+type AuthCancelRequest struct {
+	Username string `json:"username"`
+}
+
 // AuthRegenerateResponse is the definition of /v1/auth/tokens/.
 type AuthRegenerateResponse tokenResponse
 
