@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if fi, _ := os.Stdin.Stat(); fi.Mode()&os.ModeNamedPipe == 0 {
-		fmt.Println("this app only works using the stdout of another process")
+		fmt.Println("this app requires the stdout of another process")
 		os.Exit(1)
 	}
 
@@ -24,7 +24,7 @@ func main() {
 	procfile, err := builder.YamlToJSON(bytes)
 
 	if err != nil {
-		fmt.Println("the procfile does not contains a valid yaml structure")
+		fmt.Println("the Procfile is not valid yaml")
 		os.Exit(1)
 	}
 
