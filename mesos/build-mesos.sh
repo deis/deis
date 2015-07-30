@@ -10,6 +10,7 @@ if [[ -z $DOCKER_BUILD ]]; then
   exit 1
 fi
 
+# shellcheck disable=SC2034
 DEBIAN_FRONTEND=noninteractive
 
 echo "deb http://repos.mesosphere.io/ubuntu/ trusty main" > /etc/apt/sources.list.d/mesosphere.list
@@ -17,11 +18,10 @@ echo "deb http://repos.mesosphere.io/ubuntu/ trusty main" > /etc/apt/sources.lis
 apt-key adv --keyserver keyserver.ubuntu.com --recv E56151BF
 
 apt-get update && \
-  apt-get -y install mesos=$MESOS
+  apt-get -y install mesos="$MESOS"
 
 apt-get autoremove -y --purge && \
   apt-get clean -y && \
   rm -Rf /usr/share/man /usr/share/doc && \
   rm -rf /tmp/* /var/tmp/* && \
   rm -rf /var/lib/apt/lists/*
-
