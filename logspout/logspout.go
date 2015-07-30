@@ -86,13 +86,21 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 // it returns the original name and 1 as the PID.
 func getLogName(name string) (string, string) {
 	// example regex that should match: go_v2.web.1
-	r := regexp.MustCompile(`(^[a-z0-9-]+)_(v[0-9]+)\.([a-z-_]+\.[0-9]+)$`)
-	match := r.FindStringSubmatch(name)
-	if match == nil {
-		return name, "1"
-	} else {
+	match := getMatch(`(^[a-z0-9-]+)_(v[0-9]+)\.([a-z-_]+\.[0-9]+)$`, name)
+	if match != nil {
 		return match[1], match[3]
 	}
+	match = getMatch(`^k8s_([a-z0-9-]+)-([a-z]+)\.`, name)
+	if match != nil {
+		return match[1], match[2]
+	}
+	return name, "1"
+}
+
+func getMatch(regex string, name string) []string {
+	r := regexp.MustCompile(regex)
+	match := r.FindStringSubmatch(name)
+	return match
 }
 
 func websocketStreamer(w http.ResponseWriter, req *http.Request, logstream chan *Log, closer chan bool) {

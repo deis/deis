@@ -96,3 +96,7 @@ func getEtcdClient() (*etcdClient, error) {
 
 	return &etcdClient{etcd: c}, nil
 }
+
+func EtcdClient() (*etcdClient, error) {
+	return getEtcdClient()
+}

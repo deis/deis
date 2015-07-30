@@ -179,6 +179,28 @@ class App(UuidAuditedModel):
     def url(self):
         return self.id + '.' + settings.DEIS_DOMAIN
 
+    def _get_job_id(self, container_type):
+        app = self.id
+        release = self.release_set.latest()
+        version = "v{}".format(release.version)
+        job_id = "{app}_{version}.{container_type}".format(**locals())
+        return job_id
+
+    def _get_command(self, container_type):
+        try:
+            # if this is not procfile-based app, ensure they cannot break out
+            # and run arbitrary commands on the host
+            # FIXME: remove slugrunner's hardcoded entrypoint
+            release = self.release_set.latest()
+            if release.build.dockerfile or not release.build.sha:
+                return "bash -c '{}'".format(release.build.procfile[container_type])
+            else:
+                return 'start {}'.format(container_type)
+        # if the key is not present or if a parent attribute is None
+        except (KeyError, TypeError, AttributeError):
+            # handle special case for Dockerfile deployments
+            return '' if container_type == 'cmd' else 'start {}'.format(container_type)
+
     def log(self, message):
         """Logs a message to the application's log file.
 
@@ -242,6 +264,8 @@ class App(UuidAuditedModel):
         # iterate and scale by container type (web, worker, etc)
         changed = False
         to_add, to_remove = [], []
+        scale_types = {}
+
         # iterate on a copy of the container_type keys
         for container_type in requested_structure.keys():
             containers = list(self.container_set.filter(type=container_type).order_by('created'))
@@ -253,6 +277,7 @@ class App(UuidAuditedModel):
             if diff == 0:
                 continue
             changed = True
+            scale_types[container_type] = requested
             while diff < 0:
                 c = containers.pop()
                 to_remove.append(c)
@@ -267,11 +292,15 @@ class App(UuidAuditedModel):
                 to_add.append(c)
                 container_num += 1
                 diff -= 1
+
         if changed:
-            if to_add:
-                self._start_containers(to_add)
-            if to_remove:
-                self._destroy_containers(to_remove)
+            if "scale" in dir(self._scheduler):
+                self._scale_containers(scale_types, to_remove)
+            else:
+                if to_add:
+                    self._start_containers(to_add)
+                if to_remove:
+                    self._destroy_containers(to_remove)
         # save new structure to the database
         vals = self.container_set.exclude(type='run').values(
             'type').annotate(Count('pk')).order_by()
@@ -280,6 +309,31 @@ class App(UuidAuditedModel):
         self.structure = new_structure
         self.save()
         return changed
+
+    def _scale_containers(self, scale_types, to_remove):
+        release = self.release_set.latest()
+        for scale_type in scale_types:
+            image = release.image
+            version = "v{}".format(release.version)
+            kwargs = {'memory': release.config.memory,
+                      'cpu': release.config.cpu,
+                      'tags': release.config.tags,
+                      'version': version,
+                      'aname': self.id,
+                      'num': scale_types[scale_type]}
+            job_id = self._get_job_id(scale_type)
+            command = self._get_command(scale_type)
+            try:
+                self._scheduler.scale(
+                    name=job_id,
+                    image=image,
+                    command=command,
+                    **kwargs)
+            except Exception as e:
+                err = '{} (scale): {}'.format(job_id, e)
+                log_event(self, err, logging.ERROR)
+                raise
+        [c.delete() for c in to_remove]
 
     def _start_containers(self, to_add):
         """Creates and starts containers via the scheduler"""
@@ -334,20 +388,49 @@ class App(UuidAuditedModel):
         """Deploy a new release to this application"""
         existing = self.container_set.exclude(type='run')
         new = []
+        scale_types = set()
         for e in existing:
             n = e.clone(release)
             n.save()
             new.append(n)
+            scale_types.add(e.type)
 
-        self._start_containers(new)
+        if new and "deploy" in dir(self._scheduler):
+            self._deploy_app(scale_types, release, existing)
+        else:
+            self._start_containers(new)
 
-        # destroy old containers
-        if existing:
-            self._destroy_containers(existing)
+            # destroy old containers
+            if existing:
+                self._destroy_containers(existing)
 
         # perform default scaling if necessary
         if self.structure == {} and release.build is not None:
             self._default_scale(user, release)
+
+    def _deploy_app(self, scale_types, release, existing):
+        for scale_type in scale_types:
+            image = release.image
+            version = "v{}".format(release.version)
+            kwargs = {'memory': release.config.memory,
+                      'cpu': release.config.cpu,
+                      'tags': release.config.tags,
+                      'aname': self.id,
+                      'num': 0,
+                      'version': version}
+            job_id = self._get_job_id(scale_type)
+            command = self._get_command(scale_type)
+            try:
+                self._scheduler.deploy(
+                    name=job_id,
+                    image=image,
+                    command=command,
+                    **kwargs)
+            except Exception as e:
+                err = '{} (deploy): {}'.format(job_id, e)
+                log_event(self, err, logging.ERROR)
+                raise
+        [c.delete() for c in existing]
 
     def _default_scale(self, user, release):
         """Scale to default structure based on release type"""

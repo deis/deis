@@ -24,27 +24,29 @@ through the routing mesh.
 
 Scheduling and Orchestration
 ----------------------------
-Today Deis uses `Fleet`_ for scheduling.  Unfortunately, Fleet does not support
-resource-based scheduling, which results in poor cluster utilization at scale.
+Today Deis uses :ref:`Fleet <fleet_scheduler>` for scheduling.  Unfortunately, Fleet does not
+support resource-based scheduling, which results in poor cluster utilization at scale.
 
 Fortunately, Deis is composable and can easily hot-swap orchestration APIs.
 Because the most promising container orchestration solutions are under heavy development,
 the Deis project is focused on releasing "technology previews".
 
-These technology previews will help the community try different orchestration solutions easily,
-report their findings and help guide the future direction of Deis.
+These technology previews help the community try different orchestration solutions easily,
+report their findings and guide the future direction of Deis. :ref:`Kubernetes <k8s_scheduler>`,
+:ref:`Mesos with Marathon <mesos_scheduler>`, and :ref:`Swarm <swarm_scheduler>` will all be
+available for testing in Deis v1.9.
 
- - [X] Swarm preview
- - [ ] `Mesos preview`_
- - [ ] `Kubernetes preview`_
+ - [X] :ref:`Swarm preview <swarm_scheduler>`
+ - [X] :ref:`Mesos preview <mesos_scheduler>`
+ - [X] :ref:`Kubernetes preview <k8s_scheduler>`
 
 Etcd 2
 ------
 A CP database like etcd is central to Deis, which requires a distributed lock service and key/value store.
 As problems with etcd directly impact platform stability, Deis must move to the more stable etcd2.
 
- - [ ] Switch to etcd2
- - [ ] Migration strategy for etcd 0.4.x -> etcd2
+ - [X] Switch to etcd2
+ - [X] Migration strategy for etcd 0.4.x -> etcd2
 
 This feature is tracked as GitHub issue `#3564`_.
 
@@ -106,7 +108,7 @@ Networking v2
 To provide a better container networking experience, Deis must provide an overlay network
 that can facilitate SDN and improved service discovery.
 
- - [ ] Overlay Network
+ - [X] Overlay Network (flannel)
  - [ ] `Internal Service Discovery`_
  - [ ] Migration Strategy
 
@@ -135,14 +137,11 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`CoreUpdate`: https://coreos.com/docs/coreupdate/custom-apps/coreupdate-protocol/
 .. _`Deis Push`: https://github.com/deis/deis/issues/2680
 .. _`Docker Registry v2`: https://github.com/deis/deis/issues/3814
-.. _`Fleet`: https://github.com/coreos/fleet#readme
 .. _`Google Omaha Protocol`: https://code.google.com/p/omaha/wiki/ServerProtocol
 .. _`Interactive Deis Run`: https://github.com/deis/deis/issues/117
 .. _`Internal Service Discovery`: https://github.com/deis/deis/issues/3072
-.. _`Kubernetes preview`: https://github.com/deis/deis/issues/3850
 .. _`like CoreOS`: https://coreos.com/releases/
 .. _`Log Tailing`: https://github.com/deis/deis/issues/465
-.. _`Mesos preview`: https://github.com/deis/deis/issues/3809
 .. _`Service Broker API`: http://docs.cloudfoundry.org/services/api.html
 .. _`TTY Broker component`: https://github.com/deis/deis/issues/3808
 .. _`Update client/agent`: https://github.com/deis/deis/issues/3811

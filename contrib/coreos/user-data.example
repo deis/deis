@@ -316,4 +316,42 @@ write_files:
       # removing the node from etcd
       NODE=$($ETCDCTL member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
       $ETCDCTL member remove $NODE
+  - path: /opt/bin/wupiao
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      # [w]ait [u]ntil [p]ort [i]s [a]ctually [o]pen
+      [ -n "$1" ] && \
+        until curl -o /dev/null -sIf http://${1}; do \
+          sleep 1 && echo .;
+        done;
+      exit $?
+  - path: /opt/bin/download-k8s-binary
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      export K8S_VERSION="v1.0.1"
+      mkdir -p /opt/bin
+      FILE=$1
+      if [ ! -f /opt/bin/$FILE ]; then
+        curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
+        chmod +x /opt/bin/$FILE
+      else
+        # we check the version of the binary
+        INSTALLED_VERSION=$(/opt/bin/$FILE --version)
+        MATCH=$(echo "${INSTALLED_VERSION}" | grep -c "${K8S_VERSION}")
+        if [ $MATCH -eq 0 ]; then
+          # the version is different
+          curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
+          chmod +x /opt/bin/$FILE
+        fi
+      fi
+  - path: /opt/bin/scheduler-policy.json
+    content: |
+      {
+          "kind": "Policy",
+          "apiVersion": "v1",
+          "predicates": [{"name": "PodFitsPorts"},{"name": "PodFitsResources"},{"name": "NoDiskConflict"},{"name": "MatchNodeSelector"},{"name": "HostName"}],
+          "priorities": [{"name": "LeastRequestedPriority","weight": 1},{"name": "BalancedResourceAllocation","weight": 1},{"name": "ServiceSpreadingPriority","weight": 2},{"name": "EqualPriority","weight": 1}]
+      }
 manage_etc_hosts: localhost
