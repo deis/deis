@@ -252,12 +252,19 @@ Usage:
 		return err
 	}
 
+	target := args["<target>"].(string)
+	// handle help explicitly since docopt parsing is relaxed
+	if target == "--help" {
+		fmt.Println(usage)
+		os.Exit(0)
+	}
+
 	var vargs []string
 	if v, ok := args["<command>"]; ok {
 		vargs = v.([]string)
 	}
 
-	return cmd.SSH(args["<target>"].(string), vargs, c.Backend)
+	return cmd.SSH(target, vargs, c.Backend)
 }
 
 func (c *Client) Dock(argv []string) error {
@@ -274,12 +281,19 @@ Usage:
 		return err
 	}
 
+	target := args["<target>"].(string)
+	// handle help explicitly since docopt parsing is relaxed
+	if target == "--help" {
+		fmt.Println(usage)
+		os.Exit(0)
+	}
+
 	var vargs []string
 	if v, ok := args["<command>"]; ok {
 		vargs = v.([]string)
 	}
 
-	return cmd.Dock(args["<target>"].(string), vargs, c.Backend)
+	return cmd.Dock(target, vargs, c.Backend)
 }
 
 // Start activates the specified components.
