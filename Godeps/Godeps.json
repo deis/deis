@@ -20,10 +20,6 @@
 			"Rev": "2e36101a197f56f60ca6c37c3c256ed3713a9649"
 		},
 		{
-			"ImportPath": "github.com/ThomasRooney/gexpect",
-			"Rev": "025428b8021ad3cef9602997658d9eca6c145d4e"
-		},
-		{
 			"ImportPath": "github.com/codegangsta/inject",
 			"Comment": "v1.0-rc1-4-g4b81725",
 			"Rev": "4b8172520a03fa190f427bbd284db01b459bfce7"
@@ -316,10 +312,6 @@
 		{
 			"ImportPath": "github.com/jonboulle/clockwork",
 			"Rev": "b473f398c464f1988327f67c9e6aa7fba62f80d2"
-		},
-		{
-			"ImportPath": "github.com/kballard/go-shellquote",
-			"Rev": "e5c918b80c17694cbc49aab32a759f9a40067f5d"
 		},
 		{
 			"ImportPath": "github.com/kr/pty",
