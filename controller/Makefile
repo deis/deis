@@ -82,6 +82,6 @@ test-unit: setup-venv test-style
 	venv/bin/coverage report -m
 
 test-functional:
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
-	@docker history deis/test-postgresql >/dev/null 2>&1 || docker pull deis/test-postgresql:latest
+	@$(MAKE) -C ../tests/ test-etcd
+	@$(MAKE) -C ../tests/ test-postgresql
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...

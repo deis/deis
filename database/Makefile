@@ -54,6 +54,6 @@ test-style:
 	shellcheck $(SHELL_SCRIPTS)
 
 test-functional:
-	@docker history deis/mock-store >/dev/null 2>&1 || $(MAKE) -C ../tests/ mock-store
-	@docker history deis/test-etcd >/dev/null 2>&1 || docker pull deis/test-etcd:latest
+	@$(MAKE) -C ../tests/ mock-store
+	@$(MAKE) -C ../tests/ test-etcd
 	GOPATH=`cd ../tests/ && godep path`:$(GOPATH) go test -v ./tests/...

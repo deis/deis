@@ -60,10 +60,7 @@ continuous deployment, start one locally:
 
     The functional tests also use several mock or example containers:
     **deis/test-etcd**, **deis/test-postgresql**, and **deis/mock-store**.
-    These are referenced by the ``:latest`` tag, so in the rare case that one
-    of these test containers needs to change, ``docker rmi`` its image and
-    the tests will pull it from Docker Hub or rebuild it.
-
+    These are built locally during a test run.
 
 Run the Tests
 -------------
