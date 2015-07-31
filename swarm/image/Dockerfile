@@ -1,4 +1,4 @@
-FROM alpine:3.1
+FROM scratch
 
 COPY bin /app/bin/
 WORKDIR /app/bin
