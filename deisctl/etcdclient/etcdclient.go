@@ -1,4 +1,4 @@
-package config
+package etcdclient
 
 import (
 	"fmt"
@@ -12,6 +12,14 @@ import (
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/deis/deis/deisctl/backend/fleet"
 )
+
+// ServiceKey represents running Deis services
+type ServiceKey struct {
+	Key        string     `json:"key"`
+	Value      string     `json:"value,omitempty"`
+	Expiration *time.Time `json:"expiration,omitempty"`
+	TTL        int64      `json:"ttl,omitempty"`
+}
 
 func getTunnelFlag() string {
 	tun := fleet.Flags.Tunnel
@@ -42,6 +50,46 @@ func (c *etcdClient) Get(key string) (string, error) {
 	return resp.Node.Value, nil
 }
 
+func singleNodeToServiceKey(node *etcd.Node) *ServiceKey {
+	key := ServiceKey{
+		Key:        node.Key,
+		Expiration: node.Expiration,
+	}
+
+	if node.Dir != true && node.Key != "" {
+		key.Value = node.Value
+	}
+
+	return &key
+}
+
+func traverseNode(node *etcd.Node) []*ServiceKey {
+	var serviceKeys []*ServiceKey
+
+	if len(node.Nodes) > 0 {
+		for _, nodeChild := range node.Nodes {
+			serviceKeys = append(serviceKeys, traverseNode(nodeChild)...)
+		}
+	} else {
+		key := singleNodeToServiceKey(node)
+		if key.Key != "" {
+			serviceKeys = append(serviceKeys, key)
+		}
+	}
+
+	return serviceKeys
+}
+
+func (c *etcdClient) GetRecursive(key string) ([]*ServiceKey, error) {
+	resp, err := c.etcd.Get(key, true, true)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes := traverseNode(resp.Node)
+	return nodes, nil
+}
+
 func (c *etcdClient) Delete(key string) error {
 	_, err := c.etcd.Delete(key, false)
 	return err
@@ -55,7 +103,16 @@ func (c *etcdClient) Set(key string, value string) (string, error) {
 	return resp.Node.Value, nil
 }
 
-func getEtcdClient() (*etcdClient, error) {
+func (c *etcdClient) Update(key string, value string, ttl uint64) (string, error) {
+	resp, err := c.etcd.Update(key, value, ttl)
+	if err != nil {
+		return "", err
+	}
+	return resp.Node.Value, nil
+}
+
+// GetEtcdClient returns a valid etcd client, either locally or via SSH
+func GetEtcdClient() (*etcdClient, error) {
 	var dial func(string, string) (net.Conn, error)
 	sshTimeout := time.Duration(fleet.Flags.SSHTimeout*1000) * time.Millisecond
 	tun := getTunnelFlag()
@@ -95,8 +152,4 @@ func getEtcdClient() (*etcdClient, error) {
 	c.SetTransport(&trans)
 
 	return &etcdClient{etcd: c}, nil
-}
-
-func EtcdClient() (*etcdClient, error) {
-	return getEtcdClient()
 }

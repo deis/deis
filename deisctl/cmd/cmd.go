@@ -97,6 +97,16 @@ func Start(targets []string, b backend.Backend) error {
 	return nil
 }
 
+// RollingRestart restart instance unit in a rolling manner
+func RollingRestart(target string, b backend.Backend) error {
+	var wg sync.WaitGroup
+
+	b.RollingRestart(target, &wg, Stdout, Stderr)
+	wg.Wait()
+
+	return nil
+}
+
 // CheckRequiredKeys exist in etcd
 func CheckRequiredKeys() error {
 	if err := config.CheckConfig("/deis/platform/", "domain"); err != nil {

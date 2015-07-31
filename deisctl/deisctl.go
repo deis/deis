@@ -42,6 +42,9 @@ Commands, use "deisctl help <command>" to learn more:
   ssh               open an interactive shell on a machine in the cluster
   dock              open an interactive shell on a container in the cluster
   help              show the help screen for a command
+  upgrade-prep      prepare a running cluster for upgrade
+  upgrade-takeover  allow an upgrade to gracefully takeover a running cluster
+  rolling-restart   perform a rolling restart of a Deis component (currently only router is supported)
 
 Options:
   -h --help                   show this help screen
@@ -115,6 +118,12 @@ Options:
 		err = c.SSH(argv)
 	case "dock":
 		err = c.Dock(argv)
+	case "upgrade-prep":
+		err = c.UpgradePrep(argv)
+	case "upgrade-takeover":
+		err = c.UpgradeTakeover(argv)
+	case "rolling-restart":
+		err = c.RollingRestart(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0
