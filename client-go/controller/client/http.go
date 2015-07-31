@@ -100,8 +100,9 @@ func (c Client) BasicRequest(method string, path string, body []byte) (string, e
 }
 
 func checkForErrors(res *http.Response, body string) error {
-	switch res.StatusCode {
-	case http.StatusOK, http.StatusCreated, http.StatusNoContent:
+
+	// If response is not an error, return nil.
+	if res.StatusCode > 199 && res.StatusCode < 400 {
 		return nil
 	}
 
