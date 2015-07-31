@@ -100,3 +100,19 @@ func TestLoadSave(t *testing.T) {
 		t.Errorf("Expected %s, Got %s", expected, client.ControllerURL.String())
 	}
 }
+
+func TestDeleteSettings(t *testing.T) {
+	if err := createTempProfile(""); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := Delete(); err != nil {
+		t.Fatal(err)
+	}
+
+	file := locateSettingsFile()
+
+	if _, err := os.Stat(file); err == nil {
+		t.Errorf("File %s exists, supposed to have been deleted.", file)
+	}
+}

@@ -1,4 +1,4 @@
-package client
+package git
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 )
 
 // CreateRemote adds a git remote in the current directory.
-func (c Client) CreateRemote(remote, appID string) error {
-	cmd := exec.Command("git", "remote", "add", remote, c.RemoteURL(appID))
+func CreateRemote(host, remote, appID string) error {
+	cmd := exec.Command("git", "remote", "add", remote, RemoteURL(host, appID))
 	stderr, err := cmd.StderrPipe()
 
 	if err != nil {
@@ -34,7 +34,7 @@ func (c Client) CreateRemote(remote, appID string) error {
 }
 
 // DeleteRemote removes a git remote in the current directory.
-func (c Client) DeleteRemote(appID string) error {
+func DeleteRemote(appID string) error {
 	name, err := remoteNameFromAppID(appID)
 
 	if err != nil {
@@ -68,9 +68,9 @@ func remoteNameFromAppID(appID string) (string, error) {
 	return "", errors.New("Could not find remote matching app in 'git remote -v'")
 }
 
-// DetectApp detects if there is deis remote in git.
-func (c Client) DetectApp() (string, error) {
-	remote, err := c.findRemote()
+// DetectAppName detects if there is deis remote in git.
+func DetectAppName(host string) (string, error) {
+	remote, err := findRemote(host)
 
 	if err != nil {
 		return "", err
@@ -80,7 +80,7 @@ func (c Client) DetectApp() (string, error) {
 	return strings.Split(ss[len(ss)-1], ".")[0], nil
 }
 
-func (c Client) findRemote() (string, error) {
+func findRemote(host string) (string, error) {
 	out, err := exec.Command("git", "remote", "-v").Output()
 
 	if err != nil {
@@ -91,7 +91,7 @@ func (c Client) findRemote() (string, error) {
 
 	for _, line := range strings.Split(cmd, "\n") {
 		for _, remote := range strings.Split(line, " ") {
-			if strings.Contains(remote, c.ControllerURL.Host) {
+			if strings.Contains(remote, host) {
 				return strings.Split(remote, "\t")[1], nil
 			}
 		}
@@ -101,6 +101,6 @@ func (c Client) findRemote() (string, error) {
 }
 
 // RemoteURL returns the git URL of app.
-func (c Client) RemoteURL(appID string) string {
-	return fmt.Sprintf("ssh://git@%s:2222/%s.git", c.ControllerURL.Host, appID)
+func RemoteURL(host, appID string) string {
+	return fmt.Sprintf("ssh://git@%s:2222/%s.git", host, appID)
 }

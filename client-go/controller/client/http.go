@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -22,31 +21,6 @@ func CreateHTTPClient(sslVerify bool) *http.Client {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify},
 	}
 	return &http.Client{Transport: tr}
-}
-
-func rawRequest(client *http.Client, method string, url string, body io.Reader, headers http.Header,
-	expectedStatusCode int) (*http.Response, error) {
-
-	req, err := http.NewRequest(method, url, body)
-	req.Header = headers
-
-	res, err := client.Do(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if res.StatusCode != expectedStatusCode {
-		defer res.Body.Close()
-
-		resBody, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return nil, err
-		}
-		return nil, checkForErrors(res, string(resBody))
-	}
-
-	return res, nil
 }
 
 // Request makes a HTTP request on the controller.
@@ -68,7 +42,11 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "token "+c.Token)
+
+	if c.Token != "" {
+		req.Header.Add("Authorization", "token "+c.Token)
+	}
+
 	addUserAgent(&req.Header)
 
 	res, err := c.HTTPClient.Do(req)

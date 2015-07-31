@@ -18,24 +18,6 @@ func locateSettingsFile() string {
 	return path.Join(os.Getenv("HOME"), ".deis", filename+".json")
 }
 
-func deleteSettings() error {
-	filename := locateSettingsFile()
-
-	if _, err := os.Stat(filename); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-
-		return err
-	}
-
-	if err := os.Remove(filename); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func checkAPICompatability(serverAPIVersion string) {
 	if serverAPIVersion != version.APIVersion {
 		fmt.Printf(`!    WARNING: Client and server API versions do not match. Please consider upgrading.

@@ -13,6 +13,8 @@ import (
 	"github.com/deis/deis/client-go/controller/client"
 	"github.com/deis/deis/client-go/controller/models/apps"
 	"github.com/deis/deis/client-go/controller/models/config"
+	"github.com/deis/deis/client-go/pkg/git"
+	"github.com/deis/deis/client-go/pkg/webbrowser"
 )
 
 // AppCreate creates an app.
@@ -44,10 +46,10 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	}
 
 	if !noRemote {
-		return c.CreateRemote(remote, app.ID)
+		return git.CreateRemote(c.ControllerURL.Host, remote, app.ID)
 	}
 
-	fmt.Println("remote available at", c.RemoteURL(app.ID))
+	fmt.Println("remote available at", git.RemoteURL(c.ControllerURL.Host, app.ID))
 
 	return nil
 }
@@ -121,7 +123,7 @@ func AppOpen(appID string) error {
 
 	u.Scheme = "http"
 
-	return client.Webbrowser(u.String())
+	return webbrowser.Webbrowser(u.String())
 }
 
 // AppLogs returns the logs from an app.
@@ -182,7 +184,7 @@ func AppDestroy(appID, confirm string) error {
 	}
 
 	if appID == "" {
-		appID, err = c.DetectApp()
+		appID, err = git.DetectAppName(c.ControllerURL.Host)
 
 		if err != nil {
 			return err
@@ -215,7 +217,7 @@ func AppDestroy(appID, confirm string) error {
 	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	if gitSession {
-		return c.DeleteRemote(appID)
+		return git.DeleteRemote(appID)
 	}
 
 	return nil

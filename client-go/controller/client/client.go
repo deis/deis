@@ -84,3 +84,22 @@ func (c Client) Save() error {
 
 	return ioutil.WriteFile(locateSettingsFile(), settingsContents, 0775)
 }
+
+// Delete user's settings file.
+func Delete() error {
+	filename := locateSettingsFile()
+
+	if _, err := os.Stat(filename); err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+
+		return err
+	}
+
+	if err := os.Remove(filename); err != nil {
+		return err
+	}
+
+	return nil
+}
