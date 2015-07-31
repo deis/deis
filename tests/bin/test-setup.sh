@@ -115,8 +115,6 @@ function dump_logs {
     #echo "$CURRENT_APP"
     get_journal_logs $CURRENT_APP
   done
-  # etcd keyspace
-  get_logs deis-controller "etcdctl ls / --recursive" etcdctl-dump
   # component logs
   get_logs deis-builder
   get_logs deis-controller
@@ -141,13 +139,25 @@ function dump_logs {
   get_logs deis-router@3 deis-store-volume deis-store-volume-3
   get_logs deis-store-gateway
 
-  # get debug-etcd logs
+  # docker logs
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u docker \
+    > $FAILED_LOGS_DIR/docker-1.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@2 journalctl --no-pager -u docker \
+    > $FAILED_LOGS_DIR/docker-2.log
+  fleetctl -strict-host-key-checking=false ssh deis-router@3 journalctl --no-pager -u docker \
+    > $FAILED_LOGS_DIR/docker-3.log
+
+  # etcd logs
   fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u etcd \
     > $FAILED_LOGS_DIR/debug-etcd-1.log
   fleetctl -strict-host-key-checking=false ssh deis-router@2 journalctl --no-pager -u etcd \
     > $FAILED_LOGS_DIR/debug-etcd-2.log
   fleetctl -strict-host-key-checking=false ssh deis-router@3 journalctl --no-pager -u etcd \
     > $FAILED_LOGS_DIR/debug-etcd-3.log
+
+  # etcdctl dump
+  fleetctl -strict-host-key-checking=false ssh deis-router@1 etcdctl ls / --recursive \
+    > $FAILED_LOGS_DIR/etcdctl-dump.log
 
   # tarball logs
   BUCKET=jenkins-failure-logs
