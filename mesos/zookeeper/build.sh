@@ -3,7 +3,7 @@
 # fail on any command exiting non-zero
 set -eo pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
+if [ -z "$DOCKER_BUILD" ]; then
   echo
   echo "Note: this script is intended for use by the Dockerfile and not as a way to build zoopeeper locally"
   echo
