@@ -28,6 +28,9 @@ type DeisCtlClient interface {
 	Status(argv []string) error
 	Stop(argv []string) error
 	Uninstall(argv []string) error
+	UpgradePrep(argv []string) error
+	UpgradeTakeover(argv []string) error
+	RollingRestart(argv []string) error
 }
 
 // Client uses a backend to implement the DeisCtlClient interface.
@@ -55,6 +58,49 @@ func NewClient(requestedBackend string) (*Client, error) {
 		return nil, errors.New("invalid backend")
 	}
 	return &Client{Backend: backend}, nil
+}
+
+// UpgradePrep prepares a running cluster to be upgraded
+func (c *Client) UpgradePrep(argv []string) error {
+	usage := `Prepare platform for graceful upgrade.
+
+Usage:
+  deisctl upgrade-prep [options]
+`
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+
+	return cmd.UpgradePrep(c.Backend)
+}
+
+// UpgradeTakeover gracefully restarts a cluster prepared with upgrade-prep
+func (c *Client) UpgradeTakeover(argv []string) error {
+	usage := `Complete the upgrade of a prepped cluster.
+
+Usage:
+  deisctl upgrade-takeover [options]
+`
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+
+	return cmd.UpgradeTakeover(c.Backend)
+}
+
+// RollingRestart attempts a rolling restart of an instance unit
+func (c *Client) RollingRestart(argv []string) error {
+	usage := `Perform a rolling restart of an instance unit.
+
+Usage:
+  deisctl rolling-restart <target>
+`
+	args, err := docopt.Parse(usage, argv, true, "", false)
+	if err != nil {
+		return err
+	}
+
+	return cmd.RollingRestart(args["<target>"].(string), c.Backend)
 }
 
 // Config gets or sets a configuration value from the cluster.

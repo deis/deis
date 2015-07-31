@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/deis/deis/deisctl/etcdclient"
 	"github.com/deis/deis/deisctl/utils"
 )
 
@@ -23,7 +24,7 @@ var b64Keys = []string{"/deis/platform/sshPrivateKey"}
 
 // Config runs the config subcommand
 func Config(target string, action string, key []string) error {
-	client, err := getEtcdClient()
+	client, err := etcdclient.GetEtcdClient()
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func Config(target string, action string, key []string) error {
 // and returns an error if a value is not found
 func CheckConfig(root string, k string) error {
 
-	client, err := getEtcdClient()
+	client, err := etcdclient.GetEtcdClient()
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func CheckConfig(root string, k string) error {
 	return nil
 }
 
-func doConfig(target string, action string, key []string, client Client, w io.Writer) error {
+func doConfig(target string, action string, key []string, client etcdclient.Client, w io.Writer) error {
 	rootPath := "/deis/" + target + "/"
 
 	var vals []string
@@ -73,7 +74,7 @@ func doConfig(target string, action string, key []string, client Client, w io.Wr
 	return nil
 }
 
-func doConfigSet(client Client, root string, kvs []string) ([]string, error) {
+func doConfigSet(client etcdclient.Client, root string, kvs []string) ([]string, error) {
 	var result []string
 
 	for _, kv := range kvs {
@@ -100,7 +101,7 @@ func doConfigSet(client Client, root string, kvs []string) ([]string, error) {
 	return result, nil
 }
 
-func doConfigGet(client Client, root string, keys []string) ([]string, error) {
+func doConfigGet(client etcdclient.Client, root string, keys []string) ([]string, error) {
 	var result []string
 	for _, k := range keys {
 		val, err := client.Get(root + k)
@@ -112,7 +113,7 @@ func doConfigGet(client Client, root string, keys []string) ([]string, error) {
 	return result, nil
 }
 
-func doConfigRm(client Client, root string, keys []string) ([]string, error) {
+func doConfigRm(client etcdclient.Client, root string, keys []string) ([]string, error) {
 	var result []string
 	for _, k := range keys {
 		err := client.Delete(root + k)
