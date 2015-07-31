@@ -2,7 +2,6 @@ package apps
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,14 +12,10 @@ import (
 
 // List lists apps on a Deis controller.
 func List(c *client.Client) ([]api.App, error) {
-	body, status, err := c.BasicRequest("GET", "/v1/apps/", nil)
+	body, err := c.BasicRequest("GET", "/v1/apps/", nil)
 
 	if err != nil {
 		return []api.App{}, err
-	}
-
-	if status != 200 {
-		return []api.App{}, errors.New(body)
 	}
 
 	apps := api.Apps{}
@@ -45,14 +40,10 @@ func New(c *client.Client, id string) (api.App, error) {
 		}
 	}
 
-	resBody, status, err := c.BasicRequest("POST", "/v1/apps/", body)
+	resBody, err := c.BasicRequest("POST", "/v1/apps/", body)
 
 	if err != nil {
 		return api.App{}, err
-	}
-
-	if status != 201 {
-		return api.App{}, errors.New(resBody)
 	}
 
 	app := api.App{}
@@ -67,14 +58,10 @@ func New(c *client.Client, id string) (api.App, error) {
 func Get(c *client.Client, appID string) (api.App, error) {
 	u := fmt.Sprintf("/v1/apps/%s/", appID)
 
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return api.App{}, err
-	}
-
-	if status != 200 {
-		return api.App{}, errors.New(body)
 	}
 
 	app := api.App{}
@@ -94,14 +81,10 @@ func Logs(c *client.Client, appID string, lines int) (string, error) {
 		u += "?log_lines=" + strconv.Itoa(lines)
 	}
 
-	body, status, err := c.BasicRequest("GET", u, nil)
+	body, err := c.BasicRequest("GET", u, nil)
 
 	if err != nil {
 		return "", err
-	}
-
-	if status != 200 {
-		return body, errors.New(body)
 	}
 
 	return strings.Trim(body, `"`), nil
@@ -118,14 +101,10 @@ func Run(c *client.Client, appID string, command string) (api.AppRunResponse, er
 
 	u := fmt.Sprintf("/v1/apps/%s/run", appID)
 
-	resBody, status, err := c.BasicRequest("POST", u, body)
+	resBody, err := c.BasicRequest("POST", u, body)
 
 	if err != nil {
 		return api.AppRunResponse{}, err
-	}
-
-	if status != 200 {
-		return api.AppRunResponse{}, errors.New(resBody)
 	}
 
 	out := make([]interface{}, 2)
@@ -141,15 +120,6 @@ func Run(c *client.Client, appID string, command string) (api.AppRunResponse, er
 func Delete(c *client.Client, appID string) error {
 	u := fmt.Sprintf("/v1/apps/%s/", appID)
 
-	body, status, err := c.BasicRequest("DELETE", u, nil)
-
-	if err != nil {
-		return err
-	}
-
-	if status != 204 {
-		return errors.New(body)
-	}
-
-	return nil
+	_, err := c.BasicRequest("DELETE", u, nil)
+	return err
 }

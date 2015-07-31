@@ -155,20 +155,73 @@ func TestBasicRequest(t *testing.T) {
 
 	client := Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	body, status, err := client.BasicRequest("POST", "/basic/", []byte("test"))
+	body, err := client.BasicRequest("POST", "/basic/", []byte("test"))
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	expectedStatus := 200
-
-	if status != expectedStatus {
-		t.Errorf("Expected %d, got %d", expectedStatus, status)
-	}
-
 	expected := "basic"
 	if body != expected {
 		t.Errorf("Expected %s, Got %s", expected, body)
+	}
+}
+
+func TestCheckErrors(t *testing.T) {
+	t.Parallel()
+
+	expected := `
+error: This is an error.
+error_array: This is an array.
+error_array: Foo!
+404 NOT FOUND
+`
+	altExpected := `
+error_array: This is an array.
+error_array: Foo!
+error: This is an error.
+404 NOT FOUND
+`
+
+	body := `
+{
+	"error": "This is an error.",
+	"error_array": [
+		"This is an array.",
+		"Foo!"
+	]
+}`
+
+	res := http.Response{
+		StatusCode: 404,
+		Status:     "404 NOT FOUND",
+	}
+
+	actual := checkForErrors(&res, body).Error()
+
+	if actual != expected && actual != altExpected {
+		t.Errorf("Expected %s or %s, Got %s", expected, altExpected, actual)
+	}
+}
+
+func TestCheckErrorsReturnsNil(t *testing.T) {
+	t.Parallel()
+
+	responses := []http.Response{
+		http.Response{
+			StatusCode: http.StatusOK,
+		},
+		http.Response{
+			StatusCode: http.StatusCreated,
+		},
+		http.Response{
+			StatusCode: http.StatusNoContent,
+		},
+	}
+
+	for _, res := range responses {
+		if err := checkForErrors(&res, ""); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

@@ -129,14 +129,8 @@ func Passwd(username string, password string, newPassword string) error {
 		return err
 	}
 
-	resBody, status, err := client.BasicRequest("POST", "/v1/auth/passwd/", body)
-
-	if err != nil {
+	if _, err = client.BasicRequest("POST", "/v1/auth/passwd/", body); err != nil {
 		return err
-	}
-
-	if status != 200 {
-		return fmt.Errorf("Password change failed: %s", resBody)
 	}
 
 	fmt.Println("Password change succeeded.")
@@ -151,10 +145,8 @@ func Cancel() error {
 		return err
 	}
 
-	body, status, err := client.BasicRequest("DELETE", "/v1/auth/cancel/", nil)
-
-	if status != 204 {
-		return fmt.Errorf("Cancellation failed: %s", body)
+	if _, err = client.BasicRequest("DELETE", "/v1/auth/cancel/", nil); err != nil {
+		return err
 	}
 
 	if err = deleteSettings(); err != nil {
@@ -187,14 +179,10 @@ func Regenerate(username string, all bool) error {
 		return err
 	}
 
-	resBody, status, err := client.BasicRequest("POST", "/v1/auth/tokens/", body)
+	resBody, err := client.BasicRequest("POST", "/v1/auth/tokens/", body)
 
 	if err != nil {
 		return err
-	}
-
-	if status != 200 {
-		return fmt.Errorf("Token regeneration failed: %s", resBody)
 	}
 
 	// If the token regenerated is the current user's, update it.
