@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -75,7 +76,10 @@ func getleaderHost() string {
 
 	for _, node := range etcdCluster.Members {
 		if node.ID == etcdLeaderID {
-			return node.ClientURLs[0]
+			u, err := url.Parse(node.ClientURLs[0])
+			if err == nil {
+				return u.Host
+			}
 		}
 	}
 
@@ -95,6 +99,7 @@ func setEtcd(client *etcd.Client, key, value string, ttl uint64) {
 		log.Println(err)
 	}
 }
+
 func main() {
 	etcdproto := "etcd://" + getleaderHost() + swarmpath
 	etcdhost := os.Getenv("HOST")
