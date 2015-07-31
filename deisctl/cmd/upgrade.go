@@ -5,7 +5,8 @@ import (
 	"sync"
 
 	"github.com/deis/deis/deisctl/backend"
-	"github.com/deis/deis/deisctl/etcdclient"
+	"github.com/deis/deis/deisctl/config"
+	"github.com/deis/deis/deisctl/config/model"
 )
 
 // UpgradePrep stops and uninstalls all components except router and publisher
@@ -43,8 +44,8 @@ func UpgradePrep(b backend.Backend) error {
 	return nil
 }
 
-func listPublishedServices(etcdClient etcdclient.Client) ([]*etcdclient.ServiceKey, error) {
-	nodes, err := etcdClient.GetRecursive("deis/services")
+func listPublishedServices(cb config.Backend) ([]*model.ConfigNode, error) {
+	nodes, err := cb.GetRecursive("deis/services")
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +53,9 @@ func listPublishedServices(etcdClient etcdclient.Client) ([]*etcdclient.ServiceK
 	return nodes, nil
 }
 
-func republishServices(ttl uint64, nodes []*etcdclient.ServiceKey, etcdClient etcdclient.Client) error {
+func republishServices(ttl uint64, nodes []*model.ConfigNode, cb config.Backend) error {
 	for _, node := range nodes {
-		_, err := etcdClient.Update(node.Key, node.Value, ttl)
+		_, err := cb.SetWithTTL(node.Key, node.Value, ttl)
 		if err != nil {
 			return err
 		}
@@ -64,23 +65,19 @@ func republishServices(ttl uint64, nodes []*etcdclient.ServiceKey, etcdClient et
 }
 
 // UpgradeTakeover gracefully starts a platform stopped with UpgradePrep
-func UpgradeTakeover(b backend.Backend) error {
-	etcdClient, err := etcdclient.GetEtcdClient()
-	if err != nil {
-		return err
-	}
+func UpgradeTakeover(b backend.Backend, cb config.Backend) error {
 
-	if err := doUpgradeTakeOver(b, etcdClient); err != nil {
+	if err := doUpgradeTakeOver(b, cb); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func doUpgradeTakeOver(b backend.Backend, etcdClient etcdclient.Client) error {
+func doUpgradeTakeOver(b backend.Backend, cb config.Backend) error {
 	var wg sync.WaitGroup
 
-	nodes, err := listPublishedServices(etcdClient)
+	nodes, err := listPublishedServices(cb)
 	if err != nil {
 		return err
 	}
@@ -90,7 +87,7 @@ func doUpgradeTakeOver(b backend.Backend, etcdClient etcdclient.Client) error {
 	b.Destroy([]string{"publisher"}, &wg, Stdout, Stderr)
 	wg.Wait()
 
-	if err := republishServices(1800, nodes, etcdClient); err != nil {
+	if err := republishServices(1800, nodes, cb); err != nil {
 		return err
 	}
 

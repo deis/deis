@@ -9,6 +9,8 @@ import (
 	"github.com/deis/deis/deisctl/backend"
 	"github.com/deis/deis/deisctl/backend/fleet"
 	"github.com/deis/deis/deisctl/cmd"
+	"github.com/deis/deis/deisctl/config"
+	"github.com/deis/deis/deisctl/config/etcd"
 	"github.com/deis/deis/deisctl/units"
 
 	docopt "github.com/docopt/docopt-go"
@@ -35,7 +37,8 @@ type DeisCtlClient interface {
 
 // Client uses a backend to implement the DeisCtlClient interface.
 type Client struct {
-	Backend backend.Backend
+	Backend       backend.Backend
+	configBackend config.Backend
 }
 
 // NewClient returns a Client using the requested backend.
@@ -57,7 +60,13 @@ func NewClient(requestedBackend string) (*Client, error) {
 	default:
 		return nil, errors.New("invalid backend")
 	}
-	return &Client{Backend: backend}, nil
+
+	cb, err := etcd.NewConfigBackend()
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{Backend: backend, configBackend: cb}, nil
 }
 
 // UpgradePrep prepares a running cluster to be upgraded
@@ -85,7 +94,7 @@ Usage:
 		return err
 	}
 
-	return cmd.UpgradeTakeover(c.Backend)
+	return cmd.UpgradeTakeover(c.Backend, c.configBackend)
 }
 
 // RollingRestart attempts a rolling restart of an instance unit
@@ -151,7 +160,7 @@ Examples:
 		key = args["<key>"].([]string)
 	}
 
-	return cmd.Config(args["<target>"].(string), action, key)
+	return cmd.Config(args["<target>"].(string), action, key, c.configBackend)
 }
 
 // Install loads the definitions of components from local unit files.
@@ -186,7 +195,7 @@ Options:
 	}
 	cmd.RouterMeshSize = uint8(parsedValue)
 
-	return cmd.Install(args["<target>"].([]string), c.Backend, cmd.CheckRequiredKeys)
+	return cmd.Install(args["<target>"].([]string), c.Backend, c.configBackend, cmd.CheckRequiredKeys)
 }
 
 // Journal prints log output for the specified components.

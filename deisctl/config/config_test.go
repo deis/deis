@@ -8,14 +8,14 @@ import (
 	"os"
 	"testing"
 
-	"github.com/deis/deis/deisctl/etcdclient"
+	"github.com/deis/deis/deisctl/config/model"
 	"github.com/deis/deis/deisctl/test/mock"
 )
 
 func TestGetConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mock.Client{Expected: []*etcdclient.ServiceKey{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "get", []string{"testing", "port"}, testMock, &testWriter)
@@ -34,7 +34,7 @@ func TestGetConfig(t *testing.T) {
 func TestGetConfigError(t *testing.T) {
 	t.Parallel()
 
-	testMock := mock.Client{Expected: []*etcdclient.ServiceKey{{Key: "/deis/controller/testing", Value: "foo"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "get", []string{"port"}, testMock, &testWriter)
@@ -47,7 +47,7 @@ func TestGetConfigError(t *testing.T) {
 func TestSetConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mock.Client{Expected: []*etcdclient.ServiceKey{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "set", []string{"testing=bar", "port=1000"}, testMock, &testWriter)
@@ -66,7 +66,7 @@ func TestSetConfig(t *testing.T) {
 func TestDeleteConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mock.Client{Expected: []*etcdclient.ServiceKey{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "rm", []string{"testing", "port"}, testMock, &testWriter)

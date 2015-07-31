@@ -107,14 +107,14 @@ func RollingRestart(target string, b backend.Backend) error {
 	return nil
 }
 
-// CheckRequiredKeys exist in etcd
-func CheckRequiredKeys() error {
-	if err := config.CheckConfig("/deis/platform/", "domain"); err != nil {
+// CheckRequiredKeys exist in config backend
+func CheckRequiredKeys(cb config.Backend) error {
+	if err := config.CheckConfig("/deis/platform/", "domain", cb); err != nil {
 		return fmt.Errorf(`Missing platform domain, use:
 deisctl config platform set domain=<your-domain>`)
 	}
 
-	if err := config.CheckConfig("/deis/platform/", "sshPrivateKey"); err != nil {
+	if err := config.CheckConfig("/deis/platform/", "sshPrivateKey", cb); err != nil {
 		fmt.Printf(`Warning: Missing sshPrivateKey, "deis run" will be unavailable. Use:
 deisctl config platform set sshPrivateKey=<path-to-key>
 `)
@@ -286,15 +286,15 @@ func Journal(targets []string, b backend.Backend) error {
 
 // Install loads the definitions of components from local unit files.
 // After Install, the components will be available to Start.
-func Install(targets []string, b backend.Backend, checkKeys func() error) error {
+func Install(targets []string, b backend.Backend, cb config.Backend, checkKeys func(config.Backend) error) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		switch targets[0] {
 		case PlatformCommand:
-			return InstallPlatform(b, checkKeys, false)
+			return InstallPlatform(b, cb, checkKeys, false)
 		case StatelessPlatformCommand:
-			return InstallPlatform(b, checkKeys, true)
+			return InstallPlatform(b, cb, checkKeys, true)
 		case mesos:
 			return InstallMesos(b)
 		case swarm:
@@ -439,11 +439,11 @@ func splitScaleTarget(target string) (c string, num int, err error) {
 
 // Config gets or sets a configuration value from the cluster.
 //
-// A configuration value is stored and retrieved from a key/value store (in this case, etcd)
+// A configuration value is stored and retrieved from a key/value store
 // at /deis/<component>/<config>. Configuration values are typically used for component-level
 // configuration, such as enabling TLS for the routers.
-func Config(target string, action string, key []string) error {
-	if err := config.Config(target, action, key); err != nil {
+func Config(target string, action string, key []string, cb config.Backend) error {
+	if err := config.Config(target, action, key, cb); err != nil {
 		return err
 	}
 	return nil

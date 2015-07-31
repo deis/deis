@@ -6,14 +6,15 @@ import (
 	"sync"
 
 	"github.com/deis/deis/deisctl/backend"
+	"github.com/deis/deis/deisctl/config"
 	"github.com/deis/deis/pkg/prettyprint"
 )
 
 // InstallPlatform loads all components' definitions from local unit files.
 // After InstallPlatform, all components will be available for StartPlatform.
-func InstallPlatform(b backend.Backend, checkKeys func() error, stateless bool) error {
+func InstallPlatform(b backend.Backend, cb config.Backend, checkKeys func(config.Backend) error, stateless bool) error {
 
-	if err := checkKeys(); err != nil {
+	if err := checkKeys(cb); err != nil {
 		return err
 	}
 
