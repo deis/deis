@@ -39,7 +39,8 @@ Commands, use "deisctl help <command>" to learn more:
   journal           print the log output of a component
   config            set platform or component values
   refresh-units     refresh unit files from GitHub
-  ssh               open an interacive shell on a machine in the cluster
+  ssh               open an interactive shell on a machine in the cluster
+  dock              open an interactive shell on a container in the cluster
   help              show the help screen for a command
 
 Options:
