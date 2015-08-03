@@ -540,7 +540,7 @@ class ConfigTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
 
-    def _test_app_healthcheck(self,):
+    def _test_app_healthcheck(self):
         # post a new build, expecting it to pass as usual
         url = "/v1/apps/{self.app}/builds".format(**locals())
         body = {'image': 'autotest/example'}
