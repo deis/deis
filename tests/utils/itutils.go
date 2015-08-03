@@ -123,12 +123,17 @@ func GetGlobalConfig() *DeisTestConfig {
 	return &envCfg
 }
 
-func doCurl(url string) ([]byte, error) {
+// HTTPClient returns a client for use with the integration tests.
+func HTTPClient() *http.Client {
 	// disable security check for self-signed certificates
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Transport: tr}
+	return &http.Client{Transport: tr}
+}
+
+func doCurl(url string) ([]byte, error) {
+	client := HTTPClient()
 	response, err := client.Get(url)
 	if err != nil {
 		return nil, err
@@ -300,6 +305,7 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 
 // AppsDestroyTest destroys a Deis app and checks that it was successful.
 func AppsDestroyTest(t *testing.T, params *DeisTestConfig) {
+	fmt.Printf("destroying app %s...\n", params.ExampleApp)
 	cmd := "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 	if err := Chdir(params.ExampleApp); err != nil {
 		t.Fatal(err)

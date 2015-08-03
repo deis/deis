@@ -91,6 +91,32 @@ appname to the old one:
     an application, however you can work around this by pointing the @ record to the
     address of the load balancer (if any).
 
+Custom Health Checks
+--------------------
+
+By default, Deis only checks that a container is running. You can add a healthcheck by configuring a
+URL, initial delay, and timeout value:
+
+.. code-block:: console
+
+    $ deis config:set HEALTHCHECK_URL=/200.html
+    === peachy-waxworks
+    HEALTHCHECK_URL: /200.html
+    $ deis config:set HEALTHCHECK_INITIAL_DELAY=5
+    === peachy-waxworks
+    HEALTHCHECK_INITIAL_DELAY: 5
+    HEALTHCHECK_URL: /200.html
+    $ deis config:set HEALTHCHECK_TIMEOUT=5
+    === peachy-waxworks
+    HEALTHCHECK_TIMEOUT: 5
+    HEALTHCHECK_INITIAL_DELAY: 5
+    HEALTHCHECK_URL: /200.html
+
+If a new release does not pass the healthcheck, the application will be rolled back to the previous
+release. Beyond that, if an application container responds to a heartbeat check with a different
+status than a 200 OK, the :ref:`router` will mark that container as down and stop sending
+requests to that container.
+
 Track Changes
 -------------
 Each time a build or config change is made to your application, a new :ref:`release` is created.

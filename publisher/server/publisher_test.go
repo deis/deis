@@ -1,7 +1,10 @@
 package server
 
 import (
+	"fmt"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -43,5 +46,27 @@ func TestIsPortOpen(t *testing.T) {
 	}
 	if s.IsPortOpen("127.0.0.1:-1") {
 		t.Errorf("Port should be closed")
+	}
+}
+
+func TestHealthCheckOK(t *testing.T) {
+	s := &Server{}
+
+	// good server
+	ts1 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello, client")
+	}))
+	defer ts1.Close()
+	if !s.HealthCheckOK(ts1.URL, 0, 0) {
+		t.Errorf("healthcheck should be OK")
+	}
+
+	// bad server
+	ts2 := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.NotFound(w, r)
+	}))
+	defer ts2.Close()
+	if s.HealthCheckOK(ts2.URL, 0, 0) {
+		t.Errorf("healthcheck should be NOT OK")
 	}
 }

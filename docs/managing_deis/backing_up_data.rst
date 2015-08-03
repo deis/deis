@@ -212,6 +212,7 @@ use in the ``export`` command should correspond to the IP of the host machine wh
     [a.save() for a in App.objects.all()]
     [d.save() for d in Domain.objects.all()]
     [c.save() for c in Certificate.objects.all()]
+    [c.save() for c in Config.objects.all()]
     EOF
     $ exit
 
