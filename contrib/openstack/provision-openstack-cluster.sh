@@ -45,7 +45,7 @@ if [ -z "$OS_AUTH_URL" ]; then
 fi
 
 if neutron net-list|grep -q $DEIS_NETWORK &>/dev/null; then
-  NETWORK_ID=$(neutron net-list | grep internal | awk -F'| ' '{print $2}')
+  NETWORK_ID=$(neutron net-list | grep $DEIS_NETWORK | awk -F'| ' '{print $2}')
 else
   echo_yellow "Creating deis private network..."
   CIDR=${DEIS_CIDR:-10.21.12.0/24}
@@ -58,10 +58,16 @@ fi
 
 if ! neutron security-group-list | grep -q $DEIS_SECGROUP &>/dev/null; then
   neutron security-group-create $DEIS_SECGROUP
+  # Allow SSH from anywhere.
   neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 22 --port-range-max 22 $DEIS_SECGROUP
-  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 2222 --port-range-max 22222 $DEIS_SECGROUP
+  # Allow git push from anywhere
+  neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 2222 --port-range-max 2222 $DEIS_SECGROUP
+  # allow web from anywhere
   neutron security-group-rule-create --protocol tcp --remote-ip-prefix 0/0 --port-range-min 80 --port-range-max 80 $DEIS_SECGROUP
+  # allow ping from anywhere.
   neutron security-group-rule-create --protocol icmp --remote-ip-prefix 0/0 $DEIS_SECGROUP
+  # allow intra-sec-group communication
+  neutron security-group-rule-create --remote-group-id $DEIS_SECGROUP $DEIS_SECGROUP
 fi
 
 if [ -z "$DEIS_NUM_INSTANCES" ]; then
