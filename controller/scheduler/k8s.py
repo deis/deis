@@ -111,7 +111,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
     def _get_old_rc(self, name, app_type):
         con_app = httplib.HTTPConnection(self.target+":"+self.port)
         con_app.request('GET', '/api/'+self.apiversion +
-                        '/namespaces/default/replicationcontrollers')
+                        '/namespaces/'+name+'/replicationcontrollers')
         resp = con_app.getresponse()
         data = resp.read()
         reason = resp.reason
@@ -135,19 +135,19 @@ class KubeHTTPClient(AbstractSchedulerClient):
         else:
             return 0
 
-    def _get_rc_status(self, name):
+    def _get_rc_status(self, name, namespace):
         conn_rc = httplib.HTTPConnection(self.target+":"+self.port)
         conn_rc.request('GET', '/api/'+self.apiversion+'/' +
-                        'namespaces/default/replicationcontrollers/'+name)
+                        'namespaces/'+namespace+'/replicationcontrollers/'+name)
         resp = conn_rc.getresponse()
         status = resp.status
         conn_rc.close()
         return status
 
-    def _get_rc_(self, name):
+    def _get_rc_(self, name, namespace):
         conn_rc_resver = httplib.HTTPConnection(self.target+":"+self.port)
         conn_rc_resver.request('GET', '/api/'+self.apiversion+'/' +
-                               'namespaces/default/replicationcontrollers/'+name)
+                               'namespaces/'+namespace+'/replicationcontrollers/'+name)
         resp = conn_rc_resver.getresponse()
         data = resp.read()
         reason = resp.reason
@@ -171,20 +171,20 @@ class KubeHTTPClient(AbstractSchedulerClient):
         try:
             count = 1
             while desired >= count:
-                new_rc = self._scale_app(new_rc_name, count)
-                old_rc = self._scale_app(old_rc_name, desired-count)
+                new_rc = self._scale_app(new_rc_name, count, app_name)
+                old_rc = self._scale_app(old_rc_name, desired-count, app_name)
                 count += 1
         except Exception as e:
-            self._scale_app(new_rc["metadata"]["name"], 0)
-            self._delete_rc(new_rc["metadata"]["name"])
-            self._scale_app(old_rc["metadata"]["name"], desired)
+            self._scale_app(new_rc["metadata"]["name"], 0, app_name)
+            self._delete_rc(new_rc["metadata"]["name"], app_name)
+            self._scale_app(old_rc["metadata"]["name"], desired, app_name)
             err = '{} (deploy): {}'.format(name, e)
             raise RuntimeError(err)
-        self._delete_rc(old_rc_name)
+        self._delete_rc(old_rc_name, app_name)
 
-    def _get_events(self):
+    def _get_events(self, namespace):
         con_get = httplib.HTTPConnection(self.target+":"+self.port)
-        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/default/events')
+        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/'+namespace+'/events')
         resp = con_get.getresponse()
         reason = resp.reason
         status = resp.status
@@ -196,12 +196,12 @@ class KubeHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         return (status, data, reason)
 
-    def _get_schedule_status(self, name, num):
+    def _get_schedule_status(self, name, num, namespace):
         pods = []
         for _ in xrange(120):
             count = 0
             pods = []
-            status, data, reason = self._get_pods()
+            status, data, reason = self._get_pods(namespace)
             parsed_json = json.loads(data)
             for pod in parsed_json['items']:
                 if pod['metadata']['generateName'] == name+'-':
@@ -212,7 +212,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
             time.sleep(1)
         for _ in xrange(120):
             count = 0
-            status, data, reason = self._get_events()
+            status, data, reason = self._get_events(namespace)
             parsed_json = json.loads(data)
             for event in parsed_json['items']:
                 if(event['involvedObject']['name'] in pods and
@@ -225,12 +225,12 @@ class KubeHTTPClient(AbstractSchedulerClient):
                 break
             time.sleep(1)
 
-    def _scale_rc(self, rc):
+    def _scale_rc(self, rc, namespace):
         name = rc['metadata']['name']
         num = rc["spec"]["replicas"]
         headers = {'Content-Type': 'application/json'}
         conn_scalepod = httplib.HTTPConnection(self.target+":"+self.port)
-        conn_scalepod.request('PUT', '/api/'+self.apiversion+'/namespaces/default/' +
+        conn_scalepod.request('PUT', '/api/'+self.apiversion+'/namespaces/'+namespace+'/' +
                               'replicationcontrollers/'+name, headers=headers, body=json.dumps(rc))
         resp = conn_scalepod.getresponse()
         data = resp.read()
@@ -243,14 +243,14 @@ class KubeHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         resource_ver = rc['metadata']['resourceVersion']
         for _ in xrange(30):
-            js_template = self._get_rc_(name)
+            js_template = self._get_rc_(name, namespace)
             if js_template["metadata"]["resourceVersion"] != resource_ver:
                 break
             time.sleep(1)
-        self._get_schedule_status(name, num)
+        self._get_schedule_status(name, num, namespace)
         for _ in xrange(120):
             count = 0
-            status, data, reason = self._get_pods()
+            status, data, reason = self._get_pods(namespace)
             parsed_json = json.loads(data)
             for pod in parsed_json['items']:
                 if(pod['metadata']['generateName'] == name+'-' and
@@ -260,26 +260,27 @@ class KubeHTTPClient(AbstractSchedulerClient):
                 break
             time.sleep(1)
 
-    def _scale_app(self, name, num):
-        js_template = self._get_rc_(name)
+    def _scale_app(self, name, num, namespace):
+        js_template = self._get_rc_(name, namespace)
         js_template["spec"]["replicas"] = num
-        self._scale_rc(js_template)
+        self._scale_rc(js_template, namespace)
 
     def scale(self, name, image, command, **kwargs):
+        app_name = kwargs.get('aname', {})
         rc_name = name.replace(".", "-")
         rc_name = rc_name.replace("_", "-")
-        if not 200 <= self._get_rc_status(rc_name) <= 299:
+        if not 200 <= self._get_rc_status(rc_name, app_name) <= 299:
             self.create(name, image, command, **kwargs)
             return
         name = name.replace(".", "-")
         name = name.replace("_", "-")
         num = kwargs.get('num', {})
-        js_template = self._get_rc_(name)
+        js_template = self._get_rc_(name, app_name)
         old_replicas = js_template["spec"]["replicas"]
         try:
-            self._scale_app(name, num)
+            self._scale_app(name, num, app_name)
         except Exception as e:
-            self._scale_app(name, old_replicas)
+            self._scale_app(name, old_replicas, app_name)
             err = '{} (Scale): {}'.format(name, e)
             raise RuntimeError(err)
 
@@ -322,7 +323,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
             containers[0]["resources"]["limits"]["cpu"] = cpu
         headers = {'Content-Type': 'application/json'}
         conn_rc = httplib.HTTPConnection(self.target+":"+self.port)
-        conn_rc.request('POST', '/api/'+self.apiversion+'/namespaces/default/' +
+        conn_rc.request('POST', '/api/'+self.apiversion+'/namespaces/'+app_name+'/' +
                         'replicationcontrollers', headers=headers, body=json.dumps(js_template))
         resp = conn_rc.getresponse()
         data = resp.read()
@@ -335,11 +336,11 @@ class KubeHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         create = False
         for _ in xrange(30):
-            if not create and self._get_rc_status(name) == 404:
+            if not create and self._get_rc_status(name, app_name) == 404:
                 time.sleep(1)
                 continue
             create = True
-            rc = self._get_rc_(name)
+            rc = self._get_rc_(name, app_name)
             if ("observedGeneration" in rc["status"]
                     and rc["metadata"]["generation"] == rc["status"]["observedGeneration"]):
                 break
@@ -356,14 +357,14 @@ class KubeHTTPClient(AbstractSchedulerClient):
         try:
             self._create_service(name, app_name, app_type)
         except Exception as e:
-            self._scale_app(name, 0)
-            self._delete_rc(name)
+            self._scale_app(name, 0, app_name)
+            self._delete_rc(name, app_name)
             err = '{} (create): {}'.format(name, e)
             raise RuntimeError(err)
 
-    def _get_service(self, name):
+    def _get_service(self, name, namespace):
         con_get = httplib.HTTPConnection(self.target+":"+self.port)
-        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/default/services/'+name)
+        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/'+namespace+'/services/'+name)
         resp = con_get.getresponse()
         reason = resp.reason
         status = resp.status
@@ -381,7 +382,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         appname = "app-"+str(app_id)
         actual_pod = {}
         for _ in xrange(300):
-            status, data, reason = self._get_pods()
+            status, data, reason = self._get_pods(app_name)
             parsed_json = json.loads(data)
             for pod in parsed_json['items']:
                 if('generateName' in pod['metadata'] and
@@ -405,7 +406,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         template = string.Template(SERVICE_TEMPLATE).substitute(l)
         headers = {'Content-Type': 'application/json'}
         conn_serv = httplib.HTTPConnection(self.target+":"+self.port)
-        conn_serv.request('POST', '/api/'+self.apiversion+'/namespaces/default/services',
+        conn_serv.request('POST', '/api/'+self.apiversion+'/namespaces/'+app_name+'/services',
                           headers=headers, body=copy.deepcopy(template))
         resp = conn_serv.getresponse()
         data = resp.read()
@@ -413,7 +414,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         status = resp.status
         conn_serv.close()
         if status == 409:
-            status, data, reason = self._get_service(appname)
+            status, data, reason = self._get_service(appname, app_name)
             srv = json.loads(data)
             if srv['spec']['selector']['type'] == 'web':
                 return
@@ -421,7 +422,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
             srv['spec']['ports'][0]['targetPort'] = port
             headers = {'Content-Type': 'application/json'}
             conn_scalepod = httplib.HTTPConnection(self.target+":"+self.port)
-            conn_scalepod.request('PUT', '/api/'+self.apiversion+'/namespaces/default/' +
+            conn_scalepod.request('PUT', '/api/'+self.apiversion+'/namespaces/'+app_name+'/' +
                                   'services/'+appname, headers=headers, body=json.dumps(srv))
             resp = conn_scalepod.getresponse()
             data = resp.read()
@@ -445,10 +446,10 @@ class KubeHTTPClient(AbstractSchedulerClient):
         """Stop a container."""
         pass
 
-    def _delete_rc(self, name):
+    def _delete_rc(self, name, namespace):
         headers = {'Content-Type': 'application/json'}
         con_dest = httplib.HTTPConnection(self.target+":"+self.port)
-        con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/default/' +
+        con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+namespace+'/' +
                          'replicationcontrollers/'+name, headers=headers, body=POD_DELETE)
         resp = con_dest.getresponse()
         reason = resp.reason
@@ -462,18 +463,14 @@ class KubeHTTPClient(AbstractSchedulerClient):
 
     def destroy(self, name):
         """Destroy a container."""
+        appname = name.split("_")[0]
         name = name.split(".")
         name = name[0]+'-'+name[1]
         name = name.replace("_", "-")
-        appname = ''
-        try:
-            appname = self._get_rc_(name)["metadata"]["labels"]["name"]
-        except:
-            return
 
         headers = {'Content-Type': 'application/json'}
         con_dest = httplib.HTTPConnection(self.target+":"+self.port)
-        con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/default/' +
+        con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+appname+'/' +
                          'replicationcontrollers/'+name, headers=headers, body=POD_DELETE)
         resp = con_dest.getresponse()
         reason = resp.reason
@@ -492,7 +489,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         app_name = "app-"+str(app_id)
         con_serv = httplib.HTTPConnection(self.target+":"+self.port)
         con_serv.request('DELETE', '/api/'+self.apiversion +
-                         '/namespaces/default/services/'+app_name)
+                         '/namespaces/'+appname+'/services/'+app_name)
         resp = con_serv.getresponse()
         reason = resp.reason
         status = resp.status
@@ -503,15 +500,26 @@ class KubeHTTPClient(AbstractSchedulerClient):
                 name, status, reason, data)
             raise RuntimeError(errmsg)
 
-        status, data, reason = self._get_pods()
+        status, data, reason = self._get_pods(appname)
         parsed_json = json.loads(data)
         for pod in parsed_json['items']:
             if 'generateName' in pod['metadata'] and pod['metadata']['generateName'] == name+'-':
-                self._delete_pod(pod['metadata']['name'])
+                self._delete_pod(pod['metadata']['name'], appname)
+        con_ns = httplib.HTTPConnection(self.target+":"+self.port)
+        con_ns.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+appname)
+        resp = con_ns.getresponse()
+        reason = resp.reason
+        status = resp.status
+        data = resp.read()
+        con_ns.close()
+        if not 200 <= status <= 299:
+            errmsg = "Failed to delete namespace:{} {} {} - {}".format(
+                appname, status, reason, data)
+            raise RuntimeError(errmsg)
 
-    def _get_pod(self, name):
+    def _get_pod(self, name, namespace):
         conn_pod = httplib.HTTPConnection(self.target+":"+self.port)
-        conn_pod.request('GET', '/api/'+self.apiversion+'/namespaces/default/pods/'+name)
+        conn_pod.request('GET', '/api/'+self.apiversion+'/namespaces/'+namespace+'/pods/'+name)
         resp = conn_pod.getresponse()
         status = resp.status
         data = resp.read()
@@ -519,9 +527,9 @@ class KubeHTTPClient(AbstractSchedulerClient):
         conn_pod.close()
         return (status, data, reason)
 
-    def _get_pods(self):
+    def _get_pods(self, namespace):
         con_get = httplib.HTTPConnection(self.target+":"+self.port)
-        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/default/pods')
+        con_get.request('GET', '/api/'+self.apiversion+'/namespaces/'+namespace+'/pods')
         resp = con_get.getresponse()
         reason = resp.reason
         status = resp.status
@@ -533,11 +541,11 @@ class KubeHTTPClient(AbstractSchedulerClient):
             raise RuntimeError(errmsg)
         return (status, data, reason)
 
-    def _delete_pod(self, name):
+    def _delete_pod(self, name, namespace):
         headers = {'Content-Type': 'application/json'}
         con_dest_pod = httplib.HTTPConnection(self.target+":"+self.port)
-        con_dest_pod.request('DELETE', '/api/'+self.apiversion +
-                             '/namespaces/default/pods/'+name, headers=headers, body=POD_DELETE)
+        con_dest_pod.request('DELETE', '/api/'+self.apiversion+'/namespaces/' +
+                             namespace+'/pods/'+name, headers=headers, body=POD_DELETE)
         resp = con_dest_pod.getresponse()
         reason = resp.reason
         status = resp.status
@@ -548,7 +556,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
                 status, reason, data)
             raise RuntimeError(errmsg)
         for _ in xrange(5):
-            status, data, reason = self._get_pod(name)
+            status, data, reason = self._get_pod(name, namespace)
             if status != 404:
                 time.sleep(1)
                 continue
@@ -558,9 +566,10 @@ class KubeHTTPClient(AbstractSchedulerClient):
                 status, reason, data)
             raise RuntimeError(errmsg)
 
-    def _pod_log(self, name):
+    def _pod_log(self, name, namespace):
         conn_log = httplib.HTTPConnection(self.target+":"+self.port)
-        conn_log.request('GET', '/api/'+self.apiversion+'/namespaces/default/pods/'+name+'/log')
+        conn_log.request('GET', '/api/'+self.apiversion+'/namespaces/' +
+                         namespace+'/pods/'+name+'/log')
         resp = conn_log.getresponse()
         status = resp.status
         data = resp.read()
@@ -573,19 +582,21 @@ class KubeHTTPClient(AbstractSchedulerClient):
         return (status, data, reason)
 
     def logs(self, name):
+        appname = name.split("_")[0]
         name = name.replace(".", "-")
         name = name.replace("_", "-")
-        status, data, reason = self._get_pods()
+        status, data, reason = self._get_pods(appname)
         parsed_json = json.loads(data)
         log_data = ''
         for pod in parsed_json['items']:
             if name in pod['metadata']['generateName'] and pod['status']['phase'] == 'Running':
-                status, data, reason = self._pod_log(pod['metadata']['name'])
+                status, data, reason = self._pod_log(pod['metadata']['name'], appname)
                 log_data += data
         return log_data
 
     def run(self, name, image, entrypoint, command):
         """Run a one-off command."""
+        appname = name.split("_")[0]
         name = name.replace(".", "-")
         name = name.replace("_", "-")
         l = {}
@@ -604,7 +615,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
 
         con_dest = httplib.HTTPConnection(self.target+":"+self.port)
         headers = {'Content-Type': 'application/json'}
-        con_dest.request('POST', '/api/'+self.apiversion+'/namespaces/default/pods',
+        con_dest.request('POST', '/api/'+self.apiversion+'/namespaces/'+appname+'/pods',
                          headers=headers, body=json.dumps(js_template))
         resp = con_dest.getresponse()
         data = resp.read()
@@ -621,7 +632,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
             reason = ''
             data = ''
             for _ in xrange(5):
-                status, data, reason = self._get_pod(name)
+                status, data, reason = self._get_pod(name, appname)
                 if not 200 <= status <= 299:
                     time.sleep(1)
                     continue
@@ -632,24 +643,25 @@ class KubeHTTPClient(AbstractSchedulerClient):
                     status, reason, data)
                 raise RuntimeError(errmsg)
             if parsed_json['status']['phase'] == 'Succeeded':
-                status, data, reason = self._pod_log(name)
-                self._delete_pod(name)
+                status, data, reason = self._pod_log(name, appname)
+                self._delete_pod(name, appname)
                 return 0, data
             elif parsed_json['status']['phase'] == 'Failed':
                 pod_state = parsed_json['status']['containerStatuses'][0]['state']
                 err_code = pod_state['terminated']['exitCode']
-                self._delete_pod(name)
+                self._delete_pod(name, appname)
                 return err_code, data
             time.sleep(1)
         return 0, data
 
     def _get_pod_state(self, name):
         try:
+            appname = name.split("_")[0]
             name = name.split(".")
             name = name[0]+'-'+name[1]
             name = name.replace("_", "-")
             for _ in xrange(120):
-                status, data, reason = self._get_pods()
+                status, data, reason = self._get_pods(appname)
                 parsed_json = json.loads(data)
                 for pod in parsed_json['items']:
                     if pod['metadata']['generateName'] == name+'-':
