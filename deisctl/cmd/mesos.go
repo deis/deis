@@ -136,7 +136,7 @@ func StopMesos(b backend.Backend) error {
 
 func stopMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	fmt.Fprintln(out, "Marathon Framwork...")
+	fmt.Fprintln(out, "Marathon Framework...")
 	b.Stop([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 
