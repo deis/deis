@@ -7,50 +7,15 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/deis/deis/deisctl/config/model"
+	"github.com/deis/deis/deisctl/test/mock"
 )
-
-type KVPair struct {
-	key   string
-	value string
-}
-
-type MockStore []KVPair
-
-type mockClient struct {
-	expected MockStore
-}
-
-func (m mockClient) Get(key string) (value string, err error) {
-	for _, expect := range m.expected {
-		if expect.key == key {
-			return expect.value, nil
-		}
-	}
-	return "", fmt.Errorf("%s does not exist", m.expected)
-}
-
-func (m mockClient) Set(key, value string) (returnedValue string, err error) {
-	for _, expect := range m.expected {
-		if expect.key == key {
-			return value, nil
-		}
-	}
-	return "", fmt.Errorf("%s does not exist", m.expected)
-}
-
-func (m mockClient) Delete(key string) (err error) {
-	for _, expect := range m.expected {
-		if expect.key == key {
-			return nil
-		}
-	}
-	return fmt.Errorf("%s does not exist", m.expected)
-}
 
 func TestGetConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "get", []string{"testing", "port"}, testMock, &testWriter)
@@ -69,7 +34,7 @@ func TestGetConfig(t *testing.T) {
 func TestGetConfigError(t *testing.T) {
 	t.Parallel()
 
-	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "get", []string{"port"}, testMock, &testWriter)
@@ -82,7 +47,7 @@ func TestGetConfigError(t *testing.T) {
 func TestSetConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "set", []string{"testing=bar", "port=1000"}, testMock, &testWriter)
@@ -101,7 +66,7 @@ func TestSetConfig(t *testing.T) {
 func TestDeleteConfig(t *testing.T) {
 	t.Parallel()
 
-	testMock := mockClient{expected: MockStore{{key: "/deis/controller/testing", value: "foo"}, {key: "/deis/controller/port", value: "8000"}}}
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/controller/testing", Value: "foo"}, {Key: "/deis/controller/port", Value: "8000"}}}
 	testWriter := bytes.Buffer{}
 
 	err := doConfig("controller", "rm", []string{"testing", "port"}, testMock, &testWriter)

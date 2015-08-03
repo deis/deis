@@ -13,6 +13,9 @@ import (
 	"testing"
 
 	"github.com/deis/deis/deisctl/backend"
+	"github.com/deis/deis/deisctl/config"
+	"github.com/deis/deis/deisctl/config/model"
+	"github.com/deis/deis/deisctl/test/mock"
 	"github.com/deis/deis/deisctl/units"
 )
 
@@ -21,6 +24,7 @@ type backendStub struct {
 	stoppedUnits     []string
 	installedUnits   []string
 	uninstalledUnits []string
+	restartedUnits   []string
 	expected         bool
 }
 
@@ -46,6 +50,10 @@ func (backend *backendStub) Scale(component string, num int, wg *sync.WaitGroup,
 		backend.expected = false
 	}
 }
+func (backend *backendStub) RollingRestart(target string, wg *sync.WaitGroup, out, ew io.Writer) {
+	backend.restartedUnits = append(backend.restartedUnits, target)
+}
+
 func (backend *backendStub) ListUnits() error {
 	return nil
 }
@@ -79,7 +87,7 @@ func (backend *backendStub) SSHExec(target, command string) error {
 
 var _ backend.Backend = &backendStub{}
 
-func fakeCheckKeys() error {
+func fakeCheckKeys(cb config.Backend) error {
 	return nil
 }
 
@@ -270,6 +278,57 @@ func TestStartSwarm(t *testing.T) {
 	}
 }
 
+func TestRollingRestart(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"router"}
+
+	RollingRestart("router", &b)
+
+	if !reflect.DeepEqual(b.restartedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.restartedUnits))
+	}
+}
+
+func TestUpgradePrep(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"database", "registry@*", "controller", "builder", "logger", "logspout", "store-volume",
+		"store-gateway@*", "store-metadata", "store-daemon", "store-monitor"}
+
+	UpgradePrep(&b)
+
+	if !reflect.DeepEqual(b.stoppedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
+	}
+}
+
+func TestUpgradeTakeover(t *testing.T) {
+	t.Parallel()
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/services/app1", Value: "foo", TTL: 10},
+		{Key: "/deis/services/app2", Value: "8000", TTL: 10}}}
+
+	b := backendStub{}
+	expectedRestarted := []string{"router"}
+	expectedStarted := []string{"publisher", "store-monitor", "store-daemon", "store-metadata",
+		"store-gateway@*", "store-volume", "logger", "logspout", "database", "registry@*",
+		"controller", "builder", "publisher", "router@*", "database", "registry@*",
+		"controller", "builder", "publisher", "router@*"}
+
+	if err := doUpgradeTakeOver(&b, testMock); err != nil {
+		t.Error(fmt.Errorf("Takeover failed: %v", err))
+	}
+
+	if !reflect.DeepEqual(b.restartedUnits, expectedRestarted) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expectedRestarted, b.restartedUnits))
+	}
+	if !reflect.DeepEqual(b.startedUnits, expectedStarted) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expectedStarted, b.startedUnits))
+	}
+}
+
 func TestStop(t *testing.T) {
 	t.Parallel()
 
@@ -419,9 +478,11 @@ func TestInstall(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
+	cb := mock.ConfigBackend{}
+
 	expected := []string{"router@1", "router@2"}
 
-	Install(expected, &b, fakeCheckKeys)
+	Install(expected, &b, &cb, fakeCheckKeys)
 
 	if !reflect.DeepEqual(b.installedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
@@ -432,11 +493,13 @@ func TestInstallPlatform(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
+	cb := mock.ConfigBackend{}
+
 	expected := []string{"store-daemon", "store-monitor", "store-metadata", "store-volume",
 		"store-gateway@1", "logger", "logspout", "database", "registry@1",
 		"controller", "builder", "publisher", "router@1", "router@2", "router@3"}
 
-	Install([]string{"platform"}, &b, fakeCheckKeys)
+	Install([]string{"platform"}, &b, &cb, fakeCheckKeys)
 
 	if !reflect.DeepEqual(b.installedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
@@ -447,12 +510,14 @@ func TestInstallPlatformWithCustomRouterMeshSize(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
+	cb := mock.ConfigBackend{}
+
 	expected := []string{"store-daemon", "store-monitor", "store-metadata", "store-volume",
 		"store-gateway@1", "logger", "logspout", "database", "registry@1",
 		"controller", "builder", "publisher", "router@1", "router@2", "router@3", "router@4", "router@5"}
 	RouterMeshSize = 5
 
-	Install([]string{"platform"}, &b, fakeCheckKeys)
+	Install([]string{"platform"}, &b, &cb, fakeCheckKeys)
 	RouterMeshSize = DefaultRouterMeshSize
 
 	if !reflect.DeepEqual(b.installedUnits, expected) {
@@ -464,10 +529,12 @@ func TestInstallStatelessPlatform(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
+	cb := mock.ConfigBackend{}
+
 	expected := []string{"logspout", "registry@1",
 		"controller", "builder", "publisher", "router@1", "router@2", "router@3"}
 
-	Install([]string{"stateless-platform"}, &b, fakeCheckKeys)
+	Install([]string{"stateless-platform"}, &b, &cb, fakeCheckKeys)
 
 	if !reflect.DeepEqual(b.installedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
@@ -478,9 +545,11 @@ func TestInstallSwarm(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
+	cb := mock.ConfigBackend{}
+
 	expected := []string{"swarm-node", "swarm-manager"}
 
-	Install([]string{"swarm"}, &b, fakeCheckKeys)
+	Install([]string{"swarm"}, &b, &cb, fakeCheckKeys)
 
 	if !reflect.DeepEqual(b.installedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))

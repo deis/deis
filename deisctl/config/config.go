@@ -22,25 +22,15 @@ var fileKeys = []string{
 var b64Keys = []string{"/deis/platform/sshPrivateKey"}
 
 // Config runs the config subcommand
-func Config(target string, action string, key []string) error {
-	client, err := getEtcdClient()
-	if err != nil {
-		return err
-	}
-
-	return doConfig(target, action, key, client, os.Stdout)
+func Config(target string, action string, key []string, cb Backend) error {
+	return doConfig(target, action, key, cb, os.Stdout)
 }
 
 // CheckConfig looks for a value at a keyspace path
 // and returns an error if a value is not found
-func CheckConfig(root string, k string) error {
+func CheckConfig(root string, k string, cb Backend) error {
 
-	client, err := getEtcdClient()
-	if err != nil {
-		return err
-	}
-
-	_, err = doConfigGet(client, root, []string{k})
+	_, err := doConfigGet(cb, root, []string{k})
 	if err != nil {
 		return err
 	}
@@ -48,7 +38,7 @@ func CheckConfig(root string, k string) error {
 	return nil
 }
 
-func doConfig(target string, action string, key []string, client Client, w io.Writer) error {
+func doConfig(target string, action string, key []string, cb Backend, w io.Writer) error {
 	rootPath := "/deis/" + target + "/"
 
 	var vals []string
@@ -56,11 +46,11 @@ func doConfig(target string, action string, key []string, client Client, w io.Wr
 
 	switch action {
 	case "rm":
-		vals, err = doConfigRm(client, rootPath, key)
+		vals, err = doConfigRm(cb, rootPath, key)
 	case "set":
-		vals, err = doConfigSet(client, rootPath, key)
+		vals, err = doConfigSet(cb, rootPath, key)
 	default:
-		vals, err = doConfigGet(client, rootPath, key)
+		vals, err = doConfigGet(cb, rootPath, key)
 	}
 	if err != nil {
 		return err
@@ -73,7 +63,7 @@ func doConfig(target string, action string, key []string, client Client, w io.Wr
 	return nil
 }
 
-func doConfigSet(client Client, root string, kvs []string) ([]string, error) {
+func doConfigSet(cb Backend, root string, kvs []string) ([]string, error) {
 	var result []string
 
 	for _, kv := range kvs {
@@ -89,8 +79,8 @@ func doConfigSet(client Client, root string, kvs []string) ([]string, error) {
 			return result, err
 		}
 
-		// set key/value in etcd
-		ret, err := client.Set(path, val)
+		// set key/value in config backend
+		ret, err := cb.Set(path, val)
 		if err != nil {
 			return result, err
 		}
@@ -100,10 +90,10 @@ func doConfigSet(client Client, root string, kvs []string) ([]string, error) {
 	return result, nil
 }
 
-func doConfigGet(client Client, root string, keys []string) ([]string, error) {
+func doConfigGet(cb Backend, root string, keys []string) ([]string, error) {
 	var result []string
 	for _, k := range keys {
-		val, err := client.Get(root + k)
+		val, err := cb.Get(root + k)
 		if err != nil {
 			return result, err
 		}
@@ -112,10 +102,10 @@ func doConfigGet(client Client, root string, keys []string) ([]string, error) {
 	return result, nil
 }
 
-func doConfigRm(client Client, root string, keys []string) ([]string, error) {
+func doConfigRm(cb Backend, root string, keys []string) ([]string, error) {
 	var result []string
 	for _, k := range keys {
-		err := client.Delete(root + k)
+		err := cb.Delete(root + k)
 		if err != nil {
 			return result, err
 		}
