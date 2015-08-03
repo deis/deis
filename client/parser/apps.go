@@ -8,7 +8,7 @@ import (
 	docopt "github.com/docopt/docopt-go"
 )
 
-// Apps routes app commands to the specific function
+// Apps routes app commands to their specific function.
 func Apps(argv []string) error {
 	usage := `
 Valid commands for apps:
@@ -20,6 +20,7 @@ apps:open          open the application in a browser
 apps:logs          view aggregated application logs
 apps:run           run a command in an ephemeral app container
 apps:destroy       destroy an application
+apps:transfer      transfer app ownership to another user
 
 Use 'deis help [command]' to learn more.
 `
@@ -39,6 +40,8 @@ Use 'deis help [command]' to learn more.
 		return appRun(argv)
 	case "apps:destroy":
 		return appDestroy(argv)
+	case "apps:transfer":
+		return appTransfer(argv)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -243,4 +246,27 @@ Options:
 	confirm := safeGetValue(args, "--confirm")
 
 	return cmd.AppDestroy(app, confirm)
+}
+
+func appTransfer(argv []string) error {
+	usage := `
+Transfer app ownership to another user.
+
+Usage: deis apps:transfer <username> [options]
+
+Arguments:
+  <username>
+    the user that the app will be transfered to.
+
+Options:
+  -a --app=<app>
+    the uniquely identifiable name for the application.
+`
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.AppTransfer(safeGetValue(args, "--app"), safeGetValue(args, "<username>"))
 }

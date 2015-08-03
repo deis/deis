@@ -224,6 +224,17 @@ class AppViewSet(BaseDeisViewSet):
         return Response(output_and_rc, status=status.HTTP_200_OK,
                         content_type='text/plain')
 
+    def update(self, request, **kwargs):
+        app = self.get_object()
+
+        if request.data.get('owner'):
+            if self.request.user != app.owner and not self.request.user.is_superuser:
+                raise PermissionDenied()
+            new_owner = get_object_or_404(User, username=request.data['owner'])
+            app.owner = new_owner
+        app.save()
+        return Response(status=status.HTTP_200_OK)
+
 
 class BuildViewSet(ReleasableViewSet):
     """A viewset for interacting with Build objects."""

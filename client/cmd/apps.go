@@ -240,3 +240,24 @@ func AppDestroy(appID, confirm string) error {
 
 	return nil
 }
+
+// AppTransfer transfers app ownership to another user.
+func AppTransfer(appID, username string) error {
+	c, appID, err := load(appID)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Transferring %s to %s... ", appID, username)
+
+	err = apps.Transfer(c, appID, username)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("done")
+
+	return nil
+}

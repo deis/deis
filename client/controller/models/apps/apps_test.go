@@ -45,6 +45,7 @@ const appsFixture string = `
 
 const appCreateExpected string = `{"id":"example-go"}`
 const appRunExpected string = `{"command":"echo hi"}`
+const appTransferExpected string = `{"owner":"test"}`
 
 type fakeHTTPServer struct {
 	createID        bool
@@ -124,6 +125,27 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 		}
 
 		res.Write([]byte(`[0,"hi\n"]`))
+		return
+	}
+
+	if req.URL.Path == "/v1/apps/example-go/" && req.Method == "POST" {
+		body, err := ioutil.ReadAll(req.Body)
+
+		if err != nil {
+			fmt.Println(err)
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write(nil)
+		}
+
+		if string(body) != appTransferExpected {
+			fmt.Printf("Expected '%s', Got '%s'\n", appTransferExpected, body)
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write(nil)
+			return
+		}
+
+		res.WriteHeader(http.StatusNoContent)
+		res.Write(nil)
 		return
 	}
 
@@ -345,5 +367,27 @@ func TestAppsLogs(t *testing.T) {
 		if actual != test.Expected {
 			t.Errorf("Expected %s, Got %s", test.Expected, actual)
 		}
+	}
+}
+
+func TestAppsTransfer(t *testing.T) {
+	t.Parallel()
+
+	handler := fakeHTTPServer{}
+	server := httptest.NewServer(&handler)
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+
+	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	if err = Transfer(&client, "example-go", "test"); err != nil {
+		t.Fatal(err)
 	}
 }
