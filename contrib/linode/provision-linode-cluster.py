@@ -415,7 +415,7 @@ if __name__ == '__main__':
                                   help='CoreOS cloud config user-data file')
     provision_parser.add_argument('--coreos-version', required=False, default='647.2.0', dest='coreos_version',
                                   help='CoreOS version number to install')
-    provision_parser.add_argument('--coreos-channel', required=False, default='beta', dest='coreos_channel',
+    provision_parser.add_argument('--coreos-channel', required=False, default='stable', dest='coreos_channel',
                                   help='CoreOS channel to install from')
     provision_parser.set_defaults(cmd=ProvisionCommand)
 
