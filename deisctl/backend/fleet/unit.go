@@ -32,11 +32,31 @@ func (c *FleetClient) Units(target string) (units []string, err error) {
 	if err != nil {
 		return
 	}
+	// Look for units starting with the given target name first. If the given
+	// name starts with "deis-", this will easily locate platform components,
+	// but we search without canonicalizing the target name FIRST so we have the
+	// opportunity to locate application containers (whose containers do not
+	// adhere to the same naming convention as the platform's own components).
 	for _, u := range allUnits {
-		if strings.Contains(u.Name, target) {
+		if strings.HasPrefix(u.Name, target) {
 			units = append(units, u.Name)
 		}
 	}
+	// If none are found, canonicalize the target string and search again. This
+	// will locate platform components that were referenced by a target string
+	// NOT already beginning with "deis-".
+	if len(units) == 0 {
+		canonTarget := strings.ToLower(target)
+		if !strings.HasPrefix(canonTarget, "deis-") {
+			canonTarget = "deis-" + canonTarget
+		}
+		for _, u := range allUnits {
+			if strings.HasPrefix(u.Name, canonTarget) {
+				units = append(units, u.Name)
+			}
+		}
+	}
+	// If still nothing is found, then we have an error on our hands.
 	if len(units) == 0 {
 		err = fmt.Errorf("could not find unit: %s", target)
 	}
