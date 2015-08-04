@@ -14,34 +14,27 @@ func InstallMesos(b backend.Backend) error {
 
 	var wg sync.WaitGroup
 
-	io.WriteString(Stdout, prettyprint.DeisIfy("Installing Mesos..."))
+	io.WriteString(Stdout, prettyprint.DeisIfy("Installing Mesos/Marathon..."))
 
 	installMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
 
-	fmt.Fprintln(Stdout, "Done.")
-	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Done.\n ")
 	fmt.Fprintln(Stdout, "Please run `deisctl start mesos` to boot up Mesos.")
 	return nil
 }
 
 func installMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	fmt.Fprintln(out, "Zookeeper...")
-	b.Create([]string{"zookeeper"}, wg, out, err)
+	fmt.Fprintln(out, "Mesos/Marathon control plane...")
+	b.Create([]string{"zookeeper", "mesos-master"}, wg, out, err)
 	wg.Wait()
-
-	fmt.Fprintln(out, "Mesos Master...")
-	b.Create([]string{"mesos-master"}, wg, out, err)
-	wg.Wait()
-
-	fmt.Fprintln(out, "Mesos Slave...")
-	b.Create([]string{"mesos-slave"}, wg, out, err)
-	wg.Wait()
-
-	fmt.Fprintln(out, "Marathon Framework...")
 	b.Create([]string{"mesos-marathon"}, wg, out, err)
+	wg.Wait()
+
+	fmt.Fprintln(out, "Mesos/Marathon data plane...")
+	b.Create([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 }
 
@@ -50,32 +43,24 @@ func UninstallMesos(b backend.Backend) error {
 
 	var wg sync.WaitGroup
 
-	io.WriteString(Stdout, prettyprint.DeisIfy("Uninstalling Mesos..."))
+	io.WriteString(Stdout, prettyprint.DeisIfy("Uninstalling Mesos/Marathon..."))
 
 	uninstallMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
 
-	fmt.Fprintln(Stdout, "Done.")
+	fmt.Fprintln(Stdout, "Done.\n ")
 	return nil
 }
 
 func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) error {
 
-	fmt.Fprintln(out, "Marathon Framework...")
-	b.Destroy([]string{"mesos-marathon"}, wg, out, err)
-	wg.Wait()
-
-	fmt.Fprintln(out, "Mesos Slave...")
+	fmt.Fprintln(out, "Mesos/Marathon data plane...")
 	b.Destroy([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	fmt.Fprintln(out, "Mesos Master...")
-	b.Destroy([]string{"mesos-master"}, wg, out, err)
-	wg.Wait()
-
-	fmt.Fprintln(out, "Zookeeper...")
-	b.Destroy([]string{"zookeeper"}, wg, out, err)
+	fmt.Fprintln(out, "Mesos/Marathon control plane...")
+	b.Destroy([]string{"mesos-marathon", "mesos-master", "zookeeper"}, wg, out, err)
 	wg.Wait()
 
 	return nil
@@ -86,34 +71,31 @@ func StartMesos(b backend.Backend) error {
 
 	var wg sync.WaitGroup
 
-	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Mesos..."))
+	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Mesos/Marathon..."))
 
 	startMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
 
-	fmt.Fprintln(Stdout, "Done.")
-	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Done.\n ")
 	fmt.Fprintln(Stdout, "Please use `deisctl config controller set schedulerModule=mesos_marathon`")
 	return nil
 }
 
 func startMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	fmt.Fprintln(out, "Zookeeper...")
+	fmt.Fprintln(out, "Mesos/Marathon control plane...")
 	b.Start([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
-
-	fmt.Fprintln(out, "Mesos Master...")
 	b.Start([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
+	b.Start([]string{"mesos-marathon"}, wg, out, err)
+	wg.Wait()
 
-	fmt.Fprintln(out, "Mesos Slave...")
+	fmt.Fprintln(out, "Mesos/Marathon data plane...")
 	b.Start([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	fmt.Fprintln(out, "Marathon Framework...")
-	b.Start([]string{"mesos-marathon"}, wg, out, err)
 	wg.Wait()
 }
 
@@ -122,33 +104,28 @@ func StopMesos(b backend.Backend) error {
 
 	var wg sync.WaitGroup
 
-	io.WriteString(Stdout, prettyprint.DeisIfy("Stopping Mesos..."))
+	io.WriteString(Stdout, prettyprint.DeisIfy("Stopping Mesos/Marathon..."))
 
 	stopMesosServices(b, &wg, Stdout, Stderr)
 
 	wg.Wait()
 
-	fmt.Fprintln(Stdout, "Done.")
-	fmt.Fprintln(Stdout, "")
+	fmt.Fprintln(Stdout, "Done.\n ")
 	fmt.Fprintln(Stdout, "Please run `deisctl start mesos` to restart Mesos.")
 	return nil
 }
 
 func stopMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
 
-	fmt.Fprintln(out, "Marathon Framework...")
-	b.Stop([]string{"mesos-marathon"}, wg, out, err)
-	wg.Wait()
-
-	fmt.Fprintln(out, "Mesos Slave...")
+	fmt.Fprintln(out, "Mesos/Marathon data plane...")
 	b.Stop([]string{"mesos-slave"}, wg, out, err)
 	wg.Wait()
 
-	fmt.Fprintln(out, "Mesos Master...")
+	fmt.Fprintln(out, "Mesos/Marathon control plane...")
+	b.Stop([]string{"mesos-marathon"}, wg, out, err)
+	wg.Wait()
 	b.Stop([]string{"mesos-master"}, wg, out, err)
 	wg.Wait()
-
-	fmt.Fprintln(out, "Zookeeper...")
 	b.Stop([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 }

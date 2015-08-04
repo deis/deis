@@ -269,7 +269,7 @@ func TestStartSwarm(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
-	expected := []string{"swarm-node", "swarm-manager"}
+	expected := []string{"swarm-manager", "swarm-node"}
 
 	Start([]string{"swarm"}, &b)
 
@@ -547,7 +547,7 @@ func TestInstallSwarm(t *testing.T) {
 	b := backendStub{}
 	cb := mock.ConfigBackend{}
 
-	expected := []string{"swarm-node", "swarm-manager"}
+	expected := []string{"swarm-manager", "swarm-node"}
 
 	Install([]string{"swarm"}, &b, &cb, fakeCheckKeys)
 

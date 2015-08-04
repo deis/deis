@@ -13,8 +13,11 @@ import (
 func InstallSwarm(b backend.Backend) error {
 	var wg sync.WaitGroup
 	io.WriteString(Stdout, prettyprint.DeisIfy("Installing Swarm..."))
-	fmt.Fprintln(Stdout, "Swarm node and Swarm Manager...")
-	b.Create([]string{"swarm-node", "swarm-manager"}, &wg, Stdout, Stderr)
+	fmt.Fprintln(Stdout, "Swarm control plane...")
+	b.Create([]string{"swarm-manager"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	fmt.Fprintln(Stdout, "Swarm data plane...")
+	b.Create([]string{"swarm-node"}, &wg, Stdout, Stderr)
 	wg.Wait()
 	fmt.Fprintln(Stdout, "Done.\n ")
 	fmt.Fprintln(Stdout, "Please run `deisctl start swarm` to start swarm.")
@@ -25,11 +28,11 @@ func InstallSwarm(b backend.Backend) error {
 func StartSwarm(b backend.Backend) error {
 	var wg sync.WaitGroup
 	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Swarm..."))
-	fmt.Fprintln(Stdout, "swarm nodes...")
-	b.Start([]string{"swarm-node"}, &wg, Stdout, Stderr)
-	wg.Wait()
-	fmt.Fprintln(Stdout, "swarm manager...")
+	fmt.Fprintln(Stdout, "Swarm control plane...")
 	b.Start([]string{"swarm-manager"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	fmt.Fprintln(Stdout, "Swarm data plane...")
+	b.Start([]string{"swarm-node"}, &wg, Stdout, Stderr)
 	wg.Wait()
 	fmt.Fprintln(Stdout, "Done.\n ")
 	fmt.Fprintln(Stdout, "Please run `deisctl config controller set schedulerModule=swarm` to use the swarm scheduler.")
@@ -41,8 +44,11 @@ func StopSwarm(b backend.Backend) error {
 
 	var wg sync.WaitGroup
 	io.WriteString(Stdout, prettyprint.DeisIfy("Stopping Swarm..."))
-	fmt.Fprintln(Stdout, "swarm nodes and swarm manager")
-	b.Stop([]string{"swarm-node", "swarm-manager"}, &wg, Stdout, Stderr)
+	fmt.Fprintln(Stdout, "Swarm data plane...")
+	b.Stop([]string{"swarm-node"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	fmt.Fprintln(Stdout, "Swarm control plane...")
+	b.Stop([]string{"swarm-manager"}, &wg, Stdout, Stderr)
 	wg.Wait()
 
 	fmt.Fprintln(Stdout, "Done.\n ")
@@ -52,9 +58,12 @@ func StopSwarm(b backend.Backend) error {
 //UnInstallSwarm uninstall Swarm
 func UnInstallSwarm(b backend.Backend) error {
 	var wg sync.WaitGroup
-	io.WriteString(Stdout, prettyprint.DeisIfy("Destroying Swarm..."))
-	fmt.Fprintln(Stdout, "swarm nodes and swarm manager...")
-	b.Destroy([]string{"swarm-node", "swarm-manager"}, &wg, Stdout, Stderr)
+	io.WriteString(Stdout, prettyprint.DeisIfy("Uninstalling Swarm..."))
+	fmt.Fprintln(Stdout, "Swarm data plane...")
+	b.Destroy([]string{"swarm-node"}, &wg, Stdout, Stderr)
+	wg.Wait()
+	fmt.Fprintln(Stdout, "Swarm control plane...")
+	b.Destroy([]string{"swarm-manager"}, &wg, Stdout, Stderr)
 	wg.Wait()
 	fmt.Fprintln(Stdout, "Done.\n ")
 	return nil
