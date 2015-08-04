@@ -119,7 +119,7 @@ Example
 
 .. note::
 
-  You can install a git hook that checks your commit message format with ``make commit-hook`` 
+  You can install a git hook that checks your commit message format with ``make commit-hook``
 
 Subject Line
 """"""""""""
@@ -169,6 +169,10 @@ to indicate that a PR is acceptable. Any code change--other than
 a simple typo fix or one-line documentation change--requires at least two
 maintainers to accept it.
 
+No pull requests can be merged until at least one core maintainer_ signs off
+with an LGTM. The other LGTM can come from either a core maintainer or
+contributing maintainer.
+
 If the PR is from a Deis maintainer, then he or she should be the one to close
 it. This keeps the commit stream clean and gives the maintainer the benefit of
 revisiting the PR before deciding whether or not to merge the changes.
@@ -183,3 +187,4 @@ revisiting the PR before deciding whether or not to merge the changes.
 .. _`pull request`: https://github.com/deis/deis/pulls
 .. _`pull requests`: https://github.com/deis/deis/pulls
 .. _`GitHub issue`: https://github.com/deis/deis/issues
+.. _maintainer: https://github.com/deis/deis/blob/master/MAINTAINERS.md
