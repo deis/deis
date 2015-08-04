@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # fail on any command exiting non-zero
-#set -eo pipefail
+set -eo pipefail
 
 if [[ -z $DOCKER_BUILD ]]; then
   echo
@@ -21,7 +21,7 @@ ln -s "/opt/marathon-$MARATHON_VERSION" /app
 ln -s "/opt/marathon-$MARATHON_VERSION" /marathon
 
 mkdir -p "/opt/marathon-$MARATHON_VERSION/target"
-ln -s "/marathon-assembly.jar /opt/marathon-$MARATHON_VERSION/target/marathon-assembly-$MARATHON_VERSION.jar"
+ln -s "/marathon-assembly.jar" "/opt/marathon-$MARATHON_VERSION/target/marathon-assembly-$MARATHON_VERSION.jar"
 
 apt-get autoremove -y --purge && \
   apt-get clean -y && \
