@@ -25,7 +25,7 @@ func (c *FleetClient) SSH(name string) error {
 }
 
 func (c *FleetClient) SSHExec(name, cmd string) error {
-	fmt.Printf("Excuting '%s' on container '%s'\n", cmd, name)
+	fmt.Printf("Executing '%s' on container '%s'\n", cmd, name)
 
 	conn, err := c.sshConnect(name)
 	if err != nil {
