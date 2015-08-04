@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Preps a test environment and runs `make test-integration`
 # against artifacts produced from the current source tree

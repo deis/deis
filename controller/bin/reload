@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # gracefully reload gunicorn
 kill -HUP "$(cat /tmp/gunicorn.pid)"

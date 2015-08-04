@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export BACKUP_FREQUENCY=${BACKUP_FREQUENCY:-3h}
 export BACKUPS_TO_RETAIN=${BACKUPS_TO_RETAIN:-5}

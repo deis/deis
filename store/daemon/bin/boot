@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Borrows heavily from Seán C. McCord's https://github.com/Ulexus/docker-ceph repository
 
 ETCD_PORT=${ETCD_PORT:-4001}

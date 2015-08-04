@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -eo pipefail
 
 # Places cursor at start of line, so that subsequent text replaces existing text. For example;
@@ -31,7 +31,7 @@ case "$1" in
     PRERECEIVE_HOOK="$REPO_PATH/hooks/pre-receive"
     # inject a pre-receive hook
     cat > $PRERECEIVE_HOOK <<EOF
-#!/bin/bash
+#!/usr/bin/env bash
 cat | $SELF pre-receive
 EOF
     chmod +x $PRERECEIVE_HOOK

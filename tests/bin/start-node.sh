@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Connects this machine as a Jenkins node to https://ci.deis.io/
 # Set NODE_NAME and NODE_SECRET to the values provided by Jenkins in the "Manage Nodes"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Convenience script for getting a terminal session on a docker container.
 # Usage: ./dshell <continer name> <command>

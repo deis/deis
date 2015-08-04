@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This hook verifies that the commit message follows deis commit style
 # To install this hook run the following command from the deis git root
