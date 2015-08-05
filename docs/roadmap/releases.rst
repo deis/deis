@@ -36,6 +36,7 @@ Patch Release
         cache/image/Dockerfile \
         client/deis.py \
         client/setup.py \
+        client-go/deis-version \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \
         controller/Dockerfile \
@@ -85,6 +86,7 @@ Major or Minor Release
     $ ./contrib/bumpver/bumpver -f A.B.D-dev A.B.D \
         client/deis.py \
         client/setup.py \
+        client-go/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
         docs/reference/api-v1.5.rst \
@@ -196,6 +198,7 @@ Major or Minor Release
     $ ./contrib/bumpver/bumpver -f A.B.D A.B.E-dev \
         client/deis.py \
         client/setup.py \
+        client-go/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
         version/version.go
