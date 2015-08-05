@@ -51,8 +51,7 @@ class MarathonHTTPClient(AbstractSchedulerClient):
         if cpu:
             c = cpu
         cmd = "docker run --name {name} -P {image} {command}".format(**locals())
-        self.client.create_app(app_id, MarathonApp(cmd=cmd, mem=m, cpus=c))
-        self.client.scale_app(app_id, 0, force=True)
+        self.client.create_app(app_id, MarathonApp(cmd=cmd, mem=m, cpus=c, instances=0))
         for _ in xrange(POLL_ATTEMPTS):
             if self.client.get_app(self._app_id(name)).tasks_running == 0:
                 return
