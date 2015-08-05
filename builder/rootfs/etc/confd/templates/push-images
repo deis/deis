@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # wait until the docker image exists
 until docker history deis/slugrunner >/dev/null 2>&1; do

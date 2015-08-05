@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Preps a Ubuntu 14.04 box with requirements to run as a Jenkins node to https://ci.deis.io/
 # Should be run as root.

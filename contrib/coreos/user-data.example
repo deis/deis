@@ -179,7 +179,7 @@ write_files:
   - path: /run/deis/bin/get_image
     permissions: '0755'
     content: |
-      #!/bin/bash
+      #!/usr/bin/env bash
       # usage: get_image <component_path>
       IMAGE=`etcdctl get $1/image 2>/dev/null`
 
@@ -201,7 +201,7 @@ write_files:
   - path: /run/deis/bin/preseed
     permissions: '0755'
     content: |
-      #!/bin/bash
+      #!/usr/bin/env bash
 
       COMPONENTS=(builder cache controller database logger logspout publisher registry router store-daemon store-gateway store-metadata store-monitor)
       for c in "${COMPONENTS[@]}"; do
@@ -211,7 +211,7 @@ write_files:
   - path: /opt/bin/deis-debug-logs
     permissions: '0755'
     content: |
-      #!/bin/bash
+      #!/usr/bin/env bash
 
       echo '--- VERSIONS ---'
       source /etc/os-release
@@ -319,7 +319,7 @@ write_files:
   - path: /opt/bin/wupiao
     permissions: '0755'
     content: |
-      #!/bin/bash
+      #!/usr/bin/env bash
       # [w]ait [u]ntil [p]ort [i]s [a]ctually [o]pen
       [ -n "$1" ] && \
         until curl -o /dev/null -sIf http://${1}; do \
@@ -329,7 +329,7 @@ write_files:
   - path: /opt/bin/download-k8s-binary
     permissions: '0755'
     content: |
-      #!/bin/bash
+      #!/usr/bin/env bash
       export K8S_VERSION="v1.0.1"
       mkdir -p /opt/bin
       FILE=$1
