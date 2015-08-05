@@ -3,6 +3,7 @@ Description=Kubernetes API Server
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 Requires=fleet.service docker.service flanneld.service
 After=fleet.service docker.service flanneld.service
+
 [Service]
 EnvironmentFile=/etc/environment
 ExecStartPre=-/bin/sh -c "etcdctl get /deis/scheduler/k8s/master >/dev/null 2>&1 || etcdctl mk /deis/scheduler/k8s/master"
@@ -26,5 +27,7 @@ ExecStart=/bin/bash -c "/opt/bin/kube-apiserver \
 ExecStartPost=/bin/bash -c "fleetctl stop deis-kube-scheduler deis-kube-controller-manager deis-kube-kubelet deis-kube-proxy; sleep 2; fleetctl start deis-kube-scheduler deis-kube-controller-manager deis-kube-kubelet deis-kube-proxy"
 Restart=always
 RestartSec=10
+SuccessExitStatus=2
+
 [Install]
 WantedBy=multi-user.target

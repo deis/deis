@@ -1,6 +1,7 @@
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
 [Service]
 EnvironmentFile=/etc/environment
 ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kubelet"
@@ -10,7 +11,7 @@ ExecStart=/bin/bash -c '/opt/bin/kubelet --address=0.0.0.0 --port=10250 --hostna
 Restart=always
 RestartSec=10
 WorkingDirectory=/root/
-
+SuccessExitStatus=2
 
 [X-Fleet]
 Global=true
