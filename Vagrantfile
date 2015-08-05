@@ -94,7 +94,7 @@ Vagrant.configure("2") do |config|
       # Vagrant binds the VMs IP in VirtualBox's bridge network to the eth1 interface instead of eth0.
       # This necessitates the substitution below, which is not required anywhere except in Vagrant.
       user_data = File.read(CLOUD_CONFIG_PATH)
-      new_userdata = user_data.gsub("--iface=eth0", "--iface=eth1")
+      new_userdata = user_data.gsub("/opt/bin/flanneld --ip-masq=true", "/opt/bin/flanneld --iface=eth1 --ip-masq=true")
       File.open(CLOUD_CONFIG_PATH, "w") {|file| file.puts new_userdata }
     else
       raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
