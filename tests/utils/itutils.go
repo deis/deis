@@ -295,11 +295,16 @@ func Execute(t *testing.T, cmd string, params interface{}, failFlag bool, expect
 			}
 		}
 	case false:
-		if _, _, err := RunCommandWithStdoutStderr(cmdl); err != nil {
+		stdout, stderr, err := RunCommandWithStdoutStderr(cmdl)
+		if err != nil {
 			t.Fatal(err)
-		} else {
-			fmt.Println("ok")
 		}
+
+		if containsWarning(stdout.String()) || containsWarning(stderr.String()) {
+			t.Fatal("Warning found in output, aborting")
+		}
+
+		fmt.Println("ok")
 	}
 }
 
@@ -338,4 +343,12 @@ func GetRandomApp() string {
 		"example-dockerfile-http",
 	}
 	return apps[rand.Intn(len(apps))]
+}
+
+func containsWarning(out string) bool {
+	if strings.Contains(out, "WARNING") {
+		return true
+	}
+
+	return false
 }
