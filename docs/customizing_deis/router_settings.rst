@@ -70,6 +70,11 @@ setting                                      description
 /deis/router/sslCiphers                      cluster-wide enabled SSL ciphers
 /deis/router/sslKey                          cluster-wide SSL private key
 /deis/router/sslDhparam                      cluster-wide SSL dhparam
+/deis/router/sslProtocols                    nginx ssl_protocols setting (default: TLSv1 TLSv1.1 TLSv1.2)
+/deis/router/sslSessionCache                 nginx ssl_session_cache setting (default: not set)
+/deis/router/sslSessionTickets               nginx ssl_session_tickets setting (default: on)
+/deis/router/sslSessionTimeout               nginx ssl_session_timeout setting (default: 10m)
+/deis/router/sslBufferSize                   nginx ssl_buffer_size setting (default: 4k)
 /deis/router/workerProcesses                 nginx number of worker processes to start (default: auto i.e. available CPU cores)
 /deis/router/proxyProtocol                   nginx PROXY protocol enabled
 /deis/router/proxyRealIpCidr                 nginx IP with CIDR used by the load balancer in front of deis-router (default: 10.0.0.0/8)
