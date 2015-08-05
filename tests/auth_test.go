@@ -17,6 +17,7 @@ var (
 	authRegenerateUsrCmd = "auth:regenerate -u {{.UserName}}"
 	authRegenerateAllCmd = "auth:regenerate --all"
 	checkTokenCmd        = "apps:list"
+	authPasswdCmd        = "auth:passwd --username={{.UserName}} --password={{.Password}} --new-password={{.NewPassword}}"
 )
 
 func TestAuth(t *testing.T) {
@@ -53,8 +54,13 @@ func authLogoutTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func authPasswdTest(t *testing.T, params *utils.DeisTestConfig) {
 	password := "aNewPassword"
-	utils.AuthPasswd(t, params, password)
-	cmd := authLoginCmd
+	params.NewPassword = password
+	cmd := authPasswdCmd
+	utils.Execute(t, cmd, params, false, "")
+	params.Password = "wrong-password"
+	utils.Execute(t, cmd, params, true, "Password change failed")
+
+	cmd = authLoginCmd
 	utils.Execute(t, cmd, params, true, "400 BAD REQUEST")
 	params.Password = password
 	utils.Execute(t, cmd, params, false, "")
