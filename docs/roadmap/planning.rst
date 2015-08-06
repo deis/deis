@@ -30,10 +30,20 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+August 2015 (Deis v1.10)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Roadmap items completed: Scheduling and Orchestration, Etcd 2, Networking v2
+
+Roadmap items added: Internal Service Discovery, Permissions and Teams, New Default Scheduler
+
+Archive: https://www.youtube.com/watch?v=a6tOrv4Uzz4
+
 July 2015 (Deis v1.9)
 ~~~~~~~~~~~~~~~~~~~~~
 
 Roadmap items completed: Pluggable Storage Subsystem, User-defined Health Checks
+
 Roadmap items added: Stateless Logger, Production Hardening
 
 Archive: https://www.youtube.com/watch?v=f_rJFWSFY5I

@@ -12,43 +12,23 @@ important to the future of Deis.
 Given the project's rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
 direction over many releases.
 
-TTY Broker
-----------
-Today Deis cannot provide bi-directional streams needed for log tailing and interactive batch processes.
-By having the :ref:`Controller` drive a TTY Broker component, Deis can securely open WebSockets
-through the routing mesh.
+New Default Scheduler
+---------------------
+Deis now has support for Docker Swarm, Apache Mesos, and Google Kubernetes as
+application schedulers. With the known limitations of fleet (primarily, not being
+a resource-aware scheduler), we should investigate using a different scheduler
+as our default.
 
- - [ ] `TTY Broker component`_
- - [ ] `Interactive Deis Run`_ (``deis run bash``)
- - [ ] `Log Tailing`_ (``deis logs -f``)
+This feature is tracked as GitHub issue `#4222`_.
 
-Scheduling and Orchestration
-----------------------------
-Today Deis uses :ref:`Fleet <fleet_scheduler>` for scheduling.  Unfortunately, Fleet does not
-support resource-based scheduling, which results in poor cluster utilization at scale.
+Permissions and Teams
+---------------------
+Deis deployments in larger organizations require more fine-grained control
+over users and permissions. Implementation of teams and improved user permissions
+are tracked in separate issues:
 
-Fortunately, Deis is composable and can easily hot-swap orchestration APIs.
-Because the most promising container orchestration solutions are under heavy development,
-the Deis project is focused on releasing "technology previews".
-
-These technology previews help the community try different orchestration solutions easily,
-report their findings and guide the future direction of Deis. :ref:`Kubernetes <k8s_scheduler>`,
-:ref:`Mesos with Marathon <mesos_scheduler>`, and :ref:`Swarm <swarm_scheduler>` will all be
-available for testing in Deis v1.9.
-
- - [X] :ref:`Swarm preview <swarm_scheduler>`
- - [X] :ref:`Mesos preview <mesos_scheduler>`
- - [X] :ref:`Kubernetes preview <k8s_scheduler>`
-
-Etcd 2
-------
-A CP database like etcd is central to Deis, which requires a distributed lock service and key/value store.
-As problems with etcd directly impact platform stability, Deis must move to the more stable etcd2.
-
- - [X] Switch to etcd2
- - [X] Migration strategy for etcd 0.4.x -> etcd2
-
-This feature is tracked as GitHub issue `#3564`_.
+ - [ ] `Permissions`_
+ - [ ] `Teams`_
 
 Monitoring & Telemetry
 ----------------------
@@ -64,7 +44,6 @@ This feature is tracked as GitHub issue `#3699`_.
 
 Production Hardening
 --------------------
-
 For users running Deis in large environments, support is lacking for things like separating the
 control plane and data plane (application and routing mesh), running etcd on only a fraction
 of the hosts, and other architectural design customizations. Specifically, work is in
@@ -82,13 +61,20 @@ for the ``deis-logger`` component, so that a reasonable period of recent logs is
 
 This feature is tracked as GitHub issue `#4000`_.
 
+Internal Service Discovery
+--------------------------
+To provide a better container networking experience, Deis must provide
+internal service discovery for components to coordinate.
+
+This feature is tracked as GitHub issue `#3072`_.
+
 Update Service
 --------------
 Deis must support 100% automated, zero-downtime updates of the control plane.
 Like CoreOS, Deis clusters should be attached to an alpha, beta or stable channel and rely on an automatic update mechanism.
 To accomplish this, Deis plans to use the `Google Omaha Protocol`_ as implemented by `CoreUpdate`_.
 
- - [ ] `Update client/agent`_
+ - [X] `Update client/agent`_
  - [ ] Update server
  - [ ] `Automatic CoreOS upgrades`_
  - [ ] CI Integration
@@ -103,16 +89,15 @@ This works around a number of authentication issues with private registries and 
  - [ ] `Docker Registry v2`_
  - [ ] `Deis Push`_
 
-Networking v2
--------------
-To provide a better container networking experience, Deis must provide an overlay network
-that can facilitate SDN and improved service discovery.
+TTY Broker
+----------
+Today Deis cannot provide bi-directional streams needed for log tailing and interactive batch processes.
+By having the :ref:`Controller` drive a TTY Broker component, Deis can securely open WebSockets
+through the routing mesh.
 
- - [X] Overlay Network (flannel)
- - [ ] `Internal Service Discovery`_
- - [ ] Migration Strategy
-
-This feature is tracked as GitHub issue `#3812`_.
+ - [ ] `TTY Broker component`_
+ - [ ] `Interactive Deis Run`_ (``deis run bash``)
+ - [ ] `Log Tailing`_ (``deis logs -f``)
 
 Service Broker
 --------------
@@ -128,20 +113,21 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`#231`: https://github.com/deis/deis/issues/231
 .. _`#2106`: https://github.com/deis/deis/issues/2106
 .. _`#3023`: https://github.com/deis/deis/issues/3023
-.. _`#3564`: https://github.com/deis/deis/issues/3564
+.. _`#3072`: https://github.com/deis/deis/issues/3072
 .. _`#3635`: https://github.com/deis/deis/issues/3635
 .. _`#3699`: https://github.com/deis/deis/issues/3699
-.. _`#3812`: https://github.com/deis/deis/issues/3812
 .. _`#4000`: https://github.com/deis/deis/issues/4000
+.. _`#4222`: https://github.com/deis/deis/issues/4222
 .. _`Automatic CoreOS upgrades`: https://github.com/deis/deis/issues/1043
 .. _`CoreUpdate`: https://coreos.com/docs/coreupdate/custom-apps/coreupdate-protocol/
 .. _`Deis Push`: https://github.com/deis/deis/issues/2680
 .. _`Docker Registry v2`: https://github.com/deis/deis/issues/3814
 .. _`Google Omaha Protocol`: https://code.google.com/p/omaha/wiki/ServerProtocol
 .. _`Interactive Deis Run`: https://github.com/deis/deis/issues/117
-.. _`Internal Service Discovery`: https://github.com/deis/deis/issues/3072
 .. _`like CoreOS`: https://coreos.com/releases/
 .. _`Log Tailing`: https://github.com/deis/deis/issues/465
+.. _`Permissions`: https://github.com/deis/deis/issues/4150
 .. _`Service Broker API`: http://docs.cloudfoundry.org/services/api.html
+.. _`Teams`: https://github.com/deis/deis/issues/4173
 .. _`TTY Broker component`: https://github.com/deis/deis/issues/3808
 .. _`Update client/agent`: https://github.com/deis/deis/issues/3811
