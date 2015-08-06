@@ -7,6 +7,9 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/deis/deis/deisctl/config/model"
+	"github.com/deis/deis/deisctl/test/mock"
+
 	"github.com/coreos/fleet/schema"
 )
 
@@ -30,7 +33,9 @@ func TestScaleUp(t *testing.T) {
 
 	testFleetClient := stubFleetClient{testUnits: testUnits, testUnitStates: []*schema.UnitState{}, unitsMutex: &sync.Mutex{}, unitStatesMutex: &sync.Mutex{}}
 
-	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient}
+	testConfigBackend := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/platform/enablePlacementOptions", Value: "true"}}}
+
+	c := &FleetClient{templatePaths: []string{name}, Fleet: &testFleetClient, configBackend: testConfigBackend}
 
 	var errOutput string
 	var wg sync.WaitGroup

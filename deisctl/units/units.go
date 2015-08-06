@@ -31,4 +31,4 @@ var Names = []string{
 }
 
 // URL is the GitHub url where these units can be refreshed from
-var URL = "https://raw.githubusercontent.com/deis/deis/%s/deisctl/units/%s.service"
+var URL = "https://raw.githubusercontent.com/deis/deis/"

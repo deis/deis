@@ -119,7 +119,7 @@ Description=deis-controller`
 
 	ioutil.WriteFile(path.Join(name, unit+".service"), []byte(unitFile), 777)
 
-	uf, err := NewUnit(unit[5:], []string{name})
+	uf, err := NewUnit(unit[5:], []string{name}, false)
 
 	if err != nil {
 		t.Fatal(err)

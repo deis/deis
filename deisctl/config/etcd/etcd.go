@@ -45,6 +45,21 @@ func (cb *ConfigBackend) Get(key string) (string, error) {
 	return resp.Node.Value, nil
 }
 
+// GetWithDefault gets a value by key from etcd and return a default value if
+// not found
+func (cb *ConfigBackend) GetWithDefault(key string, defaultValue string) (string, error) {
+	sort, recursive := true, false
+	resp, err := cb.etcdlib.Get(key, sort, recursive)
+	if err != nil {
+		etcdErr, ok := err.(*etcdlib.EtcdError)
+		if ok && etcdErr.ErrorCode == 100 {
+			return defaultValue, nil
+		}
+		return "", err
+	}
+	return resp.Node.Value, nil
+}
+
 func singleNodeToConfigNode(node *etcdlib.Node) *model.ConfigNode {
 	key := model.ConfigNode{
 		Key:        node.Key,

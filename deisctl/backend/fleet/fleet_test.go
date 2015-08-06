@@ -6,6 +6,9 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/deis/deis/deisctl/config/model"
+	"github.com/deis/deis/deisctl/test/mock"
+
 	"github.com/coreos/fleet/machine"
 	"github.com/coreos/fleet/schema"
 )
@@ -176,8 +179,10 @@ func TestNewClient(t *testing.T) {
 	// set required flags
 	Flags.Endpoint = "http://127.0.0.1:4001"
 
+	testConfigBackend := mock.ConfigBackend{Expected: []*model.ConfigNode{}}
+
 	// instantiate client
-	_, err := NewClient()
+	_, err := NewClient(testConfigBackend)
 	if err != nil {
 		t.Fatal(err)
 	}

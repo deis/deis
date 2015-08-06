@@ -7,6 +7,7 @@ coreos:
     public-ip: $private_ipv4
     # allow etcd to slow down at times
     etcd_request_timeout: 3.0
+    metadata: controlPlane=true,dataPlane=true,routerMesh=true
   units:
   - name: etcd.service
     command: start

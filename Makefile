@@ -27,6 +27,7 @@ dev-cluster: discovery-url
 	ssh-add ~/.vagrant.d/insecure_private_key
 	deisctl config platform set sshPrivateKey=$(HOME)/.vagrant.d/insecure_private_key
 	deisctl config platform set domain=local3.deisapp.com
+	deisctl config platform set enablePlacementOptions=true
 	deisctl install platform
 
 discovery-url:

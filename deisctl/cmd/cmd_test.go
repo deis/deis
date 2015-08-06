@@ -115,7 +115,7 @@ func TestRefreshUnits(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	err = RefreshUnits(name, "v1.7.2", server.URL+"/%s/%s.service")
+	err = RefreshUnits(name, "v1.7.2", server.URL+"/")
 
 	if err != nil {
 		t.Error(err)
@@ -123,8 +123,12 @@ func TestRefreshUnits(t *testing.T) {
 
 	files, err := ioutil.ReadDir(name)
 
-	if len(units.Names) != len(files) {
-		t.Error(fmt.Errorf("Expected %d units, Got %d", len(units.Names), len(files)))
+	// There will be a "decorators" subdirectory and that shouldn't be
+	// counted as a unit when making the upcoming assertion.
+	numFiles := len(files) - 1
+
+	if len(units.Names) != numFiles {
+		t.Error(fmt.Errorf("Expected %d units, Got %d", len(units.Names), numFiles))
 	}
 
 	for _, unit := range units.Names {
@@ -155,7 +159,7 @@ func TestRefreshUnitsError(t *testing.T) {
 	server := httptest.NewServer(handler)
 	defer server.Close()
 
-	err = RefreshUnits(name, "foo", server.URL+"/%s/%s.service")
+	err = RefreshUnits(name, "foo", server.URL+"/")
 	result := err.Error()
 	expected := "404 Not Found"
 

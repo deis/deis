@@ -24,6 +24,8 @@ SSH_PRIVATE_KEY = """{{ if exists "/deis/platform/sshPrivateKey" }}{{ getv "/dei
 # platform domain must be provided
 DEIS_DOMAIN = '{{ getv "/deis/platform/domain" }}'
 
+ENABLE_PLACEMENT_OPTIONS = """{{ if exists "/deis/platform/enablePlacementOptions" }}{{ getv "/deis/platform/enablePlacementOptions" }}{{ else }}false{{end}}"""
+
 # use the private registry module
 REGISTRY_MODULE = 'registry.private'
 REGISTRY_URL = '{{ getv "/deis/registry/protocol" }}://{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}'  # noqa
