@@ -93,7 +93,7 @@ coreos:
         --env=NOTIFY_SOCKET=/run/flannel/sd.sock \
         --env-file=/run/flannel/options.env \
         --volume=/usr/share/ca-certificates:/etc/ssl/certs:ro \
-        quay.io/coreos/flannel:${FLANNEL_VER} /opt/bin/flanneld --iface=eth0 --ip-masq=true
+        quay.io/coreos/flannel:${FLANNEL_VER} /opt/bin/flanneld --ip-masq=true
 
       # Update docker options
       ExecStartPost=/usr/bin/docker run --net=host --rm -v /run:/run \
