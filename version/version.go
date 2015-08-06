@@ -4,4 +4,4 @@ package version
 const Version = "1.10.0-dev"
 
 // API identifies the latest Deis api verison
-const APIVersion = "1.5"
+const APIVersion = "1.6"

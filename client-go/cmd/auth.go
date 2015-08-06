@@ -105,7 +105,7 @@ func Logout() error {
 func Passwd(username string, password string, newPassword string) error {
 	var err error
 
-	if password == "" {
+	if password == "" && username == "" {
 		fmt.Print("current password: ")
 		password, err = readPassword()
 		fmt.Println()
