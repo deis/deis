@@ -179,7 +179,7 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	b.Start([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	fmt.Fprintln(out, "Routing mesh...")
+	fmt.Fprintln(out, "Router mesh...")
 	b.Start([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 }
@@ -213,7 +213,7 @@ func Stop(targets []string, b backend.Backend) error {
 
 func stopDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
 
-	fmt.Fprintln(out, "Routing mesh...")
+	fmt.Fprintln(out, "Router mesh...")
 	b.Stop([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
@@ -340,7 +340,7 @@ func installDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGrou
 	b.Create([]string{"publisher"}, wg, out, err)
 	wg.Wait()
 
-	fmt.Fprintln(out, "Routing mesh...")
+	fmt.Fprintln(out, "Router mesh...")
 	b.Create(getRouters(), wg, out, err)
 	wg.Wait()
 
@@ -383,7 +383,7 @@ func Uninstall(targets []string, b backend.Backend) error {
 
 func uninstallAllServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) error {
 
-	fmt.Fprintln(out, "Routing mesh...")
+	fmt.Fprintln(out, "Router mesh...")
 	b.Destroy([]string{"router@*"}, wg, out, err)
 	wg.Wait()
 
