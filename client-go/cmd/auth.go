@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"syscall"
 
 	"github.com/deis/deis/client-go/controller/client"
 	"golang.org/x/crypto/ssh/terminal"
@@ -191,7 +192,7 @@ func Regenerate(username string, all bool) error {
 }
 
 func readPassword() (string, error) {
-	password, err := terminal.ReadPassword(0)
+	password, err := terminal.ReadPassword(int(syscall.Stdin))
 
 	return string(password), err
 }

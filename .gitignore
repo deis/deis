@@ -27,6 +27,7 @@ cache/image/bin/
 client/dist/
 client/makeself/
 client-go/deis
+client-go/deis.exe
 contrib/azure/azure-user-data
 contrib/bumpver/bumpver
 deisctl/deisctl
