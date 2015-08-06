@@ -3,6 +3,7 @@ Description=Kubernetes Controller Manager
 Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 Requires=deis-kube-apiserver.service
 After=deis-kube-apiserver.service
+
 [Service]
 EnvironmentFile=/etc/environment
 ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-controller-manager"
@@ -14,6 +15,7 @@ ExecStart=/opt/bin/kube-controller-manager \
   --logtostderr=true
 Restart=always
 RestartSec=10
+SuccessExitStatus=2
 
 [X-Fleet]
 MachineOf=deis-kube-apiserver.service
