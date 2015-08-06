@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/deis/deis/client-go/controller/client"
+	"github.com/deis/deis/client-go/controller/models/auth"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -16,6 +17,7 @@ func Register(controller string, username string, password string, email string,
 	sslVerify bool) error {
 
 	u, err := url.Parse(controller)
+	httpClient := client.CreateHTTPClient(sslVerify)
 
 	if err != nil {
 		return err
@@ -27,7 +29,7 @@ func Register(controller string, username string, password string, email string,
 		return err
 	}
 
-	if err = client.CheckConection(client.CreateHTTPClient(sslVerify), controllerURL); err != nil {
+	if err = client.CheckConection(httpClient, controllerURL); err != nil {
 		return err
 	}
 
@@ -57,7 +59,42 @@ func Register(controller string, username string, password string, email string,
 		fmt.Scanln(&email)
 	}
 
-	return client.Register(controllerURL, username, password, email, sslVerify, true)
+	c := &client.Client{ControllerURL: controllerURL, SSLVerify: sslVerify, HTTPClient: httpClient}
+
+	tempClient, err := client.New()
+
+	if err == nil {
+		c.Token = tempClient.Token
+	}
+
+	err = auth.Register(c, username, password, email)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Registered %s\n", username)
+	return doLogin(c, username, password)
+}
+
+func doLogin(c *client.Client, username, password string) error {
+	token, err := auth.Login(c, username, password)
+
+	if err != nil {
+		return err
+	}
+
+	c.Token = token
+	c.Username = username
+
+	err = c.Save()
+
+	if err != nil {
+		return nil
+	}
+
+	fmt.Printf("Logged in as %s\n", username)
+	return nil
 }
 
 // Login to a Deis controller.
@@ -69,12 +106,13 @@ func Login(controller string, username string, password string, sslVerify bool) 
 	}
 
 	controllerURL, err := chooseScheme(*u)
+	httpClient := client.CreateHTTPClient(sslVerify)
 
 	if err != nil {
 		return err
 	}
 
-	if err = client.CheckConection(client.CreateHTTPClient(sslVerify), controllerURL); err != nil {
+	if err = client.CheckConection(httpClient, controllerURL); err != nil {
 		return err
 	}
 
@@ -93,17 +131,28 @@ func Login(controller string, username string, password string, sslVerify bool) 
 		}
 	}
 
-	return client.Login(controllerURL, username, password, sslVerify)
+	c := &client.Client{ControllerURL: controllerURL, SSLVerify: sslVerify, HTTPClient: httpClient}
+
+	return doLogin(c, username, password)
 }
 
 // Logout from a Deis controller.
 func Logout() error {
-	return client.Logout()
+	if err := client.Delete(); err != nil {
+		return err
+	}
+
+	fmt.Println("Logged out")
+	return nil
 }
 
 // Passwd changes a user's password.
 func Passwd(username string, password string, newPassword string) error {
-	var err error
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
 
 	if password == "" && username == "" {
 		fmt.Print("current password: ")
@@ -132,7 +181,14 @@ func Passwd(username string, password string, newPassword string) error {
 		}
 	}
 
-	return client.Passwd(username, password, newPassword)
+	err = auth.Passwd(c, username, password, newPassword)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Password change succeeded.")
+	return nil
 }
 
 // Cancel deletes a user's account.
@@ -171,7 +227,18 @@ func Cancel(username string, password string, yes bool) error {
 		return nil
 	}
 
-	return client.Cancel()
+	err = auth.Delete(c)
+
+	if err != nil {
+		return err
+	}
+
+	if err := client.Delete(); err != nil {
+		return err
+	}
+
+	fmt.Println("Account cancelled")
+	return nil
 }
 
 // Whoami prints the logged in user.
@@ -188,7 +255,30 @@ func Whoami() error {
 
 // Regenerate regenenerates a user's token.
 func Regenerate(username string, all bool) error {
-	return client.Regenerate(username, all)
+	c, err := client.New()
+
+	if err != nil {
+		return err
+	}
+
+	token, err := auth.Regenerate(c, username, all)
+
+	if err != nil {
+		return err
+	}
+
+	if username == "" && all == false {
+		c.Token = token
+
+		err = c.Save()
+
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("Token Regenerated")
+	return nil
 }
 
 func readPassword() (string, error) {

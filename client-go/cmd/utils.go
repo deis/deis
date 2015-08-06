@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/deis/deis/client-go/controller/client"
+	"github.com/deis/deis/client-go/pkg/git"
 )
 
 func progress() chan bool {
@@ -58,7 +59,7 @@ func load(appID string) (*client.Client, string, error) {
 	}
 
 	if appID == "" {
-		appID, err = c.DetectApp()
+		appID, err = git.DetectAppName(c.ControllerURL.Host)
 
 		if err != nil {
 			return nil, "", err

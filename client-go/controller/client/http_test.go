@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,11 +28,6 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/v1/" {
 		res.WriteHeader(http.StatusUnauthorized)
 		res.Write(nil)
-		return
-	}
-
-	if req.URL.Path == "/raw/" && req.Method == "POST" {
-		res.Write([]byte("test"))
 		return
 	}
 
@@ -96,45 +90,6 @@ func TestCheckConnection(t *testing.T) {
 
 	if err = CheckConection(httpClient, *u); err != nil {
 		t.Error(err)
-	}
-}
-
-func TestRawRequest(t *testing.T) {
-	t.Parallel()
-
-	handler := fakeHTTPServer{}
-	server := httptest.NewServer(handler)
-	defer server.Close()
-
-	u, err := url.Parse(server.URL)
-	u.Path = "/raw/"
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	client := CreateHTTPClient(false)
-
-	headers := http.Header{}
-	addUserAgent(&headers)
-
-	res, err := rawRequest(client, "POST", u.String(), bytes.NewBuffer(nil), headers, 200)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actual, err := ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	res.Body.Close()
-
-	expected := "test"
-	if string(actual) != expected {
-		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
 }
 

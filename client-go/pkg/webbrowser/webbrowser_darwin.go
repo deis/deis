@@ -1,4 +1,4 @@
-package client
+package webbrowser
 
 import (
 	"os/exec"

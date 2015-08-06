@@ -5,6 +5,7 @@ import (
 
 	"github.com/deis/deis/client-go/controller/client"
 	"github.com/deis/deis/client-go/controller/models/perms"
+	"github.com/deis/deis/client-go/pkg/git"
 )
 
 // PermsList prints which users have permissions.
@@ -100,7 +101,7 @@ func permsLoad(appID string, admin bool) (*client.Client, string, error) {
 	}
 
 	if !admin && appID == "" {
-		appID, err = c.DetectApp()
+		appID, err = git.DetectAppName(c.ControllerURL.Host)
 
 		if err != nil {
 			return nil, "", err
