@@ -21,7 +21,7 @@ function get_src {
   rm "$f"
 }
 
-export VERSION_NGINX=nginx-1.9.2
+export VERSION_NGINX=nginx-1.9.3
 export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
 export VERSION_NDK=0.2.19
 export VERSION_SETMISC=0.29
@@ -51,7 +51,7 @@ apk add --update-cache \
   zlib-dev
 
 # download, verify and extract the source files
-get_src 80b6425be14a005c8cb15115f3c775f4bc06bf798aa1affaee84ed9cf641ed78 \
+get_src 4298c5341b2a262fdb8dbc0a1389756181af8f098c7720abfb30bd3060f673eb \
         "http://nginx.org/download/$VERSION_NGINX.tar.gz"
 
 get_src 128b56873eedbd3f240dc0f88a8b260d791321db92f14ba2fc5c49fc5307e04d \
