@@ -1,7 +1,8 @@
 [Unit]
 Description=deis-controller
+Requires=fleet.socket
 Wants=deis-store-volume.service
-After=deis-store-volume.service
+After=fleet.socket deis-store-volume.service
 
 [Service]
 EnvironmentFile=/etc/environment
