@@ -381,7 +381,7 @@ class App(UuidAuditedModel):
         # HACK (bacongobbler): we need to wait until publisher has a chance to publish each
         # service to etcd, which can take up to 20 seconds.
         time.sleep(20)
-        for i in range(0, 4):
+        for i in xrange(len(intervals)):
             delay = int(config.get('HEALTHCHECK_INITIAL_DELAY', 0))
             try:
                 # sleep until the initial timeout is over
@@ -391,8 +391,8 @@ class App(UuidAuditedModel):
                 break
             except exceptions.HealthcheckException as e:
                 try:
-                    new_delay = delay * intervals[i+1]
-                    msg = "{}; trying again in {} seconds".format(e, new_delay)
+                    next_delay = delay * intervals[i+1]
+                    msg = "{}; trying again in {} seconds".format(e, next_delay)
                     log_event(self, msg, logging.WARNING)
                 except IndexError:
                     log_event(self, e, logging.WARNING)
