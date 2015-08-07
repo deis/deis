@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"path"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 
@@ -27,17 +28,38 @@ func TestUnits(t *testing.T) {
 	}
 
 	c := &FleetClient{Fleet: &stubFleetClient{testUnits: testUnits, unitsMutex: &sync.Mutex{}}}
+	expected := []string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"}
 
+	// Test that the correct units are resolved when providing a target string
+	// that EXCEPT for lacking the "deis-" prefix matches the beginning of one
+	// or more units' name...
 	targets, err := c.Units("router")
-
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	expected := []string{"deis-router@1.service", "deis-router@2.service", "deis-router@3.service"}
-
 	if !reflect.DeepEqual(targets, expected) {
 		t.Fatalf("Expected %v, Got %v", expected, targets)
+	}
+
+	// Test that the correct units are resolved when providing a target string
+	// INCLUDING the "deis-" prefix that matches the beginning of one or more
+	// units' name...
+	targets, err = c.Units("deis-router")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(targets, expected) {
+		t.Fatalf("Expected %v, Got %v", expected, targets)
+	}
+
+	// Test that no units are resolved and an error is returned when providing
+	// a target string that does not match the BEGINNING of a service unit name,
+	// either with or without the "deis-" prefix. We deliberately test here using
+	// a string that IS a substring (albeit in the wrong position) of service
+	// units in the stub...
+	targets, err = c.Units("outer")
+	if err == nil || !strings.HasPrefix(err.Error(), "could not find unit:") {
+		t.Fatalf("Expected an error beginning with \"could not find unit:\", but did not get one")
 	}
 }
 
