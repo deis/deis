@@ -14,7 +14,7 @@ import (
 
 // SSH opens an interactive shell to a machine in the cluster
 func (c *FleetClient) SSH(name string) error {
-	sshClient, err := c.sshConnect(name)
+	sshClient, _, err := c.sshConnect(name)
 	if err != nil {
 		return err
 	}
@@ -25,24 +25,25 @@ func (c *FleetClient) SSH(name string) error {
 }
 
 func (c *FleetClient) SSHExec(name, cmd string) error {
-	fmt.Printf("Executing '%s' on container '%s'\n", cmd, name)
 
-	conn, err := c.sshConnect(name)
+	conn, ms, err := c.sshConnect(name)
 	if err != nil {
 		return err
 	}
+
+	fmt.Printf("Executing '%s' on %s\n", cmd, ms.PublicIP)
 
 	err, _ = ssh.Execute(conn, cmd)
 	return err
 }
 
-func (c *FleetClient) sshConnect(name string) (*ssh.SSHForwardingClient, error) {
+func (c *FleetClient) sshConnect(name string) (*ssh.SSHForwardingClient, *machine.MachineState, error) {
 
 	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
 
 	ms, err := c.machineState(name)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// If name isn't a machine ID, try it as a unit instead
@@ -50,29 +51,30 @@ func (c *FleetClient) sshConnect(name string) (*ssh.SSHForwardingClient, error) 
 		units, err := c.Units(name)
 
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		machID, err := c.findUnit(units[0])
 
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		ms, err = c.machineState(machID)
 
 		if err != nil || ms == nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	addr := ms.PublicIP
 
 	if tun := getTunnelFlag(); tun != "" {
-		return ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
+		sshClient, err := ssh.NewTunnelledSSHClient("core", tun, addr, getChecker(), false, timeout)
+		return sshClient, ms, err
 	}
-	return ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
-
+	sshClient, err := ssh.NewSSHClient("core", addr, getChecker(), false, timeout)
+	return sshClient, ms, err
 }
 
 // runCommand will attempt to run a command on a given machine. It will attempt
