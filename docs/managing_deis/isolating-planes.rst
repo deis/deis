@@ -86,14 +86,14 @@ is left as an exercise for the advanced operator.
 Decorating units
 ----------------
 
-To complement the cloud-config described above, Deis 1.9.0 and later are capable
+To complement the cloud-config described above, Deis 1.10.0 and later are capable
 of seamlessly "decorating" the Fleet units for each Deis platform component with
 the metadata that describes where each unit may be hosted.
 
 .. note::
 
     For the purposes of backwards compatibility with Deis clusters provisioned
-    using versions of Deis older than 1.9.0, decorating the platform's units
+    using versions of Deis older than 1.10.0, decorating the platform's units
     with metadata is an opt-in.  Nodes in older clusters are guaranteed to be
     lacking the metadata that indicates what components they are eligible to
     host.  As such, decorated units would be ineligible to run anywhere within
