@@ -146,8 +146,10 @@ export DEISCTL_TUNNEL=$FIRST_INSTANCE
 # loop until etcd2 / fleet are up and running
 COUNTER=1
 until deisctl list >/dev/null; do
-    if [ $COUNTER -gt $ATTEMPTS ];
-        then echo_red "Timed out waiting for fleet, giving up"
+    if [ $COUNTER -gt $ATTEMPTS ]; then
+        echo_red "Timed out waiting for fleet, giving up"
+        echo_red "Ensure that the private key in cloudformation.json"
+        echo_red "is added to your ssh-agent."
         break
     fi
     echo "Waiting until fleet is up and running ..."
@@ -155,15 +157,16 @@ until deisctl list >/dev/null; do
     let COUNTER=COUNTER+1
 done
 
-echo_green "Your Deis cluster has been successfully deployed to AWS CloudFormation and is started."
-echo_green "Please continue to follow the instructions in the documentation."
-
 echo_green "Enabling proxy protocol"
 if ! deisctl config router set proxyProtocol=1; then
+    echo_red "# WARNING: Enabling proxy protocol failed."
+    echo_red "# Ensure that the private key in cloudformation.json is added to"
+    echo_red "# your ssh-agent, then enable proxy protocol before continuing:"
     echo_red "#"
-    echo_red "# Enabling proxy protocol failed, please enable proxy protocol "
-    echo_red "# manually after finishing your deis cluster installation."
-    echo_red "#"
-    echo_red "# deisctl config router set proxyProtocol=1"
-    echo_red "#"
+    echo_red "# deisctl config router set proxyProtocol=1\n"
 fi
+
+echo_green "Your Deis cluster was deployed to AWS CloudFormation as stack "$STACK_NAME".\n"
+echo_green "Now run this command in your shell:"
+echo_green "export DEISCTL_TUNNEL=$FIRST_INSTANCE"
+echo_green "and continue to follow the documentation for \"Installing the Deis Platform.\""
