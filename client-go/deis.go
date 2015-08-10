@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/deis/deis/client-go/parser"
 	"github.com/deis/deis/version"
@@ -109,8 +111,23 @@ Use 'git push deis master' to deploy to an application.
 		fmt.Print(usage)
 		return 0
 	default:
-		parser.PrintUsage()
-		return 1
+		env := os.Environ()
+		command = "deis-" + argv[0]
+
+		binary, err := exec.LookPath(command.(string))
+		if err != nil {
+			parser.PrintUsage()
+			return 1
+		}
+
+		cmdArgv := []string{command.(string)}
+		cmdArgv = append(cmdArgv, argv[1:]...)
+
+		err = syscall.Exec(binary, cmdArgv, env)
+		if err != nil {
+			parser.PrintUsage()
+			return 1
+		}
 	}
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
