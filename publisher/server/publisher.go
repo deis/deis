@@ -111,6 +111,9 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 		appPath := fmt.Sprintf("%s/%s", appName, containerName)
 		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
 		for _, p := range container.Ports {
+			var delay int
+			var timeout int
+			var err error
 			// lowest port wins (docker sorts the ports)
 			// TODO (bacongobbler): support multiple exposed ports
 			port := strconv.Itoa(int(p.PublicPort))
@@ -119,14 +122,24 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 				configKey := fmt.Sprintf("/deis/config/%s/", appName)
 				// check if the user specified a healthcheck URL
 				healthcheckURL := s.getEtcd(configKey + "healthcheck_url")
-				delay, err := strconv.Atoi(s.getEtcd(configKey + "healthcheck_initial_delay"))
-				if err != nil {
-					log.Println(err)
+				initialDelay := s.getEtcd(configKey + "healthcheck_initial_delay")
+				if initialDelay != "" {
+					delay, err = strconv.Atoi(initialDelay)
+					if err != nil {
+						log.Println(err)
+						delay = 0
+					}
+				} else {
 					delay = 0
 				}
-				timeout, err := strconv.Atoi(s.getEtcd(configKey + "healthcheck_timeout"))
-				if err != nil {
-					log.Println(err)
+				healthcheckTimeout := s.getEtcd(configKey + "healthcheck_timeout")
+				if healthcheckTimeout != "" {
+					timeout, err = strconv.Atoi(healthcheckTimeout)
+					if err != nil {
+						log.Println(err)
+						timeout = 1
+					}
+				} else {
 					timeout = 1
 				}
 				if healthcheckURL != "" {
