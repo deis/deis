@@ -13,11 +13,13 @@ var (
 	authLogoutCmd        = "auth:logout"
 	authRegisterCmd      = "auth:register http://deis.{{.Domain}} --username={{.UserName}} --password={{.Password}} --email={{.Email}}"
 	authCancelCmd        = "auth:cancel --username={{.UserName}} --password={{.Password}} --yes"
+	authCancelAdminCmd   = "auth:cancel --username={{.UserName}} --yes"
 	authRegenerateCmd    = "auth:regenerate"
 	authRegenerateUsrCmd = "auth:regenerate -u {{.UserName}}"
 	authRegenerateAllCmd = "auth:regenerate --all"
 	checkTokenCmd        = "apps:list"
 	authPasswdCmd        = "auth:passwd --username={{.UserName}} --password={{.Password}} --new-password={{.NewPassword}}"
+	authWhoamiCmd        = "auth:whoami"
 )
 
 func TestAuth(t *testing.T) {
@@ -39,6 +41,16 @@ func authSetup(t *testing.T) *utils.DeisTestConfig {
 
 func authCancel(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, authCancelCmd, params, false, "Account cancelled")
+	user := utils.GetGlobalConfig()
+
+	// Admins can delete other users.
+	user.UserName, user.Password = "cancel-test", "test"
+	utils.Execute(t, authRegisterCmd, user, false, "")
+	admin := utils.GetGlobalConfig()
+	utils.Execute(t, authLoginCmd, admin, false, "")
+	utils.Execute(t, authCancelAdminCmd, user, false, "Account cancelled")
+	// Make sure the admin is still logged in
+	utils.CheckList(t, authWhoamiCmd, admin, admin.UserName, false)
 }
 
 func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {

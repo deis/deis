@@ -17,14 +17,17 @@ const loginExpected string = `{"username":"test","password":"opensesame"}`
 const passwdExpected string = `{"username":"test","password":"old","new_password":"new"}`
 const regenAllExpected string = `{"all":true}`
 const regenUserExpected string = `{"username":"test"}`
+const cancelUserExpected string = `{"username":"foo"}`
 
 type fakeHTTPServer struct {
 	regenBodyEmpty    bool
 	regenBodyAll      bool
 	regenBodyUsername bool
+	cancelEmpty       bool
+	cancelUsername    bool
 }
 
-func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
+func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
 
 	if req.URL.Path == "/v1/auth/register/" && req.Method == "POST" {
@@ -55,6 +58,7 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			fmt.Println(err)
 			res.WriteHeader(http.StatusInternalServerError)
 			res.Write(nil)
+			return
 		}
 
 		if string(body) != loginExpected {
@@ -119,7 +123,28 @@ func (f fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.URL.Path == "/v1/auth/cancel/" && req.Method == "DELETE" {
-		res.WriteHeader(http.StatusNoContent)
+		body, err := ioutil.ReadAll(req.Body)
+
+		if err != nil {
+			fmt.Println(err)
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write(nil)
+		}
+
+		if string(body) == cancelUserExpected && !f.cancelUsername {
+			f.cancelUsername = true
+			res.WriteHeader(http.StatusNoContent)
+			res.Write(nil)
+			return
+		} else if string(body) == "" && !f.cancelEmpty {
+			f.cancelEmpty = true
+			res.WriteHeader(http.StatusNoContent)
+			res.Write(nil)
+			return
+		}
+
+		fmt.Printf("%s is not a valid body.", body)
+		res.WriteHeader(http.StatusInternalServerError)
 		res.Write(nil)
 		return
 	}
@@ -204,7 +229,7 @@ func TestPasswd(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Parallel()
 
-	handler := fakeHTTPServer{}
+	handler := fakeHTTPServer{cancelUsername: false, cancelEmpty: false}
 	server := httptest.NewServer(&handler)
 	defer server.Close()
 
@@ -217,7 +242,11 @@ func TestDelete(t *testing.T) {
 	httpClient := client.CreateHTTPClient(false)
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u}
 
-	if err := Delete(&client); err != nil {
+	if err := Delete(&client, "foo"); err != nil {
+		t.Error(err)
+	}
+
+	if err := Delete(&client, ""); err != nil {
 		t.Error(err)
 	}
 }

@@ -827,20 +827,26 @@ Make sure that the Controller URI is correct and the server is running.
         if not controller:
             self._logger.error('Not logged in to a Deis controller')
             sys.exit(1)
-        self._logger.info('Please log in again in order to cancel this account')
-        args['<controller>'] = controller
-        username = self.auth_login(args)
+        username = args.get('--username')
+
+        if not username and not args.get('--password'):
+            self._logger.info('Please log in again in order to cancel this account')
+            args['<controller>'] = controller
+            username = self.auth_login(args)
+
         if username:
             confirm = args.get('--yes')
             if not confirm:
                 confirm = raw_input(
                     "Cancel account \"{}\" at {}? (y/N) ".format(username, controller))
             if confirm in ['y', True]:
-                response = self._dispatch('delete', '/v1/auth/cancel')
+                response = self._dispatch('delete', '/v1/auth/cancel',
+                                          json.dumps({'username': username}))
                 if response.status_code == requests.codes.no_content:
-                    self._settings['controller'] = None
-                    self._settings['token'] = None
-                    self._settings.save()
+                    if not args.get('--username'):
+                        self._settings['controller'] = None
+                        self._settings['token'] = None
+                        self._settings.save()
                     self._logger.info('Account cancelled')
                 else:
                     self._logger.info('Account not changed')

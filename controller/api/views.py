@@ -26,8 +26,7 @@ class UserRegistrationViewSet(GenericViewSet,
     serializer_class = serializers.UserSerializer
 
 
-class UserManagementViewSet(GenericViewSet,
-                            mixins.DestroyModelMixin):
+class UserManagementViewSet(GenericViewSet):
     serializer_class = serializers.UserSerializer
 
     def get_queryset(self):
@@ -35,6 +34,20 @@ class UserManagementViewSet(GenericViewSet,
 
     def get_object(self):
         return self.get_queryset()[0]
+
+    def destroy(self, request, **kwargs):
+        calling_obj = self.get_object()
+        target_obj = calling_obj
+
+        if request.data.get('username'):
+            # if you "accidentally" target yourself, that should be fine
+            if calling_obj.username == request.data['username'] or calling_obj.is_superuser:
+                target_obj = get_object_or_404(User, username=request.data['username'])
+            else:
+                raise PermissionDenied()
+
+        target_obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def passwd(self, request, **kwargs):
         caller_obj = self.get_object()

@@ -14,6 +14,8 @@ What's New
 
 **New!** administrators no longer have to supply a password when changing another user's password.
 
+**New!** administrators no longer have to supply a password when deleting another user.
+
 Authentication
 --------------
 
