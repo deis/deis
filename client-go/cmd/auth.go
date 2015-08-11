@@ -72,6 +72,7 @@ func Register(controller string, username string, password string, email string,
 	c.Token = ""
 
 	if err != nil {
+		fmt.Print("Registration failed: ")
 		return err
 	}
 
@@ -186,6 +187,7 @@ func Passwd(username string, password string, newPassword string) error {
 	err = auth.Passwd(c, username, password, newPassword)
 
 	if err != nil {
+		fmt.Print("Password change failed: ")
 		return err
 	}
 

@@ -102,6 +102,20 @@ func AppInfo(appID string) error {
 	fmt.Println("owner:   ", app.Owner)
 	fmt.Println("id:      ", app.ID)
 
+	fmt.Println()
+	// print the app processes
+	if err = PsList(app.ID, defaultLimit); err != nil {
+		return err
+	}
+
+	fmt.Println()
+	// print the app domains
+	if err = DomainsList(app.ID, defaultLimit); err != nil {
+		return err
+	}
+
+	fmt.Println()
+
 	return nil
 }
 
