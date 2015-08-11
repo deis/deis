@@ -9,7 +9,8 @@ Amazon AWS
 In this tutorial, we will show you how to set up your own 3-node cluster on Amazon Web Services.
 
 Please :ref:`get the source <get_the_source>` and refer to the scripts in `contrib/aws`_
-while following this documentation.
+while following this documentation. You will also need to :ref:`install_deisctl` since the
+``deisctl`` command-line utility is used by the provisioning script.
 
 .. include:: ../_includes/_deis-pro.rst
 
