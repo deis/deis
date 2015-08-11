@@ -83,5 +83,4 @@ time deisctl start platform
 
 log_phase "Running integration suite with Python Client"
 
-export DEIS_BINARY="$DEIS_ROOT/client/dist/deis"
 time make test-integration
