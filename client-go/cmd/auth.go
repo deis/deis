@@ -69,6 +69,8 @@ func Register(controller string, username string, password string, email string,
 
 	err = auth.Register(c, username, password, email)
 
+	c.Token = ""
+
 	if err != nil {
 		return err
 	}
