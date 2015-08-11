@@ -66,8 +66,7 @@ func permsDeleteAdminTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func permsDeleteAppTest(t *testing.T, params, user *utils.DeisTestConfig) {
 	utils.Execute(t, authLoginCmd, user, false, "")
-	utils.Execute(t, permsDeleteAppCmd, user, true, "403 FORBIDDEN")
+	utils.Execute(t, permsDeleteAppCmd, user, false, "")
 	utils.Execute(t, authLoginCmd, params, false, "")
-	utils.Execute(t, permsDeleteAppCmd, params, false, "")
 	utils.CheckList(t, permsListAppCmd, params, "test1", true)
 }
