@@ -80,3 +80,8 @@ contrib/gce/gce-user-data
 # vagrant local config and droppings
 /config.rb
 .vagrant
+
+# bash infra
+/tests/bin/tmp
+!/tests/bin/accept/lib
+!/tests/bin/accept/commands
