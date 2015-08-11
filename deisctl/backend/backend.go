@@ -15,6 +15,7 @@ type Backend interface {
 	RollingRestart(string, *sync.WaitGroup, io.Writer, io.Writer)
 	SSH(string) error
 	SSHExec(string, string) error
+	Dock(string, []string) error
 	ListUnits() error
 	ListUnitFiles() error
 	Status(string) error

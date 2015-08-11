@@ -85,6 +85,10 @@ func (backend *backendStub) SSHExec(target, command string) error {
 	return errors.New("Error")
 }
 
+func (backend *backendStub) Dock(target string, command []string) error {
+	return nil
+}
+
 var _ backend.Backend = &backendStub{}
 
 func fakeCheckKeys(cb config.Backend) error {

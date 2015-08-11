@@ -492,13 +492,5 @@ func SSH(target string, cmd []string, b backend.Backend) error {
 
 // Dock connects to the appropriate host and runs 'docker exec -it'.
 func Dock(target string, cmd []string, b backend.Backend) error {
-
-	c := "sh"
-	if len(cmd) > 0 {
-		c = strings.Join(cmd, " ")
-	}
-
-	execit := fmt.Sprintf("docker exec -it %s %s", target, c)
-
-	return b.SSHExec(target, execit)
+	return b.Dock(target, cmd)
 }
