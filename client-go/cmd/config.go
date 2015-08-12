@@ -94,7 +94,7 @@ func ConfigSet(appID string, configVars []string) error {
 
 	quit := progress()
 	configObj := api.Config{Values: configMap}
-	_, err = config.Set(c, appID, configObj)
+	configObj, err = config.Set(c, appID, configObj)
 
 	quit <- true
 	<-quit
@@ -103,7 +103,11 @@ func ConfigSet(appID string, configVars []string) error {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	if release, ok := configObj.Values["DEIS_RELEASE"]; ok {
+		fmt.Printf("done, %s\n\n", release)
+	} else {
+		fmt.Print("done\n\n")
+	}
 
 	return ConfigList(appID, false)
 }
