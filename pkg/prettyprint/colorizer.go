@@ -4,6 +4,7 @@ package prettyprint
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 	"text/template"
 )
@@ -174,24 +175,28 @@ func Overwritef(msg string, args ...interface{}) string {
 //
 // This will return a formatted string.
 // The previous example would return:
-// test     testing
 // foo      bar
+// test     testing
 func PrettyTabs(msg map[string]string, spaces int) string {
+	// find the longest key so we know how much padding to use
 	max := 0
-
 	for key := range msg {
 		if len(key) > max {
 			max = len(key)
 		}
 	}
-
 	max += spaces
 
-	var output string
-
-	for key, value := range msg {
-		output += fmt.Sprintf("%s%s%s\n", key, strings.Repeat(" ", max-len(key)), value)
+	// sort the map keys so we can print them alphabetically
+	var keys []string
+	for k := range msg {
+		keys = append(keys, k)
 	}
+	sort.Strings(keys)
 
+	var output string
+	for _, k := range keys {
+		output += fmt.Sprintf("%s%s%s\n", k, strings.Repeat(" ", max-len(k)), msg[k])
+	}
 	return output
 }

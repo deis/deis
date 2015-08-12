@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/deis/deis/pkg/prettyprint"
@@ -28,9 +29,15 @@ func ConfigList(appID string, oneLine bool) error {
 		return err
 	}
 
+	var keys []string
+	for k := range config.Values {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	if oneLine {
-		for key, value := range config.Values {
-			fmt.Printf("%s=%s ", key, value)
+		for _, key := range keys {
+			fmt.Printf("%s=%s ", key, config.Values[key])
 		}
 		fmt.Println()
 	} else {
@@ -39,11 +46,11 @@ func ConfigList(appID string, oneLine bool) error {
 		configMap := make(map[string]string)
 
 		// config.Values is type interface, so it needs to be converted to a string
-		for key, value := range config.Values {
-			configMap[key] = value.(string)
+		for _, key := range keys {
+			configMap[key] = config.Values[key].(string)
 		}
 
-		fmt.Print(prettyprint.PrettyTabs(configMap, 5))
+		fmt.Print(prettyprint.PrettyTabs(configMap, 6))
 	}
 
 	return nil
