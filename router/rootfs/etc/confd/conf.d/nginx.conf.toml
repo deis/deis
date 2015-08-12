@@ -14,5 +14,5 @@ keys = [
   "/deis/certs",
   "/registry/services/",
 ]
-check_cmd  = "/app/bin/check {{ .src }}"
+check_cmd  = "check {{ .src }}"
 reload_cmd = "/opt/nginx/sbin/nginx -s reload"
