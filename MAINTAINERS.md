@@ -70,6 +70,7 @@ The current contributing maintainers of Deis:
 * Johannes Würbach - <johannes.wuerbach@googlemail.com> ([@johanneswuerbach](https://github.com/johanneswuerbach))
 * Manuel de Brito Fontes - <alejandro.debrito@soficom.cl> ([@aledbf](https://github.com/aledbf))
 * Sivaram Mothiki - <smothiki@engineyard.com> ([@smothiki](https://github.com/smothiki))
+* Wael Nasreddine - <waelnasreddine@gmail.com> ([@kalbasit](https://github.com/kalbasit))
 
 ## Becoming a maintainer
 
