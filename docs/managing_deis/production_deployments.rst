@@ -31,6 +31,8 @@ Running Deis without Ceph
 See :ref:`running-deis-without-ceph` for details on removing this operational
 complexity.
 
+.. _preseeding_continers:
+
 Preseeding containers
 ---------------------
 

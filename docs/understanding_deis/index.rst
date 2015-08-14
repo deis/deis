@@ -11,3 +11,4 @@ Understanding Deis
     concepts
     architecture
     components
+    failover
