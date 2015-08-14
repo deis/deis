@@ -40,13 +40,13 @@ Users of Deis often want to deploy their applications to separate environments
 the goal, but rather segregation of application environments - if a development app goes haywire,
 it shouldn't affect production applications that are running in the cluster.
 
-In Deis, deployed applications can be segregated by using the ```deis tags``` command. This
+In Deis, deployed applications can be segregated by using the ``deis tags`` command. This
 enables you to tag machines in your cluster with arbitrary metadata, then configure your applications
 to be scheduled to machines which match the metadata.
 
-For example, if some machines in your cluster are tagged with ```environment=production``` and some
-with ```environment=staging```, you can configure an application to be deployed to the production
-environment by using ```deis tags set environment=production```. Deis will pass this configuration
+For example, if some machines in your cluster are tagged with ``environment=production`` and some
+with ``environment=staging``, you can configure an application to be deployed to the production
+environment by using ``deis tags set environment=production``. Deis will pass this configuration
 along to the scheduler, and your applications in different environments on running on separate
 hardware.
 
