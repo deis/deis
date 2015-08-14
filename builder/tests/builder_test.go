@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
@@ -54,6 +55,13 @@ func TestBuilder(t *testing.T) {
 	etcdutils.PublishEtcd(t, handler)
 	host, port := utils.HostAddress(), utils.RandomPort()
 	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
+
+	// Run a mock registry to test whether the builder can push its initial
+	// images.
+	regport := utils.RandomPort()
+	mockRegistry(host, regport, t)
+	setupRegistry("http", host, regport, t, handler)
+
 	name := "deis-builder-" + tag
 	defer cli.CmdRm("-f", "-v", name)
 	go func() {
@@ -61,8 +69,8 @@ func TestBuilder(t *testing.T) {
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
-			"-p", port+":22",
-			"-e", "PORT=22",
+			"-p", port+":2223",
+			"-e", "PORT=2223",
 			"-e", "HOST="+host,
 			"-e", "ETCD_PORT="+etcdPort,
 			"-e", "EXTERNAL_PORT="+port,
@@ -80,4 +88,30 @@ func TestBuilder(t *testing.T) {
 	dockercli.DeisServiceTest(t, name, port, "tcp")
 	etcdutils.VerifyEtcdValue(t, "/deis/builder/host", host, etcdPort)
 	etcdutils.VerifyEtcdValue(t, "/deis/builder/port", port, etcdPort)
+}
+
+func mockRegistry(host, port string, t *testing.T) {
+	addr := host + ":" + port
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Mock Registry request: %s %s", r.Method, r.RequestURI)
+		w.WriteHeader(200)
+	})
+
+	go http.ListenAndServe(addr, nil)
+}
+
+func setupRegistry(proto, host, port string, t *testing.T, handler *etcdutils.EtcdHandle) {
+	vals := map[string]string{
+		"/deis/registry/protocol": proto,
+		"/deis/registry/port":     port,
+		"/deis/registry/host":     host,
+	}
+
+	for k, v := range vals {
+		if _, err := handler.C.Set("/deis/registry/protocol", "http", 0); err != nil {
+			t.Fatalf("Error setting %s to %s: %s", k, v, err)
+		}
+	}
+
 }

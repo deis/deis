@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -eo pipefail
 
+## !!!!!!!!!!!!!! ##
+## NO LONGER USED ## See builder.go
+## !!!!!!!!!!!!!! ##
+
 # Places cursor at start of line, so that subsequent text replaces existing text. For example;
 # "remote: Updated branch 'master' of 'repo'. Deploying to dev." becomes
 # "Updated branch 'master' of 'repo'. Deploying to dev."
