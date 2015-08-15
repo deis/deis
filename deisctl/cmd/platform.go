@@ -54,7 +54,7 @@ func StartPlatform(b backend.Backend, stateless bool) error {
 	wg.Wait()
 
 	fmt.Fprintln(Stdout, "Done.\n ")
-	fmt.Fprintln(Stdout, "Please use `deis register` to setup an administrator account.")
+	fmt.Fprintln(Stdout, "Please set up an administrative account. See 'deis help register'")
 	return nil
 }
 
