@@ -1,8 +1,25 @@
 # Deis Client
 
-`deis` is a command line utility used to interact with a Deis Cluster.
+`deis` is a command line utility used to interact with the [Deis](http://deis.io) open source PaaS.
 
-This is a WIP rewrite of the client in go.
+Please add any [issues](https://github.com/deis/deis/issues) you find with this software to
+the [Deis Project](https://github.com/deis/deis).
+
+## Installation
+
+Currently the only way to use the go version of the `deis` client is to build it yourself.
+To build the `deis` client, you need to have [go](https://golang.org/), [Godep](https://github.com/tools/godep),
+ and [make](https://www.gnu.org/software/make/) installed. Then run `make build`.
+
+## Usage
+
+Running `deis help` will give you a up to date list of `deis` commands.
+To learn more about a command run `deis help <command>`.
+
+## Windows Support
+
+`deis` has experimental support for Windows. To build deis for Windows, you need to install
+[go](https://golang.org/) and [Godep](https://github.com/tools/godep). Then run the `make.bat` script.
 
 ## License
 
