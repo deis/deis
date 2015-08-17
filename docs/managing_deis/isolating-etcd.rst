@@ -18,8 +18,10 @@ cloud-config
 ------------
 
 To realize the topology described above, it is necessary, at the time of
-provisioning, to provide different cloud-config for those hosts that will run
+provisioning, to provide different `cloud-config`_ for those hosts that will run
 etcd and for those that will only run an etcd proxy.
+
+.. _`cloud-config`: ../../contrib/coreos/user-data.example
 
 For the small, fixed number of hosts running full etcd and satisfying the
 "central services" role (as described in the CoreOS documentation), the
