@@ -27,6 +27,10 @@ ifndef DEIS_NUM_INSTANCES
   DEIS_NUM_INSTANCES = 3
 endif
 
+ifneq ($(DEIS_STATELESS), True)
+  STORE_IF_STATEFUL = store
+endif
+
 define echo_cyan
   @echo "\033[0;36m$(subst ",,$(1))\033[0m"
 endef

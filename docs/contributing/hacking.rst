@@ -382,6 +382,12 @@ You can also use the same tasks on the root ``Makefile`` to operate on all
 components at once.  For example, ``make deploy`` will build, dev-release,
 and restart all components on the cluster.
 
+.. note::
+
+   You can export the ``DEIS_STATELESS=True`` environment variable to skip all
+   store components when using the root ``Makefile``. Useful when working
+   on a stateless platform (:ref:`running-deis-without-ceph`).
+
 .. important::
 
    In order to cut a dev-release, you must commit changes using ``git`` to increment
