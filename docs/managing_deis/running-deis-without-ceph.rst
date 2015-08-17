@@ -150,7 +150,7 @@ so the controller knows where to connect.
     $ deisctl config database set engine=postgresql_psycopg2 \
                                   host=${HOST} \
                                   port=5432 \
-                                  name=${DATABASE } \
+                                  name=${DATABASE} \
                                   user=${DB_USER} \
                                   password=${DB_PASS}
 
