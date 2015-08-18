@@ -136,11 +136,24 @@ ELB_NAME=$(aws elb describe-load-balancers \
     $EXTRA_AWS_CLI_ARGS | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
 echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"
 
-FIRST_INSTANCE=$(aws ec2 describe-instances \
-    --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
-    --query 'Reservations[].Instances[].[PublicIpAddress]' \
-    --output text \
-    $EXTRA_AWS_CLI_ARGS | head -1)
+# Instance launched into a VPC may not have a PublicIPAddress
+for ip_type in PublicIpAddress PrivateIpAddress; do
+    FIRST_INSTANCE=$(aws ec2 describe-instances \
+        --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
+        --query "Reservations[].Instances[].[$ip_type]" \
+        --output text \
+        $EXTRA_AWS_CLI_ARGS | head -1)
+    if [[ ! $FIRST_INSTANCE == "None" ]]; then
+        break
+    fi
+done
+
+if [[ $FIRST_INSTANCE == "None" ]]; then
+    echo_red "The IP of any of your instances could not be found."
+    echo_red "Ensure that the cloudformation stack was created successfully."
+    exit 1
+fi
+
 export DEISCTL_TUNNEL=$FIRST_INSTANCE
 
 # loop until etcd2 / fleet are up and running
