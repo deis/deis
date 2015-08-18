@@ -100,12 +100,12 @@ Start the installation
 
 .. code-block:: console
 
-    coreos-install -C stable -c /tmp/config -d /dev/sda
+    coreos-install -C stable -c /tmp/config -d /dev/sda -V 647.2.0
 
 
-This will install the latest `CoreOS`_ stable release to disk. The Deis provision scripts for other
-platforms typically specify a CoreOS version - currently, ``647.2.0``. To specify a CoreOS
-version, append the ``-V`` parameter to the install command, e.g. ``-V 647.2.0``.
+This will install the latest `CoreOS`_ stable release that has been known to work
+well with Deis. The Deis team tests each new stable release for Deis compatibility,
+and it is generally not recommended to use a newer, untested release.
 
 After the installation has finished, reboot your server. Once your machine is back up, you should
 be able to log in as the `core` user using the `deis` ssh key.
