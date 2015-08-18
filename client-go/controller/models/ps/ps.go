@@ -10,20 +10,20 @@ import (
 )
 
 // List an app's processes.
-func List(c *client.Client, appID string) ([]api.Process, error) {
+func List(c *client.Client, appID string, results int) ([]api.Process, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/containers/", appID)
-	body, err := c.BasicRequest("GET", u, nil)
+	body, count, err := c.LimitedRequest(u, results)
 
 	if err != nil {
-		return []api.Process{}, err
+		return []api.Process{}, -1, err
 	}
 
-	procs := api.Processes{}
+	var procs []api.Process
 	if err = json.Unmarshal([]byte(body), &procs); err != nil {
-		return []api.Process{}, err
+		return []api.Process{}, -1, err
 	}
 
-	return procs.Processes, nil
+	return procs, count, nil
 }
 
 // Scale an app's processes.

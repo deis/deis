@@ -12,14 +12,18 @@ import (
 )
 
 // CertsList lists certs registered with the controller.
-func CertsList() error {
+func CertsList(results int) error {
 	c, err := client.New()
 
 	if err != nil {
 		return err
 	}
 
-	certList, err := certs.List(c)
+	if results == defaultLimit {
+		results = c.ResponseLimit
+	}
+
+	certList, _, err := certs.List(c, results)
 
 	if err != nil {
 		return err

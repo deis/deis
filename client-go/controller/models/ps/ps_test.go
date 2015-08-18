@@ -163,7 +163,7 @@ func TestProcessesList(t *testing.T) {
 
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	actual, err := List(&client, "example-go")
+	actual, _, err := List(&client, "example-go", 100)
 
 	if err != nil {
 		t.Fatal(err)

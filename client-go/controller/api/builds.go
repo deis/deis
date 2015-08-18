@@ -13,14 +13,6 @@ type Build struct {
 	UUID       string            `json:"uuid"`
 }
 
-// Builds is the structure of GET /v1/apps/<app id>/builds/.
-type Builds struct {
-	Count    int     `json:"count"`
-	Next     int     `json:"next"`
-	Previous int     `json:"previous"`
-	Builds   []Build `json:"results"`
-}
-
 // CreateBuildRequest is the structure of POST /v1/apps/<app id>/builds/.
 type CreateBuildRequest struct {
 	Image    string            `json:"image"`

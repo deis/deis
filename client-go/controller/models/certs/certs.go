@@ -9,19 +9,19 @@ import (
 )
 
 // List certs registered with the controller.
-func List(c *client.Client) ([]api.Cert, error) {
-	body, err := c.BasicRequest("GET", "/v1/certs/", nil)
+func List(c *client.Client, results int) ([]api.Cert, int, error) {
+	body, count, err := c.LimitedRequest("/v1/certs/", results)
 
 	if err != nil {
-		return []api.Cert{}, err
+		return []api.Cert{}, -1, err
 	}
 
-	res := api.Certs{}
+	var res []api.Cert
 	if err = json.Unmarshal([]byte(body), &res); err != nil {
-		return []api.Cert{}, err
+		return []api.Cert{}, -1, err
 	}
 
-	return res.Certs, nil
+	return res, count, nil
 }
 
 // New creates a new cert.

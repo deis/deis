@@ -170,7 +170,7 @@ func TestListAdmins(t *testing.T) {
 
 	client := client.Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
 
-	actual, err := ListAdmins(&client)
+	actual, _, err := ListAdmins(&client, 100)
 
 	if err != nil {
 		t.Fatal(err)

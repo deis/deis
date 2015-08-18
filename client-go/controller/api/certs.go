@@ -12,14 +12,6 @@ type Cert struct {
 	ID      int    `json:"id,omitempty"`
 }
 
-// Certs is the definition of GET /v1/certs/.
-type Certs struct {
-	Count    int    `json:"count"`
-	Next     int    `json:"next"`
-	Previous int    `json:"previous"`
-	Certs    []Cert `json:"results"`
-}
-
 // CertCreateRequest is the definition of POST /v1/certs/.
 type CertCreateRequest struct {
 	Certificate string `json:"certificate"`

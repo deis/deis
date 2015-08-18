@@ -9,20 +9,20 @@ import (
 )
 
 // List lists an app's builds.
-func List(c *client.Client, appID string) ([]api.Build, error) {
+func List(c *client.Client, appID string, results int) ([]api.Build, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/builds/", appID)
-	body, err := c.BasicRequest("GET", u, nil)
+	body, count, err := c.LimitedRequest(u, results)
 
 	if err != nil {
-		return []api.Build{}, err
+		return []api.Build{}, -1, err
 	}
 
-	builds := api.Builds{}
+	var builds []api.Build
 	if err = json.Unmarshal([]byte(body), &builds); err != nil {
-		return []api.Build{}, err
+		return []api.Build{}, -1, err
 	}
 
-	return builds.Builds, nil
+	return builds, count, nil
 }
 
 // New creates a build for an app.

@@ -9,21 +9,21 @@ import (
 )
 
 // List lists an app's releases.
-func List(c *client.Client, appID string) ([]api.Release, error) {
+func List(c *client.Client, appID string, results int) ([]api.Release, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/releases/", appID)
 
-	body, err := c.BasicRequest("GET", u, nil)
+	body, count, err := c.LimitedRequest(u, results)
 
 	if err != nil {
-		return []api.Release{}, err
+		return []api.Release{}, -1, err
 	}
 
-	releases := api.Releases{}
+	var releases []api.Release
 	if err = json.Unmarshal([]byte(body), &releases); err != nil {
-		return []api.Release{}, err
+		return []api.Release{}, -1, err
 	}
 
-	return releases.Releases, nil
+	return releases, count, nil
 }
 
 // Get a release of an app.

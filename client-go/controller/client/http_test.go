@@ -13,6 +13,22 @@ import (
 
 type fakeHTTPServer struct{}
 
+const limitedFixture string = `
+{
+    "count": 4,
+    "next": "http://replaced.com/limited2/",
+    "previous": null,
+    "results": [
+        {
+            "test": "foo"
+        },
+        {
+            "test": "bar"
+        }
+    ]
+}
+`
+
 func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	res.Header().Add("DEIS_API_VERSION", version.APIVersion)
 
@@ -28,6 +44,11 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/v1/" {
 		res.WriteHeader(http.StatusUnauthorized)
 		res.Write(nil)
+		return
+	}
+
+	if req.URL.Path == "/limited/" && req.Method == "GET" && req.URL.RawQuery == "page_size=2" {
+		res.Write([]byte(limitedFixture))
 		return
 	}
 
@@ -178,5 +199,40 @@ func TestCheckErrorsReturnsNil(t *testing.T) {
 		if err := checkForErrors(&res, ""); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestLimitedRequest(t *testing.T) {
+	t.Parallel()
+
+	handler := fakeHTTPServer{}
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := CreateHTTPClient(false)
+
+	client := Client{HTTPClient: httpClient, ControllerURL: *u, Token: "abc"}
+
+	expected := `[{"test":"foo"},{"test":"bar"}]`
+	expectedC := 4
+
+	actual, count, err := client.LimitedRequest("/limited/", 2)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if count != expectedC {
+		t.Errorf("Expected %d, Got %d", expectedC, count)
+	}
+
+	if actual != expected {
+		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
 }

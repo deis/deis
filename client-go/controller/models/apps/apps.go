@@ -11,19 +11,19 @@ import (
 )
 
 // List lists apps on a Deis controller.
-func List(c *client.Client) ([]api.App, error) {
-	body, err := c.BasicRequest("GET", "/v1/apps/", nil)
+func List(c *client.Client, results int) ([]api.App, int, error) {
+	body, count, err := c.LimitedRequest("/v1/apps/", results)
 
 	if err != nil {
-		return []api.App{}, err
+		return []api.App{}, -1, err
 	}
 
-	apps := api.Apps{}
+	var apps []api.App
 	if err = json.Unmarshal([]byte(body), &apps); err != nil {
-		return []api.App{}, err
+		return []api.App{}, -1, err
 	}
 
-	return apps.Apps, nil
+	return apps, count, nil
 }
 
 // New creates a new app.

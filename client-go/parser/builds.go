@@ -44,6 +44,8 @@ Usage: deis builds:list [options]
 Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -52,7 +54,13 @@ Options:
 		return err
 	}
 
-	return cmd.BuildsList(safeGetValue(args, "--app"))
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.BuildsList(safeGetValue(args, "--app"), results)
 }
 
 func buildsCreate(argv []string) error {

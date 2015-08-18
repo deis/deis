@@ -13,14 +13,6 @@ type Release struct {
 	Version int    `json:"version"`
 }
 
-// Releases is the definition of GET /v1/apps/<app id>/releases/.
-type Releases struct {
-	Count    int       `json:"count"`
-	Next     int       `json:"next"`
-	Previous int       `json:"previous"`
-	Releases []Release `json:"results"`
-}
-
 // ReleaseRollback is the defenition of POST /v1/apps/<app id>/releases/.
 type ReleaseRollback struct {
 	Version int `json:"version"`

@@ -42,14 +42,26 @@ func keysList(argv []string) error {
 	usage := `
 Lists SSH keys for the logged in user.
 
-Usage: deis keys:list
+Usage: deis keys:list [options]
+
+Options:
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
 
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
 		return err
 	}
 
-	return cmd.KeysList()
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.KeysList(results)
 }
 
 func keyAdd(argv []string) error {

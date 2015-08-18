@@ -9,20 +9,20 @@ import (
 )
 
 // List domains registered with an app.
-func List(c *client.Client, appID string) ([]api.Domain, error) {
+func List(c *client.Client, appID string, results int) ([]api.Domain, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/domains/", appID)
-	body, err := c.BasicRequest("GET", u, nil)
+	body, count, err := c.LimitedRequest(u, results)
 
 	if err != nil {
-		return []api.Domain{}, err
+		return []api.Domain{}, -1, err
 	}
 
-	domains := api.Domains{}
+	var domains []api.Domain
 	if err = json.Unmarshal([]byte(body), &domains); err != nil {
-		return []api.Domain{}, err
+		return []api.Domain{}, -1, err
 	}
 
-	return domains.Domains, nil
+	return domains, count, nil
 }
 
 // New adds a domain to an app.

@@ -13,11 +13,3 @@ type User struct {
 	IsActive    bool   `json:"is_active"`
 	DateJoined  string `json:"date_joined"`
 }
-
-// Users is the definition of GET /v1/users.
-type Users struct {
-	Count    int    `json:"count"`
-	Next     int    `json:"next"`
-	Previous int    `json:"previous"`
-	Users    []User `json:"results"`
-}

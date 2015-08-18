@@ -9,7 +9,7 @@ import (
 )
 
 // PermsList prints which users have permissions.
-func PermsList(appID string, admin bool) error {
+func PermsList(appID string, admin bool, results int) error {
 	c, appID, err := permsLoad(appID, admin)
 
 	if err != nil {
@@ -17,9 +17,13 @@ func PermsList(appID string, admin bool) error {
 	}
 
 	var users []string
+	var count int
 
 	if admin {
-		users, err = perms.ListAdmins(c)
+		if results == defaultLimit {
+			results = c.ResponseLimit
+		}
+		users, count, err = perms.ListAdmins(c, results)
 	} else {
 		users, err = perms.List(c, appID)
 	}
@@ -29,7 +33,7 @@ func PermsList(appID string, admin bool) error {
 	}
 
 	if admin {
-		fmt.Println("=== Administrators")
+		fmt.Printf("=== Administrators%s", limitCount(len(users), count))
 	} else {
 		fmt.Printf("=== %s's Users\n", appID)
 	}

@@ -43,7 +43,7 @@ func permsList(argv []string) error {
 Lists all users with permission to use an app, or lists all users with system
 administrator privileges.
 
-Usage: deis perms:list [-a --app=<app>|--admin]
+Usage: deis perms:list [-a --app=<app>|--admin|--admin --limit=<num>]
 
 Options:
   -a --app=<app>
@@ -51,6 +51,8 @@ Options:
     for the application.
   --admin
     lists all users with system administrator privileges.
+  -l --limit=<num>
+    the maximum number of results to display, defaults to config setting
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -61,7 +63,13 @@ Options:
 
 	admin := args["--admin"].(bool)
 
-	return cmd.PermsList(safeGetValue(args, "--app"), admin)
+	results, err := responseLimit(safeGetValue(args, "--limit"))
+
+	if err != nil {
+		return err
+	}
+
+	return cmd.PermsList(safeGetValue(args, "--app"), admin, results)
 }
 
 func permCreate(argv []string) error {

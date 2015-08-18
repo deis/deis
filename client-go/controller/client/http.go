@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/deis/deis/version"
@@ -58,6 +59,28 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
 
 	return res, nil
+}
+
+// LimitedRequest allows limiting the number of responses in a request.
+func (c Client) LimitedRequest(path string, results int) (string, int, error) {
+	body, err := c.BasicRequest("GET", path+"?page_size="+strconv.Itoa(results), nil)
+
+	if err != nil {
+		return "", -1, err
+	}
+
+	res := make(map[string]interface{})
+	if err = json.Unmarshal([]byte(body), &res); err != nil {
+		return "", -1, err
+	}
+
+	out, err := json.Marshal(res["results"].([]interface{}))
+
+	if err != nil {
+		return "", -1, err
+	}
+
+	return string(out), int(res["count"].(float64)), nil
 }
 
 // BasicRequest makes a simple http request on the controller.
