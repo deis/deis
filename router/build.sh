@@ -63,6 +63,10 @@ get_src 501f299abdb81b992a980bda182e5de5a4b2b3e275fbf72ee34dd7ae84c4b679 \
 get_src 8d280fc083420afb41dbe10df9a8ceec98f1d391bd2caa42ebae67d5bc9295d8 \
         "https://github.com/openresty/set-misc-nginx-module/archive/v$VERSION_SETMISC.tar.gz"
 
+# replace with a release instead a commit once e06a618e5780b4b94b21cab37d61820dcd3bb585 is contained in one.
+get_src 47340cf0c711b10a0231fca9264d73ea791ff8420b823b0295ae3df2d968a205 \
+        "https://github.com/vozlt/nginx-module-vts/archive/22c51e201a550bb94e96239fef541347beb4eeca.tar.gz"
+
 # build nginx
 cd "$BUILD_PATH/$VERSION_NGINX"
 
@@ -88,6 +92,7 @@ cd "$BUILD_PATH/$VERSION_NGINX"
   --add-module="$BUILD_PATH/naxsi-$VERSION_NAXSI/naxsi_src" \
   --add-module="$BUILD_PATH/ngx_devel_kit-$VERSION_NDK" \
   --add-module="$BUILD_PATH/set-misc-nginx-module-$VERSION_SETMISC" \
+  --add-module="$BUILD_PATH/nginx-module-vts-22c51e201a550bb94e96239fef541347beb4eeca" \
   && make && make install
 
 mv /tmp/firewall /opt/nginx/firewall
