@@ -68,10 +68,6 @@ Upload a CoreOS image to Glance
 
 You need to have a relatively recent CoreOS image.
 
-.. important::
-
-    Deis runs on CoreOS version 494.5.0 or later in the Stable channel.
-
 If you don't already have a suitable CoreOS image and your OpenStack install allows you to upload
 your own images, the following snippet will use the latest CoreOS image from the stable channel:
 
