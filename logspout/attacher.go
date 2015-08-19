@@ -122,7 +122,11 @@ func (m *AttachManager) Listen(source *Source, logstream chan *Log, closer <-cha
 	if source == nil {
 		source = new(Source)
 	}
-	events := make(chan *AttachEvent)
+	depth := len(m.attached)
+	if depth == 0 {
+		depth = 1
+	}
+	events := make(chan *AttachEvent, depth)
 	m.addListener(events)
 	defer m.removeListener(events)
 	for {
