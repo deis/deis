@@ -46,14 +46,14 @@ binary artifacts--just as a real-world provisioning of Deis pulls images from
 the Docker Hub.
 
 If you don't have a Docker registry already accessible for your testing or for
-continuous deployment, start one locally:
+continuous deployment, start one locally.
 
 .. code-block:: console
 
     $ make dev-registry
     registry
 
-    To use local boot2docker registry for Deis development:
+    To use local registry for Deis development:
         export DEV_REGISTRY=192.168.59.103:5000
 
 .. important::
@@ -149,7 +149,7 @@ The file ``tests/bin/test-setup.sh`` is the best reference to environment
 variables that can affect the tests' behavior. Here are some important ones:
 
 - ``HOST_IPADDR`` - address on which Docker containers can communicate for the
-  functional tests, probably the host's IP or the one assigned to boot2docker_.
+  functional tests, probably the host's IP or the one assigned to `Docker Machine`_.
 - ``DEIS_TEST_APP`` - name of the `Deis example app`_ to use, which is cloned
   from GitHub (default: ``example-go``)
 - ``DEIS_TEST_AUTH_KEY`` - SSH key used to register with the Deis controller
@@ -164,7 +164,7 @@ variables that can affect the tests' behavior. Here are some important ones:
 .. _`functional tests`: http://en.wikipedia.org/wiki/Functional_testing
 .. _`integration tests`: http://en.wikipedia.org/wiki/Integration_testing
 .. _`continuous integration`: http://en.wikipedia.org/wiki/Continuous_integration
-.. _boot2docker: http://boot2docker.io/
+.. _`Docker Machine`: http://docs.docker.com/machine/install-machine/
 .. _`source code`: https://github.com/deis/deis
 .. _`Docker registry`: https://github.com/docker/docker-registry
 .. _`Deis example app`: https://github.com/deis?query=example-

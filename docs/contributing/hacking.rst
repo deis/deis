@@ -12,7 +12,7 @@ Deis environment, this document covers a specific setup:
 
 - Developing on **Mac OSX** or **Linux**
 - Managing virtualization with **Vagrant/Virtualbox**
-- Hosting a docker registry with **Boot2Docker** (Mac)
+- Hosting a docker registry with **docker-machine** (Mac)
 
 We try to make it simple to hack on Deis. However, there are necessarily several moving
 pieces and some setup required. We welcome any suggestions for automating or simplifying
@@ -39,7 +39,7 @@ At a glance, you will need:
 - VirtualBox latest
 - Vagrant 1.5 or later
 - On Mac, you will also want
-  - Boot2Docker
+  - Docker Machine (http://docs.docker.com/machine/install-machine/)
 
 In most cases, you should simply install according to the instructions. There
 are a few special cases, though. We cover these below.
@@ -72,49 +72,40 @@ It is also straightforward to build Go from source:
 Once you can compile to ``linux/amd64``, you should be able to compile Deis'
 components as normal.
 
-Configuring Boot2Docker (Mac)
-`````````````````````````````
+Configuring Docker Machine (Mac)
+````````````````````````````````
 
 Deis needs a Docker registry running independently of the Deis cluster. On
-OS X, you will need to run this docker registry inside of Boot2Docker (http://boot2docker.io).
+OS X, you will need Docker Machine (http://docs.docker.com/machine/install-machine/) 
+to run the registry inside of a VirtualBox image.
 
-Install Boot2Docker according to the normal installation instructions. When you
-run ``init``, we highly recommend allocating a large disk, since the Docker
-registry that will live there is fairly large.
+.. note::
 
-.. code-block:: console
+    Previously, Deis used boot2docker to run the registry. However, Docker has
+    deprecated boot2docker in favor of Docker Machine.
 
-    $ boot2docker init --disksize=100000
-
-That will create virtual disk that can eventually take up a full 100,000MB of
-disk space. Then start up Boot2Docker.
-
-Once you have run ``boot2docker up``, you should be able to connect to it. You
-need to make a minor editor to the boot2docker config:
+Install Docker Machine according to the normal installation instructions. Then
+create a new image for hosting your Deis Docker registry:
 
 .. code-block:: console
 
-    $ boot2docker ip
-    192.168.59.103
-    $ boot2docker ssh sudo vi /var/lib/boot2docker/profile
+    $ docker-machine create --driver virtualbox --virtualbox-disk-size=100000 \
+    --engine-insecure-registry=192.168.0.0/16 deis-registry
 
-Inside of the profile, you need to add one line, making sure to set the IP
-address to whatever ``boot2docker ip`` printed.
+This will create a new virtual machine named `deis-registry` that will take
+up as much as 100,000 MB of disk space. Registries tend to be large, so
+allocating a big disk is a good idea.
 
-.. code-block:: console
+.. note::
 
-    EXTRA_ARGS="--insecure-registry 192.168.59.103:5000"
+    Because the registry that we create will not have a valid SSL certificate,
+    we run the local registry as an insecure (HTTP, not HTTPS) registry. Each
+    time Docker Machine reboots, the registry will get a new IP address
+    somewhere in the 192.168.0.0/16 range. We must declare that explicitly when
+    configuring Docker Machine.
 
-Once that line has been added, you can either restart boot2docker's docker
-server, or you can restart boot2docker. We recommend the latter.
-
-.. code-block:: console
-
-    $ boot2docker halt
-    $ boot2docker up
-
-At this point, Boot2Docker can now serve as a registry for Deis' Docker images.
-Later on we will return to this.
+At this point, our `deis-registry` VM can now serve as a registry for Deis'
+Docker images. Later we will return to this.
 
 Fork the Deis Repository
 ------------------------
@@ -303,7 +294,7 @@ Configure a Docker Registry
 The development workflow requires Docker Registry set at the ``DEV_REGISTRY``
 environment variable.  If you're developing locally you can use the ``dev-registry``
 target to spin up a quick, disposable registry inside a Docker container.
-The target ``dev-registry`` prints the registry's address and port when using ``boot2docker``;
+The target ``dev-registry`` prints the registry's address and port when using ``docker-machine``;
 otherwise, use your host's IP address as returned by ``ifconfig`` with port 5000 for ``DEV_REGISTRY``.
 
 .. code-block:: console
@@ -314,11 +305,6 @@ otherwise, use your host's IP address as returned by ``ifconfig`` with port 5000
         export DEV_REGISTRY=192.168.59.103:5000
 
 It is important that you export the ``DEV_REGISTRY`` variable as instructed.
-
-.. note::
-
-    If you are using Boot2Docker, make sure you set the ``EXTRA_ARGS`` as
-    explained in the prerequisites. Otherwise your registry will not work.
 
 If you are developing elsewhere, you must set up a registry yourself.
 Make sure it meets the following requirements:
