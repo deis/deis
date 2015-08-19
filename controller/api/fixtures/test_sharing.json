@@ -54,6 +54,24 @@
   }
 },
 {
+  "pk": 4,
+  "model": "auth.user",
+  "fields": {
+    "username": "autotest-3",
+    "first_name": "",
+    "last_name": "",
+    "is_active": true,
+    "is_superuser": false,
+    "is_staff": false,
+    "last_login": "2013-11-25T21:59:31.404Z",
+    "groups": [],
+    "user_permissions": [],
+    "password": "pbkdf2_sha256$10000$FrfwTVAtWPMD$HUfDokMeY37YshdyS3uhDZ+d/r8galU7kNuBfZxJl2s=",
+    "email": "autotest@deis.io",
+    "date_joined": "2013-11-25T21:59:30.760Z"
+  }
+},
+{
   "pk": "5a09a1e0-a27e-4839-928b-449310ed90f0",
   "model": "api.app",
   "fields": {

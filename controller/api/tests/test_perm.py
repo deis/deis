@@ -147,6 +147,8 @@ class TestAppPerms(TestCase):
         self.token = Token.objects.get(user=self.user).key
         self.user2 = User.objects.get(username='autotest-2')
         self.token2 = Token.objects.get(user=self.user2).key
+        self.user3 = User.objects.get(username='autotest-3')
+        self.token3 = Token.objects.get(user=self.user3).key
 
     def test_create(self):
         # check that user 1 sees her lone app and user 2's app
@@ -210,12 +212,8 @@ class TestAppPerms(TestCase):
         response = self.client.get('/v1/apps', HTTP_AUTHORIZATION='token {}'.format(self.token2))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
-        # try to delete the permission as user 2
-        url = "/v1/apps/{}/perms/{}".format(app_id, 'autotest-2')
-        response = self.client.delete(url, content_type='application/json',
-                                      HTTP_AUTHORIZATION='token {}'.format(self.token2))
-        self.assertEqual(response.status_code, 403)
         # delete permission to user 1's app
+        url = "/v1/apps/{}/perms/{}".format(app_id, 'autotest-2')
         response = self.client.delete(url, content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
@@ -280,3 +278,42 @@ class TestAppPerms(TestCase):
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
+
+    def test_collaborator_cannot_share(self):
+        """
+        An collaborator should not be able to modify the app's permissions.
+        """
+        app_id = "autotest-1-app"
+        owner_token = self.token
+        collab = self.user2
+        collab_token = self.token2
+        url = '/v1/apps/{}/perms'.format(app_id)
+        # Share app with collaborator
+        body = {'username': collab.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        self.assertEqual(response.status_code, 201)
+        # Collaborator should fail to share app
+        body = {'username': self.user3.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 403)
+        # Collaborator can list
+        response = self.client.get(url, content_type='application/json',
+                                   HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 200)
+        # Share app with user 3 for rest of tests
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        self.assertEqual(response.status_code, 201)
+        response = self.client.get(url, content_type='application/json',
+                                   HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 200)
+        # Collaborator cannot delete other collaborator
+        url += "/{}".format(self.user3.username)
+        response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 403)
+        # Collaborator can delete themselves
+        url = '/v1/apps/{}/perms/{}'.format(app_id, collab.username)
+        response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 204)
