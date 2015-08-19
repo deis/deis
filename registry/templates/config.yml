@@ -78,14 +78,14 @@ local: &local
 s3: &s3
     <<: *common
     storage: s3
-    s3_region: {{ if exists "/deis/registry/s3region" }}{{ getv "/deis/registry/s3region" }}{{ else }}""{{ end }}
-    s3_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}""{{ end }}
-    boto_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}""{{ end }}
+    s3_region: {{ if exists "/deis/registry/s3region" }}{{ getv "/deis/registry/s3region" }}{{ else }}~{{ end }}
+    s3_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}~{{ end }}
+    boto_bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}~{{ end }}
     storage_path: {{ if exists "/deis/registry/s3path" }}{{ getv "/deis/registry/s3path" }}{{ else }}"/registry"{{ end }}
     s3_encrypt: bool({{ if exists "/deis/registry/s3encrypt" }}{{ getv "/deis/registry/s3encrypt" }}{{ else }}"true"{{ end }})
     s3_secure: bool({{ if exists "/deis/registry/s3secure" }}{{ getv "/deis/registry/s3secure" }}{{ else }}"true"{{ end }})
-    s3_access_key: {{ if exists "/deis/registry/s3accessKey" }}{{ getv "/deis/registry/s3accessKey" }}{{ else }}""{{ end }}
-    s3_secret_key: {{ if exists "/deis/registry/s3secretKey" }}{{ getv "/deis/registry/s3secretKey" }}{{ else }}""{{ end }}
+    s3_access_key: {{ if exists "/deis/registry/s3accessKey" }}{{ getv "/deis/registry/s3accessKey" }}{{ else }}~{{ end }}
+    s3_secret_key: {{ if exists "/deis/registry/s3secretKey" }}{{ getv "/deis/registry/s3secretKey" }}{{ else }}~{{ end }}
 
 # Ceph Object Gateway Configuration
 # See http://ceph.com/docs/master/radosgw/ for details on installing this service.
@@ -93,15 +93,15 @@ ceph-s3: &ceph-s3
     <<: *common
     storage: s3
     s3_region: ~
-    s3_bucket: {{ getv "/deis/registry/bucketName" }}
+    s3_bucket: {{if exists "/deis/registry/bucketName"}}{{ getv "/deis/registry/bucketName" }}{{ else }}""{{ end }}
     s3_encrypt: false
     s3_secure: false
     storage_path: /registry
-    s3_access_key: {{ getv "/deis/store/gateway/accessKey" }}
-    s3_secret_key: {{ getv "/deis/store/gateway/secretKey" }}
-    boto_bucket: {{ getv "/deis/registry/bucketName" }}
-    boto_host: {{ getv "/deis/store/gateway/host" }}
-    boto_port: {{ getv "/deis/store/gateway/port" }}
+    s3_access_key: {{if exists "/deis/store/gateway/accessKey"}}{{ getv "/deis/store/gateway/accessKey" }}{{ else }}""{{ end }}
+    s3_secret_key: {{if exists "/deis/store/gateway/secretKey"}}{{ getv "/deis/store/gateway/secretKey" }}{{ else }}""{{ end }}
+    boto_bucket: {{if exists "/deis/registry/bucketName"}}{{ getv "/deis/registry/bucketName" }}{{ else }}""{{ end }}
+    boto_host: {{if exists "/deis/store/gateway/host"}}{{ getv "/deis/store/gateway/host" }}{{ else }}""{{ end }}
+    boto_port: {{if exists "/deis/store/gateway/port"}}{{ getv "/deis/store/gateway/port" }}{{ else }}""{{ end }}
     boto_debug: 0
     boto_calling_format: boto.s3.connection.OrdinaryCallingFormat
 
@@ -194,7 +194,7 @@ prod:
 
 # Flavor used by deis
 deis:
-    {{ if exists "/deis/registry/s3accessKey" }}<<: *s3
+    {{ if exists "/deis/registry/s3bucket" }}<<: *s3
     {{ else if exists "/deis/registry/swiftAuthURL" }} <<: *openstack-swift
     {{ else }} <<: *ceph-s3
     {{ end }}
