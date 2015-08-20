@@ -134,11 +134,6 @@
 			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
 		},
 		{
-			"ImportPath": "github.com/docker/docker/pkg/chrootarchive",
-			"Comment": "v1.5.0",
-			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
-		},
-		{
 			"ImportPath": "github.com/docker/docker/pkg/fileutils",
 			"Comment": "v1.5.0",
 			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
@@ -170,11 +165,6 @@
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/promise",
-			"Comment": "v1.5.0",
-			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
-		},
-		{
-			"ImportPath": "github.com/docker/docker/pkg/reexec",
 			"Comment": "v1.5.0",
 			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
 		},
