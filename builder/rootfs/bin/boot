@@ -18,153 +18,145 @@ export ETCD_PORT=${ETCD_PORT:-4001}
 export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH=${ETCD_PATH:-/deis/builder}
 export ETCD_TTL=${ETCD_TTL:-20}
+export EXTERNAL_PORT
+
+echo External port $EXTERNAL_PORT
 
 # wait for etcd to be available
-until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
-	echo "waiting for etcd at $ETCD..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+#until etcdctl --no-sync -C $ETCD ls >/dev/null 2>&1; do
+	#echo "waiting for etcd at $ETCD..."
+	#sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+#done
 
-# wait until etcd has discarded potentially stale values
-sleep $(($ETCD_TTL+1))
+## wait until etcd has discarded potentially stale values
+#sleep $(($ETCD_TTL+1))
 
-function etcd_safe_mkdir {
-	set +e
-	ERROR="$(etcdctl --no-sync -C $ETCD mkdir $1 2>&1 >/dev/null)"
-	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
-		echo "etcd_safe_mkdir: an etcd error occurred ($ERROR)"
-		echo "aborting..."
-		exit 1
-	fi
-	set -e
-}
+#function etcd_safe_mkdir {
+	#set +e
+	#ERROR="$(etcdctl --no-sync -C $ETCD mkdir $1 2>&1 >/dev/null)"
+	#if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
+		#echo "etcd_safe_mkdir: an etcd error occurred ($ERROR)"
+		#echo "aborting..."
+		#exit 1
+	#fi
+	#set -e
+#}
 
-function etcd_set_default_stdin {
-	set +e
-	ERROR=$(etcdctl --no-sync -C $ETCD mk $ETCD_PATH/$1 2>&1 >/dev/null)
-	if [[ $? -ne 0 && $(echo $ERROR | grep -ive "key already exists") ]]; then
-		echo "etcd_set_default_stdin: an etcd error occurred ($ERROR)"
-        echo "aborting..."
-		exit 1
-	fi
-	set -e
-}
-
-function etcd_get {
-	etcdctl --no-sync -C $ETCD get $ETCD_PATH/$1
-}
-
-etcd_safe_mkdir $ETCD_PATH/users
+#etcd_safe_mkdir $ETCD_PATH/users
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node $ETCD --log-level error; do
-	echo "builder: waiting for confd to write initial templates..."
-	sleep $(($ETCD_TTL/2))  # sleep for half the TTL
-done
+#until confd -onetime -node $ETCD --log-level error; do
+	#echo "builder: waiting for confd to write initial templates..."
+	#sleep $(($ETCD_TTL/2))  # sleep for half the TTL
+#done
 
-# spawn confd in the background to update services based on etcd changes
-confd -node $ETCD --log-level error --interval 5 &
-CONFD_PID=$!
+## spawn confd in the background to update services based on etcd changes
+#confd -node $ETCD --log-level error --interval 5 &
+#CONFD_PID=$!
 
-# remove any pre-existing docker.sock
-test -e /var/run/docker.sock && rm -f /var/run/docker.sock
+## remove any pre-existing docker.sock
+#test -e /var/run/docker.sock && rm -f /var/run/docker.sock
+
 
 # force overlayfs if the Docker daemon on the host is using it
-mkdir --parents --mode=0700 /
-fstype=$(findmnt --noheadings --output FSTYPE --target /)
-if [[ "$fstype" == "overlay" ]]; then
-	DRIVER_OVERRIDE="--storage-driver=overlay"
-fi
+#mkdir --parents --mode=0700 /
+#fstype=$(findmnt --noheadings --output FSTYPE --target /)
+#if [[ "$fstype" == "overlay" ]]; then
+#	DRIVER_OVERRIDE="--storage-driver=overlay"
+#fi
 
 # spawn a docker daemon to run builds
-docker -d --bip=172.19.42.1/16 $DRIVER_OVERRIDE --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 &
-DOCKER_PID=$!
+#docker -d --bip=172.19.42.1/16 $DRIVER_OVERRIDE --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10 &
+#DOCKER_PID=$!
 
 # wait for docker to start
-while [[ ! -e /var/run/docker.sock ]]; do
-	sleep 1
-done
+#while [[ ! -e /var/run/docker.sock ]]; do
+#  sleep 1
+#done
 
 # build required images if they don't already exist
-if ! docker history deis/slugbuilder >/dev/null 2>&1; then
-	docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
-fi
+#if ! docker history deis/slugbuilder >/dev/null 2>&1; then
+	#docker build -t deis/slugbuilder /usr/local/src/slugbuilder/
+#fi
 
-if ! docker history deis/slugrunner >/dev/null 2>&1; then
-	docker build -t deis/slugrunner /usr/local/src/slugrunner/
-fi
+#if ! docker history deis/slugrunner >/dev/null 2>&1; then
+	#docker build -t deis/slugrunner /usr/local/src/slugrunner/
+#fi
 
-function gen_host_keys {
-	if ! etcd_get sshHostKey; then
-		# generate the keys, then set them up in etcd
-		/usr/bin/ssh-keygen -A
-		for type in dsa ecdsa ed25519 rsa; do
-			cat "/etc/ssh/ssh_host_${type}_key" | etcd_set_default_stdin "sshHost${type}Key"
-			cat "/etc/ssh/ssh_host_${type}_key.pub" | etcd_set_default_stdin "sshHost${type}PubKey"
-		done
-		cat "etc/ssh/ssh_host_key" | etcd_set_default_stdin sshHostKey
-		cat "/etc/ssh/ssh_host_key.pub" | etcd_set_default_stdin sshHostPubKey
-	else
-		# pull the keys from etcd
-		for type in dsa ecdsa ed25519 rsa; do
-			etcd_get "sshHost${type}Key" > "/etc/ssh/ssh_host_${type}_key"
-			etcd_get "sshHost${type}PubKey" > "/etc/ssh/ssh_host_${type}_key.pub"
-		done
-		etcd_get sshHostKey > /etc/ssh/ssh_host_key
-		etcd_get sshHostPubKey > /etc/ssh/ssh_host_key.pub
-	fi
-	# set private key permissions to 0600
-	chmod 0600 /etc/ssh/ssh_host_*key
-}
+#function gen_host_keys {
+	#if ! etcd_get sshHostKey; then
+		## generate the keys, then set them up in etcd
+		#/usr/bin/ssh-keygen -A
+		#for type in dsa ecdsa ed25519 rsa; do
+			#cat "/etc/ssh/ssh_host_${type}_key" | etcd_set_default_stdin "sshHost${type}Key"
+			#cat "/etc/ssh/ssh_host_${type}_key.pub" | etcd_set_default_stdin "sshHost${type}PubKey"
+		#done
+		#cat "etc/ssh/ssh_host_key" | etcd_set_default_stdin sshHostKey
+		#cat "/etc/ssh/ssh_host_key.pub" | etcd_set_default_stdin sshHostPubKey
+	#else
+		## pull the keys from etcd
+		#for type in dsa ecdsa ed25519 rsa; do
+			#etcd_get "sshHost${type}Key" > "/etc/ssh/ssh_host_${type}_key"
+			#etcd_get "sshHost${type}PubKey" > "/etc/ssh/ssh_host_${type}_key.pub"
+		#done
+		#etcd_get sshHostKey > /etc/ssh/ssh_host_key
+		#etcd_get sshHostPubKey > /etc/ssh/ssh_host_key.pub
+	#fi
+	## set private key permissions to 0600
+	#chmod 0600 /etc/ssh/ssh_host_*key
+#}
 
-gen_host_keys
+#gen_host_keys
 
 # wait until confd generates the push-images script
-while [[ ! -e /usr/local/bin/push-images ]]; do
-	echo "waiting for confd to generate '/usr/local/bin/push-images'..."
-	sleep 1
-done
+#while [[ ! -e /usr/local/bin/push-images ]]; do
+#	echo "waiting for confd to generate '/usr/local/bin/push-images'..."
+#	sleep 1
+#done
 
 # start an SSH daemon to process `git push` requests
-/usr/sbin/sshd -D -e &
-SSHD_PID=$!
+#/usr/sbin/sshd -D -e &
+#SSHD_PID=$!
 
 # start a cleanup script to remote old repositories and images
-/bin/cleanup &
-CLEANUP_PID=$!
+#/bin/cleanup &
+#CLEANUP_PID=$!
 
 # smart shutdown on SIGINT and SIGTERM
-function on_exit() {
-	kill -TERM $DOCKER_PID $SSHD_PID $CLEANUP_PID
-	wait $DOCKER_PID $SSHD_PID $CLEANUP_PID 2>/dev/null
-	exit 0
-}
-trap on_exit INT TERM EXIT
+#function on_exit() {
+#	kill -TERM $DOCKER_PID $SSHD_PID $CLEANUP_PID
+#	wait $DOCKER_PID $SSHD_PID $CLEANUP_PID 2>/dev/null
+#	exit 0
+#}
+#trap on_exit INT TERM EXIT
 
-echo deis-builder running...
+#echo deis-builder running...
 
 # publish the service to etcd using the injected EXTERNAL_PORT
-if [[ ! -z $EXTERNAL_PORT ]]; then
+#if [[ ! -z $EXTERNAL_PORT ]]; then
 
-	# configure service discovery
-	PORT=${PORT:-22}
-	PROTO=${PROTO:-tcp}
+	## configure service discovery
+	#PORT=${PORT:-22}
+	#PROTO=${PROTO:-tcp}
 
-	set +e
+	#set +e
 
-	# wait for the service to become available on PORT
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+	## wait for the service to become available on PORT
+	#sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
 
-	# while the port is listening, publish to etcd
-	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
-		etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
-		sleep $(($ETCD_TTL/2)) # sleep for half the TTL
-	done
+	## while the port is listening, publish to etcd
+	#while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
+		#etcdctl --no-sync -C $ETCD set $ETCD_PATH/host $HOST --ttl $ETCD_TTL >/dev/null
+		#etcdctl --no-sync -C $ETCD set $ETCD_PATH/port $EXTERNAL_PORT --ttl $ETCD_TTL >/dev/null
+		#sleep $(($ETCD_TTL/2)) # sleep for half the TTL
+	#done
 
-	# if the loop quits, something went wrong
-	exit 1
+	## if the loop quits, something went wrong
+	#exit 1
 
-fi
+#fi
 
+#wait
+# Start the builder
+builder
 wait

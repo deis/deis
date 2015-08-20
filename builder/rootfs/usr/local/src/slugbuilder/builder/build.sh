@@ -54,6 +54,7 @@ function ensure_indent() {
 ## Copy application code over
 if [ -d "/tmp/app" ]; then
     cp -rf /tmp/app/. $app_dir
+    chown -R slug:slug $app_dir
 else
     cat | tar -xmC $app_dir
 fi
@@ -123,7 +124,7 @@ fi
 
 if [[ -n "$selected_buildpack" ]]; then
     echo_title "$buildpack_name app detected"
-    else
+else
     echo_title "Unable to select a buildpack"
     exit 1
 fi
@@ -146,6 +147,10 @@ if [[ -s "$build_root/.release" ]]; then
     default_types=$(ruby -e "require 'yaml';puts (YAML.load_file('$build_root/.release')['default_process_types'] || {}).keys().join(', ')")
     [[ $default_types ]] && echo_normal "Default process types for $buildpack_name -> $default_types"
 fi
+
+# Fix any wayward permissions. We want everything in app to be owned
+# by slug.
+chown -R 2000:2000 $build_root/*
 
 
 ## Produce slug

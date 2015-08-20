@@ -118,8 +118,7 @@ if [ ! -f Dockerfile ]; then
 
     # copy out the compiled slug
     docker cp $JOB:/tmp/slug.tgz $TMP_DIR
-    # copy over the Dockerfile shim to the build dir
-    cp $DOCKERFILE_SHIM ./Dockerfile
+    echo "FROM deis/slugrunner" > ./Dockerfile
 fi
 
 # force newline

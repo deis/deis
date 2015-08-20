@@ -11,9 +11,12 @@ COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
 BINARIES := extract-domain extract-types extract-version generate-buildhook get-app-config get-app-values publish-release-controller yaml2json-procfile
+
 BINARY_DEST_DIR := rootfs/usr/bin
 
 build: check-docker
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/builder cli/builder.go || exit 1; \
+		$(call check-static-binary,$(BINARY_DEST_DIR)/builder)
 	for i in $(BINARIES); do \
 		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o $(BINARY_DEST_DIR)/$$i src/$$i.go || exit 1; \
 	done
@@ -64,7 +67,7 @@ deploy: build dev-release restart
 test: test-style test-unit test-functional
 
 test-unit:
-	$(GOTEST) .
+	$(GOTEST) . ./etcd ./confd ./sshd ./cli ./docker
 
 test-functional:
 	@$(MAKE) -C ../tests/ test-etcd

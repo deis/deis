@@ -94,6 +94,7 @@ func doStop(c *FleetClient, target string, wg *sync.WaitGroup, out, ew io.Writer
 			fmt.Fprintf(ew, o, target)
 			return
 		}
+		fmt.Println(lastSubState)
 
 		time.Sleep(250 * time.Millisecond)
 	}

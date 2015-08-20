@@ -1,6 +1,9 @@
 # Deis Builder
 
-A Docker image that builds Docker images, for use in the [Deis](http://deis.io/) open source PaaS.
+**WARNING:** This is the experimental Go-based builder.
+
+Builder creates Docker images to be run elsewhere on the Deis platform.
+Builder itself also runs in a Docker container.
 
 This Docker image is based on the official
 [alpine:3.1](https://registry.hub.docker.com/_/alpine/) image.
@@ -26,7 +29,7 @@ install, and start **deis/builder**.
 
 ## License
 
-© 2014 Engine Yard, Inc.
+© 2015 Engine Yard, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may
 not use this file except in compliance with the License. You may obtain

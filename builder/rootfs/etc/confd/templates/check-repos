@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+## DEPRECATED. The Go builder now does this itself.
+
 export ETCD=${ETCD:-$HOST:4001}
 
 cd $(dirname $0) # absolute path

@@ -11,19 +11,25 @@ export HOME=/app
 mkdir -p $HOME
 
 if [[ $(ls -A $HOME) ]]; then
-	true
+  true
 elif [[ $SLUG_URL ]]; then
 	curl -s "$SLUG_URL" | tar -xzC $HOME
 	unset SLUG_URL
 else
 	cat | tar -xzC $HOME
 fi
+
 cd $HOME
 
 ## Load profile.d and release config
 
 shopt -s nullglob
 mkdir -p .profile.d
+
+# If a file is created in slugbuilder with the wrong UID, change it. But we
+# don't mess with anything owned by UID 0.
+find . -user 1000 -exec chown 2000:2000 {} \;
+
 if [[ -s .release ]]; then
 	ruby -e "require 'yaml';(YAML.load_file('.release')['config_vars'] || {}).each{|k,v| puts \"#{k}='#{v}'\"}" > .profile.d/config_vars
 fi
