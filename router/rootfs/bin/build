@@ -1,30 +1,12 @@
 #!/usr/bin/env bash
 
-# fail on any command exiting non-zero
-set -eo pipefail
+set -eof pipefail
 
-if [[ -z $DOCKER_BUILD ]]; then
-  echo
-  echo "Note: this script is intended for use by the Dockerfile and not as a way to build the router locally"
-  echo
-  exit 1
-fi
-
-function get_src {
-  hash="$1"
-  url="$2"
-  f=$(basename "$url")
-
-  curl -sSL "$url" -o "$f"
-  echo "$hash  $f" | sha256sum -c - || exit 10
-  tar xzf "$f"
-  rm "$f"
-}
-
-export VERSION_NGINX=nginx-1.9.3
-export VERSION_NAXSI=0d53a64ed856e694fcb4038748c8cf6d5551a603
-export VERSION_NDK=0.2.19
-export VERSION_SETMISC=0.29
+export NGINX_VERSION=1.9.3
+export NAXSI_VERSION=0d53a64ed856e694fcb4038748c8cf6d5551a603
+export NDK_VERSION=0.2.19
+export VTS_VERSION=22c51e201a550bb94e96239fef541347beb4eeca
+export SETMISC_VERSION=0.29
 
 export BUILD_PATH=/tmp/build
 
@@ -52,23 +34,23 @@ apk add --update-cache \
 
 # download, verify and extract the source files
 get_src 4298c5341b2a262fdb8dbc0a1389756181af8f098c7720abfb30bd3060f673eb \
-        "http://nginx.org/download/$VERSION_NGINX.tar.gz"
+        "http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz"
 
 get_src 128b56873eedbd3f240dc0f88a8b260d791321db92f14ba2fc5c49fc5307e04d \
-        "https://github.com/nbs-system/naxsi/archive/$VERSION_NAXSI.tar.gz"
+        "https://github.com/nbs-system/naxsi/archive/$NAXSI_VERSION.tar.gz"
 
 get_src 501f299abdb81b992a980bda182e5de5a4b2b3e275fbf72ee34dd7ae84c4b679 \
-        "https://github.com/simpl/ngx_devel_kit/archive/v$VERSION_NDK.tar.gz"
+        "https://github.com/simpl/ngx_devel_kit/archive/v$NDK_VERSION.tar.gz"
 
 get_src 8d280fc083420afb41dbe10df9a8ceec98f1d391bd2caa42ebae67d5bc9295d8 \
-        "https://github.com/openresty/set-misc-nginx-module/archive/v$VERSION_SETMISC.tar.gz"
+        "https://github.com/openresty/set-misc-nginx-module/archive/v$SETMISC_VERSION.tar.gz"
 
 # replace with a release instead a commit once e06a618e5780b4b94b21cab37d61820dcd3bb585 is contained in one.
 get_src 47340cf0c711b10a0231fca9264d73ea791ff8420b823b0295ae3df2d968a205 \
-        "https://github.com/vozlt/nginx-module-vts/archive/22c51e201a550bb94e96239fef541347beb4eeca.tar.gz"
+        "https://github.com/vozlt/nginx-module-vts/archive/$VTS_VERSION.tar.gz"
 
 # build nginx
-cd "$BUILD_PATH/$VERSION_NGINX"
+cd "$BUILD_PATH/nginx-$NGINX_VERSION"
 
 ./configure \
   --prefix="$PREFIX" \
@@ -89,10 +71,22 @@ cd "$BUILD_PATH/$VERSION_NGINX"
   --with-mail \
   --with-mail_ssl_module \
   --with-stream \
-  --add-module="$BUILD_PATH/naxsi-$VERSION_NAXSI/naxsi_src" \
-  --add-module="$BUILD_PATH/ngx_devel_kit-$VERSION_NDK" \
-  --add-module="$BUILD_PATH/set-misc-nginx-module-$VERSION_SETMISC" \
-  --add-module="$BUILD_PATH/nginx-module-vts-22c51e201a550bb94e96239fef541347beb4eeca" \
+  --add-module="$BUILD_PATH/naxsi-$NAXSI_VERSION/naxsi_src" \
+  --add-module="$BUILD_PATH/ngx_devel_kit-$NDK_VERSION" \
+  --add-module="$BUILD_PATH/set-misc-nginx-module-$SETMISC_VERSION" \
+  --add-module="$BUILD_PATH/nginx-module-vts-$VTS_VERSION" \
   && make && make install
 
-mv /tmp/firewall /opt/nginx/firewall
+rm -rf "$BUILD_PATH"
+apk del \
+  build-base \
+  curl \
+  geoip-dev \
+  libcrypto1.0 \
+  libpcre32 \
+  patch \
+  pcre-dev \
+  openssl-dev \
+  zlib \
+  zlib-dev
+rm -rf /var/cache/apk/*

@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ActiveState/tail"
 	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 
@@ -21,11 +20,8 @@ import (
 var log = logrus.New()
 
 const (
-	timeout        time.Duration = 10 * time.Second
-	ttl            time.Duration = timeout * 2
-	gitLogFile     string        = "/opt/nginx/logs/git.log"
-	nginxAccessLog string        = "/opt/nginx/logs/access.log"
-	nginxErrorLog  string        = "/opt/nginx/logs/error.log"
+	timeout time.Duration = 10 * time.Second
+	ttl     time.Duration = timeout * 2
 )
 
 func main() {
@@ -65,10 +61,6 @@ func main() {
 	setDefaultEtcd(client, etcdPath+"/gzip", "on")
 
 	log.Info("Starting Nginx...")
-	// tail the logs
-	go tailFile(nginxAccessLog)
-	go tailFile(nginxErrorLog)
-	go tailFile(gitLogFile)
 
 	nginxChan := make(chan bool)
 	go launchNginx(nginxChan)
@@ -87,7 +79,6 @@ func main() {
 
 	exitChan := make(chan os.Signal, 2)
 	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
-	go cleanOnExit(exitChan)
 	<-exitChan
 }
 
@@ -106,19 +97,13 @@ func launchCron() {
 	}
 }
 
-func cleanOnExit(exitChan chan os.Signal) {
-	for _ = range exitChan {
-		tail.Cleanup()
-	}
-}
-
 // Wait until the compilation of the templates
 func waitForInitialConfd(etcd string, timeout time.Duration) {
 	for {
 		var buffer bytes.Buffer
 		output := bufio.NewWriter(&buffer)
 		log.Debugf("Connecting to etcd server %s", etcd)
-		cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "-onetime", "--log-level", "error")
+		cmd := exec.Command("confd", "-node", etcd, "-onetime", "--log-level", "error")
 		cmd.Stdout = output
 		cmd.Stderr = output
 
@@ -135,7 +120,7 @@ func waitForInitialConfd(etcd string, timeout time.Duration) {
 }
 
 func launchConfd(etcd string) {
-	cmd := exec.Command("confd", "-node", etcd, "--confdir", "/app", "--log-level", "error", "--interval", "5")
+	cmd := exec.Command("confd", "-node", etcd, "--log-level", "error", "--interval", "5")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -166,15 +151,6 @@ func launchNginx(nginxChan chan bool) {
 		log.Warnf("Nginx terminated by error: %v", err)
 	} else {
 		log.Info("Reloading nginx (change in configuration)...")
-	}
-}
-
-func tailFile(path string) {
-	mkfifo(path)
-	t, _ := tail.TailFile(path, tail.Config{Follow: true})
-
-	for line := range t.Lines {
-		log.Info(line.Text)
 	}
 }
 
