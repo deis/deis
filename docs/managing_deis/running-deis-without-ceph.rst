@@ -110,7 +110,8 @@ than the :ref:`logger` component.
 
     $ HOST=logs.somewhere.com
     $ PORT=98765
-    $ deisctl config logs set host=${HOST} port=${PORT}
+    $ PROTOCOL=udp # Supported protocols are udp and tcp
+    $ deisctl config logs set host=${HOST} port=${PORT} protocol=${PROTOCOL}
 
 Configure registry
 ^^^^^^^^^^^^^^^^^^
