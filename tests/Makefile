@@ -14,21 +14,23 @@ TEST_POSTGRESQL_IMAGE = $(IMAGE_PREFIX)test-postgresql:$(BUILD_TAG)
 test: test-smoke
 
 test-smoke: test-style
-	godep go test -tags integration -short -timeout 20m -v -run TestSmoke
+# TODO: remove GOMAXPROCS=1 when concurrent stdout issues are fixed
+	GOMAXPROCS=1 godep go test -tags integration -short -timeout 20m -v -run TestSmoke
 
 test-full: test-style
-	godep go test -tags integration -v -run TestGlobal
-	godep go test -tags integration -v -run TestApps
-	godep go test -tags integration -v -run TestAuth
-	godep go test -tags integration -v -run TestBuilds
-	godep go test -tags integration -v -run TestConfig
-	godep go test -tags integration -v -run TestDomains
-	godep go test -tags integration -v -run TestHealthcheck
-	godep go test -tags integration -v -run TestKeys
-	godep go test -tags integration -v -run TestPerms
-	godep go test -tags integration -v -run TestPs
-	godep go test -tags integration -v -run TestReleases
-	godep go test -tags integration -v -run TestUsers
+# TODO: remove GOMAXPROCS=1 when concurrent stdout issues are fixed
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestGlobal
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestApps
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestAuth
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestBuilds
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestConfig
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestDomains
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestHealthcheck
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestKeys
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestPerms
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestPs
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestReleases
+	GOMAXPROCS=1 godep go test -tags integration -v -run TestUsers
 
 mock-store:
 	docker build -t $(MOCK_STORE_IMAGE) fixtures/mock-store/

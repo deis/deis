@@ -50,7 +50,7 @@ if ! vagrant -v &> /dev/null; then
 fi
 
 # install go
-wget -nv -O- https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar -C /usr/local -xz
+wget -nv -O- https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 echo "You must reboot for the global $PATH changes to take effect."
 

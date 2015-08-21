@@ -34,7 +34,7 @@ At a glance, you will need:
 
 - Python 2.7 or later (with ``pip``)
 - virtualenv (``sudo pip install virtualenv``)
-- Go 1.4 or later, with support for compiling to ``linux/amd64``
+- Go 1.5 or later, with support for compiling to ``linux/amd64``
 - Godep (https://github.com/tools/godep)
 - VirtualBox latest
 - Vagrant 1.5 or later
@@ -63,7 +63,7 @@ It is also straightforward to build Go from source:
 .. code-block:: console
 
     $ sudo su
-    $ curl -sSL https://golang.org/dl/go1.4.src.tar.gz | tar -v -C /usr/local -xz
+    $ curl -sSL https://golang.org/dl/go1.5.src.tar.gz | tar -v -C /usr/local -xz
     $ cd /usr/local/go/src
     $ # compile Go for our default platform first, then add cross-compile support
     $ ./make.bash --no-clean
@@ -76,7 +76,7 @@ Configuring Docker Machine (Mac)
 ````````````````````````````````
 
 Deis needs a Docker registry running independently of the Deis cluster. On
-OS X, you will need Docker Machine (http://docs.docker.com/machine/install-machine/) 
+OS X, you will need Docker Machine (http://docs.docker.com/machine/install-machine/)
 to run the registry inside of a VirtualBox image.
 
 .. note::
