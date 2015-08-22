@@ -95,7 +95,8 @@ new_units = [
     dict({'name': 'etcd.service', 'drop-ins': [{'name': '90-after-etcd-volume.conf', 'content': ETCD_DROPIN}]})
 ]
 
-data = yaml.load(file(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r'))
+with open(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r') as f:
+    data = yaml.safe_load(f)
 
 # coreos-cloudinit will start the units in order, so we want these to be processed before etcd/fleet
 # are started
