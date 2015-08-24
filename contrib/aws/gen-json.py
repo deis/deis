@@ -105,8 +105,7 @@ header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
 
 # configure etcd to use its EBS volume
-dump = dump.replace('-data-dir /var/lib/etcd2', '-data-dir /media/etcd')
-dump = dump.replace('--volume=/var/lib/etcd2', '--volume=/media/etcd')
+dump = dump.replace('ETCD_HOST_DATA_DIR=/var/lib/etcd2', 'ETCD_HOST_DATA_DIR=/media/etcd')
 
 template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
