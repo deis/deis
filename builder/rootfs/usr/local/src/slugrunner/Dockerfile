@@ -18,3 +18,7 @@ ENV HOME /app
 ENTRYPOINT ["/runner/init"]
 
 ENV DEIS_RELEASE 1.10.0-dev
+
+ONBUILD RUN mkdir -p /app
+ONBUILD WORKDIR /app
+ONBUILD ADD slug.tgz /app
