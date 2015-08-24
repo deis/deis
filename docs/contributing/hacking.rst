@@ -5,6 +5,19 @@
 Development Environment
 =======================
 
+DigitalOcean_ is the recommended development environment for Deis project
+contributors. :ref:`Provision a new DO cluster <deis_on_digitalocean>` and then
+continue to follow the instructions below to get started hacking.
+
+.. _digitalocean_credit:
+
+.. important::
+
+    Are you a new contributor to Deis? Your first `Pull Request`_ could earn you
+    credit at DigitalOcean_! Submit your changes and then email
+    deis@engineyard.com. When your PR is merged, the maintainer team will
+    send you a DigitalOcean credit based on the value of your contribution.
+
 This document is for developers who are interested in working directly on the
 Deis codebase. In this guide, we walk you through the process of setting up
 a local development environment. While there are many ways to set up your
@@ -430,6 +443,8 @@ Pull Requests
 Please read :ref:`standards`. It contains a checklist of things you should do
 when proposing a change to Deis.
 
+.. _DigitalOcean: https://www.digitalocean.com/
+.. _`Pull Request`: https://github.com/deis/deis/pulls
 .. _`easy-fix`: https://github.com/deis/deis/issues?labels=easy-fix&state=open
 .. _`deisctl`: https://github.com/deis/deis/tree/master/deisctl
 .. _`fork the Deis repository`: https://github.com/deis/deis/fork
