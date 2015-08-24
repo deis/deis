@@ -46,7 +46,7 @@ VOLUME /var/lib/docker
 
 ENTRYPOINT ["/bin/entry"]
 CMD ["/bin/boot"]
-EXPOSE 22
+EXPOSE 2223
 RUN addgroup -g 2000 slug && adduser -D -u 2000 -G slug slug
 
 # $GITUSER is added to docker group to use docker without sudo and to slug

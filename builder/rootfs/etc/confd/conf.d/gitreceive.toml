@@ -1,6 +1,0 @@
-[template]
-src   = "gitreceive"
-dest  = "/usr/local/bin/gitreceive"
-uid = 0
-gid = 0
-mode  = "0755"
