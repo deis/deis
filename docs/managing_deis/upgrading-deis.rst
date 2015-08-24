@@ -41,10 +41,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
 
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.9.0
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.9.1
     $ deisctl --version  # should match the desired platform
-    1.9.0
-    $ deisctl config platform set version=v1.9.0
+    1.9.1
+    $ deisctl config platform set version=v1.9.1
     $ deisctl install platform
     $ deisctl start platform
 
@@ -72,8 +72,8 @@ Graceful Upgrade
 ----------------
 
 Alternatively, an experimental feature exists to provide the ability to perform a graceful upgrade. This process is
-available for version 1.9.0 moving foward and is intended to facilitate upgrades within a major version (for example,
-from 1.9.0 to 1.9.1 or 1.10.0). Upgrading between major versions is not supported (for example, from 1.9.0 to a
+available for version 1.9.1 moving foward and is intended to facilitate upgrades within a major version (for example,
+from 1.9.1 to 1.9.1 or 1.10.0). Upgrading between major versions is not supported (for example, from 1.9.1 to a
 future 2.0.0). Unlike the in-place process above, this process keeps the platform's routers and publishers up during
 the upgrade process. This means that there should only be a maximum of around 1-2 seconds of downtime while the
 routers boot up. Many times, there will be no downtime at all.
@@ -104,7 +104,7 @@ to. Care should be taken not to overwrite the existing ``deisctl`` version.
 
     Deis version 1.10.0 does not exist at the time of this writing, but since
     the upgrade feature is only available for upgrading from Deis version
-    1.9.0 and higher, the snippet above is a realistic portrayal of how
+    1.9.1 and higher, the snippet above is a realistic portrayal of how
     this feature can be used in the future.
 
 Now it is possible to prepare the cluster for the upgrade using the old ``deisctl`` binary. This command will shutdown
@@ -130,7 +130,7 @@ If the process were to fail, the old version can be restored manually by reinsta
 
     $ /tmp/upgrade/deisctl stop platform
     $ /tmp/upgrade/deisctl uninstall platform
-    $ /tmp/upgrade/deisctl config platform set version=v1.9.0
+    $ /tmp/upgrade/deisctl config platform set version=v1.9.1
     $ /opt/bin/deisctl refresh-units
     $ /opt/bin/deisctl install platform
     $ /opt/bin/deisctl start platform

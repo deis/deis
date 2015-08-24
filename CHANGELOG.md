@@ -1,3 +1,19 @@
+### v1.9.0 -> v1.9.1
+
+#### Fixes
+
+ - [`d9a09b0`](https://github.com/deis/deis/commit/d9a09b003112a0f4a6f882ff18413332e179ba7c) contrib: fix etcd2 data directory on AWS
+ - [`8f50e70`](https://github.com/deis/deis/commit/8f50e7063a4d8669b77592edfef71f910de6e8a3) publisher: ignore healthcheck values if unset
+ - [`70867aa`](https://github.com/deis/deis/commit/70867aa69e0f02fd416cd250e526e57a2a01b9a1) controller: require fleet.socket
+ - [`1f2264c`](https://github.com/deis/deis/commit/1f2264cf303790bba6f66181dfcc209ab090e392) flannel: use default iface for starting flannel except vagrant
+ - [`ee15c14`](https://github.com/deis/deis/commit/ee15c149270669be2eaae677f76dda7fa4874a3a) deisctl/units: stop k8s services without errors
+ - [`e92e2db`](https://github.com/deis/deis/commit/e92e2db5ddd4e740b4e43d8cf0e14680be5e8bcf) contrib: fix debug-etcd
+ - [`837ef9d`](https://github.com/deis/deis/commit/837ef9dc7882e5264ea343f2548afe2d6325171d) mesos-marathon: change instances to zero instead of scale to zero
+
+#### Maintenance
+
+ - [`76571aa`](https://github.com/deis/deis/commit/76571aa87ae423537ca240a86d5f128b026463a2) (all): bump etcd to 2.1.2
+
 ### v1.8.0 -> v1.9.0
 
 #### Features

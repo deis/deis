@@ -51,6 +51,8 @@ Patch Release
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
+        mesos/template \
+        mesos/zookeeper/Dockerfile \
         publisher/image/Dockerfile \
         registry/Dockerfile \
         router/image/Dockerfile \
