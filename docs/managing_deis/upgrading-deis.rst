@@ -41,10 +41,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
 
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.9.0
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.9.1
     $ deisctl --version  # should match the desired platform
-    1.9.0
-    $ deisctl config platform set version=v1.9.0
+    1.9.1
+    $ deisctl config platform set version=v1.9.1
     $ deisctl install platform
     $ deisctl start platform
 
@@ -130,7 +130,7 @@ If the process were to fail, the old version can be restored manually by reinsta
 
     $ /tmp/upgrade/deisctl stop platform
     $ /tmp/upgrade/deisctl uninstall platform
-    $ /tmp/upgrade/deisctl config platform set version=v1.9.0
+    $ /tmp/upgrade/deisctl config platform set version=v1.9.1
     $ /opt/bin/deisctl refresh-units
     $ /opt/bin/deisctl install platform
     $ /opt/bin/deisctl start platform
