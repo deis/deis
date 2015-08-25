@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+terraform apply
+
+export DEISCTL_TUNNEL="$(terraform output ip)"
+export DEIS_TEST_DOMAIN="${DEISCTL_TUNNEL}.xip.io"
+
+rigger-save-vars DEISCTL_TUNNEL \
+                 DEIS_TEST_DOMAIN

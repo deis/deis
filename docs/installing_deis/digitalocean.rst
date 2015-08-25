@@ -20,10 +20,8 @@ To complete this guide, you must have the following:
  - A domain to point to the cluster
  - The ability to provision at least 3 DigitalOcean Droplets that are 4GB or greater
 
-In order to provision the cluster, we will need to install a couple of administrative tools.
-`docl`_ is a convenience tool to help provision DigitalOcean Droplets. We will also require the
-`Deis Control Utility`_, which will assist us with installing, configuring and managing the Deis
-platform.
+Additionally, we'll need to install `Terraform`_ to do the heavy lifting for us.
+
 
 Check System Requirements
 -------------------------
@@ -37,6 +35,8 @@ Generate SSH Key
 
 .. include:: ../_includes/_generate-ssh-key.rst
 
+Upload this key to DigitalOcean so we can use it for the rest of the provisioning
+process.
 
 Generate a New Discovery URL
 ----------------------------
@@ -47,42 +47,29 @@ Generate a New Discovery URL
 Create CoreOS Droplets
 ----------------------
 
-Now that we have the user-data file, we can provision some Droplets. We've made this process simple
-by supplying a script that does all the heavy lifting for you. If you want to provision manually,
-however, start by uploading the SSH key you wish to use to log into each of these servers. After
-that, create at least three Droplets with the following specifications:
+The only other pieces of information we'll need are your DigitalOcean API token
+and the fingerprint of your SSH key, both of which can be obtained from the
+DigitalOcean interface.
 
- - All Droplets deployed in the same region
- - Region must have private networking enabled
- - Region must have User Data enabled. Supply the user-data file here
- - Select CoreOS Stable channel
- - Select your SSH key from the list
-
-If private networking is not available in your region, swap out ``$private_ipv4`` with
-``$public_ipv4`` in the user-data file.
-
-If you want to use the script:
+From the source code root directory, invoke Terraform:
 
 .. code-block:: console
 
-    $ gem install docl
-    $ docl authorize
-    $ docl upload_key deis ~/.ssh/deis.pub
-    $ # retrieve your SSH key's ID
-    $ docl keys
-    deis (id: 12345)
-    $ # retrieve the region name
-    $ docl regions --metadata --private-networking
-    Amsterdam 2 (ams2)
-    Amsterdam 3 (ams3)
-    Frankfurt 1 (fra1)
-    London 1 (lon1)
-    New York 3 (nyc3)
-    San Francisco 1 (sfo1)
-    Singapore 1 (sgp1)
-    $ ./contrib/digitalocean/provision-do-cluster.sh nyc3 12345 4GB
+    $ terraform apply -var 'token=a1b2c3d3e4f5' \
+                      -var 'ssh_keys=c1:d3:a2:b4:e4:f5' \
+                      -var 'region=nyc3' \
+                      -var 'prefix=deis' \
+                      -var 'instances=3' \
+                      -var 'size=8GB' \
+                      contrib/digitalocean
 
-Which will provision 3 CoreOS nodes for use.
+
+Note that only ``token`` and ``ssh_keys`` are required - if unset, the other variables
+will default to 3 hosts in the ``sfo1`` region with a size of 8GB and a prefix
+of ``deis``. Additionally, ``ssh_keys`` can be just one key, or a comma-separated
+list of keys to be added to the hosts for the ``core`` user.
+
+The ``region`` option must specify a region with private networking.
 
 Configure DNS
 -------------
@@ -154,3 +141,4 @@ start installing the platform.
 .. _`Deis Control Utility`: https://github.com/deis/deis/tree/master/deisctl#readme
 .. _`DNS control panel`: https://cloud.digitalocean.com/domains
 .. _`this tutorial`: https://www.digitalocean.com/community/tutorials/how-to-set-up-a-host-name-with-digitalocean
+.. _`Terraform`: https://terraform.io/
