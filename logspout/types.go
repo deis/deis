@@ -41,6 +41,7 @@ func (s *Source) All() bool {
 type Target struct {
 	Type      string `json:"type"`
 	Addr      string `json:"addr"`
+	Protocol  string `json:"protocol"`
 	AppendTag string `json:"append_tag,omitempty"`
 }
 

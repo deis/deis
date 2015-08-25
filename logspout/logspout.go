@@ -64,14 +64,26 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 			continue
 		}
 		tag, pid := getLogName(logline.Name)
-		addr, err := net.ResolveUDPAddr("udp", target.Addr)
-		assert(err, "syslog")
-		conn, err := net.DialUDP("udp", nil, addr)
-		assert(err, "syslog")
-		// bump up the packet size for large log lines
-		assert(conn.SetWriteBuffer(1048576), "syslog")
+		var conn net.Conn
+		if strings.EqualFold(target.Protocol, "tcp") {
+			addr, err := net.ResolveTCPAddr("tcp", target.Addr)
+			assert(err, "syslog")
+			tcpconn, err := net.DialTCP("tcp", nil, addr)
+			assert(err, "syslog")
+			assert(tcpconn.SetWriteBuffer(1048576), "syslog")
+			conn = tcpconn
+		} else if strings.EqualFold(target.Protocol, "udp") {
+			addr, err := net.ResolveUDPAddr("udp", target.Addr)
+			assert(err, "syslog")
+			udpconn, err := net.DialUDP("udp", nil, addr)
+			assert(err, "syslog")
+			assert(udpconn.SetWriteBuffer(1048576), "syslog")
+			conn = udpconn
+		} else {
+			assert(fmt.Errorf("%s is not a supported protocol, use either udp or tcp", target.Protocol), "syslog")
+		}
 		// HACK: Go's syslog package hardcodes the log format, so let's send our own message
-		_, err = fmt.Fprintf(conn,
+		_, err := fmt.Fprintf(conn,
 			"%s %s[%s]: %s",
 			time.Now().Format(getopt("DATETIME_FORMAT", dtime.DeisDatetimeFormat)),
 			tag,
@@ -161,6 +173,17 @@ func httpStreamer(w http.ResponseWriter, req *http.Request, logstream chan *Log,
 	}
 }
 
+func getEtcdValueOrDefault(c *etcd.Client, key string, defaultValue string) string {
+	resp, err := c.Get(key, false, false)
+	if err != nil {
+		if strings.Contains(fmt.Sprintf("%v", err), "Key not found") {
+			return defaultValue
+		}
+		assert(err, "url")
+	}
+	return resp.Node.Value
+}
+
 func main() {
 	debugMode = getopt("DEBUG", "") != ""
 	port := getopt("PORT", "8000")
@@ -183,9 +206,10 @@ func main() {
 		assert(err, "url")
 		portResp, err := etcd.Get("/deis/logs/port", false, false)
 		assert(err, "url")
+		protocol := getEtcdValueOrDefault(etcd, "/deis/logs/protocol", "udp")
 		host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
-		log.Println("routing all to " + host)
-		router.Add(&Route{Target: Target{Type: "syslog", Addr: host}})
+		log.Printf("routing all to %s://%s", protocol, host)
+		router.Add(&Route{Target: Target{Type: "syslog", Addr: host, Protocol: protocol}})
 	}
 
 	if len(os.Args) > 1 {
