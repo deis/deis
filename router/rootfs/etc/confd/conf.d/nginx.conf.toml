@@ -5,6 +5,7 @@ uid = 0
 gid = 0
 mode  = "0644"
 keys = [
+  "/deis/config",
   "/deis/services",
   "/deis/router",
   "/deis/domains",

@@ -49,6 +49,7 @@ func main() {
 	time.Sleep(timeout + 1)
 
 	log.Debug("creating required defaults in etcd...")
+	mkdirEtcd(client, "/deis/config")
 	mkdirEtcd(client, "/deis/controller")
 	mkdirEtcd(client, "/deis/services")
 	mkdirEtcd(client, "/deis/domains")
