@@ -53,6 +53,7 @@ Create CoreOS Cluster
 
 With the management certificate and cloud config in place, we are ready to create our cluster.
 
+* Create a virtual network with a name of your choosing, containing at least one subnet.  This is required to ensure that nodes get a static private IP address.  Note the name of the virtual network and subnet for the cluster creation script below.
 * Create a container called ``vhds`` within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
 * Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
 * Create an `affinity group`_ if you don't already have one. Supply it in quotes with the ``--affinity-group`` parameter. Although *using an affinity group is not mandatory*, it is **highly recommended** since it tells the Azure fabric to place all VMs in the cluster physically close to each other, reducing inter-node latency by a great deal. If you don't want to use affinity groups, specify a `region`_ for Azure to use with a ``--location`` parameter. The default is ``"West US"``. If you specify both parameters, ``location`` will be ignored. Please note that the script *will not* create an affinity group by itself; it expects the affinity group exists.
@@ -75,6 +76,8 @@ With that, let's run the azure-coreos-cluster script which will create the CoreO
          --blob-container-url https://[blob container].blob.core.windows.net/vhds/
          --data-disk
          --custom-data azure-user-data
+         --virtual-network-name [virtual network name]
+         --subnet-names [subnet name]
 
 This script will by default provision a 3-node cluster, but you can increase this with the
 ``--num-nodes`` parameter. Likewise, you can increase the VM size using ``--vm-size``.
