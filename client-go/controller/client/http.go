@@ -19,7 +19,8 @@ import (
 // CreateHTTPClient creates a HTTP Client with proper SSL options.
 func CreateHTTPClient(sslVerify bool) *http.Client {
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify},
+		TLSClientConfig:   &tls.Config{InsecureSkipVerify: !sslVerify},
+		DisableKeepAlives: true,
 	}
 	return &http.Client{Transport: tr}
 }
