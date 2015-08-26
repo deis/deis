@@ -1,0 +1,25 @@
+FROM alpine:3.1
+ENTRYPOINT ["/bin/logspout"]
+VOLUME /mnt/routes
+EXPOSE 8000
+
+ENV DEIS_RELEASE 1.10.0-dev
+
+RUN apk add --update go git mercurial
+
+RUN mkdir -p /go/src/github.com/gliderlabs
+WORKDIR /go/src/github.com/gliderlabs
+RUN git clone https://github.com/gliderlabs/logspout.git
+# TODO: Check out v3 once it is released
+
+RUN mkdir -p /go/src/github.com/deis/deis/logspout
+COPY . /go/src/github.com/deis/deis/logspout
+WORKDIR /go/src/github.com/gliderlabs/logspout
+RUN mv /go/src/github.com/deis/deis/logspout/modules.go .
+
+ENV GOPATH=/go
+RUN go get
+RUN go build -ldflags "-X main.Version $DEIS_RELEASE" -o /bin/logspout
+
+# backwards compatibility
+RUN ln -fs /tmp/docker.sock /var/run/docker.sock

@@ -1,150 +1,115 @@
-# logspout
+# Deis Logspout
 
-A log router for Docker container output that runs entirely inside Docker. It attaches to all containers on a host, then routes their logs wherever you want.
+A customized build of [logspout](https://github.com/gliderlabs/logspout) produced by combining *stock* logspout v3 with a custom module that adapts it for use with the [Deis](http://deis.io) open source PaaS.
 
-It's a 100% stateless log appliance (unless you persist routes). It's not meant for managing log files or looking at history. It is just a means to get your logs out to live somewhere else, where they belong.
+**deis-logspout** is designed to run on all nodes of a Deis cluster and attach to `STDOUT` of all running [Docker](https://www.docker.com/) containers.  Logs read from these sources are forwarded to a log server such as **deis-logger**.
 
-For now it only captures stdout and stderr, but soon Docker will let us hook into more ... perhaps getting everything from every container's /dev/log.
+This Docker image is based on the official
+[alpine:3.1](https://registry.hub.docker.com/_/alpine/) image.
 
-## Getting logspout
+Please add any [issues](https://github.com/deis/deis/issues) you find with this software to
+the [Deis Project](https://github.com/deis/deis).  Deis maintainers will escalate issues to the upstream logspout project as needed.
 
-Logspout is a very small Docker container, so you can just pull it from the index:
+## Features
 
-	$ docker pull deis/logspout
+The included custom logspout module implements the following components:
 
-## Using logspout
+* `deisConfigJob`: discovers the address of the log server (e.g. **deis-logger**, which is a simple log aggregator) using [etcd](https://coreos.com/etcd/) (Deis' underlying discovery service).  After initial setup, the job continues to poll etcd at one minute intervals and will update logspout's internal configuration if the address of the log server changes.
+* `deisLogAdapter`: emits log messages in the custom format expected by the **deis-logger** component.  Internally, this delegates transport to...
+* `deisTransport`: a simplified version of logspout's built-in `udpTransport`.
 
-#### Route all container output to remote syslog
+**Note that only UDP transport is supported at this time, but support for TCP is already planned.**
 
-The simplest way to use logspout is to just take all logs and ship to a remote syslog. Just pass a default syslog target URI as the command. Also, we always mount the Docker Unix socket with `-v` to `/tmp/docker.sock`:
+## Usage
 
-	$ docker run -v=/var/run/docker.sock:/tmp/docker.sock deis/logspout /bin/logspout syslog://logs.papertrailapp.com:55555
+Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
+install, and start **deis-logspout**.
 
-If deis/logspout is deployed on Deis, it will connect automatically to deis-logger via service discovery.
+## Environment Variables
 
-#### Inspect log streams using curl
+* **DEBUG** enables debug level logging if set; this is with respect to **deis-logspout**'s own logs and *not* the logs it forwards from other containers
+* **ETCD_HOST** sets the IP address of the local etcd daemon; if this is not set, etcd will not be used for log server discovery
+* **ETCD_PORT** sets the TCP port on which to connect to the local etcd
+  daemon (default: *4001*)
 
-Whether or not you run it with a default routing target, if you publish its port 8000, you can connect with curl to see your local aggregated logs in realtime.
+## Contributing
 
-	$ docker run -d -p 8000:8000 \
-		-v=/var/run/docker.sock:/tmp/docker.sock \
-		deis/logspout
-	$ curl $(docker port `docker ps -lq` 8000)/logs
+It is not necessary to run a Deis cluster in order to hack on **deis-logspout** locally.  All that is required is:
 
-You should see a nicely colored stream of all your container logs. You can filter by container name, log type, and more. You can also get JSON objects, or you can upgrade to WebSocket and get JSON logs in your browser.
+* A properly configured Go development environment with Go 1.4 or higher
+* Docker 1.5 or higher
+* Other build essentials, such a `make`
 
-See [Streaming Endpoints](#streaming-endpoints) for all options.
+**deis-logspout** does not run in a vacuum.  To do anything useful, it must be able to attach to other containers to read their `STDOUT` and forward log messages found therein to a log server.  Additionally, since **deis-logspout** utilizes etcd for log server discovery, etcd must also be running.
 
-#### Create custom routes via HTTP
-
-Along with streaming endpoints, logspout also exposes a `/routes` resource to create and manage routes.
-
-	$ curl $(docker port `docker ps -lq` 8000)/logs -X POST \
-		-d '{"source": {"filter": "db", "types": ["stderr"]}, target": {"type": "syslog", "addr": "logs.papertrailapp.com:55555"}}'
-
-That example creates a new syslog route to [Papertrail](https://papertrailapp.com) of only `stderr` for containers with `db` in their name.
-
-By default, routes are ephemeral. But if you mount a volume to `/mnt/routes`, they will be persisted to disk.
-
-See [Routes Resource](#routes-resource) for all options.
-
-#### Using a custom timestamp format
-
-By default, logspout will use the timestamp format `2006-01-02T15:04:05MST`. A custom format can be specified by setting the `DATETIME_FORMAT` environment variable.
-
-## HTTP API
-
-### Streaming Endpoints
-
-You can use these chunked transfer streaming endpoints for quick debugging with `curl` or for setting up easy TCP subscriptions to log sources. They also support WebSocket upgrades.
-
-	GET /logs
-	GET /logs/filter:<container-name-substring>
-	GET /logs/id:<container-id>
-	GET /logs/name:<container-name>
-
-You can select specific log types from a source using a comma-delimited list in the query param `types`. Right now the only types are `stdout` and `stderr`, but when Docker properly takes over each container's syslog socket (or however they end up doing it), other types will be possible.
-
-If you include a request `Accept: application/json` header, the output will be JSON objects including the name and ID of the container and the log type. Note that when upgrading to WebSocket, it will always use JSON.
-
-Since `/logs` and `/logs/filter:<string>` endpoints can return logs from multiple source, they will by default return color-coded loglines prefixed with the name of the container. You can turn off the color escape codes with query param `colors=off` or the alternative is to stream the data in JSON format, which won't use colors or prefixes.
+In order to satisfy the dependencies noted above, **deis-logspout** comes equipped with `make` tasks for running etcd and **deis-logger** "fixtures" to better facilitate development.
 
 
-### Routes Resource
+### etcd
 
-Routes let you configure logspout to hand-off logs to another system. Right now the only supported target type is via UDP `syslog`, but hey that's pretty much everything.
+To start a single node etcd cluster:
 
-#### Creating a route
+```
+make start-dev-etcd
+```
 
-	POST /routes
+This will start etcd in a daemonized Docker container.
 
-Takes a JSON object like this:
+To stop this:
 
-	{
-		"source": {
-			"filter": "_db"
-			"types": ["stdout"]
-		},
-		"target": {
-			"type": "syslog",
-			"addr": "logaggregator.service.consul"
-			"append_tag": ".db"
-		}
-	}
+```
+make stop-dev-etcd
+```
 
-The `source` field should be an object with `filter`, `name`, or `id` fields. You can specify specific log types with the `types` field to collect only `stdout` or `stderr`. If you don't specify `types`, it will route all types.
+### deis-logger
 
-To route all logs of all types on all containers, don't specify a `source`.
+To start **deis-logger**:
 
-The `append_tag` field of `target` is optional and specific to `syslog`. It lets you append to the tag of syslog packets for this route. By default the tag is `<container-name>`, so an `append_tag` value of `.app` would make the tag `<container-name>.app`.
+```
+make run-dev-log-server
+```
 
-And yes, you can just specify an IP and port for `addr`, but you can also specify a name that resolves via DNS to one or more SRV records. That means this works great with [Consul](http://www.consul.io/) for service discovery.
+This launches **deis-logger** as a *non*-daemonized container since it is useful to observe this component's output during development and testing.
 
-#### Listing routes
+To stop this container, interrupt it with `ctrl-c`.
 
-	GET /routes
+### Building and running deis-logspout
 
-Returns a JSON list of current routes:
+**deis-logspout** can be built and deployed in a manner consistent with all other Deis components.  Please consult the [Makefile](Makefile) for current instructions on how to build, test, push,
+install, and start **deis-logspout**.
 
-	[
-		{
-			"id": "3631c027fb1b",
-			"source": {
-				"name": "mycontainer"
-			},
-			"target": {
-				"type": "syslog",
-				"addr": "192.168.1.111:514"
-			}
-		}
-	]
+The formal build process, which produces a compact Docker image suitable for production is a relatively slow process that is inconvenient to run with any real frequency during development cycles.  To compensate, **deis-logspout** also provides an alternative build process that is optimized to run quickly during development, although it produces larger images that are not adequately compact for production use.
 
-#### Viewing a route
 
-	GET /routes/<id>
+To build **deis-logspout** quickly:
 
-Returns a JSON route object:
+```
+make dev-build
+```
 
-	{
-		"id": "3631c027fb1b",
-		"source": {
-			"id": "a9efd0aeb470"
-			"types": ["stderr"]
-		},
-		"target": {
-			"type": "syslog",
-			"addr": "192.168.1.111:514"
-		}
-	}
+Note that the first build may not be very fast, but subsequent builds will execute more quickly since they will utilized cached layers of the Docker image produced by previous builds.
 
-#### Deleting a route
+To run the development-optimized build:
 
-	DELETE /routes/<id>
+```
+make dev-run
+```
 
-## Sponsor
+`make dev-run` will, in fact, implicitly run `make dev-build` to ensure one is always running with their latest code edits during development.
 
-This project was made possible by [DigitalOcean](http://digitalocean.com).
+
+The running container can be stopped by interrupting it with `ctrl-c`.
 
 ## License
 
-BSD
+© 2015 Engine Yard, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
