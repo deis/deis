@@ -34,7 +34,7 @@ Patch Release
         builder/rootfs/usr/local/src/slugbuilder/Dockerfile \
         builder/rootfs/usr/local/src/slugrunner/Dockerfile \
         cache/image/Dockerfile \
-        client-go/deis-version \
+        client/deis-version \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \
         controller/Dockerfile \
@@ -84,7 +84,7 @@ Major or Minor Release
   .. code-block:: console
 
     $ ./contrib/bumpver/bumpver -f A.B.D-dev A.B.D \
-        client-go/deis-version \
+        client/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
         docs/reference/api-v1.5.rst \
@@ -185,7 +185,7 @@ Major or Minor Release
   .. code-block:: console
 
     $ ./contrib/bumpver/bumpver -f A.B.D A.B.E-dev \
-        client-go/deis-version \
+        client/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
         version/version.go

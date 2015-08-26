@@ -15,7 +15,7 @@ export DEIS_ROOT=${GOPATH?}/src/github.com/deis/deis
 echo "DEIS_ROOT=$DEIS_ROOT"
 
 # the "deis" binary CLI to use in testing
-export DEIS_BINARY=${DEIS_BINARY:-$DEIS_ROOT/client-go/deis}
+export DEIS_BINARY=${DEIS_BINARY:-$DEIS_ROOT/client/deis}
 echo "DEIS_BINARY=$DEIS_BINARY"
 
 # prepend GOPATH/bin to PATH

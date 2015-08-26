@@ -12,7 +12,7 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 
 COMPONENTS=builder cache controller database logger logspout publisher registry router $(STORE_IF_STATEFUL)
 START_ORDER=publisher $(STORE_IF_STATEFUL) logger logspout database cache registry controller builder router
-CLIENTS=client-go deisctl
+CLIENTS=client deisctl
 
 all: build run
 
