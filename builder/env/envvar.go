@@ -29,11 +29,11 @@ func Get(c cookoo.Context, params *cookoo.Params) (interface{}, cookoo.Interrupt
 		var val string
 		if val = os.Getenv(name); len(val) == 0 {
 			def := def.(string)
+			val = os.ExpandEnv(def)
 			// We want to make sure that any subsequent calls to Getenv
 			// return the same default.
-			os.Setenv(name, def)
+			os.Setenv(name, val)
 
-			val = os.ExpandEnv(def)
 		}
 		c.Put(name, val)
 		log.Debugf(c, "Name: %s, Val: %s", name, val)

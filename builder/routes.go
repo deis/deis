@@ -42,7 +42,7 @@ func routes(reg *cookoo.Registry) {
 				Name: "vars2",
 				Fn:   env.Get,
 				Using: []cookoo.Param{
-					{Name: "ETCD", DefaultValue: "http://$HOST:$ETCD_PORT"},
+					{Name: "ETCD", DefaultValue: "$HOST:$ETCD_PORT"},
 				},
 			},
 

@@ -53,8 +53,24 @@ func TestGet(t *testing.T) {
 	if both := cxt.Get(snack, "").(string); both != "coffee and chocolate chip cookies" {
 		t.Errorf("Expected 'coffee and chocolate chip cookies'. Got '%s'", both)
 	}
+}
 
-	if both := os.Getenv(snack); both != snackVal {
-		t.Errorf("Expected %s to not be expanded. Got '%s'", snack, both)
+// TestGetInterpolation is a regression test to make sure that values are
+// interpolated correctly.
+func TestGetInterpolation(t *testing.T) {
+	reg, router, cxt := cookoo.Cookoo()
+
+	os.Setenv("TEST_ENV", "is")
+
+	reg.Route("test", "Test route").
+		Does(Get, "res").
+		Using("TEST_ENV2").WithDefault("de$TEST_ENV")
+
+	if err := router.HandleRequest("test", cxt, true); err != nil {
+		t.Error(err)
+	}
+
+	if os.Getenv("TEST_ENV2") != "deis" {
+		t.Errorf("Expected 'deis', got '%s'", os.Getenv("TEST_ENV2"))
 	}
 }
