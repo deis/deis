@@ -29,9 +29,6 @@ sys.modules.update((mod_name, MockModule()) for mod_name in MOCK_MODULES)
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-# Some hackery here to get deis.py to be importable as client.deis
-open(os.path.join('..', '__init__.py'), 'a')
-sys.path.insert(0, os.path.abspath(os.path.join('..')))
 sys.path.insert(0, os.path.abspath(os.path.join('..', 'controller')))
 # set up Django
 os.environ['DJANGO_SETTINGS_MODULE'] = 'deis.settings'

@@ -34,8 +34,6 @@ Patch Release
         builder/rootfs/usr/local/src/slugbuilder/Dockerfile \
         builder/rootfs/usr/local/src/slugrunner/Dockerfile \
         cache/image/Dockerfile \
-        client/deis.py \
-        client/setup.py \
         client-go/deis-version \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \
@@ -86,8 +84,6 @@ Major or Minor Release
   .. code-block:: console
 
     $ ./contrib/bumpver/bumpver -f A.B.D-dev A.B.D \
-        client/deis.py \
-        client/setup.py \
         client-go/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
@@ -136,15 +132,6 @@ Any Release
   - build-deisctl-installer-darwin
   - build-deisctl-installer-linux
   - *after* these client jobs finish, trigger test-acceptance
-
-- Publish Deis CLI to pypi.python.org
-
-  - ``pushd client && python setup.py sdist upload && popd``
-
-- Publish docs to pythonhosted.org/deis
-
-  - ``make -C docs clean zipfile``
-  - upload docs/docs.zip to the web form at the `Deis pypi`_ page
 
 - Update the installer scripts at `deis/deis.io`_ to reference new version A.B.D
 
@@ -198,8 +185,6 @@ Major or Minor Release
   .. code-block:: console
 
     $ ./contrib/bumpver/bumpver -f A.B.D A.B.E-dev \
-        client/deis.py \
-        client/setup.py \
         client-go/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
@@ -222,6 +207,5 @@ Major or Minor Release
 .. _`deis open issues`: https://github.com/deis/deis/issues?state=open
 .. _`changelog script`: https://github.com/deis/deis/blob/master/contrib/util/generate-changelog.sh
 .. _`release notes`: https://github.com/deis/deis/releases
-.. _`Deis pypi`:  https://pypi.python.org/pypi/deis/
 .. _`deis/deis.io`: https://github.com/deis/deis.io
 .. _`test-acceptance`: https://ci.deis.io/job/test-acceptance/configure
