@@ -102,7 +102,7 @@ func getLogName(name string) (string, string) {
 	if match != nil {
 		return match[1], match[3]
 	}
-	match = getMatch(`^k8s_([a-z0-9-]+)-([a-z]+)\.`, name)
+	match = getMatch(`^k8s_([a-z0-9-]+)-[a-z]+\.[\da-f]+_[a-z0-9-]+-([a-z]+-[\da-z]*)_`, name)
 	if match != nil {
 		return match[1], match[2]
 	}
