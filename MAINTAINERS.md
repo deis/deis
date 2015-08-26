@@ -69,6 +69,7 @@ The duties of a contributing maintainer are very similar to those of a core main
 The current contributing maintainers of Deis:
 * Johannes Würbach - <johannes.wuerbach@googlemail.com> ([@johanneswuerbach](https://github.com/johanneswuerbach))
 * Manuel de Brito Fontes - <alejandro.debrito@soficom.cl> ([@aledbf](https://github.com/aledbf))
+* Seth Goings - <sgoings@engineyard.com> ([@sgoings](https://github.com/sgoings))
 * Sivaram Mothiki - <smothiki@engineyard.com> ([@smothiki](https://github.com/smothiki))
 * Wael Nasreddine - <waelnasreddine@gmail.com> ([@kalbasit](https://github.com/kalbasit))
 
