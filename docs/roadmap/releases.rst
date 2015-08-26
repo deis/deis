@@ -200,7 +200,7 @@ Major or Minor Release
   - copy and paste from the previous blog post
   - remove Jekyll-specific headers and ``<!-- more -->`` tag
 
-- Update HipChat channel topic to reference the next planned version
+- Update Slack channel topic to reference the next planned version
 
 
 .. _`deis milestone`: https://github.com/deis/deis/issues/milestones
