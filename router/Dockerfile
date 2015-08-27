@@ -21,10 +21,6 @@ RUN addgroup -S nginx && \
 
 COPY rootfs /
 
-# forward request and error logs to docker
-RUN ln -sf /dev/stdout /opt/nginx/logs/access.log
-RUN ln -sf /dev/stderr /opt/nginx/logs/error.log
-
 # compile nginx from source
 RUN build
 

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ActiveState/tail"
 	"github.com/Sirupsen/logrus"
 	"github.com/coreos/go-etcd/etcd"
 
@@ -20,8 +21,10 @@ import (
 var log = logrus.New()
 
 const (
-	timeout time.Duration = 10 * time.Second
-	ttl     time.Duration = timeout * 2
+	timeout        time.Duration = 10 * time.Second
+	ttl            time.Duration = timeout * 2
+	nginxAccessLog string        = "/opt/nginx/logs/access.log"
+	nginxErrorLog  string        = "/opt/nginx/logs/error.log"
 )
 
 func main() {
@@ -62,6 +65,9 @@ func main() {
 
 	log.Info("Starting Nginx...")
 
+	go tailFile(nginxAccessLog)
+	go tailFile(nginxErrorLog)
+
 	nginxChan := make(chan bool)
 	go launchNginx(nginxChan)
 	<-nginxChan
@@ -80,6 +86,7 @@ func main() {
 	exitChan := make(chan os.Signal, 2)
 	signal.Notify(exitChan, syscall.SIGTERM, syscall.SIGINT)
 	<-exitChan
+	tail.Cleanup()
 }
 
 func launchCron() {
@@ -158,6 +165,15 @@ func mkfifo(path string) {
 	os.Remove(path)
 	if err := syscall.Mkfifo(path, syscall.S_IFIFO|0666); err != nil {
 		log.Fatalf("%v", err)
+	}
+}
+
+func tailFile(path string) {
+	mkfifo(path)
+	t, _ := tail.TailFile(path, tail.Config{Follow: true})
+
+	for line := range t.Lines {
+		log.Info(line.Text)
 	}
 }
 
