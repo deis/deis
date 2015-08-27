@@ -112,9 +112,6 @@ New Relic
 
 The `New Relic`_ monitoring service's agent will run on the CoreOS host and report metrics to New Relic.
 
-Unlike Datadog, however, the agent running on the host doesn't send metrics for individual containers
-unless those containers have been built with a Dockerfile that installs their own instance of the agent.
-
 The Deis community's own Johannes Würbach has developed a fleet service for New Relic in his
 `newrelic-sysmond`_ repository.
 
