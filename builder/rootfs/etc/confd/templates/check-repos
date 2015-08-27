@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+export ETCD=${ETCD:-$HOST:4001}
+
+cd $(dirname $0) # absolute path
+
+for repo in $(ls | grep .git)
+do
+    reponame="${repo%.*}"
+    etcdctl -C "$ETCD" ls /deis/services/"$reponame" > /dev/null 2>&1
+    if [[ $? -eq 4 ]]
+    then
+        rm -rf "$repo"
+        appname="{{ getv "/deis/registry/host" }}:{{ getv "/deis/registry/port" }}/$reponame"
+        docker images | grep $appname | awk '{ print $3 }' | xargs -r docker rmi -f
+        # remove any dangling images left over from the cleanup
+        docker images --filter "dangling=true" | awk '{ print $3 }' | grep -v IMAGE | xargs -r docker rmi -f
+    fi
+done

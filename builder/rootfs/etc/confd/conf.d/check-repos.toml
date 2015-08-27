@@ -1,0 +1,9 @@
+[template]
+src   = "check-repos"
+dest  = "/home/git/check-repos"
+uid = 0
+gid = 0
+mode  = "0755"
+keys = [
+  "/deis/registry",
+]
