@@ -174,11 +174,11 @@ In this setup, fetching and pulling code will work directly with the upstream
 repository, while pushing code will send changes to your fork. This makes it
 easy to stay up to date, but also make changes and then issue pull requests.
 
-Build Deisctl
+Build deisctl
 -------------
 
-Deisctl is used for interacting with the Deis cluster. While you can use an
-existing ``deisctl`` build, we recommend that developers build it from source.
+``deisctl`` is used for interacting with the Deis cluster. While you can use an
+existing ``deisctl`` binary, we recommend that developers build it from source.
 
 .. code-block:: console
 
@@ -218,33 +218,17 @@ one of the hosts in your cluster:
 Install the Deis Client
 -----------------------
 
-Unlike ``deisctl``, the ``deis`` client is written in Python.
-
-Your Deis client should match your server's version. For developers, one way
-to ensure this is to use `Python 2.7`_ to install requirements and then run
-``client/deis.py`` in the Deis code repository. Then make a symlink or shell
-alias for ``deis`` to ensure it is found in your ``$PATH``. The example
-below shows the simplest way to install ``deis.py`` as ``deis``.
-
-.. note::
-
-    On OSX, you must have the XCode command line utilities installed. If you
-    see errors about `ffi`, try installing or reinstalling the XCode command
-    line tools.
-
-From the root of the ``deis`` repository, run the appropriate ``make`` command:
+The ``deis`` client is also written in Go. Your Deis client should match your server's
+version. Like ``deisctl``, we recommend that developers build ``deis`` from source:
 
 .. code-block:: console
 
-    $ cd $DEIS
-    $ make -C client/ install
-    $ sudo ln -fs $(pwd)/client/deis.py /usr/local/bin/deis
-    $ deis
+    $ cd $DEIS/client
+    $ make build
+    $ make install  # optionally
+    $ ./deis
     Usage: deis <command> [<args>...]
 
-This will fetch all of the dependencies. If one of your system Python libraries
-is out of date, you may prefer to ``cd`` into ``client`` and run
-``pip install --upgrade .`` to fetch the latest dependencies.
 
 Start Up a Development Cluster
 ------------------------------

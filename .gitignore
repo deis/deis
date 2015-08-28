@@ -24,10 +24,8 @@ logs/
 # local binaries, installers, and artifacts
 builder/rootfs/usr/bin
 cache/image/bin/
-client/dist/
-client/makeself/
-client-go/deis
-client-go/deis.exe
+client/deis
+client/deis.exe
 contrib/azure/azure-user-data
 contrib/bumpver/bumpver
 deisctl/deisctl
