@@ -18,6 +18,12 @@ func (c *FleetClient) Journal(target string) (err error) {
 
 // runJournal tails the systemd journal for a given unit
 func (c *FleetClient) runJournal(name string) (exit int) {
+	u, err := c.Fleet.Unit(name)
+	if suToGlobal(*u) {
+		fmt.Fprintf(c.errWriter, "Unable to get journal for global unit %s. Check on a host directly using journalctl.\n", name)
+		return 1
+	}
+
 	machineID, err := c.findUnit(name)
 
 	if err != nil {
