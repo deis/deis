@@ -145,7 +145,7 @@ func parseLimits(limits []string) map[string]interface{} {
 }
 
 func parseLimit(limit string) (string, string, error) {
-	regex := regexp.MustCompile("^([A-z]+)=([0-9]+[BKMG]{1}|[0-9]{1,4})$")
+	regex := regexp.MustCompile("^([A-z]+)=([0-9]+[bkmgBKMG]{1,2}|[0-9]{1,4})$")
 
 	if !regex.MatchString(limit) {
 		return "", "", fmt.Errorf(`%s doesn't fit format type=#unit or type=#

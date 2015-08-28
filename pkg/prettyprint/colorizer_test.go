@@ -37,6 +37,7 @@ func ExampleColorize() {
 	out := Colorize("{{.Red}}Hello {{.Default}}World{{.UnderGreen}}!{{.Default}}")
 	fmt.Println(out)
 }
+
 func ExampleColorizeVars() {
 	vars := map[string]string{"Who": "World"}
 	tpl := "{{.C.Red}}Hello {{.C.Default}}{{.V.Who}}!"
@@ -67,16 +68,13 @@ func TestPrettyTabs(t *testing.T) {
 		"foo":  "bar",
 	}
 
-	expected := `test testing
-foo  bar
-`
-	otherExpected := `foo  bar
+	expected := `foo  bar
 test testing
 `
 
 	output := PrettyTabs(test, 1)
 
-	if !(output == expected || output == otherExpected) {
+	if output != expected {
 		t.Errorf("Expected '%s', Got '%s'", expected, output)
 	}
 }

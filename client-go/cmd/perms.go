@@ -56,10 +56,10 @@ func PermCreate(appID string, username string, admin bool) error {
 
 	if admin {
 		fmt.Printf("Adding %s to system administrators... ", username)
-		perms.NewAdmin(c, username)
+		err = perms.NewAdmin(c, username)
 	} else {
 		fmt.Printf("Adding %s to %s collaborators... ", username, appID)
-		perms.New(c, appID, username)
+		err = perms.New(c, appID, username)
 	}
 
 	if err != nil {
@@ -82,10 +82,10 @@ func PermDelete(appID string, username string, admin bool) error {
 
 	if admin {
 		fmt.Printf("Removing %s from system administrators... ", username)
-		perms.DeleteAdmin(c, username)
+		err = perms.DeleteAdmin(c, username)
 	} else {
 		fmt.Printf("Removing %s from %s collaborators... ", username, appID)
-		perms.Delete(c, appID, username)
+		err = perms.Delete(c, appID, username)
 	}
 
 	if err != nil {
