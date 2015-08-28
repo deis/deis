@@ -1,20 +1,6 @@
 package parser
 
-import (
-	"reflect"
-	"testing"
-)
-
-func TestCommandCombing(t *testing.T) {
-	t.Parallel()
-
-	expected := []string{"apps:create", "test", "foo"}
-	actual := combineCommand([]string{"apps", "create", "test", "foo"})
-
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected %s, Got %s", expected, actual)
-	}
-}
+import "testing"
 
 func TestSafeGet(t *testing.T) {
 	t.Parallel()
@@ -43,5 +29,27 @@ func TestSafeGetNil(t *testing.T) {
 
 	if expected != actual {
 		t.Errorf("Expected %s, Got %s", expected, actual)
+	}
+}
+
+func TestPrintHelp(t *testing.T) {
+	t.Parallel()
+
+	usage := ""
+
+	if !printHelp([]string{"ps", "--help"}, usage) {
+		t.Error("Expected true")
+	}
+
+	if !printHelp([]string{"ps", "-h"}, usage) {
+		t.Error("Expected true")
+	}
+
+	if printHelp([]string{"ps"}, usage) {
+		t.Error("Expected false")
+	}
+
+	if printHelp([]string{"ps", "--foo"}, usage) {
+		t.Error("Expected false")
 	}
 }

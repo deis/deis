@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,24 @@ limits:unset       unset resource limits for an app
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return limitsList([]string{"limits:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return limitsList(combineCommand(argv))
-	case "set":
-		return limitSet(combineCommand(argv))
-	case "unset":
-		return limitUnset(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "limits:list":
+		return limitsList(argv)
+	case "limits:set":
+		return limitSet(argv)
+	case "limits:unset":
+		return limitUnset(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "limits" {
+			argv[0] = "limits:list"
+			return limitsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

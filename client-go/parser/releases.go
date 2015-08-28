@@ -19,21 +19,24 @@ releases:rollback    return to a previous release
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return releasesList([]string{"releases:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return releasesList(combineCommand(argv))
-	case "info":
-		return releasesInfo(combineCommand(argv))
-	case "rollback":
-		return releasesRollback(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "releases:list":
+		return releasesList(argv)
+	case "releases:info":
+		return releasesInfo(argv)
+	case "releases:rollback":
+		return releasesRollback(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "releases" {
+			argv[0] = "releases:list"
+			return releasesList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

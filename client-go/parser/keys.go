@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,24 @@ keys:remove      remove an SSH key
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return keysList([]string{"keys:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return keysList(combineCommand(argv))
-	case "add":
-		return keyAdd(combineCommand(argv))
-	case "remove":
-		return keyRemove(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "keys:list":
+		return keysList(argv)
+	case "keys:add":
+		return keyAdd(argv)
+	case "keys:remove":
+		return keyRemove(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "keys" {
+			argv[0] = "keys:list"
+			return keysList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

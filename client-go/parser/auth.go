@@ -22,26 +22,23 @@ auth:regenerate        regenerate user tokens
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return nil
-	}
 
-	switch argv[1] {
-	case "register":
-		return authRegister(combineCommand(argv))
-	case "login":
-		return authLogin(combineCommand(argv))
-	case "logout":
-		return authLogout(combineCommand(argv))
-	case "passwd":
-		return authPasswd(combineCommand(argv))
-	case "whoami":
-		return authWhoami(combineCommand(argv))
-	case "cancel":
-		return authCancel(combineCommand(argv))
-	case "regenerate":
-		return authRegenerate(combineCommand(argv))
-	case "--help":
+	switch argv[0] {
+	case "auth:register":
+		return authRegister(argv)
+	case "auth:login":
+		return authLogin(argv)
+	case "auth:logout":
+		return authLogout(argv)
+	case "auth:passwd":
+		return authPasswd(argv)
+	case "auth:whoami":
+		return authWhoami(argv)
+	case "auth:cancel":
+		return authCancel(argv)
+	case "auth:regenerate":
+		return authRegenerate(argv)
+	case "auth":
 		fmt.Print(usage)
 		return nil
 	default:

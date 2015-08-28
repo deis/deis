@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,24 @@ tags:unset       unset tags for an app
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return tagsList([]string{"tags:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return tagsList(combineCommand(argv))
-	case "set":
-		return tagsSet(combineCommand(argv))
-	case "unset":
-		return tagsUnset(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "tags:list":
+		return tagsList(argv)
+	case "tags:set":
+		return tagsSet(argv)
+	case "tags:unset":
+		return tagsUnset(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "tags" {
+			argv[0] = "tags:list"
+			return tagsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

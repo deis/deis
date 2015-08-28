@@ -12,10 +12,14 @@ func TestHelpReformatting(t *testing.T) {
 	expected := "help"
 
 	for _, test := range tests {
-		actual := parseArgs([]string{test})
+		actual, argv := parseArgs([]string{test})
 
-		if actual[0] != expected {
-			t.Errorf("Expected %s, Got %s", expected, actual[0])
+		if actual != expected {
+			t.Errorf("Expected %s, Got %s", expected, actual)
+		}
+
+		if len(argv) != 1 {
+			t.Errorf("Expected length of 1, Got %d", len(argv))
 		}
 	}
 }
@@ -24,13 +28,18 @@ func TestHelpReformattingWithCommand(t *testing.T) {
 	t.Parallel()
 
 	tests := []string{"--help", "-h", "help"}
-	expected := "--help"
+	expected := "test"
+	expectedArgv := []string{"test", "--help"}
 
 	for _, test := range tests {
-		actual := parseArgs([]string{test, "test"})
+		actual, argv := parseArgs([]string{test, "test"})
 
-		if actual[1] != expected {
-			t.Errorf("Expected %s, Got %s", expected, actual[1])
+		if actual != expected {
+			t.Errorf("Expected %s, Got %s", expected, actual)
+		}
+
+		if !reflect.DeepEqual(expectedArgv, argv) {
+			t.Errorf("Expected %v, Got %v", expectedArgv, argv)
 		}
 	}
 }
@@ -38,11 +47,17 @@ func TestHelpReformattingWithCommand(t *testing.T) {
 func TestCommandSplitting(t *testing.T) {
 	t.Parallel()
 
-	expected := []string{"apps", "create", "test", "foo"}
-	actual := parseArgs([]string{"apps:create", "test", "foo"})
+	expected := "apps"
+	expectedArgv := []string{"apps:create", "test", "foo"}
 
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected %v, Got %v", expected, actual)
+	actual, argv := parseArgs(expectedArgv)
+
+	if actual != expected {
+		t.Errorf("Expected %s, Got %s", expected, actual)
+	}
+
+	if !reflect.DeepEqual(expectedArgv, argv) {
+		t.Errorf("Expected %v, Got %v", expectedArgv, argv)
 	}
 }
 

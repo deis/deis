@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -16,17 +14,20 @@ users:list        list all registered users
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return usersList([]string{"users:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return usersList(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "users:list":
+		return usersList(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "users" {
+			argv[0] = "users:list"
+			return usersList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,24 @@ ps:scale       scale processes (e.g. web=4 worker=2)
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return psList([]string{"ps:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return psList(combineCommand(argv))
-	case "restart":
-		return psRestart(combineCommand(argv))
-	case "scale":
-		return psScale(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "ps:list":
+		return psList(argv)
+	case "ps:restart":
+		return psRestart(argv)
+	case "ps:scale":
+		return psScale(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "ps" {
+			argv[0] = "ps:list"
+			return psList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}
