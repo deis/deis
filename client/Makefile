@@ -17,6 +17,17 @@ build:
 install:
 	godep go install -v .
 
+installer: build
+	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
+	PATH=./makeself:$$PATH BINARY=deis makeself.sh --bzip2 --current --nox11 . \
+		deis-cli-`cat deis-version`-`go env GOOS`-`go env GOARCH`.run \
+		"Deis CLI" "echo \
+		&& echo 'deis is in the current directory. Please' \
+		&& echo 'move deis to a directory in your search PATH.' \
+		&& echo \
+		&& echo 'See http://docs.deis.io/ for documentation.' \
+		&& echo"
+
 setup-root-gotools:
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
