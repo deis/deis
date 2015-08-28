@@ -25,6 +25,6 @@ COPY rootfs /
 RUN build
 
 CMD ["boot"]
-EXPOSE 80 2222
+EXPOSE 80 2222 9090
 
 ENV DEIS_RELEASE 1.11.0-dev

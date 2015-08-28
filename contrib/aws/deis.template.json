@@ -300,7 +300,7 @@
         "HealthCheck": {
           "HealthyThreshold": "4",
           "Interval": "15",
-          "Target": "TCP:80",
+          "Target": "HTTP:9090/health-check",
           "Timeout": "5",
           "UnhealthyThreshold": "2"
         },
@@ -367,7 +367,8 @@
           {"IpProtocol": "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : { "Ref" : "SSHFrom" }},
           {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } },
           {"IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } },
-          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } }
+          {"IpProtocol": "tcp", "FromPort": "2222", "ToPort": "2222", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } },
+          {"IpProtocol": "tcp", "FromPort": "9090", "ToPort": "9090", "SourceSecurityGroupId": { "Ref": "DeisWebELBSecurityGroup" } }
         ],
         "VpcId" : { "Ref" : "VPC" }
       }
