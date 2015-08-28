@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -24,29 +23,32 @@ apps:destroy       destroy an application
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return appsList([]string{"apps:list"})
-	}
 
-	switch argv[1] {
-	case "create":
-		return appCreate(combineCommand(argv))
-	case "list":
-		return appsList(combineCommand(argv))
-	case "info":
-		return appInfo(combineCommand(argv))
-	case "open":
-		return appOpen(combineCommand(argv))
-	case "logs":
-		return appLogs(combineCommand(argv))
-	case "run":
-		return appRun(combineCommand(argv))
-	case "destroy":
-		return appDestroy(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "apps:create":
+		return appCreate(argv)
+	case "apps:list":
+		return appsList(argv)
+	case "apps:info":
+		return appInfo(argv)
+	case "apps:open":
+		return appOpen(argv)
+	case "apps:logs":
+		return appLogs(argv)
+	case "apps:run":
+		return appRun(argv)
+	case "apps:destroy":
+		return appDestroy(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "apps" {
+			argv[0] = "apps:list"
+			return appsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,23 @@ perms:delete          delete a permission for a user
 
 Use 'deis help perms:[command]' to learn more.
 `
-	if len(argv) < 2 {
-		return permsList([]string{"perms:list"})
-	}
-
-	switch argv[1] {
-	case "list":
-		return permsList(combineCommand(argv))
-	case "create":
-		return permCreate(combineCommand(argv))
-	case "delete":
-		return permDelete(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "perms:list":
+		return permsList(argv)
+	case "perms:create":
+		return permCreate(argv)
+	case "perms:delete":
+		return permDelete(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "perms" {
+			argv[0] = "perms:list"
+			return permsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/deis/deis/client-go/cmd"
@@ -17,14 +16,11 @@ git:remote          Adds git remote of application to repository
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return errors.New("'deis git' is not a valid command, try 'deis help git'")
-	}
 
-	switch argv[1] {
-	case "remote":
-		return gitRemote(combineCommand(argv))
-	case "--help":
+	switch argv[0] {
+	case "git:remote":
+		return gitRemote(argv)
+	case "git":
 		fmt.Print(usage)
 		return nil
 	default:

@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -20,25 +18,28 @@ config:push        set environment variables from .env
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return configList([]string{"config:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return configList(combineCommand(argv))
-	case "set":
-		return configSet(combineCommand(argv))
-	case "unset":
-		return configUnset(combineCommand(argv))
-	case "pull":
-		return configPull(combineCommand(argv))
-	case "push":
-		return configPush(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "config:list":
+		return configList(argv)
+	case "config:set":
+		return configSet(argv)
+	case "config:unset":
+		return configUnset(argv)
+	case "config:pull":
+		return configPull(argv)
+	case "config:push":
+		return configPush(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "config" {
+			argv[0] = "config:list"
+			return configList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

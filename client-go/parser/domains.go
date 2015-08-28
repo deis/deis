@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,23 @@ domains:remove        unbind a domain from an application
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return domainsList([]string{"domains:list"})
-	}
-
-	switch argv[1] {
-	case "add":
-		return domainsAdd(combineCommand(argv))
-	case "list":
-		return domainsList(combineCommand(argv))
-	case "remove":
-		return domainsRemove(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "domains:add":
+		return domainsAdd(argv)
+	case "domains:list":
+		return domainsList(argv)
+	case "domains:remove":
+		return domainsRemove(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "domains" {
+			argv[0] = "domains:list"
+			return domainsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

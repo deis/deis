@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/deis/deis/client-go/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -18,21 +16,24 @@ certs:remove          remove an SSL certificate from an app
 
 Use 'deis help [command]' to learn more.
 `
-	if len(argv) < 2 {
-		return certsList([]string{"certs:list"})
-	}
 
-	switch argv[1] {
-	case "list":
-		return certsList(combineCommand(argv))
-	case "add":
-		return certAdd(combineCommand(argv))
-	case "remove":
-		return certRemove(combineCommand(argv))
-	case "--help":
-		fmt.Print(usage)
-		return nil
+	switch argv[0] {
+	case "certs:list":
+		return certsList(argv)
+	case "certs:add":
+		return certAdd(argv)
+	case "certs:remove":
+		return certRemove(argv)
 	default:
+		if printHelp(argv, usage) {
+			return nil
+		}
+
+		if argv[0] == "certs" {
+			argv[0] = "certs:list"
+			return certsList(argv)
+		}
+
 		PrintUsage()
 		return nil
 	}

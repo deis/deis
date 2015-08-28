@@ -62,20 +62,19 @@ Shortcut commands, use 'deis shortcuts' to see all::
 Use 'git push deis master' to deploy to an application.
 `
 	// Reorganize some command line flags and commands.
-	argv = parseArgs(argv)
+	command, argv := parseArgs(argv)
 	// Give docopt an optional final false arg so it doesn't call os.Exit().
-	args, err := docopt.Parse(usage, argv, false, version.Version, true, false)
+	_, err := docopt.Parse(usage, []string{command}, false, version.Version, true, false)
 
 	if err != nil {
 		fmt.Println(err)
 		return 1
 	}
 
-	if len(args) == 0 {
+	if len(argv) == 0 {
 		return 0
 	}
 
-	command := args["<command>"]
 	// Dispatch the command, passing the argv through so subcommands can
 	// re-parse it according to their usage strings.
 	switch command {
@@ -110,18 +109,27 @@ Use 'git push deis master' to deploy to an application.
 	case "help":
 		fmt.Print(usage)
 		return 0
+	case "--version":
+		return 0
 	default:
 		env := os.Environ()
-		command = "deis-" + argv[0]
+		extCmd := "deis-" + command
 
-		binary, err := exec.LookPath(command.(string))
+		binary, err := exec.LookPath(extCmd)
 		if err != nil {
 			parser.PrintUsage()
 			return 1
 		}
 
-		cmdArgv := []string{command.(string)}
-		cmdArgv = append(cmdArgv, argv[1:]...)
+		cmdArgv := []string{extCmd}
+
+		cmdSplit := strings.Split(argv[0], command+":")
+
+		if len(cmdSplit) > 1 {
+			argv[0] = cmdSplit[1]
+		}
+
+		cmdArgv = append(cmdArgv, argv...)
 
 		err = syscall.Exec(binary, cmdArgv, env)
 		if err != nil {
@@ -138,22 +146,21 @@ Use 'git push deis master' to deploy to an application.
 
 // parseArgs returns the provided args with "--help" as the last arg if need be,
 // expands shortcuts and formats commands to be properly routed.
-func parseArgs(argv []string) []string {
+func parseArgs(argv []string) (string, []string) {
 	if len(argv) == 1 {
-		// rearrange "deisctl --help" as "deisctl help"
+		// rearrange "deis --help" as "deis help"
 		if argv[0] == "--help" || argv[0] == "-h" {
 			argv[0] = "help"
 		}
 	}
 
 	if len(argv) >= 2 {
-		// Rearrange "deisctl help <command>" to "deisctl <command> --help".
+		// Rearrange "deis help <command>" to "deis <command> --help".
 		if argv[0] == "help" || argv[0] == "--help" || argv[0] == "-h" {
 			argv = append(argv[1:], "--help")
 		}
 	}
 
-	// Split commands with colons [apps:create, ...] -> [apps, create, ...].
 	if len(argv) > 0 {
 		argv[0] = replaceShortcut(argv[0])
 
@@ -161,12 +168,13 @@ func parseArgs(argv []string) []string {
 
 		if index != -1 {
 			command := argv[0]
-			argv[0] = command[:index]
-			argv = append(argv[:1], append([]string{command[(index + 1):]}, argv[1:]...)...)
+			return command[:index], argv
 		}
+
+		return argv[0], argv
 	}
 
-	return argv
+	return "", argv
 }
 
 func replaceShortcut(command string) string {
