@@ -140,8 +140,8 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    X_DEIS_API_VERSION: 1.3
-    X_DEIS_PLATFORM_VERSION: 1.6.1
+    DEIS_API_VERSION: 1.5
+    DEIS_PLATFORM_VERSION: 1.9.1
     Content-Type: application/json
 
     {"token": "abc123"}

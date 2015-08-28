@@ -14,7 +14,7 @@ First check that you have ``deisctl`` installed and the version is correct.
 .. code-block:: console
 
     $ deisctl --version
-    1.9.1
+    1.10.0
 
 If not, follow instructions to :ref:`install_deisctl`.
 
