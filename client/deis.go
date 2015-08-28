@@ -72,7 +72,8 @@ Use 'git push deis master' to deploy to an application.
 	}
 
 	if len(argv) == 0 {
-		return 0
+		fmt.Println("Usage: deis <command> [<args>...]")
+		return 1
 	}
 
 	// Dispatch the command, passing the argv through so subcommands can
