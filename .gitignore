@@ -26,6 +26,8 @@ builder/rootfs/usr/bin
 cache/image/bin/
 client/deis
 client/deis.exe
+client/*.run
+client/makeself/
 contrib/azure/azure-user-data
 contrib/bumpver/bumpver
 deisctl/deisctl
