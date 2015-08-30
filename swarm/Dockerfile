@@ -1,4 +1,4 @@
-FROM golang:1.4
+FROM golang:1.5
 
 WORKDIR /go/src/github.com/docker
 RUN git clone https://github.com/deis/swarm
