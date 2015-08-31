@@ -5,8 +5,6 @@ coreos:
     # We have to set the public_ip here so this works on Vagrant -- otherwise, Vagrant VMs
     # will all publish the same private IP. This is harmless for cloud providers.
     public-ip: $private_ipv4
-    # allow etcd to slow down at times
-    etcd_request_timeout: 3.0
     metadata: controlPlane=true,dataPlane=true,routerMesh=true
   units:
   - name: etcd.service
@@ -26,8 +24,6 @@ coreos:
       LimitNOFILE=40000
       EnvironmentFile=/etc/environment
       Environment="ETCD_IMAGE=quay.io/coreos/etcd:v2.1.2"
-      Environment="ETCD_ELECTION_TIMEOUT=2000"
-      Environment="ETCD_HEARTBEAT_INTERVAL=400"
       Environment="ETCD_HOST_DATA_DIR=/var/lib/etcd2"
       Environment="ETCD_NAME=%m"
       Environment="DOCKER_HOST=unix:///var/run/early-docker.sock"
@@ -45,8 +41,6 @@ coreos:
         -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
         -initial-advertise-peer-urls http://${COREOS_PRIVATE_IPV4}:2380,http://${COREOS_PRIVATE_IPV4}:7001 \
         -listen-peer-urls http://0.0.0.0:2380,http://0.0.0.0:7001 \
-        --heartbeat-interval ${ETCD_HEARTBEAT_INTERVAL} \
-        --election-timeout ${ETCD_ELECTION_TIMEOUT} \
         --discovery #DISCOVERY_URL
       ExecStop=-/usr/bin/docker stop $ETCD_NAME
   - name: etcd2.service
