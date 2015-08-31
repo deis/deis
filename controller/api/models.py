@@ -12,7 +12,6 @@ import importlib
 import logging
 import os
 import re
-import subprocess
 import time
 from threading import Thread
 
@@ -174,8 +173,6 @@ class App(UuidAuditedModel):
                           validators=[validate_id_is_docker_compatible,
                                       validate_reserved_names])
     structure = JSONField(default={}, blank=True, validators=[validate_app_structure])
-
-    _etcd_client = None
 
     class Meta:
         permissions = (('use_app', 'Can use app'),)
@@ -518,41 +515,9 @@ class App(UuidAuditedModel):
 
         self.scale(user, structure)
 
-    def _get_etcd_client(self):
-        if self._etcd_client is None:
-            try:
-                self._etcd_client = etcd.Client(host=settings.ETCD_HOST,
-                                                port=int(settings.ETCD_PORT))
-            except etcd.EtcdException:
-                logger.log(logging.WARNING,
-                           'Cannot synchronize with etcd cluster')
-        return self._etcd_client
-
-    def _get_logging_mode(self):
-        try:
-            return self._get_etcd_client().get('/deis/logs/handlertype').value
-        except KeyError:
-            return 'standard'
-        except etcd.EtcdException:
-            return 'standard'
-
-    def logs_from_fs(self, log_lines):
-        """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
-            raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', log_lines, path])
-        return data
-
     def logs(self, log_lines=str(settings.LOG_LINES)):
-        if self._get_logging_mode() == 'standard':
-            return self.logs_from_fs(log_lines)
-        else:
-            return self._get_logs_from_logger(log_lines)
-
-    def _get_logs_from_logger(self, log_lines):
         try:
-            host = self._get_etcd_client().get('/deis/logs/host').value
+            host = settings.LOGGER_HOST
             url = 'http://{}:{}/{}/{}/'.format(host, 8088, self.id, log_lines)
             r = requests.get(url)
             return r.content

@@ -207,8 +207,7 @@ class AppViewSet(BaseDeisViewSet):
         try:
             return Response(app.logs(request.query_params.get('log_lines',
                                      str(settings.LOG_LINES))),
-                            status=status.HTTP_200_OK,
-                            content_type='text/plain')
+                            status=status.HTTP_200_OK, content_type='text/plain')
         except EnvironmentError:
             return Response("No logs for {}".format(app.id),
                             status=status.HTTP_204_NO_CONTENT,

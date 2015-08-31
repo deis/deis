@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// get handler type from etcd if it exist
-	if resp, err := client.Get(publishPath+"/handlertype", false, false); err == nil {
+	if resp, err := client.Get(publishPath+"/handlerType", false, false); err == nil {
 		if resp != nil && resp.Node != nil {
 			syslogd.HandlerType = fmt.Sprint(resp.Node.Value)
 		}
