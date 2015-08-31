@@ -1,5 +1,17 @@
 #!/bin/env bash
 
+if [ ! -f /opt/bin/jq ]; then
+  echo "/opt/bin/jq is missing. Downloading..."
+  curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
+  chmod +x /opt/bin/jq
+fi
+
+# obtain the etcd node members and check that at least there is three
+ETCD_NODES=$(curl -s http://localhost:4001/v2/members | jq '.[] | .[].peerURLs | length' | wc -l)
+if test $ETCD_NODES -lt 3; then
+  echo "etcd is not working correctly. Verify the etcd cluster is running before the execution of this script."
+fi
+
 echo "Obtaining IP addresses of the nodes in the cluster..."
 MACHINES_IP=$(fleetctl list-machines --fields=ip --no-legend | awk -vORS=, '{ print $1 }' | sed 's/,$/\n/')
 
@@ -59,7 +71,7 @@ echo "Enabling iptables service"
 sudo systemctl enable iptables-restore.service
 
 # Flush custom rules before the restore (so this script is idempotent)
-sudo /usr/sbin/iptables -F Firewall-INPUT
+sudo /usr/sbin/iptables -F Firewall-INPUT 2> /dev/null
 
 echo "Loading custom iptables firewall"
 sudo /sbin/iptables-restore --noflush /var/lib/iptables/rules-save
