@@ -302,8 +302,8 @@ write_files:
 
       # TODO: remove the next check once etcdctl is using etcd2
       ETCDCTL=/usr/bin/etcdctl
-      if ! $ETCDCTL --version | grep -q "etcdctl version 2.0."; then
-        ETCD_VERSION=2.0.13
+      if ! $ETCDCTL --version | grep -q "etcdctl version 2.1"; then
+        ETCD_VERSION=2.1.2
         curl -sSL https://github.com/coreos/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz | \
           tar zxv -C /opt/bin etcd-v${ETCD_VERSION}-linux-amd64/etcdctl --strip=1
         ETCDCTL="/opt/bin/etcdctl"
