@@ -14,8 +14,8 @@ build:
 	CGO_ENABLED=0 godep go build -a -installsuffix cgo -ldflags '-s' -o deis .
 	@$(call check-static-binary,deis)
 
-install:
-	godep go install -v .
+install: build
+	cp deis $$GOPATH/bin
 
 installer: build
 	@if [ ! -d makeself ]; then git clone -b single-binary https://github.com/deis/makeself.git; fi
