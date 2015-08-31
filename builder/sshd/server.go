@@ -207,7 +207,7 @@ func (s *server) answer(channel ssh.Channel, requests <-chan *ssh.Request, sshCo
 
 			router := s.c.Get("cookoo.Router", nil).(*cookoo.Router)
 
-			// XXX: Should we unset the context value 'cookoo.Router'?
+			// TODO: Should we unset the context value 'cookoo.Router'?
 			// We need a shallow copy of the context to avoid race conditions.
 			cxt := s.c.Copy()
 			cxt.Put("SSH_CONNECTION", sshConn)
@@ -285,7 +285,7 @@ type GenericMessage struct {
 func cleanExec(pay []byte) string {
 	e := &ExecCmd{}
 	ssh.Unmarshal(pay, e)
-	// XXX: Minimal escaping of values in command. There is probably a better
+	// TODO: Minimal escaping of values in command. There is probably a better
 	// way of doing this.
 	r := strings.NewReplacer("$", "", "`", "'")
 	return r.Replace(e.Value)

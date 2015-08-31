@@ -30,7 +30,6 @@ var DockSock = "/var/run/docker.sock"
 // Returns true if the file exists (and was deleted), or false if no file
 // was deleted.
 func Cleanup(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
-
 	// If info is returned, then the file is there. If we get an error, we're
 	// pretty much not going to be able to remove the file (which probably
 	// doesn't exist).
@@ -61,6 +60,7 @@ func CreateClient(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Inter
 // This assumes the presence of the docker client on the host. It does not use
 // the API.
 func Start(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
+	// Allow insecure Docker registries on all private network ranges in RFC 1918 and RFC 6598.
 	dargs := []string{
 		"-d",
 		"--bip=172.19.42.1/16",
