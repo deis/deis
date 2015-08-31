@@ -37,16 +37,16 @@ apt-get install -yq build-essential \
 
 # install virtualbox
 if ! virtualbox --help &> /dev/null; then
-  wget -nv http://download.virtualbox.org/virtualbox/4.3.22/virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
-  dpkg -i virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
-  rm virtualbox-4.3_4.3.22-98236~Ubuntu~raring_amd64.deb
+  wget -nv http://download.virtualbox.org/virtualbox/5.0.2/virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
+  dpkg -i virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
+  rm virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
 fi
 
 # install vagrant
 if ! vagrant -v &> /dev/null; then
-  wget -nv https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
-  dpkg -i vagrant_1.7.2_x86_64.deb
-  rm vagrant_1.7.2_x86_64.deb
+  wget -nv https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.4_x86_64.deb
+  dpkg -i vagrant_1.7.4_x86_64.deb
+  rm vagrant_1.7.4_x86_64.deb
 fi
 
 # install go
