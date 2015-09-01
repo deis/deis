@@ -114,16 +114,16 @@ func checkForErrors(res *http.Response, body string) error {
 		return err
 	}
 
-	errorMessage := "\n"
+	errorMessage := fmt.Sprintf("\n%s\n", res.Status)
 	for key, value := range bodyMap {
 		switch v := value.(type) {
 		case string:
-			errorMessage += key + ": " + v + "\n"
+			errorMessage += fmt.Sprintf("%s: %s\n", key, v)
 		case []interface{}:
 			for _, subValue := range v {
 				switch sv := subValue.(type) {
 				case string:
-					errorMessage += key + ": " + sv + "\n"
+					errorMessage += fmt.Sprintf("%s: %s\n", key, sv)
 				default:
 					fmt.Printf("Unexpected type in %s error message array. Contents: %v",
 						reflect.TypeOf(value), sv)
@@ -135,7 +135,6 @@ func checkForErrors(res *http.Response, body string) error {
 		}
 	}
 
-	errorMessage += res.Status + "\n"
 	return errors.New(errorMessage)
 }
 

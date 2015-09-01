@@ -147,16 +147,16 @@ func TestCheckErrors(t *testing.T) {
 	t.Parallel()
 
 	expected := `
+404 NOT FOUND
 error: This is an error.
 error_array: This is an array.
 error_array: Foo!
-404 NOT FOUND
 `
 	altExpected := `
+404 NOT FOUND
 error_array: This is an array.
 error_array: Foo!
 error: This is an error.
-404 NOT FOUND
 `
 
 	body := `
