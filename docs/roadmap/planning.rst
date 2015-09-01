@@ -30,6 +30,12 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+September 2015 (Deis v1.11)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The public release planning meeting for Deis v1.11 will take place on
+**Thursday, September 3rd**. For more details, see: https://groups.google.com/forum/#!topic/deis-users/WlaVJM94hIs
+
 August 2015 (Deis v1.10)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
