@@ -111,7 +111,7 @@ func checkForErrors(res *http.Response, body string) error {
 	bodyMap := make(map[string]interface{})
 
 	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
-		return err
+		return fmt.Errorf("\n%s\n%s\n", res.Status, body)
 	}
 
 	errorMessage := fmt.Sprintf("\n%s\n", res.Status)
