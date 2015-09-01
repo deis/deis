@@ -197,24 +197,8 @@ Finishing up
 
 Now that the data is restored, the rest of the cluster should come up normally with a ``deisctl start platform``.
 
-The last task is to instruct the controller to re-write user keys, application data, and domains to etcd.
-Log into the machine which runs deis-controller and run the following. Note that the IP address to
-use in the ``export`` command should correspond to the IP of the host machine which runs this container.
-
-.. code-block:: console
-
-    $ nse deis-controller
-    $ cd /app
-    $ export ETCD=172.17.8.100:4001
-    ./manage.py shell <<EOF
-    from api.models import *
-    [k.save() for k in Key.objects.all()]
-    [a.save() for a in App.objects.all()]
-    [d.save() for d in Domain.objects.all()]
-    [c.save() for c in Certificate.objects.all()]
-    [c.save() for c in Config.objects.all()]
-    EOF
-    $ exit
+The controller will automatically re-write user keys, application data, and domains from the
+restored database to etcd.
 
 That's it! The cluster should be fully restored.
 

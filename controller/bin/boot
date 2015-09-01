@@ -86,6 +86,8 @@ sudo -E -u deis ./manage.py syncdb --migrate --noinput
 # spawn a gunicorn server in the background
 sudo -E -u deis gunicorn -c deis/gconf.py deis.wsgi &
 
+./manage.py load_db_state_to_etcd
+
 # smart shutdown on SIGTERM (SIGINT is handled by gunicorn)
 function on_exit() {
 	GUNICORN_PID=$(cat /tmp/gunicorn.pid)
