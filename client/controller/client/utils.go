@@ -18,7 +18,7 @@ func locateSettingsFile() string {
 	return path.Join(FindHome(), ".deis", filename+".json")
 }
 
-func checkAPICompatability(serverAPIVersion string) {
+func checkAPICompatibility(serverAPIVersion string) {
 	if serverAPIVersion != version.APIVersion {
 		fmt.Printf(`!    WARNING: Client and server API versions do not match. Please consider upgrading.
 !    Client version: %s

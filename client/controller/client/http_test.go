@@ -109,7 +109,7 @@ func TestCheckConnection(t *testing.T) {
 
 	httpClient := CreateHTTPClient(false)
 
-	if err = CheckConection(httpClient, *u); err != nil {
+	if err = CheckConnection(httpClient, *u); err != nil {
 		t.Error(err)
 	}
 }

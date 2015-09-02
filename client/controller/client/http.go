@@ -61,7 +61,7 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 		return nil, err
 	}
 
-	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
+	checkAPICompatibility(res.Header.Get("DEIS_API_VERSION"))
 
 	return res, nil
 }
@@ -152,8 +152,8 @@ func checkForErrors(res *http.Response, body string) error {
 	return errors.New(errorMessage)
 }
 
-// CheckConection checks that the user is connected to a network and the URL points to a valid controller.
-func CheckConection(client *http.Client, controllerURL url.URL) error {
+// CheckConnection checks that the user is connected to a network and the URL points to a valid controller.
+func CheckConnection(client *http.Client, controllerURL url.URL) error {
 	errorMessage := `%s does not appear to be a valid Deis controller.
 Make sure that the Controller URI is correct and the server is running.`
 
@@ -180,7 +180,7 @@ Make sure that the Controller URI is correct and the server is running.`
 		return fmt.Errorf(errorMessage, baseURL)
 	}
 
-	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
+	checkAPICompatibility(res.Header.Get("DEIS_API_VERSION"))
 
 	return nil
 }
