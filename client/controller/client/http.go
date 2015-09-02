@@ -57,6 +57,10 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 		return nil, err
 	}
 
+	if err = checkForErrors(res, ""); err != nil {
+		return nil, err
+	}
+
 	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
 
 	return res, nil
@@ -108,8 +112,18 @@ func checkForErrors(res *http.Response, body string) error {
 		return nil
 	}
 
-	bodyMap := make(map[string]interface{})
+	// Read the response body if none was provided.
+	if body == "" {
+		defer res.Body.Close()
+		resBody, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+		body = string(resBody)
+	}
 
+	// Unmarshal the response as JSON, or return the status and body.
+	bodyMap := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
 		return fmt.Errorf("\n%s\n%s\n", res.Status, body)
 	}
