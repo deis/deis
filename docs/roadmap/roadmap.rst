@@ -42,16 +42,6 @@ Deis will standardize the monitoring interfaces and provide open source agent(s)
 
 This feature is tracked as GitHub issue `#3699`_.
 
-Production Hardening
---------------------
-For users running Deis in large environments, support is lacking for things like separating the
-control plane and data plane (application and routing mesh), running etcd on only a fraction
-of the hosts, and other architectural design customizations. Specifically, work is in
-progress for:
-
- - [ ] Better support for large-scale clusters (`#3635`_)
- - [ ] Support for separating the data plane and control plane (`#3023`_)
-
 Stateless Logger
 ----------------
 Users who have elected to run a Ceph-less cluster give up application logs since
