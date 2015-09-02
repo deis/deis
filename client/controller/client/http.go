@@ -57,7 +57,11 @@ func (c Client) Request(method string, path string, body []byte) (*http.Response
 		return nil, err
 	}
 
-	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
+	if err = checkForErrors(res, ""); err != nil {
+		return nil, err
+	}
+
+	checkAPICompatibility(res.Header.Get("DEIS_API_VERSION"))
 
 	return res, nil
 }
@@ -108,22 +112,32 @@ func checkForErrors(res *http.Response, body string) error {
 		return nil
 	}
 
-	bodyMap := make(map[string]interface{})
-
-	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
-		return err
+	// Read the response body if none was provided.
+	if body == "" {
+		defer res.Body.Close()
+		resBody, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return err
+		}
+		body = string(resBody)
 	}
 
-	errorMessage := "\n"
+	// Unmarshal the response as JSON, or return the status and body.
+	bodyMap := make(map[string]interface{})
+	if err := json.Unmarshal([]byte(body), &bodyMap); err != nil {
+		return fmt.Errorf("\n%s\n%s\n", res.Status, body)
+	}
+
+	errorMessage := fmt.Sprintf("\n%s\n", res.Status)
 	for key, value := range bodyMap {
 		switch v := value.(type) {
 		case string:
-			errorMessage += key + ": " + v + "\n"
+			errorMessage += fmt.Sprintf("%s: %s\n", key, v)
 		case []interface{}:
 			for _, subValue := range v {
 				switch sv := subValue.(type) {
 				case string:
-					errorMessage += key + ": " + sv + "\n"
+					errorMessage += fmt.Sprintf("%s: %s\n", key, sv)
 				default:
 					fmt.Printf("Unexpected type in %s error message array. Contents: %v",
 						reflect.TypeOf(value), sv)
@@ -135,12 +149,11 @@ func checkForErrors(res *http.Response, body string) error {
 		}
 	}
 
-	errorMessage += res.Status + "\n"
 	return errors.New(errorMessage)
 }
 
-// CheckConection checks that the user is connected to a network and the URL points to a valid controller.
-func CheckConection(client *http.Client, controllerURL url.URL) error {
+// CheckConnection checks that the user is connected to a network and the URL points to a valid controller.
+func CheckConnection(client *http.Client, controllerURL url.URL) error {
 	errorMessage := `%s does not appear to be a valid Deis controller.
 Make sure that the Controller URI is correct and the server is running.`
 
@@ -167,7 +180,7 @@ Make sure that the Controller URI is correct and the server is running.`
 		return fmt.Errorf(errorMessage, baseURL)
 	}
 
-	checkAPICompatability(res.Header.Get("DEIS_API_VERSION"))
+	checkAPICompatibility(res.Header.Get("DEIS_API_VERSION"))
 
 	return nil
 }

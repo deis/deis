@@ -29,7 +29,7 @@ func Register(controller string, username string, password string, email string,
 		return err
 	}
 
-	if err = client.CheckConection(httpClient, controllerURL); err != nil {
+	if err = client.CheckConnection(httpClient, controllerURL); err != nil {
 		return err
 	}
 
@@ -115,7 +115,7 @@ func Login(controller string, username string, password string, sslVerify bool) 
 		return err
 	}
 
-	if err = client.CheckConection(httpClient, controllerURL); err != nil {
+	if err = client.CheckConnection(httpClient, controllerURL); err != nil {
 		return err
 	}
 

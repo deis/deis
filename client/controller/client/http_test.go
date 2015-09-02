@@ -109,7 +109,7 @@ func TestCheckConnection(t *testing.T) {
 
 	httpClient := CreateHTTPClient(false)
 
-	if err = CheckConection(httpClient, *u); err != nil {
+	if err = CheckConnection(httpClient, *u); err != nil {
 		t.Error(err)
 	}
 }
@@ -147,16 +147,16 @@ func TestCheckErrors(t *testing.T) {
 	t.Parallel()
 
 	expected := `
+404 NOT FOUND
 error: This is an error.
 error_array: This is an array.
 error_array: Foo!
-404 NOT FOUND
 `
 	altExpected := `
+404 NOT FOUND
 error_array: This is an array.
 error_array: Foo!
 error: This is an error.
-404 NOT FOUND
 `
 
 	body := `
@@ -177,6 +177,36 @@ error: This is an error.
 
 	if actual != expected && actual != altExpected {
 		t.Errorf("Expected %s or %s, Got %s", expected, altExpected, actual)
+	}
+
+	expected = `
+503 Service Temporarily Unavailable
+<html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body bgcolor="white">
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx/1.9.4</center>
+</body>
+</html>
+`
+
+	body = `<html>
+<head><title>503 Service Temporarily Unavailable</title></head>
+<body bgcolor="white">
+<center><h1>503 Service Temporarily Unavailable</h1></center>
+<hr><center>nginx/1.9.4</center>
+</body>
+</html>`
+
+	res = http.Response{
+		StatusCode: http.StatusServiceUnavailable,
+		Status:     "503 Service Temporarily Unavailable",
+	}
+
+	actual = checkForErrors(&res, body).Error()
+
+	if actual != expected {
+		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
 }
 
