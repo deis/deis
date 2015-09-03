@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -185,6 +186,7 @@ func getEtcdValueOrDefault(c *etcd.Client, key string, defaultValue string) stri
 }
 
 func main() {
+	runtime.GOMAXPROCS(1)
 	debugMode = getopt("DEBUG", "") != ""
 	port := getopt("PORT", "8000")
 	endpoint := getopt("DOCKER_HOST", "unix:///var/run/docker.sock")
