@@ -12,6 +12,27 @@ important to the future of Deis.
 Given the project's rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
 direction over many releases.
 
+Etcd Hardening
+--------------
+
+We have recently seen various issues with etcd performance, which can cause
+issues with Deis. We will focus on re-evaluating our implementation and use
+of etcd in Deis, with a focus on performance and reliability.
+
+This feature is tracked as GitHub issue `#4404`_.
+
+Rigger
+------
+
+We want the provisioning process of CoreOS hosts to be as smooth as the
+``deisctl`` experience when users install and start Deis. We've started working
+on a tool called `Rigger`_ which provisions hosts and deploys Deis on
+any supported provider.
+
+We're still defining the interface between Rigger and the provider-specific
+provision logic. We'd love input from the community on this discussion in
+`#4345`_.
+
 New Default Scheduler
 ---------------------
 Deis now has support for Docker Swarm, Apache Mesos, and Google Kubernetes as
@@ -41,16 +62,6 @@ Deis will standardize the monitoring interfaces and provide open source agent(s)
  - [ ] Controller Telemetry (app created, build created, containers scaled)
 
 This feature is tracked as GitHub issue `#3699`_.
-
-Production Hardening
---------------------
-For users running Deis in large environments, support is lacking for things like separating the
-control plane and data plane (application and routing mesh), running etcd on only a fraction
-of the hosts, and other architectural design customizations. Specifically, work is in
-progress for:
-
- - [ ] Better support for large-scale clusters (`#3635`_)
- - [ ] Support for separating the data plane and control plane (`#3023`_)
 
 Stateless Logger
 ----------------
@@ -112,12 +123,12 @@ This feature is tracked as GitHub issue `#231`_.
 
 .. _`#231`: https://github.com/deis/deis/issues/231
 .. _`#2106`: https://github.com/deis/deis/issues/2106
-.. _`#3023`: https://github.com/deis/deis/issues/3023
 .. _`#3072`: https://github.com/deis/deis/issues/3072
-.. _`#3635`: https://github.com/deis/deis/issues/3635
 .. _`#3699`: https://github.com/deis/deis/issues/3699
 .. _`#4000`: https://github.com/deis/deis/issues/4000
 .. _`#4222`: https://github.com/deis/deis/issues/4222
+.. _`#4345`: https://github.com/deis/deis/issues/4345
+.. _`#4404`: https://github.com/deis/deis/issues/4404
 .. _`Automatic CoreOS upgrades`: https://github.com/deis/deis/issues/1043
 .. _`CoreUpdate`: https://coreos.com/docs/coreupdate/custom-apps/coreupdate-protocol/
 .. _`Deis Push`: https://github.com/deis/deis/issues/2680
@@ -127,6 +138,7 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`like CoreOS`: https://coreos.com/releases/
 .. _`Log Tailing`: https://github.com/deis/deis/issues/465
 .. _`Permissions`: https://github.com/deis/deis/issues/4150
+.. _`Rigger`: https://github.com/deis/rigger
 .. _`Service Broker API`: http://docs.cloudfoundry.org/services/api.html
 .. _`Teams`: https://github.com/deis/deis/issues/4173
 .. _`TTY Broker component`: https://github.com/deis/deis/issues/3808
