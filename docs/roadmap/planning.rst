@@ -30,11 +30,21 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+October 2015 (Deis v1.12)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The public release planning meeting for Deis v1.12 will take place on
+**Thursday, October 8th** at **11am MDT/1700 GMT**. The `event`_ can be added
+directly to your calendar.
+
 September 2015 (Deis v1.11)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The public release planning meeting for Deis v1.11 will take place on
-**Thursday, September 3rd**. For more details, see: https://groups.google.com/forum/#!topic/deis-users/WlaVJM94hIs
+Roadmap items completed: Production Hardening
+
+Roadmap items added: Etcd Hardening, Rigger
+
+Archive: https://www.youtube.com/watch?v=oqTUDBmriDA
 
 August 2015 (Deis v1.10)
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,4 +77,5 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
+.. _`event`: https://goo.gl/1YVnNn
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
