@@ -1,3 +1,5 @@
+
+from rest_framework import exceptions
 from rest_framework import permissions
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
@@ -103,7 +105,7 @@ class HasRegistrationAuth(permissions.BasePermission):
         """
         try:
             if settings.REGISTRATION_MODE == 'disabled':
-                return False
+                raise exceptions.PermissionDenied('Registration is disabled')
             if settings.REGISTRATION_MODE == 'enabled':
                 return True
             elif settings.REGISTRATION_MODE == 'admin_only':
