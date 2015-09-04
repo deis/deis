@@ -56,11 +56,13 @@ until confd -onetime -node "$ETCD" -confdir /app --log-level error; do
   sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
+PG_DATA_DIR=/var/lib/postgresql/9.3/main
+
 # initialize database if one doesn't already exist
 # for example, in the case of a data container
-if [[ ! -d /var/lib/postgresql/9.3/main ]]; then
+if [[ ! -d $PG_DATA_DIR ]]; then
   chown -R postgres:postgres /var/lib/postgresql
-  sudo -u postgres /usr/bin/initdb -D /var/lib/postgresql/9.3/main
+  sudo -u postgres /usr/bin/initdb -D $PG_DATA_DIR
 fi
 
 # ensure WAL log bucket exists
@@ -69,24 +71,24 @@ INIT_ID=$(etcdctl -C "$ETCD" get "$ETCD_PATH/initId" 2> /dev/null || echo none)
 echo "database: expecting initialization id: $INIT_ID"
 
 initial_backup=0
-if [[ "$(cat /var/lib/postgresql/9.3/main/initialized 2> /dev/null)" != "$INIT_ID" ]]; then
+if [[ "$(cat $PG_DATA_DIR/initialized 2> /dev/null)" != "$INIT_ID" ]]; then
   echo "database: no existing database found or it is outdated."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
   if [[ $(envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l) -gt "1" ]]; then
     echo "database: restoring from backup..."
-    rm -rf /var/lib/postgresql/9.3/main
-    sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch /var/lib/postgresql/9.3/main LATEST
-    chown -R postgres:postgres /var/lib/postgresql/9.3/main
-    chmod 0700 /var/lib/postgresql/9.3/main
-    echo "restore_command = 'envdir /etc/wal-e.d/env wal-e wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee /var/lib/postgresql/9.3/main/recovery.conf >/dev/null
+    rm -rf $PG_DATA_DIR
+    sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch $PG_DATA_DIR LATEST
+    chown -R postgres:postgres $PG_DATA_DIR
+    chmod 0700 $PG_DATA_DIR
+    echo "restore_command = 'envdir /etc/wal-e.d/env wal-e wal-fetch \"%f\" \"%p\"'" | sudo -u postgres tee $PG_DATA_DIR/recovery.conf >/dev/null
   else
     echo "database: no backups found. Initializing a new database..."
     initial_backup=1
   fi
   # either way, we mark the database as initialized
   INIT_ID=$(cat /proc/sys/kernel/random/uuid)
-  echo "$INIT_ID" > /var/lib/postgresql/9.3/main/initialized
+  echo "$INIT_ID" > $PG_DATA_DIR/initialized
   etcdctl --no-sync -C "$ETCD" set "$ETCD_PATH/initId" "$INIT_ID" >/dev/null
 else
   echo "database: existing data directory found. Starting postgres..."
@@ -111,7 +113,7 @@ trap on_exit INT TERM
 confd -node "$ETCD" -confdir /app --log-level error --interval 5 &
 
 # wait for the service to become available
-sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\" && \$1 ~ \"tcp.?\"") ]] ; do sleep 1; done
+until sudo -u postgres psql -l -t >/dev/null 2>&1; do sleep 1; done
 
 # perform a one-time reload to populate database entries
 /usr/local/bin/reload
@@ -119,7 +121,7 @@ sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".5432\
 if [[ "${initial_backup}" == "1" ]] ; then
   echo "database: performing an initial backup..."
   # perform an initial backup
-  sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push /var/lib/postgresql/9.3/main
+  sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-push $PG_DATA_DIR
 fi
 
 sudo -Eu postgres /app/bin/backup &
@@ -135,7 +137,7 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
   set +e
 
   # wait for the service to become available on PORT
-  sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+  until sudo -u postgres psql -l -t >/dev/null 2>&1; do sleep 1; done
 
   # while the port is listening, publish to etcd
   while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
