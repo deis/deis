@@ -15,7 +15,6 @@ import (
 	"github.com/Masterminds/cookoo"
 	"github.com/Masterminds/cookoo/log"
 	"github.com/Masterminds/cookoo/safely"
-
 	"github.com/coreos/go-etcd/etcd"
 )
 
@@ -327,7 +326,6 @@ func genSSHKeys(c cookoo.Context) error {
 // 	- client (Setter): The client to use to write the data to etcd.
 // 	- sshPid (int): The PID for SSHD. If SSHD dies, this stops notifying.
 func UpdateHostPort(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
-
 	base := p.Get("base", "").(string)
 	host := p.Get("host", "").(string)
 	port := p.Get("port", "").(string)
@@ -405,7 +403,6 @@ func MakeDir(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt)
 	}
 
 	return res, nil
-
 }
 
 // Watch watches a given path, and executes a git check-repos for each event.
@@ -511,7 +508,6 @@ func Watch(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
 //
 // It adds configurable number of retries and configurable timesouts.
 func checkRetry(c *etcd.Cluster, numReqs int, last http.Response, err error) error {
-
 	if numReqs > retryCycles*len(c.Machines) {
 		return fmt.Errorf("Tried and failed %d cluster connections: %s", retryCycles, err)
 	}

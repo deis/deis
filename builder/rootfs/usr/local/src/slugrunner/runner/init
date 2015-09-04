@@ -28,7 +28,7 @@ mkdir -p .profile.d
 
 # If a file is created in slugbuilder with the wrong UID, change it. But we
 # don't mess with anything owned by UID 0.
-find . -user 1000 -exec chown 2000:2000 {} \;
+find . -user 1000 -exec chown slug:slug {} \;
 
 if [[ -s .release ]]; then
 	ruby -e "require 'yaml';(YAML.load_file('.release')['config_vars'] || {}).each{|k,v| puts \"#{k}='#{v}'\"}" > .profile.d/config_vars
