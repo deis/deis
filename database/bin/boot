@@ -94,6 +94,11 @@ else
   echo "database: existing data directory found. Starting postgres..."
 fi
 
+# Explicitly correct permissions on this file.  This compensates for the fact
+# it may have been initially written by root above, but more importantly, if
+# it's already owned by root, this will correct the permissions during upgrade.
+chown postgres:postgres /var/lib/postgresql/9.3/main/initialized
+
 # run the service in the background
 sudo -i -u postgres /usr/bin/postgres \
                     -c config-file="${PG_CONFIG:-/etc/postgresql/main/postgresql.conf}" \
