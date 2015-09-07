@@ -34,7 +34,7 @@ discovery-url:
 	@for i in 1 2 3 4 5; do \
 		URL=`curl -s -w '\n' https://discovery.etcd.io/new?size=$$DEIS_NUM_INSTANCES`; \
 		if [ ! -z $$URL ]; then \
-			sed -e "s,discovery #DISCOVERY_URL,discovery $$URL," contrib/coreos/user-data.example > contrib/coreos/user-data; \
+			sed -e "s,discovery: #DISCOVERY_URL,discovery: $$URL," contrib/coreos/user-data.example > contrib/coreos/user-data; \
 			echo "Wrote $$URL to contrib/coreos/user-data"; \
 		    break; \
 		fi; \
