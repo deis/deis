@@ -30,7 +30,7 @@ func LimitsList(appID string) error {
 		memoryMap := make(map[string]string)
 
 		for key, value := range config.Memory {
-			memoryMap[key] = value.(string)
+			memoryMap[key] = fmt.Sprintf("%v", value)
 		}
 
 		fmt.Print(prettyprint.PrettyTabs(memoryMap, 5))
