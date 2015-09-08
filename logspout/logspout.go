@@ -64,7 +64,7 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 		if typestr != ",," && !strings.Contains(typestr, logline.Type) {
 			continue
 		}
-		tag, pid := getLogName(logline.Name)
+		tag, pid, data := getLogParts(logline)
 		var conn net.Conn
 		if strings.EqualFold(target.Protocol, "tcp") {
 			addr, err := net.ResolveTCPAddr("tcp", target.Addr)
@@ -89,25 +89,34 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 			time.Now().Format(getopt("DATETIME_FORMAT", dtime.DeisDatetimeFormat)),
 			tag,
 			pid,
-			logline.Data)
+			data)
 		assert(err, "syslog")
 	}
 }
 
-// getLogName returns a custom tag and PID for containers that
+// getLogParts returns a custom tag and PID for containers that
 // match Deis' specific application name format. Otherwise,
-// it returns the original name and 1 as the PID.
-func getLogName(name string) (string, string) {
+// it returns the original name and 1 as the PID.  Additionally,
+// it returns log data.  The function is also smart enough to
+// detect when a leading tag in the log data represents an attempt
+// by the controller to log an application event.
+func getLogParts(logline *Log) (string, string, string) {
 	// example regex that should match: go_v2.web.1
-	match := getMatch(`(^[a-z0-9-]+)_(v[0-9]+)\.([a-z-_]+\.[0-9]+)$`, name)
+	match := getMatch(`(^[a-z0-9-]+)_(v[0-9]+)\.([a-z-_]+\.[0-9]+)$`, logline.Name)
 	if match != nil {
-		return match[1], match[3]
+		return match[1], match[3], logline.Data
 	}
-	match = getMatch(`^k8s_([a-z0-9-]+)-[a-z]+\.[\da-f]+_[a-z0-9-]+-([a-z]+-[\da-z]*)_`, name)
+	match = getMatch(`^k8s_([a-z0-9-]+)-[a-z]+\.[\da-f]+_[a-z0-9-]+-([a-z]+-[\da-z]*)_`, logline.Name)
 	if match != nil {
-		return match[1], match[2]
+		return match[1], match[2], logline.Data
 	}
-	return name, "1"
+	if logline.Name == "deis-controller" {
+		data_match := getMatch(`^[A-Z]+ \[([a-z0-9-]+)\]: (.*)`, logline.Data)
+		if data_match != nil {
+			return data_match[1], "deis-controller", data_match[2]
+		}
+	}
+	return logline.Name, "1", logline.Data
 }
 
 func getMatch(regex string, name string) []string {

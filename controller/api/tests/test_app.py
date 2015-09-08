@@ -7,6 +7,7 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import logging
 import mock
 import os.path
 import requests
@@ -131,22 +132,18 @@ class AppTest(TestCase):
         os.remove(path)
         # TODO: test run needs an initial build
 
-    def test_app_release_notes_in_logs(self):
+    @mock.patch('api.models.logger')
+    def test_app_release_notes_in_logs(self, mock_logger):
         """Verifies that an app's release summary is dumped into the logs."""
         url = '/v1/apps'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
-        app_id = response.data['id']  # noqa
-        path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
-        url = '/v1/apps/{app_id}/logs'.format(**locals())
-        response = self.client.get(url,
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertIn('autotest created initial release', response.data)
-        self.assertEqual(response.status_code, 200)
-        # delete file for future runs
-        os.remove(path)
+        # check app logs
+        exp_msg = "autotest created initial release"
+        exp_log_call = mock.call(logging.INFO, exp_msg)
+        mock_logger.log.has_calls(exp_log_call)
 
     def test_app_errors(self):
         app_id = 'autotest-errors'
@@ -202,7 +199,8 @@ class AppTest(TestCase):
         self.assertEqual(response.data['structure'], {"web": 1})
 
     @mock.patch('requests.post', mock_import_repository_task)
-    def test_admin_can_manage_other_apps(self):
+    @mock.patch('api.models.logger')
+    def test_admin_can_manage_other_apps(self, mock_logger):
         """Administrators of Deis should be able to manage all applications.
         """
         # log in as non-admin user and create an app
@@ -213,18 +211,15 @@ class AppTest(TestCase):
         body = {'id': app_id}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(token))
-        app = App.objects.get(id=app_id)
         # log in as admin, check to see if they have access
         url = '/v1/apps/{}'.format(app_id)
         response = self.client.get(url,
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         # check app logs
-        url = '/v1/apps/{app_id}/logs'.format(**locals())
-        response = self.client.get(url,
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('autotest2 created initial release', response.data)
+        exp_msg = "autotest2 created initial release"
+        exp_log_call = mock.call(logging.INFO, exp_msg)
+        mock_logger.log.has_calls(exp_log_call)
         # TODO: test run needs an initial build
         # delete the app
         url = '/v1/apps/{}'.format(app_id)

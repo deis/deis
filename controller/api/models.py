@@ -61,7 +61,7 @@ def close_db_connections(func, *args, **kwargs):
 def log_event(app, msg, level=logging.INFO):
     # controller needs to know which app this log comes from
     logger.log(level, "{}: {}".format(app.id, msg))
-    app.log(msg)
+    app.log(msg, level)
 
 
 def validate_base64(value):
@@ -215,18 +215,15 @@ class App(UuidAuditedModel):
             # handle special case for Dockerfile deployments
             return '' if container_type == 'cmd' else 'start {}'.format(container_type)
 
-    def log(self, message):
-        """Logs a message to the application's log file.
+    def log(self, message, level=logging.INFO):
+        """Logs a message in the context of this application.
 
-        This is a workaround for how Django interacts with Python's logging module. Each app
-        needs its own FileHandler instance so it can write to its own log file. That won't work in
-        Django's case because logging is set up before you run the server and it disables all
-        existing logging configurations.
+        This prefixes log messages with an application "tag" that the customized deis-logspout will
+        be on the lookout for.  When it's seen, the message-- usually an application event of some
+        sort like releasing or scaling, will be considered as "belonging" to the application
+        instead of the controller and will be handled accordingly.
         """
-        with open(os.path.join(settings.DEIS_LOG_DIR, self.id + '.log'), 'a') as f:
-            msg = "{} deis[api]: {}\n".format(time.strftime(settings.DEIS_DATETIME_FORMAT),
-                                              message)
-            f.write(msg.encode('utf-8'))
+        logger.log(level, "[{}]: {}".format(self.id, message))
 
     def create(self, *args, **kwargs):
         """Create a new application with an initial config and release"""
