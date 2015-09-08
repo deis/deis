@@ -14,5 +14,3 @@ CREATE ROLE {{ getv "/deis/database/user" }} WITH LOGIN;
 ALTER ROLE {{ getv "/deis/database/user" }} WITH PASSWORD '{{ getv "/deis/database/password" }}';
 CREATE DATABASE {{ getv "/deis/database/name" }} WITH OWNER {{ getv "/deis/database/user" }};
 EOF
-
-exit 0
