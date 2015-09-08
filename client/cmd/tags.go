@@ -25,7 +25,7 @@ func TagsList(appID string) error {
 	tagMap := make(map[string]string)
 
 	for key, value := range config.Tags {
-		tagMap[key] = value.(string)
+		tagMap[key] = fmt.Sprintf("%v", value)
 	}
 
 	fmt.Print(prettyprint.PrettyTabs(tagMap, 5))

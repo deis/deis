@@ -47,7 +47,7 @@ func ConfigList(appID string, oneLine bool) error {
 
 		// config.Values is type interface, so it needs to be converted to a string
 		for _, key := range keys {
-			configMap[key] = config.Values[key].(string)
+			configMap[key] = fmt.Sprintf("%v", config.Values[key])
 		}
 
 		fmt.Print(prettyprint.PrettyTabs(configMap, 6))
