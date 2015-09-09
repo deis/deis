@@ -23,6 +23,7 @@ var (
 	appsInfoCmd            = "apps:info --app={{.AppName}}"
 	appsDestroyCmd         = "apps:destroy --app={{.AppName}} --confirm={{.AppName}}"
 	appsDestroyCmdNoApp    = "apps:destroy --confirm={{.AppName}}"
+	appsTransferCmd        = "apps:transfer {{.NewOwner}} --app={{.AppName}}"
 )
 
 func randomString(n int) string {
@@ -44,6 +45,7 @@ func TestApps(t *testing.T) {
 	appsOpenTest(t, params)
 	appsDestroyTest(t, params)
 	appsListTest(t, params, true)
+	appsTransferTest(t, params)
 }
 
 func appsSetup(t *testing.T) *utils.DeisTestConfig {
@@ -126,4 +128,19 @@ func appsRunTest(t *testing.T, params *utils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	utils.Execute(t, cmd, params, true, "Not found")
+}
+
+func appsTransferTest(t *testing.T, params *utils.DeisTestConfig) {
+	user := utils.GetGlobalConfig()
+	user.UserName, user.Password = "app-transfer-test", "test"
+	user.AppName = "transfer-test"
+	user.NewOwner = params.UserName
+	utils.Execute(t, authRegisterCmd, user, false, "")
+	utils.Execute(t, authLoginCmd, user, false, "")
+	utils.Execute(t, appsCreateCmdNoRemote, user, false, "")
+	utils.Execute(t, appsTransferCmd, user, false, "")
+	utils.Execute(t, appsInfoCmd, user, true, "403 FORBIDDEN")
+	utils.Execute(t, authLoginCmd, params, false, "")
+	params.AppName = user.AppName
+	utils.CheckList(t, appsInfoCmd, params, params.UserName, false)
 }

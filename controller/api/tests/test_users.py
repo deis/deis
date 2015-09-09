@@ -21,9 +21,7 @@ class TestUsers(TestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(token))
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data['results']), 2)
-        self.assertEqual(response.data['results'][0]['username'], 'autotest')
-        self.assertEqual(response.data['results'][1]['username'], 'autotest2')
+        self.assertEqual(len(response.data['results']), 3)
 
     def test_non_super_user_cannot_list(self):
         url = '/v1/users/'

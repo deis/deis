@@ -324,6 +324,52 @@ class AppTest(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 404)
 
+    def test_app_transfer(self):
+        owner = User.objects.get(username='autotest2')
+        owner_token = Token.objects.get(user=owner).key
+        app_id = 'autotest'
+        base_url = '/v1/apps'
+        body = {'id': app_id}
+        response = self.client.post(base_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        # Transfer App
+        url = '{}/{}'.format(base_url, app_id)
+        new_owner = User.objects.get(username='autotest3')
+        new_owner_token = Token.objects.get(user=new_owner).key
+        body = {'owner': new_owner.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        self.assertEqual(response.status_code, 200)
+
+        # Original user can no longer access it
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        self.assertEqual(response.status_code, 403)
+
+        # New owner can access it
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(new_owner_token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['owner'], new_owner.username)
+
+        # Collaborators can't transfer
+        body = {'username': owner.username}
+        perms_url = url+"/perms/"
+        response = self.client.post(perms_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(new_owner_token))
+        self.assertEqual(response.status_code, 201)
+        body = {'owner': self.user.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(owner_token))
+        self.assertEqual(response.status_code, 403)
+
+        # Admins can transfer
+        body = {'owner': self.user.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['owner'], self.user.username)
+
 
 FAKE_LOG_DATA = """
 2013-08-15 12:41:25 [33454] [INFO] Starting gunicorn 17.5

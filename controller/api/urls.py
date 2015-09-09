@@ -63,7 +63,7 @@ urlpatterns = patterns(
         views.AppPermsViewSet.as_view({'get': 'list', 'post': 'create'})),
     # apps base endpoint
     url(r"^apps/(?P<id>{})/?".format(settings.APP_URL_REGEX),
-        views.AppViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})),
+        views.AppViewSet.as_view({'get': 'retrieve', 'post': 'update', 'delete': 'destroy'})),
     url(r'^apps/?',
         views.AppViewSet.as_view({'get': 'list', 'post': 'create'})),
     # key

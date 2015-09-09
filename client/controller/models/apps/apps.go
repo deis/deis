@@ -123,3 +123,18 @@ func Delete(c *client.Client, appID string) error {
 	_, err := c.BasicRequest("DELETE", u, nil)
 	return err
 }
+
+// Transfer an app to another user.
+func Transfer(c *client.Client, appID string, username string) error {
+	u := fmt.Sprintf("/v1/apps/%s/", appID)
+
+	req := api.AppUpdateRequest{Owner: username}
+	body, err := json.Marshal(req)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = c.BasicRequest("POST", u, body)
+	return err
+}

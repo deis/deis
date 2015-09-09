@@ -15,6 +15,11 @@ type AppCreateRequest struct {
 	ID string `json:"id,omitempty"`
 }
 
+// AppUpdateRequest is the definition of POST /v1/apps/<app id>/.
+type AppUpdateRequest struct {
+	Owner string `json:"owner,omitempty"`
+}
+
 // AppRunRequest is the definition of POST /v1/apps/<app id>/run.
 type AppRunRequest struct {
 	Command string `json:"command"`

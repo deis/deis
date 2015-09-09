@@ -1,20 +1,18 @@
-:title: Controller API v1.6
-:description: The v1.6 REST API for Deis' Controller
+:title: Controller API v1.7
+:description: The v1.7 REST API for Deis' Controller
 
-Controller API v1.6
+.. _controller_api_v1:
+
+Controller API v1.7
 ===================
 
-This is the v1.6 REST API for the :ref:`Controller`.
+This is the v1.7 REST API for the :ref:`Controller`.
 
 
 What's New
 ----------
 
-**New!** administrators no longer have to supply a password when changing another user's password.
-
-**New!** administrators no longer have to supply a password when deleting another user.
-
-**New!** ``?page_size`` query parameter for paginated requests to set the number of results per page.
+**New!** apps can now be updated ``POST /v1/apps/<app id>``.
 
 
 Authentication
@@ -52,7 +50,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -90,7 +88,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -113,7 +111,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 Regenerate Token
@@ -145,7 +143,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -183,7 +181,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -207,7 +205,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -253,7 +251,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -284,7 +282,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -304,7 +302,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -318,6 +316,33 @@ Example Response:
         "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
     }
 
+Update Application Details
+``````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/apps/example-go/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Optional parameters:
+
+.. code-block:: console
+
+    {
+      "owner": "test"
+    }
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    DEIS_API_VERSION: 1.7
+    DEIS_PLATFORM_VERSION: 1.8.0
+    Content-Type: application/json
 
 Retrieve Application Logs
 `````````````````````````
@@ -341,7 +366,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: text/plain
 
@@ -365,7 +390,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -392,7 +417,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -425,7 +450,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -470,7 +495,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -500,7 +525,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -524,7 +549,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -564,7 +589,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -604,7 +629,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -639,7 +664,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -674,7 +699,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -712,7 +737,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -736,7 +761,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -774,7 +799,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
     X-Deis-Release: 3
@@ -817,7 +842,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
     X-Deis-Release: 4
@@ -859,7 +884,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -897,7 +922,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -927,7 +952,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -951,7 +976,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1006,7 +1031,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
     X-Deis-Release: 4
@@ -1044,7 +1069,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1106,7 +1131,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1142,7 +1167,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1169,7 +1194,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1211,7 +1236,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1241,7 +1266,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -1269,7 +1294,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1299,7 +1324,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
@@ -1319,7 +1344,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 List Administrators
@@ -1338,7 +1363,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 
@@ -1381,7 +1406,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 201 CREATED
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 Remove User's Administrative Privileges
@@ -1404,7 +1429,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 204 NO CONTENT
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
 
 Users
@@ -1430,7 +1455,7 @@ Example Response:
 .. code-block:: console
 
     HTTP/1.1 200 OK
-    DEIS_API_VERSION: 1.6
+    DEIS_API_VERSION: 1.7
     DEIS_PLATFORM_VERSION: 1.10.0
     Content-Type: application/json
 

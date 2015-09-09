@@ -37,6 +37,7 @@ type DeisTestConfig struct {
 	UserName           string
 	Password           string
 	NewPassword        string
+	NewOwner           string
 	Email              string
 	ExampleApp         string
 	AppDomain          string
