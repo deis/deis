@@ -8,6 +8,7 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
+import logging
 import mock
 import requests
 
@@ -569,7 +570,8 @@ class ConfigTest(TransactionTestCase):
     @mock.patch('requests.get', mock_status_not_found)
     @mock.patch('api.models.get_etcd_client', lambda func: func)
     @mock.patch('time.sleep', lambda func: func)
-    def test_app_healthcheck_bad(self):
+    @mock.patch('api.models.logger')
+    def test_app_healthcheck_bad(self, mock_logger):
         """
         If a user deploys an app with a config value set for HEALTHCHECK_URL, the controller
         should check that the application responds with a 200 OK. If it's down, the app should be
@@ -583,10 +585,16 @@ class ConfigTest(TransactionTestCase):
         # check that only the build and initial release exist
         self.assertEqual(self.app.release_set.latest().version, 2)
         # assert that the reason why the containers failed was because
-        # they failed the health check 4 times
-        self.assertEqual(
-            self.app.logs().count("app failed health check (got '404', expected: '200')"),
-            4)
+        # they failed the health check 4 times; we do this by looking
+        # at logs-- there may be a better way
+        exp_msg = "{}: app failed health check (got '404', expected: '200'); trying again in 0.0 \
+seconds".format(self.app.id)
+        exp_log_call = mock.call(logging.WARNING, exp_msg)
+        log_calls = mock_logger.log.mock_calls
+        self.assertEqual(log_calls.count(exp_log_call), 3)
+        exp_msg = "{}: app failed health check (got '404', expected: '200')".format(self.app.id)
+        exp_log_call = mock.call(logging.WARNING, exp_msg)
+        self.assertEqual(log_calls.count(exp_log_call), 1)
 
     @mock.patch('requests.get', mock_status_not_found)
     @mock.patch('api.models.get_etcd_client', lambda func: func)
