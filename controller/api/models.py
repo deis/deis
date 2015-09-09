@@ -12,7 +12,6 @@ import importlib
 import logging
 import os
 import re
-import subprocess
 import time
 from threading import Thread
 
@@ -216,17 +215,21 @@ class App(UuidAuditedModel):
             return '' if container_type == 'cmd' else 'start {}'.format(container_type)
 
     def log(self, message):
-        """Logs a message to the application's log file.
+        try:
+            host = settings.LOGGER_HOST
+            url = 'http://{}:{}/{}/'.format(host,
+                                            8088,
+                                            self.id)
+            requests.post(url,
+                          data={'message': self.format_log_message(message)})
+        except Exception as e:
+            logger.error(
+                'Unable to send logs to logger due error: {}'.format(e))
 
-        This is a workaround for how Django interacts with Python's logging module. Each app
-        needs its own FileHandler instance so it can write to its own log file. That won't work in
-        Django's case because logging is set up before you run the server and it disables all
-        existing logging configurations.
-        """
-        with open(os.path.join(settings.DEIS_LOG_DIR, self.id + '.log'), 'a') as f:
-            msg = "{} deis[api]: {}\n".format(time.strftime(settings.DEIS_DATETIME_FORMAT),
-                                              message)
-            f.write(msg.encode('utf-8'))
+    @staticmethod
+    def format_log_message(message):
+        return "{} deis[api]: {}\n".format(
+            time.strftime(settings.DEIS_DATETIME_FORMAT), message)
 
     def create(self, *args, **kwargs):
         """Create a new application with an initial config and release"""
@@ -520,12 +523,13 @@ class App(UuidAuditedModel):
         self.scale(user, structure)
 
     def logs(self, log_lines=str(settings.LOG_LINES)):
-        """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
-            raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', log_lines, path])
-        return data
+        try:
+            host = settings.LOGGER_HOST
+            url = 'http://{}:{}/{}/{}/'.format(host, 8088, self.id, log_lines)
+            r = requests.get(url)
+            return r.content
+        except Exception as e:
+            return 'Unable to get logs due error: {}'.format(e)
 
     def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""

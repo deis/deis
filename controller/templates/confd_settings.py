@@ -72,3 +72,8 @@ GROUP_BASEDN = '{{ if exists "/deis/controller/auth/ldap/group/basedn" }}{{ getv
 GROUP_FILTER = '{{ if exists "/deis/controller/auth/ldap/group/filter" }}{{ getv "/deis/controller/auth/ldap/group/filter"}}{{ else }} {{ end }}'
 GROUP_TYPE = '{{ if exists "/deis/controller/auth/ldap/group/type" }}{{ getv "/deis/controller/auth/ldap/group/type"}}{{ else }} {{ end }}'
 {{ end }}
+
+HANDLER_TYPE = '{{ if exists "/deis/logs/handlertype" }}{{ getv "/deis/logs/handlertype"}}{{ else }}standard{{ end }}'
+{{ if exists "/deis/logs/host" }}
+LOGGER_HOST = '{{ getv "/deis/logs/host"}}'
+{{ end }}
