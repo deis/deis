@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+function check-elb-service {
+  local elb_name="${1}"
+
+  ATTEMPTS=45
+  SLEEPTIME=10
+  COUNTER=1
+  IN_SERVICE=0
+  until [ $IN_SERVICE -ge 1 ]; do
+    if [ $COUNTER -gt $ATTEMPTS ]; then exit 1; fi  # timeout after 7 1/2 minutes
+    if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
+    rigger-log "Waiting for ELB (${elb_name}) to see an instance in InService..."
+    IN_SERVICE=$(aws elb describe-instance-health \
+                         --load-balancer-name "${elb_name}" \
+                         --query 'InstanceStates[].State' \
+                 | grep InService \
+                 | wc -l)
+  done
+}
+
+check-elb-service "${ELB_NAME}"

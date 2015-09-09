@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+pip install -r requirements.txt
