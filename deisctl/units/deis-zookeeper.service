@@ -13,7 +13,7 @@ ExecStartPre=-/usr/bin/docker kill deis-zookeeper
 ExecStartPre=-/usr/bin/docker rm deis-zookeeper
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/zookeeper` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/zookeeper` && docker run -e EXTERNAL_PORT=2181 -e HOST=$COREOS_PRIVATE_IPV4 -e LOG_LEVEL=debug --net=host --rm --name deis-zookeeper --volumes-from=zookeeper-data $IMAGE"
-ExecStop=/usr/bin/docker stop deis-zookeeper
+ExecStop=-/usr/bin/docker stop deis-zookeeper
 
 [Install]
 WantedBy=multi-user.target
