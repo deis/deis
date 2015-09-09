@@ -12,7 +12,6 @@ import importlib
 import logging
 import os
 import re
-import subprocess
 import time
 from threading import Thread
 
