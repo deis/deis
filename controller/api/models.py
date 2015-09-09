@@ -387,7 +387,8 @@ class App(UuidAuditedModel):
                 # sleep until the initial timeout is over
                 if delay > 0:
                     time.sleep(delay * intervals[i])
-                self._do_healthcheck(containers, config)
+                to_healthcheck = [c for c in containers if c.type in ['web', 'cmd']]
+                self._do_healthcheck(to_healthcheck, config)
                 break
             except exceptions.HealthcheckException as e:
                 try:
