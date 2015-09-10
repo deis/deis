@@ -158,10 +158,19 @@ func AppLogs(appID string, lines int) error {
 		return err
 	}
 
+	return printLogs(logs)
+}
+
+// printLogs prints each log line with a color matched to its category.
+func printLogs(logs string) error {
 	for _, log := range strings.Split(strings.Trim(logs, `\n`), `\n`) {
-		catagory := strings.Split(strings.Split(log, ": ")[0], " ")[1]
+		category := "unknown"
+		parts := strings.Split(strings.Split(log, ": ")[0], " ")
+		if len(parts) >= 2 {
+			category = parts[1]
+		}
 		colorVars := map[string]string{
-			"Color": chooseColor(catagory),
+			"Color": chooseColor(category),
 			"Log":   log,
 		}
 		fmt.Println(prettyprint.ColorizeVars("{{.V.Color}}{{.V.Log}}{{.C.Default}}", colorVars))
