@@ -44,9 +44,6 @@ DATABASES = {
     }
 }
 
-# move log directory out of /app/deis
-DEIS_LOG_DIR = '/data/logs'
-
 LOGGER_HOST = '{{ getv "/deis/logs/host"}}'
 
 {{ if exists "/deis/controller/registrationMode" }}

@@ -280,7 +280,6 @@ TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].split(':')
 
 # default deis settings
-DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
 DEIS_DOMAIN = 'deisapp.local'
@@ -396,3 +395,5 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = True
 AUTH_LDAP_MIRROR_GROUPS = True
 AUTH_LDAP_FIND_GROUP_PERMS = True
 AUTH_LDAP_CACHE_GROUPS = False
+
+LOGGER_HOST = '127.0.0.1'

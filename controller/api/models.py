@@ -10,7 +10,6 @@ from datetime import datetime
 import etcd
 import importlib
 import logging
-import os
 import re
 import time
 from threading import Thread
@@ -250,9 +249,13 @@ class App(UuidAuditedModel):
 
     def _clean_app_logs(self):
         """Delete application logs stored by the logger component"""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if os.path.exists(path):
-            os.remove(path)
+        try:
+            url = 'http://{}:{}/{}/'.format(settings.LOGGER_HOST, 8088, self.id)
+            requests.delete(url)
+        except Exception:
+            # Ignore errors deleting application logs.  An error here should not interfere with
+            # the overall success of deleting an application.
+            pass
 
     def scale(self, user, structure):  # noqa
         """Scale containers up or down to match requested structure."""
@@ -517,12 +520,23 @@ class App(UuidAuditedModel):
 
     def logs(self, log_lines=str(settings.LOG_LINES)):
         try:
-            host = settings.LOGGER_HOST
-            url = 'http://{}:{}/{}/{}/'.format(host, 8088, self.id, log_lines)
+            url = "http://{}:{}/{}?log_lines={}".format(settings.LOGGER_HOST, 8088, self.id,
+                                                        log_lines)
             r = requests.get(url)
-            return r.content
-        except Exception as e:
-            return 'Unable to get logs due error: {}'.format(e)
+        # Handle HTTP request errors
+        except requests.exceptions.RequestException as e:
+            logger.error("Error accessing deis-logger: {}".format(e))
+            raise e
+        # Handle logs empty or not found
+        if r.status_code == 204 or r.status_code == 404:
+            logger.info("GET {} returned a {} status code".format(url, r.status_code))
+            raise EnvironmentError('Could not locate logs')
+        # Handle unanticipated status codes
+        if r.status_code != 200:
+            logger.error("Error accessing deis-logger: GET {} returned a {} status code"
+                         .format(url, r.status_code))
+            raise EnvironmentError('Error accessing deis-logger')
+        return r.content
 
     def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""
