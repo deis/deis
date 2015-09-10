@@ -55,25 +55,12 @@ Vagrant.configure("2") do |config|
   # always use Vagrant's insecure key
   config.ssh.insert_key = false
   config.vm.box = "coreos-%s" % $update_channel
-
-  # HACK to bypass the limitation of the CoreOS "current" metadata for boxes -
-  # it only specifies the latest release, so we cannot use it for older releases.
-  # TODO(carmstrong) we can remove this once we're back to using "specific release or more recent"
-  if $update_channel == "stable"
-    config.vm.box_version = "= 647.2.0"
-    config.vm.box_url = "http://stable.release.core-os.net/amd64-usr/647.2.0/coreos_production_vagrant.json"
-  else
-    config.vm.box_version = ">= 681.2.0"
-    config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
-  end
+  config.vm.box_version = ">= 766.3.0"
+  config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
 
   ["vmware_fusion", "vmware_workstation"].each do |vmware|
     config.vm.provider vmware do |v, override|
-      if $update_channel == "stable"
-        override.vm.box_url = "http://stable.release.core-os.net/amd64-usr/647.2.0/coreos_production_vagrant_vmware_fusion.json" % $update_channel
-      else
-        override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
-      end
+      override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
     end
   end
 
