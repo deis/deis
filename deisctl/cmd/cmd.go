@@ -41,10 +41,10 @@ func ListUnitFiles(b backend.Backend) error {
 }
 
 // Location to write standard output. By default, this is the os.Stdout.
-var Stdout io.Writer = os.Stderr
+var Stdout io.Writer = os.Stdout
 
 // Location to write standard error information. By default, this is the os.Stderr.
-var Stderr io.Writer = os.Stdout
+var Stderr io.Writer = os.Stderr
 
 // Number of routers to be installed. By default, it's DefaultRouterMeshSize.
 var RouterMeshSize = DefaultRouterMeshSize
