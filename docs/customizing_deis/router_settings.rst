@@ -34,9 +34,10 @@ setting                                      description
 =======================================      ==================================================================================================================================================================================================================================================================================================================================
 /deis/builder/host                           host of the builder component (set by builder)
 /deis/builder/port                           port of the builder component (set by builder)
+/deis/config/\*/deis_whitelist               comma separated list of IPs (or CIDR) allowed to connect to the application containers (set by controller) Example: "0.0.0.0:some_optional_label,10.0.0.0/8"
 /deis/controller/host                        host of the controller component (set by controller)
 /deis/controller/port                        port of the controller component (set by controller)
-/deis/domains/*                              domain configuration for applications (set by controller)
+/deis/domains/\*                             domain configuration for applications (set by controller)
 /deis/router/affinityArg                     for requests with the indicated query string variable, hash its contents to perform session affinity (default: undefined)
 /deis/router/bodySize                        nginx body size setting (default: 1m)
 /deis/router/defaultTimeout                  default timeout value in seconds. Should be greater then the frontfacing load balancers timeout value (default: 1300)
@@ -45,7 +46,9 @@ setting                                      description
 /deis/router/controller/timeout/connect      proxy_connect_timeout for deis-controller (default: 10m)
 /deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
 /deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
+/deis/router/controller/whitelist            comma separated list of IPs (or CIDR) allowed to connect to the controller (default: not set) Example: "0.0.0.0:some_optional_label,10.0.0.0/8"
 /deis/router/enforceHTTPS                    redirect all HTTP traffic to HTTPS (default: false)
+/deis/router/enforceWhitelist                deny all connections unless specifically whitelisted (default: false)
 /deis/router/firewall/enabled                nginx naxsi firewall enabled (default: false)
 /deis/router/firewall/errorCode              nginx default firewall error code (default: 400)
 /deis/router/errorLogLevel                   nginx error_log level (default: error) Valid options: debug, info, notice, warn, error, crit, alert, emerg
