@@ -64,7 +64,7 @@ Install Deis Platform
 ---------------------
 
 Now that you've finished provisioning a CoreOS cluster,
-please refer to :ref:`install_deisctl` and :ref:`install_deis_platform`.
+please :ref:`install_deis_platform`.
 
 
 .. _`CoreOS`: https://coreos.com/
