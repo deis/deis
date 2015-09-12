@@ -258,6 +258,41 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(str(config), "{}-{}".format(config5['app'], config5['uuid'][:7]))
 
     @mock.patch('requests.post', mock_status_ok)
+    def test_valid_config_keys(self):
+        """Test that valid config keys are accepted.
+        """
+        keys = ("FOO", "_foo", "f001", "FOO_BAR_BAZ_")
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = '/v1/apps/{app_id}/config'.format(**locals())
+        for k in keys:
+            body = {'values': json.dumps({k: "testvalue"})}
+            resp = self.client.post(
+                url, json.dumps(body), content_type='application/json',
+                HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(resp.status_code, 201)
+            self.assertIn(k, resp.data['values'])
+
+    @mock.patch('requests.post', mock_status_ok)
+    def test_invalid_config_keys(self):
+        """Test that invalid config keys are rejected.
+        """
+        keys = ("123", "../../foo", "FOO/", "FOO-BAR")
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        url = '/v1/apps/{app_id}/config'.format(**locals())
+        for k in keys:
+            body = {'values': json.dumps({k: "testvalue"})}
+            resp = self.client.post(
+                url, json.dumps(body), content_type='application/json',
+                HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(resp.status_code, 400)
+
+    @mock.patch('requests.post', mock_status_ok)
     def test_admin_can_create_config_on_other_apps(self):
         """If a non-admin creates an app, an administrator should be able to set config
         values for that app.
