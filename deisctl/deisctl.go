@@ -35,6 +35,7 @@ Commands, use "deisctl help <command>" to learn more:
   start             start components
   stop              stop components
   restart           stop, then start components
+  status            view status of components
   scale             grow or shrink the number of routers, registries or store gateways
   journal           print the log output of a component
   config            set platform or component values
