@@ -111,6 +111,8 @@ if [[ -n "$BUILDPACK_URL" ]]; then
         git clone --quiet "$url" "$buildpack"
         pushd "$buildpack" &>/dev/null
             git checkout --quiet "$committish"
+            git submodule init --quiet
+            git submodule update --quiet --recursive
         popd &>/dev/null
     fi
 
