@@ -18,6 +18,8 @@ clone the source code into your `$GOPATH`_:
     $ go get -u -v github.com/deis/deis
     $ cd $GOPATH/src/github.com/deis/deis
 
+Additionally, you'll need the ``deisctl`` CLI tool. If you don't already have it,
+install instructions are :ref:`here <install_deisctl>`.
 
 .. _`source code`: https://github.com/deis/deis
 .. _`releases page`: https://github.com/deis/deis/releases
