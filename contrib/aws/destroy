@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+function aws-get-elb-dns-name {
+  local stack_name="${1}"
+
+  aws cloudformation describe-stacks \
+      --stack-name "${stack_name}" \
+      --max-items 1 \
+      --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
+      --output=text
+}
+
+function aws-destroy-route53 {
+  local stack_name="${1}"
+  local domain="${2}"
+
+  local elb_dns_name="$(aws-get-elb-dns-name ${stack_name})"
+
+  if [ -n "${elb_dns_name}" ]; then
+    rigger-log "Removing Route53 zone..."
+    python "${DEIS_ROOT}/contrib/aws/route53-wildcard.py" delete "${domain}" "${elb_dns_name}"
+  fi
+}
+
+rigger-log "Attempting to destroy ${STACK_NAME}..."
+
+aws cloudformation delete-stack --stack-name "${STACK_NAME}"
+
+aws-destroy-route53 "${STACK_NAME}" "${DEIS_TEST_DOMAIN}"

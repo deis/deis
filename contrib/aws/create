@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+export DEIS_NUM_INSTANCES=3
+
+function aws-setup-keypair {
+  local deis_auth_key="${1}"
+
+  rigger-log "Importing ${deis_auth_key} keypair to EC2"
+
+  # TODO: don't hardcode --key-names
+  if ! aws ec2 describe-key-pairs --key-names "deis" >/dev/null ; then
+    rigger-log "Importing ${deis_auth_key} keypair to EC2"
+    aws ec2 import-key-pair --key-name deis \
+        --public-key-material file://${deis_auth_key}.pub \
+        --output text
+  fi
+}
+
+function aws-provision-cluster {
+  local stack_name="${1}"
+
+  # customize cloudformation.json to use m3.medium instances
+  cat > $DEIS_ROOT/contrib/aws/cloudformation.json <<EOF
+  [
+      {
+          "ParameterKey":     "KeyPair",
+          "ParameterValue":   "deis"
+      }
+  ]
+EOF
+
+  rigger-log "Provisioning ${DEIS_NUM_INSTANCES}-node CoreOS"
+
+  "${DEIS_ROOT}/contrib/aws/provision-aws-cluster.sh" "${stack_name}"
+
+  # discard changes to cloudformation.json
+  git checkout -- "${DEIS_ROOT}/contrib/aws/cloudformation.json"
+}
+
+function aws-get-elb-dns-name {
+  local stack_name="${1}"
+
+  aws cloudformation describe-stacks \
+      --stack-name "${stack_name}" \
+      --max-items 1 \
+      --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
+      --output=text
+}
+
+function aws-get-elb-name {
+  local elb_dns_name="${1}"
+
+  aws elb describe-load-balancers \
+    --query 'LoadBalancerDescriptions[].[ DNSName,LoadBalancerName ]' \
+    --output=text | grep -F ${elb_dns_name} | head -n1 | cut -f2
+}
+
+function aws-setup-route53 {
+  local stack_name="${1}"
+  local domain="${2}"
+
+  rigger-log "Setting up Route53 zone..."
+
+  python "${DEIS_ROOT}/contrib/aws/route53-wildcard.py" create "${domain}" "$(aws-get-elb-dns-name ${stack_name})"
+}
+
+function aws-get-instance-id {
+  local stack_name="${1}"
+
+  local instance_ids=$(aws ec2 describe-instances \
+      --filters Name=tag:aws:cloudformation:stack-name,Values=${stack_name} Name=instance-state-name,Values=running \
+      --query 'Reservations[].Instances[].[ InstanceId ]' \
+      --output text)
+
+  cut -d " " -f1 <<< ${instance_ids}
+}
+
+function aws-deisctl-tunnel {
+  local stack_name="${1}"
+
+  aws ec2 describe-instances \
+      --instance-ids=$(aws-get-instance-id ${stack_name}) \
+      --filters Name=tag:aws:cloudformation:stack-name,Values=${stack_name} Name=instance-state-name,Values=running \
+      --query 'Reservations[].Instances[].[ PublicDnsName ]' \
+      --output text
+}
+
+(
+  cd ${DEIS_ROOT}
+  rigger-log "Creating CloudFormation stack ${STACK_NAME}"
+  aws-setup-keypair "${DEIS_TEST_AUTH_KEY}"
+  aws-provision-cluster "${STACK_NAME}"
+)
+
+export ELB_DNS_NAME=$(aws-get-elb-dns-name "${STACK_NAME}")
+export ELB_NAME=$(aws-get-elb-name "${ELB_DNS_NAME}")
+export DEIS_TEST_DOMAIN="${STACK_TAG}.${DEIS_TEST_DOMAIN}"
+
+(
+  cd ${DEIS_ROOT}
+  aws-setup-route53 "${STACK_NAME}" "${DEIS_TEST_DOMAIN}"
+  aws-get-instance-id "${STACK_NAME}"
+)
+
+export DEISCTL_TUNNEL="$(aws-deisctl-tunnel ${STACK_NAME})"
+rigger-log "DEISCTL_TUNNEL=${DEISCTL_TUNNEL}"
+rigger-save-vars DEISCTL_TUNNEL \
+                 ELB_DNS_NAME \
+                 ELB_NAME \
+                 STACK_TAG \
+                 STACK_NAME \
+                 DEIS_TEST_DOMAIN
