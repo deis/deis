@@ -1280,6 +1280,32 @@ Example Response:
         ]
     }
 
+Get User's Application Permissions
+``````````````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    GET /v1/apps/example-go/perms/example/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    DEIS_API_VERSION: 1.6
+    DEIS_PLATFORM_VERSION: 1.8.0
+    Content-Type: application/json
+
+    {
+        "config": true,
+        "domains": true,
+        "push": true,
+        "scale": true,
+    }
 
 Create Application Permission
 `````````````````````````````
@@ -1292,7 +1318,20 @@ Example Request:
     Host: deis.example.com
     Authorization: token abc123
 
-    {"username": "example"}
+    {
+        "username": "example"
+    }
+
+Optional Parameters:
+
+.. code-block:: console
+
+    {
+        "config": true,
+        "domains": true,
+        "push": true,
+        "scale": true,
+    }
 
 Example Response:
 
@@ -1303,8 +1342,8 @@ Example Response:
     DEIS_PLATFORM_VERSION: 1.10.0
 
 
-Remove Application Permission
-`````````````````````````````
+Remove Application Access
+`````````````````````````
 
 Example Request:
 
@@ -1406,6 +1445,66 @@ Example Response:
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.6
     DEIS_PLATFORM_VERSION: 1.10.0
+
+Get User's Cluster Permissions
+``````````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    GET /v1/perms/example HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    DEIS_API_VERSION: 1.6
+    DEIS_PLATFORM_VERSION: 1.8.0
+    Content-Type: application/json
+
+    {
+        "apps": true,
+        "app_management": true,
+        "certs": true,
+    }
+
+Create Cluster Permission
+`````````````````````````
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/perms/ HTTP/1.1
+    Host: deis.example.com
+    Authorization: token abc123
+
+    {
+        "username": "example"
+    }
+
+Optional Parameters:
+
+.. code-block:: console
+
+    {
+        "apps": true,
+        "app_management": true,
+        "certs": true,
+    }
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 201 CREATED
+    DEIS_API_VERSION: 1.6
+    DEIS_PLATFORM_VERSION: 1.8.0
+    Content-Type: application/json
 
 Users
 -----

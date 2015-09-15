@@ -22,3 +22,4 @@ Using Deis
     config-application
     manage-application
     app-ssl
+    permissions

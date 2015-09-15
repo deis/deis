@@ -44,6 +44,7 @@ setting                                   description
 /deis/controller/subdomain                subdomain used by the router for API requests (default: "deis")
 /deis/controller/webEnabled               enable controller web UI (default: 0)
 /deis/controller/workers                  number of web worker processes (default: CPU cores * 2 + 1)
+/deis/controller/permissions/*            default permissions, see :ref:`configure_default_permissions`
 /deis/cache/host                          host of the cache component (set by cache)
 /deis/cache/port                          port of the cache component (set by cache)
 /deis/database/host                       host of the database component (set by database)
@@ -133,6 +134,37 @@ This will set the registration mode to admin_only.
 .. code-block:: console
 
     $ deisctl config controller set registrationMode="admin_only"
+
+.. _configure_default_permissions:
+
+Configuring Default Permissions
+-------------------------------
+These settings can be used to configure the default permissions for users.
+These settings are retroactive and affects all current and new users.
+
+All permission settings are boolean values, true for granted, false for denied.
+
+Settings Used by Permissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================================== =======
+setting                                     default
+=========================================== =======
+/deis/controller/permissions/apps           true
+/deis/controller/permissions/app_management false
+/deis/controller/permissions/certs          true
+/deis/controller/permissions/config         true
+/deis/controller/permissions/domains        true
+/deis/controller/permissions/push           true
+/deis/controller/permissions/scale          true
+=========================================== =======
+
+For example, this command prevents normal users from creating apps.
+
+.. code-block:: console
+
+    $ deisctl config controller set permissions/apps=false
+
+To read more about permissions, see :ref:`user_permissions`
 
 Using a LDAP Auth
 -----------------
