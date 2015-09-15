@@ -2,6 +2,8 @@ package tests
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -25,14 +27,18 @@ func TestLogger(t *testing.T) {
 	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
 	name := "deis-logger-" + tag
 	defer cli.CmdRm("-f", name)
+	tempLogDir, err := ioutil.TempDir("", "log-tests")
+	defer os.Remove(tempLogDir)
 	go func() {
 		_ = cli.CmdRm("-f", name)
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
 			"-p", port+":514/udp",
+			"-v", tempLogDir+":/data/logs",
 			imageName,
 			"--enable-publish",
+			"--log-host="+host,
 			"--log-port="+port,
 			"--publish-host="+host,
 			"--publish-port="+etcdPort)
@@ -42,7 +48,7 @@ func TestLogger(t *testing.T) {
 		t.Fatal(err)
 	}
 	// FIXME: Wait until etcd keys are published
-	time.Sleep(5000 * time.Millisecond)
+	time.Sleep(15 * time.Second)
 	dockercli.DeisServiceTest(t, name, port, "udp")
 	etcdutils.VerifyEtcdValue(t, "/deis/logs/host", host, etcdPort)
 	etcdutils.VerifyEtcdValue(t, "/deis/logs/port", port, etcdPort)

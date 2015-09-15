@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import json
 import logging
 import mock
-import os.path
+import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -89,40 +89,49 @@ class AppTest(TestCase):
         self.assertContains(response, 'This field must be unique.', status_code=400)
         return response
 
-    def test_app_actions(self):
+    @mock.patch('requests.get')
+    def test_app_actions(self, mock_get):
         url = '/v1/apps'
         body = {'id': 'autotest'}
         response = self.client.post(url, json.dumps(body), content_type='application/json',
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         app_id = response.data['id']  # noqa
-        # test logs
-        if not os.path.exists(settings.DEIS_LOG_DIR):
-            os.mkdir(settings.DEIS_LOG_DIR)
-        path = os.path.join(settings.DEIS_LOG_DIR, app_id + '.log')
-        # HACK: remove app lifecycle logs
-        if os.path.exists(path):
-            os.remove(path)
-        url = '/v1/apps/{app_id}/logs'.format(**locals())
-        response = self.client.get(url,
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+
+        # test logs - 204 from deis-logger
+        mock_response = mock.Mock()
+        mock_response.status_code = 204
+        mock_get.return_value = mock_response
+        url = "/v1/apps/{app_id}/logs".format(**locals())
+        response = self.client.get(url, HTTP_AUTHORIZATION="token {}".format(self.token))
         self.assertEqual(response.status_code, 204)
-        self.assertEqual(response.data, 'No logs for {}'.format(app_id))
-        # write out some fake log data and try again
-        with open(path, 'a') as f:
-            f.write(FAKE_LOG_DATA)
-        response = self.client.get(url,
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.data, "No logs for {}".format(app_id))
+
+        # test logs - 404 from deis-logger
+        mock_response.status_code = 404
+        response = self.client.get(url, HTTP_AUTHORIZATION="token {}".format(self.token))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.data, "No logs for {}".format(app_id))
+
+        # test logs - unanticipated status code from deis-logger
+        mock_response.status_code = 400
+        response = self.client.get(url, HTTP_AUTHORIZATION="token {}".format(self.token))
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.data, "Error accessing logs for {}".format(app_id))
+
+        # test logs - success accessing deis-logger
+        mock_response.status_code = 200
+        mock_response.content = FAKE_LOG_DATA
+        response = self.client.get(url, HTTP_AUTHORIZATION="token {}".format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data, FAKE_LOG_DATA)
 
-        # test with log_lines
-        response = self.client.get(url + "?log_lines=1",
-                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data, FAKE_LOG_DATA.splitlines(True)[4])
+        # test logs - HTTP request error while accessing deis-logger
+        mock_get.side_effect = requests.exceptions.RequestException('Boom!')
+        response = self.client.get(url, HTTP_AUTHORIZATION="token {}".format(self.token))
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.data, "Error accessing logs for {}".format(app_id))
 
-        os.remove(path)
         # TODO: test run needs an initial build
 
     @mock.patch('api.models.logger')

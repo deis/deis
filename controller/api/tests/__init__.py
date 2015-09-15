@@ -1,9 +1,7 @@
 
 from __future__ import unicode_literals
 import logging
-import os
 
-from django.conf import settings
 from django.test.client import RequestFactory, Client
 from django.test.simple import DjangoTestSuiteRunner
 import requests
@@ -40,9 +38,6 @@ class SilentDjangoTestSuiteRunner(DjangoTestSuiteRunner):
         """Run tests with all but critical log messages disabled."""
         # hide any log messages less than critical
         logging.disable(logging.CRITICAL)
-        # also, create the log directory
-        if not os.path.exists(settings.DEIS_LOG_DIR):
-            os.makedirs(settings.DEIS_LOG_DIR)
         return super(SilentDjangoTestSuiteRunner, self).run_tests(
             test_labels, extra_tests, **kwargs)
 

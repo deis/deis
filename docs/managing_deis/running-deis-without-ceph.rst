@@ -35,15 +35,15 @@ the removal of Ceph. The necessary changes are described below.
 Logger
 ^^^^^^
 
-The :ref:`logger` component provides a syslog-compatible endpoint to consume
-application logs, which it writes to a shared Ceph filesystem. These logs are
-read by the :ref:`controller` component. The :ref:`logspout` talks to the Docker
-daemon on each host, listens for log events from running applications, and ships
-them to the logger.
+The :ref:`logspout` component attaches to Docker containers on each host and
+listens for log events from platform components and running applications.  It
+ships these to the :ref:`logger` component.  By default, the logger writes the
+logs to a distributed Ceph filesystem. These logs can then be fetched by the
+:ref:`controller` component via HTTP.
 
-The Logger component is not necessary in a Ceph-less Deis cluster. Instead of
-using the Logger, we will route all the logs directly to another syslog
-compatible endpoint.
+In a Ceph-less clutser, the Logger component should be configured, instead, to
+use in-memory log storage.  Optionally, a drain may also be configured to forward
+logs to an external log service (such as Papertrail) for longer-term archival.
 
 Database
 ^^^^^^^^
@@ -56,16 +56,6 @@ previous state.
 
 We will not be using the database component in the Ceph-less cluster, and will
 instead rely on an external database.
-
-Controller
-^^^^^^^^^^
-
-The :ref:`controller` component hosts the API that the Deis CLI consumes. The controller
-mounts the same Ceph filesystem that the logger writes to. When users run ``deis logs``
-to view an application's log files, the controller reads from this shared filesystem.
-
-A Ceph-less cluster will not store logs (instead sending them to an external service),
-so the ``deis logs`` command will not work for users.
 
 Registry
 ^^^^^^^^
@@ -100,18 +90,18 @@ Deploy an AWS cluster
 Follow the :ref:`deis_on_aws` installation documentation through the "Configure
 DNS" portion.
 
-Configure log shipping
-^^^^^^^^^^^^^^^^^^^^^^
+Configure logger
+^^^^^^^^^^^^^^^^
 
-The :ref:`logspout` component must be configured to ship logs to somewhere other
-than the :ref:`logger` component.
+The :ref:`logger` component should be configured to use in-memory storage. Optionally
+it may also be configured to drain logs to an external service for longer-term
+archival.
 
 .. code-block:: console
 
-    $ HOST=logs.somewhere.com
-    $ PORT=98765
-    $ PROTOCOL=udp # Supported protocols are udp and tcp
-    $ deisctl config logs set host=${HOST} port=${PORT} protocol=${PROTOCOL}
+    $ STORAGE_ADAPTER=memory
+    $ DRAIN=udp://logs.somewhere.com:12345 # Supported protocols are udp and tcp; for backwards compatibility, "syslog" is an alias for udp
+    $ deisctl config logs set storageAdapterType=${STORAGE_ADAPTER} drain=${DRAIN}
 
 Configure registry
 ^^^^^^^^^^^^^^^^^^

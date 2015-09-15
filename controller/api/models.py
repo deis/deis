@@ -10,9 +10,7 @@ from datetime import datetime
 import etcd
 import importlib
 import logging
-import os
 import re
-import subprocess
 import time
 from threading import Thread
 
@@ -251,9 +249,14 @@ class App(UuidAuditedModel):
 
     def _clean_app_logs(self):
         """Delete application logs stored by the logger component"""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if os.path.exists(path):
-            os.remove(path)
+        try:
+            url = 'http://{}:{}/{}/'.format(settings.LOGGER_HOST, settings.LOGGER_PORT, self.id)
+            requests.delete(url)
+        except Exception as e:
+            # Ignore errors deleting application logs.  An error here should not interfere with
+            # the overall success of deleting an application, but we should log it.
+            err = 'Error deleting existing application logs: {}'.format(e)
+            log_event(self, err, logging.WARNING)
 
     def scale(self, user, structure):  # noqa
         """Scale containers up or down to match requested structure."""
@@ -518,11 +521,24 @@ class App(UuidAuditedModel):
 
     def logs(self, log_lines=str(settings.LOG_LINES)):
         """Return aggregated log data for this application."""
-        path = os.path.join(settings.DEIS_LOG_DIR, self.id + '.log')
-        if not os.path.exists(path):
+        try:
+            url = "http://{}:{}/{}?log_lines={}".format(settings.LOGGER_HOST, settings.LOGGER_PORT,
+                                                        self.id, log_lines)
+            r = requests.get(url)
+        # Handle HTTP request errors
+        except requests.exceptions.RequestException as e:
+            logger.error("Error accessing deis-logger using url '{}': {}".format(url, e))
+            raise e
+        # Handle logs empty or not found
+        if r.status_code == 204 or r.status_code == 404:
+            logger.info("GET {} returned a {} status code".format(url, r.status_code))
             raise EnvironmentError('Could not locate logs')
-        data = subprocess.check_output(['tail', '-n', log_lines, path])
-        return data
+        # Handle unanticipated status codes
+        if r.status_code != 200:
+            logger.error("Error accessing deis-logger: GET {} returned a {} status code"
+                         .format(url, r.status_code))
+            raise EnvironmentError('Error accessing deis-logger')
+        return r.content
 
     def run(self, user, command):
         """Run a one-off command in an ephemeral app container."""

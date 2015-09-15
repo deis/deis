@@ -18,6 +18,7 @@ func TestController(t *testing.T) {
 		"/deis/registry/host",
 		"/deis/registry/port",
 		"/deis/platform/domain",
+		"/deis/logs/host",
 	}
 	setdir := []string{
 		"/deis/controller",
