@@ -67,7 +67,7 @@ For providers that do not supply a security group feature, please try
 `contrib/util/custom-firewall.sh`_.
 
 .. note::
-    If you need to add a new node to the cluster and you are using the custom firewall 
+    If you need to add a new node to the cluster and you are using the custom firewall
     `contrib/util/custom-firewall.sh`_ you must allow the access to the cluster running
     the next command in each existing node:
 
@@ -80,6 +80,17 @@ Router firewall
 The :ref:`Router` component includes a firewall to help thwart attacks. It can be enabled by running:
 ``deisctl config router set firewall/enabled=true``. For more information, see the `router README`_
 and :ref:`router_settings`.
+
+Protect Paths
+-------------
+You can enforce cluster-wide paths protection by running ``deisctl config router set denyPaths=<list-of-paths>``.
+For example:
+
+.. code-block:: console
+
+    $ deisctl config router set denyPaths=/varz,/healthz,/statusz
+
+Accessing these paths will immediately return 403
 
 IP Whitelist
 ------------
