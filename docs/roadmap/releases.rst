@@ -33,7 +33,6 @@ Patch Release
         builder/rootfs/Dockerfile \
         builder/rootfs/usr/local/src/slugbuilder/Dockerfile \
         builder/rootfs/usr/local/src/slugrunner/Dockerfile \
-        cache/image/Dockerfile \
         client/deis-version \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \

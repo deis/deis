@@ -41,7 +41,6 @@ deis-logger.service: loaded
 Storage subsystem...
 deis-store-gateway@1.service: loaded
 Control plane...
-deis-cache.service: loaded
 deis-database.service: loaded
 deis-registry@1.service: loaded
 deis-controller.service: loaded
@@ -68,7 +67,6 @@ deis-store-daemon.service: running
 deis-store-monitor.service: running
 deis-store-gateway@1.service: running
 Control plane...
-deis-cache.service: running
 deis-database.service: running
 deis-registry@1.service: running
 deis-controller.service: running
@@ -101,7 +99,6 @@ Data plane...
 Control plane...
 deis-controller.service: inactive
 deis-builder.service: inactive
-deis-cache.service: inactive
 deis-database.service: inactive
 deis-registry@1.service: inactive
 Storage subsystem...
@@ -136,7 +133,6 @@ The `deisctl` tool provides a number of other commands, including:
 $ deisctl list
 UNIT				MACHINE				LOAD	ACTIVE	SUB
 deis-builder.service		f936b7a5.../172.17.8.100	loaded	active	running
-deis-cache.service  		f936b7a5.../172.17.8.100	loaded	active	running
 deis-controller.service	    f936b7a5.../172.17.8.100	loaded	active	running
 deis-database.service		f936b7a5.../172.17.8.100	loaded	active	running
 deis-logger.service	    	f936b7a5.../172.17.8.100	loaded	active	running

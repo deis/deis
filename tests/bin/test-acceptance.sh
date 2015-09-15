@@ -56,7 +56,6 @@ function set_release {
   deisctl config $1 set image=deis/$1:$2
 }
 set_release logger ${OLD_TAG}
-set_release cache ${OLD_TAG}
 set_release router ${OLD_TAG}
 set_release database ${OLD_TAG}
 set_release controller ${OLD_TAG}

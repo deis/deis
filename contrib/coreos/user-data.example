@@ -135,7 +135,7 @@ write_files:
     content: |
       #!/usr/bin/env bash
 
-      COMPONENTS=(builder cache controller database logger logspout publisher registry router store-daemon store-gateway store-metadata store-monitor)
+      COMPONENTS=(builder controller database logger logspout publisher registry router store-daemon store-gateway store-metadata store-monitor)
       for c in "${COMPONENTS[@]}"; do
         image=`/run/deis/bin/get_image /deis/$c`
         docker history $image >/dev/null 2>&1 || docker pull $image

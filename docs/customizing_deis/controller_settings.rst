@@ -9,7 +9,7 @@ The following settings are tunable for the :ref:`controller` component.
 
 Dependencies
 ------------
-Requires: :ref:`cache <cache_settings>`, :ref:`database <database_settings>`, :ref:`registry <registry_settings>`
+Requires: :ref:`database <database_settings>`, :ref:`registry <registry_settings>`
 
 Required by: :ref:`router <router_settings>`
 
@@ -44,8 +44,6 @@ setting                                   description
 /deis/controller/subdomain                subdomain used by the router for API requests (default: "deis")
 /deis/controller/webEnabled               enable controller web UI (default: 0)
 /deis/controller/workers                  number of web worker processes (default: CPU cores * 2 + 1)
-/deis/cache/host                          host of the cache component (set by cache)
-/deis/cache/port                          port of the cache component (set by cache)
 /deis/database/host                       host of the database component (set by database)
 /deis/database/port                       port of the database component (set by database)
 /deis/database/engine                     database engine (set by database)

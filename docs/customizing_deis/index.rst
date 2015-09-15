@@ -14,7 +14,6 @@ Customizing Deis
     choosing-a-scheduler
     cli-plugins
     builder_settings
-    cache_settings
     controller_settings
     database_settings
     logger_settings

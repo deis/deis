@@ -9,7 +9,7 @@ The following settings are tunable for the :ref:`registry` component.
 
 Dependencies
 ------------
-Requires: :ref:`cache <cache_settings>`, :ref:`store-gateway <store_gateway_settings>`
+Requires: :ref:`store-gateway <store_gateway_settings>`
 
 Required by: :ref:`builder <builder_settings>`, :ref:`controller <controller_settings>`
 
@@ -35,8 +35,8 @@ The following etcd keys are used by the registry component.
 ====================================      =================================================================================
 setting                                   description
 ====================================      =================================================================================
-/deis/cache/host                          host of the cache component (set by cache)
-/deis/cache/port                          port of the cache component (set by cache)
+/deis/cache/host                          host of a Redis cache (optional)
+/deis/cache/port                          port of a Redis cache (optional)
 /deis/store/gateway/accessKey             S3 API access used to access store-gateway (set by store-gateway)
 /deis/store/gateway/host                  host of the store-gateway component (set by store-gateway)
 /deis/store/gateway/port                  port of the store-gateway component (set by store-gateway)
