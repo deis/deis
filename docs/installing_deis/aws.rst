@@ -59,7 +59,7 @@ During installation, ``deisctl`` will make an SSH connection to the cluster.
 It will need to be able to use this key to connect.
 
 Most users use SSH agent (``ssh-agent``). If this is the case, run
-``ssh-agent add ~/.ssh/deis`` to add the key. Otherwise, you may prefer to
+``ssh-add ~/.ssh/deis`` to add the key. Otherwise, you may prefer to
 modify ``~/.ssh/config`` to add the key to the IPs in AWS.
 
 Choose Number of Instances
