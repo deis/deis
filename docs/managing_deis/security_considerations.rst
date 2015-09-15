@@ -90,7 +90,13 @@ For example:
 
     $ deisctl config router set denyPaths=/varz,/healthz,/statusz
 
-Accessing these paths will immediately return 403
+You can also protect a per-application paths by running ``deis config:set DENY_PATHS=<list-of-paths>``.
+
+.. code-block:: console
+
+    $ deis config:set DENY_PATHS=/varz,/healthz,/statusz
+
+Trying to access these paths will immediately return 403.
 
 IP Whitelist
 ------------
