@@ -34,25 +34,12 @@ the ``-proxy on`` flag. For example:
 .. code-block:: yaml
 
     #cloud-config
-    ---
+
     coreos:
-      # ...
-      - name: etcd.service
-        command: start
-        content: |
-          # ...
-          [Service]
-          # ...
-          ExecStart=/usr/bin/docker run --net=host --rm \
-            # ...
-            -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 \
-            # ...
-            --discovery <discovery url here> \
-            -proxy on
-          # ...
+      etcd2:
+        discovery: <discovery URL here>
+        proxy: on
         # ...
-      # ...
-    # ...
 
 Isolating etcd as described here requires subsets of a cluster's hosts to be
 configured differently from one another (including or excluding the

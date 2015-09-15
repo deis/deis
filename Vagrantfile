@@ -78,10 +78,8 @@ Vagrant.configure("2") do |config|
 
   config.trigger.before :up do
     if File.exists?(CLOUD_CONFIG_PATH) && !File.readlines(CLOUD_CONFIG_PATH).grep(/\s*discovery #DISCOVERY_URL/).any?
-      # Vagrant binds the VMs IP in VirtualBox's bridge network to the eth1 interface instead of eth0.
-      # This necessitates the substitution below, which is not required anywhere except in Vagrant.
       user_data = File.read(CLOUD_CONFIG_PATH)
-      new_userdata = user_data.gsub("/opt/bin/flanneld --ip-masq=true", "/opt/bin/flanneld --iface=eth1 --ip-masq=true")
+      new_userdata = user_data.gsub("coreos:", "coreos:\n  flannel:\n    interface: $public_ipv4")
       File.open(CLOUD_CONFIG_PATH, "w") {|file| file.puts new_userdata }
     else
       raise Vagrant::Errors::VagrantError.new, "Run 'make discovery-url' first to create user-data."
