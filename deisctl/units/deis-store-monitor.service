@@ -8,7 +8,7 @@ ExecStartPre=/bin/sh -c "docker inspect deis-store-monitor-data >/dev/null 2>&1 
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "etcdctl set /deis/store/hosts/$COREOS_PRIVATE_IPV4 `hostname` >/dev/null"
 ExecStartPre=/bin/sh -c "docker inspect deis-store-monitor >/dev/null 2>&1 && docker rm -f deis-store-monitor >/dev/null 2>&1 || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker run --name deis-store-monitor --rm --volumes-from=deis-store-monitor-data -e HOST=$COREOS_PRIVATE_IPV4 -p 6789 --net host $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-monitor` && docker run --label io.deis.component=store-monitor --name deis-store-monitor --rm --volumes-from=deis-store-monitor-data -e HOST=$COREOS_PRIVATE_IPV4 -p 6789 --net host $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-store-monitor
 Restart=on-failure
 RestartSec=5

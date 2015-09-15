@@ -7,7 +7,7 @@ TimeoutStartSec=30m
 ExecStartPre=-/usr/bin/etcdctl mkdir /deis/cache >/dev/null 2>&1
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/registry` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-registry >/dev/null 2>&1 && docker rm -f deis-registry || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/registry` && docker run --name deis-registry --rm -p 5000:5000 -e EXTERNAL_PORT=5000 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/registry` && docker run --label io.deis.component=registry --name deis-registry --rm -p 5000:5000 -e EXTERNAL_PORT=5000 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-registry
 Restart=on-failure
 RestartSec=5

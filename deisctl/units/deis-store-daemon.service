@@ -8,7 +8,7 @@ ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon-data >/dev/null 2>&1 |
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-store-daemon >/dev/null 2>&1 && docker rm -f deis-store-daemon >/dev/null 2>&1 || true"
 ExecStartPre=/usr/bin/sleep 10
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker run --name deis-store-daemon --rm --volumes-from=deis-store-daemon-data -e HOST=$COREOS_PRIVATE_IPV4 -p 6800 --net host $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-daemon` && docker run --label io.deis.component=store-daemon --name deis-store-daemon --rm --volumes-from=deis-store-daemon-data -e HOST=$COREOS_PRIVATE_IPV4 -p 6800 --net host $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-store-daemon
 Restart=on-failure
 RestartSec=5

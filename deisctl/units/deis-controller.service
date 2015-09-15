@@ -9,7 +9,7 @@ EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-controller >/dev/null 2>&1 && docker rm -f deis-controller || true"
-ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --name deis-controller --rm -p 8000:8000 -e EXTERNAL_PORT=8000 -e HOST=$COREOS_PRIVATE_IPV4 -v /var/run/fleet.sock:/var/run/fleet.sock -v /var/lib/deis/store:/data $IMAGE"
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/controller` && docker run --label io.deis.component=controller --name deis-controller --rm -p 8000:8000 -e EXTERNAL_PORT=8000 -e HOST=$COREOS_PRIVATE_IPV4 -v /var/run/fleet.sock:/var/run/fleet.sock -v /var/lib/deis/store:/data $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-controller
 Restart=on-failure
 RestartSec=5
