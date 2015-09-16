@@ -3,7 +3,6 @@ package units
 // Names are the base names of Deis units. Update this list when adding a new Deis unit file.
 var Names = []string{
 	"deis-builder",
-	"deis-cache",
 	"deis-controller",
 	"deis-database",
 	"deis-logger",
