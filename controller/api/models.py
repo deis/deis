@@ -1081,9 +1081,10 @@ def _log_config_updated(**kwargs):
 
 
 def _log_domain_added(**kwargs):
-    domain = kwargs['instance']
-    msg = "domain {} added".format(domain)
-    log_event(domain.app, msg)
+    if kwargs.get('created'):
+        domain = kwargs['instance']
+        msg = "domain {} added".format(domain)
+        log_event(domain.app, msg)
 
 
 def _log_domain_removed(**kwargs):
@@ -1093,8 +1094,9 @@ def _log_domain_removed(**kwargs):
 
 
 def _log_cert_added(**kwargs):
-    cert = kwargs['instance']
-    logger.info("cert {} added".format(cert))
+    if kwargs.get('created'):
+        cert = kwargs['instance']
+        logger.info("cert {} added".format(cert))
 
 
 def _log_cert_removed(**kwargs):
@@ -1127,10 +1129,13 @@ def _etcd_purge_user(**kwargs):
         pass
 
 
-def _etcd_create_app(**kwargs):
+def _etcd_publish_app(**kwargs):
     appname = kwargs['instance']
-    if kwargs['created']:
+    try:
         _etcd_client.write('/deis/services/{}'.format(appname), None, dir=True)
+    except KeyError:
+        # Ignore error when the directory already exists.
+        pass
 
 
 def _etcd_purge_app(**kwargs):
@@ -1143,9 +1148,8 @@ def _etcd_purge_app(**kwargs):
 
 def _etcd_publish_cert(**kwargs):
     cert = kwargs['instance']
-    if kwargs['created']:
-        _etcd_client.write('/deis/certs/{}/cert'.format(cert), cert.certificate)
-        _etcd_client.write('/deis/certs/{}/key'.format(cert), cert.key)
+    _etcd_client.write('/deis/certs/{}/cert'.format(cert), cert.certificate)
+    _etcd_client.write('/deis/certs/{}/key'.format(cert), cert.key)
 
 
 def _etcd_purge_cert(**kwargs):
@@ -1167,13 +1171,12 @@ def _etcd_publish_config(**kwargs):
                             prevExist=True, dir=True, recursive=True)
     except KeyError:
         pass
-    if kwargs['created']:
-        for k, v in config.values.iteritems():
-            _etcd_client.write(
-                '/deis/config/{}/{}'.format(
-                    config.app,
-                    unicode(k).encode('utf-8').lower()),
-                unicode(v).encode('utf-8'))
+    for k, v in config.values.iteritems():
+        _etcd_client.write(
+            '/deis/config/{}/{}'.format(
+                config.app,
+                unicode(k).encode('utf-8').lower()),
+            unicode(v).encode('utf-8'))
 
 
 def _etcd_purge_config(**kwargs):
@@ -1187,8 +1190,7 @@ def _etcd_purge_config(**kwargs):
 
 def _etcd_publish_domains(**kwargs):
     domain = kwargs['instance']
-    if kwargs['created']:
-        _etcd_client.write('/deis/domains/{}'.format(domain), domain.app)
+    _etcd_client.write('/deis/domains/{}'.format(domain), domain.app)
 
 
 def _etcd_purge_domains(**kwargs):
@@ -1226,7 +1228,7 @@ if _etcd_client:
     post_delete.connect(_etcd_purge_user, sender=get_user_model(), dispatch_uid='api.models')
     post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_domains, sender=Domain, dispatch_uid='api.models')
-    post_save.connect(_etcd_create_app, sender=App, dispatch_uid='api.models')
+    post_save.connect(_etcd_publish_app, sender=App, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_app, sender=App, dispatch_uid='api.models')
     post_save.connect(_etcd_publish_cert, sender=Certificate, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_cert, sender=Certificate, dispatch_uid='api.models')
