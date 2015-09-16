@@ -6,7 +6,7 @@ Documentation=https://github.com/GoogleCloudPlatform/kubernetes
 EnvironmentFile=/etc/environment
 ExecStartPre=/bin/bash -c "/opt/bin/download-k8s-binary kube-proxy"
 ExecStartPre=/bin/bash -c "/opt/bin/wupiao $(/usr/bin/etcdctl get /deis/scheduler/k8s/master):8080"
-ExecStart=/bin/bash -c '/opt/bin/kube-proxy --master=`/usr/bin/etcdctl get /deis/scheduler/k8s/master`:8080 --logtostderr=true'
+ExecStart=/bin/bash -c '/opt/bin/kube-proxy --master=`/usr/bin/etcdctl get /deis/scheduler/k8s/master`:8080 --logtostderr=true --healthz-bind-address=0.0.0.0'
 Restart=always
 RestartSec=10
 SuccessExitStatus=2
