@@ -171,8 +171,6 @@ indent "To learn more, use \`deis help\` or visit http://deis.io"
 echo
 
 # cleanup
-cd $REPO_DIR
-git gc &>/dev/null
 if [ -n "$JOB" ]; then
   docker rm -f $JOB &>/dev/null
 fi
