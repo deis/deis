@@ -46,7 +46,13 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	}
 
 	if !noRemote {
-		return git.CreateRemote(c.ControllerURL.Host, remote, app.ID)
+		if err = git.CreateRemote(c.ControllerURL.Host, remote, app.ID); err != nil {
+			if err.Error() == "exit status 128" {
+				fmt.Println("To replace the existing git remote entry, run:")
+				fmt.Printf("  git remote rename deis deis.old && deis git:remote -a %s\n", app.ID)
+			}
+			return err
+		}
 	}
 
 	fmt.Println("remote available at", git.RemoteURL(c.ControllerURL.Host, app.ID))
