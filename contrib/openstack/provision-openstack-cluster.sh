@@ -45,7 +45,7 @@ if [ -z "$OS_AUTH_URL" ]; then
 fi
 
 if neutron net-list|grep -q $DEIS_NETWORK &>/dev/null; then
-  NETWORK_ID=$(neutron net-list | grep $DEIS_NETWORK | awk -F'| ' '{print $2}')
+  NETWORK_ID=$(neutron net-list | grep $DEIS_NETWORK | awk -F'|' '{gsub(/ /, "", $0); print $2}')
 else
   echo_yellow "Creating deis private network..."
   CIDR=${DEIS_CIDR:-10.21.12.0/24}
