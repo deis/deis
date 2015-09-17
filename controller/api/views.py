@@ -16,6 +16,8 @@ from rest_framework.authtoken.models import Token
 
 from api import authentication, models, permissions, serializers, viewsets
 
+import requests
+
 
 class UserRegistrationViewSet(GenericViewSet,
                               mixins.CreateModelMixin):
@@ -208,10 +210,19 @@ class AppViewSet(BaseDeisViewSet):
             return Response(app.logs(request.query_params.get('log_lines',
                                      str(settings.LOG_LINES))),
                             status=status.HTTP_200_OK, content_type='text/plain')
-        except EnvironmentError:
-            return Response("No logs for {}".format(app.id),
-                            status=status.HTTP_204_NO_CONTENT,
+        except requests.exceptions.RequestException:
+            return Response("Error accessing logs for {}".format(app.id),
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             content_type='text/plain')
+        except EnvironmentError as e:
+            if e.message == 'Error accessing deis-logger':
+                return Response("Error accessing logs for {}".format(app.id),
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                content_type='text/plain')
+            else:
+                return Response("No logs for {}".format(app.id),
+                                status=status.HTTP_204_NO_CONTENT,
+                                content_type='text/plain')
 
     def run(self, request, **kwargs):
         app = self.get_object()
