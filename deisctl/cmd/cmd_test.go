@@ -306,7 +306,20 @@ func TestUpgradePrep(t *testing.T) {
 	expected := []string{"database", "registry@*", "controller", "builder", "logger", "logspout", "store-volume",
 		"store-gateway@*", "store-metadata", "store-daemon", "store-monitor"}
 
-	UpgradePrep(&b)
+	UpgradePrep(false, &b)
+
+	if !reflect.DeepEqual(b.stoppedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
+	}
+}
+
+func TestStatelessUpgradePrep(t *testing.T) {
+	t.Parallel()
+
+	b := backendStub{}
+	expected := []string{"database", "registry@*", "controller", "builder", "logger", "logspout"}
+
+	UpgradePrep(true, &b)
 
 	if !reflect.DeepEqual(b.stoppedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
@@ -322,10 +335,33 @@ func TestUpgradeTakeover(t *testing.T) {
 	expectedRestarted := []string{"router"}
 	expectedStarted := []string{"publisher", "store-monitor", "store-daemon", "store-metadata",
 		"store-gateway@*", "store-volume", "logger", "logspout", "database", "registry@*",
-		"controller", "builder", "publisher", "router@*", "database", "registry@*",
-		"controller", "builder", "publisher", "router@*"}
+		"controller", "builder", "publisher", "database", "registry@*",
+		"controller", "builder", "publisher"}
 
-	if err := doUpgradeTakeOver(&b, testMock); err != nil {
+	if err := doUpgradeTakeOver(false, &b, testMock); err != nil {
+		t.Error(fmt.Errorf("Takeover failed: %v", err))
+	}
+
+	if !reflect.DeepEqual(b.restartedUnits, expectedRestarted) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expectedRestarted, b.restartedUnits))
+	}
+	if !reflect.DeepEqual(b.startedUnits, expectedStarted) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expectedStarted, b.startedUnits))
+	}
+}
+
+func TestStatelessUpgradeTakeover(t *testing.T) {
+	t.Parallel()
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{{Key: "/deis/services/app1", Value: "foo", TTL: 10},
+		{Key: "/deis/services/app2", Value: "8000", TTL: 10}}}
+
+	b := backendStub{}
+	expectedRestarted := []string{"router"}
+	expectedStarted := []string{"publisher", "logspout", "registry@*",
+		"controller", "builder", "publisher", "router@*", "registry@*",
+		"controller", "builder", "publisher"}
+
+	if err := doUpgradeTakeOver(true, &b, testMock); err != nil {
 		t.Error(fmt.Errorf("Takeover failed: %v", err))
 	}
 

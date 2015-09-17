@@ -74,13 +74,19 @@ func (c *Client) UpgradePrep(argv []string) error {
 	usage := `Prepare platform for graceful upgrade.
 
 Usage:
-  deisctl upgrade-prep [options]
+  deisctl upgrade-prep [--stateless]
+
+Options:
+  --stateless  Use when the target platform is stateless
 `
-	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false)
+	if err != nil {
 		return err
 	}
 
-	return cmd.UpgradePrep(c.Backend)
+	stateless, _ := args["--stateless"].(bool)
+
+	return cmd.UpgradePrep(stateless, c.Backend)
 }
 
 // UpgradeTakeover gracefully restarts a cluster prepared with upgrade-prep
@@ -88,13 +94,19 @@ func (c *Client) UpgradeTakeover(argv []string) error {
 	usage := `Complete the upgrade of a prepped cluster.
 
 Usage:
-  deisctl upgrade-takeover [options]
+  deisctl upgrade-takeover [--stateless]
+
+Options:
+  --stateless  Use when the target platform is stateless
 `
-	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false)
+	if err != nil {
 		return err
 	}
 
-	return cmd.UpgradeTakeover(c.Backend, c.configBackend)
+	stateless, _ := args["--stateless"].(bool)
+
+	return cmd.UpgradeTakeover(stateless, c.Backend, c.configBackend)
 }
 
 // RollingRestart attempts a rolling restart of an instance unit
