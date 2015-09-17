@@ -85,3 +85,6 @@ contrib/gce/gce-user-data
 /tests/bin/tmp
 !/tests/bin/accept/lib
 !/tests/bin/accept/commands
+
+# Terraform
+*.tfstate*
