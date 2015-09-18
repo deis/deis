@@ -2,7 +2,7 @@
 import argparse
 import json
 import os
-import urllib
+import urllib2
 import yaml
 
 parser = argparse.ArgumentParser()
@@ -12,7 +12,7 @@ args = vars(parser.parse_args())
 
 url = "http://{channel}.release.core-os.net/amd64-usr/{version}/coreos_production_ami_all.json".format(**args)
 try:
-    amis = json.load(urllib.urlopen(url))
+    amis = json.load(urllib2.urlopen(url))
 except (IOError, ValueError):
     print "The URL {} is invalid.".format(url)
     raise
