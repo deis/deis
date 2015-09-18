@@ -123,11 +123,12 @@ The :ref:`registry` component won't start until it's configured with an S3 store
     $ BUCKET=MYS3BUCKET
     $ AWS_ACCESS_KEY=something
     $ AWS_SECRET_KEY=something
+    $ AWS_S3_REGION=some-aws-region #(e.g., us-west-1)
     $ deisctl config registry set s3bucket=${BUCKET} \
                                   bucketName=${BUCKET} \
                                   s3accessKey=${AWS_ACCESS_KEY} \
                                   s3secretKey=${AWS_SECRET_KEY} \
-                                  s3region=eu-west-1 \
+                                  s3region=${AWS_S3_REGION} \
                                   s3path=/ \
                                   s3encrypt=false \
                                   s3secure=false
