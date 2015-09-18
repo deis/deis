@@ -21,6 +21,7 @@ MEMLIMIT_MATCH = re.compile(r'^(?P<mem>[0-9]+(MB|KB|GB|[BKMG]))$', re.IGNORECASE
 CPUSHARE_MATCH = re.compile(r'^(?P<cpu>[0-9]+)$')
 TAGKEY_MATCH = re.compile(r'^[a-z]+$')
 TAGVAL_MATCH = re.compile(r'^\w+$')
+CONFIGKEY_MATCH = re.compile(r'^[a-z_]+[a-z0-9_]*$', re.IGNORECASE)
 
 
 class JSONFieldSerializer(serializers.Field):
@@ -180,6 +181,14 @@ class ConfigSerializer(ModelSerializer):
     class Meta:
         """Metadata options for a :class:`ConfigSerializer`."""
         model = models.Config
+
+    def validate_values(self, value):
+        for k, v in value.viewitems():
+            if not re.match(CONFIGKEY_MATCH, k):
+                raise serializers.ValidationError(
+                    "Config keys must start with a letter or underscore and "
+                    "only contain [A-z0-9_]")
+        return value
 
     def validate_memory(self, value):
         for k, v in value.viewitems():
