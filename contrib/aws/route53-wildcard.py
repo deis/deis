@@ -65,9 +65,11 @@ def delete_cname(args, block=False):
 if __name__ == '__main__':
     args = parse_args()
 
-    # calculate zone from provided name
-    zone = '.'.join(args['<name>'].split('.')[-2:])
-    args['<zone>'] = zone
+    if args['--zone'] == None:
+        zone = '.'.join(args['<name>'].split('.')[-2:])
+        args['<zone>'] = zone
+    else:
+        args['<zone>'] = args['--zone']
 
     # add a * to the provided name
     args['<name>'] = u'\\052.'+unicode(args['<name>'])
