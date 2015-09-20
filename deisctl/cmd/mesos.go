@@ -67,13 +67,13 @@ func uninstallMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.W
 }
 
 // StartMesos activates all Mesos components.
-func StartMesos(b backend.Backend) error {
+func StartMesos(b backend.Backend, verbose bool) error {
 
 	var wg sync.WaitGroup
 
 	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Mesos/Marathon..."))
 
-	startMesosServices(b, &wg, Stdout, Stderr)
+	startMesosServices(b, verbose, &wg, Stdout, Stderr)
 
 	wg.Wait()
 
@@ -82,20 +82,22 @@ func StartMesos(b backend.Backend) error {
 	return nil
 }
 
-func startMesosServices(b backend.Backend, wg *sync.WaitGroup, out, err io.Writer) {
+func startMesosServices(b backend.Backend, verbose bool, wg *sync.WaitGroup, out, err io.Writer) {
+	var quitChans []chan bool
 
 	fmt.Fprintln(out, "Mesos/Marathon control plane...")
 	b.Start([]string{"zookeeper"}, wg, out, err)
 	wg.Wait()
 	b.Start([]string{"mesos-master"}, wg, out, err)
+	startLogging(b, verbose, &quitChans, "mesos-master", Stdout)
 	wg.Wait()
+	stopLogging(&quitChans)
 	b.Start([]string{"mesos-marathon"}, wg, out, err)
+	startLogging(b, verbose, &quitChans, "meos-marathon", Stdout)
 	wg.Wait()
-
+	stopLogging(&quitChans)
 	fmt.Fprintln(out, "Mesos/Marathon data plane...")
 	b.Start([]string{"mesos-slave"}, wg, out, err)
-	wg.Wait()
-
 	wg.Wait()
 }
 

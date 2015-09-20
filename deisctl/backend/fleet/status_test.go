@@ -84,7 +84,7 @@ func TestStatus(t *testing.T) {
 	err = c.Status("foo")
 
 	actualErr := err.Error()
-	expectedErr := "could not find unit: foo"
+	expectedErr := "could not find unit: foo\n"
 
 	if actualErr != expectedErr {
 		t.Errorf("Expected %s, Got %s", expectedErr, actualErr)

@@ -100,6 +100,10 @@ func (c *FleetClient) expandTargets(targets []string) (expandedTargets []string,
 			}
 			expandedTargets = append(expandedTargets, targets...)
 		} else {
+			if !strings.HasSuffix(t, ".service") {
+				t += ".service"
+			}
+
 			expandedTargets = append(expandedTargets, t)
 		}
 

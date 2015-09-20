@@ -58,7 +58,7 @@ func (c *FleetClient) Units(target string) (units []string, err error) {
 	}
 	// If still nothing is found, then we have an error on our hands.
 	if len(units) == 0 {
-		err = fmt.Errorf("could not find unit: %s", target)
+		err = fmt.Errorf("could not find unit: %s\n", target)
 	}
 	return
 }

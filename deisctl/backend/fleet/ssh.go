@@ -1,6 +1,7 @@
 package fleet
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -24,6 +25,7 @@ func (c *FleetClient) SSH(name string) error {
 	return err
 }
 
+// SSHExec runs a command on a machine
 func (c *FleetClient) SSHExec(name, cmd string) error {
 
 	conn, ms, err := c.sshConnect(name)
@@ -101,6 +103,46 @@ func (c *FleetClient) runCommand(cmd string, machID string) (retcode int) {
 	return
 }
 
+// runRemoteCommandString will attempt to run a command on a given machine via ssh.
+// It will return a string of the output.
+func runRemoteCommandString(cmd string, IP string) (string, error) {
+
+	timeout := time.Duration(Flags.SSHTimeout*1000) * time.Millisecond
+
+	var sshClient *ssh.SSHForwardingClient
+	var err error
+	if tun := getTunnelFlag(); tun != "" {
+		sshClient, err = ssh.NewTunnelledSSHClient("core", tun, IP, getChecker(), false, timeout)
+	} else {
+		sshClient, err = ssh.NewSSHClient("core", IP, getChecker(), false, timeout)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	defer sshClient.Close()
+
+	session, err := sshClient.NewSession()
+	if err != nil {
+		return "", err
+	}
+	if err = sshClient.ForwardAgentAuthentication(session); err != nil {
+		return "", err
+	}
+
+	var output bytes.Buffer
+
+	session.Stdout = &output
+	session.Stderr = &output
+
+	defer session.Close()
+
+	session.Start(cmd)
+	session.Wait()
+
+	return output.String(), nil
+}
+
 type commandRunner interface {
 	LocalCommand(string) (int, error)
 	RemoteCommand(string, string, time.Duration) (int, error)
@@ -154,10 +196,11 @@ func (c *FleetClient) findUnit(name string) (machID string, err error) {
 	switch {
 	case err != nil:
 		return "", fmt.Errorf("Error retrieving Unit %s: %v", name, err)
+	case u == nil:
+		fmt.Printf("Unit %s does not exist.\n", name)
+		return "", fmt.Errorf("Unit %s does not exist.\n", name)
 	case suToGlobal(*u):
 		return "", fmt.Errorf("Unable to connect to global unit %s.\n", name)
-	case u == nil:
-		return "", fmt.Errorf("Unit %s does not exist.\n", name)
 	case u.CurrentState == "":
 		return "", fmt.Errorf("Unit %s does not appear to be running.\n", name)
 	}

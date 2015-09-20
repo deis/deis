@@ -357,6 +357,10 @@ func (c *Client) Start(argv []string) error {
 
 Usage:
   deisctl start [<target>...] [options]
+
+Options:
+  -v --verbose
+    Print logs of starting components.
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -364,7 +368,7 @@ Usage:
 		return err
 	}
 
-	return cmd.Start(args["<target>"].([]string), c.Backend)
+	return cmd.Start(args["<target>"].([]string), args["--verbose"].(bool), c.Backend)
 }
 
 // Status prints the current status of components.

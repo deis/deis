@@ -194,8 +194,8 @@ func TestExpandTargets(t *testing.T) {
 	expectedTargets := []string{
 		"deis-router@1.service",
 		"deis-router@2.service",
-		"deis-store-gateway@1",
-		"deis-controller",
+		"deis-store-gateway@1.service",
+		"deis-controller.service",
 		"deis-registry@1.service",
 	}
 	if !reflect.DeepEqual(expandedTargets, expectedTargets) {

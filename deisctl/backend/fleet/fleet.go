@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"text/tabwriter"
+	"time"
 
 	"github.com/deis/deis/deisctl/config"
 
@@ -20,10 +21,13 @@ type FleetClient struct {
 	// used to cache MachineStates
 	machineStates map[string]*machine.MachineState
 
-	templatePaths []string
-	runner        commandRunner
-	out           *tabwriter.Writer
-	errWriter     io.Writer
+	templatePaths          []string
+	runner                 commandRunner
+	runRemoteCommandString func(string, string) (string, error)
+	out                    *tabwriter.Writer
+	errWriter              io.Writer
+	journalInterval        time.Duration
+	timeNow                func() time.Time
 }
 
 // NewClient returns a client used to communicate with Fleet
@@ -44,6 +48,7 @@ func NewClient(cb config.Backend) (*FleetClient, error) {
 	out := new(tabwriter.Writer)
 	out.Init(os.Stdout, 0, 8, 1, '\t', 0)
 
-	return &FleetClient{Fleet: client, configBackend: cb, templatePaths: templatePaths, runner: sshCommandRunner{},
-		out: out, errWriter: os.Stderr}, nil
+	return &FleetClient{Fleet: client, configBackend: cb, templatePaths: templatePaths,
+		runner: sshCommandRunner{}, runRemoteCommandString: runRemoteCommandString, out: out,
+		errWriter: os.Stderr, journalInterval: time.Second, timeNow: time.Now}, nil
 }

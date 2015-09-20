@@ -101,7 +101,7 @@ func doUpgradeTakeOver(b backend.Backend, cb config.Backend) error {
 	installDefaultServices(b, false, &wg, Stdout, Stderr) // @fixme: hax?
 	wg.Wait()
 
-	startDefaultServices(b, false, &wg, Stdout, Stderr) // @fixme: hax?
+	startDefaultServices(b, false, false, &wg, Stdout, Stderr) // @fixme: hax?
 	wg.Wait()
 	return nil
 }

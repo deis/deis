@@ -30,14 +30,20 @@ func InstallK8s(b backend.Backend) error {
 }
 
 //StartK8s starts K8s Schduler
-func StartK8s(b backend.Backend) error {
+func StartK8s(b backend.Backend, verbose bool) error {
+	var quitChans []chan bool
 	var wg sync.WaitGroup
 	io.WriteString(Stdout, prettyprint.DeisIfy("Starting K8s..."))
 	fmt.Fprintln(Stdout, "K8s control plane...")
 	b.Start([]string{"kube-apiserver"}, &wg, Stdout, Stderr)
+	startLogging(b, verbose, &quitChans, "kube-apiserver", Stdout)
 	wg.Wait()
+	stopLogging(&quitChans)
 	b.Start([]string{"kube-controller-manager", "kube-scheduler"}, &wg, Stdout, Stderr)
+	startLogging(b, verbose, &quitChans, "kube-controller-manager", Stdout)
+	startLogging(b, verbose, &quitChans, "kube-scheduler", Stdout)
 	wg.Wait()
+	stopLogging(&quitChans)
 	fmt.Fprintln(Stdout, "K8s data plane...")
 	b.Start([]string{"kube-kubelet"}, &wg, Stdout, Stderr)
 	wg.Wait()

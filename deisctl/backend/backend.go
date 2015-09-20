@@ -20,4 +20,5 @@ type Backend interface {
 	ListUnitFiles() error
 	Status(string) error
 	Journal(string) error
+	JournalBackground(string, io.Writer) []chan bool
 }

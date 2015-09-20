@@ -43,13 +43,13 @@ func InstallPlatform(b backend.Backend, cb config.Backend, checkKeys func(config
 }
 
 // StartPlatform activates all components.
-func StartPlatform(b backend.Backend, stateless bool) error {
+func StartPlatform(b backend.Backend, stateless bool, verbose bool) error {
 
 	var wg sync.WaitGroup
 
 	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Deis..."))
 
-	startDefaultServices(b, stateless, &wg, Stdout, Stderr)
+	startDefaultServices(b, stateless, verbose, &wg, Stdout, Stderr)
 
 	wg.Wait()
 

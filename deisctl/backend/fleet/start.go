@@ -75,13 +75,11 @@ func doStart(c *FleetClient, target string, wg *sync.WaitGroup, out, ew io.Write
 
 		// if subState changed, send it across the output channel
 		if lastSubState != currentState.SystemdSubState {
-			l := prettyprint.Overwritef(stateFmt, name, currentState.SystemdActiveState, currentState.SystemdSubState)
-			fmt.Fprintf(out, l)
+			fmt.Fprintf(out, stateFmt+"\n", name, currentState.SystemdActiveState, currentState.SystemdSubState)
 		}
 
 		// break when desired state is reached
 		if currentState.SystemdSubState == desiredState {
-			fmt.Fprintln(out)
 			return
 		}
 

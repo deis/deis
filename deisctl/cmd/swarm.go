@@ -25,12 +25,15 @@ func InstallSwarm(b backend.Backend) error {
 }
 
 //StartSwarm starts Swarm Schduler
-func StartSwarm(b backend.Backend) error {
+func StartSwarm(b backend.Backend, verbose bool) error {
 	var wg sync.WaitGroup
 	io.WriteString(Stdout, prettyprint.DeisIfy("Starting Swarm..."))
 	fmt.Fprintln(Stdout, "Swarm control plane...")
 	b.Start([]string{"swarm-manager"}, &wg, Stdout, Stderr)
+	var quitChans []chan bool
+	startLogging(b, verbose, &quitChans, "swarm-mananger", Stdout)
 	wg.Wait()
+	stopLogging(&quitChans)
 	fmt.Fprintln(Stdout, "Swarm data plane...")
 	b.Start([]string{"swarm-node"}, &wg, Stdout, Stderr)
 	wg.Wait()

@@ -70,27 +70,38 @@ func Scale(targets []string, b backend.Backend) error {
 }
 
 // Start activates the specified components.
-func Start(targets []string, b backend.Backend) error {
+func Start(targets []string, verbose bool, b backend.Backend) error {
 
 	// if target is platform, install all services
 	if len(targets) == 1 {
 		switch targets[0] {
 		case PlatformCommand:
-			return StartPlatform(b, false)
+			return StartPlatform(b, false, verbose)
 		case StatelessPlatformCommand:
-			return StartPlatform(b, true)
+			return StartPlatform(b, true, verbose)
 		case mesos:
-			return StartMesos(b)
+			return StartMesos(b, verbose)
 		case swarm:
-			return StartSwarm(b)
+			return StartSwarm(b, verbose)
 		case k8s:
-			return StartK8s(b)
+			return StartK8s(b, verbose)
 		}
 	}
 	var wg sync.WaitGroup
 
 	b.Start(targets, &wg, Stdout, Stderr)
+
+	var quitChans []chan bool
+
+	if verbose {
+		for _, target := range targets {
+			startLogging(b, true, &quitChans, target, Stdout)
+		}
+	}
+
 	wg.Wait()
+
+	stopLogging(&quitChans)
 
 	return nil
 }
@@ -120,7 +131,8 @@ deisctl config platform set sshPrivateKey=<path-to-key>
 	return nil
 }
 
-func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup, out, err io.Writer) {
+func startDefaultServices(b backend.Backend, stateless bool, verbose bool, wg *sync.WaitGroup, out, err io.Writer) {
+	var quitChans []chan bool
 
 	// Wait for groups to come up.
 	// If we're running in stateless mode, we start only a subset of services.
@@ -135,7 +147,10 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 		// we start gateway first to give metadata time to come up for volume
 		b.Start([]string{"store-gateway@*"}, wg, out, err)
+		startLogging(b, verbose, &quitChans, "store-gateway@*", out)
 		wg.Wait()
+		stopLogging(&quitChans)
+
 		b.Start([]string{"store-volume"}, wg, out, err)
 		wg.Wait()
 	}
@@ -144,7 +159,10 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	fmt.Fprintln(out, "Logging subsystem...")
 	if !stateless {
 		b.Start([]string{"logger"}, wg, out, err)
+		startLogging(b, verbose, &quitChans, "logger", out)
+
 		wg.Wait()
+		stopLogging(&quitChans)
 	}
 	b.Start([]string{"logspout"}, wg, out, err)
 	wg.Wait()
@@ -167,11 +185,22 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 	if stateless {
 		batch = []string{"registry@*", "controller"}
 	}
+
+	startLogging(b, verbose, &quitChans, "registry@*", out)
+	startLogging(b, verbose, &quitChans, "controller", out)
+	if !stateless {
+		startLogging(b, verbose, &quitChans, "database", out)
+	}
+
 	b.Start(batch, wg, out, err)
 	wg.Wait()
+	stopLogging(&quitChans)
 
 	b.Start([]string{"builder"}, wg, out, err)
+	startLogging(b, verbose, &quitChans, "builder", out)
+
 	wg.Wait()
+	stopLogging(&quitChans)
 
 	fmt.Fprintln(out, "Data plane...")
 	b.Start([]string{"publisher"}, wg, out, err)
@@ -179,7 +208,25 @@ func startDefaultServices(b backend.Backend, stateless bool, wg *sync.WaitGroup,
 
 	fmt.Fprintln(out, "Router mesh...")
 	b.Start([]string{"router@*"}, wg, out, err)
+	startLogging(b, verbose, &quitChans, "router@*", out)
 	wg.Wait()
+	stopLogging(&quitChans)
+}
+
+func startLogging(b backend.Backend, verbose bool, quitChans *[]chan bool, target string, out io.Writer) {
+	if verbose {
+		newChans := b.JournalBackground(target, out)
+		*quitChans = append(*quitChans, newChans...)
+	}
+}
+
+func stopLogging(quitChans *[]chan bool) {
+	for _, quit := range *quitChans {
+		quit <- true
+		<-quit
+	}
+
+	*quitChans = []chan bool{}
 }
 
 // Stop deactivates the specified components.
@@ -257,7 +304,7 @@ func Restart(targets []string, b backend.Backend) error {
 		return err
 	}
 
-	return Start(targets, b)
+	return Start(targets, false, b)
 }
 
 // Status prints the current status of components.

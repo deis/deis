@@ -25,6 +25,7 @@ type backendStub struct {
 	installedUnits   []string
 	uninstalledUnits []string
 	restartedUnits   []string
+	journaledUnits   []string
 	expected         bool
 }
 
@@ -83,6 +84,10 @@ func (backend *backendStub) SSHExec(target, command string) error {
 		return nil
 	}
 	return errors.New("Error")
+}
+func (backend *backendStub) JournalBackground(target string, out io.Writer) []chan bool {
+	backend.journaledUnits = append(backend.journaledUnits, target)
+	return []chan bool{}
 }
 
 func (backend *backendStub) Dock(target string, command []string) error {
@@ -235,10 +240,26 @@ func TestStart(t *testing.T) {
 	b := backendStub{}
 	expected := []string{"router@1", "router@2"}
 
-	Start(expected, &b)
+	Start(expected, false, &b)
 
 	if !reflect.DeepEqual(b.startedUnits, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+		t.Errorf("Expected %v, Got %v", expected, b.startedUnits)
+	}
+
+	if len(b.journaledUnits) != 0 {
+		t.Errorf("Expected no journaled units, Got %d", len(b.journaledUnits))
+	}
+
+	b = backendStub{}
+	Start(expected, true, &b)
+	expectedJournaled := []string{"router@1", "router@2"}
+
+	if !reflect.DeepEqual(b.startedUnits, expected) {
+		t.Errorf("Expected %v, Got %v", expected, b.startedUnits)
+	}
+
+	if !reflect.DeepEqual(b.journaledUnits, expectedJournaled) {
+		t.Errorf("Expected %v, Got %v", expectedJournaled, b.journaledUnits)
 	}
 }
 
@@ -251,10 +272,27 @@ func TestStartPlatform(t *testing.T) {
 		"builder", "publisher", "router@*", "database", "registry@*", "controller",
 		"builder", "publisher", "router@*"}
 
-	Start([]string{"platform"}, &b)
+	Start([]string{"platform"}, false, &b)
 
 	if !reflect.DeepEqual(b.startedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	if len(b.journaledUnits) != 0 {
+		t.Errorf("Expected no journaled units, Got %d", len(b.journaledUnits))
+	}
+
+	b = backendStub{}
+	Start([]string{"platform"}, true, &b)
+
+	if !reflect.DeepEqual(b.startedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	expectedJournaled := []string{"store-gateway@*", "logger", "registry@*",
+		"controller", "database", "builder", "router@*"}
+	if !reflect.DeepEqual(b.journaledUnits, expectedJournaled) {
+		t.Errorf("Expected %v, Got %v", expectedJournaled, b.journaledUnits)
 	}
 }
 
@@ -266,10 +304,26 @@ func TestStartStatelessPlatform(t *testing.T) {
 		"builder", "publisher", "router@*", "registry@*", "controller",
 		"builder", "publisher", "router@*"}
 
-	Start([]string{"stateless-platform"}, &b)
+	Start([]string{"stateless-platform"}, false, &b)
 
 	if !reflect.DeepEqual(b.startedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	if len(b.journaledUnits) != 0 {
+		t.Errorf("Expected no journaled units, Got %d", len(b.journaledUnits))
+	}
+
+	b = backendStub{}
+	Start([]string{"stateless-platform"}, true, &b)
+
+	if !reflect.DeepEqual(b.startedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	expectedJournaled := []string{"registry@*", "controller", "builder", "router@*"}
+	if !reflect.DeepEqual(b.journaledUnits, expectedJournaled) {
+		t.Errorf("Expected %v, Got %v", expectedJournaled, b.journaledUnits)
 	}
 }
 
@@ -279,10 +333,25 @@ func TestStartSwarm(t *testing.T) {
 	b := backendStub{}
 	expected := []string{"swarm-manager", "swarm-node"}
 
-	Start([]string{"swarm"}, &b)
+	Start([]string{"swarm"}, false, &b)
 
 	if !reflect.DeepEqual(b.startedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	if len(b.journaledUnits) != 0 {
+		t.Errorf("Expected no journaled units, Got %d", len(b.journaledUnits))
+	}
+
+	b = backendStub{}
+	Start([]string{"swarm"}, true, &b)
+
+	if !reflect.DeepEqual(b.startedUnits, expected) {
+		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
+	}
+
+	if len(b.journaledUnits) != 1 {
+		t.Errorf("Expected one unit journaled, Got %d", len(b.journaledUnits))
 	}
 }
 
