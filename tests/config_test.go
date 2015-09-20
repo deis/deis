@@ -11,10 +11,12 @@ import (
 )
 
 var (
-	configListCmd         = "config:list --app={{.AppName}}"
-	configSetCmd          = "config:set FOO=讲台 --app={{.AppName}}"
-	configSet2Cmd         = "config:set FOO=10 --app={{.AppName}}"
-	configSet3Cmd         = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
+	configListCmd = "config:list --app={{.AppName}}"
+	configSetCmd  = "config:set FOO=讲台 --app={{.AppName}}"
+	configSet2Cmd = "config:set FOO=10 --app={{.AppName}}"
+	configSet3Cmd = "config:set POWERED_BY=\"the Deis team\" --app={{.AppName}}"
+	configSet4Cmd = `config:set FOO="This is a
+multiline string" --app={{.AppName}}`
 	configSetBuildpackCmd = "config:set BUILDPACK_URL=$BUILDPACK_URL --app={{.AppName}}"
 	configUnsetCmd        = "config:unset FOO --app={{.AppName}}"
 )
@@ -90,6 +92,8 @@ func configSetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.CheckList(t, appsInfoCmd, params, "(v5)", false)
 	utils.Execute(t, configSet2Cmd, params, false, "10")
 	utils.CheckList(t, appsInfoCmd, params, "(v6)", false)
+	utils.Execute(t, configSet4Cmd, params, false, "")
+	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
 }
 
 func configPushTest(t *testing.T, params *utils.DeisTestConfig) {
@@ -101,7 +105,7 @@ func configPushTest(t *testing.T, params *utils.DeisTestConfig) {
 		t.Fatal(err)
 	}
 	utils.Execute(t, "config:push --app {{.AppName}}", params, false, "Deis")
-	utils.CheckList(t, appsInfoCmd, params, "(v7)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v8)", false)
 	if err := utils.Chdir(".."); err != nil {
 		t.Fatal(err)
 	}
@@ -109,6 +113,6 @@ func configPushTest(t *testing.T, params *utils.DeisTestConfig) {
 
 func configUnsetTest(t *testing.T, params *utils.DeisTestConfig) {
 	utils.Execute(t, configUnsetCmd, params, false, "")
-	utils.CheckList(t, appsInfoCmd, params, "(v8)", false)
+	utils.CheckList(t, appsInfoCmd, params, "(v9)", false)
 	utils.CheckList(t, "run env --app={{.AppName}}", params, "FOO", true)
 }
