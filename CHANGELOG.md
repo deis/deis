@@ -1,3 +1,12 @@
+### v1.10.0 -> v1.10.1
+
+#### Fixes
+
+ - [`04a9306`](https://github.com/deis/deis/commit/04a93066c6dc7bd702e72d6bf23870ceed3b7446) deisctl: default stdout and stderr are reversed
+ - [`5878b8f`](https://github.com/deis/deis/commit/5878b8f8c3d7d625351d93589cf8223d06a93bbb) (all): ensure component containers stop
+ - [`9ef640f`](https://github.com/deis/deis/commit/9ef640f7ca06b9c146d3525d9f6bb5a09f9db40d) database: improve postgres ready checks
+ - [`fb44cbc`](https://github.com/deis/deis/commit/fb44cbc7d4de877f1487498fbfe56f3e284b7db8) database: fix db init file perms
+
 ### v1.9.1 -> v1.10.0
 
 #### Features

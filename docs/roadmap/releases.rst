@@ -52,7 +52,7 @@ Patch Release
         mesos/zookeeper/Dockerfile \
         publisher/image/Dockerfile \
         registry/Dockerfile \
-        router/image/Dockerfile \
+        router/Dockerfile \
         store/base/Dockerfile \
         swarm/image/Dockerfile \
         version/version.go
