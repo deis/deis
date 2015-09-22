@@ -26,8 +26,8 @@ export DEIS_TEST_APP=${DEIS_TEST_APP:-example-dockerfile-http}
 echo "DEIS_TEST_APP=$DEIS_TEST_APP"
 
 # SSH key name used for testing
-export DEIS_TEST_AUTH_KEY=${DEIS_TEST_AUTH_KEY:-deis-test}
-echo "DEIS_TEST_AUTH_KEY=$DEIS_TEST_AUTH_KEY"
+export DEIS_TEST_AUTH_KEY="${DEIS_TEST_AUTH_KEY:-${HOME}/.ssh/deiskey}"
+echo "DEIS_TEST_AUTH_KEY=${DEIS_TEST_AUTH_KEY}"
 
 # SSH key used for deisctl tunneling
 export DEIS_TEST_SSH_KEY=${DEIS_TEST_SSH_KEY:-~/.vagrant.d/insecure_private_key}
@@ -80,13 +80,16 @@ go get -v github.com/tools/godep
 rm -rf $DEIS_ROOT/tests/example-*
 
 # generate ssh keys if they don't already exist
-test -e ~/.ssh/$DEIS_TEST_AUTH_KEY || ssh-keygen -t rsa -f ~/.ssh/$DEIS_TEST_AUTH_KEY -N ''
-# TODO: parameterize this key required for keys_test.go?
-test -e ~/.ssh/deiskey || ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
+if [ ! -e ${DEIS_TEST_AUTH_KEY} ]; then
+  ssh-keygen -t rsa \
+             -f "${DEIS_TEST_AUTH_KEY}" \
+             -N '' \
+             -C "$(basename ${DEIS_TEST_AUTH_KEY})"
+fi
 
 # prepare the SSH agent
 ssh-add -D || eval $(ssh-agent) && ssh-add -D
-ssh-add ~/.ssh/$DEIS_TEST_AUTH_KEY
+ssh-add $DEIS_TEST_AUTH_KEY
 ssh-add $DEIS_TEST_SSH_KEY
 
 # clear the drink of choice in case the user has set it
