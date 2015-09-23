@@ -116,7 +116,9 @@ than the :ref:`logger` component.
 Configure registry
 ^^^^^^^^^^^^^^^^^^
 
-The :ref:`registry` component won't start until it's configured with an S3 store.
+The :ref:`registry` component won't start until it's configured with a store.
+
+S3 store configuration sample:
 
 .. code-block:: console
 
@@ -136,6 +138,19 @@ The :ref:`registry` component won't start until it's configured with an S3 store
                                gateway/secretKey=${AWS_SECRET_KEY} \
                                gateway/host=s3.amazonaws.com \
                                gateway/port=80
+
+Openstack-swift support requires `Swift3`_ middleware to be installed. Here is a sample configuration:
+
+.. code-block:: console
+
+    $ SWIFT_CONTAINER=mycontainer
+    $ SWIFT_USER=system:root
+    $ SWIFT_SECRET_KEY=testpass
+    $ deisctl config registry set bucketName=${SWIFT_CONTAINER}
+    $ deisctl config store set gateway/accessKey=${SWIFT_USER} \
+                               gateway/secretKey=${SWIFT_SECRET_KEY} \
+                               gateway/host=10.1.50.1 \
+                               gateway/port=8080
 
 Configure database settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -182,3 +197,4 @@ When following the :ref:`upgrading-deis` documentation, be sure to use
 .. _`Amazon S3`: http://aws.amazon.com/s3/
 .. _`Arne-Christian Blystad`: https://github.com/blystad
 .. _`Papertrail`: https://papertrailapp.com/
+.. _`Swift3`: https://github.com/stackforge/swift3
