@@ -67,12 +67,12 @@ Use 'git push deis master' to deploy to an application.
 	_, err := docopt.Parse(usage, []string{command}, false, version.Version, true, false)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 
 	if len(argv) == 0 {
-		fmt.Println("Usage: deis <command> [<args>...]")
+		fmt.Fprintf(os.Stderr, "Usage: deis <command> [<args>...]")
 		return 1
 	}
 
@@ -139,7 +139,7 @@ Use 'git push deis master' to deploy to an application.
 		}
 	}
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return 1
 	}
 	return 0

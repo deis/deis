@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -22,8 +23,8 @@ func responseLimit(limit string) (int, error) {
 
 // PrintUsage runs if no matching command is found.
 func PrintUsage() {
-	fmt.Println("Found no matching command, try 'deis help'")
-	fmt.Println("Usage: deis <command> [<args>...]")
+	fmt.Fprintln(os.Stderr, "Found no matching command, try 'deis help'")
+	fmt.Fprintln(os.Stderr, "Usage: deis <command> [<args>...]")
 }
 
 func printHelp(argv []string, usage string) bool {

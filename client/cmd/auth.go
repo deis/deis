@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 	"syscall"
 
@@ -72,7 +73,7 @@ func Register(controller string, username string, password string, email string,
 	c.Token = ""
 
 	if err != nil {
-		fmt.Print("Registration failed: ")
+		fmt.Fprint(os.Stderr, "Registration failed: ")
 		return err
 	}
 
@@ -187,7 +188,7 @@ func Passwd(username string, password string, newPassword string) error {
 	err = auth.Passwd(c, username, password, newPassword)
 
 	if err != nil {
-		fmt.Print("Password change failed: ")
+		fmt.Fprint(os.Stderr, "Password change failed: ")
 		return err
 	}
 
@@ -235,7 +236,7 @@ func Cancel(username string, password string, yes bool) error {
 	}
 
 	if yes == false {
-		fmt.Println("Account not changed")
+		fmt.Fprintln(os.Stderr, "Account not changed")
 		return nil
 	}
 
