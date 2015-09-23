@@ -216,7 +216,7 @@ func ConfigPush(appID string, fileName string) error {
 func parseConfig(configVars []string) map[string]interface{} {
 	configMap := make(map[string]interface{})
 
-	regex := regexp.MustCompile("^([A-z_]+[A-z0-9_]*)=(.+)$")
+	regex := regexp.MustCompile(`^([A-z_]+[A-z0-9_]*)=([\s\S]+)$`)
 	for _, config := range configVars {
 		if regex.MatchString(config) {
 			captures := regex.FindStringSubmatch(config)
