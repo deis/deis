@@ -63,6 +63,22 @@ Deis also requires a few lightweight components on these hosts:
  * :ref:`publisher` - publishes end-user containers to the :ref:`router`
  * :ref:`logspout` - feeds log data to the Control Plane :ref:`logger`
 
+ .. _router-mesh:
+
+Router Mesh
+-----------
+
+.. image:: DeisRouterMesh.png
+ :alt: Deis Router Mesh Architecture
+
+The Router Mesh publishes :ref:`Applications <application>` to consumers.
+
+Each :ref:`router` in the mesh is a configurable software load balancer designed to expose
+:ref:`Containers <container>` running in the data plane.
+Routers track healthy containers using a distributed, watchable store like ``etcd``.
+
+Any changes to router configuration or certificates are applied within seconds.
+
 .. _topologies:
 
 Topologies
