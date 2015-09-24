@@ -52,6 +52,7 @@ aws cloudformation create-stack \
     --template-body "$($THIS_DIR/gen-json.py --channel $COREOS_CHANNEL --version $COREOS_VERSION)" \
     --stack-name $STACK_NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    --stack-policy-body "$(<$THIS_DIR/stack_policy.json)" \
     $EXTRA_AWS_CLI_ARGS
 
 # loop until the instances are created

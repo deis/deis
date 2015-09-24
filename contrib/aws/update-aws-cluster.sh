@@ -35,6 +35,7 @@ aws cloudformation update-stack \
     --template-body "$($THIS_DIR/gen-json.py --channel $COREOS_CHANNEL --version $COREOS_VERSION)" \
     --stack-name $NAME \
     --parameters "$(<$THIS_DIR/cloudformation.json)" \
+    --stack-policy-body "$(<$THIS_DIR/stack_policy.json)" \
     $EXTRA_AWS_CLI_ARGS
 
 echo_green "Your Deis cluster on AWS CloudFormation has been successfully updated."
