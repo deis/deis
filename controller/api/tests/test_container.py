@@ -7,15 +7,15 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import mock
 import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
-from scheduler.states import TransitionError
+import mock
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release
+from scheduler.states import TransitionError
 
 
 def mock_import_repository_task(*args, **kwargs):
@@ -25,6 +25,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class ContainerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 

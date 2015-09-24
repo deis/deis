@@ -9,12 +9,12 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import mock
 import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import etcd
+import mock
 from rest_framework.authtoken.models import Token
 
 import api.exceptions
@@ -52,6 +52,7 @@ class MockEtcdClient:
         return etcd.EtcdResult(None, node)
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class ConfigTest(TransactionTestCase):
 
     """Tests setting and updating config values"""

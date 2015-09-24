@@ -7,11 +7,11 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import mock
 import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+import mock
 from rest_framework.authtoken.models import Token
 
 from api.models import Build
@@ -24,6 +24,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class BuildTest(TransactionTestCase):
 
     """Tests build notification from build system"""

@@ -303,7 +303,6 @@ SECRET_KEY = os.environ.get('DEIS_SECRET_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29r
 BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&29rkywd^78ff(qi')
 
 # registry settings
-REGISTRY_MODULE = 'registry.mock'
 REGISTRY_URL = 'http://localhost:5000'
 REGISTRY_HOST = 'localhost'
 REGISTRY_PORT = 5000

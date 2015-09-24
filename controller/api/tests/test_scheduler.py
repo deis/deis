@@ -11,11 +11,13 @@ import json
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+import mock
 from rest_framework.authtoken.models import Token
 
 from scheduler import chaos
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class SchedulerTest(TransactionTestCase):
     """Tests creation of containers on nodes"""
 

@@ -7,12 +7,12 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import mock
 import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+import mock
 from rest_framework.authtoken.models import Token
 
 
@@ -23,6 +23,7 @@ def mock_import_repository_task(*args, **kwargs):
     return resp
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class HookTest(TransactionTestCase):
 
     """Tests API hooks used to trigger actions from external components"""
