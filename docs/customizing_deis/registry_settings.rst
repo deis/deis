@@ -43,6 +43,21 @@ setting                                   description
 /deis/store/gateway/secretKey             S3 API secret key used to access store-gateway (set by store-gateway)
 ====================================      =================================================================================
 
+If the ``/deis/registry/s3bucket`` key is supplied, the registry
+will use Amazon S3 as its storage backend and use the following values.
+
+====================================      =================================================================================
+setting                                   description
+====================================      =================================================================================
+/deis/registry/s3accessKey                S3 API access key. If not specified, the registry will get it from the instance role
+/deis/registry/s3secretKey                S3 API secret key, required if s3accessKey is specified
+/deis/registry/s3region                   S3 region to connect to, will use boto default if not specified
+/deis/registry/s3bucket                   S3 bucket to store images 
+/deis/registry/s3path                     path in the bucket (default: "/registry")
+/deis/registry/s3encrypt                  whether the object is encrypted while at rest on the server (default: true)
+/deis/registry/s3secure                   use secure protocol to establish connection with S3 (default: true)
+====================================      =================================================================================
+
 The Deis registry component inherits from the Docker registry container, so additional configuration
 options can be supplied. For a full explanation of these settings, see the Docker registry `README`_.
 

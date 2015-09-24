@@ -121,21 +121,58 @@ The :ref:`registry` component won't start until it's configured with an S3 store
 .. code-block:: console
 
     $ BUCKET=MYS3BUCKET
-    $ AWS_ACCESS_KEY=something
-    $ AWS_SECRET_KEY=something
     $ AWS_S3_REGION=some-aws-region #(e.g., us-west-1)
     $ deisctl config registry set s3bucket=${BUCKET} \
-                                  bucketName=${BUCKET} \
-                                  s3accessKey=${AWS_ACCESS_KEY} \
-                                  s3secretKey=${AWS_SECRET_KEY} \
                                   s3region=${AWS_S3_REGION} \
                                   s3path=/ \
                                   s3encrypt=false \
                                   s3secure=false
-    $ deisctl config store set gateway/accessKey=${AWS_ACCESS_KEY} \
-                               gateway/secretKey=${AWS_SECRET_KEY} \
-                               gateway/host=s3.amazonaws.com \
-                               gateway/port=80
+
+By default, the registry will try to authenticate to S3 using the instance role.
+If your cluster is not running on EC2, you can supply hard coded API access and
+secret key:
+
+.. code-block:: console
+
+    $ deisctl config registry set s3accessKey=your-access-key \
+                                  s3secretKey=your-secret-key
+
+For reference, here's example of a policy you could attach to the role/user used by
+the registry:
+
+.. code-block:: javascript
+
+    {
+      "Statement": [
+        {
+          "Resource": "arn:aws:s3:::*",
+          "Action": "s3:ListAllMyBuckets",
+          "Effect": "Allow"
+        },
+        {
+          "Resource": [
+            "arn:aws:s3:::MYBUCKET"
+          ],
+          "Action": [
+            "s3:ListBucket",
+            "s3:GetBucketLocation"
+          ],
+          "Effect": "Allow"
+        },
+        {
+          "Resource": [
+            "arn:aws:s3:::MYBUCKET/*"
+          ],
+          "Action": [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:DeleteObject"
+          ],
+          "Effect": "Allow"
+        }
+      ],
+      "Version": "2012-10-17"
+    }
 
 Configure database settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
