@@ -121,28 +121,27 @@ aws ec2 describe-instances \
     $EXTRA_AWS_CLI_ARGS
 
 # get ELB public DNS name through cloudformation
-# TODO: is "first output value" going to be reliable enough?
 export ELB_DNS_NAME=$(aws cloudformation describe-stacks \
     --stack-name $STACK_NAME \
     --max-items 1 \
-    --query 'Stacks[].[ Outputs[0].[ OutputValue ] ]' \
+    --query 'Stacks[].[ Outputs[?OutputKey==`DNSName`].OutputValue ] ]' \
     --output=text \
     $EXTRA_AWS_CLI_ARGS)
 
 # get ELB friendly name through aws elb
 ELB_NAME=$(aws elb describe-load-balancers \
-    --query 'LoadBalancerDescriptions[].[ DNSName,LoadBalancerName ]' \
+    --query "LoadBalancerDescriptions[?DNSName=='$ELB_DNS_NAME'].[ LoadBalancerName ]" \
     --output=text \
-    $EXTRA_AWS_CLI_ARGS | grep -F $ELB_DNS_NAME | head -n1 | cut -f2)
+    $EXTRA_AWS_CLI_ARGS)
 echo "Using ELB $ELB_NAME at $ELB_DNS_NAME"
 
 # Instance launched into a VPC may not have a PublicIPAddress
 for ip_type in PublicIpAddress PrivateIpAddress; do
     FIRST_INSTANCE=$(aws ec2 describe-instances \
         --filters Name=tag:aws:cloudformation:stack-name,Values=$STACK_NAME Name=instance-state-name,Values=running \
-        --query "Reservations[].Instances[].[$ip_type]" \
+        --query "Reservations[].Instances[].[$ip_type][0]" \
         --output text \
-        $EXTRA_AWS_CLI_ARGS | head -1)
+        $EXTRA_AWS_CLI_ARGS)
     if [[ ! $FIRST_INSTANCE == "None" ]]; then
         break
     fi
