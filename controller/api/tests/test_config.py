@@ -19,13 +19,7 @@ from rest_framework.authtoken.models import Token
 
 import api.exceptions
 from api.models import App, Config
-
-
-def mock_status_ok(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
+from . import mock_status_ok
 
 
 def mock_status_not_found(*args, **kwargs):

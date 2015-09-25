@@ -7,7 +7,6 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
@@ -16,13 +15,7 @@ from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release
 from scheduler.states import TransitionError
-
-
-def mock_import_repository_task(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
+from . import mock_status_ok
 
 
 @mock.patch('api.models.publish_release', lambda *args: None)
@@ -171,7 +164,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_container_api_docker(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -234,7 +227,7 @@ class ContainerTest(TransactionTestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_container_release(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
