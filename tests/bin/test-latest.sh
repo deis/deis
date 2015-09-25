@@ -27,13 +27,13 @@ log_phase "Running test-latest on $DEIS_TEST_APP"
 log_phase "Installing clients"
 
 # install deis CLI from http://deis.io/ website
-pushd $DEIS_ROOT/deisctl
+pushd $DEIS_ROOT/client
 curl -sSL http://deis.io/deis-cli/install.sh | sh
 popd
 
 # install deisctl from http://deis.io/ website
 # installs latest unit files to $HOME/.deis/units
-pushd $DEIS_ROOT/client
+pushd $DEIS_ROOT/deisctl
 curl -sSL http://deis.io/deisctl/install.sh | sh
 popd
 
