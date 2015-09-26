@@ -15,9 +15,7 @@ function check-elb-service {
     rigger-log "Waiting for ELB (${elb_name}) to see an instance in InService..."
     IN_SERVICE=$(aws elb describe-instance-health \
                          --load-balancer-name "${elb_name}" \
-                         --query 'InstanceStates[].State' \
-                 | grep InService \
-                 | wc -l)
+                         --query 'length(InstanceStates[?State==`InService`])')
   done
 }
 
