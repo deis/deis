@@ -35,6 +35,7 @@ setting                                      description
 /deis/builder/host                           host of the builder component (set by builder)
 /deis/builder/port                           port of the builder component (set by builder)
 /deis/config/\*/deis_whitelist               comma separated list of IPs (or CIDR) allowed to connect to the application containers (set by controller) Example: "0.0.0.0:some_optional_label,10.0.0.0/8"
+/deis/config/\*/deny_paths                   comma separated list of paths (absolute paths) to protect (default: not set) Example: "/varz,/statusz,/healthz"
 /deis/controller/host                        host of the controller component (set by controller)
 /deis/controller/port                        port of the controller component (set by controller)
 /deis/domains/\*                             domain configuration for applications (set by controller)
@@ -47,6 +48,7 @@ setting                                      description
 /deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
 /deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
 /deis/router/controller/whitelist            comma separated list of IPs (or CIDR) allowed to connect to the controller (default: not set) Example: "0.0.0.0:some_optional_label,10.0.0.0/8"
+/deis/router/denyPaths                       comma separated list of paths (absolute paths) to protect (default: not set) Example: "/varz,/statusz,/healthz"
 /deis/router/enforceHTTPS                    redirect all HTTP traffic to HTTPS (default: false)
 /deis/router/enforceWhitelist                deny all connections unless specifically whitelisted (default: false)
 /deis/router/firewall/enabled                nginx naxsi firewall enabled (default: false)
