@@ -21,9 +21,11 @@ export REGISTRY_PORT="${PORT:-5000}"
 
 export BUCKET_NAME="${BUCKET_NAME:-registry}"
 
+echo "registry: environment ETCD=${ETCD} ETCD_PATH=${ETCD_PATH} HOST_ETCD_PATH=${HOST_ETCD_PATH} ETCD_TTL=${ETCD_TTL} REGISTRY_PORT=${REGISTRY_PORT} EXTERNAL_PORT=${EXTERNAL_PORT} BUCKET_NAME=${BUCKET_NAME}"
+
 # wait for etcd to be available
 until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
-	echo "registry: waiting for etcd at $ETCD..."
+	echo "registry: waiting for etcd at ${ETCD}..."
 	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -35,8 +37,7 @@ function etcd_set_default {
   ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
 
   if [[ $? -ne 0 ]] && echo "$ERROR" | grep -iqve "key already exists"; then
-    echo "registry: etcd_set_default: an etcd error occurred ($ERROR)"
-    echo "registry: aborting..."
+    echo "registry: etcd_set_default($1=$2) aborting, an etcd error occurred ($ERROR)"
     exit 1
   fi
   set -e
@@ -53,15 +54,20 @@ until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
 done
 
 # ensure registry bucket exists
+echo "registry: creating bucket"
 /app/bin/create_bucket
+echo "registry: bucket created"
 
 # spawn the service in the background
+echo "registry: starting registry"
 cd /docker-registry
 sudo -E -u registry docker-registry &
 SERVICE_PID=$!
+echo "registry: docker registry started in background with pid: ${SERVICE_PID}"
 
 # smart shutdown on SIGINT and SIGTERM
 function on_exit() {
+	echo "registry: on_exit() called"
 	kill -TERM $SERVICE_PID
 	wait $SERVICE_PID 2>/dev/null
 	exit 0
@@ -70,8 +76,6 @@ trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
 confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
-
-echo "deis-registry running..."
 
 # publish the service to etcd using the injected EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
@@ -83,8 +87,9 @@ if [[ ! -z $EXTERNAL_PORT ]]; then
 	set +e
 
 	# wait for the service to become available on PORT
-	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; done
+	sleep 1 && while [[ -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do sleep 1; echo "registry: waiting for service to become available"; done
 
+	echo "registry: starting loop to update service discovery"
 	# while the port is listening, publish to etcd
 	while [[ ! -z $(netstat -lnt | awk "\$6 == \"LISTEN\" && \$4 ~ \".$PORT\" && \$1 ~ \"$PROTO.?\"") ]] ; do
 		if etcdctl --no-sync -C "$ETCD" mk "${ETCD_PATH}/masterLock" "$HOSTNAME" --ttl "$ETCD_TTL" >/dev/null 2>&1 \
