@@ -10,13 +10,6 @@ parser.add_argument('--channel', help='the CoreOS channel to use', default='stab
 parser.add_argument('--version', help='the CoreOS version to use', default='current')
 args = vars(parser.parse_args())
 
-url = "http://{channel}.release.core-os.net/amd64-usr/{version}/coreos_production_ami_all.json".format(**args)
-try:
-    amis = json.load(urllib2.urlopen(url))
-except (IOError, ValueError):
-    print "The URL {} is invalid.".format(url)
-    raise
-
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 # Add AWS-specific units to the shared user-data
@@ -85,6 +78,16 @@ ETCD_DROPIN = '''
   After=prepare-etcd-data-directory.service
 '''
 
+def coreos_amis(channel, version):
+    url = "http://{channel}.release.core-os.net/amd64-usr/{version}/coreos_production_ami_all.json".format(channel=channel, version=version)
+    try:
+        amis = json.load(urllib2.urlopen(url))
+    except (IOError, ValueError):
+        print "The URL {} is invalid.".format(url)
+        raise
+
+    return dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
+
 new_units = [
     dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
     dict({'name': 'var-lib-docker.mount', 'command': 'start', 'content': MOUNT_DOCKER_VOLUME}),
@@ -112,7 +115,7 @@ template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = ["\n", header + dump.split("\n")]
 template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
-template['Mappings']['CoreOSAMIs'] = dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
+template['Mappings']['CoreOSAMIs'] = coreos_amis(args['channel'], args['version'])
 
 VPC_ID = os.getenv('VPC_ID', None)
 VPC_SUBNETS = os.getenv('VPC_SUBNETS', None)
