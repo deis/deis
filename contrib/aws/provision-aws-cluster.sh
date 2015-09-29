@@ -125,7 +125,7 @@ aws ec2 describe-instances \
 export ELB_DNS_NAME=$(aws cloudformation describe-stacks \
     --stack-name $STACK_NAME \
     --max-items 1 \
-    --query 'Stacks[].[ Outputs[?OutputKey==`DNSName`].OutputValue ] ]' \
+    --query 'Stacks[].[ Outputs[?OutputKey==`DNSName`].OutputValue ]' \
     --output=text \
     $EXTRA_AWS_CLI_ARGS)
 
