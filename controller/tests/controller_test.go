@@ -49,6 +49,7 @@ func TestController(t *testing.T) {
 		err = dockercli.RunContainer(cli,
 			"--name", name,
 			"--rm",
+			"-v", "/var/run/docker.sock:/var/run/docker.sock",
 			"-v", "/var/run/fleet.sock:/var/run/fleet.sock",
 			"-p", port+":8000",
 			"-e", "EXTERNAL_PORT="+port,
