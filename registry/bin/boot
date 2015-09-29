@@ -23,7 +23,7 @@ export BUCKET_NAME="${BUCKET_NAME:-registry}"
 
 # wait for etcd to be available
 until etcdctl --no-sync -C "$ETCD" ls >/dev/null 2>&1; do
-	echo "waiting for etcd at $ETCD..."
+	echo "registry: waiting for etcd at $ETCD..."
 	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
@@ -35,8 +35,8 @@ function etcd_set_default {
   ERROR="$(etcdctl --no-sync -C "$ETCD" mk "$ETCD_PATH/$1" "$2" 2>&1 >/dev/null)"
 
   if [[ $? -ne 0 ]] && echo "$ERROR" | grep -iqve "key already exists"; then
-    echo "etcd_set_default: an etcd error occurred ($ERROR)"
-    echo "aborting..."
+    echo "registry: etcd_set_default: an etcd error occurred ($ERROR)"
+    echo "registry: aborting..."
     exit 1
   fi
   set -e
@@ -71,7 +71,7 @@ trap on_exit INT TERM
 # spawn confd in the background to update services based on etcd changes
 confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
 
-echo deis-registry running...
+echo "deis-registry running..."
 
 # publish the service to etcd using the injected EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then
