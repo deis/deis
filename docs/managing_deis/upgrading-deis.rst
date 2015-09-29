@@ -261,6 +261,12 @@ functioning properly.
   Deis. It is always recommended to provision a Deis release with the CoreOS version specified
   in that release's provision scripts or documentation.
 
+.. important::
+
+  Upgrading a cluster can result in simultaneously running different etcd versions,
+  which may introduce incompatibilities that result in a broken etcd cluster. It is
+  always recommended to first test upgrades in a non-production cluster whenever possible.
+
 While typically not recommended, it is possible to trigger an update of a CoreOS machine. Some
 Deis releases may recommend a CoreOS upgrade - in these cases, the release notes for a Deis release
 will point to this documentation.
