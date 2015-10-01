@@ -1,0 +1,29 @@
+{
+  "newStorageAccountName": {
+    "value": ""
+  },
+  "publicDomainName": {
+    "value": ""
+  },
+  "dnsPrefixNameForPublicIP": {
+    "value": ""
+  },
+  "vmSize": {
+    "value": "Standard_A3"
+  },
+  "adminUsername": {
+    "value": "core"
+  },
+  "sshKeyData": {
+    "value": ""
+  },
+  "customData": {
+    "value": ""
+  },
+  "numberOfNodes": {
+    "value": 3
+  },
+  "dockerVolumeSize": {
+    "value": 100
+  }
+}

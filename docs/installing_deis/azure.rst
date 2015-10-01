@@ -23,68 +23,65 @@ If you haven't already, install these on your development machine:
     $ brew install python
     $ sudo pip install azure pyyaml
 
-Generate Certificates
----------------------
-
-The azure-coreos-cluster creation tool uses the Azure management REST API to create the CoreOS
-cluster which uses a management certificate to authenticate.
-
-If you don't have a management certificate already configured, the script generate-mgmt-cert.sh can
-create this certificate for you. Otherwise, you can skip to the next section.
-
-If you need to create a certificate, edit cert.conf in contrib/azure with your company's details and then run:
-
-.. code-block:: console
-
-    $ ./generate-mgmt-cert.sh
-
-Upload Management Cert
-----------------------
-
-If you haven't uploaded your management certificate to Azure (azure-cert.cer if you used the script
-in the previous section), do that now using the `management certificates tab`_ of the
-Azure portal's Settings.
-
-Also copy the Azure subscription id from this table and save it for the cluster creation script below.
-
-
 Create CoreOS Cluster
 ---------------------
 
-With the management certificate and cloud config in place, we are ready to create our cluster.
-
-* Create a virtual network with a name of your choosing, containing at least one subnet.  This is required to ensure that nodes get a static private IP address.  Note the name of the virtual network and subnet for the cluster creation script below.
-* Create a container called ``vhds`` within a storage account in the same region as your cluster using the Azure portal. Note the URL of the container for the cluster creation script below.
-* Choose a cloud service name for your Deis cluster for the script below. The script will automatically create this cloud service for you.
-* Create an `affinity group`_ if you don't already have one. Supply it in quotes with the ``--affinity-group`` parameter. Although *using an affinity group is not mandatory*, it is **highly recommended** since it tells the Azure fabric to place all VMs in the cluster physically close to each other, reducing inter-node latency by a great deal. If you don't want to use affinity groups, specify a `region`_ for Azure to use with a ``--location`` parameter. The default is ``"West US"``. If you specify both parameters, ``location`` will be ignored. Please note that the script *will not* create an affinity group by itself; it expects the affinity group exists.
-
-This script calls the ``./create-azure-user-data`` script which takes the stock cluster instance config in ``../coreos/user-data.example``, customizes it for Azure, and inserts a unique cluster discovery
-endpoint. It will then use the newly created CoreOS config on the newly provisioned cluster.
-
-With that, let's run the azure-coreos-cluster script which will create the CoreOS cluster. Fill in the bracketed values with the values for your deployment you created above.
+First, login to the Azure CLI:
 
 .. code-block:: console
 
-    $ ./azure-coreos-cluster [cloud service name]
-         --subscription [subscription id]
-         --azure-cert azure-cert.pem
-         --num-nodes 3
-         --affinity-group [affinity group name]
-         --vm-size Large
-         --pip
-         --deis
-         --blob-container-url https://[blob container].blob.core.windows.net/vhds/
-         --data-disk
-         --custom-data azure-user-data
-         --virtual-network-name [virtual network name]
-         --subnet-names [subnet name]
+    $ azure login
 
-This script will by default provision a 3-node cluster, but you can increase this with the
-``--num-nodes`` parameter. Likewise, you can increase the VM size using ``--vm-size``.
-It is not recommended that you use smaller than Large (A3) sized instances.
+.. note::
 
-A Deis cluster must have 3 or more nodes. See :ref:`cluster-size` for more details.
+    Deis makes use of `Azure Resource Manager`_ to submit a template
+    describing the infrastructure that we'd like to create. You'll need an
+    `organizational account`_ (not a typical Microsoft or Live account) in order to
+    use this template.
 
+Instruct the client to switch to ARM mode:
+
+.. code-block:: console
+
+    $ azure config mode arm
+
+Switch to the ``contrib/azure`` directory:
+
+.. code-block:: console
+
+    $ cd contrib/azure
+
+Generate a new discovery URL for the deployment so the hosts can find each other:
+
+.. code-block:: console
+
+    $ ./create-azure-user-data $(curl -s https://discovery.etcd.io/new)
+
+Next, edit ``parameters.json`` to configure the parameters required for the
+cluster. For ``sshKeyData``, use the public key material for the SSH key you'd like
+to use to log into the hosts. For ``customData``, you'll need to supply the
+base64-encoded version of ``azure-user-data``. This can be generated using ``base64``:
+
+.. code-block:: console
+
+    $ base64 azure-user-data
+
+Paste the result into ``parameters.json``.
+
+Finally, we can deploy. Choose a valid location to deploy -- you can list all locations
+with ``azure location list``:
+
+.. code-block:: console
+
+    $ azure group create --name deis --location "West US" --deployment-name deis --template-file arm-template.json --parameters-file parameters.json
+
+Each instance will have a public IP address which can be used to log in via SSH
+or as a tunnel endpoint for ``deisctl``. You can get these IPs from the Azure Portal
+or via the CLI with ``azure vm show``:
+
+.. code-block:: console
+
+    $ azure vm show deisNode0 --resource-group deis
 
 Configure DNS
 -------------
@@ -98,9 +95,6 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
-.. _`management certificates tab`: https://manage.windowsazure.com/#Workspaces/AdminTasks/ListManagementCertificates
+.. _`Azure Resource Manager`: https://azure.microsoft.com/en-us/documentation/articles/resource-group-overview/
 .. _`contrib/azure`: https://github.com/deis/deis/tree/master/contrib/azure
-.. _`etcd`: https://github.com/coreos/etcd
-.. _`etcd disaster recovery`: https://github.com/coreos/etcd/blob/master/Documentation/admin_guide.md#disaster-recovery
-.. _`region`: http://azure.microsoft.com/en-us/regions/
-.. _`affinity group`: https://msdn.microsoft.com/en-gb/library/azure/jj156085.aspx
+.. _`organizational account`: http://www.brucebnews.com/2013/04/the-difference-between-a-microsoft-account-and-an-office-365-account/
