@@ -65,6 +65,7 @@ etcd_safe_mkdir /deis/services
 echo "controller: running etcd data migrations..."
 for script in /app/migrations/data/*.sh;
 do
+	# shellcheck disable=SC1090
     . "$script";
 done
 echo "controller: done running etcd data migrations."
