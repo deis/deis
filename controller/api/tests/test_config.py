@@ -9,23 +9,17 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import mock
 import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import etcd
+import mock
 from rest_framework.authtoken.models import Token
 
 import api.exceptions
 from api.models import App, Config
-
-
-def mock_status_ok(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
+from . import mock_status_ok
 
 
 def mock_status_not_found(*args, **kwargs):
@@ -52,6 +46,7 @@ class MockEtcdClient:
         return etcd.EtcdResult(None, node)
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class ConfigTest(TransactionTestCase):
 
     """Tests setting and updating config values"""

@@ -867,8 +867,7 @@ class Release(UuidAuditedModel):
         source_tag = 'git-{}'.format(self.build.sha) if self.build.sha else source_version
         source_image = '{}:{}'.format(self.build.image, source_tag)
         # IOW, this image did not come from the builder
-        # FIXME: remove check for mock registry module
-        if not self.build.sha and 'mock' not in settings.REGISTRY_MODULE:
+        if not self.build.sha:
             # we assume that the image is not present on our registry,
             # so shell out a task to pull in the repository
             data = {

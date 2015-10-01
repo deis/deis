@@ -10,7 +10,6 @@ import json
 import logging
 import mock
 import os.path
-import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,13 +17,7 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
 from api.models import App
-
-
-def mock_import_repository_task(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
+from . import mock_status_ok
 
 
 class AppTest(TestCase):
@@ -198,7 +191,7 @@ class AppTest(TestCase):
         self.assertIn('structure', response.data)
         self.assertEqual(response.data['structure'], {"web": 1})
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     @mock.patch('api.models.logger')
     def test_admin_can_manage_other_apps(self, mock_logger):
         """Administrators of Deis should be able to manage all applications.

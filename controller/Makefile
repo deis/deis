@@ -74,7 +74,7 @@ setup-venv:
 	venv/bin/pip install --disable-pip-version-check -q -r requirements.txt -r dev_requirements.txt
 
 test-style: setup-venv
-	venv/bin/flake8
+	venv/bin/flake8 --show-pep8 --show-source
 	shellcheck $(SHELL_SCRIPTS)
 
 test-unit: setup-venv test-style

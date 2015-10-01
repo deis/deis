@@ -7,22 +7,17 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import mock
-import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+import mock
 from rest_framework.authtoken.models import Token
 
-
-def mock_import_repository_task(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
+from . import mock_status_ok
 
 
+@mock.patch('api.models.publish_release', lambda *args: None)
 class HookTest(TransactionTestCase):
 
     """Tests API hooks used to trigger actions from external components"""
@@ -97,7 +92,7 @@ class HookTest(TransactionTestCase):
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_build_hook(self):
         """Test creating a Build via an API Hook"""
         url = '/v1/apps'

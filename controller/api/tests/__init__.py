@@ -6,6 +6,7 @@ import os
 from django.conf import settings
 from django.test.client import RequestFactory, Client
 from django.test.simple import DjangoTestSuiteRunner
+import requests
 
 
 # add patch support to built-in django test client
@@ -46,18 +47,25 @@ class SilentDjangoTestSuiteRunner(DjangoTestSuiteRunner):
             test_labels, extra_tests, **kwargs)
 
 
+def mock_status_ok(*args, **kwargs):
+    resp = requests.Response()
+    resp.status_code = 200
+    resp._content_consumed = True
+    return resp
+
+
 from .test_api_middleware import *  # noqa
 from .test_app import *  # noqa
 from .test_auth import *  # noqa
 from .test_build import *  # noqa
-from .test_config import *  # noqa
-from .test_domain import *  # noqa
 from .test_certificate import *  # noqa
+from .test_config import *  # noqa
 from .test_container import *  # noqa
+from .test_domain import *  # noqa
 from .test_hooks import *  # noqa
 from .test_key import *  # noqa
+from .test_limits import *  # noqa
 from .test_perm import *  # noqa
 from .test_release import *  # noqa
 from .test_scheduler import *  # noqa
 from .test_users import *  # noqa
-from .test_limits import *  # noqa

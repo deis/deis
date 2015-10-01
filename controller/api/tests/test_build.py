@@ -7,23 +7,17 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 import json
-import mock
-import requests
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+import mock
 from rest_framework.authtoken.models import Token
 
 from api.models import Build
+from . import mock_status_ok
 
 
-def mock_import_repository_task(*args, **kwargs):
-    resp = requests.Response()
-    resp.status_code = 200
-    resp._content_consumed = True
-    return resp
-
-
+@mock.patch('api.models.publish_release', lambda *args: None)
 class BuildTest(TransactionTestCase):
 
     """Tests build notification from build system"""
@@ -34,7 +28,7 @@ class BuildTest(TransactionTestCase):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_build(self):
         """
         Test that a null build is created and that users can post new builds
@@ -82,7 +76,7 @@ class BuildTest(TransactionTestCase):
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 405)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_response_data(self):
         """Test that the serialized response contains only relevant data."""
         body = {'id': 'test'}
@@ -108,7 +102,7 @@ class BuildTest(TransactionTestCase):
         }
         self.assertDictContainsSubset(expected, response.data)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_build_default_containers(self):
         url = '/v1/apps'
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
@@ -194,7 +188,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(container['type'], 'web')
         self.assertEqual(container['num'], 1)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_build_str(self):
         """Test the text representation of a build."""
         url = '/v1/apps'
@@ -211,7 +205,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(str(build), "{}-{}".format(
                          response.data['app'], response.data['uuid'][:7]))
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_admin_can_create_builds_on_other_apps(self):
         """If a user creates an application, an administrator should be able
         to push builds.
@@ -233,7 +227,7 @@ class BuildTest(TransactionTestCase):
         self.assertEqual(str(build), "{}-{}".format(
                          response.data['app'], response.data['uuid'][:7]))
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_unauthorized_user_cannot_modify_build(self):
         """
         An unauthorized user should not be able to modify other builds.
@@ -254,7 +248,7 @@ class BuildTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(unauthorized_token))
         self.assertEqual(response.status_code, 403)
 
-    @mock.patch('requests.post', mock_import_repository_task)
+    @mock.patch('requests.post', mock_status_ok)
     def test_new_build_does_not_scale_up_automatically(self):
         """
         After the first initial deploy, if the containers are scaled down to zero,
