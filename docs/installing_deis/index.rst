@@ -24,7 +24,6 @@ information on how to get set up with CoreOS.
     aws
     baremetal
     digitalocean
-    engineyard
     gce
     linode
     azure

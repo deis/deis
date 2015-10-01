@@ -6,8 +6,6 @@ Quick Start
 
 These steps will help you provision a Deis cluster.
 
-.. include:: ../_includes/_deis-pro.rst
-
 .. _get_the_source:
 
 Get the Source
