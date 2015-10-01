@@ -215,7 +215,7 @@ func (c *Client) Journal(argv []string) error {
 	usage := `Prints log output for the specified components.
 
 Usage:
-  deisctl journal [<target>...] [options]
+  deisctl journal [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -231,7 +231,7 @@ func (c *Client) List(argv []string) error {
 	usage := `Prints a list of installed units.
 
 Usage:
-  deisctl list [options]
+  deisctl list
 `
 	// parse command-line arguments
 	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
@@ -275,7 +275,7 @@ func (c *Client) Restart(argv []string) error {
 	usage := `Stops and then starts the specified components.
 
 Usage:
-  deisctl restart [<target>...] [options]
+  deisctl restart [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -293,7 +293,7 @@ func (c *Client) Scale(argv []string) error {
 Currently "router", "registry" and "store-gateway" are the only types that can be scaled.
 
 Usage:
-  deisctl scale [<target>...] [options]
+  deisctl scale [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -368,7 +368,7 @@ func (c *Client) Start(argv []string) error {
 	usage := `Activates the specified components.
 
 Usage:
-  deisctl start [<target>...] [options]
+  deisctl start [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -384,7 +384,7 @@ func (c *Client) Status(argv []string) error {
 	usage := `Prints the current status of components.
 
 Usage:
-  deisctl status [<target>...] [options]
+  deisctl status [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -400,7 +400,7 @@ func (c *Client) Stop(argv []string) error {
 	usage := `Deactivates the specified components.
 
 Usage:
-  deisctl stop [<target>...] [options]
+  deisctl stop [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
@@ -419,7 +419,7 @@ func (c *Client) Uninstall(argv []string) error {
 After uninstall, the components will be unavailable until install is called.
 
 Usage:
-  deisctl uninstall [<target>...] [options]
+  deisctl uninstall [<target>...]
 `
 	// parse command-line arguments
 	args, err := docopt.Parse(usage, argv, true, "", false)
