@@ -12,16 +12,20 @@ Before you start, :ref:`get the Deis source <get_the_source>` and change directo
 while following this documentation.
 
 
-Install Python and Azure SDK for Python
----------------------------------------
+Install Tools
+-------------
 
-The cluster creation tool uses Python and the Python Azure library to create a CoreOS cluster.
+The cluster creation tool uses a Python script to generate a configuration file.
+This script uses PyYAML, a Python library, to do its work.
+
 If you haven't already, install these on your development machine:
 
 .. code-block:: console
 
     $ brew install python
-    $ sudo pip install azure pyyaml
+    $ sudo pip install pyyaml
+
+Additionally, we'll also need to install the `Azure CLI`_ from Microsoft.
 
 Create CoreOS Cluster
 ---------------------
@@ -95,6 +99,7 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
-.. _`Azure Resource Manager`: https://azure.microsoft.com/en-us/documentation/articles/resource-group-overview/
+.. _`Azure CLI`: https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/
+.. _`Azure Resource Manager`: https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/
 .. _`contrib/azure`: https://github.com/deis/deis/tree/master/contrib/azure
 .. _`organizational account`: http://www.brucebnews.com/2013/04/the-difference-between-a-microsoft-account-and-an-office-365-account/
