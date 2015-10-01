@@ -78,7 +78,7 @@ if ! shellcheck -V &> /dev/null; then
   apt-get install -yq cabal-install
   cabal update
   pushd /tmp
-  git clone --branch v0.3.8 --single-branch https://github.com/koalaman/shellcheck.git
+  git clone --branch v0.4.1 --single-branch https://github.com/koalaman/shellcheck.git
   pushd shellcheck
   cabal install --global
   popd +2
