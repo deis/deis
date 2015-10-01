@@ -12,8 +12,6 @@ Please :ref:`get the source <get_the_source>` and refer to the scripts in `contr
 while following this documentation. You will also need to :ref:`install_deisctl` since the
 ``deisctl`` command-line utility is used by the provisioning script.
 
-.. include:: ../_includes/_deis-pro.rst
-
 Install the AWS Command Line Interface
 --------------------------------------
 
