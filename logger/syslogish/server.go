@@ -13,6 +13,8 @@ import (
 	"github.com/deis/deis/logger/storage"
 )
 
+const queueSize = 500
+
 var appRegex *regexp.Regexp
 
 func init() {
@@ -26,8 +28,9 @@ func init() {
 type Server struct {
 	conn           net.PacketConn
 	listening      bool
-	queue          chan string
+	storageQueue   chan string
 	storageAdapter storage.Adapter
+	drainageQueue  chan string
 	drain          drain.LogDrain
 	adapterMutex   sync.RWMutex
 	drainMutex     sync.RWMutex
@@ -43,7 +46,11 @@ func NewServer(bindHost string, bindPort int) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Server{conn: c, queue: make(chan string, 1000)}, nil
+	return &Server{
+		conn:          c,
+		storageQueue:  make(chan string, queueSize),
+		drainageQueue: make(chan string, queueSize),
+	}, nil
 }
 
 // SetStorageAdapter permits a server's underlying storage.Adapter to be reconfigured (replaced)
@@ -71,7 +78,8 @@ func (s *Server) Listen() {
 	if !s.listening {
 		s.listening = true
 		go s.receive()
-		go s.process()
+		go s.processStorage()
+		go s.processDrainage()
 		log.Println("syslogish server running")
 	}
 }
@@ -86,22 +94,21 @@ func (s *Server) receive() {
 		}
 		message := strings.TrimSuffix(string(buf[:n]), "\n")
 		select {
-		case s.queue <- message:
+		case s.storageQueue <- message:
 		default:
 		}
 	}
 }
 
-func (s *Server) process() {
-	for message := range s.queue {
+func (s *Server) processStorage() {
+	for message := range s.storageQueue {
 		app, err := getAppName(message)
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		// Get a read lock to ensure the storage adapater pointer can't be updated by another
-		// goroutine in the time between we check if it's nil and the time we invoke .Write() upon
-		// it.
+		// Get a read lock to ensure the storage adapater pointer can't be nilled by the configurer
+		// in the time between we check if it's nil and the time we invoke .Write() upon it.
 		s.adapterMutex.RLock()
 		// DONT'T defer unlocking... defered statements are executed when the function returns, but
 		// we are inside an infinite loop here.  If we defer, we would never release the lock.
@@ -118,16 +125,37 @@ func (s *Server) process() {
 			// Treating this as a fatal event would cause the deis-logger unit to restart-- sending
 			// even more log messages to STDOUT.  The overall effect would be the same as described
 			// above with the added disadvantages of flapping.
-			//
-			// But, do not return preemptively.  It's possible the message can still be sent to
-			// the drain.
 		}
 		s.adapterMutex.RUnlock()
-		// Same story as above for the lock on the drain
+		// Add the message to the drainage queue.  This allows the storage loop to continue right
+		// away instead of waiting while the message is sent to an external service-- since that
+		// could be a bottleneck and error prone depending on rate limiting, network congestion, etc.
+		select {
+		case s.drainageQueue <- message:
+		default:
+		}
+	}
+}
+
+func (s *Server) processDrainage() {
+	for message := range s.drainageQueue {
+		// Get a read lock to ensure the drain pointer can't be nilled by the configurer in the time
+		// between we check if it's nil and the time we invoke .Send() upon it.
 		s.drainMutex.RLock()
+		// DONT'T defer unlocking... defered statements are executed when the function returns, but
+		// we are inside an infinite loop here.  If we defer, we would never release the lock.
+		// Instead, release it manually below.
 		if s.drain != nil {
 			s.drain.Send(message)
-			// We don't bother trapping errors here.  The rationale is the same as above.
+			// We don't bother trapping errors here, so failed sends to the drain are silent.  This is
+			// by design.  If we sent a log message to STDOUT in response to the failure, deis-logspout
+			// would read it and forward it back to deis-logger, which would fail again to send to the
+			// drain and spawn ANOTHER log message.  The effect would be an infinite loop of undrainable
+			// log messages that would nevertheless fill up journal logs and eventually overake the disk.
+			//
+			// Treating this as a fatal event would cause the deis-logger unit to restart-- sending
+			// even more log messages to STDOUT.  The overall effect would be the same as described
+			// above with the added disadvantages of flapping.
 		}
 		s.drainMutex.RUnlock()
 	}
