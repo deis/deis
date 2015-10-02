@@ -15,4 +15,4 @@ VOLUME ["/opt/zookeeper-data"]
 
 ENTRYPOINT ["/app/bin/boot"]
 
-ENV DEIS_RELEASE 1.11.0-dev
+ENV DEIS_RELEASE 1.11.0

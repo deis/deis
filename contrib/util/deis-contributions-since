@@ -10,7 +10,7 @@ if date_since.nil? or date_since.empty?
 end
 
 # ignore project maintainers
-ignored_contributors = %w[aledbf bacongobbler carmstrong gabrtv kalbasit kmala krancour johanneswuerbach iancoffey mboersma sgoings smothiki technosophos]
+ignored_contributors = %w[adamreese aledbf bacongobbler carmstrong dwmcallister gabrtv helgi iancoffey jackfrancis jchauncey kalbasit kmala krancour johanneswuerbach lanej mboersma michelleN mikedup rimusz sgoings slack smothiki technosophos]
 
 # make our GitHub calls here
 client = Octokit::Client.new(:access_token => ENV['GITHUB_ACCESS_TOKEN'])

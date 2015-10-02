@@ -1,3 +1,57 @@
+### v1.10.1 -> v1.11.0
+
+#### Features
+
+ - [`46a5ec7`](https://github.com/deis/deis/commit/46a5ec7df73a8015a1687ee0c36a490d3cf79003) Registry: add support for IAM role authentication
+ - [`b60b8f9`](https://github.com/deis/deis/commit/b60b8f9932ba3be26ea2b643c36c37e1ba862a68) client: print error messages to stderr
+ - [`4d25e8b`](https://github.com/deis/deis/commit/4d25e8b300024b27d861f967580fc8c4f122115e) contrib/vagrant: auto discover DEISCTL_TUNNEL via Vagrant
+ - [`ff221e4`](https://github.com/deis/deis/commit/ff221e4954871b3da590d1c97f04c3e3c154a32a) controller: publish etcd keys at controller start
+ - [`4a5606f`](https://github.com/deis/deis/commit/4a5606f50c6f6f26e5b716ec51bcb687bc57f78c) router: improve healthcheck
+ - [`3838a0a`](https://github.com/deis/deis/commit/3838a0ad238baba12bc3128a8c8073431563cbc8) Router: IP whitelisting for apps and controller
+ - [`418b998`](https://github.com/deis/deis/commit/418b9986ca2003982db31cae772978c2c3807734) controller: allow users to transfer app ownership.
+
+#### Fixes
+
+ - [`e19fdcb`](https://github.com/deis/deis/commit/e19fdcb580c2fef2cf2f07211f61dd4c192e9be7) client: add newline for usage message
+ - [`b11b45c`](https://github.com/deis/deis/commit/b11b45c53091e6bd9926b213a61b77e19017a9d9) deisctl: remove unused options docstring
+ - [`29b6c0b`](https://github.com/deis/deis/commit/29b6c0b2aab51739cd2a128f7fd5dbbb6b305809) contrib/aws: stray bracket in aws query removed
+ - [`6e91f50`](https://github.com/deis/deis/commit/6e91f5034c3aa7bfff6110f2418b7c85134f7ff0) tests: binaries are installed in the wrong directories
+ - [`7421f01`](https://github.com/deis/deis/commit/7421f01cbcd0c6be617b9c4c8f9e4408ef63f8b0) client: accept multi line config vars.
+ - [`1b331a9`](https://github.com/deis/deis/commit/1b331a9172f999f0795e56f9b97e26457b5bfd16) deisctl: fixes for graceful upgrades.
+ - [`3a287ac`](https://github.com/deis/deis/commit/3a287ac722c060284f8e63c32275b71f770de566) contrib: Zone argument not supported for aws
+ - [`01daf4d`](https://github.com/deis/deis/commit/01daf4dbbfec07f2ce73b3cbfd3106107db29364) contrib: urlopen call hangs
+ - [`799e559`](https://github.com/deis/deis/commit/799e55995ed630a93526c17a67dc81932b9b0d8d) deisctl: fix refresh-units as cache is now missing
+ - [`306e63d`](https://github.com/deis/deis/commit/306e63d4c9aeaaa793727af8faa4ec70b1811db2) controller: validate config keys at the api level
+ - [`e3a28b4`](https://github.com/deis/deis/commit/e3a28b48a451338e12165ab769d9c711f9533805) client: suggest help when git remote creation fails
+ - [`0bd2471`](https://github.com/deis/deis/commit/0bd24715f24d23b705ec4cd0a8d266506b95c4f5) contrib/coreos: mask etcd.service
+ - [`f7d55f6`](https://github.com/deis/deis/commit/f7d55f66bdc178648d6f5abaabbbaf4025d165c8) deisctl: add status command to help screen
+ - [`53bf1ed`](https://github.com/deis/deis/commit/53bf1ed8ec2b44f34290aa04318734a779214960) controller: state property can't be used in a list_filter in the Django web admin
+ - [`05b6d03`](https://github.com/deis/deis/commit/05b6d03dc7f01251eb82fe96d2814de38d88c3f2) client: print logs that lack a category prefix
+ - [`b12772d`](https://github.com/deis/deis/commit/b12772d3bd09503c345c5a7403b58582ffb039b8) firewall: check etcd is running
+ - [`404889c`](https://github.com/deis/deis/commit/404889c9a835d442818592d83cf0f2a2d22f2fc4) controller: write app event logs via logspout
+ - [`c5bb64b`](https://github.com/deis/deis/commit/c5bb64ba5851cdc4ae97c43de1523ad43f509499) Makefile: silence docker-machine warning when it isn't installed
+ - [`7bd72ff`](https://github.com/deis/deis/commit/7bd72ff63daf277962fbcf4edfd0d6770d5db37b) controller: healthcheck no longer check non-web processes
+ - [`e68d5e2`](https://github.com/deis/deis/commit/e68d5e292814231e30054d98dab2df47e4278928) client-go: error deserializing json
+ - [`1330404`](https://github.com/deis/deis/commit/1330404b3f84206c71294ac2d65c050e01b043b0) controller: clarify error if registration is disabled
+
+#### Documentation
+
+ - [`c3381a0`](https://github.com/deis/deis/commit/c3381a0cca1add9fd62535e74f8f885911d75c51) installing_deis: remove try.deis.com references
+ - [`70b060c`](https://github.com/deis/deis/commit/70b060c001ed952ac2371266d89362a0c8971265) installing_deis: install Azure CLI
+ - [`bc33750`](https://github.com/deis/deis/commit/bc337508b025595e135b087052bbedd40ceafb46) managing_deis: add caveat for different etcd versions
+ - [`c78854f`](https://github.com/deis/deis/commit/c78854fcd458357af58593030943b997616d8080) managing_deis: add OpenStack Swift store example
+ - [`751f6cf`](https://github.com/deis/deis/commit/751f6cfb7d237e5f88b23b069dd0ba480084f5b4) understanding_deis: add section on router mesh
+ - [`55cb83f`](https://github.com/deis/deis/commit/55cb83ff854eae1257145fd8cc6820456cb6d224) running-deis-without-ceph: s3 region var
+ - [`f9cd978`](https://github.com/deis/deis/commit/f9cd978ae1ab7c696d2b74cde211b6c3cd2afb3f) quickstart: added install deisctl step at top of quick start docs
+
+#### Maintenance
+
+ - [`2333ccd`](https://github.com/deis/deis/commit/2333ccdc19969a6affa1b8b2225b88d186a2af33) logger: refactor-- also includes new features
+ - [`6026ac6`](https://github.com/deis/deis/commit/6026ac61c12070f098e21ba978a22b970e7f5a15) tests: update shellcheck to 0.4.1
+ - [`c2dedfb`](https://github.com/deis/deis/commit/c2dedfb13546c1840a043a49f50fc657f3df1adb) (all): update CoreOS to 766.4.0
+ - [`43f0833`](https://github.com/deis/deis/commit/43f08330bb4fcf830447a8d962b0f25238c250e1) (all): update CoreOS to 766.3.0
+ - [`a1b431b`](https://github.com/deis/deis/commit/a1b431bcfa57e5768f980110e3ffa66b09507784) tests: update virtualbox and vagrant
+
 ### v1.10.0 -> v1.10.1
 
 #### Fixes

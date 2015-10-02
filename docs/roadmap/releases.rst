@@ -44,7 +44,7 @@ Patch Release
         docs/installing_deis/install-deisctl.rst \
         docs/installing_deis/install-platform.rst \
         docs/managing_deis/upgrading-deis.rst \
-        docs/reference/api-v1.6.rst \
+        docs/reference/api-v1.7.rst \
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
@@ -86,7 +86,7 @@ Major or Minor Release
         client/deis-version \
         controller/deis/__init__.py \
         deisctl/deis-version \
-        docs/reference/api-v1.5.rst \
+        docs/reference/api-v1.7.rst \
         version/version.go
 
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
@@ -161,7 +161,7 @@ Patch Release
       docs/installing_deis/install-deisctl.rst \
       docs/installing_deis/install-platform.rst \
       docs/managing_deis/upgrading-deis.rst \
-      docs/reference/api-v1.6.rst \
+      docs/reference/api-v1.7.rst \
       docs/troubleshooting_deis/index.rst
 
   - ``git commit -a -m 'chore(release): update version in master to vA.B.D'``
