@@ -27,6 +27,9 @@ Application logs can be drained to an external syslog server (or compatible serv
 
 This will send all application logs - there is currently no way to drain logs per application.
 
+Log drain endpoints must be prefixed with a protocol. The currently supported
+protocols are ``syslog`` and ``https``.
+
 Routing host logs to a custom location
 --------------------------------------
 

@@ -30,7 +30,7 @@ func filter(m syslog.SyslogMessage) bool {
 
 func newHandler() *handler {
 	h := handler{
-		BaseHandler: syslog.NewBaseHandler(5, filter, false),
+		BaseHandler: syslog.NewBaseHandler(100, filter, false),
 	}
 
 	go h.mainLoop() // BaseHandler needs some goroutine that reads from its queue
