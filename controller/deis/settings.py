@@ -280,7 +280,6 @@ TEST_RUNNER = 'api.tests.SilentDjangoTestSuiteRunner'
 ETCD_HOST, ETCD_PORT = os.environ.get('ETCD', '127.0.0.1:4001').split(',')[0].split(':')
 
 # default deis settings
-DEIS_LOG_DIR = os.path.abspath(os.path.join(__file__, '..', '..', 'logs'))
 LOG_LINES = 1000
 TEMPDIR = tempfile.mkdtemp(prefix='deis')
 DEIS_DOMAIN = 'deisapp.local'
@@ -306,6 +305,10 @@ BUILDER_KEY = os.environ.get('DEIS_BUILDER_KEY', 'CHANGEME_sapm$s%upvsw5l_zuy_&2
 REGISTRY_URL = 'http://localhost:5000'
 REGISTRY_HOST = 'localhost'
 REGISTRY_PORT = 5000
+
+# logger settings
+LOGGER_HOST = 'localhost'
+LOGGER_PORT = 8088
 
 # check if we can register users with `deis register`
 REGISTRATION_ENABLED = True

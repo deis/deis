@@ -262,7 +262,7 @@ func TestStartStatelessPlatform(t *testing.T) {
 	t.Parallel()
 
 	b := backendStub{}
-	expected := []string{"logspout", "registry@*", "controller",
+	expected := []string{"logger", "logspout", "registry@*", "controller",
 		"builder", "publisher", "router@*", "registry@*", "controller",
 		"builder", "publisher", "router@*"}
 
@@ -575,7 +575,7 @@ func TestInstallStatelessPlatform(t *testing.T) {
 	b := backendStub{}
 	cb := mock.ConfigBackend{}
 
-	expected := []string{"logspout", "registry@1",
+	expected := []string{"logger", "logspout", "registry@1",
 		"controller", "builder", "publisher", "router@1", "router@2", "router@3"}
 
 	Install([]string{"stateless-platform"}, &b, &cb, fakeCheckKeys)

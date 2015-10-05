@@ -30,6 +30,7 @@ setting                                  description
 /deis/controller/unitHostname            See `Unit hostname`_. (default: "default")
 /deis/builder/users/*                    stores user SSH keys (used by builder)
 /deis/domains/*                          domain configuration for applications (used by router)
+/deis/logs/host                          IP address of the host running logger
 =============================            =================================================================================
 
 Settings used by controller

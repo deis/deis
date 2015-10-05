@@ -28,7 +28,18 @@ setting                                  description
 
 Settings used by logger
 -------------------------
-The logger component uses no keys from etcd.
+The following etcd keys are used by the logger component.
+
+====================================      ================================================================================
+setting                                   description
+====================================      ================================================================================
+/deis/logs/storageAdapterType             Type of storage adapter to use: ``file`` or ``memory``; if not set, ``file`` is assumed.  It is also possible so specify the size of the in-memory adapter's internal ring buffer (in lines; a line is a max of 65k) using a value like: ``memory:<size>``.  1000 is the default size.
+/deis/logs/drain                          URL for an external service that logs can be forwarded to for long-term archival. If not set, no drain is used.  URLs beginning with ``udp://``, ``syslog://`` use UDP for transport.  URLs beginning with ``tcp://`` use TCP.
+====================================      ================================================================================
+
+.. note::
+
+  Those running the stateless (Ceph-less) platform should prefer the in-memory storage adapter.
 
 Using a custom logger image
 ---------------------------
