@@ -72,7 +72,7 @@ Use 'git push deis master' to deploy to an application.
 	}
 
 	if len(argv) == 0 {
-		fmt.Fprintf(os.Stderr, "Usage: deis <command> [<args>...]")
+		fmt.Fprintln(os.Stderr, "Usage: deis <command> [<args>...]")
 		return 1
 	}
 
