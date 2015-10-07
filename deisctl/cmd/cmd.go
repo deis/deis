@@ -35,6 +35,11 @@ func ListUnits(b backend.Backend) error {
 	return b.ListUnits()
 }
 
+// ListMachines prints a list of current hosts.
+func ListMachines(b backend.Backend) error {
+	return b.ListMachines()
+}
+
 // ListUnitFiles prints the contents of all defined unit files.
 func ListUnitFiles(b backend.Backend) error {
 	return b.ListUnitFiles()

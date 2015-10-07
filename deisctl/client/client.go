@@ -22,6 +22,7 @@ type DeisCtlClient interface {
 	Install(argv []string) error
 	Journal(argv []string) error
 	List(argv []string) error
+	Machines(argv []string) error
 	RefreshUnits(argv []string) error
 	Restart(argv []string) error
 	Scale(argv []string) error
@@ -238,6 +239,20 @@ Usage:
 		return err
 	}
 	return cmd.ListUnits(c.Backend)
+}
+
+func (c *Client) Machines(argv []string) error {
+	usage := `List the current hosts in the cluster
+
+
+Usage:
+  deisctl machines
+`
+	// parse command-line arguments
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+	return cmd.ListMachines(c.Backend)
 }
 
 // RefreshUnits overwrites local unit files with those requested.

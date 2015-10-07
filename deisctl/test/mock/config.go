@@ -83,5 +83,3 @@ func (cb ConfigBackend) SetWithTTL(key string, value string, ttl uint64) (string
 	}
 	return "", fmt.Errorf("%s does not exist", cb.Expected)
 }
-
-
