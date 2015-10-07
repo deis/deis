@@ -90,7 +90,7 @@ function aws-deisctl-tunnel {
 (
   cd ${DEIS_ROOT}
   rigger-log "Creating CloudFormation stack ${STACK_NAME}"
-  aws-setup-keypair "${DEIS_TEST_AUTH_KEY}"
+  aws-setup-keypair "${DEIS_TEST_SSH_KEY}"
   aws-provision-cluster "${STACK_NAME}"
 )
 
