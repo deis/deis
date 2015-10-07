@@ -85,7 +85,7 @@ or via the CLI with ``azure vm show``:
 
 .. code-block:: console
 
-    $ azure vm show deisNode0 --resource-group deis
+    $ azure vm show deisNode0 --resource-group deis | grep 'Public IP address'
 
 Configure DNS
 -------------
