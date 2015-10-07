@@ -6,7 +6,7 @@ repo_path = github.com/deis/deis/logger
 GO_FILES = $(wildcard *.go)
 GO_PACKAGES = configurer drain publisher storage syslogish tests weblog
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
-GO_TESTABLE_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,drain drain/udp drain/tcp storage storage/file storage/ringbuffer)
+GO_TESTABLE_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,drain drain/simple storage storage/file storage/ringbuffer)
 
 COMPONENT = $(notdir $(repo_path))
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)

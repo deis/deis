@@ -33,7 +33,7 @@ func TestGetUdpDrain(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if want, got := "*udp.logDrain", reflect.TypeOf(d).String(); want != got {
+	if want, got := "*simple.logDrain", reflect.TypeOf(d).String(); want != got {
 		t.Errorf("Expected a %s, but got a %s", want, got)
 	}
 }
@@ -43,7 +43,7 @@ func TestGetSyslogDrain(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if want, got := "*udp.logDrain", reflect.TypeOf(d).String(); want != got {
+	if want, got := "*simple.logDrain", reflect.TypeOf(d).String(); want != got {
 		t.Errorf("Expected a %s, but got a %s", want, got)
 	}
 }
@@ -53,7 +53,7 @@ func TestGetTcpDrain(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if want, got := "*tcp.logDrain", reflect.TypeOf(d).String(); want != got {
+	if want, got := "*simple.logDrain", reflect.TypeOf(d).String(); want != got {
 		t.Errorf("Expected a %s, but got a %s", want, got)
 	}
 }
