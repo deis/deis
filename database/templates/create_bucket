@@ -12,5 +12,5 @@ conn = boto.connect_s3(
     calling_format=OrdinaryCallingFormat())
 name = sys.argv[1]
 
-if name not in (bucket.name for bucket in conn.get_all_buckets()):
+if not conn.lookup(name):
     conn.create_bucket(name)
