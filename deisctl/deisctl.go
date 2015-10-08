@@ -32,6 +32,7 @@ Commands, use "deisctl help <command>" to learn more:
   install           install components, or the entire platform
   uninstall         uninstall components
   list              list installed components
+  machines          list the current hosts in the cluster
   start             start components
   stop              stop components
   restart           stop, then start components
@@ -75,7 +76,7 @@ Options:
 		return 0
 	}
 
-	command := args["<command>"]
+	command := args["<command>"].(string)
 	setTunnel := true
 	// "--help" and "refresh-units" doesn't need SSH tunneling
 	if helpFlag || command == "refresh-units" {
@@ -95,6 +96,8 @@ Options:
 	switch command {
 	case "list":
 		err = c.List(argv)
+	case "machines":
+		err = c.Machines(argv)
 	case "scale":
 		err = c.Scale(argv)
 	case "start":

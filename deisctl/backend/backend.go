@@ -16,6 +16,7 @@ type Backend interface {
 	SSH(string) error
 	SSHExec(string, string) error
 	Dock(string, []string) error
+	ListMachines() error
 	ListUnits() error
 	ListUnitFiles() error
 	Status(string) error
