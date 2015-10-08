@@ -12,6 +12,15 @@ important to the future of Deis.
 Given the project's rapid :ref:`Release Schedule, <release_schedule>` roadmap items are designed to provide a sense of
 direction over many releases.
 
+Deis v2
+-------
+
+Much of the Deis team's efforts are focused on Deis v2, which will see the Deis
+platform running on Kubernetes.
+
+For details on Deis v2, see the `Deis v2 Design Document`_
+and issues with the `v2`_ tag.
+
 Etcd Hardening
 --------------
 
@@ -62,15 +71,6 @@ Deis will standardize the monitoring interfaces and provide open source agent(s)
  - [ ] Controller Telemetry (app created, build created, containers scaled)
 
 This feature is tracked as GitHub issue `#3699`_.
-
-Stateless Logger
-----------------
-Users who have elected to run a Ceph-less cluster give up application logs since
-``deis-controller`` has nowhere to store them. To alleviate this, we plan to implement an in-memory ring buffer
-for the ``deis-logger`` component, so that a reasonable period of recent logs is stored and can be queried with
-``deis logs``.
-
-This feature is tracked as GitHub issue `#4000`_.
 
 Internal Service Discovery
 --------------------------
@@ -125,13 +125,13 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`#2106`: https://github.com/deis/deis/issues/2106
 .. _`#3072`: https://github.com/deis/deis/issues/3072
 .. _`#3699`: https://github.com/deis/deis/issues/3699
-.. _`#4000`: https://github.com/deis/deis/issues/4000
 .. _`#4222`: https://github.com/deis/deis/issues/4222
 .. _`#4345`: https://github.com/deis/deis/issues/4345
 .. _`#4404`: https://github.com/deis/deis/issues/4404
 .. _`Automatic CoreOS upgrades`: https://github.com/deis/deis/issues/1043
 .. _`CoreUpdate`: https://coreos.com/docs/coreupdate/custom-apps/coreupdate-protocol/
 .. _`Deis Push`: https://github.com/deis/deis/issues/2680
+.. _`Deis v2 Design Document`: https://github.com/deis/deis/issues/4582
 .. _`Docker Registry v2`: https://github.com/deis/deis/issues/3814
 .. _`Google Omaha Protocol`: https://code.google.com/p/omaha/wiki/ServerProtocol
 .. _`Interactive Deis Run`: https://github.com/deis/deis/issues/117
@@ -143,3 +143,4 @@ This feature is tracked as GitHub issue `#231`_.
 .. _`Teams`: https://github.com/deis/deis/issues/4173
 .. _`TTY Broker component`: https://github.com/deis/deis/issues/3808
 .. _`Update client/agent`: https://github.com/deis/deis/issues/3811
+.. _`v2`: https://github.com/deis/deis/labels/v2
