@@ -412,7 +412,7 @@ class App(UuidAuditedModel):
             try:
                 key = "/deis/services/{self}/{container.job_id}".format(**locals())
                 url = "http://{}{}".format(_etcd_client.get(key).value, path)
-                response = requests.get(url, timeout=timeout)
+                response = requests.get(url, timeout=timeout, headers={'host': self.url})
                 if response.status_code != requests.codes.OK:
                     raise exceptions.HealthcheckException(
                         "app failed health check (got '{}', expected: '200')".format(

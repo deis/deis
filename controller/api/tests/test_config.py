@@ -597,6 +597,15 @@ class ConfigTest(TransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(self.app.release_set.latest().version, 3)
 
+    @mock.patch('requests.get')
+    def test_app_healthcheck_has_host_header(self, get_mock):
+        """
+        The healthcheck request should contain a host header with the app fqdn.
+        """
+        self._test_app_healthcheck()
+        get_mock.assert_called_with(mock.ANY, timeout=mock.ANY,
+                                    headers={'host': self.app.url})
+
     @mock.patch('requests.get', mock_status_not_found)
     @mock.patch('api.models.get_etcd_client', lambda func: func)
     @mock.patch('time.sleep', lambda func: func)
@@ -617,8 +626,8 @@ class ConfigTest(TransactionTestCase):
         # assert that the reason why the containers failed was because
         # they failed the health check 4 times; we do this by looking
         # at logs-- there may be a better way
-        exp_msg = "{}: app failed health check (got '404', expected: '200'); trying again in 0.0 \
-seconds".format(self.app.id)
+        exp_msg = "{}: app failed health check (got '404', expected: '200'); trying again " \
+                  "in 0.0 seconds".format(self.app.id)
         exp_log_call = mock.call(logging.WARNING, exp_msg)
         log_calls = mock_logger.log.mock_calls
         self.assertEqual(log_calls.count(exp_log_call), 3)
@@ -691,7 +700,8 @@ seconds".format(self.app.id)
         body = {'values': json.dumps({'HEALTHCHECK_TIMEOUT': 10})}
         self.client.post(url, json.dumps(body), content_type='application/json',
                          HTTP_AUTHORIZATION='token {}'.format(self.token))
-        mock_request.assert_called_with('http://127.0.0.1:1234/', timeout=10)
+        mock_request.assert_called_with('http://127.0.0.1:1234/', timeout=10,
+                                        headers={'host': self.app.url})
 
     @mock.patch('requests.get', mock_request_connection_error)
     @mock.patch('time.sleep', lambda func: func)
