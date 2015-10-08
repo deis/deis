@@ -88,6 +88,11 @@ routers boot up. Many times, there will be no downtime at all.
 
 The process involves two ``deisctl`` subcommands, ``upgrade-prep`` and ``upgrade-takeover``, in coordination with a few other important commands.
 
+.. note::
+
+    If you are using Deis in :ref:`stateless mode <running-deis-without-ceph>`, you should add the option `--stateless`
+    to `upgrade-prep` and `upgrade-takeover` subcommands to start only the necessary components.
+
 First, a new ``deisctl`` version should be installed to a temporary location, reflecting the desired version to upgrade
 to. Care should be taken not to overwrite the existing ``deisctl`` version.
 
