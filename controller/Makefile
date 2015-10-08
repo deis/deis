@@ -78,7 +78,7 @@ test-style: setup-venv
 	shellcheck $(SHELL_SCRIPTS)
 
 test-unit: setup-venv test-style
-	venv/bin/coverage run manage.py test --noinput api
+	venv/bin/coverage run manage.py test --noinput web api
 	venv/bin/coverage report -m
 
 test-functional:

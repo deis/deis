@@ -6,6 +6,7 @@ Run the tests with "./manage.py test web"
 
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.template import Context
 from django.template import Template
 from django.template import TemplateSyntaxError
@@ -15,6 +16,10 @@ from django.test import TestCase
 class WebViewsTest(TestCase):
 
     fixtures = ['test_web.json']
+
+    @classmethod
+    def setUpClass(cls):
+        settings.WEB_ENABLED = True
 
     def setUp(self):
         self.client.login(username='autotest-1', password='password')
