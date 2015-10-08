@@ -10,7 +10,7 @@ RestartSec=20
 TimeoutStartSec=0
 ExecStartPre=-/usr/bin/docker kill deis-mesos-master
 ExecStartPre=-/usr/bin/docker rm deis-mesos-master
-ExecStartPre=/bin/sh -c "docker inspect deis-mesos-master-data >/dev/null 2>&1 || docker run --name deis-mesos-master-data -v /tmp/mesos-master alpine:3.1 /bin/true"
+ExecStartPre=/bin/sh -c "docker inspect deis-mesos-master-data >/dev/null 2>&1 || docker run --name deis-mesos-master-data -v /tmp/mesos-master alpine:3.2 /bin/true"
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/mesos-master` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
 ExecStart=/usr/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/mesos-master` && docker run --volumes-from=deis-mesos-master-data --name=deis-mesos-master --privileged --net=host -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-mesos-master

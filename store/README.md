@@ -7,7 +7,7 @@ The bin/boot scripts and Dockerfiles were inspired by
 Seán C. McCord's [docker-ceph](https://github.com/Ulexus/docker-ceph) repository.
 
 This Docker image is based on the official
-[alpine:3.1](https://registry.hub.docker.com/_/alpine/) image.
+[alpine:3.2](https://registry.hub.docker.com/_/alpine/) image.
 
 Please add any issues you find with this software to the
 [Deis project](https://github.com/deis/deis/issues).

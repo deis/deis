@@ -1,4 +1,4 @@
-FROM alpine:3.1
+FROM alpine:3.2
 
 ENV JAVA_HOME /jre
 ENV PATH ${PATH}:${JAVA_HOME}/bin
