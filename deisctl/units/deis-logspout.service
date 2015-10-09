@@ -7,7 +7,7 @@ After=docker.socket etcd2.service etcd.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker history $IMAGE >/dev/null 2>&1 || flock -w 1200 /var/run/lock/alpine-pull docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-logspout >/dev/null 2>&1 && docker rm -f deis-logspout || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker run --name deis-logspout --rm -v /var/run/docker.sock:/tmp/docker.sock -e ETCD_HOST=$COREOS_PRIVATE_IPV4 -e HOST=$COREOS_PRIVATE_IPV4 -e DEBUG=1 $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-logspout
