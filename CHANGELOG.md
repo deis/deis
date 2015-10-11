@@ -1,3 +1,9 @@
+### v1.11.0 -> v1.11.1
+
+#### Fixes
+
+ - [`7c02cd6`](https://github.com/deis/deis/commit/7c02cd6bfa51a3a6720bfa3d03a403ea7d16a117) fix(*): use flock to serialize certain pulls
+
 ### v1.10.1 -> v1.11.0
 
 #### Features
