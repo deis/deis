@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"gopkg.in/yaml.v2"
 
@@ -42,19 +44,26 @@ func BuildsCreate(appID, image, procfile string) error {
 		return err
 	}
 
-	var procfileMap map[string]string
+	var procfileMap *map[string]string
 
 	if procfile != "" {
-		err = yaml.Unmarshal([]byte(procfile), &procfileMap)
-
+		if procfileMap, err = parseProcfile([]byte(procfile)); err != nil {
+			return err
+		}
+	} else if _, err := os.Stat("Procfile"); err == nil {
+		contents, err := ioutil.ReadFile("Procfile")
 		if err != nil {
+			return err
+		}
+
+		if procfileMap, err = parseProcfile(contents); err != nil {
 			return err
 		}
 	}
 
 	fmt.Print("Creating build... ")
 	quit := progress()
-	_, err = builds.New(c, appID, image, procfileMap)
+	_, err = builds.New(c, appID, image, *procfileMap)
 	quit <- true
 	<-quit
 
@@ -65,4 +74,9 @@ func BuildsCreate(appID, image, procfile string) error {
 	fmt.Println("done")
 
 	return nil
+}
+
+func parseProcfile(procfile []byte) (*map[string]string, error) {
+	procfileMap := make(map[string]string)
+	return &procfileMap, yaml.Unmarshal(procfile, &procfileMap)
 }
