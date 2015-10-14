@@ -30,7 +30,7 @@ Run `/opt/bin/deis-debug-logs` on one of your CoreOS machines and provide the ou
 ## Getting Started
 
 - Fork the repository on GitHub
-- Read the README.md for build instructions
+- Read [the documentation](http://docs.deis.io/en/latest/contributing/hacking/) for build instructions
 
 ## Contribution Flow
 
