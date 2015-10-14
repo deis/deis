@@ -54,6 +54,10 @@ At a glance, you will need:
 - On Mac, you will also want
   - Docker Machine (http://docs.docker.com/machine/install-machine/)
 
+Additionally, you may need:
+- shellcheck (https://github.com/koalaman/shellcheck)
+- golint (https://github.com/golang/lint)
+
 In most cases, you should simply install according to the instructions. There
 are a few special cases, though. We cover these below.
 
