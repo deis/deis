@@ -54,7 +54,8 @@ coreos:
         MountFlags=slave
         LimitNOFILE=1048576
         LimitNPROC=1048576
-        ExecStartPre=/usr/bin/sh -c 'test -x /opt/bin/docker || curl -sSL https://get.docker.com/builds/Linux/x86_64/docker-1.5.0 -o /opt/bin/docker && chmod +x /opt/bin/docker'
+        ExecStartPre=/usr/bin/sh -c 'test -x /opt/bin/docker || curl -sSL https://s3-us-west-2.amazonaws.com/get-deis/docker-1.5.0-coreos -o /opt/bin/docker && chmod +x /opt/bin/docker'
+        ExecStartPre=/usr/bin/sh -c 'test -x /opt/bin/dockerinit || curl -sSL https://s3-us-west-2.amazonaws.com/get-deis/dockerinit-1.5.0-coreos -o /opt/bin/dockerinit && chmod +x /opt/bin/dockerinit && mount -o bind /opt/bin/dockerinit /usr/libexec/docker/dockerinit'
         ExecStart=/opt/bin/docker --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
 
         [Install]
