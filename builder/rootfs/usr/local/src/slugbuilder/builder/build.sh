@@ -131,6 +131,9 @@ else
     exit 1
 fi
 
+export CURL_CONNECT_TIMEOUT="30"
+export CURL_TIMEOUT="180"
+
 ## Buildpack compile
 
 $selected_buildpack/bin/compile "$build_root" "$cache_root" | ensure_indent
