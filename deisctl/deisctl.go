@@ -29,24 +29,24 @@ func Command(argv []string) int {
 Usage: deisctl [options] <command> [<args>...]
 
 Commands, use "deisctl help <command>" to learn more:
-  install           install components, or the entire platform
-  uninstall         uninstall components
-  list              list installed components
-  machines          list the current hosts in the cluster
-  start             start components
-  stop              stop components
-  restart           stop, then start components
-  status            view status of components
-  scale             grow or shrink the number of routers, registries or store gateways
-  journal           print the log output of a component
   config            set platform or component values
-  refresh-units     refresh unit files from GitHub
-  ssh               open an interactive shell on a machine in the cluster
   dock              open an interactive shell on a container in the cluster
   help              show the help screen for a command
+  install           install components, or the entire platform
+  journal           print the log output of a component
+  list              list installed components
+  machines          list the current hosts in the cluster
+  refresh-units     refresh unit files from GitHub
+  restart           stop, then start components
+  rolling-restart   perform a rolling restart of a Deis component (currently only router is supported)
+  scale             grow or shrink the number of routers, registries or store gateways
+  ssh               open an interactive shell on a machine in the cluster
+  start             start components
+  status            view status of components
+  stop              stop components
+  uninstall         uninstall components
   upgrade-prep      prepare a running cluster for upgrade
   upgrade-takeover  allow an upgrade to gracefully takeover a running cluster
-  rolling-restart   perform a rolling restart of a Deis component (currently only router is supported)
 
 Options:
   -h --help                   show this help screen
