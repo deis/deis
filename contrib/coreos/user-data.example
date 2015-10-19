@@ -42,6 +42,24 @@ coreos:
       command: stop
       enable: false
     - name: docker.service
+      content: |
+        [Unit]
+        Description=Docker Application Container Engine
+        Documentation=http://docs.docker.com
+        After=docker.socket early-docker.target network.target
+        Requires=docker.socket early-docker.target
+
+        [Service]
+        EnvironmentFile=-/run/flannel_docker_opts.env
+        MountFlags=slave
+        LimitNOFILE=1048576
+        LimitNPROC=1048576
+        ExecStartPre=/usr/bin/sh -c 'test -x /opt/bin/docker || curl -sSL https://s3-us-west-2.amazonaws.com/get-deis/docker-1.5.0-coreos -o /opt/bin/docker && chmod +x /opt/bin/docker'
+        ExecStartPre=/usr/bin/sh -c 'test -x /opt/bin/dockerinit || curl -sSL https://s3-us-west-2.amazonaws.com/get-deis/dockerinit-1.5.0-coreos -o /opt/bin/dockerinit && chmod +x /opt/bin/dockerinit && mount -o bind /opt/bin/dockerinit /usr/libexec/docker/dockerinit'
+        ExecStart=/opt/bin/docker --daemon --host=fd:// $DOCKER_OPTS $DOCKER_OPT_BIP $DOCKER_OPT_MTU $DOCKER_OPT_IPMASQ
+
+        [Install]
+        WantedBy=multi-user.target
       drop-ins:
       - name: 50-insecure-registry.conf
         content: |
@@ -98,12 +116,25 @@ coreos:
         Type=oneshot
         ExecStartPre=/usr/sbin/modprobe nf_conntrack
         ExecStart=/bin/sh -c "sysctl -w net.netfilter.nf_conntrack_max=262144"
+    - name: etc-environment-path.service
+      command: start
+      content: |
+        [Unit]
+        Description=Adds /opt/bin to the beginning of PATH in /etc/environment
+        Before=docker.service
+
+        [Service]
+        Type=oneshot
+        ExecStart=/bin/sh -c "fgrep PATH= /etc/environment 2>&1 >/dev/null || echo PATH=/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin >> /etc/environment"
 write_files:
   - path: /etc/deis-release
     content: |
       DEIS_RELEASE=v1.11.1
   - path: /etc/motd
     content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
+  - path: /etc/profile.d/path-for-local-docker.sh
+    content: |
+      export PATH=/opt/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   - path: /etc/profile.d/nse-function.sh
     permissions: '0755'
     content: |
