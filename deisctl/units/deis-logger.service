@@ -6,7 +6,7 @@ After=deis-store-volume.service
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker history $IMAGE >/dev/null 2>&1 || flock -w 1200 /var/run/lock/alpine-pull docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-logger >/dev/null 2>&1 && docker rm -f deis-logger || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker run --name deis-logger --rm -p 8088:8088/tcp -p 514:514/udp -e EXTERNAL_PORT=514 -e HOST=$COREOS_PRIVATE_IPV4 -v /var/lib/deis/store:/data $IMAGE"
 ExecStop=-/usr/bin/docker stop deis-logger
