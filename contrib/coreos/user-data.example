@@ -13,7 +13,7 @@ coreos:
     listen-peer-urls: http://$private_ipv4:2380,http://$private_ipv4:7001
     data-dir: /var/lib/etcd2
   fleet:
-    public-ip: $public_ipv4
+    public-ip: $private_ipv4
     metadata: controlPlane=true,dataPlane=true,routerMesh=true
   update:
     reboot-strategy: "off"
