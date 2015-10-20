@@ -410,7 +410,7 @@ class App(UuidAuditedModel):
             raise exceptions.HealthcheckException('no etcd client available')
         for container in containers:
             try:
-                key = "/deis/services/{self}/{container.job_id}".format(**locals())
+                key = "/deis/services/{self}/containers/{container.job_id}".format(**locals())
                 url = "http://{}{}".format(_etcd_client.get(key).value, path)
                 response = requests.get(url, timeout=timeout)
                 if response.status_code != requests.codes.OK:

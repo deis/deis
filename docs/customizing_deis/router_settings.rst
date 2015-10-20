@@ -81,7 +81,7 @@ setting                                      description
 /deis/router/workerProcesses                 nginx number of worker processes to start (default: auto i.e. available CPU cores)
 /deis/router/proxyProtocol                   nginx PROXY protocol enabled
 /deis/router/proxyRealIpCidr                 nginx IP with CIDR used by the load balancer in front of deis-router (default: 10.0.0.0/8)
-/deis/services/*                             healthy application containers reported by deis/publisher
+/deis/services/*                             healthy application info reported by deis/publisher
 /deis/store/gateway/host                     host of the store gateway component (set by store-gateway)
 /deis/store/gateway/port                     port of the store gateway component (set by store-gateway)
 =======================================      ==================================================================================================================================================================================================================================================================================================================================
