@@ -5,6 +5,7 @@ Django settings for the Deis project.
 from __future__ import unicode_literals
 import os.path
 import random
+import semantic_version as semver
 import string
 import sys
 import tempfile
@@ -371,6 +372,17 @@ except ImportError:
 if os.path.exists('/templates/confd_settings.py'):
     sys.path.append('/templates')
     from confd_settings import *  # noqa
+
+# Disable swap when mem limits are set, unless Docker is too old
+DISABLE_SWAP = '--memory-swap=-1'
+try:
+    version = 'unknown'
+    from registry.dockerclient import DockerClient
+    version = DockerClient().client.version().get('Version')
+    if not semver.validate(version) or semver.Version(version) < semver.Version('1.5.0'):
+        DISABLE_SWAP = ''
+except:
+    print("Not disabling --memory-swap for Docker version {}".format(version))
 
 # LDAP Backend Configuration
 # Should be always after the confd_settings import.
