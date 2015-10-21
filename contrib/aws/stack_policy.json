@@ -7,7 +7,7 @@
       "Resource" : "*",
       "Condition" : {
         "StringEquals" : {
-          "ResourceType" : ["AWS::EC2::Instance"]
+          "ResourceType" : ["AWS::EC2::Instance", "AWS::AutoScaling::AutoScalingGroup"]
         }
       }
     },
