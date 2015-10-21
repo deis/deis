@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package machine
 
@@ -36,7 +34,7 @@ const (
 )
 
 func NewCoreOSMachine(static MachineState, um unit.UnitManager) *CoreOSMachine {
-	log.V(1).Infof("Created CoreOSMachine with static state %s", static)
+	log.Debugf("Created CoreOSMachine with static state %s", static)
 	m := &CoreOSMachine{
 		staticState: static,
 		um:          um,
@@ -91,7 +89,7 @@ func (m *CoreOSMachine) PeriodicRefresh(interval time.Duration, stop chan bool) 
 	for {
 		select {
 		case <-stop:
-			log.V(1).Info("Halting CoreOSMachine.PeriodicRefresh")
+			log.Debug("Halting CoreOSMachine.PeriodicRefresh")
 			ticker.Stop()
 			return
 		case <-ticker.C:
@@ -170,29 +168,29 @@ func usableAddress(ip net.IP) bool {
 }
 
 func getDefaultGatewayIface() *net.Interface {
-	log.V(1).Infof("Attempting to retrieve IP route info from netlink")
+	log.Debug("Attempting to retrieve IP route info from netlink")
 
 	routes, err := netlink.NetworkGetRoutes()
 	if err != nil {
-		log.V(1).Infof("Unable to detect default interface: %v", err)
+		log.Debugf("Unable to detect default interface: %v", err)
 		return nil
 	}
 
 	if len(routes) == 0 {
-		log.V(1).Infof("Netlink returned zero routes")
+		log.Debugf("Netlink returned zero routes")
 		return nil
 	}
 
 	for _, route := range routes {
 		if route.Default {
 			if route.Iface == nil {
-				log.V(1).Infof("Found default route but could not determine interface")
+				log.Debugf("Found default route but could not determine interface")
 			}
-			log.V(1).Infof("Found default route with interface %v", route.Iface.Name)
+			log.Debugf("Found default route with interface %v", route.Iface.Name)
 			return route.Iface
 		}
 	}
 
-	log.V(1).Infof("Unable to find default route")
+	log.Debugf("Unable to find default route")
 	return nil
 }

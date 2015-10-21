@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package registry
 
@@ -100,7 +98,7 @@ func (r *EtcdRegistry) statesByMUSKey() (map[MUSKey]*unit.UnitState, error) {
 		Recursive: true,
 	}
 	res, err := r.etcd.Do(&req)
-	if err != nil && !isKeyNotFound(err) {
+	if err != nil && !etcd.IsKeyNotFound(err) {
 		return nil, err
 	}
 	if res != nil {
@@ -133,7 +131,7 @@ func (r *EtcdRegistry) getUnitState(uName, machID string) (*unit.UnitState, erro
 	res, err := r.etcd.Do(&req)
 
 	if err != nil {
-		if isKeyNotFound(err) {
+		if etcd.IsKeyNotFound(err) {
 			err = nil
 		}
 		return nil, err
@@ -186,7 +184,7 @@ func (r *EtcdRegistry) RemoveUnitState(jobName string) error {
 		Key: legacyKey,
 	}
 	_, err := r.etcd.Do(&req)
-	if err != nil && !isKeyNotFound(err) {
+	if err != nil && !etcd.IsKeyNotFound(err) {
 		return err
 	}
 
@@ -197,7 +195,7 @@ func (r *EtcdRegistry) RemoveUnitState(jobName string) error {
 		Recursive: true,
 	}
 	_, err = r.etcd.Do(&req)
-	if err != nil && !isKeyNotFound(err) {
+	if err != nil && !etcd.IsKeyNotFound(err) {
 		return err
 	}
 	return nil

@@ -6,11 +6,6 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "code.google.com/p/google-api-go-client/googleapi",
-			"Comment": "release-101",
-			"Rev": "e1c259484b495133836706f46319f5897f1e9bf6"
-		},
-		{
 			"ImportPath": "github.com/ActiveState/tail",
 			"Rev": "068b72961a6bc5b4a82cf4fc14ccc724c0cfa73a"
 		},
@@ -31,53 +26,53 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/client",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/etcd",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/job",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/log",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/machine",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/pkg",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/registry",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/schema",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/ssh",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/fleet/unit",
-			"Comment": "v0.9.2",
-			"Rev": "e0f7a2316dc6ae610979598c4efe127ac8ff1ae9"
+			"Comment": "v0.10.2",
+			"Rev": "76516ab4ae194e37aaae9c1f2fa5090553e541f3"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
@@ -342,8 +337,16 @@
 			"Rev": "f7445b17d61953e333441674c2d11e91ae4559d3"
 		},
 		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "d9558e5c97f85372afee28cf2b6059d7d3818919"
+		},
+		{
 			"ImportPath": "golang.org/x/net/websocket",
 			"Rev": "d9558e5c97f85372afee28cf2b6059d7d3818919"
+		},
+		{
+			"ImportPath": "google.golang.org/api/googleapi",
+			"Rev": "c83ee8e9b7e6c40a486c0992a963ea8b6911de67"
 		},
 		{
 			"ImportPath": "gopkg.in/tomb.v1",

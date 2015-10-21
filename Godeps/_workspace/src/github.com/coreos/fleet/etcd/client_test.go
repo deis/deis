@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package etcd
 
@@ -95,7 +93,7 @@ func TestFilterURL(t *testing.T) {
 		pass     bool
 	}{
 		// IP & port
-		{"http://192.0.2.3:4001/", true},
+		{"http://192.0.2.3:2379/", true},
 
 		// trailing slash
 		{"http://192.0.2.3/", true},
@@ -234,16 +232,16 @@ func assertClientSteps(t *testing.T, c *client, act Action, steps []clientStep, 
 func TestClientRedirectsFollowed(t *testing.T) {
 	steps := []clientStep{
 		{
-			"GET", "http://192.0.2.1:4001/v2/keys/foo?consistent=true&recursive=false&sorted=false",
+			"GET", "http://192.0.2.1:2379/v2/keys/foo?consistent=true&recursive=false&sorted=false",
 			http.Response{
 				StatusCode: http.StatusTemporaryRedirect,
 				Header: http.Header{
-					"Location": {"http://192.0.2.2:4001/v2/keys/foo?recursive=false&sorted=false"},
+					"Location": {"http://192.0.2.2:2379/v2/keys/foo?recursive=false&sorted=false"},
 				},
 			},
 		},
 		{
-			"GET", "http://192.0.2.2:4001/v2/keys/foo?recursive=false&sorted=false",
+			"GET", "http://192.0.2.2:2379/v2/keys/foo?recursive=false&sorted=false",
 			http.Response{
 				StatusCode: http.StatusTemporaryRedirect,
 				Header: http.Header{
@@ -261,7 +259,7 @@ func TestClientRedirectsFollowed(t *testing.T) {
 		},
 	}
 
-	c, err := NewClient([]string{"http://192.0.2.1:4001"}, &http.Transport{}, time.Second)
+	c, err := NewClient([]string{"http://192.0.2.1:2379"}, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
 	}
@@ -289,7 +287,7 @@ func TestClientRedirectsAndAlternateEndpoints(t *testing.T) {
 			},
 		},
 		{
-			"GET", "http://192.0.2.2:4002/v2/keys/foo?consistent=true&recursive=false&sorted=false",
+			"GET", "http://192.0.2.2:2379/v2/keys/foo?consistent=true&recursive=false&sorted=false",
 			http.Response{
 				StatusCode: http.StatusOK,
 				Header:     http.Header{"X-Etcd-Index": {"123"}},
@@ -298,7 +296,7 @@ func TestClientRedirectsAndAlternateEndpoints(t *testing.T) {
 		},
 	}
 
-	c, err := NewClient([]string{"http://192.0.2.1:4001", "http://192.0.2.2:4002"}, &http.Transport{}, time.Second)
+	c, err := NewClient([]string{"http://192.0.2.1:4001", "http://192.0.2.2:2379"}, &http.Transport{}, time.Second)
 	if err != nil {
 		t.Fatalf("NewClient failed: %v", err)
 	}
@@ -319,14 +317,14 @@ func TestClientRedirectOverLimit(t *testing.T) {
 		resp := http.Response{
 			StatusCode: http.StatusTemporaryRedirect,
 			Header: http.Header{
-				"Location": {"http://127.0.0.1:4001/"},
+				"Location": {"http://127.0.0.1:2379/"},
 			},
 		}
 
 		return &resp, []byte{}, nil
 	}
 
-	endpoint, err := url.Parse("http://192.0.2.1:4001")
+	endpoint, err := url.Parse("http://192.0.2.1:2379")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -364,7 +362,7 @@ func TestClientRedirectMax(t *testing.T) {
 			resp = http.Response{
 				StatusCode: http.StatusTemporaryRedirect,
 				Header: http.Header{
-					"Location": {"http://127.0.0.1:4001/"},
+					"Location": {"http://127.0.0.1:2379/"},
 				},
 			}
 		}
@@ -372,7 +370,7 @@ func TestClientRedirectMax(t *testing.T) {
 		return &resp, body, nil
 	}
 
-	endpoint, err := url.Parse("http://192.0.2.1:4001")
+	endpoint, err := url.Parse("http://192.0.2.1:2379")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -391,7 +389,7 @@ func TestClientRequestFuncError(t *testing.T) {
 		return nil, nil, errors.New("bogus error")
 	}
 
-	endpoint, err := url.Parse("http://192.0.2.1:4001")
+	endpoint, err := url.Parse("http://192.0.2.1:2379")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -414,7 +412,7 @@ func TestClientRedirectNowhere(t *testing.T) {
 		return &resp, []byte{}, nil
 	}
 
-	endpoint, err := url.Parse("http://192.0.2.1:4001")
+	endpoint, err := url.Parse("http://192.0.2.1:2379")
 	if err != nil {
 		t.Fatal(err)
 	}

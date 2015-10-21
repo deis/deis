@@ -4,7 +4,7 @@
 //
 // Usage example:
 //
-//   import "github.com/coreos/fleet/Godeps/_workspace/src/code.google.com/p/google-api-go-client/schema/v1"
+//   import "github.com/coreos/fleet/Godeps/_workspace/src/google.golang.org/api/schema/v1"
 //   ...
 //   schemaService, err := schema.New(oauthHttpClient)
 package schema
@@ -20,7 +20,7 @@ import (
 	"strconv"
 	"strings"
 
-	"code.google.com/p/google-api-go-client/googleapi"
+	"google.golang.org/api/googleapi"
 )
 
 // Always reference these packages, just in case the auto-generated code
@@ -168,12 +168,23 @@ func (c *MachinesListCall) NextPageToken(nextPageToken string) *MachinesListCall
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *MachinesListCall) Fields(s ...googleapi.Field) *MachinesListCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *MachinesListCall) Do() (*MachinePage, error) {
 	var body io.Reader = nil
 	params := make(url.Values)
 	params.Set("alt", "json")
 	if v, ok := c.opt_["nextPageToken"]; ok {
 		params.Set("nextPageToken", fmt.Sprintf("%v", v))
+	}
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
 	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "machines")
 	urls += "?" + params.Encode()
@@ -242,6 +253,14 @@ func (c *UnitStateListCall) UnitName(unitName string) *UnitStateListCall {
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *UnitStateListCall) Fields(s ...googleapi.Field) *UnitStateListCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *UnitStateListCall) Do() (*UnitStatePage, error) {
 	var body io.Reader = nil
 	params := make(url.Values)
@@ -254,6 +273,9 @@ func (c *UnitStateListCall) Do() (*UnitStatePage, error) {
 	}
 	if v, ok := c.opt_["unitName"]; ok {
 		params.Set("unitName", fmt.Sprintf("%v", v))
+	}
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
 	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "state")
 	urls += "?" + params.Encode()
@@ -314,15 +336,27 @@ func (r *UnitsService) Delete(unitName string) *UnitsDeleteCall {
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *UnitsDeleteCall) Fields(s ...googleapi.Field) *UnitsDeleteCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *UnitsDeleteCall) Do() error {
 	var body io.Reader = nil
 	params := make(url.Values)
 	params.Set("alt", "json")
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
+	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "units/{unitName}")
 	urls += "?" + params.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
-	req.URL.Path = strings.Replace(req.URL.Path, "{unitName}", url.QueryEscape(c.unitName), 1)
-	googleapi.SetOpaque(req.URL)
+	googleapi.Expand(req.URL, map[string]string{
+		"unitName": c.unitName,
+	})
 	req.Header.Set("User-Agent", "google-api-go-client/0.5")
 	res, err := c.s.client.Do(req)
 	if err != nil {
@@ -367,15 +401,27 @@ func (r *UnitsService) Get(unitName string) *UnitsGetCall {
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *UnitsGetCall) Fields(s ...googleapi.Field) *UnitsGetCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *UnitsGetCall) Do() (*Unit, error) {
 	var body io.Reader = nil
 	params := make(url.Values)
 	params.Set("alt", "json")
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
+	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "units/{unitName}")
 	urls += "?" + params.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
-	req.URL.Path = strings.Replace(req.URL.Path, "{unitName}", url.QueryEscape(c.unitName), 1)
-	googleapi.SetOpaque(req.URL)
+	googleapi.Expand(req.URL, map[string]string{
+		"unitName": c.unitName,
+	})
 	req.Header.Set("User-Agent", "google-api-go-client/0.5")
 	res, err := c.s.client.Do(req)
 	if err != nil {
@@ -431,12 +477,23 @@ func (c *UnitsListCall) NextPageToken(nextPageToken string) *UnitsListCall {
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *UnitsListCall) Fields(s ...googleapi.Field) *UnitsListCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *UnitsListCall) Do() (*UnitPage, error) {
 	var body io.Reader = nil
 	params := make(url.Values)
 	params.Set("alt", "json")
 	if v, ok := c.opt_["nextPageToken"]; ok {
 		params.Set("nextPageToken", fmt.Sprintf("%v", v))
+	}
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
 	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "units")
 	urls += "?" + params.Encode()
@@ -491,6 +548,14 @@ func (r *UnitsService) Set(unitName string, unit *Unit) *UnitsSetCall {
 	return c
 }
 
+// Fields allows partial responses to be retrieved.
+// See https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *UnitsSetCall) Fields(s ...googleapi.Field) *UnitsSetCall {
+	c.opt_["fields"] = googleapi.CombineFields(s)
+	return c
+}
+
 func (c *UnitsSetCall) Do() error {
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.unit)
@@ -500,11 +565,15 @@ func (c *UnitsSetCall) Do() error {
 	ctype := "application/json"
 	params := make(url.Values)
 	params.Set("alt", "json")
+	if v, ok := c.opt_["fields"]; ok {
+		params.Set("fields", fmt.Sprintf("%v", v))
+	}
 	urls := googleapi.ResolveRelative(c.s.BasePath, "units/{unitName}")
 	urls += "?" + params.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
-	req.URL.Path = strings.Replace(req.URL.Path, "{unitName}", url.QueryEscape(c.unitName), 1)
-	googleapi.SetOpaque(req.URL)
+	googleapi.Expand(req.URL, map[string]string{
+		"unitName": c.unitName,
+	})
 	req.Header.Set("Content-Type", ctype)
 	req.Header.Set("User-Agent", "google-api-go-client/0.5")
 	res, err := c.s.client.Do(req)
