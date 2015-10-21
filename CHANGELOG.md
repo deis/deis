@@ -1,3 +1,11 @@
+### v1.11.1 -> v1.11.2
+
+#### Fixes
+
+ - [`abe3fa0`](https://github.com/deis/deis/commit/abe3fa09ebda348f8c2c91113571bc026bc2eaf6) fix(user-data): use $private_ipv4 for fleet
+ - [`c55d9c8`](https://github.com/deis/deis/commit/c55d9c8bdab91d1539fa34fbb7ec392c7355ce24) fix(*) add flocks to additional services
+ - [`6dc0da4`](https://github.com/deis/deis/commit/6dc0da42e096ea6132e2bc8ffc861cde8e1bb937) fix(*) add flocks to -data pulls for db & builder
+
 ### v1.11.0 -> v1.11.1
 
 #### Fixes
