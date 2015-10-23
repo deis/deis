@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package etcd
 
@@ -28,8 +26,11 @@ import (
 )
 
 const (
-	defaultEndpoint = "http://localhost:4001"
-	redirectMax     = 10
+	redirectMax = 10
+)
+
+var (
+	defaultEndpoints = []string{"http://localhost:4001", "http://localhost:2379"}
 )
 
 type Client interface {
@@ -47,7 +48,7 @@ type transport interface {
 
 func NewClient(endpoints []string, transport *http.Transport, actionTimeout time.Duration) (*client, error) {
 	if len(endpoints) == 0 {
-		endpoints = []string{defaultEndpoint}
+		endpoints = defaultEndpoints
 	}
 
 	parsed := make([]url.URL, len(endpoints))
@@ -363,13 +364,13 @@ func (ar *actionResolver) next(resp *http.Response) (*http.Request, error) {
 }
 
 func (ar *actionResolver) one(req *http.Request, cancel <-chan struct{}) (resp *http.Response, body []byte, err error) {
-	log.V(1).Infof("etcd: sending HTTP request %s %s", req.Method, req.URL)
+	log.Debugf("etcd: sending HTTP request %s %s", req.Method, req.URL)
 	resp, body, err = ar.requestFunc(req, cancel)
 	if err != nil {
-		log.V(1).Infof("etcd: recv error response from %s %s: %v", req.Method, req.URL, err)
+		log.Debugf("etcd: recv error response from %s %s: %v", req.Method, req.URL, err)
 		return
 	}
 
-	log.V(1).Infof("etcd: recv response from %s %s: %s", req.Method, req.URL, resp.Status)
+	log.Debugf("etcd: recv response from %s %s: %s", req.Method, req.URL, resp.Status)
 	return
 }

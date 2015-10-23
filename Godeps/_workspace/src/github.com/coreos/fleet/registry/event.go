@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package registry
 
@@ -90,7 +88,7 @@ func watch(client etcd.Client, key string, stop chan struct{}) (res *etcd.Result
 	for res == nil {
 		select {
 		case <-stop:
-			log.V(1).Infof("Gracefully closing etcd watch loop: key=%s", key)
+			log.Debugf("Gracefully closing etcd watch loop: key=%s", key)
 			return
 		default:
 			req := &etcd.Watch{
@@ -99,7 +97,7 @@ func watch(client etcd.Client, key string, stop chan struct{}) (res *etcd.Result
 				Recursive: true,
 			}
 
-			log.V(1).Infof("Creating etcd watcher: %v", req)
+			log.Debugf("Creating etcd watcher: %v", req)
 
 			var err error
 			res, err = client.Wait(req, stop)

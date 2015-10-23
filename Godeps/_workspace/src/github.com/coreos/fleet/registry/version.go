@@ -1,18 +1,16 @@
-/*
-   Copyright 2014 CoreOS, Inc.
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package registry
 
@@ -31,7 +29,7 @@ import (
 func (r *EtcdRegistry) LatestDaemonVersion() (*semver.Version, error) {
 	machs, err := r.Machines()
 	if err != nil {
-		if isKeyNotFound(err) {
+		if etcd.IsKeyNotFound(err) {
 			err = nil
 		}
 		return nil, err
@@ -58,7 +56,7 @@ func (r *EtcdRegistry) EngineVersion() (int, error) {
 	if err != nil {
 		// no big deal, either the cluster is new or is just
 		// upgrading from old unversioned code
-		if isKeyNotFound(err) {
+		if etcd.IsKeyNotFound(err) {
 			err = nil
 		}
 		return 0, err
@@ -84,7 +82,7 @@ func (r *EtcdRegistry) UpdateEngineVersion(from, to int) error {
 	_, err := r.etcd.Do(req)
 	if err == nil {
 		return nil
-	} else if !isKeyNotFound(err) {
+	} else if !etcd.IsKeyNotFound(err) {
 		return err
 	}
 

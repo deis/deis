@@ -1,27 +1,23 @@
-/*
-   Copyright 2014 CoreOS, Inc.
+// Copyright 2014 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
-
-package registry
+package etcd
 
 import (
 	"reflect"
 	"testing"
 	"time"
-
-	"github.com/coreos/fleet/etcd"
 )
 
 func TestSerializeLeaseMetadata(t *testing.T) {
@@ -56,13 +52,13 @@ func TestSerializeLeaseMetadata(t *testing.T) {
 
 func TestLeaseFromResult(t *testing.T) {
 	tests := []struct {
-		res  etcd.Result
+		res  Result
 		want etcdLease
 	}{
 		// typical case
 		{
-			res: etcd.Result{
-				Node: &etcd.Node{
+			res: Result{
+				Node: &Node{
 					Key:           "/foo/bar",
 					ModifiedIndex: 12,
 					TTL:           9,
@@ -82,8 +78,8 @@ func TestLeaseFromResult(t *testing.T) {
 
 		// backwards-compatibility with unversioned engines
 		{
-			res: etcd.Result{
-				Node: &etcd.Node{
+			res: Result{
+				Node: &Node{
 					Key:           "/foo/bar",
 					ModifiedIndex: 12,
 					TTL:           9,
@@ -103,8 +99,8 @@ func TestLeaseFromResult(t *testing.T) {
 
 		// json decode failures are treated like a nonversioned lease
 		{
-			res: etcd.Result{
-				Node: &etcd.Node{
+			res: Result{
+				Node: &Node{
 					Key:           "/foo/bar",
 					ModifiedIndex: 12,
 					TTL:           9,
