@@ -11,9 +11,9 @@ The :ref:`scheduler` creates, starts, stops, and destroys each :ref:`container`
 of your app. For example, a command such as ``deis scale web=3`` tells the
 scheduler to run three containers from the Docker image for your app.
 
-Deis defaults to using the :ref:`fleet_scheduler`. Tech previews of schedulers based on
-:ref:`Kubernetes <k8s_scheduler>`, :ref:`Mesos with Marathon <mesos_scheduler>`, and
-:ref:`Swarm <swarm_scheduler>` are available for testing.
+Deis defaults to using the :ref:`fleet_scheduler`, but the :ref:`k8s_scheduler`
+is also available. Additionally, tech previews of a :ref:`Mesos with Marathon <mesos_scheduler>`
+and :ref:`Swarm <swarm_scheduler>` can be enabled for testing.
 
 .. note::
 
@@ -30,10 +30,10 @@ Some keys will exist only if a particular ``schedulerModule`` backend is enabled
 ===================================            ==========================================================
 setting                                        description
 ===================================            ==========================================================
+/deis/scheduler/k8s/master                     used to identify host IP address of kubernetes ApiService
+/deis/scheduler/mesos/marathon                 used to identify Marathon framework's host IP address
 /deis/scheduler/swarm/host                     the swarm manager's host IP address
 /deis/scheduler/swarm/node                     used to identify other nodes in the cluster
-/deis/scheduler/mesos/marathon                 used to identify Marathon framework's host IP address
-/deis/scheduler/k8s/master                     used to identify host IP address of kubernetes ApiService
 ===================================            ==========================================================
 
 
@@ -45,8 +45,8 @@ The following etcd keys are used by the scheduler module of the controller compo
 ====================================      ===============================================
 setting                                   description
 ====================================      ===============================================
-/deis/controller/schedulerModule          scheduler backend, either "fleet" or "swarm" or
-                                          "mesos_marathon" or "k8s" (default: "fleet")
+/deis/controller/schedulerModule          scheduler backend, either "fleet" or "k8s" or
+                                          "mesos_marathon" or "swarm" (default: "fleet")
 ====================================      ===============================================
 
 .. _fleet_scheduler:
@@ -77,26 +77,17 @@ To use the Fleet Scheduler backend explicitly, set the controller's
 Kubernetes Scheduler
 --------------------
 
-.. important::
-
-    The Kubernetes Scheduler is a technology preview and is not recommended for production use.
-    Since it requires overlay networking, Kubernetes can only be enabled on a new cluster.
-
 `Kubernetes`_ is an orchestration system for Docker containers:
 
     Kubernetes (k8s) provides APIs to manage, deploy and scale Docker containers. Kubernetes
     deploys containers as `pods`_, providing a unique entity across a cluster, but allowing
     containers within the pod to share a namespace.
 
-Kubernetes requires the `flannel`_ overlay network so each pod receives a unique IP address within
-the cluster. Existing Deis clusters cannot simply turn on overlay networking. Instead, provision
-a new cluster to enable `flannel`_.
-
-To test the Kubernetes Scheduler, first install and start the Kubernetes components:
+To use the Kubernetes Scheduler, first install and start the Kubernetes components:
 
 .. code-block:: console
 
-    $deisctl install k8s && deisctl start k8s
+    $ deisctl install k8s && deisctl start k8s
 
 Then set the controller's ``schedulerModule`` to "k8s":
 
@@ -105,7 +96,7 @@ Then set the controller's ``schedulerModule`` to "k8s":
     $ deisctl config controller set schedulerModule=k8s
 
 The Kubernetes scheduler is now active. Commands such as ``deis destroy`` or ``deis scale web=9``
-will use the Kubernetes ApiServer to manage app pods.
+will use the Kubernetes API Server to manage app pods.
 
 Deis creates a `replication controller`_ to manage pods and a `service`_ which proxies traffic to
 the pods for your app. Unlike other Deis schedulers, new app releases on Kubernetes do a rolling
@@ -116,10 +107,10 @@ an error forces a rollback to the previous release).
 
     **Known Issues**
 
-    - The flannel overlay network is not backward-compatible with earlier Deis clusters, since it
-      changes Docker networking and requires new units from Deis' user-data file.
-    - The Kubernetes ApiServer is not HA. If the ApiServer is rescheduled, it will reschedule all
-      Kubernetes units.
+    - Deis clusters provisioned from v1.8 or earlier do not have flannel_ and will
+      not work with the Kubernetes scheduler
+    - The Kubernetes API Server is not HA. If the API Server is rescheduled, it will reschedule
+      all Kubernetes units.
     - Kubernetes implements resource-based scheduling. Specifying limits will create a reservation
       of that resource on the node.
 
