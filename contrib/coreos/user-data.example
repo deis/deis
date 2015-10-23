@@ -255,21 +255,11 @@ write_files:
     permissions: '0755'
     content: |
       #!/usr/bin/env bash
-      export K8S_VERSION="v1.0.1"
-      mkdir -p /opt/bin
-      FILE=$1
-      if [ ! -f /opt/bin/$FILE ]; then
-        curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
-        chmod +x /opt/bin/$FILE
-      else
-        # we check the version of the binary
-        INSTALLED_VERSION=$(/opt/bin/$FILE --version)
-        MATCH=$(echo "${INSTALLED_VERSION}" | grep -c "${K8S_VERSION}")
-        if [ $MATCH -eq 0 ]; then
-          # the version is different
-          curl -sSL -o /opt/bin/$FILE https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/$FILE
-          chmod +x /opt/bin/$FILE
-        fi
+      export K8S_VERSION="v1.0.7"
+      if [ ! -x /opt/bin/"$1" ] || ! /opt/bin/"$1" --version | fgrep $K8S_VERSION; then
+        curl -sSL --retry 5 --retry-delay 2 -o /opt/bin/"$1" \
+           https://storage.googleapis.com/kubernetes-release/release/$K8S_VERSION/bin/linux/amd64/"$1" \
+           && chmod +x /opt/bin/"$1"
       fi
   - path: /opt/bin/scheduler-policy.json
     content: |

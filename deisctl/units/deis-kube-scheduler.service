@@ -1,6 +1,6 @@
 [Unit]
 Description=Kubernetes Scheduler
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+Documentation=http://kubernetes.io/v1.0/docs/admin/kube-scheduler.html
 Requires=deis-kube-apiserver.service
 After=deis-kube-apiserver.service
 
