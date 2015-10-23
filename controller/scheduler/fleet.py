@@ -127,7 +127,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
         # prepare memory limit for the container type
         mem = kwargs.get('memory', {}).get(l['c_type'], None)
         if mem:
-            l.update({'memory': '-m {}'.format(mem.lower())})
+            l.update({'memory': '-m {} {}'.format(mem.lower(), settings.DISABLE_SWAP)})
         else:
             l.update({'memory': ''})
         # prepare memory limit for the container type
