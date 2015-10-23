@@ -85,15 +85,15 @@ if [ $CODE -ne 0 ]; then
     exit 1
 fi
 
-BUILD_OPTS=()
-BUILD_OPTS+='/usr/bin/docker'
-BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
-# get application configuration
-BUILD_OPTS+=$(echo $RESPONSE | get-app-values)
-
 # if no Dockerfile is present, use slugbuilder to compile a heroku slug
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
+    BUILD_OPTS=()
+    BUILD_OPTS+='/usr/bin/docker'
+    BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
+    # get application configuration
+    BUILD_OPTS+=$(echo $RESPONSE | get-app-values)
+    BUILD_OPTS+=" -e SOURCE_VERSION=$GIT_SHA"
     # run in the background, we'll attach to it to retrieve logs
     BUILD_OPTS+=' -d'
     BUILD_OPTS+=' -v '
