@@ -1,1 +1,1 @@
-from private import publish_release  # noqa
+from dockerclient import publish_release  # noqa

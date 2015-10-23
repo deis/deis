@@ -152,6 +152,7 @@ INSTALLED_APPS = (
     'corsheaders',
     # Deis apps
     'api',
+    'registry',
     'web',
 )
 
@@ -268,6 +269,11 @@ LOGGING = {
             'propagate': True,
         },
         'api': {
+            'handlers': ['console', 'mail_admins', 'rsyslog'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'registry': {
             'handlers': ['console', 'mail_admins', 'rsyslog'],
             'level': 'INFO',
             'propagate': True,

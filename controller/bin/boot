@@ -81,6 +81,11 @@ cd /app
 mkdir -p /data/logs
 chmod 777 /data/logs
 
+# allow deis user permission to Docker
+if addgroup -g "$(stat -c "%g" /var/run/docker.sock)" docker; then
+	addgroup deis docker
+fi
+
 # run an idempotent database migration
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 

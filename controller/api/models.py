@@ -880,29 +880,13 @@ class Release(UuidAuditedModel):
     def publish(self, source_version='latest'):
         if self.build is None:
             raise EnvironmentError('No build associated with this release to publish')
-        source_tag = 'git-{}'.format(self.build.sha) if self.build.sha else source_version
-        source_image = '{}:{}'.format(self.build.image, source_tag)
-        # IOW, this image did not come from the builder
-        if not self.build.sha:
-            # we assume that the image is not present on our registry,
-            # so shell out a task to pull in the repository
-            data = {
-                'src': self.build.image
-            }
-            requests.post(
-                '{}/v1/repositories/{}/tags'.format(settings.REGISTRY_URL,
-                                                    self.app.id),
-                data=data,
-            )
-            # update the source image to the repository we just imported
-            source_image = self.app.id
-            # if the image imported had a tag specified, use that tag as the source
-            if ':' in self.build.image:
-                if '/' not in self.build.image[self.build.image.rfind(':') + 1:]:
-                    source_image += self.build.image[self.build.image.rfind(':'):]
-        publish_release(source_image,
-                        self.config.values,
-                        self.image)
+        source_image = self.build.image
+        if ':' not in source_image:
+            source_tag = 'git-{}'.format(self.build.sha) if self.build.sha else source_version
+            source_image = "{}:{}".format(source_image, source_tag)
+        # If the build has a SHA, assume it's from deis-builder and in the deis-registry already
+        deis_registry = bool(self.build.sha)
+        publish_release(source_image, self.config.values, self.image, deis_registry)
 
     def previous(self):
         """

@@ -3,8 +3,8 @@
 registry
 ========
 
-registry.private
-----------------
+registry.dockerclient
+---------------------
 .. contents::
     :local:
-.. automodule:: registry.private
+.. automodule:: registry.dockerclient
