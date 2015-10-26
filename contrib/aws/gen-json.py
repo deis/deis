@@ -108,9 +108,6 @@ data['coreos']['units'] = new_units + data['coreos']['units']
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
 
-# configure etcd to use its EBS volume
-dump = dump.replace('ETCD_HOST_DATA_DIR=/var/lib/etcd2', 'ETCD_HOST_DATA_DIR=/media/etcd')
-
 template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = ["\n", header + dump.split("\n")]
