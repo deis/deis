@@ -77,7 +77,8 @@ are defaults and can be customized if desired.
 
   For best performance, Deis clusters on Azure default to using `premium storage`_.
   This incurs an additional cost. Using standard storage is possible, but is unsupported
-  as it resulted in cluster issues during testing.
+  as it resulted in cluster issues during testing. Premium storage is only available
+  in `some regions`_.
 
 Finally, we can deploy. Choose a valid location to deploy -- you can list all locations
 with ``azure location list``.
@@ -113,3 +114,4 @@ start installing the platform.
 .. _`contrib/azure`: https://github.com/deis/deis/tree/master/contrib/azure
 .. _`organizational account`: http://www.brucebnews.com/2013/04/the-difference-between-a-microsoft-account-and-an-office-365-account/
 .. _`premium storage`: https://azure.microsoft.com/en-us/services/storage/premium-storage/
+.. _`some regions`: https://azure.microsoft.com/en-us/regions/#services

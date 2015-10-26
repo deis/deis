@@ -9,7 +9,7 @@
     "value": ""
   },
   "vmSize": {
-    "value": "Standard_A3"
+    "value": "Standard_DS2"
   },
   "adminUsername": {
     "value": "core"
