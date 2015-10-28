@@ -56,14 +56,19 @@ def main():
     azure_template = get_file("azure-user-data-template")
     coreos_template = get_file("../coreos/user-data.example")
 
-    configuration_coreos_template = yaml.safe_load(coreos_template)
+    coreos_template_w_url = None
+    with open(coreos_template.name, 'r') as file :
+      coreos_template_w_url = file.read()
+
+    coreos_template_w_url = coreos_template_w_url.replace('#DISCOVERY_URL', url)
+
+    configuration_coreos_template = yaml.safe_load(coreos_template_w_url)
     configuration_azure_template = yaml.safe_load(azure_template)
 
     configuration = combine_dicts(configuration_coreos_template,
                                   configuration_azure_template)
 
     dump = yaml.dump(configuration, default_flow_style=False)
-    dump = dump.replace('#DISCOVERY_URL', url)
 
     with azure_user_data as outfile:
         try:
