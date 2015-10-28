@@ -9,14 +9,17 @@ set -eo pipefail
 apt-get install -y apt-transport-https
 
 # install docker
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 \
-            --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-echo deb https://get.docker.com/ubuntu docker main > /etc/apt/sources.list.d/docker.list
-apt-get update
-apt-get install -yq lxc-docker-1.5.0
+apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 
-# install extra extensions (AUFS)
-sudo apt-get -y install "linux-image-extra-$(uname -r)"
+echo deb https://apt.dockerproject.org/repo ubuntu-trusty main > /etc/apt/sources.list.d/docker.list
+apt-get update
+apt-get purge lxc-docker*
+apt-get install -yq docker-engine=1.8.3-0~trusty
+
+# install extra extensions (AUFS, requires reboot)
+apt-get -y install "linux-image-extra-$(uname -r)"
+
+rm -rf /var/lib/docker/devicemapper/ # docker startup chokes on this on Docker 1.7.0+
 
 # install java
 apt-get install -yq openjdk-7-jre-headless
