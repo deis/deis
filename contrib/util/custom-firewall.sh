@@ -1,11 +1,5 @@
 #!/bin/env bash
 
-if [ ! -f /opt/bin/jq ]; then
-  echo "/opt/bin/jq is missing. Downloading..."
-  curl -sSL -o /opt/bin/jq http://stedolan.github.io/jq/download/linux64/jq
-  chmod +x /opt/bin/jq
-fi
-
 # obtain the etcd node members and check that at least there is three
 ETCD_NODES=$(curl -s http://localhost:4001/v2/members | jq '.[] | .[].peerURLs | length' | wc -l)
 if test $ETCD_NODES -lt 3; then
