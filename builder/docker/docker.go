@@ -157,6 +157,10 @@ func ParallelBuild(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Inte
 
 	for _, img := range images {
 		img := img
+
+		// HACK: ensure "docker build" is serialized by allowing only one entry in
+		// the WaitGroup. This works around the "simultaneous docker pull" bug.
+		wg.Wait()
 		wg.Add(1)
 		safely.GoDo(c, func() {
 			log.Infof(c, "Starting build for %s (tag: %s)", img.Path, img.Tag)
