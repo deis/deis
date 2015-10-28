@@ -40,7 +40,7 @@ class MockEtcdClient:
 
     def get(self, key, *args, **kwargs):
         node = {
-            'key': '/deis/services/{}/{}_v2.web.1'.format(self.app, self.app),
+            'key': '/deis/services/{}/containers/{}_v2.web.1'.format(self.app, self.app),
             'value': '127.0.0.1:1234'
         }
         return etcd.EtcdResult(None, node)

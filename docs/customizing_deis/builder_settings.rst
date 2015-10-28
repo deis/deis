@@ -38,7 +38,7 @@ setting                                   description
 /deis/controller/protocol                 protocol of the controller component (set by controller)
 /deis/registry/host                       host of the controller component (set by registry)
 /deis/registry/port                       port of the controller component (set by registry)
-/deis/services/*                          healthy application containers reported by deis/publisher
+/deis/services/*                          healthy application info reported by deis/publisher
 ====================================      ===========================================================
 
 Using a custom builder image

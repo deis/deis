@@ -16,6 +16,7 @@ import (
 
 const (
 	appNameRegex string = `([a-z0-9-]+)_v([1-9][0-9]*).(cmd|web).([1-9][0-9])*`
+	pathPrefix          = "/deis/services"
 )
 
 // Server is the main entrypoint for a publisher. It listens on a docker client for events
@@ -26,12 +27,20 @@ type Server struct {
 
 	host     string
 	logLevel string
+
+	countMap   map[string]int
+	countMutex sync.Mutex
+}
+
+type containerInfo struct {
+	appName  string
+	etcdPath string
 }
 
 var safeMap = struct {
 	sync.RWMutex
-	data map[string]string
-}{data: make(map[string]string)}
+	data map[string]containerInfo
+}{data: make(map[string]containerInfo)}
 
 // New returns a new instance of Server.
 func New(dockerClient *docker.Client, etcdClient *etcd.Client, host, logLevel string) *Server {
@@ -40,6 +49,7 @@ func New(dockerClient *docker.Client, etcdClient *etcd.Client, host, logLevel st
 		EtcdClient:   etcdClient,
 		host:         host,
 		logLevel:     logLevel,
+		countMap:     make(map[string]int),
 	}
 }
 
@@ -55,15 +65,22 @@ func (s *Server) Listen(ttl time.Duration) {
 	for {
 		select {
 		case event := <-listener:
-			if event.Status == "start" {
-				container, err := s.getContainer(event.ID)
-				if err != nil {
-					log.Println(err)
-					continue
+			if event.Status == "start" || event.Status == "stop" {
+				s.countMutex.Lock()
+				// Must not defer the unlock since we're in an infinite loop; do it explicitly below
+				if event.Status == "start" {
+					container, err := s.getContainer(event.ID)
+					if err != nil {
+						log.Println(err)
+						s.countMutex.Unlock()
+						continue
+					}
+					s.publishContainer(container, ttl)
+				} else {
+					s.removeContainer(event.ID)
 				}
-				s.publishContainer(container, ttl)
-			} else if event.Status == "stop" {
-				s.removeContainer(event.ID)
+				s.publishCounts(ttl)
+				s.countMutex.Unlock()
 			}
 		}
 	}
@@ -71,6 +88,9 @@ func (s *Server) Listen(ttl time.Duration) {
 
 // Poll lists all containers from the docker client every time the TTL comes up and publishes them to etcd
 func (s *Server) Poll(ttl time.Duration) {
+	s.countMutex.Lock()
+	defer s.countMutex.Unlock()
+	s.countMap = make(map[string]int)
 	containers, err := s.DockerClient.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
 		log.Fatal(err)
@@ -79,6 +99,7 @@ func (s *Server) Poll(ttl time.Duration) {
 		// send container to channel for processing
 		s.publishContainer(&container, ttl)
 	}
+	s.publishCounts(ttl)
 }
 
 // getContainer retrieves a container from the docker client based on id
@@ -108,8 +129,7 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 			continue
 		}
 		appName := match[1]
-		appPath := fmt.Sprintf("%s/%s", appName, containerName)
-		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
+		keyPath := fmt.Sprintf("%s/%s/containers/%s", pathPrefix, appName, containerName)
 		for _, p := range container.Ports {
 			var delay int
 			var timeout int
@@ -148,8 +168,9 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 					}
 				}
 				s.setEtcd(keyPath, hostAndPort, uint64(ttl.Seconds()))
+				s.countMap[appName]++
 				safeMap.Lock()
-				safeMap.data[container.ID] = appPath
+				safeMap.data[container.ID] = containerInfo{appName: appName, etcdPath: keyPath}
 				safeMap.Unlock()
 			}
 			break
@@ -157,16 +178,29 @@ func (s *Server) publishContainer(container *docker.APIContainers, ttl time.Dura
 	}
 }
 
+func (s *Server) publishCounts(ttl time.Duration) {
+	for appName, count := range s.countMap {
+		countPath := fmt.Sprintf("%s/%s/hosts/%s/instanceCount", pathPrefix, appName, s.host)
+		if count == 0 {
+			s.removeEtcd(countPath, false)
+		} else {
+			s.setEtcd(countPath, strconv.Itoa(s.countMap[appName]), uint64(ttl.Seconds()))
+		}
+	}
+}
+
 // removeContainer remove a container published by this component
 func (s *Server) removeContainer(event string) {
 	safeMap.RLock()
-	appPath := safeMap.data[event]
+	cInfo, ok := safeMap.data[event]
 	safeMap.RUnlock()
-
-	if appPath != "" {
-		keyPath := fmt.Sprintf("/deis/services/%s", appPath)
-		log.Printf("stopped %s\n", keyPath)
-		s.removeEtcd(keyPath, false)
+	if ok {
+		safeMap.Lock()
+		delete(safeMap.data, event)
+		safeMap.Unlock()
+		log.Printf("stopped %s\n", cInfo.etcdPath)
+		s.removeEtcd(cInfo.etcdPath, false)
+		s.countMap[cInfo.appName]--
 	}
 }
 
@@ -229,7 +263,7 @@ func latestRunningVersion(client *etcd.Client, appName string) int {
 		}
 		return 0
 	}
-	resp, err := client.Get(fmt.Sprintf("/deis/services/%s", appName), false, true)
+	resp, err := client.Get(fmt.Sprintf("%s/%s/containers", pathPrefix, appName), false, true)
 	if err != nil {
 		// no app has been published here (key not found) or there was an error
 		return 0
