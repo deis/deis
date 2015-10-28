@@ -24,8 +24,8 @@ template=$(cat <<EOF
 :FORWARD DROP [0:0]
 :OUTPUT ACCEPT [0:0]
 :Firewall-INPUT - [0:0]
--A INPUT -j Firewall-INPUT
--A FORWARD -j Firewall-INPUT
+-I INPUT 1 -j Firewall-INPUT
+-I FORWARD 1 -j Firewall-INPUT
 -A Firewall-INPUT -i lo -j ACCEPT
 -A Firewall-INPUT -p icmp --icmp-type echo-reply -j ACCEPT
 -A Firewall-INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
