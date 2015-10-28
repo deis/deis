@@ -70,10 +70,20 @@ base64-encoded version of ``azure-user-data``. This can be generated using ``bas
 
     $ base64 azure-user-data
 
-Paste the result into ``parameters.json``.
+Paste the result into ``parameters.json``. Any of the values in ``parameters.json``
+are defaults and can be customized if desired.
+
+.. note::
+
+  For best performance, Deis clusters on Azure default to using `premium storage`_.
+  This incurs an additional cost. Using standard storage is possible, but is unsupported
+  as it resulted in cluster issues during testing. Premium storage is only available
+  in `some regions`_.
 
 Finally, we can deploy. Choose a valid location to deploy -- you can list all locations
-with ``azure location list``:
+with ``azure location list``.
+
+As an example, to create a deployment named "deis" in the "West US" region:
 
 .. code-block:: console
 
@@ -103,3 +113,5 @@ start installing the platform.
 .. _`Azure Resource Manager`: https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/
 .. _`contrib/azure`: https://github.com/deis/deis/tree/master/contrib/azure
 .. _`organizational account`: http://www.brucebnews.com/2013/04/the-difference-between-a-microsoft-account-and-an-office-365-account/
+.. _`premium storage`: https://azure.microsoft.com/en-us/services/storage/premium-storage/
+.. _`some regions`: https://azure.microsoft.com/en-us/regions/#services

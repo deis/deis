@@ -65,7 +65,7 @@
     "customData": {
       "type": "string",
       "metadata": {
-        "description": "Base64-encoded cloud-config.yaml file to deploy and start Fleet"
+        "description": "Base64-encoded cloud-config.yaml file to deploy and start fleet"
       }
     },
     "numberOfNodes": {
@@ -78,15 +78,26 @@
     "dockerVolumeSize": {
       "type": "int",
       "metadata": {
-        "description": "Size in GB of the Docker volume."
+        "description": "Size in GB of the Docker volume"
       },
       "defaultValue": "100"
     },
     "coreosVersion": {
       "type": "string",
       "metadata": {
-        "description": "Version of CoreOS to deploy."
+        "description": "Version of CoreOS to deploy"
       }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account type"
+      },
+      "allowedValues": [
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "defaultValue": "Premium_LRS"
     }
   },
   "variables": {
@@ -94,7 +105,6 @@
     "subnet1Name": "Subnet-1",
     "subnet1Prefix": "10.0.0.0/24",
     "publicIPAddressType": "Dynamic",
-    "storageAccountType": "Standard_LRS",
     "imagePublisher": "CoreOS",
     "imageOffer": "CoreOS",
     "imageSKU": "Stable",
@@ -134,7 +144,7 @@
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-05-01-preview",
       "properties": {
-        "accountType": "[variables('storageAccountType')]"
+        "accountType": "[parameters('storageAccountType')]"
       }
     },
     {
