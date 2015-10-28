@@ -11,11 +11,23 @@ end
 
 CLOUD_CONFIG_PATH = File.join(File.dirname(__FILE__), "contrib", "coreos", "user-data")
 CONFIG = File.join(File.dirname(__FILE__), "config.rb")
+CONTRIB_UTILS_PATH = File.join(File.dirname(__FILE__), "contrib", "utils.sh")
+
+# Make variables from contrib/utils.sh accessible
+if File.exists?(CONTRIB_UTILS_PATH)
+  cu_vars = Hash.new do |hash, key|
+    value = `. #{CONTRIB_UTILS_PATH} 2> /dev/null && echo $#{key}`.chomp
+    hash[key] = value unless value.empty?
+  end
+else
+  raise Vagrant::Errors::VagrantError.new, "The file '#{CONTRIB_UTILS_PATH}' is missing."
+end
 
 # Defaults for config options defined in CONFIG
 $num_instances = 1
 $instance_name_prefix = "deis"
-$update_channel = ENV["COREOS_CHANNEL"] || "stable"
+$update_channel = cu_vars["COREOS_CHANNEL"]
+$image_version = cu_vars["COREOS_VERSION"]
 $enable_serial_logging = false
 $share_home = false
 $vm_gui = false
@@ -52,15 +64,18 @@ def vm_cpus
 end
 
 Vagrant.configure("2") do |config|
-  # always use Vagrant's insecure key
+  # always use Vagrants insecure key
   config.ssh.insert_key = false
+
   config.vm.box = "coreos-%s" % $update_channel
-  config.vm.box_version = ">= 766.4.0"
-  config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant.json" % $update_channel
+  if $image_version != "current"
+      config.vm.box_version = $image_version
+  end
+  config.vm.box_url = "http://%s.release.core-os.net/amd64-usr/%s/coreos_production_vagrant.json" % [$update_channel, $image_version]
 
   ["vmware_fusion", "vmware_workstation"].each do |vmware|
     config.vm.provider vmware do |v, override|
-      override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json" % $update_channel
+      override.vm.box_url = "http://%s.release.core-os.net/amd64-usr/%s/coreos_production_vagrant_vmware_fusion.json" % [$update_channel, $image_version]
     end
   end
 
