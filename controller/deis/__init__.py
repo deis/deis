@@ -6,4 +6,4 @@ the api, provider, cm, and web Django apps.
 
 from __future__ import absolute_import
 
-__version__ = '1.12.0-dev'
+__version__ = '1.12.0'

@@ -1,3 +1,48 @@
+### v1.11.2 -> v1.12.0
+
+#### Features
+
+ - [`c8100da`](https://github.com/deis/deis/commit/c8100da71e24a2b932b453c886a8cfaa904327b5) contrib/digitalocean: improve Digital Ocean provisioning workflow
+ - [`5c8f5b9`](https://github.com/deis/deis/commit/5c8f5b984b361e7379d7bf5048ae46abcfa0e800) tests: use Docker 1.8.3 for Jenkins nodes
+ - [`a47fcfe`](https://github.com/deis/deis/commit/a47fcfe4586e43e71c4515075626c3e0814a07d1) contrib: vagrantfile sources utils.sh
+ - [`25653e3`](https://github.com/deis/deis/commit/25653e39a1ac8d76eee28563e2601c9750c3e8a7) builder: make SOURCE_VERSION env variable
+ - [`d55f9a1`](https://github.com/deis/deis/commit/d55f9a14bef9ef72b7c365f04a3461d4c6c816c8) registry: add more information on during startup process
+ - [`8f7f284`](https://github.com/deis/deis/commit/8f7f284895601087842e513855cc62072bda627c) controller: disable swap if there's a mem limit
+ - [`ab53096`](https://github.com/deis/deis/commit/ab53096daf466024cda23c203b377326815df4b9) controller: use Docker for last-mile layer
+ - [`9e87112`](https://github.com/deis/deis/commit/9e87112957f5fdaf852028df018548e2641937d4) deisctl: bump fleet api to v0.10.2
+
+#### Fixes
+
+ - [`2ecc28f`](https://github.com/deis/deis/commit/2ecc28fe8e0e791c8903aea99a5897a54f4543e0) database: revert to alpine:3.1 for PostgreSQL
+ - [`2a0a319`](https://github.com/deis/deis/commit/2a0a319cf5d3d77f95ba92f7d34062390b41bb72) contrib/linode: fix discovery url issues in deployment scripts
+ - [`61c1026`](https://github.com/deis/deis/commit/61c1026f480e73c11a06bebccdee30bc44ed47a4) builder: continue updating etcd after errors
+ - [`055763b`](https://github.com/deis/deis/commit/055763b9d2e03d7fc5c87ac46f2bc3d5a013fc24) client: init procfileMap in "deis pull"
+ - [`a81e689`](https://github.com/deis/deis/commit/a81e6896137e4775e6799d3b99f9c0a278488112) contrib/linode: fix issues with DHCP on Linode
+ - [`2c5d0da`](https://github.com/deis/deis/commit/2c5d0dad2e10508d780a5721d0f9da371804c7ad) Vagrantfile: specifically use bash to source utils.sh
+ - [`8ac36e8`](https://github.com/deis/deis/commit/8ac36e8bf5107e1f9efbb05f138d7b631b1f78e6) client: catch and propagate client errors
+ - [`5fc33de`](https://github.com/deis/deis/commit/5fc33de0d3e291c9b2a8d52241d6e52f28d11196) contrib/gce: replace discovery url properly
+ - [`d830adf`](https://github.com/deis/deis/commit/d830adf1e8d323ff37f23300661c543daebc632b) contrib/azure: use Azure premium storage
+ - [`648439d`](https://github.com/deis/deis/commit/648439dcdcc0a9b8ce7de268fdcf394cc2f1e758) contrib/azure: discovery url
+ - [`4d5db42`](https://github.com/deis/deis/commit/4d5db42da2b27e825af2d3aa7548dda6dc3957a9) builder: update d-in-d wrapper for newer Docker
+ - [`b9dde4a`](https://github.com/deis/deis/commit/b9dde4a90fdc6985479b6b2f9cd1dcad5195326d) client: read procfile from PWD when pulling
+ - [`87afcd9`](https://github.com/deis/deis/commit/87afcd91e8b98c1dc9bd351496aaab73da4376da) controller/web: enable unit tests
+ - [`df1dd36`](https://github.com/deis/deis/commit/df1dd3692b97f9b8463b7aebd9baf409fd8e9fdd) contrib/aws[rigger]: upload correct ssh key
+
+#### Documentation
+
+ - [`70bd364`](https://github.com/deis/deis/commit/70bd36465bb0529480324c30071611ee411c9d9b) roadmap: add release criteria
+ - [`3ec1ccf`](https://github.com/deis/deis/commit/3ec1ccfaf19e3eb9fac06815a59ec01c378a7201) contributing: update where build instructions are
+ - [`393883e`](https://github.com/deis/deis/commit/393883e2d35b185164820d35e3ac62a4feba8191) contributing: add optional pre-reqs
+ - [`dfa98e9`](https://github.com/deis/deis/commit/dfa98e9df93ce249af3320f1f1015b49c881d5db) upgrading-deis: graceful upgrade in stateless mode
+ - [`c489394`](https://github.com/deis/deis/commit/c489394f0dd49e810f74c1513aa6369bb6fa380e) roadmap: add October 2015 planning meeting
+
+#### Maintenance
+
+ - [`386947f`](https://github.com/deis/deis/commit/386947f14d96025d12eee3c09980125a90021482) router: update nginx to 1.9.6
+ - [`ea93351`](https://github.com/deis/deis/commit/ea9335140d906d11f6e5e1496d042d2df2240e9a) logger: improve drains
+ - [`491bd26`](https://github.com/deis/deis/commit/491bd269f9e398402c5bef30c5b2b76a70763b54) builder: update Docker to 1.8.3
+ - [`f78a706`](https://github.com/deis/deis/commit/f78a706bca18c4f334470a1ae799434633bb20ec) (all): update Docker base image to alpine:3.2
+
 ### v1.11.1 -> v1.11.2
 
 #### Fixes
