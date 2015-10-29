@@ -2,7 +2,9 @@
 
 set -eo pipefail -o nounset
 
-terraform apply
+export TF_VAR_token="${DO_TOKEN}"
+
+terraform apply | grep --line-buffered -v user_data
 
 export DEISCTL_TUNNEL="$(terraform output ip)"
 export DEIS_TEST_DOMAIN="${DEISCTL_TUNNEL}.xip.io"

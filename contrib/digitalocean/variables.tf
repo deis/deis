@@ -19,5 +19,5 @@ variable "ssh_keys" {
 }
 
 variable "token" {
-  description = "Your Digital Ocean auth token"
+  description = "Your DigitalOcean auth token"
 }
