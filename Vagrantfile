@@ -2,6 +2,7 @@
 # # vi: set ft=ruby :
 
 require 'fileutils'
+require 'open3'
 
 Vagrant.require_version ">= 1.6.5"
 
@@ -16,7 +17,8 @@ CONTRIB_UTILS_PATH = File.join(File.dirname(__FILE__), "contrib", "utils.sh")
 # Make variables from contrib/utils.sh accessible
 if File.exists?(CONTRIB_UTILS_PATH)
   cu_vars = Hash.new do |hash, key|
-    value = `. #{CONTRIB_UTILS_PATH} 2> /dev/null && echo $#{key}`.chomp
+    stdin, stdout, stderr = Open3.popen3("/usr/bin/env", "bash", "-c", "source #{CONTRIB_UTILS_PATH} && echo $#{key}")
+    value = stdout.gets.chomp
     hash[key] = value unless value.empty?
   end
 else
