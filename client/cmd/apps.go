@@ -20,6 +20,9 @@ import (
 // AppCreate creates an app.
 func AppCreate(id string, buildpack string, remote string, noRemote bool) error {
 	c, err := client.New()
+	if err != nil {
+		return err
+	}
 
 	fmt.Print("Creating Application... ")
 	quit := progress()
