@@ -50,7 +50,7 @@ Add the public key part for the SSH key generated in the first step to the user-
 Update $private_ipv4
 ^^^^^^^^^^^^^^^^^^^^
 
-`CoreOS`_ on bare metal doesn't detect the ``$private_ipv4`` reliably. Replace all occurences in
+`CoreOS`_ on bare metal doesn't detect the ``$private_ipv4`` reliably. Replace all occurrences in
 the user-data with the (private) IP address of the node.
 
 

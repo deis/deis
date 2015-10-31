@@ -72,7 +72,7 @@ Graceful Upgrade
 ----------------
 
 Alternatively, an experimental feature exists to provide the ability to perform a graceful upgrade. This process is
-available for version 1.9.0 moving foward and is intended to facilitate upgrades within a major version (for example,
+available for version 1.9.0 moving forward and is intended to facilitate upgrades within a major version (for example,
 from 1.9.0 to 1.9.1 or 1.11.2). Upgrading between major versions is not supported (for example, from 1.9.0 to a
 future 2.0.0). Unlike the in-place process above, this process keeps the platform's routers and publishers up during
 the upgrade process. This means that there should only be a maximum of around 1-2 seconds of downtime while the
@@ -83,7 +83,7 @@ routers boot up. Many times, there will be no downtime at all.
     Your loadbalancer configuration is the determining factor for how much downtime will occur during a successful upgrade.
     If your loadbalancer is configured to quickly reactivate failed hosts to its pool of active hosts, its quite possible to
     achieve zero downtime upgrades. If your loadbalancer is configured to be more pessimistic, such as requiring multiple
-    successful healthchecks before reactiving a node, then the chance for downtime increases. You should review your
+    successful healthchecks before reactivating a node, then the chance for downtime increases. You should review your
     loadbalancers configuration to determine what to expect during the upgrade process.
 
 The process involves two ``deisctl`` subcommands, ``upgrade-prep`` and ``upgrade-takeover``, in coordination with a few other important commands.
@@ -107,7 +107,7 @@ to. Care should be taken not to overwrite the existing ``deisctl`` version.
 
 Now it is possible to prepare the cluster for the upgrade using the old ``deisctl`` binary. This command will shutdown
 and uninstall all components of the cluster except the router and publisher. This means your services should still be
-serving traffic afterwords, but nothing else in the cluster will be functional.
+serving traffic afterwards, but nothing else in the cluster will be functional.
 
 .. code-block:: console
 
