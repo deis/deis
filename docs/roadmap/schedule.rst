@@ -36,6 +36,14 @@ defined as:
 Users of Deis can be confident that upgrading to a patch or to a minor release
 will not change the behavior of these items in a backward-incompatible way.
 
+Release Criteria
+----------------
+
+For any Deis release to be made publicly available, it must meet at least
+these criteria:
+
+- Passes all tests on the supported, load-balancing cloud providers
+- Has no new regressions in behavior that are not considered trivial
 
 Patch Releases
 --------------
