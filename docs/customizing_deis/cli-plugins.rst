@@ -27,7 +27,7 @@ Any flags after the command will also be sent to the plugin as an argument:
     $ deis accounts:list --debug
     $ deis-accounts list --debug
 
-But flags preceeding the command will not:
+But flags preceding the command will not:
 
 .. code-block:: console
 

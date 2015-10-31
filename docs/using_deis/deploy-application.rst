@@ -11,7 +11,7 @@ Supported Applications
 ----------------------
 Deis can deploy any application or service that can run inside a Docker container.  In order to be scaled horizontally, applications must follow Heroku's `twelve-factor methodology`_ and store state in external backing services.
 
-For example, if your application persists state to the local filesystem -- common with content management systems like Wordpress and Drupal -- it cannot be scaled horizonally using ``deis scale``.
+For example, if your application persists state to the local filesystem -- common with content management systems like Wordpress and Drupal -- it cannot be scaled horizontally using ``deis scale``.
 
 Fortunately, most modern applications feature a stateless application tier that can scale horizontally inside Deis.
 

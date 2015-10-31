@@ -8,7 +8,7 @@ Recovering Ceph quorum
 
 Ceph relies on `Paxos`_ to maintain a quorum among monitor services so that they agree on cluster state.
 In some cases Ceph can lose quorum, such as when hosts are added and removed from the cluster in
-quick successtion, without removing the old hosts from Ceph (see :ref:`add_remove_host`).
+quick succession, without removing the old hosts from Ceph (see :ref:`add_remove_host`).
 
 A telltale sign of quorum loss is when querying cluster health, ``ceph -s`` times out with monitor
 faults on every host in the cluster.

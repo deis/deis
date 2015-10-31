@@ -245,7 +245,7 @@ You will want to add two records as YAML objects. Here is an example edit for th
       ttl: 21600
       type: SOA
 
-And finaly execute the transaction.
+And finally execute the transaction.
 
 .. code-block:: console
 
