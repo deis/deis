@@ -44,7 +44,7 @@ func BuildsCreate(appID, image, procfile string) error {
 		return err
 	}
 
-	var procfileMap *map[string]string
+	procfileMap := make(map[string]string)
 
 	if procfile != "" {
 		if procfileMap, err = parseProcfile([]byte(procfile)); err != nil {
@@ -63,7 +63,7 @@ func BuildsCreate(appID, image, procfile string) error {
 
 	fmt.Print("Creating build... ")
 	quit := progress()
-	_, err = builds.New(c, appID, image, *procfileMap)
+	_, err = builds.New(c, appID, image, procfileMap)
 	quit <- true
 	<-quit
 
@@ -76,7 +76,7 @@ func BuildsCreate(appID, image, procfile string) error {
 	return nil
 }
 
-func parseProcfile(procfile []byte) (*map[string]string, error) {
+func parseProcfile(procfile []byte) (map[string]string, error) {
 	procfileMap := make(map[string]string)
-	return &procfileMap, yaml.Unmarshal(procfile, &procfileMap)
+	return procfileMap, yaml.Unmarshal(procfile, &procfileMap)
 }
