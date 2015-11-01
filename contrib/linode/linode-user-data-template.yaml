@@ -5,18 +5,23 @@ coreos:
     metadata: name=%H
   units:
   - name: 00-eth0.network
-    runtime: false
+    runtime: true
     content: |
       [Match]
       Name=eth0
 
       [Network]
+      DHCP=ipv4
       Address=$public_ipv4/24
       Address=$private_ipv4/17
       Gateway=$gateway.1
       DNS=72.14.179.5
       DNS=8.8.8.8
       DNS=208.67.222.222
+
+      [DHCP]
+      UseDNS=false
+      CriticalConnection=true
   - name: disable-ipv6.service
     command: start
     content: |
