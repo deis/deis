@@ -349,14 +349,13 @@ func UpdateHostPort(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Int
 	safely.GoDo(c, func() {
 		ticker := time.NewTicker(10 * time.Second)
 		for range ticker.C {
-			//log.Infof(c, "Setting SSHD host/port")
 			if _, err := os.FindProcess(sshd); err != nil {
 				log.Errf(c, "Lost SSHd process: %s", err)
 				break
 			} else {
 				if err := setHostPort(client, base, host, port, ttl); err != nil {
 					log.Errf(c, "Etcd error setting host/port: %s", err)
-					break
+					continue
 				}
 			}
 		}
