@@ -167,6 +167,30 @@ func plumbCommand(cmd *exec.Cmd, channel ssh.Channel, sidechannel io.Writer) *sy
 
 var createLock sync.Mutex
 
+// initRepo create a directory and init a new Git repo
+func initRepo(repoPath, gitHome string, c cookoo.Context) (bool, error) {
+	log.Infof(c, "Creating new directory at %s", repoPath)
+	// Create directory
+	if err := os.MkdirAll(repoPath, 0755); err != nil {
+		log.Warnf(c, "Failed to create repository: %s", err)
+		return false, err
+	}
+	cmd := exec.Command("git", "init", "--bare")
+	cmd.Dir = repoPath
+	if out, err := cmd.CombinedOutput(); err != nil {
+		log.Warnf(c, "git init output: %s", out)
+		return false, err
+	}
+
+	hook, err := prereceiveHook(map[string]string{"GitHome": gitHome})
+	if err != nil {
+		return true, err
+	}
+	ioutil.WriteFile(filepath.Join(repoPath, "hooks", "pre-receive"), hook, 0755)
+
+	return true, nil
+}
+
 // createRepo creates a new Git repo if it is not present already.
 //
 // Largely inspired by gitreceived from Flynn.
@@ -177,37 +201,30 @@ func createRepo(c cookoo.Context, repoPath, gitHome string) (bool, error) {
 	createLock.Lock()
 	defer createLock.Unlock()
 
-	if fi, err := os.Stat(repoPath); err == nil && fi.IsDir() {
-		// Nothing to do.
-		log.Infof(c, "Directory %s already exists.", repoPath)
-		return false, nil
+	if fi, err := os.Stat(repoPath); err == nil {
+		if fi.IsDir() {
+			configPath := filepath.Join(repoPath, "config")
+			if _, cerr := os.Stat(configPath); cerr == nil {
+				log.Infof(c, "Directory '%s' already exists.", repoPath)
+				return true, nil
+			} else {
+				log.Warnf(c, "No config file found at path `%s`; removing it and recreating.", repoPath)
+				if err := os.RemoveAll(repoPath); err != nil {
+					return false, fmt.Errorf("Unable to remove path '%s': %s", repoPath, err)
+				}
+			}
+		} else {
+			log.Warnf(c, "Path '%s' is not a directory; removing it and recreating.", repoPath)
+			if err := os.RemoveAll(repoPath); err != nil {
+				return false, fmt.Errorf("Unable to remove path '%s': %s", repoPath, err)
+			}
+		}
 	} else if os.IsNotExist(err) {
-
-		log.Infof(c, "Creating new directory at %s", repoPath)
-		// Create directory
-		if err := os.MkdirAll(repoPath, 0755); err != nil {
-			log.Warnf(c, "Failed to create repository: %s", err)
-			return false, err
-		}
-		cmd := exec.Command("git", "init", "--bare")
-		cmd.Dir = repoPath
-		if out, err := cmd.CombinedOutput(); err != nil {
-			log.Warnf(c, "git init output: %s", out)
-			return false, err
-		}
-
-		hook, err := prereceiveHook(map[string]string{"GitHome": gitHome})
-		if err != nil {
-			return true, err
-		}
-		ioutil.WriteFile(filepath.Join(repoPath, "hooks", "pre-receive"), hook, 0755)
-
-		return true, nil
-	} else if err == nil {
-		return false, errors.New("Expected directory, found file.")
+		log.Infof(c, "Unable to get stat for path '%s': %s .", repoPath, err)
 	} else {
 		return false, err
 	}
+	return initRepo(repoPath, gitHome, c)
 }
 
 //prereceiveHook templates a pre-receive hook for Git.
