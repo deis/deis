@@ -105,6 +105,9 @@ with open(os.path.join(CURR_DIR, '..', 'coreos', 'user-data'), 'r') as f:
 # are started
 data['coreos']['units'] = new_units + data['coreos']['units']
 
+# Point to the right data directory
+data['coreos']['etcd2']['data-dir'] = '/media/etcd'
+
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
 
