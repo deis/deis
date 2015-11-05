@@ -48,11 +48,12 @@ coreos:
           [Service]
           Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
     - name: flanneld.service
+      command: start
       drop-ins:
       - name: 50-network-config.conf
         content: |
           [Service]
-          ExecStartPre=/usr/bin/etcdctl mk /coreos.com/network/config '{"Network": "10.244.0.0/16", "SubnetLen": 24, "SubnetMin": "10.244.0.0", "Backend": {"Type": "vxlan"}}'
+          ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network": "10.244.0.0/16", "SubnetLen": 24, "SubnetMin": "10.244.0.0", "Backend": {"Type": "vxlan"}}'
     - name: graceful-deis-shutdown.service
       content: |
         [Unit]
