@@ -10,7 +10,7 @@ class AbstractSchedulerClient(object):
         self.options = options
         self.pkey = pkey
 
-    def create(self, name, image, command, **kwargs):
+    def create(self, name, image, command, config, **kwargs):
         """Create a new container."""
         raise NotImplementedError
 

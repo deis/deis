@@ -116,7 +116,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
 
     # container api
 
-    def create(self, name, image, command='', template=None, **kwargs):
+    def create(self, name, image, command='', template=None, config=None, **kwargs):
         """Create a container."""
         self._create_container(name, image, command,
                                template or copy.deepcopy(CONTAINER_TEMPLATE), **kwargs)

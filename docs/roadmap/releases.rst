@@ -56,6 +56,7 @@ Patch Release
         router/Dockerfile \
         store/base/Dockerfile \
         swarm/image/Dockerfile \
+        terminator/Dockerfile \
         version/version.go
 
 - Update the CHANGELOG to include all commits since the last release. Since

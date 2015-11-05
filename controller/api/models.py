@@ -342,6 +342,7 @@ class App(UuidAuditedModel):
                     name=job_id,
                     image=image,
                     command=command,
+                    config=release.config.values,
                     **kwargs)
             except Exception as e:
                 err = '{} (scale): {}'.format(job_id, e)
@@ -492,6 +493,7 @@ class App(UuidAuditedModel):
                     name=job_id,
                     image=image,
                     command=command,
+                    config=release.config.values,
                     **kwargs)
             except Exception as e:
                 err = '{} (deploy): {}'.format(job_id, e)
@@ -646,6 +648,7 @@ class Container(UuidAuditedModel):
                 name=self.job_id,
                 image=image,
                 command=self._command,
+                config=self.release.config.values,
                 **kwargs)
         except Exception as e:
             err = '{} (create): {}'.format(self.job_id, e)

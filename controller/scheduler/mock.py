@@ -10,7 +10,7 @@ jobs = {}
 
 class MockSchedulerClient(AbstractSchedulerClient):
 
-    def create(self, name, image, command, **kwargs):
+    def create(self, name, image, command, config, **kwargs):
         """Create a new container."""
         jobs.setdefault(name, {})['state'] = JobState.created
 
