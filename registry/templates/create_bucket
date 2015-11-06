@@ -22,5 +22,5 @@ name = '{{ getv "/deis/registry/s3bucket" }}'
 name = '{{ getv "/deis/registry/bucketName" }}'
 {{ end }}
 
-if not conn.lookup(name):
+if conn.lookup(name) is None:
     conn.create_bucket(name)
