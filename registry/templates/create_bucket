@@ -8,13 +8,22 @@ conn = boto.connect_s3(
     {{ if exists "/deis/store/gateway/accessKey" }}
     aws_access_key_id='{{ getv "/deis/store/gateway/accessKey" }}',
     aws_secret_access_key='{{ getv "/deis/store/gateway/secretKey" }}',
-    {{end}}
+    {{ else }}
+    {{ if exists "/deis/registry/s3accessKey" }}
+    aws_access_key_id='{{ getv "/deis/registry/s3accessKey" }}',
+    aws_secret_access_key='{{ getv "/deis/registry/s3secretKey" }}',
+    {{ end }}
+    {{ end }}
     {{ if exists "/deis/store/gateway/host" }}
     host='{{ getv "/deis/store/gateway/host" }}',
     port={{ getv "/deis/store/gateway/port" }},
     {{ end }}
+    {{ if exists "/deis/registry/s3bucket" }}
+    is_secure=True)
+    {{ else }}
     is_secure=False,
     calling_format=OrdinaryCallingFormat())
+    {{ end }}
 
 {{ if exists "/deis/registry/s3bucket" }}
 name = '{{ getv "/deis/registry/s3bucket" }}'
