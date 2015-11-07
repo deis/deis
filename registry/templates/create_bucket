@@ -1,3 +1,4 @@
+{{ if exists "/deis/store/gateway" }}
 #!/usr/bin/env python
 
 import boto
@@ -22,5 +23,6 @@ name = '{{ getv "/deis/registry/s3bucket" }}'
 name = '{{ getv "/deis/registry/bucketName" }}'
 {{ end }}
 
-if conn.lookup(name) is None:
+if not conn.lookup(name):
     conn.create_bucket(name)
+{{ end }}
