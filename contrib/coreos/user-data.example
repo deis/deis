@@ -48,10 +48,10 @@ coreos:
           [Unit]
           Requires=flanneld.service
           After=flanneld.service
-      - name: 50-insecure-registry.conf
+      - name: 50-custom-options.conf
         content: |
           [Service]
-          Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
+          Environment="DOCKER_OPTS=--iptables=false --insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
     - name: flanneld.service
       command: start
       drop-ins:
