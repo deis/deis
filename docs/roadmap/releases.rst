@@ -34,6 +34,7 @@ Patch Release
         builder/rootfs/usr/local/src/slugbuilder/Dockerfile \
         builder/rootfs/usr/local/src/slugrunner/Dockerfile \
         client/deis-version \
+        contrib/utils.sh \
         contrib/coreos/user-data.example \
         controller/deis/__init__.py \
         controller/Dockerfile \
@@ -91,6 +92,7 @@ Major or Minor Release
 
     $ ./contrib/bumpver/bumpver -f A.B.C A.B.D \
         README.md \
+        contrib/utils.sh \
         contrib/coreos/user-data.example \
         docs/_includes/_get-the-source.rst \
         docs/installing_deis/install-deisctl.rst \
@@ -156,6 +158,7 @@ Patch Release
 
     ./contrib/bumpver/bumpver -f A.B.C A.B.D \
       README.md \
+      contrib/utils.sh \
       contrib/coreos/user-data.example \
       docs/_includes/_get-the-source.rst \
       docs/installing_deis/install-deisctl.rst \
