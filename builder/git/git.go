@@ -205,10 +205,10 @@ func createRepo(c cookoo.Context, repoPath, gitHome string) (bool, error) {
 		if fi.IsDir() {
 			configPath := filepath.Join(repoPath, "config")
 			if _, cerr := os.Stat(configPath); cerr == nil {
-				log.Infof(c, "Directory '%s' already exists.", repoPath)
+				log.Debugf(c, "Directory '%s' already exists.", repoPath)
 				return true, nil
 			} else {
-				log.Warnf(c, "No config file found at path `%s`; removing it and recreating.", repoPath)
+				log.Warnf(c, "No config file found at `%s`; removing it and recreating.", repoPath)
 				if err := os.RemoveAll(repoPath); err != nil {
 					return false, fmt.Errorf("Unable to remove path '%s': %s", repoPath, err)
 				}
@@ -220,7 +220,7 @@ func createRepo(c cookoo.Context, repoPath, gitHome string) (bool, error) {
 			}
 		}
 	} else if os.IsNotExist(err) {
-		log.Infof(c, "Unable to get stat for path '%s': %s .", repoPath, err)
+		log.Debugf(c, "Unable to get stat for path '%s': %s .", repoPath, err)
 	} else {
 		return false, err
 	}
