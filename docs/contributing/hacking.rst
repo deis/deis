@@ -113,6 +113,13 @@ This will create a new virtual machine named `deis-registry` that will take
 up as much as 100,000 MB of disk space. Registries tend to be large, so
 allocating a big disk is a good idea.
 
+Once the deis-registry machine exists, source its values into your environment
+so your docker client knows how to use the new machine.
+
+.. code-block:: console
+
+    $ eval "$(docker-machine env deis-registry)"
+
 .. note::
 
     Because the registry that we create will not have a valid SSL certificate,
