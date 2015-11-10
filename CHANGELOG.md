@@ -1,3 +1,16 @@
+### v1.12.0 -> v1.12.1
+
+#### Fixes
+
+ - [`293d657`](https://github.com/deis/deis/commit/293d6572d2d0da73595bd7e178e438e83115c2e6) registry: fix create_bucket s3 compatability
+ - [`b07db69`](https://github.com/deis/deis/commit/b07db69e9b3ad197d869fec4cb0b5a7051a0ef16) user-data: always start flannel on boot
+ - [`d9ef023`](https://github.com/deis/deis/commit/d9ef0234f4cbab8f806f7970d71d883da1261e52) contrib: re-introduce data dir mapping for etcd
+ - [`070d081`](https://github.com/deis/deis/commit/070d081838e262256b7987fd2e9e6c44aff48dd1) create_bucket: check for existence of None
+
+#### Maintenance
+
+ - [`3eb277a`](https://github.com/deis/deis/commit/3eb277a4f90c2bd2733764e49b9ce70e7c3567e9) (all): bump CoreOS to 766.5.0
+
 ### v1.11.2 -> v1.12.0
 
 #### Features
