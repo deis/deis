@@ -3,7 +3,6 @@ package config
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -27,7 +26,7 @@ func TestGetConfig(t *testing.T) {
 	expected := "foo\n8000\n"
 	output := testWriter.String()
 	if output != expected {
-		t.Error(fmt.Errorf("Expected: '%s', Got:'%s'", expected, output))
+		t.Errorf("Expected: '%s', Got:'%s'", expected, output)
 	}
 }
 
@@ -59,7 +58,21 @@ func TestSetConfig(t *testing.T) {
 	expected := "bar\n1000\n"
 	output := testWriter.String()
 	if output != expected {
-		t.Error(fmt.Errorf("Expected: '%s', Got:'%s'", expected, output))
+		t.Errorf("Expected: '%s', Got:'%s'", expected, output)
+	}
+}
+
+func TestSetConfigError(t *testing.T) {
+	t.Parallel()
+
+	testMock := mock.ConfigBackend{Expected: []*model.ConfigNode{}}
+	testWriter := bytes.Buffer{}
+
+	expected := "'foo' does not match the pattern 'key=var', ex: foo=bar\n"
+	err := doConfig("controller", "set", []string{"foo", "=", "bar"}, testMock, &testWriter)
+
+	if err.Error() != expected {
+		t.Errorf("Expected: '%s', Got:'%q'", expected, err)
 	}
 }
 
@@ -78,7 +91,7 @@ func TestDeleteConfig(t *testing.T) {
 	expected := "testing\nport\n"
 	output := testWriter.String()
 	if output != expected {
-		t.Error(fmt.Errorf("Expected: '%s', Got:'%s'", expected, output))
+		t.Errorf("Expected: '%s', Got:'%s'", expected, output)
 	}
 }
 
