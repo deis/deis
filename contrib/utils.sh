@@ -12,5 +12,6 @@ function echo_green {
   echo -e "\033[0;32m$1\033[0m"
 }
 
-COREOS_CHANNEL=${COREOS_CHANNEL:-stable}
-COREOS_VERSION=${COREOS_VERSION:-766.5.0}
+export COREOS_CHANNEL=${COREOS_CHANNEL:-stable}
+export COREOS_VERSION=${COREOS_VERSION:-766.5.0}
+export DEIS_RELEASE=1.13.0-dev
