@@ -43,6 +43,11 @@ coreos:
       enable: false
     - name: docker.service
       drop-ins:
+      - name: 10-require-flannel.conf
+        content: |
+          [Unit]
+          Requires=flanneld.service
+          After=flanneld.service
       - name: 50-insecure-registry.conf
         content: |
           [Service]
