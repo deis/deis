@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"strings"
+	"regexp"
 
 	"github.com/deis/deis/deisctl/utils"
 )
@@ -65,12 +65,17 @@ func doConfig(target string, action string, key []string, cb Backend, w io.Write
 
 func doConfigSet(cb Backend, root string, kvs []string) ([]string, error) {
 	var result []string
+	regex := regexp.MustCompile(`^(.+)=([\s\S]+)$`)
 
 	for _, kv := range kvs {
 
+		if !regex.MatchString(kv) {
+			return []string{}, fmt.Errorf("'%s' does not match the pattern 'key=var', ex: foo=bar\n", kv)
+		}
+
 		// split k/v from args
-		split := strings.SplitN(kv, "=", 2)
-		k, v := split[0], split[1]
+		captures := regex.FindStringSubmatch(kv)
+		k, v := captures[1], captures[2]
 
 		// prepare path and value
 		path := root + k
