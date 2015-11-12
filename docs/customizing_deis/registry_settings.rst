@@ -22,7 +22,7 @@ The following etcd keys are set by the registry component, typically in its /bin
 ===========================              =================================================================================
 setting                                  description
 ===========================              =================================================================================
-/deis/registry/bucketName                store component bucket used for registry image layers (default: registry)
+/deis/registry/bucketName                store component bucket used for registry image layers. Periods are not allowed in the name (default: registry)
 /deis/registry/host                      IP address of the host running registry
 /deis/registry/port                      port used by the registry service (default: 5000)
 /deis/registry/protocol                  protocol for registry (default: http)
@@ -52,7 +52,7 @@ setting                                   description
 /deis/registry/s3accessKey                S3 API access key. If not specified, the registry will get it from the instance role
 /deis/registry/s3secretKey                S3 API secret key, required if s3accessKey is specified
 /deis/registry/s3region                   S3 region to connect to, will use boto default if not specified
-/deis/registry/s3bucket                   S3 bucket to store images 
+/deis/registry/s3bucket                   S3 bucket to store images. Periods are not allowed in the name.
 /deis/registry/s3path                     path in the bucket (default: "/registry")
 /deis/registry/s3encrypt                  whether the object is encrypted while at rest on the server (default: true)
 /deis/registry/s3secure                   use secure protocol to establish connection with S3 (default: true)

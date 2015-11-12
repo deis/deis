@@ -19,17 +19,21 @@ conn = boto.connect_s3(
     port={{ getv "/deis/store/gateway/port" }},
     {{ end }}
     {{ if exists "/deis/registry/s3bucket" }}
-    is_secure=True)
+    is_secure=True
     {{ else }}
     is_secure=False,
-    calling_format=OrdinaryCallingFormat())
+    calling_format=OrdinaryCallingFormat()
     {{ end }}
+)
 
 {{ if exists "/deis/registry/s3bucket" }}
 name = '{{ getv "/deis/registry/s3bucket" }}'
 {{ else }}
 name = '{{ getv "/deis/registry/bucketName" }}'
 {{ end }}
+
+if '.' in name:
+    raise Exception('periods are not supported in bucket name')
 
 if conn.lookup(name) is None:
     conn.create_bucket(name)
