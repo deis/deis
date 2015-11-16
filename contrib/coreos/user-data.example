@@ -85,13 +85,6 @@ coreos:
         [Service]
         Type=oneshot
         ExecStart=/usr/bin/sh -c 'curl -sSL --retry 5 --retry-delay 2 http://deis.io/deisctl/install.sh | sh -s 1.12.1'
-    - name: debug-etcd.service
-      content: |
-        [Unit]
-        Description=etcd debugging service
-
-        [Service]
-        ExecStart=/usr/bin/bash -c "while true; do curl -sL http://127.0.0.1:4001/v2/stats/self | jq . ; sleep 1 ; done"
     - name: increase-nf_conntrack-connections.service
       command: start
       content: |
