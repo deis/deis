@@ -30,5 +30,3 @@ def unlock(name):
         get_etcd_client().delete(key)
     except KeyError:
         log.warn('{key} already removed'.format(key=key))
-
-
