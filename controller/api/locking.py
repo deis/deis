@@ -14,6 +14,9 @@ def lock(name, ttl=3600):
     key = LOCK_PATH_TEMPLATE.format(name=name)
     value = 'locked'
     client = get_etcd_client()
+    if client is None:
+        log.warn('Etcd client is None, skip locking')
+        return
     try:
         log.debug('Reading key: "{key}"'.format(key=key))
         client.read(key)
