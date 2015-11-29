@@ -1,1 +1,1 @@
-http+path://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}
+http{{ if eq (getv "/deis/store/gateway/port") "443"}}s{{ end }}+path://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}
