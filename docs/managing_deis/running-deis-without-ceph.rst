@@ -219,4 +219,4 @@ When following the :ref:`upgrading-deis` documentation, be sure to use
 .. _`Amazon S3`: http://aws.amazon.com/s3/
 .. _`Arne-Christian Blystad`: https://github.com/blystad
 .. _`Papertrail`: https://papertrailapp.com/
-.. _`Swift3`: https://github.com/stackforge/swift3
+.. _`Swift3`: https://github.com/openstack/swift3
