@@ -19,9 +19,9 @@ func InstallPlatform(b backend.Backend, cb config.Backend, checkKeys func(config
 	}
 
 	if stateless {
-		fmt.Println("Warning: With a stateless control plane, `deis logs` will be unavailable.")
-		fmt.Println("Additionally, components will need to be configured to use external persistent stores.")
+		fmt.Println("Warning: With a stateless control plane, some components require manual configuration.")
 		fmt.Println("See the official Deis documentation for details on running a stateless control plane.")
+		fmt.Println("http://docs.deis.io/en/latest/managing_deis/running-deis-without-ceph/")
 	}
 
 	var wg sync.WaitGroup
