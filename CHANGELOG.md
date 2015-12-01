@@ -1,3 +1,23 @@
+### v1.12.1 -> v1.12.2
+
+#### Fixes
+
+ - [`0738c13`](https://github.com/deis/deis/commit/0738c13949187a6d444a693193585aed7e44304a) database: supports HTTPs as S3 endpoint
+ - [`3498099`](https://github.com/deis/deis/commit/34980992c27497735b9155ce7ff8786c048e1f41) router: fix router common prefix app publishing
+ - [`27eab71`](https://github.com/deis/deis/commit/27eab713f9dd1c2a4f3bc5b8152b43df7bec66b5) contrib: Add drop-in to make docker require flannel
+ - [`42d00af`](https://github.com/deis/deis/commit/42d00af18390745da4bebf6b3f70c11d40e09884) deisctl: don't panic when config key/value is malformed
+ - [`7410fb7`](https://github.com/deis/deis/commit/7410fb74c7fe5c85a9df1765d5b18ea836e68f8d) builder: Fix problem with missed git repos after builder restart
+
+#### Documentation
+
+ - [`a19caaf`](https://github.com/deis/deis/commit/a19caaf61ad7e3f718570b93f9fe11aa0665fa2f) managing_deis: change swift3 link.
+ - [`82732b4`](https://github.com/deis/deis/commit/82732b486f4531242b41b44493c7f69da3aa2425) hacking: add docs to show how to use the docker-machine env
+
+#### Maintenance
+
+ - [`0f96abe`](https://github.com/deis/deis/commit/0f96abea0a7d28257f8c87e89eb6453fec21fa79) contrib/coreos: remove debug-etcd service
+ - [`e1e3927`](https://github.com/deis/deis/commit/e1e39274cbed8e5fc04dfa5b6a42dc74ae1b61f7) MAINTAINERS: don't enumerate maintainers
+
 ### v1.12.0 -> v1.12.1
 
 #### Fixes
