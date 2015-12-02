@@ -23,6 +23,7 @@ RUN apk add --update-cache \
     udev \
     util-linux \
     xz \
+    perl \
     && rm -rf /var/cache/apk/*
 
 # the docker package in alpine disables aufs and devicemapper

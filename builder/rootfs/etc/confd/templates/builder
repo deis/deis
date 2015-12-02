@@ -64,10 +64,31 @@ mkdir -p $BUILD_DIR $CACHE_DIR
 TMP_DIR=$(mktemp -d -p $BUILD_DIR)
 
 cd $REPO_DIR
-git archive $GIT_SHA | tar -xmC $TMP_DIR
 
-# switch to app context
-cd $TMP_DIR
+# Check if .gitmodules file exists.
+git ls-files --with-tree $GIT_SHA --error-unmatch .gitmodules 1>/dev/null 2>/dev/null
+
+if [  $? -eq 0 ]; then
+    puts-step "Git submodules detected"
+
+    # HACK: git archive ignores submodules, so we have to clone
+    # and then -rf .git to mimic archive behavior
+
+    git clone --quiet --reference="$REPO_DIR" "file://$REPO_DIR" "$TMP_DIR"
+    cd $TMP_DIR
+    git checkout $GIT_SHA
+
+    # intialize and pull submodules
+    git submodule init --quiet
+    git submodule update --quiet --recursive
+
+    rm -rf .git
+else
+    git archive $GIT_SHA | tar -xmC $TMP_DIR
+
+    # switch to app context
+    cd $TMP_DIR
+fi
 
 USING_DOCKERFILE=false
 
