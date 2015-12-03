@@ -4,7 +4,7 @@ COMPONENT = registry
 IMAGE = $(IMAGE_PREFIX)$(COMPONENT):$(BUILD_TAG)
 DEV_IMAGE = $(REGISTRY)$(IMAGE)
 
-SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard bin/*)
+SHELL_SCRIPTS = $(shell find "." -name '*.sh') $(wildcard rootfs/bin/*)
 
 build: check-docker
 	docker build -t $(IMAGE) .

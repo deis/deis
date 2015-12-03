@@ -40,7 +40,7 @@ func TestRegistry(t *testing.T) {
 	defer cli.CmdRm("-f", cephName)
 
 	host, port := utils.HostAddress(), utils.RandomPort()
-	fmt.Printf("--- Run %s at %s:%s\n", imageName, host, port)
+	fmt.Printf("--- Running %s at %s:%s\n", imageName, host, port)
 	name := "deis-registry-" + tag
 	defer cli.CmdRm("-f", name)
 	go func() {
@@ -54,7 +54,7 @@ func TestRegistry(t *testing.T) {
 			"-e", "ETCD_PORT="+etcdPort,
 			imageName)
 	}()
-	dockercli.PrintToStdout(t, stdout, stdoutPipe, "Booting")
+	dockercli.PrintToStdout(t, stdout, stdoutPipe, "listening on [::]:5000")
 	if err != nil {
 		t.Fatal(err)
 	}

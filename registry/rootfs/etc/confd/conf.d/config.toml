@@ -1,6 +1,6 @@
 [template]
 src   = "config.yml"
-dest  = "/docker-registry/config/config.yml"
+dest  = "/etc/config.yml"
 uid = 0
 gid = 0
 mode  = "0644"
@@ -9,4 +9,4 @@ keys = [
   "/deis/registry",
   "/deis/store/gateway",
 ]
-reload_cmd = "/app/bin/reload"
+reload_cmd = "/bin/reload"

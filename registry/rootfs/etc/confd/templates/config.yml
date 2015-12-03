@@ -1,0 +1,59 @@
+version: 0.1
+log:
+  level: info
+  fields:
+    service: registry
+storage:
+  delete:
+    enabled: true
+  cache:
+    blobdescriptor: inmemory
+  {{ if exists "/deis/registry/s3accessKey" }}
+  s3:
+    accesskey: {{ if exists "/deis/registry/s3accessKey" }}{{ getv "/deis/registry/s3accessKey" }}{{ else }}~{{ end }}
+    secretkey: {{ if exists "/deis/registry/s3secretKey" }}{{ getv "/deis/registry/s3secretKey" }}{{ else }}~{{ end }}
+    region: {{ if exists "/deis/registry/s3region" }}{{ getv "/deis/registry/s3region" }}{{ else }}~{{ end }}
+    bucket: {{ if exists "/deis/registry/s3bucket" }}{{ getv "/deis/registry/s3bucket" }}{{ else }}~{{ end }}
+    encrypt: {{ if exists "/deis/registry/s3encrypt" }}{{ getv "/deis/registry/s3encrypt" }}{{ else }}true{{ end }})
+    secure: {{ if exists "/deis/registry/s3secure" }}{{ getv "/deis/registry/s3secure" }}{{ else }}true{{ end }}
+    v4auth: true
+    chunksize: 5242880
+    rootdirectory: {{ if exists "/deis/registry/s3path" }}{{ getv "/deis/registry/s3path" }}{{ else }}/registry{{ end }}
+  {{ else if exists "/deis/registry/swiftAuthURL" }}
+  swift:
+    username: {{ if exists "/deis/registry/swiftUser" }}{{ getv "/deis/registry/swiftUser" }}{{ else }}~{{ end }}
+    password: {{ if exists "/deis/registry/swiftPassword" }}{{ getv "/deis/registry/swiftPassword" }}{{ else }}~{{ end }}
+    authurl: {{ if exists "/deis/registry/swiftAuthURL" }}{{ getv "/deis/registry/swiftAuthURL" }}{{ else }}~{{ end }}
+    tenant: {{ if exists "/deis/registry/swiftTenantName" }}{{ getv "/deis/registry/swiftTenantName" }}{{ else }}~{{ end }}
+    tenantid: {{ if exists "/deis/registry/swiftTenantID" }}{{ getv "/deis/registry/swiftTenantID" }}{{ else }}~{{ end }}
+    domain: {{ if exists "/deis/registry/swiftDomain" }}{{ getv "/deis/registry/swiftDomain" }}{{ else }}~{{ end }}
+    domainid: {{ if exists "/deis/registry/swiftDomainID" }}{{ getv "/deis/registry/swiftDomainID" }}{{ else }}~{{ end }}
+    insecureskipverify: true
+    region: {{ if exists "/deis/registry/swiftRegionName" }}{{ getv "/deis/registry/swiftRegionName" }}{{ else }}~{{ end }}
+    container: {{ if exists "/deis/registry/swiftContainer" }}{{ getv "/deis/registry/swiftContainer" }}{{ else }}~{{ end }}
+    rootdirectory: /registry
+  {{ else }}
+  s3:
+    accesskey: {{ getv "/deis/store/gateway/accessKey" }}
+    secretkey: {{ getv "/deis/store/gateway/secretKey" }}
+    region: generic
+    regionendpoint: http://{{ getv "/deis/store/gateway/host" }}:{{ getv "/deis/store/gateway/port" }}
+    regionsupportshead: false
+    bucket: {{ getv "/deis/registry/bucketName" }}
+    encrypt: false
+    secure: false
+    v4auth: false
+    chunksize: 5242880
+    rootdirectory: /registry
+  {{ end }}
+http:
+  addr: :5000
+  debug:
+    addr: localhost:5001
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3

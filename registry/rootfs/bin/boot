@@ -15,6 +15,7 @@ export ETCD="$HOST:$ETCD_PORT"
 export ETCD_PATH="${ETCD_PATH:-/deis/registry}"
 export HOST_ETCD_PATH="${HOST_ETCD_PATH:-/deis/registry/hosts/$HOST}"
 export ETCD_TTL="${ETCD_TTL:-20}"
+export DOCKER_REGISTRY_CONFIG="${DOCKER_REGISTRY_CONFIG:-/etc/config.yml}"
 
 # run.sh requires $REGISTRY_PORT
 export REGISTRY_PORT="${PORT:-5000}"
@@ -48,20 +49,20 @@ etcd_set_default protocol http
 etcd_set_default bucketName "${BUCKET_NAME}"
 
 # wait for confd to run once and install initial templates
-until confd -onetime -node "$ETCD" --confdir /app --log-level error; do
+until confd -onetime -node "$ETCD" --log-level error; do
 	echo "registry: waiting for confd to write initial templates..."
 	sleep $((ETCD_TTL/2))  # sleep for half the TTL
 done
 
 # ensure registry bucket exists
 echo "registry: creating bucket"
-/app/bin/create_bucket
+/bin/create_bucket
 echo "registry: bucket created"
 
 # spawn the service in the background
+mkdir -p /var/lib/registry
 echo "registry: starting registry"
-cd /docker-registry
-sudo -E -u registry docker-registry &
+/bin/registry "$DOCKER_REGISTRY_CONFIG" &
 SERVICE_PID=$!
 echo "registry: docker registry started in background with pid: ${SERVICE_PID}"
 
@@ -75,7 +76,7 @@ function on_exit() {
 trap on_exit INT TERM
 
 # spawn confd in the background to update services based on etcd changes
-confd -node "$ETCD" --confdir /app --log-level error --interval 5 &
+confd -node "$ETCD" --log-level error --interval 5 &
 
 # publish the service to etcd using the injected EXTERNAL_PORT
 if [[ ! -z $EXTERNAL_PORT ]]; then

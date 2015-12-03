@@ -1,6 +1,6 @@
 [template]
 src   = "create_bucket"
-dest  = "/app/bin/create_bucket"
+dest  = "/bin/create_bucket"
 uid = 0
 gid = 0
 mode  = "0755"
