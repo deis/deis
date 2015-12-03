@@ -150,10 +150,13 @@ class FleetHTTPClient(AbstractSchedulerClient):
             f['value'] = f['value'].format(**l)
         # prepare tags only if one was provided
         tags = kwargs.get('tags', {})
-        tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in tags.viewitems()])
+        unit_tags = tags.viewitems()
         if settings.ENABLE_PLACEMENT_OPTIONS in ['true', 'True', 'TRUE', '1']:
+            unit_tags['dataPlane'] = 'true'
+        if unit_tags:
+            tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in unit_tags])
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
-                         "value": tagset + ' "dataPlane=true"'})
+                         "value": tagset})
         # post unit to fleet
         self._put_unit(name, {"desiredState": "loaded", "options": unit})
 
