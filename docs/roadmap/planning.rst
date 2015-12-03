@@ -30,12 +30,30 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
-November 2015 (Deis v1.13)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+January 2016
+~~~~~~~~~~~~
 
-The public release planning meeting for Deis v1.13 will take place on
-**Thursday, November 5th** at **12pm MDT/1900 GMT**. The `event`_ can be added
+The next public release planning meeting for Deis will take place on
+**Thursday, January 7th** at **12pm MDT/1900 GMT**. The `event`_ can be added
 directly to your calendar.
+
+December 2015 (Deis 1.x LTS release)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+While much of our engineering efforts have shifted to complete Deis v2,
+we plan to ship one final release of the 1.x branch. This release will be
+a long-term support (LTS) release, receiving bug fixes and security updates
+for the foreseeable future.
+
+We invite our community to help us plan this release, and look forward to your
+comments in the `LTS release issue`_ on GitHub.
+
+Archive: https://www.youtube.com/watch?v=U70FOwJuIH4
+
+November 2015 (Deis v1.12.2)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+No archive due to technical difficulties.
 
 October 2015 (Deis v1.12)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,5 +104,6 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: https://goo.gl/q27Jyh
+.. _`event`: https://goo.gl/iFvIv6
+.. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
