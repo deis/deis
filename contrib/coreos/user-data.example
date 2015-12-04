@@ -59,21 +59,40 @@ coreos:
         content: |
           [Service]
           ExecStartPre=-/usr/bin/etcdctl mk /coreos.com/network/config '{"Network": "10.244.0.0/16", "SubnetLen": 24, "SubnetMin": "10.244.0.0", "Backend": {"Type": "vxlan"}}'
-    - name: graceful-deis-shutdown.service
+    - name: graceful-ceph-shutdown.service
       content: |
         [Unit]
-        Description=Clean up
+        Description=Ceph node clean up for Deis
         DefaultDependencies=no
-        After=fleet.service etcd2.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service
-        Requires=fleet.service etcd2.service deis-store-admin.service deis-store-daemon.service deis-store-volume.service docker.service docker.socket deis-store-monitor.service
+        After=fleet.service etcd2.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service graceful-etcd-shutdown.service
+        Requires=fleet.service etcd2.service docker.service docker.socket deis-store-admin.service deis-store-daemon.service deis-store-volume.service deis-store-monitor.service graceful-etcd-shutdown.service
+        RefuseManualStop=true
 
         [Install]
         WantedBy=shutdown.target halt.target reboot.target
 
         [Service]
-        ExecStop=/opt/bin/graceful-shutdown.sh --really
+        ExecStart=/usr/bin/docker exec deis-store-admin ceph -s
+        ExecStop=/opt/bin/graceful-shutdown.sh --ceph
         Type=oneshot
         TimeoutSec=1200
+        RemainAfterExit=yes
+    - name: graceful-etcd-shutdown.service
+      content: |
+        [Unit]
+        Description=etcd clean up for Deis
+        DefaultDependencies=no
+        After=fleet.service etcd2.service docker.service docker.socket
+        Requires=fleet.service etcd2.service docker.service docker.socket
+        RefuseManualStop=true
+
+        [Install]
+        WantedBy=shutdown.target halt.target reboot.target
+
+        [Service]
+        ExecStop=/opt/bin/graceful-shutdown.sh --etcd
+        Type=oneshot
+        TimeoutSec=120
         RemainAfterExit=yes
     - name: install-deisctl.service
       command: start
@@ -187,58 +206,67 @@ write_files:
     permissions: '0755'
     content: |
       #!/usr/bin/bash
-      if [ "$1" != '--really' ]; then
-        echo "command must be run as: $0 --really"
-        exit 1
-      fi
-      # procedure requires the store-admin
-      ADMIN_RUNNING=$(docker inspect --format="{{ .State.Running }}" deis-store-admin)
-      if [ $? -eq 1 ] || [ "$ADMIN_RUNNING" == "false" ]; then
-        echo "deis-store-admin container is required for graceful shutdown"
-        exit 2
-      fi
-      set -e -x -o pipefail
-      # determine osd id
-      CURRENT_STATUS=$(docker exec deis-store-admin ceph health | awk '{print $1}')
-      OSD_HOSTS=($(etcdctl ls /deis/store/hosts/| awk -F'/' '{print $5}'))
-      for HOST in "${OSD_HOSTS[@]}"
-      do
-        PUBLIC_IP=$(fleetctl list-machines -fields="machine,ip" -full -no-legend| grep `cat /etc/machine-id` | awk '{print $2}')
-        if [ "$HOST" = "$PUBLIC_IP" ] ; then
-          OSD_ID=$(etcdctl get /deis/store/osds/$PUBLIC_IP)
-          break
-        fi
-      done
-      # if we own an osd and its healthy, try to gracefully remove it
-      if [ ! -z "$OSD_ID" ] && [[ "$CURRENT_STATUS" == *"HEALTH_OK"* ]] && [ ${#OSD_HOSTS[@]} -gt "3" ]; then
-        docker exec deis-store-admin ceph osd out $OSD_ID
-        sleep 30
-        TIMEWAITED=0
-        until [[ $(docker exec deis-store-admin ceph health) == *"HEALTH_OK"* ]]
+      ceph_shutdown () {
+        # determine osd id
+        OSD_HOSTS=($(etcdctl ls /deis/store/hosts/| awk -F'/' '{print $5}'))
+        for HOST in "${OSD_HOSTS[@]}"
         do
-          if [ $TIMEWAITED -gt "1200" ]
-          then
-            echo "ceph graceful removal timeout exceeded"
+          PUBLIC_IP=$(etcdctl member list|grep `cat /etc/machine-id`| awk '{print $3}'| grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+          if [ "$HOST" = "$PUBLIC_IP" ] ; then
+            OSD_ID=$(etcdctl get /deis/store/osds/$PUBLIC_IP)
             break
           fi
-          echo "waiting" && sleep 5
-          TIMEWAITED=$((TIMEWAITED+5))
         done
-        docker stop deis-store-daemon
-        docker exec deis-store-admin ceph osd crush remove osd.$OSD_ID
-        docker exec deis-store-admin ceph auth del osd.$OSD_ID
-        docker exec deis-store-admin ceph osd rm $OSD_ID
-        etcdctl rm /deis/store/osds/$PUBLIC_IP
-        etcdctl rm /deis/store/hosts/$PUBLIC_IP && sleep 10
-        # remove ceph mon
-        docker stop deis-store-monitor || true
-        docker exec deis-store-admin ceph mon remove `hostname -f` # fixme
-        docker stop deis-store-metadata || true
-      fi
+        # if we own an osd and its healthy, try to gracefully remove it
+        if [ ! -z "$OSD_ID" ] && [ ${#OSD_HOSTS[@]} -gt "3" ]; then
+          ADMIN_RUNNING=$(docker inspect --format="{{ .State.Running }}" deis-store-admin)
+          if [ $? -eq 1 ] || [ "$ADMIN_RUNNING" == "false" ]; then
+            echo "deis-store-admin container is required for graceful shutdown"
+            exit 2
+          fi
+          set -e -x -o pipefail
+          CURRENT_STATUS=$(docker exec deis-store-admin ceph health | awk '{print $1}')
+          if [[ "$CURRENT_STATUS" != *"HEALTH_OK"* ]]; then
+            echo "Ceph cluster must be healthy to perform graceful removal"
+            exit 3
+          fi
 
-      # removing the node from etcd
-      NODE=$(etcdctl member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
-      etcdctl member remove $NODE
+          docker exec deis-store-admin ceph osd out $OSD_ID
+          sleep 30
+          TIMEWAITED=0
+          until [[ $(docker exec deis-store-admin ceph health) == *"HEALTH_OK"* ]]
+          do
+            if [ $TIMEWAITED -gt "1200" ]
+            then
+              echo "ceph graceful removal timeout exceeded"
+              break
+            fi
+            echo "waiting" && sleep 5
+            TIMEWAITED=$((TIMEWAITED+5))
+          done
+          docker stop deis-store-daemon
+          docker exec deis-store-admin ceph osd crush remove osd.$OSD_ID
+          docker exec deis-store-admin ceph auth del osd.$OSD_ID
+          docker exec deis-store-admin ceph osd rm $OSD_ID
+          etcdctl rm /deis/store/osds/$PUBLIC_IP
+          etcdctl rm /deis/store/hosts/$PUBLIC_IP && sleep 10
+          # remove ceph mon
+          docker stop deis-store-monitor || true
+          docker exec deis-store-admin ceph mon remove `hostname -f` # fixme
+          docker stop deis-store-metadata || true
+        fi
+      }
+      etcd_shutdown () {
+        set -e -x -o pipefail
+        # removing the node from etcd
+        NODE=$(etcdctl member list | grep `cat /etc/machine-id` | cut -d ':' -f 1)
+        etcdctl member remove $NODE
+      }
+      if [ "$1" == "--ceph" ]; then
+        ceph_shutdown
+      elif [ "$1" == "--etcd" ]; then
+        etcd_shutdown
+      fi
   - path: /opt/bin/wupiao
     permissions: '0755'
     content: |
