@@ -33,7 +33,7 @@ class MarathonHTTPClient(AbstractSchedulerClient):
         return name.replace('_', '.')
 
     # container api
-    def create(self, name, image, command='', **kwargs):
+    def create(self, name, image, command='', config=None, **kwargs):
         """Create a new container"""
         app_id = self._app_id(name)
         l = locals().copy()

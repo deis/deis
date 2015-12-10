@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+set -eof pipefail
+
+export NGINX_VERSION=1.9.6
+export NAXSI_VERSION=0d53a64ed856e694fcb4038748c8cf6d5551a603
+export NDK_VERSION=0.2.19
+export VTS_VERSION=22c51e201a550bb94e96239fef541347beb4eeca
+export SETMISC_VERSION=0.29
+
+export BUILD_PATH=/tmp/build
+
+# nginx installation directory
+export PREFIX=/opt/nginx
+
+rm -rf "$PREFIX"
+mkdir -p "$PREFIX"
+
+mkdir -p "$BUILD_PATH"
+cd "$BUILD_PATH"
+
+# install required packages to build
+apk add --update-cache \
+  build-base \
+  curl \
+  geoip-dev \
+  libcrypto1.0 \
+  libpcre32 \
+  patch \
+  pcre-dev \
+  openssl-dev \
+  zlib \
+  zlib-dev
+
+# download, verify and extract the source files
+get_src ed501fc6d0eff9d3bc1049cc1ba3a3ac8c602de046acb2a4c108392bbfa865ea \
+        "http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz"
+
+get_src 128b56873eedbd3f240dc0f88a8b260d791321db92f14ba2fc5c49fc5307e04d \
+        "https://github.com/nbs-system/naxsi/archive/$NAXSI_VERSION.tar.gz"
+
+get_src 501f299abdb81b992a980bda182e5de5a4b2b3e275fbf72ee34dd7ae84c4b679 \
+        "https://github.com/simpl/ngx_devel_kit/archive/v$NDK_VERSION.tar.gz"
+
+get_src 8d280fc083420afb41dbe10df9a8ceec98f1d391bd2caa42ebae67d5bc9295d8 \
+        "https://github.com/openresty/set-misc-nginx-module/archive/v$SETMISC_VERSION.tar.gz"
+
+# replace with a release instead a commit once e06a618e5780b4b94b21cab37d61820dcd3bb585 is contained in one.
+get_src 47340cf0c711b10a0231fca9264d73ea791ff8420b823b0295ae3df2d968a205 \
+        "https://github.com/vozlt/nginx-module-vts/archive/$VTS_VERSION.tar.gz"
+
+# build nginx
+cd "$BUILD_PATH/nginx-$NGINX_VERSION"
+
+./configure \
+  --prefix="$PREFIX" \
+  --pid-path=/run/nginx.pid \
+  --with-debug \
+  --with-pcre-jit \
+  --with-ipv6 \
+  --with-http_ssl_module \
+  --with-http_stub_status_module \
+  --with-http_realip_module \
+  --with-http_auth_request_module \
+  --with-http_addition_module \
+  --with-http_dav_module \
+  --with-http_geoip_module \
+  --with-http_gzip_static_module \
+  --with-http_sub_module \
+  --with-http_v2_module \
+  --with-mail \
+  --with-mail_ssl_module \
+  --with-stream \
+  --add-module="$BUILD_PATH/naxsi-$NAXSI_VERSION/naxsi_src" \
+  --add-module="$BUILD_PATH/ngx_devel_kit-$NDK_VERSION" \
+  --add-module="$BUILD_PATH/set-misc-nginx-module-$SETMISC_VERSION" \
+  --add-module="$BUILD_PATH/nginx-module-vts-$VTS_VERSION" \
+  && make && make install
+
+rm -rf "$BUILD_PATH"
+apk del --purge \
+  build-base \
+  curl \
+  geoip-dev \
+  libcrypto1.0 \
+  libpcre32 \
+  patch \
+  pcre-dev \
+  openssl-dev \
+  zlib \
+  zlib-dev
+rm -rf /var/cache/apk/*

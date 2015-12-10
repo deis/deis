@@ -1,3 +1,4 @@
+import base64
 import copy
 import httplib
 import json
@@ -11,6 +12,19 @@ from docker import Client
 from .states import JobState
 from . import AbstractSchedulerClient
 
+from deis import __version__
+
+SECRET_TEMPLATE = '''{
+  "kind": "Secret",
+  "apiVersion": "$version",
+  "metadata": {
+    "name": "$name-cert"
+  },
+  "data": {
+    "deis.cert": "$cert",
+    "deis.key": "$key"
+  }
+}'''
 
 POD_TEMPLATE = '''{
   "kind": "Pod",
@@ -58,6 +72,24 @@ RC_TEMPLATE = '''{
                {
                   "name":"$containername",
                   "image":"$image"
+               },
+               {
+                  "name":"ssl-terminator",
+                  "image":"$terminatorimage",
+                  "volumeMounts":[
+                     {
+                        "mountPath":"/etc/ssl",
+                        "name":"cert-volume"
+                     }
+                  ]
+               }
+            ],
+            "volumes":[
+               {
+                  "name":"cert-volume",
+                  "secret":{
+                     "secretName":"$id-cert"
+                  }
                }
             ]
          }
@@ -77,8 +109,14 @@ SERVICE_TEMPLATE = '''{
    "spec":{
       "ports": [
         {
+          "name":"http",
           "port":80,
           "targetPort":$port,
+          "protocol":"TCP"
+        },
+        {
+          "name":"https",
+          "port":443,
           "protocol":"TCP"
         }
       ],
@@ -89,7 +127,7 @@ SERVICE_TEMPLATE = '''{
    }
 }'''
 
-POD_DELETE = '''{
+DELETE_BODY = '''{
 }'''
 
 
@@ -107,6 +145,23 @@ class KubeHTTPClient(AbstractSchedulerClient):
         self.registry = settings.REGISTRY_HOST+":"+settings.REGISTRY_PORT
         self.apiversion = "v1"
         self.conn = httplib.HTTPConnection(self.target+":"+self.port)
+
+    def _get_secret(self, name):
+        con_sec = httplib.HTTPConnection(self.target+":"+self.port)
+        con_sec.request('GET', '/api/' + self.apiversion + '/namespaces/' + name + '/secrets/' +
+                        name + '-cert')
+        resp = con_sec.getresponse()
+        data = resp.read()
+        reason = resp.reason
+        status = resp.status
+        con_sec.close()
+        if status == 404:
+            return 0
+        if not 200 <= status <= 299:
+            errmsg = "Failed to get Secret: {}-cert {} {} - {}".format(name, status, reason, data)
+            raise RuntimeError(errmsg)
+        parsed_json = json.loads(data)
+        return parsed_json
 
     def _get_old_rc(self, name, app_type):
         con_app = httplib.HTTPConnection(self.target+":"+self.port)
@@ -160,11 +215,23 @@ class KubeHTTPClient(AbstractSchedulerClient):
         parsed_json = json.loads(data)
         return parsed_json
 
-    def deploy(self, name, image, command, **kwargs):
+    def deploy(self, name, image, command, config, **kwargs):
         app_name = kwargs.get('aname', {})
         app_type = name.split(".")[1]
+        e2e_https = config.get('E2E_HTTPS', '') in ['true', 'True', 'TRUE', '1']
+        cert = settings.PLATFORM_SSL_CERT
+        key = settings.PLATFORM_SSL_KEY
+        secret = self._get_secret(app_name)
+        delete_secret = False
+        if e2e_https and cert != "" and key != "":
+            if secret == 0:
+                self._create_secret(cert, key, **kwargs)
+            else:
+                self._update_secret(cert, key, **kwargs)
+        elif secret != 0:
+            delete_secret = True
         old_rc = self._get_old_rc(app_name, app_type)
-        new_rc = self._create_rc(name, image, command, **kwargs)
+        new_rc = self._create_rc(name, image, command, config, **kwargs)
         desired = int(old_rc["spec"]["replicas"])
         old_rc_name = old_rc["metadata"]["name"]
         new_rc_name = new_rc["metadata"]["name"]
@@ -181,6 +248,8 @@ class KubeHTTPClient(AbstractSchedulerClient):
             err = '{} (deploy): {}'.format(name, e)
             raise RuntimeError(err)
         self._delete_rc(old_rc_name, app_name)
+        if delete_secret:
+            self._delete_secret(app_name)
 
     def _get_events(self, namespace):
         con_get = httplib.HTTPConnection(self.target+":"+self.port)
@@ -265,12 +334,12 @@ class KubeHTTPClient(AbstractSchedulerClient):
         js_template["spec"]["replicas"] = num
         self._scale_rc(js_template, namespace)
 
-    def scale(self, name, image, command, **kwargs):
+    def scale(self, name, image, command, config, **kwargs):
         app_name = kwargs.get('aname', {})
         rc_name = name.replace(".", "-")
         rc_name = rc_name.replace("_", "-")
         if not 200 <= self._get_rc_status(rc_name, app_name) <= 299:
-            self.create(name, image, command, **kwargs)
+            self.create(name, image, command, config, **kwargs)
             return
         name = name.replace(".", "-")
         name = name.replace("_", "-")
@@ -284,7 +353,53 @@ class KubeHTTPClient(AbstractSchedulerClient):
             err = '{} (Scale): {}'.format(name, e)
             raise RuntimeError(err)
 
-    def _create_rc(self, name, image, command, **kwargs):
+    def _create_secret(self, cert, key, **kwargs):
+        app_name = kwargs.get('aname', {})
+        l = {}
+        l["name"] = app_name
+        l["version"] = self.apiversion
+        l["cert"] = base64.b64encode(cert)
+        l["key"] = base64.b64encode(key)
+        json_str = string.Template(SECRET_TEMPLATE).substitute(l)
+        headers = {'Content-Type': 'application/json'}
+        conn_sec = httplib.HTTPConnection(self.target + ":" + self.port)
+        conn_sec.request('POST', '/api/' + self.apiversion + '/namespaces/' + app_name+'/' +
+                         'secrets', headers=headers, body=json_str)
+        resp = conn_sec.getresponse()
+        data = resp.read()
+        reason = resp.reason
+        status = resp.status
+        conn_sec.close()
+        if not 200 <= status <= 299:
+            errmsg = "Failed to create Secret:{}-cert {} {} - {}".format(
+                app_name, status, reason, data)
+            raise RuntimeError(errmsg)
+        return json.loads(data)
+
+    def _update_secret(self, cert, key, **kwargs):
+        app_name = kwargs.get('aname', {})
+        l = {}
+        l["name"] = app_name
+        l["version"] = self.apiversion
+        l["cert"] = base64.b64encode(cert)
+        l["key"] = base64.b64encode(key)
+        json_str = string.Template(SECRET_TEMPLATE).substitute(l)
+        headers = {'Content-Type': 'application/json'}
+        conn_sec = httplib.HTTPConnection(self.target + ":" + self.port)
+        conn_sec.request('PUT', '/api/' + self.apiversion + '/namespaces/' + app_name+'/' +
+                         'secrets/' + app_name + '-cert', headers=headers, body=json_str)
+        resp = conn_sec.getresponse()
+        data = resp.read()
+        reason = resp.reason
+        status = resp.status
+        conn_sec.close()
+        if not 200 <= status <= 299:
+            errmsg = "Failed to update Secret:{}-cert {} {} - {}".format(
+                app_name, status, reason, data)
+            raise RuntimeError(errmsg)
+        return json.loads(data)
+
+    def _create_rc(self, name, image, command, config, **kwargs):
         container_fullname = name
         app_name = kwargs.get('aname', {})
         app_type = name.split(".")[1]
@@ -303,6 +418,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         l['num'] = num
         l['containername'] = container_name
         l['type'] = app_type
+        l['terminatorimage'] = self._get_terminator_image()
         template = string.Template(RC_TEMPLATE).substitute(l)
         js_template = json.loads(template)
         containers = js_template["spec"]["template"]["spec"]["containers"]
@@ -321,6 +437,12 @@ class KubeHTTPClient(AbstractSchedulerClient):
         if cpu:
             cpu = float(cpu)/1024
             containers[0]["resources"]["limits"]["cpu"] = cpu
+        e2e_https = config.get('E2E_HTTPS') in ["true", "True", "TRUE", "1"]
+        cert = settings.PLATFORM_SSL_CERT
+        key = settings.PLATFORM_SSL_KEY
+        if not e2e_https or cert == "" or key == "":
+            containers.pop()
+            del js_template["spec"]["template"]["spec"]["volumes"]
         headers = {'Content-Type': 'application/json'}
         conn_rc = httplib.HTTPConnection(self.target+":"+self.port)
         conn_rc.request('POST', '/api/'+self.apiversion+'/namespaces/'+app_name+'/' +
@@ -347,9 +469,14 @@ class KubeHTTPClient(AbstractSchedulerClient):
             time.sleep(1)
         return json.loads(data)
 
-    def create(self, name, image, command, **kwargs):
+    def create(self, name, image, command, config, **kwargs):
         """Create a container."""
-        self._create_rc(name, image, command, **kwargs)
+        e2e_https = config.get('E2E_HTTPS') in ["true", "True", "TRUE", "1"]
+        cert = settings.PLATFORM_SSL_CERT
+        key = settings.PLATFORM_SSL_KEY
+        if e2e_https and cert != "" and key != "":
+            self._create_secret(cert, key, **kwargs)
+        self._create_rc(name, image, command, config, **kwargs)
         app_type = name.split(".")[1]
         name = name.replace(".", "-")
         name = name.replace("_", "-")
@@ -446,11 +573,25 @@ class KubeHTTPClient(AbstractSchedulerClient):
         """Stop a container."""
         pass
 
+    def _delete_secret(self, name):
+        headers = {'Content-Type': 'application/json'}
+        con_sec = httplib.HTTPConnection(self.target+":"+self.port)
+        con_sec.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+name+'/' +
+                        'secrets/'+name+'-cert', headers=headers, body=DELETE_BODY)
+        resp = con_sec.getresponse()
+        reason = resp.reason
+        status = resp.status
+        data = resp.read()
+        con_sec.close()
+        if not 200 <= status <= 299:
+            errmsg = "Failed to delete Secret:{} {} {} - {}".format(name, status, reason, data)
+            raise RuntimeError(errmsg)
+
     def _delete_rc(self, name, namespace):
         headers = {'Content-Type': 'application/json'}
         con_dest = httplib.HTTPConnection(self.target+":"+self.port)
         con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+namespace+'/' +
-                         'replicationcontrollers/'+name, headers=headers, body=POD_DELETE)
+                         'replicationcontrollers/'+name, headers=headers, body=DELETE_BODY)
         resp = con_dest.getresponse()
         reason = resp.reason
         status = resp.status
@@ -471,7 +612,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         headers = {'Content-Type': 'application/json'}
         con_dest = httplib.HTTPConnection(self.target+":"+self.port)
         con_dest.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+appname+'/' +
-                         'replicationcontrollers/'+name, headers=headers, body=POD_DELETE)
+                         'replicationcontrollers/'+name, headers=headers, body=DELETE_BODY)
         resp = con_dest.getresponse()
         reason = resp.reason
         status = resp.status
@@ -505,6 +646,10 @@ class KubeHTTPClient(AbstractSchedulerClient):
         for pod in parsed_json['items']:
             if 'generateName' in pod['metadata'] and pod['metadata']['generateName'] == name+'-':
                 self._delete_pod(pod['metadata']['name'], appname)
+
+        if self._get_secret(appname) != 0:
+            self._delete_secret(appname)
+
         con_ns = httplib.HTTPConnection(self.target+":"+self.port)
         con_ns.request('DELETE', '/api/'+self.apiversion+'/namespaces/'+appname)
         resp = con_ns.getresponse()
@@ -545,7 +690,7 @@ class KubeHTTPClient(AbstractSchedulerClient):
         headers = {'Content-Type': 'application/json'}
         con_dest_pod = httplib.HTTPConnection(self.target+":"+self.port)
         con_dest_pod.request('DELETE', '/api/'+self.apiversion+'/namespaces/' +
-                             namespace+'/pods/'+name, headers=headers, body=POD_DELETE)
+                             namespace+'/pods/'+name, headers=headers, body=DELETE_BODY)
         resp = con_dest_pod.getresponse()
         reason = resp.reason
         status = resp.status
@@ -682,5 +827,15 @@ class KubeHTTPClient(AbstractSchedulerClient):
             return JobState.error
         except RuntimeError:
             return JobState.destroyed
+
+    def _get_terminator_image(self):
+        # Try to use an explicitly set image first
+        if settings.TERMINATOR_IMAGE != "":
+            return settings.TERMINATOR_IMAGE
+        # Next try default image name with platform version from etcd
+        if settings.PLATFORM_VERSION != "":
+            return "deis/terminator:{}".format(settings.PLATFORM_VERSION)
+        # Lastly, use default image name, but infer version from the controller's deis package
+        return "deis/terminator:{}".format(__version__)
 
 SchedulerClient = KubeHTTPClient

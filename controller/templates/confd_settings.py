@@ -70,3 +70,11 @@ GROUP_BASEDN = '{{ if exists "/deis/controller/auth/ldap/group/basedn" }}{{ getv
 GROUP_FILTER = '{{ if exists "/deis/controller/auth/ldap/group/filter" }}{{ getv "/deis/controller/auth/ldap/group/filter"}}{{ else }} {{ end }}'
 GROUP_TYPE = '{{ if exists "/deis/controller/auth/ldap/group/type" }}{{ getv "/deis/controller/auth/ldap/group/type"}}{{ else }} {{ end }}'
 {{ end }}
+
+# Platform-wide wildcard certificate and corresponding key-- if they exist
+PLATFORM_SSL_CERT = """{{ if exists "/deis/router/sslCert" }}{{ getv "/deis/router/sslCert" }}{{ else }}""{{end}}"""
+PLATFORM_SSL_KEY = """{{ if exists "/deis/router/sslKey" }}{{ getv "/deis/router/sslKey" }}{{ else }}""{{end}}"""
+
+PLATFORM_VERSION = """{{ if exists "/deis/platform/version" }}{{ getv "/deis/platform/version" }}{{ else }}""{{end}}"""
+
+TERMINATOR_IMAGE = """{{ if exists "/deis/terminator/image" }}{{ getv "/deis/terminator/image" }}{{ else }}""{{end}}"""

@@ -22,7 +22,7 @@ class SwarmClient(AbstractSchedulerClient):
         self.docker_cli = Client("tcp://{}:2395".format(self.target),
                                  timeout=1200, version='1.17')
 
-    def create(self, name, image, command='', template=None, **kwargs):
+    def create(self, name, image, command='', template=None, config=None, **kwargs):
         """Create a new container."""
         cimage = self.registry + '/' + image
         affinity = "affinity:container!=~/{}*/".format(re.split(r'_v\d.', name)[0])
