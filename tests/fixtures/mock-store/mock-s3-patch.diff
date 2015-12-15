@@ -1,0 +1,14 @@
+diff --git a/mock_s3/main.py b/mock_s3/main.py
+index bd0307f..29c431a 100755
+--- a/mock_s3/main.py
++++ b/mock_s3/main.py
+@@ -65,6 +65,9 @@ class S3Handler(BaseHTTPRequestHandler):
+     def do_HEAD(self):
+         return self.do_GET()
+ 
++    def do_POST(self):
++        return self.do_GET()
++
+     def do_PUT(self):
+         parsed_path = urlparse.urlparse(self.path)
+         qs = urlparse.parse_qs(parsed_path.query, True)
