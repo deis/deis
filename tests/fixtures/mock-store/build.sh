@@ -23,10 +23,11 @@ apk add --update-cache \
 curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
   && chmod +x /usr/local/bin/etcdctl
 
-git clone https://github.com/jserver/mock-s3 /app/mock-s3 --depth 1
+git clone https://github.com/jserver/mock-s3 /app/mock-s3
 cd /app/mock-s3
-#FIXME: This is a gisted patch to enable pseudo-handling of POST requests, otherwise wal-e crashes attempting to delete old wal segments
-curl https://gist.githubusercontent.com/anonymous/c565f11a8d90d6e2d92b/raw/c5815f6c83aa5c2cfb7b0a34cfab4a075c97be16/mock-s3-post.diff|git apply
+#FIXME: This is a gisted patch to a known "good" version of mock-s3 to enable pseudo-handling of POST requests, otherwise wal-e crashes attempting to delete old wal segments
+git checkout 4c3c3752f990db97e8969c00666251a3b427ef4c
+git apply /tmp/mock-s3-patch.diff
 
 # install pip
 curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
