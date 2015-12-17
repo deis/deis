@@ -1,6 +1,6 @@
 [Unit]
 Description=Kubernetes API Server
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+Documentation=http://kubernetes.io/v1.0/docs/admin/kube-apiserver.html
 Requires=fleet.service docker.service flanneld.service
 After=fleet.service docker.service flanneld.service
 

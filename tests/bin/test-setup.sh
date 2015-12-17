@@ -142,6 +142,10 @@ function dump_logs {
   get_logs deis-router@3 deis-store-metadata deis-store-metadata-3
   get_logs deis-router@3 deis-store-volume deis-store-volume-3
   get_logs deis-store-gateway
+  # k8s logs
+  get_logs deis-kube-apiserver
+  get_logs deis-kube-scheduler
+  get_logs deis-kube-controller-manager
 
   # docker logs
   fleetctl -strict-host-key-checking=false ssh deis-router@1 journalctl --no-pager -u docker \

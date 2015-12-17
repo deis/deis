@@ -78,6 +78,11 @@ log_phase "Provisioning Deis"
 deisctl config platform set domain=$DEIS_TEST_DOMAIN
 deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
 
+# test the k8s scheduler
+time deisctl install k8s
+time deisctl start k8s
+deisctl config controller set schedulerModule=k8s
+
 time deisctl install platform
 time deisctl start platform
 

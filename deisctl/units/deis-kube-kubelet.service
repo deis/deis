@@ -1,6 +1,6 @@
 [Unit]
 Description=Kubernetes Kubelet
-Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+Documentation=http://kubernetes.io/v1.0/docs/admin/kubelet.html
 
 [Service]
 EnvironmentFile=/etc/environment
