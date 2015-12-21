@@ -195,6 +195,6 @@ until [ $IN_SERVICE -ge 1 ]; do
         | grep InService | wc -l)
 done
 
-log_phase "Running integration suite with Python Client"
+log_phase "Running integration test suite"
 
 time make test-integration

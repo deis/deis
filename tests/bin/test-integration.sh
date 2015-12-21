@@ -81,6 +81,6 @@ deisctl config platform set sshPrivateKey=$DEIS_TEST_SSH_KEY
 time deisctl install platform
 time deisctl start platform
 
-log_phase "Running integration suite with Python Client"
+log_phase "Running integration test suite"
 
 time make test-integration
