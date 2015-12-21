@@ -13,7 +13,7 @@ import (
 	"github.com/deis/deis/pkg/prettyprint"
 	"github.com/deis/deis/version"
 
-	docopt "github.com/docopt/docopt-go"
+	"github.com/docopt/docopt-go"
 )
 
 // main exits with the return value of Command(os.Args[1:]), deferring all logic to
