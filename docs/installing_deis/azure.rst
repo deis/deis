@@ -20,10 +20,18 @@ This script uses PyYAML, a Python library, to do its work.
 
 If you haven't already, install these on your development machine:
 
+For OSX users:
+
 .. code-block:: console
 
     $ brew install python
     $ sudo pip install pyyaml
+
+For Ubuntu users:
+
+.. code-block:: console
+
+    $ sudo apt-get install -y python-yaml
 
 Additionally, we'll also need to install the `Azure CLI`_ from Microsoft.
 
