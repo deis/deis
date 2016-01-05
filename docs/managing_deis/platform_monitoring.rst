@@ -132,7 +132,7 @@ SPM Docker Agent can be run using Docker as follows (assuming the SPM_TOKEN is s
 
 .. code-block:: console
 
-    docker run -d --name spm-agent -e SPM_TOKEN=`etcdctl get SPM_TOKEN` -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker
+    docker run -d --name sematext-agent -e SPM_TOKEN=`etcdctl get SPM_TOKEN` -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/sematext-agent-docker
     
 
 To activate SPM Docker Agent for the entire cluster submit this unit file to fleet
@@ -149,11 +149,11 @@ To activate SPM Docker Agent for the entire cluster submit this unit file to fle
     EnvironmentFile=/etc/environment
     Restart=always
     RestartSec=30s
-    ExecStartPre=-/usr/bin/docker kill spm-agent
-    ExecStartPre=-/usr/bin/docker rm spm-agent
-    ExecStartPre=/usr/bin/docker pull sematext/spm-agent-docker:latest
-    ExecStart=/bin/sh -c 'set -ex; /usr/bin/docker run --name spm-agent -e SPM_TOKEN=$(etcdctl get SPM_TOKEN) -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/spm-agent-docker'
-    ExecStop=/usr/bin/docker stop spm-agent
+    ExecStartPre=-/usr/bin/docker kill sematext-agent
+    ExecStartPre=-/usr/bin/docker rm sematext-agent
+    ExecStartPre=/usr/bin/docker pull sematext/sematext-agent-docker:latest
+    ExecStart=/bin/sh -c 'set -ex; /usr/bin/docker run --name sematext-agent -e SPM_TOKEN=$(etcdctl get SPM_TOKEN) -e HOSTNAME=$HOSTNAME -v /var/run/docker.sock:/var/run/docker.sock sematext/sematext-agent-docker'
+    ExecStop=/usr/bin/docker stop sematext-agent
 
     [Install]
     WantedBy=multi-user.target
@@ -161,22 +161,22 @@ To activate SPM Docker Agent for the entire cluster submit this unit file to fle
     [X-Fleet]
     Global=true
 
-Save the file as ``spm-agent.service``. 
+Save the file as ``sematext-agent.service``. 
 
 .. code-block:: console
 
-    wget https://raw.githubusercontent.com/sematext/spm-agent-docker/master/coreos/spm-agent.service
+    wget https://raw.githubusercontent.com/sematext/sematext-agent-docker/master/coreos/sematext-agent.service
 
 Load and start the service with
 
 .. code-block:: console
 
-    fleetctl load spm-agent.service && fleetctl start spm-agent.service 
+    fleetctl load sematext-agent.service && fleetctl start sematext-agent.service 
 
 After one minute, you should see metrics in SPM. 
 
 Documentation, source code and support information is available here:
-`https://github.com/sematext/spm-agent-docker`_. 
+`https://github.com/sematext/sematext-agent-docker`_. 
 
 
 
@@ -189,4 +189,4 @@ Documentation, source code and support information is available here:
 .. _`newrelic-sysmond`: https://github.com/johanneswuerbach/newrelic-sysmond-service
 .. _`SPM for Docker`: http://sematext.com/spm/integrations/docker-monitoring.html
 .. _`Create a new SPM App`: https://apps.sematext.com/spm-reports/registerApplication.do
-.. _`https://github.com/sematext/spm-agent-docker`: https://github.com/sematext/spm-agent-docker
+.. _`https://github.com/sematext/sematext-agent-docker`: https://github.com/sematext/sematext-agent-docker
