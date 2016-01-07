@@ -30,12 +30,31 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
-January 2016
-~~~~~~~~~~~~
+February 2016
+~~~~~~~~~~~~~
 
 The next public release planning meeting for Deis will take place on
-**Thursday, January 7th** at **12pm MDT/1900 GMT**. The `event`_ can be added
+**Thursday, February 4th** at **12pm MST/1900 UTC**. The `event`_ can be added
 directly to your calendar.
+
+January 2016 (Deis 1.x LTS release and Deis v2 Alpha)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We're still taking feedback and suggestions on what our users would like to
+see in the 1.x LTS release. Feel free to provide your input on the
+`LTS release issue`_ on GitHub.
+
+Over the last month we've been hard at work on Deis v2 which puts the Deis
+workflow people have come to know and love on top of the `Kubernetes`_ platform.
+Aaron demoed what we've done so far with the release of Deis v2 Alpha.
+(`v2 alpha walkthrough cheatsheet`_)
+
+If you've tried out v2 alpha, let us know what you think via the
+`v2 alpha feedback`_ GitHub issue!
+
+You can also take a look at our `v2 beta milestone`_ goals and chime in there.
+
+Archive: https://www.youtube.com/watch?v=8LNVluUFh1M
 
 December 2015 (Deis 1.x LTS release)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,3 +126,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 .. _`event`: https://goo.gl/iFvIv6
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
+.. _`Kubernetes`: http://kubernetes.io/
+.. _`v2 alpha feedback`: https://github.com/deis/deis/issues/4827
+.. _`v2 alpha walkthrough cheatsheet`: https://gist.github.com/arschles/5b7a75a50938913d3eb1
+.. _`v2 beta milestone`: https://github.com/deis/deis/issues/4809
