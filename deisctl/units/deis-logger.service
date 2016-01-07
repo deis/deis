@@ -12,6 +12,8 @@ ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logger` && docker run
 ExecStop=-/usr/bin/docker stop deis-logger
 Restart=on-failure
 RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target

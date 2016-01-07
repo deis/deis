@@ -11,6 +11,8 @@ ExecStartPost=/bin/sh -c "until (echo 'Waiting for ceph gateway on 8888/tcp...' 
 ExecStop=-/usr/bin/docker stop deis-store-gateway
 Restart=on-failure
 RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target

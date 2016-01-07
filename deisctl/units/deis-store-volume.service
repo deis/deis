@@ -11,6 +11,8 @@ ExecStartPost=/bin/sh -c "test -d /var/lib/deis/store/logs || mkdir -p /var/lib/
 ExecStopPost=-/usr/bin/umount /var/lib/deis/store
 Restart=on-failure
 RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target

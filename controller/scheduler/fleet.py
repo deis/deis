@@ -380,6 +380,8 @@ CONTAINER_TEMPLATE = [
     {"section": "Service", "name": "TimeoutStopSec", "value": "10"},
     {"section": "Service", "name": "RestartSec", "value": "5"},
     {"section": "Service", "name": "Restart", "value": "on-failure"},
+    {"section": "Service", "name": "StartLimitInterval", "value": "60s"},
+    {"section": "Service", "name": "StartLimitBurst", "value": "3"},
 ]
 
 

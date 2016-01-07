@@ -10,6 +10,8 @@ ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/store-metadata` && do
 ExecStop=-/usr/bin/docker stop deis-store-metadata
 Restart=on-failure
 RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target

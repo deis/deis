@@ -13,6 +13,8 @@ ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/logspout` && docker r
 ExecStop=-/usr/bin/docker stop deis-logspout
 Restart=on-failure
 RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target
