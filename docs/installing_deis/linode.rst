@@ -188,6 +188,7 @@ connections between nodes while blocking outside connections automatically. Full
 .. code-block:: console
 
     usage: apply-firewall.py [-h] --private-key PRIVATE_KEY [--private]
+                             [--adding-new-nodes]
                              [--discovery-url DISCOVERY_URL]
                              [--hosts HOSTS [HOSTS ...]]
 
@@ -199,6 +200,7 @@ connections between nodes while blocking outside connections automatically. Full
                             Cluster SSH Private Key
       --private             Only allow access to the cluster from the private
                             network
+      --adding-new-nodes    When adding new nodes to existing cluster, allows access to etcd                      
       --discovery-url DISCOVERY_URL
                             Etcd discovery url
       --hosts HOSTS [HOSTS ...]
@@ -212,7 +214,25 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
+Adding Nodes to an Existing Cluster
+-----------------------------------
+
+When adding one or more nodes to an existing CoreOS setup, ``etcd`` requires access to ports 2379
+and 2380. 
+
+When adding nodes to the cluster, before cluster provisioning, run:
+
+.. code-block:: console
+
+    $ ./apply-firewall.py --private-key /path/to/key/deis --hosts 1.2.3.4 11.22.33.44 111.222.33.44 --adding-new-nodes
+
+    
+Then provision the cluster as described above and apply security groups settings using ``./apply-firewall.py``
+without the ``--adding-new-nodes`` parameter.
+
+
 .. _`contrib/linode`: https://github.com/deis/deis/tree/master/contrib/linode
 .. _`Linode Account Settings`: https://manager.linode.com/account/settings
 .. _`Linode API Keys`: https://manager.linode.com/profile/api
 .. _`pip`: https://pip.pypa.io/en/stable/
+
