@@ -2,7 +2,7 @@
 hostname: $hostname
 coreos:
   fleet:
-    metadata: name=%H
+    metadata: name=%H,controlPlane=true,dataPlane=true,routerMesh=true
   units:
   - name: 00-eth0.network
     runtime: true
