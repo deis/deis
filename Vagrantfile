@@ -33,8 +33,8 @@ $image_version = cu_vars["COREOS_VERSION"]
 $enable_serial_logging = false
 $share_home = false
 $vm_gui = false
-$vm_memory = 2048
-$vm_cpus = 1
+$vm_memory = 384000
+$vm_cpus = 4
 $shared_folders = {}
 $forwarded_ports = {}
 
