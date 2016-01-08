@@ -56,7 +56,7 @@ def validate_ip_address(ip):
     return True if re.match('([0-9]{1,3}\.){3}[0-9]{1,3}', ip) else False
 
 
-def get_firewall_contents(node_ips, private=False):
+def get_firewall_contents(node_ips, private=False, adding_new_nodes=False):
     rules_template_text = """*filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
@@ -78,16 +78,17 @@ def get_firewall_contents(node_ips, private=False):
 # Allow connections from docker container
 -A Firewall-INPUT -i docker0 -j ACCEPT
 # Accept ssh, http, https and git
--A Firewall-INPUT -m conntrack --ctstate NEW -m multiport$multiport_private -p tcp --dports 22,2222,80,443 -j ACCEPT
+-A Firewall-INPUT -m conntrack --ctstate NEW -m multiport$multiport_private -p tcp --dports 22,2222,80,443$add_new_nodes -j ACCEPT
 # Log and drop everything else
 -A Firewall-INPUT -j REJECT
 COMMIT
 """
 
     multiport_private = ' -s 192.168.0.0/16' if private else ''
+    add_new_nodes = ',2379,2380' if adding_new_nodes else ''
 
     rules_template = string.Template(rules_template_text)
-    return rules_template.substitute(node_ips=string.join(node_ips, ','), multiport_private=multiport_private)
+    return rules_template.substitute(node_ips=string.join(node_ips, ','), multiport_private=multiport_private, add_new_nodes=add_new_nodes)
 
 
 def apply_rules_to_all(host_ips, rules, private_key):
@@ -150,8 +151,9 @@ def main():
     parser = argparse.ArgumentParser(description='Apply a "Security Group" to a Deis cluster')
     parser.add_argument('--private-key', required=True, type=file, dest='private_key', help='Cluster SSH Private Key')
     parser.add_argument('--private', action='store_true', dest='private', help='Only allow access to the cluster from the private network')
+    parser.add_argument('--adding-new-nodes', action='store_true', dest='adding_new_nodes', help='When adding new nodes to existing cluster, allows access to etcd')
     parser.add_argument('--discovery-url', dest='discovery_url', help='Etcd discovery url')
-    parser.add_argument('--hosts', nargs='+', dest='hosts', help='The IP addresses of the hosts to apply rules to')
+    parser.add_argument('--hosts', nargs='+', dest='hosts', help='The public IP addresses of the hosts to apply rules to')
     args = parser.parse_args()
 
     nodes = get_nodes_from_args(args)
@@ -178,14 +180,13 @@ def main():
         raise ValueError('No valid host addresses.')
 
     log_info('Generating iptables rules...')
-    rules = get_firewall_contents(node_ips, args.private)
+    rules = get_firewall_contents(node_ips, args.private, args.adding_new_nodes)
     log_success('Generated rules:')
     log_debug(rules)
 
     log_info('Applying rules...')
     apply_rules_to_all(host_ips, rules, args.private_key)
     log_success('Done!')
-
 
 def log_debug(message):
     print(Style.DIM + Fore.MAGENTA + message + Fore.RESET + Style.RESET_ALL)
