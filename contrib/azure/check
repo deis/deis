@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+ssh -o UserKnownHostsFile=/dev/null \
+    -o StrictHostKeyChecking=no \
+    -T \
+    core@${DEISCTL_TUNNEL} <<EOF
+set -e
+
+echo "==> etcdctl cluster-health"
+etcdctl cluster-health
+
+echo
+
+echo "==> fleetctl list-machines"
+fleetctl list-machines
+
+echo
+
+echo "==> fleetctl list-units"
+fleetctl list-units
+
+echo
+
+echo "==> journalctl -u deis-store-monitor"
+journalctl -u deis-store-monitor
+EOF

@@ -1,4 +1,3 @@
-export SUGGEST_DEV_REGISTRY="registry.hub.docker.com"
 export STACK_TAG="${STACK_TAG:-test}-${DEIS_ID}"
 export DEIS_NUM_INSTANCES=${DEIS_NUM_INSTANCES:-3}
 export STACK_NAME="${STACK_NAME:-deis-${STACK_TAG}}"

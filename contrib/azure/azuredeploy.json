@@ -22,7 +22,7 @@
     },
     "vmSize": {
       "type": "string",
-      "defaultValue": "Standard_A3",
+      "defaultValue": "Standard_DS2",
       "allowedValues": [
         "Standard_A0",
         "Standard_A1",
@@ -54,7 +54,8 @@
       "type": "string",
       "metadata": {
         "description": "Username to login to the VMs"
-      }
+      },
+      "defaultValue": "core"
     },
     "sshKeyData": {
       "type": "string",
@@ -91,7 +92,7 @@
     "storageAccountType": {
       "type": "string",
       "metadata": {
-        "description": "Storage account type"
+        "description": "Storage account type. Can be Premium_LRS (recommended) or Standard_LRS"
       },
       "allowedValues": [
         "Standard_LRS",

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+azure config mode arm
+azure group delete -q "${AZURE_RESOURCE_GROUP}"
+
+SLEEPTIME=10
+ELAPSED=0
+# wait until ${AZURE_RESOURCE_GROUP} no longer is in the list of azure groups
+while azure group list --json | jq '.[] | .name' | grep -q "${AZURE_RESOURCE_GROUP}"; do
+  rigger-log "Waiting for Azure to destroy infrastructure (${ELAPSED}s)..."
+  let ELAPSED=ELAPSED+SLEEPTIME
+  sleep 10
+done

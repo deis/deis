@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+# install jq
+# install azure cli

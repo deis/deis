@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+
+set -eo pipefail -o nounset
+
+function wait-for {
+  local wait_function="${1}"
+  local wait_message="${2}"
+  local attempts="${3:-60}"
+  local sleeptime="${4:-10}"
+  local counter=0
+
+  until ${wait_function}; do
+    if [ ${counter} -ge ${attempts} ]; then
+      rigger-log "Waited $(expr ${attempts} - ${counter})0s, giving up."
+      exit 1
+    fi
+
+    if [ ${counter} -ne 0 ]; then
+      sleep ${sleeptime}
+    fi
+
+    rigger-log "${wait_message} ($(expr ${attempts} - ${counter})0s) ..."
+
+    let counter=counter+1
+  done
+
+  rigger-log "Success!"
+}
+
+function generate-raw-azure-cer {
+  openssl req -x509 \
+              -days 365 \
+              -new \
+              -key "${DEIS_TEST_SSH_KEY}" \
+              -subj "/CN=${DEIS_TEST_DOMAIN}/O=deis/C=US" \
+      | sed '/[-]*\(BEGIN\|END\) CERTIFICATE[-]*/d' \
+      | tr -d '\n'
+}
+
+function check-azure-vms-available {
+  local expected_num="${1}"
+
+  if azure group deployment list --json "${AZURE_RESOURCE_GROUP}" \
+      | jq -r '.[] | .properties.provisioningState' \
+      | grep Failed; then
+    rigger-log "Azure deployment failed."
+    azure group deployment list "${AZURE_RESOURCE_GROUP}"
+    exit 1
+  fi
+
+  local statuses="$(azure vm list --json "${AZURE_RESOURCE_GROUP}" \
+                      | jq -r '.[] | .provisioningState')"
+
+  if [ -n "${statuses}" ]; then
+    if echo "${statuses}" | grep -q Failed &> /dev/null; then
+      rigger-log "Azure VM create failed."
+      azure vm list "${AZURE_RESOURCE_GROUP}"
+      exit 1
+    fi
+
+    if [ $(echo "${statuses}" | grep Succeeded | wc -l) -eq ${expected_num} ]; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+function deisctl-tunnel {
+  azure network public-ip list --json \
+    "${AZURE_RESOURCE_GROUP}" \
+    | jq -r '.[0].ipAddress'
+}
+
+export AZURE_DIR="${DEIS_ID_DIR}/azure"
+mkdir -p "${AZURE_DIR}"
+pushd "${AZURE_DIR}" &> /dev/null
+
+  export AZURE_CERT_FILE="${AZURE_DIR}/$(basename ${DEIS_TEST_SSH_KEY}).cert"
+  generate-raw-azure-cer > "${AZURE_CERT_FILE}"
+  export AZURE_CERT="$(cat ${AZURE_CERT_FILE})"
+
+popd &> /dev/null
+
+pushd ${PROVIDER_DIR}/${PROVIDER} &> /dev/null
+
+  base64="base64 -w 0"
+  if ! base64 --version | grep -q GNU; then
+    base64="base64 -b 0"
+  fi
+
+  (
+    cd "${DEIS_ROOT}/contrib/azure"
+    ./create-azure-user-data "$(curl -s https://discovery.etcd.io/new)"
+  )
+
+  export CLOUD_CONFIG_BASE64="$(cat "${DEIS_ROOT}/contrib/azure/azure-user-data" | ${base64})"
+  export AZURE_PARAMETERS_FILE="${AZURE_DIR}/azure-parameters-replaced.json"
+
+  rigger-render-shell-template parameters.json \
+          | tr '\n' ' ' > "${AZURE_PARAMETERS_FILE}"
+
+  azure config mode arm
+  azure group create -v -n "${AZURE_RESOURCE_GROUP}" \
+                        -l "${AZURE_REGION}" \
+                        -f azuredeploy.json \
+                        -e "${AZURE_PARAMETERS_FILE}"
+
+popd &> /dev/null
+
+wait-for "check-azure-vms-available ${DEIS_NUM_INSTANCES}" \
+                "Waiting for Azure VMs to be available"
+
+export DEISCTL_TUNNEL="$(deisctl-tunnel)"
+export DEIS_TEST_DOMAIN="${DEISCTL_TUNNEL}.xip.io"
+rigger-save-vars DEISCTL_TUNNEL \
+                 DEIS_TEST_DOMAIN

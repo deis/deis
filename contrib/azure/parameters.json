@@ -1,27 +1,27 @@
 {
   "newStorageAccountName": {
-    "value": ""
+    "value": "${AZURE_STORAGE_NAME}"
   },
   "publicDomainName": {
-    "value": ""
+    "value": "${AZURE_DOMAIN_PREFIX}"
   },
   "dnsPrefixNameForPublicIP": {
-    "value": ""
+    "value": "${AZURE_DOMAIN_PREFIX}"
   },
   "vmSize": {
-    "value": "Standard_DS2"
+    "value": "${AZURE_INSTANCE_SIZE}"
   },
   "adminUsername": {
     "value": "core"
   },
   "sshKeyData": {
-    "value": ""
+    "value": "${AZURE_CERT}"
   },
   "customData": {
-    "value": ""
+    "value": "${CLOUD_CONFIG_BASE64}"
   },
   "numberOfNodes": {
-    "value": 3
+    "value": ${DEIS_NUM_INSTANCES}
   },
   "dockerVolumeSize": {
     "value": 100

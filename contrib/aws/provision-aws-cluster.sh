@@ -102,7 +102,7 @@ until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
         exit 1
     fi
 
-    if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
+    if [ $COUNTER -ne 1 ]; then sleep ${SLEEPTIME}; fi
     echo "Waiting for instances to pass initial health checks ($(expr 61 - $COUNTER)0s) ..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
         --filters Name=instance-status.reachability,Values=passed \
