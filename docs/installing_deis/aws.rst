@@ -234,6 +234,25 @@ Install Deis Platform
 Now that you've finished provisioning a cluster, please refer to :ref:`install_deis_platform` to
 start installing the platform.
 
+In case of failures
+-------------------
+
+Though it is uncommon, provisioning may fail for a few reasons. In these cases,
+``provision-aws-cluster.sh`` will automatically attempt to rollback its changes.
+
+If it fails to do so, you can clean up the AWS resources manually. Do this by logging into the AWS
+console, and under CloudFormation, simply delete the ``deis`` stack it created.
+
+If you wish to retry, you'll need to take note of a few caveats:
+
+- The ``deis`` CloudFormation stack may be in the process of being deleted. In this case, you can't
+  provision another CloudFormation stack with the same name. You can simply wait for the stack to
+  clean itself up, or provision a stack under a different name by doing ``./provision-aws-cluster.sh
+  <newname>``.
+
+- In most cases, it's not a good idea to re-use the same discovery URL of a failed provisioning.
+  Generate a new discovery URL before attempting to provision a new stack.
+
 CloudFormation Updates
 ----------------------
 
