@@ -62,7 +62,7 @@ COUNTER=1
 INSTANCE_IDS=""
 until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = "CREATE_COMPLETE" ]; do
     if [ $COUNTER -gt $ATTEMPTS ]; then
-        echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after 10m)"
+        echo "Provisioning instances failed (timeout, $(wc -w <<< $INSTANCE_IDS) of $DEIS_NUM_INSTANCES provisioned after $(expr $ATTEMPTS * $SLEEPTIME)s)"
         echo "Destroying stack $STACK_NAME"
         bailout
         exit 1
@@ -85,7 +85,7 @@ until [ $(wc -w <<< $INSTANCE_IDS) -eq $DEIS_NUM_INSTANCES -a "$STACK_STATUS" = 
         --output text \
         $EXTRA_AWS_CLI_ARGS)
 
-    echo "Waiting for instances to be provisioned ($STACK_STATUS, $(expr 61 - $COUNTER)0s) ..."
+    echo "Waiting for instances to be provisioned ($STACK_STATUS, $(expr $ATTEMPTS + 1 - $COUNTER)0s) ..."
     sleep $SLEEPTIME
 
     let COUNTER=COUNTER+1
@@ -96,14 +96,14 @@ COUNTER=1
 INSTANCE_STATUSES=""
 until [ `wc -w <<< $INSTANCE_STATUSES` -eq $DEIS_NUM_INSTANCES ]; do
     if [ $COUNTER -gt $ATTEMPTS ];
-        then echo "Health checks not passed after 10m, giving up"
+        then echo "Health checks not passed after $(expr $ATTEMPTS * $SLEEPTIME)s, giving up"
         echo "Destroying stack $STACK_NAME"
         bailout
         exit 1
     fi
 
     if [ $COUNTER -ne 1 ]; then sleep $SLEEPTIME; fi
-    echo "Waiting for instances to pass initial health checks ($(expr 61 - $COUNTER)0s) ..."
+    echo "Waiting for instances to pass initial health checks ($(expr $ATTEMPTS + 1 - $COUNTER)0s) ..."
     INSTANCE_STATUSES=$(aws ec2 describe-instance-status \
         --filters Name=instance-status.reachability,Values=passed \
         --instance-ids $INSTANCE_IDS \
