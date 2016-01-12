@@ -12,41 +12,8 @@ from threading import Thread
 import sys
 
 import paramiko
-import requests
-import colorama
-from colorama import Fore, Style
-
-
-class LinodeApiCommand:
-    def __init__(self, arguments):
-        self._arguments = vars(arguments)
-        self._linode_api_key = arguments.linode_api_key
-
-    def __getattr__(self, name):
-        return self._arguments.get(name)
-
-    def request(self, action, **kwargs):
-        kwargs['params'] = dict({'api_key': self._linode_api_key, 'api_action': action}.items() + kwargs.get('params', {}).items())
-        response = requests.request('get', 'https://api.linode.com/api/', **kwargs)
-
-        json = response.json()
-        errors = json.get('ERRORARRAY', [])
-        data = json.get('DATA')
-
-        if len(errors) > 0:
-            raise IOError(str(errors))
-
-        return data
-
-    def run(self):
-        raise NotImplementedError
-
-    def info(self, message):
-        print(Fore.MAGENTA + threading.current_thread().name + ': ' + Fore.CYAN + message + Fore.RESET)
-
-    def success(self, message):
-        print(Fore.MAGENTA + threading.current_thread().name + ': ' + Fore.GREEN + message + Fore.RESET)
-
+from linodeapi import LinodeApiCommand
+import linodeutils 
 
 class ProvisionCommand(LinodeApiCommand):
     _created_linodes = []
@@ -81,31 +48,9 @@ class ProvisionCommand(LinodeApiCommand):
             ips.append(linode['public'])
 
         firewall_command = './apply-firewall.py --private-key /path/to/key/deis --hosts ' + string.join(ips, ' ')
-
-        # set up the report constants
-        divider = Style.BRIGHT + Fore.MAGENTA + ('=' * 109) + Fore.RESET + Style.RESET_ALL
-        column_format = "  {:<20} {:<20} {:<20} {:<20} {:<12} {:>8}"
-        formatted_header = column_format.format(*('HOSTNAME', 'PUBLIC IP', 'PRIVATE IP', 'GATEWAY', 'DC', 'PLAN'))
-
-        # display the report
-        print('')
-        print(divider)
-        print(divider)
-        print('')
-        print(Style.BRIGHT + Fore.LIGHTGREEN_EX + '  Successfully provisioned ' + str(self.num_nodes) + ' nodes!' + Fore.RESET + Style.RESET_ALL)
-        print('')
-        print(Style.BRIGHT + Fore.CYAN + formatted_header + Fore.RESET + Style.RESET_ALL)
-        for row in rows:
-            print(Fore.CYAN + column_format.format(*row) + Fore.RESET)
-        print('')
-        print('')
-        print(Fore.LIGHTYELLOW_EX + '  Finish up your installation by securing your cluster with the following command:' + Fore.RESET)
-        print('')
-        print('  ' + firewall_command)
-        print('')
-        print(divider)
-        print(divider)
-        print('')
+        header_msg = '  Successfully provisioned ' + str(self.num_nodes) + ' nodes!'
+        footer_msg = '  Finish up your installation by securing your cluster with the following command:\n  ' + firewall_command + '\n'
+        linodeutils.log_table(rows, header_msg, footer_msg)
 
     def _get_plan(self):
         if self._plan is None:
@@ -140,8 +85,8 @@ class ProvisionCommand(LinodeApiCommand):
         if self.num_nodes < 1:
             raise ValueError('Must provision at least one node.')
         elif self.num_nodes < 3:
-            print(Fore.YELLOW + 'A Deis cluster must have 3 or more nodes, only continue if you adding to a current cluster.' + Fore.RESET)
-            print(Fore.YELLOW + 'Continue? (y/n)' + Fore.RESET)
+            linodeutils.log_warning('A Deis cluster must have 3 or more nodes, only continue if you adding to a current cluster.')
+            linodeutils.log_warning('Continue? (y/n)')
             accept = None
             while True:
                 if accept == 'y':
@@ -371,21 +316,20 @@ class ListDataCentersCommand(LinodeApiCommand):
     def run(self):
         data = self.request('avail.datacenters')
         column_format = "{:<4} {:}"
-        print(Style.BRIGHT + Fore.GREEN + column_format.format(*('ID', 'LOCATION')) + Fore.RESET + Style.RESET_ALL)
+        linodeutils.log_success(column_format.format(*('ID', 'LOCATION')))
         for data_center in data:
             row = (
                 data_center.get('DATACENTERID'),
                 data_center.get('LOCATION')
             )
-            print(Fore.GREEN + column_format.format(*row) + Fore.RESET)
+            linodeutils.log_minor_success(column_format.format(*row))
 
 
 class ListPlansCommand(LinodeApiCommand):
     def run(self):
         data = self.request('avail.linodeplans')
         column_format = "{:<4} {:<16} {:<8} {:<12} {:}"
-        print(Style.BRIGHT + Fore.GREEN + column_format.format(
-            *('ID', 'LABEL', 'CORES', 'RAM', 'PRICE')) + Fore.RESET + Style.RESET_ALL)
+        linodeutils.log_success(column_format.format(*('ID', 'LABEL', 'CORES', 'RAM', 'PRICE')))
         for plan in data:
             row = (
                 plan.get('PLANID'),
@@ -394,11 +338,11 @@ class ListPlansCommand(LinodeApiCommand):
                 str(plan.get('RAM')) + 'MB',
                 '$' + str(plan.get('PRICE'))
             )
-            print(Fore.GREEN + column_format.format(*row) + Fore.RESET)
+            linodeutils.log_minor_success(column_format.format(*row))
 
 
-if __name__ == '__main__':
-    colorama.init()
+def main():
+    linodeutils.init()
 
     parser = argparse.ArgumentParser(description='Provision Linode Deis Cluster')
     parser.add_argument('--api-key', required=True, dest='linode_api_key', help='Linode API Key')
@@ -426,10 +370,12 @@ if __name__ == '__main__':
     list_plans_parser.set_defaults(cmd=ListPlansCommand)
 
     args = parser.parse_args()
-    cmd = args.cmd(args)
+    args.cmd(args).run()
 
+
+if __name__ == "__main__":
     try:
-        cmd.run()
+        main()
     except Exception as e:
-        print(Style.BRIGHT + Fore.RED + e.message + Fore.RESET + Style.RESET_ALL)
+        linodeutils.log_error(e.message)
         sys.exit(1)
