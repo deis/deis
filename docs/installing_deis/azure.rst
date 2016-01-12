@@ -63,6 +63,10 @@ Switch to the ``contrib/azure`` directory:
 
     $ cd contrib/azure
 
+Generate an SSH keypair to use:
+
+    $ ssh-keygen -q -t rsa -f ~/.ssh/deis -N '' -C deis
+
 Generate a new discovery URL for the deployment so the hosts can find each other:
 
 .. code-block:: console
@@ -70,16 +74,14 @@ Generate a new discovery URL for the deployment so the hosts can find each other
     $ ./create-azure-user-data $(curl -s https://discovery.etcd.io/new)
 
 Next, edit ``parameters.json`` to configure the parameters required for the
-cluster. For ``sshKeyData``, use the public key material for the SSH key you'd like
-to use to log into the hosts. For ``customData``, you'll need to supply the
-base64-encoded version of ``azure-user-data``. This can be generated using ``base64``:
+cluster. Any of the values in ``parameters.json`` are defaults and can be customized if desired.
 
-.. code-block:: console
+- For ``sshKeyData``, use the contents of ``~/.ssh/deis.pub``, which should only be a single line.
 
-    $ base64 azure-user-data
+- For ``customData``, you'll need to supply the base64-encoded version of ``azure-user-data``. This
+  can be generated using the command ``base64 azure-user-data``.
 
-Paste the result into ``parameters.json``. Any of the values in ``parameters.json``
-are defaults and can be customized if desired.
+- For the other parameters, you can refer to ``arm-template.json`` for a reference on their values.
 
 .. note::
 
@@ -98,7 +100,7 @@ As an example, to create a deployment named "deis" in the "West US" region:
     $ azure group create --name deis --location "West US" --deployment-name deis --template-file arm-template.json --parameters-file parameters.json
 
 Each instance will have a public IP address which can be used to log in via SSH
-or as a tunnel endpoint for ``deisctl``. You can get these IPs from the Azure Portal
+or as a tunnel endpoint for ``deisctl``. You can get these IPs from the `Azure Portal`_
 or via the CLI with ``azure vm show``:
 
 .. code-block:: console
@@ -110,6 +112,15 @@ Configure DNS
 
 See :ref:`configure-dns` for more information on properly setting up your DNS records with Deis.
 
+In case of failure
+------------------
+
+There are cases where a provisioning can fail, such as when you specify invalid parameters in
+``parameters.json``. To inspect errors, log onto the `Azure Portal`_, and look in the ``deis``
+resource group. A failed provisioning should show up as "Last deployment: 01/01/2016 (Failed)" in
+one of its resources.
+
+To retry the provisioning, you'll need to delete the ``deis`` resource group first.
 
 Install Deis Platform
 ---------------------
@@ -123,3 +134,4 @@ start installing the platform.
 .. _`organizational account`: http://www.brucebnews.com/2013/04/the-difference-between-a-microsoft-account-and-an-office-365-account/
 .. _`premium storage`: https://azure.microsoft.com/en-us/services/storage/premium-storage/
 .. _`some regions`: https://azure.microsoft.com/en-us/regions/#services
+.. _`Azure Portal`: https://portal.azure.com
