@@ -70,7 +70,8 @@ Generate a new discovery URL for the deployment so the hosts can find each other
     $ ./create-azure-user-data $(curl -s https://discovery.etcd.io/new)
 
 Next, edit ``parameters.json`` to configure the parameters required for the
-cluster. For ``sshKeyData``, use the public key material for the SSH key you'd like
+cluster. For ``publicDomainName``, specify the prefix of domain name (like ``deisNode``).
+For ``sshKeyData``, use the public key material for the SSH key you'd like
 to use to log into the hosts. For ``customData``, you'll need to supply the
 base64-encoded version of ``azure-user-data``. This can be generated using ``base64``:
 
