@@ -118,7 +118,7 @@ Launch 3 instances. You can choose another starting CoreOS image from the listin
       --metadata-from-file user-data=gce-user-data,sshKeys=$HOME/.ssh/deis.pub \
       --disk name=cored${num},device-name=coredocker \
       --tags deis \
-      --image coreos-stable-835-9-0-v20151208 \
+      --image coreos-stable-835-10-0-v20160120 \
       --image-project coreos-cloud;
     done
 
