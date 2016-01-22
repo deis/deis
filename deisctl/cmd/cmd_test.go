@@ -277,19 +277,6 @@ func TestStartStatelessPlatform(t *testing.T) {
 	}
 }
 
-func TestStartSwarm(t *testing.T) {
-	t.Parallel()
-
-	b := backendStub{}
-	expected := []string{"swarm-manager", "swarm-node"}
-
-	Start([]string{"swarm"}, &b)
-
-	if !reflect.DeepEqual(b.startedUnits, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.startedUnits))
-	}
-}
-
 func TestRollingRestart(t *testing.T) {
 	t.Parallel()
 
@@ -410,18 +397,6 @@ func TestStopStatelessPlatform(t *testing.T) {
 	expected := []string{"router@*", "publisher", "controller", "builder",
 		"registry@*", "logspout"}
 	Stop([]string{"stateless-platform"}, &b)
-
-	if !reflect.DeepEqual(b.stoppedUnits, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
-	}
-}
-
-func TestStopSwarm(t *testing.T) {
-	t.Parallel()
-
-	b := backendStub{}
-	expected := []string{"swarm-node", "swarm-manager"}
-	Stop([]string{"swarm"}, &b)
 
 	if !reflect.DeepEqual(b.stoppedUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.stoppedUnits))
@@ -589,21 +564,6 @@ func TestInstallStatelessPlatform(t *testing.T) {
 	}
 }
 
-func TestInstallSwarm(t *testing.T) {
-	t.Parallel()
-
-	b := backendStub{}
-	cb := mock.ConfigBackend{}
-
-	expected := []string{"swarm-manager", "swarm-node"}
-
-	Install([]string{"swarm"}, &b, &cb, fakeCheckKeys)
-
-	if !reflect.DeepEqual(b.installedUnits, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.installedUnits))
-	}
-}
-
 func TestUninstall(t *testing.T) {
 	t.Parallel()
 
@@ -640,19 +600,6 @@ func TestUninstallStatelessPlatform(t *testing.T) {
 		"registry@*", "logspout"}
 
 	Uninstall([]string{"stateless-platform"}, &b)
-
-	if !reflect.DeepEqual(b.uninstalledUnits, expected) {
-		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.uninstalledUnits))
-	}
-}
-
-func TestUninstallSwarm(t *testing.T) {
-	t.Parallel()
-
-	b := backendStub{}
-	expected := []string{"swarm-node", "swarm-manager"}
-
-	Uninstall([]string{"swarm"}, &b)
 
 	if !reflect.DeepEqual(b.uninstalledUnits, expected) {
 		t.Error(fmt.Errorf("Expected %v, Got %v", expected, b.uninstalledUnits))

@@ -1,6 +1,0 @@
-[template]
-src   = "zoo_cfg.dynamic"
-dest  = "/opt/zookeeper/conf/fleet-zoo_cfg.dynamic"
-keys = [
-  "/zookeeper/nodes",
-]

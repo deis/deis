@@ -3,20 +3,12 @@ SECRET_KEY = '{{ getv "/deis/controller/secretKey" }}'
 BUILDER_KEY = '{{ getv "/deis/controller/builderKey" }}'
 
 # scheduler settings
-SCHEDULER_MODULE = 'scheduler.{{ if exists "/deis/controller/schedulerModule" }}{{ getv "/deis/controller/schedulerModule" }}{{ else }}fleet{{ end }}'
-SCHEDULER_TARGET = '{{ if exists "/deis/controller/schedulerTarget" }}{{ getv "/deis/controller/schedulerTarget" }}{{ else }}/var/run/fleet.sock{{ end }}'
+SCHEDULER_MODULE = 'scheduler.fleet'
+SCHEDULER_TARGET = '/var/run/fleet.sock'
 try:
     SCHEDULER_OPTIONS = dict('{{ if exists "/deis/controller/schedulerOptions" }}{{ getv "/deis/controller/schedulerOptions" }}{{ else }}{}{{ end }}')
 except:
     SCHEDULER_OPTIONS = {}
-
-# scheduler swarm manager host
-
-SWARM_HOST = '{{ if exists "/deis/scheduler/swarm/host" }}{{ getv "/deis/scheduler/swarm/host" }}{{ else }}127.0.0.1{{ end }}'
-
-MARATHON_HOST = '{{ if exists "/deis/scheduler/mesos/marathon" }}{{ getv "/deis/scheduler/mesos/marathon" }}{{ else }}127.0.0.1{{ end }}'
-
-K8S_MASTER = '{{ if exists "/deis/scheduler/k8s/master" }}{{ getv "/deis/scheduler/k8s/master" }}{{ else }}127.0.0.1{{ end }}'
 
 # base64-encoded SSH private key to facilitate current version of "deis run"
 SSH_PRIVATE_KEY = """{{ if exists "/deis/platform/sshPrivateKey" }}{{ getv "/deis/platform/sshPrivateKey" }}{{ else }}""{{end}}"""

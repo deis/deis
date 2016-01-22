@@ -15,9 +15,8 @@ The scheduler must decide which machines are eligible to run these container
 jobs. Scheduler backends vary in the details of their job allocation policies
 and whether or not they are resource-aware, among other features.
 
-The Deis scheduler is implemented in the :ref:`controller` component. The
-scheduler implementation (or "backend") can be changed dynamically to support
-different strategies or cluster types.
+The Deis scheduler client is implemented in the :ref:`controller` component.
+Deis uses `Fleet`_ to schedule the containers across the cluster.
 
-Follow the :ref:`choosing_a_scheduler` guide to learn about available
-options for the Deis scheduler.
+
+.. _`Fleet`: https://github.com/coreos/fleet

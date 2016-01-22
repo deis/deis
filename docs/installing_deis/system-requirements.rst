@@ -33,10 +33,9 @@ in component failures, issues with etcd/fleet, and other problems.
 Cluster size
 ------------
 
-For :ref:`scheduling <choosing_a_scheduler>` and the :ref:`deis-store <Store>` components
-to work properly, clusters must have at least three nodes. The ``etcd`` service must always
-be able to obtain a quorum, and the Ceph data store must maintain at least three replicas
-of persistent data.
+For the :ref:`deis-store <Store>` component to work properly, clusters must have at least
+three nodes. The ``etcd`` service must always be able to obtain a quorum, and the Ceph
+data store must maintain at least three replicas of persistent data.
 
 See `optimal etcd cluster size`_ and `etcd disaster recovery`_ for further information.
 
