@@ -1,5 +1,8 @@
 SHELL = /bin/bash
 
+# Enable vendor/ directory support.
+export GO15VENDOREXPERIMENT=1
+
 GO = godep go
 GOFMT = gofmt -l
 GOLINT = golint
