@@ -47,6 +47,7 @@ setting                                      description
 /deis/router/controller/timeout/read         proxy_read_timeout for deis-controller (default: 20m)
 /deis/router/controller/timeout/send         proxy_send_timeout for deis-controller (default: 20m)
 /deis/router/controller/whitelist            comma separated list of IPs (or CIDR) allowed to connect to the controller (default: not set) Example: "0.0.0.0:some_optional_label,10.0.0.0/8"
+/deis/router/enableNginxStatus               enable vhost traffic status page
 /deis/router/enforceHTTPS                    redirect all HTTP traffic to HTTPS (default: false)
 /deis/router/enforceWhitelist                deny all connections unless specifically whitelisted (default: false)
 /deis/router/firewall/enabled                nginx naxsi firewall enabled (default: false)
