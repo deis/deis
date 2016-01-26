@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"net"
 )
 
 // CreateRemote adds a git remote in the current directory.
@@ -106,5 +107,10 @@ func findRemote(host string) (string, error) {
 
 // RemoteURL returns the git URL of app.
 func RemoteURL(host, appID string) string {
-	return fmt.Sprintf("ssh://git@%s:2222/%s.git", host, appID)
+	// Go by Example - URL Parsing: https://gobyexample.com/url-parsing
+	domain, _, err := net.SplitHostPort(host)
+	if (err != nil) {
+		domain = host
+	}
+	return fmt.Sprintf("ssh://git@%s:2222/%s.git", domain, appID)
 }
