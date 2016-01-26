@@ -11,7 +11,6 @@ Customizing Deis
 
 .. toctree::
 
-    choosing-a-scheduler
     cli-plugins
     builder_settings
     controller_settings

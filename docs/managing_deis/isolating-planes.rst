@@ -105,15 +105,5 @@ the metadata that describes where each unit may be hosted.
 
         $ deisctl config platform set enablePlacementOptions=true
 
-Alternate schedulers
---------------------
-
-Recent versions of Deis ship with
-:ref:`technology previews <choosing_a_scheduler>` that permit the use of
-alternate schedulers such as Swarm or Mesos with Marathon.
-
-If opting into both isolated planes and an alternate scheduler, units for the
-alternate scheduler's agents (a Mesos slave process, for instance) will be
-decorated appropriately to isolate them to the Data Plane.
 
 .. _`More details on Fleet metadata`: https://coreos.com/fleet/docs/latest/unit-files-and-scheduling.html#fleet-specific-options

@@ -16,17 +16,6 @@ var Names = []string{
 	"deis-store-metadata",
 	"deis-store-monitor",
 	"deis-store-volume",
-	"deis-swarm-manager",
-	"deis-swarm-node",
-	"deis-mesos-marathon",
-	"deis-mesos-master",
-	"deis-mesos-slave",
-	"deis-zookeeper",
-	"deis-kube-apiserver",
-	"deis-kube-controller-manager",
-	"deis-kube-kubelet",
-	"deis-kube-proxy",
-	"deis-kube-scheduler",
 }
 
 // URL is the GitHub url where these units can be refreshed from

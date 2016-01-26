@@ -26,9 +26,3 @@ scheduler.states
 .. contents::
     :local:
 .. automodule:: scheduler.states
-
-scheduler.swarm
----------------
-.. contents::
-    :local:
-.. automodule:: scheduler.swarm

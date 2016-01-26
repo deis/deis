@@ -1,1 +1,0 @@
-{{ range $index, $node := lsdir "/zookeeper/nodes" }}{{ if $index }},{{ end }}{{ $node }}:3888{{ end }}

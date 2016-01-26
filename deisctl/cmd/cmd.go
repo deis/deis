@@ -23,11 +23,8 @@ const (
 	PlatformCommand string = "platform"
 	// StatelessPlatformCommand is shorthand for the components except store-* and database.
 	StatelessPlatformCommand string = "stateless-platform"
-	swarm                    string = "swarm"
-	mesos                    string = "mesos"
 	// DefaultRouterMeshSize defines the default number of routers to be loaded when installing the platform.
-	DefaultRouterMeshSize uint8  = 3
-	k8s                   string = "k8s"
+	DefaultRouterMeshSize uint8 = 3
 )
 
 // ListUnits prints a list of installed units.
@@ -84,12 +81,6 @@ func Start(targets []string, b backend.Backend) error {
 			return StartPlatform(b, false)
 		case StatelessPlatformCommand:
 			return StartPlatform(b, true)
-		case mesos:
-			return StartMesos(b)
-		case swarm:
-			return StartSwarm(b)
-		case k8s:
-			return StartK8s(b)
 		}
 	}
 	var wg sync.WaitGroup
@@ -195,12 +186,6 @@ func Stop(targets []string, b backend.Backend) error {
 			return StopPlatform(b, false)
 		case StatelessPlatformCommand:
 			return StopPlatform(b, true)
-		case mesos:
-			return StopMesos(b)
-		case swarm:
-			return StopSwarm(b)
-		case k8s:
-			return StopK8s(b)
 		}
 	}
 
@@ -296,12 +281,6 @@ func Install(targets []string, b backend.Backend, cb config.Backend, checkKeys f
 			return InstallPlatform(b, cb, checkKeys, false)
 		case StatelessPlatformCommand:
 			return InstallPlatform(b, cb, checkKeys, true)
-		case mesos:
-			return InstallMesos(b)
-		case swarm:
-			return InstallSwarm(b)
-		case k8s:
-			return InstallK8s(b)
 		}
 	}
 	var wg sync.WaitGroup
@@ -360,12 +339,6 @@ func Uninstall(targets []string, b backend.Backend) error {
 			return UninstallPlatform(b, false)
 		case StatelessPlatformCommand:
 			return UninstallPlatform(b, true)
-		case mesos:
-			return UninstallMesos(b)
-		case swarm:
-			return UnInstallSwarm(b)
-		case k8s:
-			return UnInstallK8s(b)
 		}
 	}
 

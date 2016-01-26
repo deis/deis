@@ -1,9 +1,0 @@
-FROM ubuntu-debootstrap:14.04
-
-ENV DEBIAN_FRONTEND noninteractive
-
-COPY build-mesos.sh /tmp/build.sh
-
-RUN DOCKER_BUILD=true MESOS="#VERSION#" /tmp/build.sh
-
-ENV DEIS_RELEASE 1.13.0-dev
