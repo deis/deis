@@ -6,7 +6,7 @@ from django.test import TestCase
 class HealthCheckTest(TestCase):
 
     def setUp(self):
-        self.url = '/health-check'
+        self.url = '/healthz'
 
     def test_healthcheck(self):
         # GET and HEAD (no auth required)

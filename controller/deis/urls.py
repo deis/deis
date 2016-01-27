@@ -18,7 +18,7 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    url(r'^health-check$', HealthCheckView.as_view()),
+    url(r'^healthz$', HealthCheckView.as_view()),
     url(r'^v1/', include('api.urls')),
 )
 
