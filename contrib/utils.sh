@@ -13,5 +13,5 @@ function echo_green {
 }
 
 export COREOS_CHANNEL=${COREOS_CHANNEL:-stable}
-export COREOS_VERSION=${COREOS_VERSION:-835.9.0}
+export COREOS_VERSION=${COREOS_VERSION:-835.11.0}
 export DEIS_RELEASE=1.13.0-dev
