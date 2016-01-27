@@ -75,7 +75,8 @@ if [[ "$(cat $PG_DATA_DIR/initialized 2> /dev/null)" != "$INIT_ID" ]]; then
   echo "database: no existing database found or it is outdated."
   # check if there are any backups -- if so, let's restore
   # we could probably do better than just testing number of lines -- one line is just a heading, meaning no backups
-  if [[ $(envdir /etc/wal-e.d/env wal-e --terse backup-list | wc -l) -gt "1" ]]; then
+  BACKUP_LIST=$(envdir /etc/wal-e.d/env wal-e --terse backup-list) # if this fails, this script will exit
+  if [[ $(echo "$BACKUP_LIST" | wc -l) -gt "1" ]]; then
     echo "database: restoring from backup..."
     rm -rf $PG_DATA_DIR
     sudo -u postgres envdir /etc/wal-e.d/env wal-e backup-fetch $PG_DATA_DIR LATEST
