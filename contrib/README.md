@@ -36,8 +36,8 @@ Please add to this list by opening a pull request!
 * [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) by [@ianblenke](https://github.com/ianblenke) - Unit files to launch various services on CoreOS hosts
 * [Docker S3 Cleaner](https://github.com/myriadmobile/docker-s3-cleaner) by [@croemmich](https://github.com/croemmich) - Unit file to remove orphaned image layers from S3 backed private docker registries
 * [New Relic unit for CoreOS](https://github.com/lorieri/coreos-newrelic) by [@lorieri](https://github.com/lorieri) - A global unit to launch New Relic sysmond
-* [SPM Docker Agent for CoreOS](https://github.com/sematext/spm-agent-docker/blob/master/coreos/spm-agent.service) by [@sematext](https://github.com/sematext) - A global unit to launch the agent for [SPM Performance Monitoring, Anomaly Detection and Alerting](http://sematext.com/spm/integrations/docker-monitoring.html) 
-* [Forwarding systemd journal to Logsene](https://github.com/sematext/spm-agent-docker/blob/master/coreos/logsene.service) by [@sematext](https://github.com/sematext) - A global unit to forward systemd journal via SSL/TLS. Note: The IP address of the CoreOS host needs to be authorized in Logsene. [Logsene ­Log Management & Analytics](http://www.sematext.com/logsene/) 
+* [Sematext Docker Agent for CoreOS](https://github.com/sematext/sematext-agent-docker/blob/master/coreos/sematext-agent.service) by [@sematext](https://github.com/sematext) - A global unit to launch the agent for [SPM Performance Monitoring, Anomaly Detection and Alerting](http://sematext.com/spm/integrations/docker-monitoring.html) 
+* [Forwarding systemd journal to Logsene](https://github.com/sematext/sematext-agent-docker/blob/master/coreos/logsene.service) by [@sematext](https://github.com/sematext) - A global unit to forward systemd journal via SSL/TLS. Note: The IP address of the CoreOS host needs to be authorized in Logsene. [Logsene ­Log Management & Analytics](http://www.sematext.com/logsene/) 
 
 ### Example Applications
 * [Melano](https://github.com/SuaveIO/Melano) - F# "Hello World" app using the Suave framework
