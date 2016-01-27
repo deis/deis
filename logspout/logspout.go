@@ -110,6 +110,11 @@ func getLogParts(logline *Log) (string, string, string) {
 	if match != nil {
 		return match[1], match[2], logline.Data
 	}
+	// handle k8s runs
+	match = getMatch(`^k8s_([a-z0-9-]+)-[a-z0-9]+-run-[0-9]+\.[\da-f]+_[a-z0-9-]+-([a-z]+-[\da-z]*)_`, logline.Name)
+	if match != nil {
+		return match[1], match[2], logline.Data
+	}
 	if logline.Name == "deis-controller" {
 		data_match := getMatch(`^[A-Z]+ \[([a-z0-9-]+)\]: (.*)`, logline.Data)
 		if data_match != nil {
