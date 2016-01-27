@@ -106,5 +106,7 @@ func findRemote(host string) (string, error) {
 
 // RemoteURL returns the git URL of app.
 func RemoteURL(host, appID string) string {
+	// Strip off any trailing :port number after the host name.
+	host = strings.Split(host, ":")[0]
 	return fmt.Sprintf("ssh://git@%s:2222/%s.git", host, appID)
 }
