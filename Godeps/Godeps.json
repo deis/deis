@@ -277,10 +277,6 @@
 			"Rev": "819aca59fdc412028cc5348ff3d16be2715d33cf"
 		},
 		{
-			"ImportPath": "github.com/golang/glog",
-			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
-		},
-		{
 			"ImportPath": "github.com/gorilla/context",
 			"Rev": "14f550f51af52180c2eefed15e5fd18d63c0a64a"
 		},
@@ -298,26 +294,9 @@
 			"Rev": "b473f398c464f1988327f67c9e6aa7fba62f80d2"
 		},
 		{
-			"ImportPath": "github.com/kardianos/osext",
-			"Rev": "10a0e3c4f6267b0f903197acf80d194bab3eb8cb"
-		},
-		{
-			"ImportPath": "github.com/leeor/etcd-sync",
-			"Rev": "1b8ac808160f955a5a2cdf21809e968698b07e8d"
-		},
-		{
 			"ImportPath": "github.com/lib/pq",
 			"Comment": "go1.0-cutoff-28-g72d960f",
 			"Rev": "72d960fe96ac86dfd376b0de7ca81c0334838d0b"
-		},
-		{
-			"ImportPath": "github.com/progrium/go-basher",
-			"Rev": "ca3b97b3bd2a7eda303716f56916684771b79942"
-		},
-		{
-			"ImportPath": "github.com/robfig/cron",
-			"Comment": "v1-2-g67823cd",
-			"Rev": "67823cd24dece1b04cced3a0a0b3ca2bc84d875e"
 		},
 		{
 			"ImportPath": "github.com/tchap/go-patricia/patricia",
@@ -337,16 +316,12 @@
 			"Rev": "f7445b17d61953e333441674c2d11e91ae4559d3"
 		},
 		{
-			"ImportPath": "golang.org/x/net/context",
-			"Rev": "d9558e5c97f85372afee28cf2b6059d7d3818919"
-		},
-		{
 			"ImportPath": "golang.org/x/net/websocket",
 			"Rev": "d9558e5c97f85372afee28cf2b6059d7d3818919"
 		},
 		{
 			"ImportPath": "google.golang.org/api/googleapi",
-			"Rev": "c83ee8e9b7e6c40a486c0992a963ea8b6911de67"
+			"Rev": "0caa37974a5f5ae67172acf68b4970f7864f994c"
 		},
 		{
 			"ImportPath": "gopkg.in/tomb.v1",
