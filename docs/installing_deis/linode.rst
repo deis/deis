@@ -180,16 +180,29 @@ each host. To do so, run:
 
     $ ./apply-firewall.py --private-key /path/to/key/deis --hosts 1.2.3.4 11.22.33.44 111.222.33.44
 
+    
+Or, you can provide the display group (NOTE: the default display group is ``deis``) to search for the
+nodes using the Linode API, by running:
 
-The script will use the etcd discovery url in the generated ``linode-user-data.yaml`` file or the value of the
-discovery-url argument, if provided, to find all of the nodes in your cluster and create iptables rules to allow
-connections between nodes while blocking outside connections automatically. Full command usage:
+.. code-block:: console
+
+    $ ./apply-firewall.py --private-key /path/to/key/deis --api-key YOUR_LINODE_API_KEY --display-group YOUR_DISPLAY_GROUP
+
+
+The script will use either the Linode API or the etcd discovery url to find all of the nodes in your
+cluster and create iptables rules to allow connections between nodes while blocking outside connections
+automatically. Note that when discovering node ips, the ``--display-group`` parameter has highest priority,
+then manual specification via ``--nodes`` and ``--hosts`` (i.e. public and private ips), then the etcd
+discovery url via parameter ``--display-url`` or the ``linode-user-data.yaml`` file. Full command usage:
 
 .. code-block:: console
 
     usage: apply-firewall.py [-h] --private-key PRIVATE_KEY [--private]
+                             [--adding-new-nodes]
                              [--discovery-url DISCOVERY_URL]
+                             [--display-group DISPLAY_GROUP]
                              [--hosts HOSTS [HOSTS ...]]
+                             [--nodes HOSTS [HOSTS ...]]
 
     Apply a "Security Group" to a Deis cluster
 
@@ -199,10 +212,15 @@ connections between nodes while blocking outside connections automatically. Full
                             Cluster SSH Private Key
       --private             Only allow access to the cluster from the private
                             network
+      --adding-new-nodes    When adding new nodes to existing cluster, allows access to etcd
+      --display-group DISPLAY_GROUP
+                            Linode display group for nodes 
       --discovery-url DISCOVERY_URL
                             Etcd discovery url
       --hosts HOSTS [HOSTS ...]
-                            The IP addresses of the hosts to apply rules to
+                            The public IP addresses of the hosts
+      --nodes HOSTS [HOSTS ...]
+                            The private IP addresses of the hosts 
 
 
 Install Deis Platform
@@ -212,7 +230,28 @@ Now that you've finished provisioning a cluster, please refer to :ref:`install_d
 start installing the platform.
 
 
+Adding Nodes to an Existing Cluster
+-----------------------------------
+
+When adding one or more nodes to an existing CoreOS setup, ``etcd`` will be `added as a proxy to
+the existing cluster`_. The setup of a proxy requires access to ports 2379 and 2380 of the existing
+nodes in the cluster.
+
+In order to open up these ports, before cluster provisioning, run:
+
+.. code-block:: console
+
+    $ ./apply-firewall.py --private-key /path/to/key/deis --hosts 1.2.3.4 11.22.33.44 111.222.33.44
+                          --adding-new-nodes
+
+    
+Then provision the cluster as described above and afterwards reapply the firewall using
+``./apply-firewall.py`` without the ``--adding-new-nodes`` parameter.
+
+
+.. _`added as a proxy to the existing cluster`: https://coreos.com/etcd/docs/latest/clustering.html#public-etcd-discovery-service
 .. _`contrib/linode`: https://github.com/deis/deis/tree/master/contrib/linode
 .. _`Linode Account Settings`: https://manager.linode.com/account/settings
 .. _`Linode API Keys`: https://manager.linode.com/profile/api
 .. _`pip`: https://pip.pypa.io/en/stable/
+
