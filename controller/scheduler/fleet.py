@@ -152,7 +152,7 @@ class FleetHTTPClient(AbstractSchedulerClient):
         tags = kwargs.get('tags', {})
         unit_tags = tags.viewitems()
         if settings.ENABLE_PLACEMENT_OPTIONS in ['true', 'True', 'TRUE', '1']:
-            unit_tags['dataPlane'] = 'true'
+            tags['dataPlane'] = 'true'
         if unit_tags:
             tagset = ' '.join(['"{}={}"'.format(k, v) for k, v in unit_tags])
             unit.append({"section": "X-Fleet", "name": "MachineMetadata",
