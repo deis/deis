@@ -4,7 +4,6 @@ Description=deis-router
 [Service]
 EnvironmentFile=/etc/environment
 TimeoutStartSec=20m
-ExecStartPre=-/usr/bin/etcdctl mkdir /registry/services/ >/dev/null 2>&1
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router` && docker history $IMAGE >/dev/null 2>&1 || flock -w 1200 /var/run/lock/alpine-pull docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-router >/dev/null 2>&1 && docker rm -f deis-router || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router` && docker run --name deis-router --rm -p 80:80 -p 2222:2222 -p 443:443 -p 9090:9090 -e EXTERNAL_PORT=80 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
