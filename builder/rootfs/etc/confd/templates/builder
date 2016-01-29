@@ -131,7 +131,6 @@ puts-step "Building Docker image"
 docker build -t $TMP_IMAGE . 2>&1
 puts-step "Pushing image to private registry"
 docker push $TMP_IMAGE  &>/dev/null
-echo
 
 # use Procfile if provided, otherwise try default process types from ./release
 if [ -f Procfile ]; then
