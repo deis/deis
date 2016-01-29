@@ -20,6 +20,11 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+const (
+	MAX_UDP_MSG_BYTES = 65507
+	MAX_TCP_MSG_BYTES = 1048576
+)
+
 var debugMode bool
 
 func debug(v ...interface{}) {
@@ -65,32 +70,42 @@ func syslogStreamer(target Target, types []string, logstream chan *Log) {
 			continue
 		}
 		tag, pid, data := getLogParts(logline)
-		var conn net.Conn
-		if strings.EqualFold(target.Protocol, "tcp") {
-			addr, err := net.ResolveTCPAddr("tcp", target.Addr)
-			assert(err, "syslog")
-			tcpconn, err := net.DialTCP("tcp", nil, addr)
-			assert(err, "syslog")
-			assert(tcpconn.SetWriteBuffer(1048576), "syslog")
-			conn = tcpconn
-		} else if strings.EqualFold(target.Protocol, "udp") {
-			addr, err := net.ResolveUDPAddr("udp", target.Addr)
-			assert(err, "syslog")
-			udpconn, err := net.DialUDP("udp", nil, addr)
-			assert(err, "syslog")
-			assert(udpconn.SetWriteBuffer(1048576), "syslog")
-			conn = udpconn
-		} else {
-			assert(fmt.Errorf("%s is not a supported protocol, use either udp or tcp", target.Protocol), "syslog")
-		}
+
 		// HACK: Go's syslog package hardcodes the log format, so let's send our own message
-		_, err := fmt.Fprintf(conn,
-			"%s %s[%s]: %s",
+		data = fmt.Sprintf("%s %s[%s]: %s",
 			time.Now().Format(getopt("DATETIME_FORMAT", dtime.DeisDatetimeFormat)),
 			tag,
 			pid,
 			data)
-		assert(err, "syslog")
+
+		if strings.EqualFold(target.Protocol, "tcp") {
+			addr, err := net.ResolveTCPAddr("tcp", target.Addr)
+			assert(err, "syslog")
+			conn, err := net.DialTCP("tcp", nil, addr)
+			assert(err, "syslog")
+			assert(conn.SetWriteBuffer(MAX_TCP_MSG_BYTES), "syslog")
+			_, err = fmt.Fprintln(conn, data)
+			assert(err, "syslog")
+		} else if strings.EqualFold(target.Protocol, "udp") {
+			// Truncate the message if it's too long to fit in a single UDP packet.
+			// Get the bytes first.  If the string has non-UTF8 chars, the number of
+			// bytes might exceed the number of characters and it would be good to
+			// know that up front.
+			dataBytes := []byte(data)
+			if len(dataBytes) > MAX_UDP_MSG_BYTES {
+				// Truncate the bytes and add ellipses.
+				dataBytes = append(dataBytes[:MAX_UDP_MSG_BYTES-3], "..."...)
+			}
+			addr, err := net.ResolveUDPAddr("udp", target.Addr)
+			assert(err, "syslog")
+			conn, err := net.DialUDP("udp", nil, addr)
+			assert(err, "syslog")
+			assert(conn.SetWriteBuffer(MAX_UDP_MSG_BYTES), "syslog")
+			_, err = conn.Write(dataBytes)
+			assert(err, "syslog")
+		} else {
+			assert(fmt.Errorf("%s is not a supported protocol, use either udp or tcp", target.Protocol), "syslog")
+		}
 	}
 }
 
