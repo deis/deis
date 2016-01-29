@@ -4,9 +4,11 @@ RESTful view classes for presenting Deis API objects.
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from guardian.shortcuts import assign_perm, get_objects_for_user, \
     get_users_with_perms, remove_perm
+from django.views.generic import View
 from rest_framework import mixins, renderers, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +19,16 @@ from rest_framework.authtoken.models import Token
 from api import authentication, models, permissions, serializers, viewsets
 
 import requests
+
+
+class HealthCheckView(View):
+    """Simple health check view to determine if the server
+       is responding to HTTP requests.
+    """
+
+    def get(self, request):
+        return HttpResponse("OK")
+    head = get
 
 
 class UserRegistrationViewSet(GenericViewSet,
