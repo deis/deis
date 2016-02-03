@@ -99,5 +99,5 @@ urlpatterns = patterns(
     url(r'^certs/?',
         views.CertificateViewSet.as_view({'get': 'list', 'post': 'create'})),
     # list users
-    url(r'^users/', views.UserView.as_view({'get': 'list'})),
+    url(r'^users/?', views.UserView.as_view({'get': 'list'})),
 )

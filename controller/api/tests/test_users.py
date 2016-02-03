@@ -12,7 +12,7 @@ class TestUsers(TestCase):
     fixtures = ['tests.json']
 
     def test_super_user_can_list(self):
-        url = '/v1/users/'
+        url = '/v1/users'
 
         user = User.objects.get(username='autotest')
         token = Token.objects.get(user=user)
@@ -24,7 +24,7 @@ class TestUsers(TestCase):
         self.assertEqual(len(response.data['results']), 3)
 
     def test_non_super_user_cannot_list(self):
-        url = '/v1/users/'
+        url = '/v1/users'
 
         user = User.objects.get(username='autotest2')
         token = Token.objects.get(user=user)
