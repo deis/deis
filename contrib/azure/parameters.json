@@ -27,7 +27,7 @@
     "value": 100
   },
   "coreosVersion": {
-    "value": "766.5.0"
+    "value": "835.12.0"
   },
   "storageAccountType": {
     "value": "Premium_LRS"
