@@ -8,7 +8,6 @@ import (
 	"syscall"
 
 	"github.com/deis/deis/client/parser"
-	"github.com/deis/deis/version"
 	docopt "github.com/docopt/docopt-go"
 )
 
@@ -24,6 +23,11 @@ func Command(argv []string) int {
 The Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [<args>...]
+
+Option flags::
+
+  -h --help     display help information
+  -v --version  display client version
 
 Auth commands::
 
@@ -47,6 +51,7 @@ Subcommands, use 'deis help [subcommand]' to learn more::
   perms         manage permissions for applications
   git           manage git for applications
   users         manage users
+  version       display client version
 
 Shortcut commands, use 'deis shortcuts' to see all::
 
@@ -64,7 +69,7 @@ Use 'git push deis master' to deploy to an application.
 	// Reorganize some command line flags and commands.
 	command, argv := parseArgs(argv)
 	// Give docopt an optional final false arg so it doesn't call os.Exit().
-	_, err := docopt.Parse(usage, []string{command}, false, version.Version, true, false)
+	_, err := docopt.Parse(usage, []string{command}, false, "", true, false)
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -107,10 +112,10 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Git(argv)
 	case "users":
 		err = parser.Users(argv)
+	case "version":
+		err = parser.Version(argv)
 	case "help":
 		fmt.Print(usage)
-		return 0
-	case "--version":
 		return 0
 	default:
 		env := os.Environ()
@@ -149,9 +154,12 @@ Use 'git push deis master' to deploy to an application.
 // expands shortcuts and formats commands to be properly routed.
 func parseArgs(argv []string) (string, []string) {
 	if len(argv) == 1 {
-		// rearrange "deis --help" as "deis help"
 		if argv[0] == "--help" || argv[0] == "-h" {
+			// rearrange "deis --help" as "deis help"
 			argv[0] = "help"
+		} else if argv[0] == "--version" || argv[0] == "-v" {
+			// rearrange "deis --version" as "deis version"
+			argv[0] = "version"
 		}
 	}
 
