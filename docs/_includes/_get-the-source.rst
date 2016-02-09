@@ -6,7 +6,7 @@ this documentation. Download an archive file from the `releases page`_, or use
 
     $ git clone https://github.com/deis/deis.git
     $ cd deis
-    $ git checkout v1.12.2
+    $ git checkout v1.12.3
 
 Check out the latest Deis release, rather than using the default (master).
 

@@ -41,10 +41,10 @@ Finally, update ``deisctl`` to the new version and reinstall:
 
 .. code-block:: console
 
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.2
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.3
     $ deisctl --version  # should match the desired platform
-    1.12.2
-    $ deisctl config platform set version=v1.12.2
+    1.12.3
+    $ deisctl config platform set version=v1.12.3
     $ deisctl install platform
     $ deisctl start platform
 
@@ -99,11 +99,11 @@ to. Care should be taken not to overwrite the existing ``deisctl`` version.
 .. code-block:: console
 
     $ mkdir /tmp/upgrade
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.2 /tmp/upgrade
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.3 /tmp/upgrade
     $ /tmp/upgrade/deisctl --version  # should match the desired platform
-    1.12.2
+    1.12.3
     $ /tmp/upgrade/deisctl refresh-units
-    $ /tmp/upgrade/deisctl config platform set version=v1.12.2
+    $ /tmp/upgrade/deisctl config platform set version=v1.12.3
 
 Now it is possible to prepare the cluster for the upgrade using the old ``deisctl`` binary. This command will shutdown
 and uninstall all components of the cluster except the router and publisher. This means your services should still be
@@ -128,7 +128,7 @@ If the process were to fail, the old version can be restored manually by reinsta
 
     $ /tmp/upgrade/deisctl stop platform
     $ /tmp/upgrade/deisctl uninstall platform
-    $ /tmp/upgrade/deisctl config platform set version=v1.12.2
+    $ /tmp/upgrade/deisctl config platform set version=v1.12.3
     $ /opt/bin/deisctl refresh-units
     $ /opt/bin/deisctl install platform
     $ /opt/bin/deisctl start platform

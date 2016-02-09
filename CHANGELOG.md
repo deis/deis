@@ -1,3 +1,9 @@
+### v1.12.2 -> v1.12.3
+
+#### Maintenance
+
+ - [`7356d26`](https://github.com/deis/deis/commit/7356d26adeb2f48d8df82a1d0baa090da7d4bb20) (all): bump CoreOS to 835.12.0
+
 ### v1.12.1 -> v1.12.2
 
 #### Fixes
