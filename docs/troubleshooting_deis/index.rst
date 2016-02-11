@@ -107,7 +107,7 @@ If you built ``deisctl`` locally or didn't use its installer, you may see an err
 
 This is because ``deisctl`` could not find unit files for Deis locally. Run
 ``deisctl help refresh-units`` to see where ``deisctl`` searches, and then run a command such as
-``deisctl refresh-units --tag=v1.12.2``, or set the ``$DEISCTL_UNITS`` environment variable to a directory
+``deisctl refresh-units --tag=v1.12.3``, or set the ``$DEISCTL_UNITS`` environment variable to a directory
 containing the unit files.
 
 Other issues

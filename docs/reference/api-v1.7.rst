@@ -51,7 +51,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -89,7 +89,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {"token": "abc123"}
@@ -112,7 +112,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 Regenerate Token
 ````````````````
@@ -144,7 +144,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {"token": "abc123"}
@@ -182,7 +182,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Applications
@@ -206,7 +206,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -252,7 +252,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -283,7 +283,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 List Application Details
@@ -303,7 +303,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -367,7 +367,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: text/plain
 
     "16:51:14 deis[api]: test created initial release\n"
@@ -391,7 +391,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     [0, "hi\n"]
@@ -418,7 +418,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -451,7 +451,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -496,7 +496,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -526,7 +526,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Containers
@@ -550,7 +550,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -590,7 +590,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -630,7 +630,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     [
@@ -665,7 +665,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     [
@@ -700,7 +700,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     [
@@ -738,7 +738,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Configuration
@@ -762,7 +762,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -800,7 +800,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
     X-Deis-Release: 3
 
@@ -843,7 +843,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
     X-Deis-Release: 4
 
@@ -885,7 +885,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -923,7 +923,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -953,7 +953,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Builds
@@ -977,7 +977,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1032,7 +1032,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
     X-Deis-Release: 4
 
@@ -1070,7 +1070,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1132,7 +1132,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1168,7 +1168,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {"version": 5}
@@ -1195,7 +1195,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1237,7 +1237,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1267,7 +1267,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Permissions
@@ -1295,7 +1295,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1325,7 +1325,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 
 Remove Application Permission
@@ -1345,7 +1345,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 List Administrators
 ```````````````````
@@ -1364,7 +1364,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {
@@ -1407,7 +1407,7 @@ Example Response:
 
     HTTP/1.1 201 CREATED
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 Remove User's Administrative Privileges
 ```````````````````````````````````````
@@ -1430,7 +1430,7 @@ Example Response:
 
     HTTP/1.1 204 NO CONTENT
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
 
 Users
 -----
@@ -1456,7 +1456,7 @@ Example Response:
 
     HTTP/1.1 200 OK
     DEIS_API_VERSION: 1.7
-    DEIS_PLATFORM_VERSION: 1.12.2
+    DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: application/json
 
     {

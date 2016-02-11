@@ -18,11 +18,11 @@ and run the latest installer:
 .. code-block:: console
 
     $ cd ~/bin
-    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.2
+    $ curl -sSL http://deis.io/deisctl/install.sh | sh -s 1.12.3
     $ # on CoreOS, add "sudo" to install to /opt/bin/deisctl
-    $ curl -sSL http://deis.io/deisctl/install.sh | sudo sh -s 1.12.2
+    $ curl -sSL http://deis.io/deisctl/install.sh | sudo sh -s 1.12.3
 
-This installs ``deisctl`` version 1.12.2 to the current directory, and downloads the matching
+This installs ``deisctl`` version 1.12.3 to the current directory, and downloads the matching
 Deis systemd unit files used to schedule the components. Link ``deisctl`` into /usr/local/bin, so
 it will be in your ``$PATH``:
 
@@ -33,10 +33,10 @@ it will be in your ``$PATH``:
 To change installation options, save the installer directly:
 
 .. image:: download-linux-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/get-deis/deisctl-1.12.2-linux-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/get-deis/deisctl-1.12.3-linux-amd64.run
 
 .. image:: download-osx-brightgreen.svg
-   :target: https://s3-us-west-2.amazonaws.com/get-deis/deisctl-1.12.2-darwin-amd64.run
+   :target: https://s3-us-west-2.amazonaws.com/get-deis/deisctl-1.12.3-darwin-amd64.run
 
 Then run the downloaded file as a shell script. Append ``--help`` to see what options
 are available.
