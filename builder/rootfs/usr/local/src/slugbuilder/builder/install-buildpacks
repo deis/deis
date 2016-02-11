@@ -32,7 +32,7 @@ download_buildpack https://github.com/heroku/heroku-buildpack-multi.git         
 download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v144
 download_buildpack https://github.com/heroku/heroku-buildpack-nodejs.git         v87
 download_buildpack https://github.com/heroku/heroku-buildpack-java.git           v43
-download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         v12
+download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         v17
 download_buildpack https://github.com/heroku/heroku-buildpack-grails.git         v19
 download_buildpack https://github.com/heroku/heroku-buildpack-play.git           v24
 download_buildpack https://github.com/heroku/heroku-buildpack-python.git         v70
