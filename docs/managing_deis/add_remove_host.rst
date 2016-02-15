@@ -288,7 +288,7 @@ This can be achieved by making a request to the etcd API. See `remove machines`_
 Automatic Host Removal
 ======================
 
-The ``contrib/user-data.example`` provides 2 units, ``graceful-etcd-shutdown.service`` and
+The ``contrib/coreos/user-data.example`` provides 2 units, ``graceful-etcd-shutdown.service`` and
 ``graceful-ceph-shutdown.service``, that contain some experimental logic to clean-up a Deis node's
 cluster membership before reboot, shutdown or halt events. The units can be used independently or
 together.
