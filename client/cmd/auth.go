@@ -247,7 +247,7 @@ func Cancel(username string, password string, yes bool) error {
 	}
 
 	// If user targets themselves, logout.
-	if username != "" || c.Username == username {
+	if username == "" || c.Username == username {
 		if err := client.Delete(); err != nil {
 			return err
 		}
