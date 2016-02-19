@@ -11,7 +11,7 @@ django-fsm==2.2.0
 django-guardian==1.2.5
 django-json-field==0.5.7
 djangorestframework==3.0.5
-docker-py==1.6.0
+docker-py==1.7.0
 gunicorn==19.3.0
 paramiko==1.15.2
 python-etcd==0.3.2

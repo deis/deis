@@ -8,7 +8,7 @@ django-guardian==1.2.5
 django-json-field==0.5.7
 django-auth-ldap==1.2.5
 djangorestframework==3.0.5
-docker-py==1.6.0
+docker-py==1.7.0
 gunicorn==19.3.0
 marathon==0.6.15
 paramiko==1.15.2
