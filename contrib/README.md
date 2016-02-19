@@ -31,6 +31,7 @@ Please add to this list by opening a pull request!
 * [deis-netstat](https://github.com/lorieri/deis-netstat) by [@lorieri](https://github.com/lorieri) - A cluster-wide netstat tool for Deis
 * [deis-proxy](https://github.com/lorieri/deis-proxy) by [@lorieri](https://github.com/lorieri) - A transparent proxy for Deis
 * [deis-store-dashboard](https://github.com/aledbf/deis/tree/optional_store_dashboard) by [@aledbf](https://github.com/aledbf) - An implementation of [ceph-dash](https://github.com/Crapworks/ceph-dash) to view `deis-store` health
+* [deis-phppgadmin](https://github.com/HeheCloud/deis-phppgadmin) by [hehecloud](https://github.com/HeheCloud) - A PostgreSQL database dashboard (phpPgAdmin)
 
 ### CoreOS Unit Files
 * [CoreOS unit files](https://github.com/ianblenke/coreos-vagrant-kitchen-sink/tree/master/cloud-init) by [@ianblenke](https://github.com/ianblenke) - Unit files to launch various services on CoreOS hosts
