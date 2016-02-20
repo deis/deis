@@ -94,7 +94,7 @@ Start the installation
 
 .. code-block:: console
 
-    coreos-install -C stable -c /tmp/config -d /dev/sda -V 835.12.0
+    coreos-install -C stable -c /tmp/config -d /dev/sda -V 835.13.0
 
 
 This will install the latest `CoreOS`_ stable release that has been known to work
