@@ -357,7 +357,7 @@ def main():
                                   help='Node data center id. Use list-data-centers to find the id.')
     provision_parser.add_argument('--cloud-config', required=False, default='linode-user-data.yaml', type=file, dest='cloud_config',
                                   help='CoreOS cloud config user-data file')
-    provision_parser.add_argument('--coreos-version', required=False, default='835.12.0', dest='coreos_version',
+    provision_parser.add_argument('--coreos-version', required=False, default='835.13.0', dest='coreos_version',
                                   help='CoreOS version number to install')
     provision_parser.add_argument('--coreos-channel', required=False, default='stable', dest='coreos_channel',
                                   help='CoreOS channel to install from')
