@@ -134,7 +134,7 @@ func (s *server) handleConn(conn net.Conn, conf *ssh.ServerConfig) {
 	_, chans, reqs, err := ssh.NewServerConn(conn, conf)
 	if err != nil {
 		// Handshake failure.
-		log.Errf(s.c, "Failed handshake: %s (%v)", err, conn)
+		log.Debugf(s.c, "Failed handshake: %s", err)
 		return
 	}
 
