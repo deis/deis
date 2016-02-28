@@ -17,7 +17,7 @@ CONTRIB_UTILS_PATH = File.join(File.dirname(__FILE__), "contrib", "utils.sh")
 # Make variables from contrib/utils.sh accessible
 if File.exists?(CONTRIB_UTILS_PATH)
   cu_vars = Hash.new do |hash, key|
-    stdin, stdout, stderr = Open3.popen3("/usr/bin/env", "bash", "-c", "source #{CONTRIB_UTILS_PATH} && echo $#{key}")
+    stdin, stdout, stderr = Open3.popen3("/usr/bin/env", "bash", "-c", "source '#{CONTRIB_UTILS_PATH}' && echo $#{key}")
     value = stdout.gets.chomp
     hash[key] = value unless value.empty?
   end
