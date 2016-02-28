@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -142,15 +141,12 @@ func AppOpen(appID string) error {
 		return err
 	}
 
-	u, err := url.Parse(app.URL)
-
-	if err != nil {
-		return err
+	u := app.URL
+	if !(strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://")) {
+		u = "http://" + u
 	}
 
-	u.Scheme = "http"
-
-	return webbrowser.Webbrowser(u.String())
+	return webbrowser.Webbrowser(u)
 }
 
 // AppLogs returns the logs from an app.
