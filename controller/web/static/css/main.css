@@ -514,6 +514,24 @@ pre, code pre {
     color: #000!important;
     background-color: #f5f5f5!important;
 }
+.doc-content .version-warning {
+    padding: 10px;
+    margin-top 10px;
+    border: solid 4px #ff135a;
+}
+.doc-content .version-warning .version-warning-title {
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 26px;
+    text-indent: 50px;
+}
+.doc-content .important .version-warning-title {
+    background: url(../img/glyphs.png) no-repeat 0 -81px;
+}
+.doc-content .version-warning a, .doc-content .version-warning a em, .doc-content .version-warning em {
+    font-style: normal!imporant;
+    color: #ff135a!important;
+}
 .doc-content .admonition {
     padding: 10px;
     margin-bottom: 10px;
