@@ -1,0 +1,10 @@
+[Unit]
+Description=Nginx upstream watcher
+Requires=etcd2.service
+
+[Service]
+ExecStart=/bin/sh -c "etcdctl exec-watch  --recursive /deis/services -- /bin/sh -c \"env | grep ETCD | paste -s -d ' '\" |  systemd-cat -t upstream-watcher"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
