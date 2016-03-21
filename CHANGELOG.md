@@ -1,3 +1,94 @@
+### v1.12.3 -> v1.13.0
+
+#### Features
+
+ - [`3181b2d`](https://github.com/deis/deis/commit/3181b2d4c70c8827bc7b5e9bf6bba4950f8a7b37) client: document deis version
+ - [`6ec3e06`](https://github.com/deis/deis/commit/6ec3e06702714f4529d4383e3ab063d062d927af) controller: add simple health check view
+ - [`42464a2`](https://github.com/deis/deis/commit/42464a2d951c1890d384b0c6a2be5ed1939955da) contrib: graceful shutdown for non-ceph nodes
+ - [`d7fe142`](https://github.com/deis/deis/commit/d7fe142a78b020e6b78e1397e9a2f04123a9960b) contrib/linode: allow for cluster expansion and standardize scripts
+ - [`3f4e25a`](https://github.com/deis/deis/commit/3f4e25ab269eb32b7d48cea7b234a727a2555986) router: make vhost_traffic_status_zone configurable
+
+#### Fixes
+
+ - [`e2aeace`](https://github.com/deis/deis/commit/e2aeaced2303172cac196ceab3075d2a37c5edc5) logspout: discover logger connection continuously
+ - [`3052fe6`](https://github.com/deis/deis/commit/3052fe6707708b8207cbba3e7437142545f87caf) controller: prevent overlapping config:set operations
+ - [`040f90d`](https://github.com/deis/deis/commit/040f90df79648a959d1bd339163784a45f20bd89) client: only delete local ~/.deis/client.json if cancelling logged in user
+ - [`67090ae`](https://github.com/deis/deis/commit/67090ae58c5cd2c3c5640162a3d2c3f542c59e10) controller: use django HttpResponse for logs
+ - [`17da397`](https://github.com/deis/deis/commit/17da397b3fc9b961381ca34baed639f9e54746df) controller: use double quotes to escape ENV values
+ - [`d481c4c`](https://github.com/deis/deis/commit/d481c4c35a36dd5258283636127869aef0c18a60) api: disable adding wildcard certificates
+ - [`ad558e4`](https://github.com/deis/deis/commit/ad558e4bec7d3f17785e78d647267350316bba18) auth: return a 409 if a user is cancelled that has apps
+ - [`2cf9205`](https://github.com/deis/deis/commit/2cf92051ee86146884c4d9bc968d3783585cde3d) setup-node.sh: update packages for a Jenkins node
+ - [`46bbba7`](https://github.com/deis/deis/commit/46bbba731280cbe381b914cdd39b42b3dc3bddfb) router: Allow for comma-delimited X-Forwarded-Proto
+ - [`8f0119f`](https://github.com/deis/deis/commit/8f0119f9303ad83df6a795832da163f72a89f9b0) controller: tag keys can be lowercase or capital
+ - [`ba38edc`](https://github.com/deis/deis/commit/ba38edc8e4f320996780fd6c8d76336364870c55) builder: fail on piped command
+ - [`78a16fb`](https://github.com/deis/deis/commit/78a16fbeb793310a55b44336df862b7662704ccd) builder: source proxy envvars
+ - [`35a97b1`](https://github.com/deis/deis/commit/35a97b1a08d98b21cec4d0f022979a5db8b7e355) builder: remove temporary build dir on success
+ - [`f7099c7`](https://github.com/deis/deis/commit/f7099c70a54b9dd6bf29d393e7e404d2e43c6e3b) builder: log env tcp requests information to debug
+ - [`1cb11dd`](https://github.com/deis/deis/commit/1cb11ddd5d03468abefacd7bbb2494570749a934) client: simplify URL prefixing
+ - [`4a9f791`](https://github.com/deis/deis/commit/4a9f791ea39f366a4941b18e0b81472d8ab2dbf3) vagrant: fix Vagrantfile to handle spaces
+ - [`3275683`](https://github.com/deis/deis/commit/3275683a1a47119232f1171ded579608477fda4f) builder: demote handshake failure log to debug
+ - [`e0aa2b1`](https://github.com/deis/deis/commit/e0aa2b138c558ce3372983801595f2a19e5a46b6) client: strip controller port when parsing git remotes
+ - [`112f513`](https://github.com/deis/deis/commit/112f513cecf731cb22c61fe84c4c753af5429c52) controller: do not require slash at the end of the `GET /v1/users`
+ - [`a450965`](https://github.com/deis/deis/commit/a4509659cb1f9352f619d2fa027e3cccb3b3a434) builder: remove empty newline
+ - [`7290dd0`](https://github.com/deis/deis/commit/7290dd019d9d228a57a83f7ede812f46f13d79f3) logspout: Truncate lines too big for a single UDP packet
+ - [`0700028`](https://github.com/deis/deis/commit/07000288742edd43d43a5457ca9e457341be2b80) router: Fix issues establishing real end-client IP
+ - [`05e4b57`](https://github.com/deis/deis/commit/05e4b57f35cc4fb736a53f54311212474978bcb8) controller: legacy fix should modify dict instead of dict view
+ - [`51c6861`](https://github.com/deis/deis/commit/51c686151ce57670f493a95da3d69e2956d96de1) database: bail out if unable to check for existing backups
+ - [`8b824df`](https://github.com/deis/deis/commit/8b824df1f866491fb55dd166198ee277121b6968) client: backport deis/workflow#280 to v1
+ - [`f46b967`](https://github.com/deis/deis/commit/f46b967e9fd7c2260cddad656393d7817bcd0897) tests: remove reference to python client
+ - [`455e6b0`](https://github.com/deis/deis/commit/455e6b04e30c9ebcd56e25e9e2b6198e3c95efc5) tests: use and patch known "good" version of mock-s3
+ - [`481fe6b`](https://github.com/deis/deis/commit/481fe6b1ce0405ef4f0eda73dcc1669edbfe2577) registry: disallow dots in s3 buckets
+
+#### Documentation
+
+ - [`7703d12`](https://github.com/deis/deis/commit/7703d1287d6bd879fc65465958902b6fd6ca7e56) managing_deis: recommend m3.medium for RDS
+ - [`1b9facd`](https://github.com/deis/deis/commit/1b9facd36044b59abe4d9ddbd33bebb85fde220a) roadmap: add March meeting archive
+ - [`48eb886`](https://github.com/deis/deis/commit/48eb88630b442f4e08c67b2c1307bd346e8b0582) contrib: add link to deis-phppgadmin
+ - [`4009ffd`](https://github.com/deis/deis/commit/4009ffdec6c326c1fa9c01a5a21583548582616e) reference: remove sidenote about pushing only to master
+ - [`a9a7f33`](https://github.com/deis/deis/commit/a9a7f33ac63085434e3c3aab583b2484c77a9d77) roadmap: add March release planning meeting
+ - [`997e082`](https://github.com/deis/deis/commit/997e0826392ec8c03d0bcaad04c1092fc3513bc1) Add/Remove hosts: fix wrong filepath to user-data.example
+ - [`ada6c9c`](https://github.com/deis/deis/commit/ada6c9c96798e96f4cba683b1282c4b6d4605a73) managing_deis: add workaround for cephless cluster
+ - [`f04ed12`](https://github.com/deis/deis/commit/f04ed124f857a52c4b1e37be943e11e7839203a0) managing_deis: update Sematext agent name and URL
+ - [`3faf421`](https://github.com/deis/deis/commit/3faf42182004056423039a65b3a2f8fa4470d619) installing_deis: Add parameter description about publicDomainName.
+ - [`2520e54`](https://github.com/deis/deis/commit/2520e543be81f8a9f6ac1bf9f61e0eaf6d2b10f7) roadmap: add January 2016 meeting + archive
+ - [`ee77077`](https://github.com/deis/deis/commit/ee77077de6ef7a979a91a63749e5659b43ef2589) roadmap: add December 2015 and January 2016 meetings
+
+#### Maintenance
+
+ - [`5c8d0c4`](https://github.com/deis/deis/commit/5c8d0c4bda4c3de31dd315b98561f0966115a614) reqs: update docker-py to 1.7.2
+ - [`a5e065f`](https://github.com/deis/deis/commit/a5e065f6e483d7139088dc8f60c2c8f671ca5718) build.sh: remove unused git install
+ - [`4ad3329`](https://github.com/deis/deis/commit/4ad3329ef6ef61f193b7da227072b7a2bbc51dbd) requirements: remove obsolete marathon lib
+ - [`52e96a5`](https://github.com/deis/deis/commit/52e96a5c193677976c4809292bfa464889f55de2) (all): update base to alpine:3.3
+ - [`1a79431`](https://github.com/deis/deis/commit/1a794318d0bbafa4755beb1578cd0a983774c19f) (all): bump CoreOS to 899.13.0
+ - [`a7ee6cc`](https://github.com/deis/deis/commit/a7ee6cc9ad8e640ef83f63e01f46692e03ded3a4) buildpacks: update heroku-buildpack-java to v44
+ - [`02fbaf1`](https://github.com/deis/deis/commit/02fbaf19df415384603b0e528e567b3c6fa7b735) buildpacks: update heroku-buildpack-php to v97
+ - [`452a028`](https://github.com/deis/deis/commit/452a02824255ffd71cb41aed0898f73772b31ec6) buildpacks: update heroku-buildpack-ruby to v145
+ - [`ab88aaf`](https://github.com/deis/deis/commit/ab88aafd405ac54d98de12ddd23a9526d1c90611) buildpacks: update heroku-buildpack-grails to v20
+ - [`408f053`](https://github.com/deis/deis/commit/408f053ce1225ef83f8c48d9adde250be1a7bbd4) buildpacks: update heroku-buildpack-scala to v67
+ - [`c23dbff`](https://github.com/deis/deis/commit/c23dbff0ed5f54c4d2710ef965d1a1e93ee59bd8) buildpacks: update heroku-buildpack-multi to v1.0.0
+ - [`79d68a3`](https://github.com/deis/deis/commit/79d68a37ed5abda13bc1056099cd7eeea13503b1) buildpacks: update heroku-buildpack-nodejs to v89
+ - [`4ef40e6`](https://github.com/deis/deis/commit/4ef40e6923521f313c67993e1ec96e3ae220d1c8) buildpacks: update heroku-buildpack-python to v78
+ - [`ee22d78`](https://github.com/deis/deis/commit/ee22d78376f4aa90840834f5085c4ce51f2ddd59) buildpacks: update heroku-buildpack-php to v94
+ - [`f448577`](https://github.com/deis/deis/commit/f44857728875cc603fa0fe820a90077671573776) buildpacks: update heroku-buildpack-scala to v66
+ - [`c9b0a4c`](https://github.com/deis/deis/commit/c9b0a4c95a394808d8c46d042d06d40c65fb46bd) buildpacks: update heroku-buildpack-nodejs to v88
+ - [`df95748`](https://github.com/deis/deis/commit/df957488417543043cb41bcbc051c89d05b30730) buildpacks: update heroku-buildpack-go to v31
+ - [`1d8f9cc`](https://github.com/deis/deis/commit/1d8f9cc854a673e6cab1c9b29d41fb26be85ef2a) (all): bump CoreOS to 835.13.0
+ - [`c96aad6`](https://github.com/deis/deis/commit/c96aad6d59157d046bfc7172716245dc9f27dd75) requirements: update docker-py to 1.7.0
+ - [`96796c6`](https://github.com/deis/deis/commit/96796c64c62e5011f5352af325b0e2fb2611840c) buildpacks: update all Heroku buildpacks
+ - [`3a619bc`](https://github.com/deis/deis/commit/3a619bcd974b6beb32be13643da9a47eb9d20057) (all): remove k8s scheduler code
+ - [`5c916c8`](https://github.com/deis/deis/commit/5c916c8bd9f75669234c851284c5505cef7691e6) Godeps: bump googleapi, remove unused packages
+ - [`7c37363`](https://github.com/deis/deis/commit/7c373633f1aaf05741cb5c8f745de587db17212c) (all): bump to CoreOS 835.11.0
+ - [`4dac497`](https://github.com/deis/deis/commit/4dac49741901f1a780693d464eea1981ce29f68b) deisctl: update stateless warning message
+ - [`d88ec07`](https://github.com/deis/deis/commit/d88ec07c99f4ab903fc7d250025146b966aacee8) (all): bump to CoreOS 835.9.0
+ - [`31ad174`](https://github.com/deis/deis/commit/31ad17416487d394a8d06f6b262d9ed4eb807020) controller: update docker-py to 1.6.0
+ - [`aad62fe`](https://github.com/deis/deis/commit/aad62fedd20acc567d1477c152884de77397ffa1) (all): bump CoreOS to 835.8.0
+
+### v1.12.2 -> v1.12.3
+
+#### Maintenance
+
+ - [`7356d26`](https://github.com/deis/deis/commit/7356d26adeb2f48d8df82a1d0baa090da7d4bb20) (all): bump CoreOS to 835.12.0
+
 ### v1.12.1 -> v1.12.2
 
 #### Fixes

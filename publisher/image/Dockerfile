@@ -7,4 +7,4 @@ RUN apk add --no-cache curl
 ADD bin/publisher /usr/local/bin/publisher
 ENTRYPOINT ["/usr/local/bin/publisher"]
 
-ENV DEIS_RELEASE 1.13.0-dev
+ENV DEIS_RELEASE 1.13.0
