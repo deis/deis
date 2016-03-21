@@ -29,7 +29,7 @@ download_buildpack() {
 mkdir -p $BUILDPACK_INSTALL_PATH
 
 download_buildpack https://github.com/heroku/heroku-buildpack-multi.git          v1.0.0
-download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v144
+download_buildpack https://github.com/heroku/heroku-buildpack-ruby.git           v145
 download_buildpack https://github.com/heroku/heroku-buildpack-nodejs.git         v89
 download_buildpack https://github.com/heroku/heroku-buildpack-java.git           v43
 download_buildpack https://github.com/heroku/heroku-buildpack-gradle.git         v17
