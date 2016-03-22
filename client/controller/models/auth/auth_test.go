@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/deis/deis/client/controller/client"
@@ -18,6 +19,7 @@ const passwdExpected string = `{"username":"test","password":"old","new_password
 const regenAllExpected string = `{"all":true}`
 const regenUserExpected string = `{"username":"test"}`
 const cancelUserExpected string = `{"username":"foo"}`
+const cancelAdminExpected string = `{"username":"admin"}`
 
 type fakeHTTPServer struct {
 	regenBodyEmpty    bool
@@ -131,7 +133,12 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 			res.Write(nil)
 		}
 
-		if string(body) == cancelUserExpected && !f.cancelUsername {
+		if string(body) == cancelAdminExpected && !f.cancelUsername {
+			f.cancelUsername = true
+			res.WriteHeader(http.StatusConflict)
+			res.Write(nil)
+			return
+		} else if string(body) == cancelUserExpected && !f.cancelUsername {
 			f.cancelUsername = true
 			res.WriteHeader(http.StatusNoContent)
 			res.Write(nil)
@@ -248,6 +255,31 @@ func TestDelete(t *testing.T) {
 
 	if err := Delete(&client, ""); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestDeleteUserApp(t *testing.T) {
+	t.Parallel()
+
+	handler := fakeHTTPServer{cancelUsername: false, cancelEmpty: false}
+	server := httptest.NewServer(&handler)
+	defer server.Close()
+
+	u, err := url.Parse(server.URL)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	httpClient := client.CreateHTTPClient(false)
+	client := client.Client{HTTPClient: httpClient, ControllerURL: *u}
+
+	err = Delete(&client, "admin")
+	// should be a 409 Conflict
+
+	expected := fmt.Errorf("\n%s %s\n\n", "409", "Conflict")
+	if reflect.DeepEqual(err, expected) == false {
+		t.Errorf("got '%s' but expected '%s'", err, expected)
 	}
 }
 

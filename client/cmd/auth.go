@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"syscall"
 
@@ -242,7 +243,11 @@ func Cancel(username string, password string, yes bool) error {
 
 	err = auth.Delete(c, username)
 
-	if err != nil {
+	cleanup := fmt.Errorf("\n%s %s\n\n", "409", "Conflict")
+	if reflect.DeepEqual(err, cleanup) {
+		fmt.Printf("%s still has application associated with it. Transfer ownership or delete them first\n", username)
+		return nil
+	} else if err != nil {
 		return err
 	}
 

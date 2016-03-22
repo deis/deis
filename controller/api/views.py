@@ -59,6 +59,11 @@ class UserManagementViewSet(GenericViewSet):
             else:
                 raise PermissionDenied()
 
+        # A user can not be removed without apps changing ownership first
+        if len(models.App.objects.filter(owner=target_obj)) > 0:
+            msg = '{} still has applications assigned. Delete or transfer ownership'.format(str(target_obj))  # noqa
+            return Response({'detail': msg}, status=status.HTTP_409_CONFLICT)
+
         target_obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
