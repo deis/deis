@@ -57,6 +57,9 @@ previous state.
 We will not be using the database component in the Ceph-less cluster, and will
 instead rely on an external database.
 
+When provisioning the database, it is strongly recommended to use an `m3.medium`
+instance or greater.
+
 Registry
 ^^^^^^^^
 
