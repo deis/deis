@@ -199,7 +199,7 @@ func (s *server) answer(channel ssh.Channel, requests <-chan *ssh.Request, sshCo
 		case "env":
 			o := &EnvVar{}
 			ssh.Unmarshal(req.Payload, o)
-			fmt.Printf("Key='%s', Value='%s'\n", o.Name, o.Value)
+			log.Debugf(s.c, "Key='%s', Value='%s'\n", o.Name, o.Value)
 			req.Reply(true, nil)
 		case "exec":
 			clean := cleanExec(req.Payload)
