@@ -80,6 +80,17 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
 
+    def test_create_wildcard_certificate(self):
+        """Tests creating a wildcard certificate, which should be disabled."""
+        body = {'certificate': self.autotest_example_com_cert,
+                'key': self.key,
+                'common_name': '*.example.com'}
+        response = self.client.post(self.url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content),
+                         {'common_name': ['Wildcard certificates are not supported']})
+
     def test_create_certificate_with_different_common_name(self):
         """
         In some cases such as with SAN certificates, the certificate can cover more
