@@ -172,6 +172,7 @@ echo
 # cleanup
 cd $REPO_DIR
 git gc &>/dev/null
+rm -rf $TMP_DIR
 if [ -n "$JOB" ]; then
   docker rm -f $JOB &>/dev/null
 fi
