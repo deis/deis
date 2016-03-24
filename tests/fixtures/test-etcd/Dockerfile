@@ -1,7 +1,7 @@
-FROM alpine:3.2
+FROM alpine:3.3
 
 # install common packages
-RUN apk add --update-cache curl tar && rm -rf /var/cache/apk/*
+RUN apk add --no-cache curl tar
 
 # ETCD_VERSION is actually used by the etcd daemon, and causes an issue if we
 # format it for our use here. So, we call this something else.

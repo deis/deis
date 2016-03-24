@@ -11,7 +11,7 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 # install required packages to build
-apk add --update-cache \
+apk add --no-cache \
   build-base \
   curl \
   file \
@@ -30,13 +30,13 @@ git checkout 4c3c3752f990db97e8969c00666251a3b427ef4c
 git apply /tmp/mock-s3-patch.diff
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
+curl -sSL https://bootstrap.pypa.io/get-pip.py | python - pip==8.1.1
 
 python setup.py install
 
 # cleanup.
-apk del --purge \
+apk del --no-cache \
   build-base \
   gcc \
   git
-rm -rf /var/cache/apk/* /tmp/*
+rm -rf /tmp/*
