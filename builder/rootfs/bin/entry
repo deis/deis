@@ -3,6 +3,8 @@ set -eo pipefail
 
 if [[ -f /etc/environment_proxy ]]; then
 	source /etc/environment_proxy
+	export HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY
+	export http_proxy https_proxy all_proxy no_proxy
 fi
 
 # START jpetazzo/dind wrapper
