@@ -277,6 +277,7 @@ func keysToLocal(c cookoo.Context, client Getter, ciphers []string, etcdPath str
 // It only fails if it cannot copy ssh_host_key to sshHostKey. All other
 // abnormal conditions are logged, but not considered to be failures.
 func keysToEtcd(c cookoo.Context, client Setter, ciphers []string, etcdPath string) error {
+	firstpath := ""
 	lpath := "/etc/ssh/ssh_host_%s_key"
 	privkey := "%s/sshHost%sKey"
 	for _, cipher := range ciphers {
@@ -288,10 +289,19 @@ func keysToEtcd(c cookoo.Context, client Setter, ciphers []string, etcdPath stri
 		} else if _, err := client.Set(key, string(content), 0); err != nil {
 			log.Errf(c, "Could not store ssh key in etcd: %s", err)
 		}
+		// Remember the first key's path in case the generic key is missing
+		if firstpath == "" {
+			firstpath = path
+		}
 	}
 	// Now we set the generic key:
-	if content, err := ioutil.ReadFile("/etc/ssh/ssh_host_key"); err != nil {
-		log.Errf(c, "Could not read the ssh_host_key file.")
+	keypath := "/etc/ssh/ssh_host_key"
+	if _, err := os.Stat(keypath); os.IsNotExist(err) && firstpath != "" {
+		// Use ssh_host_dsa_key if newer ssh-keygen didn't create ssh_host_key
+		keypath = firstpath
+	}
+	if content, err := ioutil.ReadFile(keypath); err != nil {
+		log.Errf(c, "Could not read the %s file.", keypath)
 		return err
 	} else if _, err := client.Set("sshHostKey", string(content), 0); err != nil {
 		log.Errf(c, "Failed to set sshHostKey in etcd.")
