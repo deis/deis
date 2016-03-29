@@ -31,19 +31,6 @@ const (
 	ServerConfig string = "ssh.ServerConfig"
 )
 
-// PrereceiveHookTmpl is a pre-receive hook.
-const PrereceiveHookTpl = `#!/bin/bash
-strip_remote_prefix() {
-    stdbuf -i0 -o0 -e0 sed "s/^/"$'\e[1G'"/"
-}
-
-echo "pre-receive hook START"
-set -eo pipefail; while read oldrev newrev refname; do
-[[ $refname = "refs/heads/master" ]] && git archive $newrev | {{.Receiver}} "$RECEIVE_REPO" "$newrev" | strip_remote_prefix
-done
-echo "pre-receive hook END"
-`
-
 // Serve starts a native SSH server.
 //
 // The general design of the server is that it acts as a main server for
