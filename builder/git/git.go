@@ -30,6 +30,8 @@ strip_remote_prefix() {
     stdbuf -i0 -o0 -e0 sed "s/^/"$'\e[1G'"/"
 }
 
+set -eo pipefail
+
 while read oldrev newrev refname
 do
   LOCKFILE="/tmp/$RECEIVE_REPO.lock"
