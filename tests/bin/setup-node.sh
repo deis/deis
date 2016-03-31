@@ -14,7 +14,7 @@ apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070AD
 echo deb https://apt.dockerproject.org/repo ubuntu-trusty main > /etc/apt/sources.list.d/docker.list
 apt-get update
 apt-get purge lxc-docker*
-apt-get install -yq docker-engine=1.8.3-0~trusty
+apt-get install -yq --force-yes docker-engine=1.10.3-0~trusty
 
 # install extra extensions (AUFS, requires reboot)
 apt-get -y install "linux-image-extra-$(uname -r)"
@@ -40,20 +40,20 @@ apt-get install -yq build-essential \
 
 # install virtualbox
 if ! virtualbox --help &> /dev/null; then
-  wget -nv http://download.virtualbox.org/virtualbox/5.0.2/virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
-  dpkg -i virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
-  rm virtualbox-5.0_5.0.2-102096~Ubuntu~trusty_amd64.deb
+  wget -nv http://download.virtualbox.org/virtualbox/5.0.16/virtualbox-5.0_5.0.16-105871~Ubuntu~trusty_amd64.deb
+  dpkg -i virtualbox-5.0_5.0.16-105871~Ubuntu~trusty_amd64.deb
+  rm virtualbox-5.0_5.0.16-105871~Ubuntu~trusty_amd64.deb
 fi
 
 # install vagrant
 if ! vagrant -v &> /dev/null; then
-  wget -nv https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.4_x86_64.deb
-  dpkg -i vagrant_1.7.4_x86_64.deb
-  rm vagrant_1.7.4_x86_64.deb
+  wget -nv https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
+  dpkg -i vagrant_1.8.1_x86_64.deb
+  rm vagrant_1.8.1_x86_64.deb
 fi
 
 # install go
-wget -nv -O- https://storage.googleapis.com/golang/go1.5.linux-amd64.tar.gz | tar -C /usr/local -xz
+wget -nv -O- https://storage.googleapis.com/golang/go1.5.3.linux-amd64.tar.gz | tar -C /usr/local -xz
 echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 echo "You must reboot for the global $PATH changes to take effect."
 
@@ -70,7 +70,7 @@ apt-get install -yq curl \
                     libldap2-dev \
                     libsasl2-dev
 
-curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
+curl -sSL https://bootstrap.pypa.io/get-pip.py | python - pip==8.1.1
 pip install virtualenv
 
 # TODO: rely on virtualenvs' pip instead of system pip on slaves
