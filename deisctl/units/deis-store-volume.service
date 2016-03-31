@@ -5,7 +5,7 @@ Description=deis-store-volume
 EnvironmentFile=/etc/environment
 ExecStartPre=/usr/bin/mkdir -p /var/lib/deis/store
 ExecStartPre=/bin/sh -c "echo waiting for store-monitor... && until etcdctl get /deis/store/monSetupComplete >/dev/null 2>&1; do sleep 2; done"
-ExecStartPre=/bin/bash -c "HOSTS=`etcdctl ls /deis/store/hosts | cut -d/ -f5 | awk '{if(NR == 1) {printf $0} else {printf \",\"$0}}'` && cat /proc/mounts |grep '/var/lib/deis/store' || mount -t ceph $HOSTS:/ /var/lib/deis/store -o name=admin,secret=`etcdctl get /deis/store/adminKeyring | grep 'key =' | cut -d' ' -f3`"
+ExecStartPre=/bin/bash -c "HOSTS=`etcdctl ls /deis/store/hosts | cut -d/ -f5 | awk '{if(NR == 1) {printf $0} else {printf \",\"$0}}'` && cat /proc/mounts |grep '/var/lib/deis/store' || mount -t ceph $HOSTS:/ /var/lib/deis/store -o name=admin,secret=`etcdctl get /deis/store/adminKeyring | grep 'key =' | cut -d' ' -f3`,context=system_u:object_r:tmp_t:s0"
 ExecStart=/usr/bin/tail -f /dev/null
 ExecStartPost=/bin/sh -c "test -d /var/lib/deis/store/logs || mkdir -p /var/lib/deis/store/logs"
 ExecStopPost=-/usr/bin/umount /var/lib/deis/store
