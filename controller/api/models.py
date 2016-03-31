@@ -116,6 +116,11 @@ def validate_certificate(value):
         raise ValidationError('Could not load certificate: {}'.format(e))
 
 
+def validate_common_name(value):
+    if '*' in value:
+        raise ValidationError('Wildcard certificates are not supported')
+
+
 def get_etcd_client():
     if not hasattr(get_etcd_client, "client"):
         # wire up etcd publishing if we can connect
@@ -1011,7 +1016,7 @@ class Certificate(AuditedModel):
     certificate = models.TextField(validators=[validate_certificate])
     key = models.TextField()
     # X.509 certificates allow any string of information as the common name.
-    common_name = models.TextField(unique=True)
+    common_name = models.TextField(unique=True, validators=[validate_common_name])
     expires = models.DateTimeField()
 
     def __str__(self):
