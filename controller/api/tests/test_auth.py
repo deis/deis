@@ -221,6 +221,19 @@ class AuthTest(TestCase):
                                       content_type='application/json',
                                       HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
         self.assertEqual(response.status_code, 204)
+        # user can not be deleted if it has an app attached to it
+        response = self.client.post(
+            '/v1/apps',
+            HTTP_AUTHORIZATION='token {}'.format(self.admin_token)
+        )
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']  # noqa
+        self.assertIn('id', response.data)
+
+        response = self.client.delete(url, json.dumps({'username': str(self.admin)}),
+                                      content_type='application/json',
+                                      HTTP_AUTHORIZATION='token {}'.format(self.admin_token))
+        self.assertEqual(response.status_code, 409)
 
     def test_passwd(self):
         """Test that a registered user can change the password."""
