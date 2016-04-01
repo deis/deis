@@ -168,7 +168,7 @@ func AppLogs(appID string, lines int) error {
 
 // printLogs prints each log line with a color matched to its category.
 func printLogs(logs string) error {
-	for _, log := range strings.Split(strings.Trim(logs, `\n`), `\n`) {
+	for _, log := range strings.Split(logs, "\n") {
 		category := "unknown"
 		parts := strings.Split(strings.Split(log, ": ")[0], " ")
 		if len(parts) >= 2 {

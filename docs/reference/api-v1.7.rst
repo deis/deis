@@ -370,7 +370,8 @@ Example Response:
     DEIS_PLATFORM_VERSION: 1.12.3
     Content-Type: text/plain
 
-    "16:51:14 deis[api]: test created initial release\n"
+    16:51:14 deis[api]: test created initial release
+    16:51:15 deis[api]: test added POWERED_BY
 
 
 Run one-off Commands
