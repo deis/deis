@@ -55,8 +55,8 @@ class DockerClient(object):
     def build(self, source, config, repo, tag):
         """Add a "last-mile" layer of environment config to a Docker image for deis-registry."""
         check_blacklist(repo)
-        env = ' '.join("{}='{}'".format(
-            k, v.encode('unicode-escape').replace("'", "\\'")) for k, v in config.viewitems())
+        env = ' '.join('{}="{}"'.format(
+            k, v.encode('unicode-escape').replace('"', '\\"')) for k, v in config.viewitems())
         dockerfile = "FROM {}\nENV {}".format(source, env)
         f = io.BytesIO(dockerfile.encode('utf-8'))
         target_repo = "{}/{}:{}".format(self.registry, repo, tag)
