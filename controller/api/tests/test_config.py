@@ -9,13 +9,16 @@ from __future__ import unicode_literals
 
 import json
 import logging
+import os.path
 import requests
+import tempfile
 
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import etcd
 import mock
 from rest_framework.authtoken.models import Token
+from simpleflock import SimpleFlock
 
 import api.exceptions
 from api.models import App, Config
@@ -132,6 +135,42 @@ class ConfigTest(TransactionTestCase):
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 405)
         return config5
+
+    @mock.patch('requests.post', mock_status_ok)
+    def test_overlapping_config(self):
+        """
+        Test that config won't be created if a similar operation
+        is in progress for that app.
+        """
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # check to see that an initial/empty config was created
+        url = "/v1/apps/{app_id}/config".format(**locals())
+        response = self.client.get(url,
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('values', response.data)
+        self.assertEqual(response.data['values'], {})
+        config1 = response.data
+        # create the lockfile as though a "deis config:set" were in progress
+        lockfile = os.path.join(tempfile.gettempdir(), app_id + "-config")
+        with SimpleFlock(lockfile):
+            # set an initial config value
+            body = {'values': json.dumps({'NEW_URL1': 'http://localhost:8080/'})}
+            response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
+            self.assertEqual(response.status_code, 409)
+            self.assertNotIn('values', response.data)
+            self.assertNotIn('uuid', response.data)
+        # read the config
+        response = self.client.get(url,
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 200)
+        config2 = response.data
+        self.assertEqual(config1, config2)
+        self.assertNotIn('NEW_URL1', response.data['values'])
 
     @mock.patch('requests.post', mock_status_ok)
     def test_response_data(self):

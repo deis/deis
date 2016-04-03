@@ -1,6 +1,10 @@
 """
 RESTful view classes for presenting Deis API objects.
 """
+
+import os.path
+import tempfile
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
@@ -15,6 +19,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
+from simpleflock import SimpleFlock
 
 from api import authentication, models, permissions, serializers, viewsets
 
@@ -276,6 +281,18 @@ class ConfigViewSet(ReleasableViewSet):
     """A viewset for interacting with Config objects."""
     model = models.Config
     serializer_class = serializers.ConfigSerializer
+
+    def create(self, request, **kwargs):
+        # Guard against overlapping config changes, using a filesystem lock so that
+        # multiple controller processes can be coordinated.
+        # Use a tempfile such as "/tmp/violet-valkyrie-config".
+        lockfile = os.path.join(tempfile.gettempdir(), kwargs['id'] + '-config')
+        try:
+            with SimpleFlock(lockfile, timeout=5):
+                return super(ConfigViewSet, self).create(request, **kwargs)
+        except IOError as err:
+            msg = "Config changes already in progress.\n{}".format(err)
+            return Response(status=status.HTTP_409_CONFLICT, data={'error': msg})
 
     def post_save(self, config):
         release = config.app.release_set.latest()
