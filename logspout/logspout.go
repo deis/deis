@@ -205,6 +205,17 @@ func getEtcdValueOrDefault(c *etcd.Client, key string, defaultValue string) stri
 	return resp.Node.Value
 }
 
+func getEtcdRoute(client *etcd.Client) *Route {
+	hostResp, err := client.Get("/deis/logs/host", false, false)
+	assert(err, "url")
+	portResp, err := client.Get("/deis/logs/port", false, false)
+	assert(err, "url")
+	protocol := getEtcdValueOrDefault(client, "/deis/logs/protocol", "udp")
+	host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
+	log.Printf("routing all to %s://%s", protocol, host)
+	return &Route{ID: "etcd", Target: Target{Type: "syslog", Addr: host, Protocol: protocol}}
+}
+
 func main() {
 	runtime.GOMAXPROCS(1)
 	debugMode = getopt("DEBUG", "") != ""
@@ -224,14 +235,14 @@ func main() {
 		debug("etcd:", connectionString[0])
 		etcd := etcd.NewClient(connectionString)
 		etcd.SetDialTimeout(3 * time.Second)
-		hostResp, err := etcd.Get("/deis/logs/host", false, false)
-		assert(err, "url")
-		portResp, err := etcd.Get("/deis/logs/port", false, false)
-		assert(err, "url")
-		protocol := getEtcdValueOrDefault(etcd, "/deis/logs/protocol", "udp")
-		host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
-		log.Printf("routing all to %s://%s", protocol, host)
-		router.Add(&Route{Target: Target{Type: "syslog", Addr: host, Protocol: protocol}})
+		router.Add(getEtcdRoute(etcd))
+		go func() {
+			for {
+				// NOTE(bacongobbler): sleep for a bit before doing the discovery loop again
+				time.Sleep(10 * time.Second)
+				router.Add(getEtcdRoute(etcd))
+			}
+		}()
 	}
 
 	if len(os.Args) > 1 {
