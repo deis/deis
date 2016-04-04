@@ -224,22 +224,20 @@ class AppViewSet(BaseDeisViewSet):
     def logs(self, request, **kwargs):
         app = self.get_object()
         try:
-            return Response(app.logs(request.query_params.get('log_lines',
-                                     str(settings.LOG_LINES))),
-                            status=status.HTTP_200_OK, content_type='text/plain')
+            return HttpResponse(app.logs(request.query_params.get('log_lines',
+                                         str(settings.LOG_LINES))),
+                                status=status.HTTP_200_OK, content_type='text/plain')
         except requests.exceptions.RequestException:
-            return Response("Error accessing logs for {}".format(app.id),
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            content_type='text/plain')
-        except EnvironmentError as e:
-            if e.message == 'Error accessing deis-logger':
-                return Response("Error accessing logs for {}".format(app.id),
+            return HttpResponse("Error accessing logs for {}".format(app.id),
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 content_type='text/plain')
+        except EnvironmentError as e:
+            if e.message == 'Error accessing deis-logger':
+                return HttpResponse("Error accessing logs for {}".format(app.id),
+                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                    content_type='text/plain')
             else:
-                return Response("No logs for {}".format(app.id),
-                                status=status.HTTP_204_NO_CONTENT,
-                                content_type='text/plain')
+                return HttpResponse(status=status.HTTP_204_NO_CONTENT)
 
     def run(self, request, **kwargs):
         app = self.get_object()
