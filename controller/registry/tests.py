@@ -56,7 +56,7 @@ class DockerClientTest(unittest.TestCase):
         self.assertDictContainsSubset(args, kwargs)
         # test that the fileobj arg to "docker build" contains a correct Dockerfile
         f = kwargs['fileobj']
-        self.assertEqual(f.read(), "FROM ozzy/embryo:git-f3a8020\nENV POWERED_BY='Deis'")
+        self.assertEqual(f.read(), "FROM ozzy/embryo:git-f3a8020\nENV POWERED_BY=\"Deis\"")
         # Test that blacklisted image names can't be built
         with self.assertRaises(PermissionDenied):
             self.client.build('deis/controller:v1.11.1', {}, 'deis/controller', 'v1.11.1')
