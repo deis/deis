@@ -10,7 +10,6 @@ django-auth-ldap==1.2.5
 djangorestframework==3.0.5
 docker-py==1.7.0
 gunicorn==19.3.0
-marathon==0.6.15
 paramiko==1.15.2
 psycopg2==2.6.1
 python-etcd==0.3.2
