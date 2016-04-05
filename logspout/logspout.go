@@ -241,7 +241,7 @@ func main() {
 				// NOTE(bacongobbler): sleep for a bit before doing the discovery loop again
 				time.Sleep(10 * time.Second)
 				newRoute := getEtcdRoute(etcd)
-				oldRoute, err := router.Get("etcd")
+				oldRoute, err := router.Get(newRoute.ID)
 				// router.Get only returns an error if the route doesn't exist. If it does,
 				// then we can skip this check and just add the new route to the routing table
 				if err == nil &&
@@ -251,7 +251,7 @@ func main() {
 					continue
 				}
 				// NOTE(bacongobbler): this operation is a no-op if the route doesn't exist
-				router.Remove("etcd")
+				router.Remove(oldRoute.ID)
 				router.Add(newRoute)
 			}
 		}()
