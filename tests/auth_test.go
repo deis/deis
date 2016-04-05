@@ -49,8 +49,8 @@ func authCancel(t *testing.T, params *utils.DeisTestConfig) {
 	admin := utils.GetGlobalConfig()
 	utils.Execute(t, authLoginCmd, admin, false, "")
 	utils.Execute(t, authCancelAdminCmd, user, false, "Account cancelled")
-	// Make sure the user's config was purged after auth:cancel
-	utils.Execute(t, authWhoamiCmd, admin, true, "Error: Not logged in")
+	// Make sure the user's config was not purged after auth:cancel --username
+	utils.Execute(t, authWhoamiCmd, admin, false, "You are "+admin.UserName)
 }
 
 func authLoginTest(t *testing.T, params *utils.DeisTestConfig) {
