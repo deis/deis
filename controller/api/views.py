@@ -2,6 +2,7 @@
 RESTful view classes for presenting Deis API objects.
 """
 from django.conf import settings
+
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -17,6 +18,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.authtoken.models import Token
 
 from api import authentication, models, permissions, serializers, viewsets
+from api import locking
 
 import requests
 
@@ -276,6 +278,18 @@ class ConfigViewSet(ReleasableViewSet):
     """A viewset for interacting with Config objects."""
     model = models.Config
     serializer_class = serializers.ConfigSerializer
+
+    def create(self, request, **kwargs):
+        try:
+            locking.lock(kwargs['id'])
+            return super(ConfigViewSet, self).create(request, **kwargs)
+        except locking.AlreadyLocked:
+            return Response(status=status.HTTP_409_CONFLICT,
+                            data={'error': 'Service configuration already'
+                                           ' running. Please wait few minutes'
+                                           ' and try again.'})
+        finally:
+            locking.unlock(kwargs['id'])
 
     def post_save(self, config):
         release = config.app.release_set.latest()
