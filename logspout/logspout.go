@@ -240,6 +240,7 @@ func main() {
 			for {
 				// NOTE(bacongobbler): sleep for a bit before doing the discovery loop again
 				time.Sleep(10 * time.Second)
+				router.Remove("etcd")
 				router.Add(getEtcdRoute(etcd))
 			}
 		}()
