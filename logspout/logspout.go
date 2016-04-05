@@ -240,8 +240,19 @@ func main() {
 			for {
 				// NOTE(bacongobbler): sleep for a bit before doing the discovery loop again
 				time.Sleep(10 * time.Second)
+				newRoute := getEtcdRoute(etcd)
+				oldRoute, err := router.Get("etcd")
+				// router.Get only returns an error if the route doesn't exist. If it does,
+				// then we can skip this check and just add the new route to the routing table
+				if err == nil &&
+					newRoute.Target.Protocol == oldRoute.Target.Protocol &&
+					newRoute.Target.Addr == oldRoute.Target.Addr {
+					// NOTE(bacongobbler): the two targets are the same; perform a no-op
+					continue
+				}
+				// NOTE(bacongobbler): this operation is a no-op if the route doesn't exist
 				router.Remove("etcd")
-				router.Add(getEtcdRoute(etcd))
+				router.Add(newRoute)
 			}
 		}()
 	}
