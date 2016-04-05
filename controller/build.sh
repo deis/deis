@@ -11,10 +11,8 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 # install required system packages
-# HACK: install git so we can install bacongobbler's fork of django-fsm
 apk add --no-cache \
   build-base \
-  git \
   libffi-dev \
   libpq \
   openldap \
@@ -41,7 +39,6 @@ pip install --disable-pip-version-check --no-cache-dir -r /app/requirements.txt
 # cleanup.
 apk del --no-cache \
   build-base \
-  git \
   libffi-dev \
   openldap-dev \
   postgresql-dev \
