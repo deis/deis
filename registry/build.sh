@@ -11,7 +11,7 @@ if [[ -z $DOCKER_BUILD ]]; then
 fi
 
 # install required packages (copied from dotcloud/docker-registry Dockerfile)
-apk add --update-cache \
+apk add --no-cache \
   build-base \
   git \
   openssl-dev \
@@ -22,16 +22,13 @@ apk add --update-cache \
   xz-dev
 
 # install pip
-curl -sSL https://raw.githubusercontent.com/pypa/pip/7.0.3/contrib/get-pip.py | python -
-
-# workaround to python > 2.7.8 SSL issues
-pip install --disable-pip-version-check --no-cache-dir pyopenssl ndg-httpsclient pyasn1
+curl -sSL https://bootstrap.pypa.io/get-pip.py | python - pip==8.1.1
 
 # create a registry user
 adduser -D -s /bin/bash registry
 
 # add the docker registry source from github
-git clone -b new-repository-import-master --single-branch https://github.com/deis/docker-registry /docker-registry && \
+git clone -b deis-v1-lts --single-branch https://github.com/deis/docker-registry /docker-registry && \
   chown -R registry:registry /docker-registry
 
 # install boto configuration
@@ -44,14 +41,12 @@ pip install --disable-pip-version-check --no-cache-dir /docker-registry/depends/
 # Install registry
 pip install --disable-pip-version-check --no-cache-dir "file:///docker-registry#egg=docker-registry[bugsnag,newrelic,cors]"
 
-patch \
-  "$(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')/connection.py" \
-  < /docker-registry/contrib/boto_header_patch.diff
+# patch boto
+cd "$(python -c 'import boto; import os; print os.path.dirname(boto.__file__)')" \
+  && patch -i /docker-registry/contrib/boto_header_patch.diff connection.py
 
 # cleanup. indicate that python is a required package.
-apk del --purge \
+apk del --no-cache \
   build-base \
   linux-headers \
   python-dev
-
-rm -rf /var/cache/apk/*

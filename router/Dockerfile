@@ -1,15 +1,14 @@
-FROM alpine:3.2
+FROM alpine:3.3
 
 # install common packages
-RUN apk add --update-cache \
+RUN apk add --no-cache \
 	bash \
 	curl \
 	geoip \
 	libssl1.0 \
 	openssl \
 	pcre \
-	sudo \
-	&& rm -rf /var/cache/apk/*
+	sudo
 
 # install confd
 RUN curl -sSL -o /usr/local/bin/confd https://s3-us-west-2.amazonaws.com/opdemand/confd-git-73f7489 \

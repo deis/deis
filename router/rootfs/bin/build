@@ -20,7 +20,7 @@ mkdir "$BUILD_PATH"
 cd "$BUILD_PATH"
 
 # install required packages to build
-apk add --update-cache \
+apk add --no-cache \
   build-base \
   curl \
   geoip-dev \
@@ -78,7 +78,7 @@ cd "$BUILD_PATH/nginx-$NGINX_VERSION"
   && make && make install
 
 rm -rf "$BUILD_PATH"
-apk del --purge \
+apk del --no-cache \
   build-base \
   curl \
   geoip-dev \
@@ -89,4 +89,3 @@ apk del --purge \
   openssl-dev \
   zlib \
   zlib-dev
-rm -rf /var/cache/apk/*

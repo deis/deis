@@ -1,7 +1,7 @@
-FROM alpine:3.2
+FROM alpine:3.3
 
 # install common packages
-RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
+RUN apk add --no-cache curl bash sudo
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \

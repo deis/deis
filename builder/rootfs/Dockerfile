@@ -1,7 +1,7 @@
-FROM alpine:3.2
+FROM alpine:3.3
 
 # install common packages
-RUN apk add --update-cache curl bash sudo && rm -rf /var/cache/apk/*
+RUN apk add --no-cache curl bash sudo
 
 # install etcdctl
 RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/etcdctl-v0.4.9 \
@@ -11,19 +11,18 @@ RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-d
 RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 \
     && chmod +x /usr/local/bin/confd
 
-RUN apk add --update-cache \
+RUN apk add --no-cache \
     coreutils \
     device-mapper \
     e2fsprogs \
     git \
     iptables \
-    libudev \
+    udev \
     lxc \
     openssh \
     udev \
     util-linux \
-    xz \
-    && rm -rf /var/cache/apk/*
+    xz
 
 # the docker package in alpine disables aufs and devicemapper
 ENV DOCKER_BUCKET get.docker.com
