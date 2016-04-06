@@ -155,7 +155,8 @@ func checkForErrors(res *http.Response, body string) error {
 // CheckConnection checks that the user is connected to a network and the URL points to a valid controller.
 func CheckConnection(client *http.Client, controllerURL url.URL) error {
 	errorMessage := `%s does not appear to be a valid Deis controller.
-Make sure that the Controller URI is correct and the server is running.`
+Make sure that the Controller URI is correct, the server is running and
+your client version is correct.`
 
 	controllerURL.Path = "/v1/"
 
