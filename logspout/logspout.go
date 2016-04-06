@@ -205,6 +205,17 @@ func getEtcdValueOrDefault(c *etcd.Client, key string, defaultValue string) stri
 	return resp.Node.Value
 }
 
+func getEtcdRoute(client *etcd.Client) *Route {
+	hostResp, err := client.Get("/deis/logs/host", false, false)
+	assert(err, "url")
+	portResp, err := client.Get("/deis/logs/port", false, false)
+	assert(err, "url")
+	protocol := getEtcdValueOrDefault(client, "/deis/logs/protocol", "udp")
+	host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
+	log.Printf("routing all to %s://%s", protocol, host)
+	return &Route{ID: "etcd", Target: Target{Type: "syslog", Addr: host, Protocol: protocol}}
+}
+
 func main() {
 	runtime.GOMAXPROCS(1)
 	debugMode = getopt("DEBUG", "") != ""
@@ -224,14 +235,26 @@ func main() {
 		debug("etcd:", connectionString[0])
 		etcd := etcd.NewClient(connectionString)
 		etcd.SetDialTimeout(3 * time.Second)
-		hostResp, err := etcd.Get("/deis/logs/host", false, false)
-		assert(err, "url")
-		portResp, err := etcd.Get("/deis/logs/port", false, false)
-		assert(err, "url")
-		protocol := getEtcdValueOrDefault(etcd, "/deis/logs/protocol", "udp")
-		host := fmt.Sprintf("%s:%s", hostResp.Node.Value, portResp.Node.Value)
-		log.Printf("routing all to %s://%s", protocol, host)
-		router.Add(&Route{Target: Target{Type: "syslog", Addr: host, Protocol: protocol}})
+		router.Add(getEtcdRoute(etcd))
+		go func() {
+			for {
+				// NOTE(bacongobbler): sleep for a bit before doing the discovery loop again
+				time.Sleep(10 * time.Second)
+				newRoute := getEtcdRoute(etcd)
+				oldRoute, err := router.Get(newRoute.ID)
+				// router.Get only returns an error if the route doesn't exist. If it does,
+				// then we can skip this check and just add the new route to the routing table
+				if err == nil &&
+					newRoute.Target.Protocol == oldRoute.Target.Protocol &&
+					newRoute.Target.Addr == oldRoute.Target.Addr {
+					// NOTE(bacongobbler): the two targets are the same; perform a no-op
+					continue
+				}
+				// NOTE(bacongobbler): this operation is a no-op if the route doesn't exist
+				router.Remove(oldRoute.ID)
+				router.Add(newRoute)
+			}
+		}()
 	}
 
 	if len(os.Args) > 1 {
