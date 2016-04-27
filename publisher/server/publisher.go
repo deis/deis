@@ -75,10 +75,17 @@ func (s *Server) Poll(ttl time.Duration) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	var wg sync.WaitGroup
 	for _, container := range containers {
-		// send container to channel for processing
-		s.publishContainer(&container, ttl)
+		wg.Add(1)
+		go func(container docker.APIContainers, ttl time.Duration) {
+			defer wg.Done()
+			// send container to channel for processing
+			s.publishContainer(&container, ttl)
+		}(container, ttl)
 	}
+	// Wait for all publish operations to complete.
+	wg.Wait()
 }
 
 // getContainer retrieves a container from the docker client based on id
