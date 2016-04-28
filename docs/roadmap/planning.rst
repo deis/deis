@@ -30,12 +30,26 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
-April 2016
-~~~~~~~~~~
+
+May 2016
+~~~~~~~~
 
 The next public release planning meeting for Deis will take place on
-**Thursday, April 7th** at **12pm MST/1900 UTC**. The `event`_ can be added
+**Thursday, May 5th** at **12pm MDT/1900 UTC**. The `event`_ can be added
 directly to your calendar.
+
+April 2016 (Deis LTS Release)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- Intro
+- Move to Slack https://slack.deis.io
+- Notes on Deis Workflow Beta
+- Road to Workflow Stable
+- Deis Workflow e2e Testing and Improvements
+- LTS Release (v1.13.0) for Deis v1
+- Call for Community Demos!
+
+Archive: https://www.youtube.com/watch?v=72g9PxiR0iU
 
 March 2016 (Deis v2 Beta)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -135,7 +149,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: https://goo.gl/6tfAEE
+.. _`event`: https://goo.gl/lc8rwf
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
 .. _`Kubernetes`: http://kubernetes.io/
