@@ -1,3 +1,20 @@
+### v1.13.0 -> v1.13.1
+
+#### Fixes
+
+ - [`2a4b9ff`](https://github.com/deis/deis/commit/2a4b9ffd511340ca8a6121a4b11357ebe961e8db) controller: only load latest config
+
+#### Maintenance
+
+ - [`eb32fb2`](https://github.com/deis/deis/commit/eb32fb2a651fad862003eb9e0093411fefbcd79c) buildpacks: update heroku-buildpack-ruby to v146
+ - [`297f885`](https://github.com/deis/deis/commit/297f88518a628094c14a8faed1cb82ff898f567e) buildpacks: update heroku-buildpack-php to v102
+ - [`b53d38c`](https://github.com/deis/deis/commit/b53d38cdb2f58d18afd68d64c3bf718d2202e480) buildpacks: update heroku-buildpack-nodejs to v90
+ - [`cfff045`](https://github.com/deis/deis/commit/cfff0454649a77ec1640ad4ee1d32b4c6c1cfa39) tests: update test-etcd to v2.2.3
+ - [`8257291`](https://github.com/deis/deis/commit/8257291e0c9c03791e105f5d58a2e40c01a190ff) buildpacks: update heroku-buildpack-go to v34
+ - [`c8957fc`](https://github.com/deis/deis/commit/c8957fcd69b2248110abad1c3933979c1f88fdb1) (all): bump CoreOS to 899.17.0
+ - [`705f736`](https://github.com/deis/deis/commit/705f7363d67d676685bdfaa2dfbb6d0acf475bd6) roadmap: update for May planning meeting
+ - [`fc65359`](https://github.com/deis/deis/commit/fc65359c2ba5541aadf35836940bf312007956de) (all): bump CoreOS to 899.15.0
+
 ### v1.12.3 -> v1.13.0
 
 #### Features
