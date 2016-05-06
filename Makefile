@@ -90,12 +90,10 @@ setup-gotools:
 	go get -u -v github.com/tools/godep
 	go get -u -v github.com/golang/lint/golint
 	go get -u -v golang.org/x/tools/cmd/cover
-	go get -u -v golang.org/x/tools/cmd/vet
 
 setup-root-gotools:
 # "go vet" and "go cover" must be installed as root on some systems
 	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/cover
-	sudo GOPATH=/tmp/tmpGOPATH go get -u -v golang.org/x/tools/cmd/vet
 	sudo rm -rf /tmp/tmpGOPATH
 
 test: test-style test-unit test-functional push test-integration
