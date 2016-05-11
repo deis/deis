@@ -62,6 +62,12 @@ Finally, update ``deisctl`` to the new version and reinstall:
     If an in-place upgrade is required on a cluster running a version older than v1.6,
     run ``deisctl config router set proxyProtocol=1``, enable PROXY protocol for ports 80 and
     443 on the ELB, add a ``TCP 443:443`` listener.
+    
+    Elastic Load Balancer is set to perform health checks to make sure your instances are alive.
+    When you take your cluster down, there will be a brief period that your instances will be
+    marked as ``OutOfService``. If deis-cli can't connect to your cluster, check your EC2 Load
+    Balancer's health check status in the AWS web console. Wait for the instances to return to
+    ``InService`` status.
 
 Upgrade Deis clients
 ^^^^^^^^^^^^^^^^^^^^
