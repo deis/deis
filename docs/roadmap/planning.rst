@@ -31,12 +31,23 @@ Release Planning Meetings are open to the public with access coordinated via the
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
 
+June 2016
+~~~~~~~~~
+
+The next public release planning meeting for Deis will take place on
+**Thursday, June 2nd** at **12pm MDT/1900 UTC**. The `event`_ can be added
+directly to your calendar.
+
 May 2016
 ~~~~~~~~
 
-The next public release planning meeting for Deis will take place on
-**Thursday, May 5th** at **12pm MDT/1900 UTC**. The `event`_ can be added
-directly to your calendar.
+- Introduction & Community Updates
+- LTS Update
+- Beta 3 Release and Beta 4 Status
+- Helm Update, Helm Classic and Kubernetes Helm
+- Wrap-up!
+
+Archive: https://www.youtube.com/watch?v=Jb-X_yVE2-w
 
 April 2016 (Deis LTS Release)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -149,7 +160,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: https://goo.gl/lc8rwf
+.. _`event`: https://goo.gl/pM1WPk
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
 .. _`Kubernetes`: http://kubernetes.io/
