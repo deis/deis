@@ -86,6 +86,11 @@ if addgroup -g "$(stat -c "%g" /var/run/docker.sock)" docker; then
 	addgroup deis docker
 fi
 
+# allow deis user permission to fleet
+if addgroup -g "$(stat -c "%g" /var/run/fleet.sock)" fleet; then
+    addgroup deis fleet
+fi
+
 # run an idempotent database migration
 sudo -E -u deis ./manage.py syncdb --migrate --noinput
 
