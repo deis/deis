@@ -30,13 +30,23 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+July 2016
+~~~~~~~~~
+
+The next public release planning meeting for Deis will take place on
+**Thursday, July 7nd** at **12pm MDT/1900 UTC**. The `event`_ can be added
+directly to your calendar.
 
 June 2016
 ~~~~~~~~~
 
-The next public release planning meeting for Deis will take place on
-**Thursday, June 2nd** at **12pm MDT/1900 UTC**. The `event`_ can be added
-directly to your calendar.
+- Introduction & Community Updates - Gabe Monroy
+- Helm Alpha 1 Demo - Michelle Noorali
+- How Mozilla uses Deis v1 - Josh Mize
+- Deis V1 Maintenance Update - Matt Boersma
+- Deis Workflow Release Update - Jason Hansen
+
+Archive: https://youtu.be/MtGSwsRnpcM
 
 May 2016
 ~~~~~~~~
@@ -160,7 +170,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: https://goo.gl/pM1WPk
+.. _`event`: https://goo.gl/82ToK7
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
 .. _`Kubernetes`: http://kubernetes.io/
