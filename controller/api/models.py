@@ -450,7 +450,8 @@ class App(UuidAuditedModel):
         destroy_threads = [Thread(target=c.destroy) for c in to_destroy]
         [t.start() for t in destroy_threads]
         [t.join() for t in destroy_threads]
-        [c.delete() for c in to_destroy if c.state == 'destroyed']
+        pks = [c.pk for c in to_destroy if c.state == 'destroyed']
+        Container.objects.filter(pk__in=pks).delete()
         if any(c.state != 'destroyed' for c in to_destroy):
             err = 'aborting, failed to destroy some containers'
             log_event(self, err, logging.ERROR)
