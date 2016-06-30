@@ -87,7 +87,6 @@ setting                                      description
 /deis/services/*                             healthy application containers reported by deis/publisher
 /deis/store/gateway/host                     host of the store gateway component (set by store-gateway)
 /deis/store/gateway/port                     port of the store gateway component (set by store-gateway)
-/deis/router/xFrameOptions                   X-Frame-Options header to prevent click-jacking (default: not set) Valid options: DENY, SAMEORIGIN, ALLOW-FROM uri
 =======================================      ==================================================================================================================================================================================================================================================================================================================================
 
 Using a custom router image
