@@ -30,9 +30,10 @@ Docker Image Requirements
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 In order to deploy Docker images, they must conform to the following requirements:
 
- * The Docker image must EXPOSE only one port
- * The port must be listening for a HTTP connection
- * A default CMD must be specified for running the container
+* The Docker image must EXPOSE only one port
+* The port must be listening for a HTTP connection
+* A default CMD must be specified for running the container
+* Bash should be available in the Docker image
 
 .. note::
 
