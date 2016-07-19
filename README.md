@@ -1,4 +1,7 @@
-# Deis
+| This repository (`deis/deis`) is home for the Deis v1 PaaS (based on CoreOS + Fleet). For more information about the latest version, based on Kubernetes, visit [`deis/workflow`](https://github.com/deis/workflow).
+|---|
+
+# Deis v1 PaaS
 
 Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy and manage applications on your own servers. Deis builds upon [Docker](http://docker.io/) and [CoreOS](http://coreos.com) to provide a lightweight PaaS with a [Heroku-inspired](http://heroku.com) workflow.
 
@@ -6,13 +9,9 @@ Deis (pronounced DAY-iss) is an open source PaaS that makes it easy to deploy an
 [![Current Release](http://img.shields.io/badge/release-v1.13.2-1eb0fc.svg)](https://github.com/deis/deis/releases/tag/v1.13.2)
 [![Latest Docs](http://img.shields.io/badge/docs-latest-fc1e5e.svg)](http://docs.deis.io/en/latest/)
 
-![Deis Graphic](https://s3-us-west-2.amazonaws.com/deis-images/deis-graphic.png)
-
-
 New to Deis?  Learn more about Deis [Concepts](http://docs.deis.io/en/latest/understanding_deis/concepts/), [Architecture](http://docs.deis.io/en/latest/understanding_deis/architecture/) and how to [Deploy an Application](http://docs.deis.io/en/latest/using_deis/deploy-application/).
 
-
-# Installing Deis
+# Installing Deis v1
 
 Deis is a set of Docker containers that can be deployed anywhere including public cloud, private cloud, bare metal or your workstation. Decide where you'd like to deploy Deis, then follow the [provider-specific documentation](http://docs.deis.io/en/latest/installing_deis/) for provisioning.
 
