@@ -89,7 +89,7 @@ fi
 # and write out a Dockerfile to use that slug
 if [ ! -f Dockerfile ]; then
     BUILD_OPTS=()
-    BUILD_OPTS+='/usr/bin/docker'
+    BUILD_OPTS+='/usr/local/bin/docker'
     BUILD_OPTS+=' run -v /etc/environment_proxy:/etc/environment_proxy'
     # get application configuration
     BUILD_OPTS+=$(echo $RESPONSE | get-app-values)
