@@ -135,7 +135,7 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func TestProcessesList(t *testing.T) {
 	t.Parallel()
 
-	expected := []api.Process{
+	expected := api.Processes{
 		api.Process{
 			Owner:   "test",
 			App:     "example-go",

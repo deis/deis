@@ -9,7 +9,7 @@ import (
 )
 
 // List keys on a controller.
-func List(c *client.Client, results int) ([]api.Key, int, error) {
+func List(c *client.Client, results int) (api.Keys, int, error) {
 	body, count, err := c.LimitedRequest("/v1/keys/", results)
 
 	if err != nil {

@@ -13,3 +13,9 @@ type User struct {
 	IsActive    bool   `json:"is_active"`
 	DateJoined  string `json:"date_joined"`
 }
+
+type Users []User
+
+func (u Users) Len() int           { return len(u) }
+func (u Users) Swap(i, j int)      { u[i], u[j] = u[j], u[i] }
+func (u Users) Less(i, j int) bool { return u[i].Username < u[j].Username }

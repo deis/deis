@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -32,6 +33,8 @@ func KeysList(results int) error {
 	}
 
 	fmt.Printf("=== %s Keys%s", c.Username, limitCount(len(keys), count))
+
+	sort.Sort(keys)
 
 	for _, key := range keys {
 		fmt.Printf("%s %s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/client/controller/models/users"
@@ -26,6 +27,8 @@ func UsersList(results int) error {
 	}
 
 	fmt.Printf("=== Users%s", limitCount(len(users), count))
+
+	sort.Sort(users)
 
 	for _, user := range users {
 		fmt.Println(user.Username)

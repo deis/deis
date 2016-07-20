@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/deis/deis/client/controller/models/domains"
 )
@@ -25,6 +26,8 @@ func DomainsList(appID string, results int) error {
 	}
 
 	fmt.Printf("=== %s Domains%s", appID, limitCount(len(domains), count))
+
+	sort.Sort(domains)
 
 	for _, domain := range domains {
 		fmt.Println(domain.Domain)
