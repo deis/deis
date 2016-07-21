@@ -43,6 +43,10 @@ coreos:
       enable: false
     - name: docker.service
       drop-ins:
+      - name: 00-reset-environment.conf
+        content: |
+          [Service]
+          Environment=
       - name: 10-require-flannel.conf
         content: |
           [Unit]
@@ -52,6 +56,10 @@ coreos:
         content: |
           [Service]
           Environment="DOCKER_OPTS=--insecure-registry 10.0.0.0/8 --insecure-registry 172.16.0.0/12 --insecure-registry 192.168.0.0/16 --insecure-registry 100.64.0.0/10"
+      - name: 60-cgroup-driver.conf
+        content: |
+          [Service]
+          Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs"
     - name: flanneld.service
       command: start
       drop-ins:
