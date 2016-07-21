@@ -70,6 +70,7 @@ setting                                      description
 /deis/router/maxWorkerConnections            maximum number of simultaneous connections that can be opened by a worker process (default: 768)
 /deis/router/serverNameHashMaxSize           nginx server_names_hash_max_size setting (default: 512)
 /deis/router/serverNameHashBucketSize        nginx server_names_hash_bucket_size (default: 64)
+/deis/router/serverTokens                    nginx server_tokens setting (default: not set)
 /deis/router/sslCert                         cluster-wide SSL certificate
 /deis/router/sslCiphers                      cluster-wide enabled SSL ciphers
 /deis/router/sslKey                          cluster-wide SSL private key
