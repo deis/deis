@@ -1,4 +1,4 @@
-FROM docker:1.8-dind
+FROM docker:1.10-dind
 
 # install common packages
 RUN apk add --no-cache curl bash sudo
