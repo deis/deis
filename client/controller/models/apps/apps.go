@@ -11,7 +11,7 @@ import (
 )
 
 // List lists apps on a Deis controller.
-func List(c *client.Client, results int) ([]api.App, int, error) {
+func List(c *client.Client, results int) (api.Apps, int, error) {
 	body, count, err := c.LimitedRequest("/v1/apps/", results)
 
 	if err != nil {

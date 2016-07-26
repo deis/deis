@@ -288,7 +288,7 @@ func TestAppsRun(t *testing.T) {
 func TestAppsList(t *testing.T) {
 	t.Parallel()
 
-	expected := []api.App{
+	expected := api.Apps{
 		api.App{
 			ID:      "example-go",
 			Created: "2014-01-01T00:00:00UTC",

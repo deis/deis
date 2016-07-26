@@ -10,6 +10,12 @@ type App struct {
 	UUID    string `json:"uuid"`
 }
 
+type Apps []App
+
+func (a Apps) Len() int           { return len(a) }
+func (a Apps) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a Apps) Less(i, j int) bool { return a[i].ID < a[j].ID }
+
 // AppCreateRequest is the definition of POST /v1/apps/.
 type AppCreateRequest struct {
 	ID string `json:"id,omitempty"`

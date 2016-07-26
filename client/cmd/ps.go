@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -133,15 +134,19 @@ func PsRestart(appID, target string) error {
 	return nil
 }
 
-func printProcesses(appID string, processes []api.Process, count int) {
+func printProcesses(appID string, processes api.Processes, count int) {
 	psMap := ps.ByType(processes)
 
 	fmt.Printf("=== %s Processes%s", appID, limitCount(len(processes), count))
 
-	for psType, procs := range psMap {
-		fmt.Printf("--- %s:\n", psType)
+	sort.Sort(psMap)
 
-		for _, proc := range procs {
+	for _, processType := range psMap {
+		fmt.Printf("--- %s:\n", processType.Type)
+
+		sort.Sort(processType.Processes)
+
+		for _, proc := range processType.Processes {
 			fmt.Printf("%s.%d %s (%s)\n", proc.Type, proc.Num, proc.State, proc.Release)
 		}
 	}

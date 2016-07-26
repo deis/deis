@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/deis/deis/client/controller/client"
 	"github.com/deis/deis/client/controller/models/perms"
@@ -37,6 +38,8 @@ func PermsList(appID string, admin bool, results int) error {
 	} else {
 		fmt.Printf("=== %s's Users\n", appID)
 	}
+
+	sort.Strings(users)
 
 	for _, user := range users {
 		fmt.Println(user)

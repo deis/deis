@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -82,6 +83,7 @@ func AppsList(results int) error {
 
 	fmt.Printf("=== Apps%s", limitCount(len(apps), count))
 
+	sort.Sort(apps)
 	for _, app := range apps {
 		fmt.Println(app.ID)
 	}

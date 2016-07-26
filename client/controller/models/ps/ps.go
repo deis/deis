@@ -10,7 +10,7 @@ import (
 )
 
 // List an app's processes.
-func List(c *client.Client, appID string, results int) ([]api.Process, int, error) {
+func List(c *client.Client, appID string, results int) (api.Processes, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/containers/", appID)
 	body, count, err := c.LimitedRequest(u, results)
 
@@ -69,12 +69,17 @@ func Restart(c *client.Client, appID string, procType string, num int) ([]api.Pr
 }
 
 // ByType organizes processes of an app by process type.
-func ByType(processes []api.Process) map[string][]api.Process {
-	psMap := make(map[string][]api.Process)
+func ByType(processes api.Processes) api.ProcessTypes {
+	psMap := make(map[string]api.Processes)
 
 	for _, ps := range processes {
 		psMap[ps.Type] = append(psMap[ps.Type], ps)
 	}
 
-	return psMap
+	processTypes := []api.ProcessType{}
+	for processType, processes := range psMap {
+		processTypes = append(processTypes, api.ProcessType{processType, processes})
+	}
+
+	return processTypes
 }

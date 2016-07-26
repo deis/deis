@@ -9,7 +9,7 @@ import (
 )
 
 // List domains registered with an app.
-func List(c *client.Client, appID string, results int) ([]api.Domain, int, error) {
+func List(c *client.Client, appID string, results int) (api.Domains, int, error) {
 	u := fmt.Sprintf("/v1/apps/%s/domains/", appID)
 	body, count, err := c.LimitedRequest(u, results)
 

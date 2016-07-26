@@ -86,7 +86,7 @@ func (fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func TestDomainsList(t *testing.T) {
 	t.Parallel()
 
-	expected := []api.Domain{
+	expected := api.Domains{
 		api.Domain{
 			App:     "example-go",
 			Created: "2014-01-01T00:00:00UTC",

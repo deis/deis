@@ -10,6 +10,12 @@ type Key struct {
 	UUID    string `json:"uuid"`
 }
 
+type Keys []Key
+
+func (k Keys) Len() int           { return len(k) }
+func (k Keys) Swap(i, j int)      { k[i], k[j] = k[j], k[i] }
+func (k Keys) Less(i, j int) bool { return k[i].ID < k[j].ID }
+
 // KeyCreateRequest is the definition of POST /v1/keys/.
 type KeyCreateRequest struct {
 	ID     string `json:"id"`
