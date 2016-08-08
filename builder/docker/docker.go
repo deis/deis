@@ -72,6 +72,8 @@ func Start(c cookoo.Context, p *cookoo.Params) (interface{}, cookoo.Interrupt) {
 		"192.168.0.0/16",
 		"--insecure-registry",
 		"100.64.0.0/10",
+		"--exec-opt",
+		"native.cgroupdriver=cgroupfs",
 	}
 
 	// For overlay-ish filesystems, force the overlay to kick in if it exists.

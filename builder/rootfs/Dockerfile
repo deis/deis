@@ -1,4 +1,4 @@
-FROM alpine:3.3
+FROM docker:1.8-dind
 
 # install common packages
 RUN apk add --no-cache curl bash sudo
@@ -24,13 +24,6 @@ RUN apk add --no-cache \
     util-linux \
     xz
 
-# the docker package in alpine disables aufs and devicemapper
-ENV DOCKER_BUCKET get.docker.com
-ENV DOCKER_VERSION 1.8.3
-ENV DOCKER_SHA256 f024bc65c45a3778cf07213d26016075e8172de8f6e4b5702bedde06c241650f
-RUN curl -sSL "https://${DOCKER_BUCKET}/builds/Linux/x86_64/docker-$DOCKER_VERSION" -o /usr/bin/docker \
-	&& echo "${DOCKER_SHA256} /usr/bin/docker" | sha256sum -c - \
-	&& chmod +x /usr/bin/docker
 
 # configure ssh server
 RUN mkdir -p /var/run/sshd && rm -rf /etc/ssh/ssh_host*
