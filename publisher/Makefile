@@ -32,7 +32,7 @@ install: check-deisctl
 dev-release: push set-image
 
 push: check-registry
-	docker tag -f $(RELEASE_IMAGE) $(REMOTE_IMAGE)
+	docker tag $(RELEASE_IMAGE) $(REMOTE_IMAGE)
 	docker push $(REMOTE_IMAGE)
 
 set-image: check-deisctl
