@@ -30,12 +30,31 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+September 2016
+~~~~~~~~~~~~~~
+
+The next public release planning meeting for Deis will take place on
+**Thursday, September 1st** at **12pm MDT/1900 UTC**. The `event`_ can be added
+directly to your calendar.
+
+August 2016
+~~~~~~~~~~~
+
+- Introduction - Jason Hansen
+- Megaboom Demo - Aaron Schlesinger
+- Deployments Demo - Helgi Þorbjörnsson
+- Workflow 2.3 Release Review - Jason Hansen
+- Workflow 2.4 Up Next - Jason Hansen
+
+Archive: https://www.youtube.com/watch?v=ZWkDpi76H-E
+
 July 2016
 ~~~~~~~~~
 
-The next public release planning meeting for Deis will take place on
-**Thursday, July 7nd** at **12pm MDT/1900 UTC**. The `event`_ can be added
-directly to your calendar.
+- Workflow 2.1 and 2.2 Release Review
+- Helm Alpha.2 and Alpha.3 Review
+
+Archive: https://www.youtube.com/watch?v=BVHT03uQ1WU
 
 June 2016
 ~~~~~~~~~
@@ -170,7 +189,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: https://goo.gl/82ToK7
+.. _`event`: https://goo.gl/85tFYc
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
 .. _`Kubernetes`: http://kubernetes.io/
