@@ -17,6 +17,7 @@ apk add --no-cache \
   file \
   gcc \
   git \
+  openssl \
   python-dev
 
 # install etcdctl

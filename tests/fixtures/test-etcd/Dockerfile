@@ -1,4 +1,4 @@
-FROM alpine:3.3
+FROM alpine:3.4
 
 # install common packages
 RUN apk add --no-cache curl tar

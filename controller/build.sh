@@ -17,6 +17,7 @@ apk add --no-cache \
   libpq \
   openldap \
   openldap-dev \
+  openssl \
   postgresql-dev \
   python \
   python-dev
