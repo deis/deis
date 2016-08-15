@@ -26,15 +26,19 @@ func NewAttachManager(client *docker.Client) *AttachManager {
 	containers, err := client.ListContainers(docker.ListContainersOptions{})
 	assert(err, "attacher")
 	for _, listing := range containers {
-		m.attach(listing.ID[:12])
+		m.attach(listing.ID)
 	}
 	go func() {
 		events := make(chan *docker.APIEvents)
 		assert(client.AddEventListener(events), "attacher")
 		for msg := range events {
-			debug("event:", msg.ID[:12], msg.Status)
-			if msg.Status == "start" {
-				go m.attach(msg.ID[:12])
+			if msg.Status != "" {
+				debug("event:", msg.Status, msg.From, msg.ID, "(Status/From/ID)")
+				if msg.Status == "start" {
+					go m.attach(msg.ID)
+				}
+			} else {
+				debug("event: unknown (probably post API v1.22)")
 			}
 		}
 		log.Fatal("ruh roh") // todo: loop?
@@ -44,6 +48,10 @@ func NewAttachManager(client *docker.Client) *AttachManager {
 
 func (m *AttachManager) attach(id string) {
 	container, err := m.client.InspectContainer(id)
+	shortId := id
+	if len(shortId) > 12 {
+		shortId = id[:12]
+	}
 	assert(err, "attacher")
 	name := container.Name[1:]
 	success := make(chan struct{})
@@ -63,7 +71,7 @@ func (m *AttachManager) attach(id string) {
 		})
 		outwr.Close()
 		errwr.Close()
-		debug("attach:", id, "finished")
+		debug("attach:", shortId, "finished")
 		if err != nil {
 			close(success)
 			failure <- err
@@ -80,10 +88,10 @@ func (m *AttachManager) attach(id string) {
 		m.Unlock()
 		success <- struct{}{}
 		m.send(&AttachEvent{ID: id, Name: name, Type: "attach"})
-		debug("attach:", id, name, "success")
+		debug("attach:", shortId, name, "success")
 		return
 	}
-	debug("attach:", id, "failure:", <-failure)
+	debug("attach:", shortId, "failure:", <-failure)
 }
 
 func (m *AttachManager) send(event *AttachEvent) {
