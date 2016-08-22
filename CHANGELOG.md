@@ -1,3 +1,28 @@
+### v1.13.2 -> v1.13.3
+
+#### Features
+
+ - [`d369fd7`](https://github.com/deis/deis/commit/d369fd7e811c24d9da4eb907fd1237400cc15114) contrib: Add script to restart all apps.
+ - [`ef80d81`](https://github.com/deis/deis/commit/ef80d818b01de5e69888192fb855c63374fce9cc) client: Sort listings
+ - [`968c48c`](https://github.com/deis/deis/commit/968c48c859e92539173032f26aa95afe6478a455) router: Add server_tokens option
+
+#### Fixes
+
+ - [`d143b4b`](https://github.com/deis/deis/commit/d143b4bf7ba7cb14236748dc6e421554c95ecba8) logspout: Ignore events with short ID
+
+#### Documentation
+
+ - [`6da7204`](https://github.com/deis/deis/commit/6da72045a36a49d6e6c8b4dbe59ff66695cc927d) dockerfiles: Make Bash requirement explicit in the documentation
+
+#### Maintenance
+
+ - [`e30db13`](https://github.com/deis/deis/commit/e30db1391800284edf0937d5abfa7956179802af) buildpacks: update go, scala, and php buildpacks
+ - [`fc1518a`](https://github.com/deis/deis/commit/fc1518a66b9d28d29626696d11be07749cc121a1) (all): update base to alpine:3.4
+ - [`fd35c66`](https://github.com/deis/deis/commit/fd35c66ab16c4a621e42f2f42da5b66cb2c63cda) planning: add July and August, up next, September
+ - [`3ef983f`](https://github.com/deis/deis/commit/3ef983f8c5c7c2d57f3261789a15443fb021f22e) (all): bump CoreOS to 1068.8.0
+ - [`167a44a`](https://github.com/deis/deis/commit/167a44a43880ce47509651c3ee2507e9c4e3abca) buildpacks: update go, php, nodejs, python, and scala buildpacks
+ - [`8342efc`](https://github.com/deis/deis/commit/8342efc2b78b7691e2578e1ac719953739fea908) roadmap: clarify Deis v1 roadmap status
+
 ### v1.13.1 -> v1.13.2
 
 #### Fixes

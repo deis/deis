@@ -49,13 +49,10 @@ Patch Release
         docs/troubleshooting_deis/index.rst \
         logger/image/Dockerfile \
         logspout/image/Dockerfile \
-        mesos/template \
-        mesos/zookeeper/Dockerfile \
         publisher/image/Dockerfile \
         registry/Dockerfile \
         router/Dockerfile \
         store/base/Dockerfile \
-        swarm/image/Dockerfile \
         version/version.go
 
 - Update the CHANGELOG to include all commits since the last release. Since
