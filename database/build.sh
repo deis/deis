@@ -25,8 +25,8 @@ apk add --update-cache \
   python-dev
 
 # pv port.
-curl http://dl-3.alpinelinux.org/alpine/edge/testing/x86_64/pv-1.6.0-r0.apk -o /tmp/pv-1.6.0-r0.apk
-apk add /tmp/pv-1.6.0-r0.apk
+curl https://s3-us-west-2.amazonaws.com/get-deis/pv-1.6.0-r1.apk -o /tmp/pv-1.6.0-r1.apk
+apk add /tmp/pv-1.6.0-r1.apk
 
 /etc/init.d/postgresql stop || true
 
