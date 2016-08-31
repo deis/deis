@@ -2,7 +2,7 @@
 
 set -eof pipefail
 
-export NGINX_VERSION=1.9.6
+export NGINX_VERSION=1.10.1
 export NAXSI_VERSION=0d53a64ed856e694fcb4038748c8cf6d5551a603
 export NDK_VERSION=0.2.19
 export VTS_VERSION=22c51e201a550bb94e96239fef541347beb4eeca
@@ -33,7 +33,7 @@ apk add --no-cache \
   zlib-dev
 
 # download, verify and extract the source files
-get_src ed501fc6d0eff9d3bc1049cc1ba3a3ac8c602de046acb2a4c108392bbfa865ea \
+get_src 1fd35846566485e03c0e318989561c135c598323ff349c503a6c14826487a801 \
         "http://nginx.org/download/nginx-$NGINX_VERSION.tar.gz"
 
 get_src 128b56873eedbd3f240dc0f88a8b260d791321db92f14ba2fc5c49fc5307e04d \
