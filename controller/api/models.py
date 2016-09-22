@@ -457,8 +457,25 @@ class App(UuidAuditedModel):
             log_event(self, err, logging.ERROR)
             raise RuntimeError(err)
 
+    def _prune_containers(self):
+        try:
+            containers = self.container_set.exclude(type='run')
+            # find the unique type+num values of containers
+            vals = set((i[0], i[1]) for i in containers.values_list('type', 'num'))
+            for typ, num in vals:
+                # delete all but the latest of each type+num
+                group = containers.filter(type=typ, num=num)
+                if group.count() > 1:
+                    latest = group.latest()
+                    group.exclude(uuid=latest.uuid).delete()
+        except Exception as e:
+            # just log the error, don't raise it
+            err = '(_prune_containers): {}'.format(e)
+            log_event(self, err, logging.ERROR)
+
     def deploy(self, user, release):
         """Deploy a new release to this application"""
+        self._prune_containers()
         existing = self.container_set.exclude(type='run')
         new = []
         scale_types = set()
@@ -609,7 +626,7 @@ class Container(UuidAuditedModel):
         return self.short_name()
 
     class Meta:
-        get_latest_by = '-created'
+        get_latest_by = 'created'
         ordering = ['created']
 
     @property
