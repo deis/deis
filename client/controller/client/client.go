@@ -94,11 +94,11 @@ func (c Client) Save() error {
 		return err
 	}
 
-	if err = os.MkdirAll(path.Join(FindHome(), "/.deis/"), 0775); err != nil {
+	if err = os.MkdirAll(path.Join(FindHome(), "/.deis/"), 0700); err != nil {
 		return err
 	}
 
-	return ioutil.WriteFile(locateSettingsFile(), settingsContents, 0775)
+	return ioutil.WriteFile(locateSettingsFile(), settingsContents, 0600)
 }
 
 // Delete user's settings file.
