@@ -61,6 +61,32 @@ func TestCommandSplitting(t *testing.T) {
 	}
 }
 
+func TestTopLevelCommandArgsPreparing(t *testing.T) {
+	t.Parallel()
+
+	command := "ssh"
+	argv := []string{"ssh"}
+	expected := []string{"deis-ssh"}
+	actual := prepareCmdArgs(command, argv)
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected %v, Got %v", expected, actual)
+	}
+}
+
+func TestCommandWithParameterArgsPreparing(t *testing.T) {
+	t.Parallel()
+
+	command := "ssh --help"
+	argv := []string{"ssh --help"}
+	expected := []string{"deis-ssh --help"}
+	actual := prepareCmdArgs(command, argv)
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Errorf("Expected %v, Got %v", expected, actual)
+	}
+}
+
 func TestReplaceShortcutRepalce(t *testing.T) {
 	t.Parallel()
 
