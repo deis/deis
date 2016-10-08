@@ -30,12 +30,21 @@ Major decisions affecting the Roadmap are discussed during Release Planning Meet
 Release Planning Meetings are open to the public with access coordinated via the #deis IRC channel on Freenode.
 Notes from past meetings are below, along with links to a recording of the entire meeting on YouTube.
 
+November 2016
+~~~~~~~~~~~~~
+
+The next public release planning meeting for Deis will take place on
+**Thursday, November 3rd** at **12pm MDT/1900 UTC**. The `event`_ can be added
+directly to your calendar.
+
 October 2016
 ~~~~~~~~~~~~
 
-The next public release planning meeting for Deis will take place on
-**Thursday, October 6th** at **12pm MDT/1900 UTC**. The `event`_ can be added
-directly to your calendar.
+- Introduction - Seth Goings
+- Release Review - Jason Hansen
+- Deis CI Overview - Jonathan Chauncey
+
+Archive: https://www.youtube.com/watch?v=LhglIIh9izw
 
 September 2016
 ~~~~~~~~~~~~~~
@@ -200,7 +209,7 @@ Thanks to `Amy Lindburg`_ and our friends at `Docker`_ for their inspiration.
 
 .. _`Amy Lindburg`: https://twitter.com/amylindburg
 .. _`Docker`: https://www.docker.com/
-.. _`event`: http://goo.gl/adIzE5
+.. _`event`: https://goo.gl/FGNnOC
 .. _`LTS release issue`: https://github.com/deis/deis/issues/4776
 .. _`Maintainers`: https://github.com/deis/deis/blob/master/MAINTAINERS.md
 .. _`Kubernetes`: http://kubernetes.io/
