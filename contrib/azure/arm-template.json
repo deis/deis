@@ -28,23 +28,57 @@
         "Standard_A1",
         "Standard_A2",
         "Standard_A3",
+        "Standard_A5",
         "Standard_A4",
+        "Standard_A6",
+        "Standard_A7",
+        "Basic_A0",
+        "Basic_A1",
+        "Basic_A2",
+        "Basic_A3",
+        "Basic_A4",
+        "Standard_D1_v2",
+        "Standard_D2_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2",
+        "Standard_D5_v2",
+        "Standard_D11_v2",
+        "Standard_D12_v2",
+        "Standard_D13_v2",
+        "Standard_D14_v2",
+        "Standard_D15_v2",
+        "Standard_F1",
+        "Standard_F2",
+        "Standard_F4",
+        "Standard_F8",
+        "Standard_F16",
         "Standard_D1",
-        "Standard_DS1",
         "Standard_D2",
-        "Standard_DS2",
         "Standard_D3",
-        "Standard_DS3",
         "Standard_D4",
-        "Standard_DS4",
         "Standard_D11",
-        "Standard_DS11",
         "Standard_D12",
-        "Standard_DS12",
         "Standard_D13",
-        "Standard_DS13",
         "Standard_D14",
-        "Standard_DS14"
+        "Standard_DS1_v2",
+        "Standard_DS2_v2",
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_DS5_v2",
+        "Standard_DS11_v2",
+        "Standard_DS12_v2",
+        "Standard_DS13_v2",
+        "Standard_DS14_v2",
+        "Standard_DS15_v2",
+        "Standard_F1s",
+        "Standard_F2s",
+        "Standard_F4s",
+        "Standard_F8s",
+        "Standard_F16s",
+        "Standard_A8",
+        "Standard_A9",
+        "Standard_A10",
+        "Standard_A11"
       ],
       "metadata": {
         "description": "Instance size for the VMs"
@@ -73,14 +107,14 @@
       "metadata": {
         "description": "Number of member nodes"
       },
-      "defaultValue": "3"
+      "defaultValue": 3
     },
     "dockerVolumeSize": {
       "type": "int",
       "metadata": {
         "description": "Size in GB of the Docker volume"
       },
-      "defaultValue": "100"
+      "defaultValue": 100
     },
     "coreosVersion": {
       "type": "string",
@@ -134,7 +168,7 @@
     {
       "type": "Microsoft.Compute/availabilitySets",
       "name": "[variables('availabilitySetName')]",
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2016-03-30",
       "location": "[resourceGroup().location]",
       "properties": {}
     },
@@ -142,13 +176,13 @@
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[parameters('newStorageAccountName')]",
       "location": "[resourceGroup().location]",
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2015-06-15",
       "properties": {
         "accountType": "[parameters('storageAccountType')]"
       }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2016-06-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('loadBalancerPublicIPName')]",
       "location": "[resourceGroup().location]",
@@ -160,7 +194,7 @@
       }
     },
     {
-        "apiVersion": "2015-05-01-preview",
+        "apiVersion": "2016-06-01",
         "type": "Microsoft.Network/publicIPAddresses",
         "name": "[concat(parameters('dnsPrefixNameForPublicIP'),copyIndex())]",
         "location": "[resourceGroup().location]",
@@ -179,7 +213,7 @@
         }
     },
     {
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2016-06-01",
       "type": "Microsoft.Network/loadBalancers",
       "name": "[variables('loadBalancerName')]",
       "location": "[resourceGroup().location]",
@@ -226,10 +260,10 @@
                 "id": "[variables('lbPoolID')]"
               },
               "protocol": "TCP",
-              "frontendPort": "80",
-              "backendPort": "80",
+              "frontendPort": 80,
+              "backendPort": 80,
               "enableFloatingIP": false,
-              "idleTimeoutInMinutes": "10",
+              "idleTimeoutInMinutes": 10,
               "probe": {
                 "id": "[variables('apiProbeID')]"
               }
@@ -237,9 +271,6 @@
           },
           {
             "name": "[variables('loadBalancerBuilderRuleName')]",
-            "dependsOn": [
-              "[variables('lbIPConfig')]"
-            ],
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[variables('lbIPConfig')]"
@@ -248,10 +279,10 @@
                 "id": "[variables('lbPoolID')]"
               },
               "protocol": "TCP",
-              "frontendPort": "2222",
-              "backendPort": "2222",
+              "frontendPort": 2222,
+              "backendPort": 2222,
               "enableFloatingIP": false,
-              "idleTimeoutInMinutes": "10"
+              "idleTimeoutInMinutes": 10
             }
           }
         ],
@@ -260,9 +291,9 @@
             "name": "[variables('apiProbeName')]",
             "properties": {
               "protocol": "HTTP",
-              "port": "80",
-              "intervalInSeconds": "5",
-              "numberOfProbes": "2",
+              "port": 80,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2,
               "requestPath": "/health-check"
             }
           }
@@ -274,6 +305,9 @@
       "name": "[variables('virtualNetworkName')]",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-05-01-preview",
+      "dependsOn": [
+        "[variables('nsgID')]"
+      ],
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -303,7 +337,7 @@
         "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
         "[variables('lbID')]"
       ],
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2016-06-01",
       "properties": {
         "ipConfigurations": [
           {
@@ -339,7 +373,7 @@
         "[concat('Microsoft.Network/networkInterfaces/', 'nic', copyindex())]",
         "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
       ],
-      "apiVersion": "2015-05-01-preview",
+      "apiVersion": "2016-03-30",
       "properties": {
         "availabilitySet": {
           "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
