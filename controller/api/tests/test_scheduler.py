@@ -35,6 +35,7 @@ class SchedulerTest(TransactionTestCase):
         settings.SCHEDULER_MODULE = 'scheduler.chaos'
         # provide mock authentication used for run commands
         settings.SSH_PRIVATE_KEY = '<some-ssh-private-key>'
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def tearDown(self):
         # reset for subsequent tests

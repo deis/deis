@@ -8,8 +8,10 @@ from __future__ import unicode_literals
 
 import json
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import Domain
@@ -28,6 +30,7 @@ class DomainTest(TestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 201)
         self.app_id = response.data['id']  # noqa
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_response_data(self):
         """Test that the serialized response contains only relevant data."""
@@ -142,6 +145,7 @@ class DomainTest(TestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 400)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_add_domains_to_other_apps(self):
         """If a non-admin user creates an app, an administrator should be able to add
         domains to it.

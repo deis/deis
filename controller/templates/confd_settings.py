@@ -50,6 +50,15 @@ UNIT_HOSTNAME = '{{ if exists "/deis/controller/unitHostname" }}{{ getv "/deis/c
 DEIS_RESERVED_NAMES = ['{{ getv "/deis/controller/subdomain" }}']
 {{ end }}
 
+DEFAULT_PERMISSIONS_APPS = bool('{{ getv "/deis/controller/permissions/apps" }}')
+DEFAULT_PERMISSIONS_APP_MANAGEMENT = bool('{{ getv "/deis/controller/permissions/app_management" }}')
+DEFAULT_PERMISSIONS_CERTS = bool('{{ getv "/deis/controller/permissions/certs" }}')
+DEFAULT_PERMISSIONS_CONFIG = bool('{{ getv "/deis/controller/permissions/config" }}')
+DEFAULT_PERMISSIONS_DOMAINS = bool('{{ getv "/deis/controller/permissions/domains" }}')
+DEFAULT_PERMISSIONS_PUSH = bool('{{ getv "/deis/controller/permissions/push" }}')
+DEFAULT_PERMISSIONS_SCALE = bool('{{ getv "/deis/controller/permissions/scale" }}')
+DEFAULT_PERMISSIONS_RUN = bool('{{ getv "/deis/controller/permissions/run" }}')
+
 # AUTH
 # LDAP
 {{ if exists "/deis/controller/auth/ldap/endpoint" }}

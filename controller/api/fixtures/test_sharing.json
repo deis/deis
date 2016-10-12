@@ -72,7 +72,7 @@
   }
 },
 {
-  "pk": "5a09a1e0-a27e-4839-928b-449310ed90f0",
+  "pk": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
   "model": "api.app",
   "fields": {
     "updated": "2013-11-25T22:09:36.726Z",
@@ -89,6 +89,28 @@
     "created": "2013-11-25T22:09:36.726Z",
     "owner": 3,
     "id": "autotest-2-app"
+  }
+},
+{
+  "pk": "5a09a1e0-a27e-4839-928b-449310ed90f2",
+  "model": "api.release",
+  "fields": {
+    "updated": "2013-11-25T22:09:36.726Z",
+    "created": "2013-11-25T22:09:36.726Z",
+    "owner": 2,
+    "app": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2",
+    "version": 1,
+    "config": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1"
+  }
+},
+{
+  "pk": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1",
+  "model": "api.config",
+  "fields": {
+    "updated": "2013-11-25T22:09:36.726Z",
+    "created": "2013-11-25T22:09:36.726Z",
+    "owner": 2,
+    "app": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"
   }
 }
 ]

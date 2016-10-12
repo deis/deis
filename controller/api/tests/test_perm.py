@@ -3,11 +3,16 @@ from __future__ import unicode_literals
 import json
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.test import TestCase
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 
 class TestAdminPerms(TestCase):
+
+    def setUp(self):
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_first_signup(self):
         # register a first user
@@ -149,6 +154,7 @@ class TestAppPerms(TestCase):
         self.token2 = Token.objects.get(user=self.user2).key
         self.user3 = User.objects.get(username='autotest-3')
         self.token3 = Token.objects.get(user=self.user3).key
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_create(self):
         # check that user 1 sees her lone app and user 2's app
@@ -182,10 +188,14 @@ class TestAppPerms(TestCase):
         # check that user 2 sees (empty) results now for builds, containers,
         # and releases. (config and limit will still give 404s since we didn't
         # push a build here.)
-        for model in ['builds', 'containers', 'releases']:
+        for model in ['builds', 'containers']:
             response = self.client.get("/v1/apps/{}/{}/".format(app_id, model),
                                        HTTP_AUTHORIZATION='token {}'.format(self.token2))
             self.assertEqual(len(response.data['results']), 0)
+
+        response = self.client.get("/v1/apps/{}/releases/".format(app_id),
+                                   HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(len(response.data['results']), 1)
         # TODO:  check that user 2 can git push the app
 
     def test_create_errors(self):
@@ -317,3 +327,64 @@ class TestAppPerms(TestCase):
         url = '/v1/apps/{}/perms/{}'.format(app_id, collab.username)
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(collab_token))
         self.assertEqual(response.status_code, 204)
+
+    @override_settings(DEFAULT_PERMISSIONS_CONFIG=True)
+    @override_settings(DEFAULT_PERMISSIONS_DOMAINS=True)
+    def test_obj_permissions(self):
+        app_id = 'autotest-1-app'
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': self.user2.username}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+
+        # test component access
+        for component in ["config", "domains"]:
+            url = "/v1/apps/{}/{}".format(app_id, component)
+            response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+            self.assertEqual(response.status_code, 200)
+
+    @override_settings(DEFAULT_PERMISSIONS_APP_MANAGEMENT=True)
+    def test_app_management(self):
+        app_id = 'autotest-1-app'
+        # List shows apps not shared with user
+        url = "/v1/apps/"
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+
+        # User can access other app.
+        url = "/v1/apps/{}/".format(app_id)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(response.status_code, 200)
+
+    @override_settings(DEFAULT_PERMISSIONS_CONFIG=False)
+    @override_settings(DEFAULT_PERMISSIONS_DOMAINS=False)
+    def test_obj_permissions_denied(self):
+        app_id = 'autotest-1-app'
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': 'autotest-2'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+
+        # test component access
+        for component in ["config", "domains"]:
+            url = "/v1/apps/{}/{}".format(app_id, component)
+            response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+            self.assertEqual(response.status_code, 403)
+
+    def test_app_management_disabled(self):
+        app_id = 'autotest-1-app'
+        # List deosn't show apps not shared with user
+        url = "/v1/apps/"
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 1)
+
+        # User canot access other app.
+        url = "/v1/apps/{}/".format(app_id)
+        response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(response.status_code, 403)

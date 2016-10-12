@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import mock
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from . import mock_status_ok
@@ -27,6 +28,8 @@ class HookTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
+
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_push_hook(self):
         """Test creating a Push via the API"""
@@ -228,6 +231,7 @@ class HookTest(TransactionTestCase):
         self.assertIn('values', response.data)
         self.assertEqual(values, response.data['values'])
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_hook(self):
         """Administrator should be able to create build hooks on non-admin apps.
         """
@@ -253,3 +257,35 @@ class HookTest(TransactionTestCase):
                                     HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['release']['version'], 2)
+
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
+    @override_settings(DEFAULT_PERMISSIONS_PUSH=False)
+    def test_push_perm(self):
+        """Test push permission.
+        """
+        """Test creating a Push via the API"""
+        user = User.objects.get(username='autotest')
+        token = Token.objects.get(user=user).key
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': 'autotest2'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 201)
+        # prepare a push body that simulates a git push
+        body = {
+            'sha': 'df1e628f2244b73f9cdf944f880a2b3470a122f4',
+            'fingerprint': '88:25:ed:67:56:91:3d:c6:1b:7f:42:c6:9b:41:24:99',
+            'receive_user': 'autotest2',
+            'receive_repo': app_id,
+            'ssh_connection': '10.0.1.10 50337 172.17.0.143 22',
+            'ssh_original_command': "git-receive-pack '{app_id}.git'".format(**locals()),
+        }
+        url = "/v1/hooks/push"
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_X_DEIS_BUILDER_AUTH=settings.BUILDER_KEY)
+        self.assertEqual(response.status_code, 403)

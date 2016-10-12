@@ -11,6 +11,8 @@ import json
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import mock
+from django.conf import settings
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import Release
@@ -27,6 +29,8 @@ class ReleaseTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
+
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     @mock.patch('requests.post', mock_status_ok)
     def test_release(self):
@@ -243,6 +247,7 @@ class ReleaseTest(TransactionTestCase):
         self.assertIn('autotest deployed ', release.summary)
 
     @mock.patch('requests.post', mock_status_ok)
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_create_release(self):
         """If a non-user creates an app, an admin should be able to create releases."""
         user = User.objects.get(username='autotest2')

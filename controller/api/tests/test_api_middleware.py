@@ -6,6 +6,7 @@ Run the tests with "./manage.py test api"
 from __future__ import unicode_literals
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 
@@ -21,6 +22,7 @@ class APIMiddlewareTest(TestCase):
     def setUp(self):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_deis_version_header_good(self):
         """

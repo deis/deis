@@ -9,8 +9,10 @@ from __future__ import unicode_literals
 import json
 
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.test import TransactionTestCase
 import mock
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Build, Container, Release
@@ -27,6 +29,7 @@ class ContainerTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def test_container_state_good(self):
         """Test that the finite state machine transitions with a good scheduler"""
@@ -409,6 +412,7 @@ class ContainerTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_manage_other_containers(self):
         """If a non-admin user creates a container, an administrator should be able to
         manage it.
@@ -667,3 +671,34 @@ class ContainerTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), container_set.filter(type='web', num=1).count())
+
+    @override_settings(DEFAULT_PERMISSIONS_SCALE=False)
+    def test_scale_permissions(self):
+        """
+        Test scaling permissions
+        """
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': 'autotest2'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+
+        collab = User.objects.get(username='autotest2')
+        collab_token = Token.objects.get(user=collab).key
+        url = "/v1/apps/{}/scale".format(app_id)
+        body = {'web': 4}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 403)

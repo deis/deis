@@ -54,6 +54,14 @@ etcd_set_default builderKey "${DEIS_BUILDER_KEY:-$(openssl rand -base64 64 | tr 
 etcd_set_default registrationMode "enabled"
 etcd_set_default webEnabled 0
 etcd_set_default unitHostname default
+etcd_set_default permissions/apps 1
+etcd_set_default permissions/app_management 0
+etcd_set_default permissions/certs 1
+etcd_set_default permissions/config 1
+etcd_set_default permissions/domains 1
+etcd_set_default permissions/push 1
+etcd_set_default permissions/scale 1
+etcd_set_default permissions/run 1
 
 # safely create required keyspaces
 etcd_safe_mkdir /deis/domains

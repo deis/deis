@@ -14,6 +14,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import App
@@ -30,11 +31,13 @@ class AppTest(TestCase):
         self.token = Token.objects.get(user=self.user).key
         # provide mock authentication used for run commands
         settings.SSH_PRIVATE_KEY = '<some-ssh-private-key>'
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     def tearDown(self):
         # reset global vars for other tests
         settings.SSH_PRIVATE_KEY = ''
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app(self):
         """
         Test that a user can create, read, update and delete an application
@@ -60,6 +63,7 @@ class AppTest(TestCase):
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_response_data(self):
         """Test that the serialized response contains only relevant data."""
         body = {'id': 'test'}
@@ -76,6 +80,7 @@ class AppTest(TestCase):
         }
         self.assertDictContainsSubset(expected, response.data)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_override_id(self):
         body = {'id': 'myid'}
         response = self.client.post('/v1/apps', json.dumps(body),
@@ -90,6 +95,7 @@ class AppTest(TestCase):
         return response
 
     @mock.patch('requests.get')
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_actions(self, mock_get):
         url = '/v1/apps'
         body = {'id': 'autotest'}
@@ -133,6 +139,7 @@ class AppTest(TestCase):
         # TODO: test run needs an initial build
 
     @mock.patch('api.models.logger')
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_release_notes_in_logs(self, mock_logger):
         """Verifies that an app's release summary is dumped into the logs."""
         url = '/v1/apps'
@@ -154,6 +161,7 @@ class AppTest(TestCase):
         exp_msg = "[{app_name}]: goodbye world".format(**locals())
         mock_logger.log.assert_called_with(logging.WARNING, exp_msg)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_errors(self):
         app_id = 'autotest-errors'
         url = '/v1/apps'
@@ -177,6 +185,7 @@ class AppTest(TestCase):
                                        HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEquals(response.status_code, 404)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_reserved_names(self):
         """Nobody should be able to create applications with names which are reserved."""
         url = '/v1/apps'
@@ -191,6 +200,7 @@ class AppTest(TestCase):
                     '{} is a reserved name.'.format(name),
                     status_code=400)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_structure_is_valid_json(self):
         """Application structures should be valid JSON objects."""
         url = '/v1/apps'
@@ -209,6 +219,7 @@ class AppTest(TestCase):
 
     @mock.patch('requests.post', mock_status_ok)
     @mock.patch('api.models.logger')
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_manage_other_apps(self, mock_logger):
         """Administrators of Deis should be able to manage all applications.
         """
@@ -236,6 +247,7 @@ class AppTest(TestCase):
                                       HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_see_other_apps(self):
         """If a user creates an application, the administrator should be able
         to see it.
@@ -252,6 +264,7 @@ class AppTest(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.data['count'], 1)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_run_without_auth(self):
         """If the administrator has not provided SSH private key for run commands,
         make sure a friendly error message is provided on run"""
@@ -271,6 +284,7 @@ class AppTest(TestCase):
         self.assertEquals(response.data, {'detail': 'Support for admin commands '
                                                     'is not configured'})
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_run_without_release_should_error(self):
         """
         A user should not be able to run a one-off command unless a release
@@ -289,6 +303,7 @@ class AppTest(TestCase):
         self.assertEqual(response.data, {'detail': 'No build associated with this '
                                                    'release to run this command'})
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_unauthorized_user_cannot_see_app(self):
         """
         An unauthorized user should not be able to access an app's resources.
@@ -328,6 +343,7 @@ class AppTest(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 404)
 
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_app_transfer(self):
         owner = User.objects.get(username='autotest2')
         owner_token = Token.objects.get(user=owner).key
@@ -373,6 +389,39 @@ class AppTest(TestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['owner'], self.user.username)
+
+    @override_settings(DEFAULT_PERMISSIONS_APPS=False)
+    def test_default_apps_permissions(self):
+        base_url = '/v1/apps'
+        token = Token.objects.get(user=User.objects.get(username='autotest2')).key
+        response = self.client.post(base_url, HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
+    @override_settings(DEFAULT_PERMISSIONS_RUN=False)
+    def test_push_perm(self):
+        """
+        Test run permission.
+        """
+        collab = User.objects.get(username='autotest2')
+        collab_token = Token.objects.get(user=collab).key
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': 'autotest2'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+
+        # Collaborators shouldn't be able to run
+        url = '/v1/apps/{}/run'.format(app_id)
+        body = {'command': 'ls -al'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(collab_token))
+        self.assertEqual(response.status_code, 403)
 
 
 FAKE_LOG_DATA = """

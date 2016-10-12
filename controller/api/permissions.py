@@ -8,7 +8,9 @@ from api import models
 
 
 def is_app_user(request, obj):
-    if request.user.is_superuser or \
+    if settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+        return True
+    elif request.user.is_superuser or \
             isinstance(obj, models.App) and obj.owner == request.user or \
             hasattr(obj, 'app') and obj.app.owner == request.user:
         return True
@@ -17,6 +19,41 @@ def is_app_user(request, obj):
         return request.method != 'DELETE'
     else:
         return False
+
+
+def can_push(request, obj):
+        if not is_app_user(request, obj):
+            return False
+        elif settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+            return True
+        elif request.user.is_superuser:
+            return True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_PUSH
+
+
+def can_scale(request, obj):
+        if settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+            return True
+        elif request.user.is_superuser:
+            return True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_SCALE
+
+
+def can_run(request, obj):
+        if settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+            return True
+        elif request.user.is_superuser:
+            return True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_RUN
 
 
 class IsAnonymous(permissions.BasePermission):
@@ -146,3 +183,71 @@ class CanRegenerateToken(permissions.BasePermission):
             return request.user.is_superuser
         else:
             return True
+
+
+class Apps(permissions.BasePermission):
+    """
+    Checks if a user can create an app.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if request.user.is_superuser:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_APPS
+
+
+class Certs(permissions.BasePermission):
+    """
+    Checks if a user can access certs.
+    """
+
+    def has_permission(self, request, view):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if request.user.is_superuser:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_CERTS
+
+
+class Config(permissions.BasePermission):
+    """
+    Checks if collaborators can access config.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+            return True
+        elif request.user.is_superuser:
+            return True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_CONFIG
+
+
+class Domains(permissions.BasePermission):
+    """
+    Checks if collaborators can access domains.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` if permission is granted, `False` otherwise.
+        """
+        if settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT:
+            return True
+        elif request.user.is_superuser:
+            return True
+        elif hasattr(obj, 'owner') and obj.owner == request.user:
+            return True
+        else:
+            return settings.DEFAULT_PERMISSIONS_DOMAINS

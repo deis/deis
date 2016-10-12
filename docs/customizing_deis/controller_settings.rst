@@ -44,6 +44,7 @@ setting                                   description
 /deis/controller/subdomain                subdomain used by the router for API requests (default: "deis")
 /deis/controller/webEnabled               enable controller web UI (default: 0)
 /deis/controller/workers                  number of web worker processes (default: CPU cores * 2 + 1)
+/deis/controller/permissions/*            default permissions, see :ref:`configure_default_permissions`
 /deis/database/host                       host of the database component (set by database)
 /deis/database/port                       port of the database component (set by database)
 /deis/database/engine                     database engine (set by database)
@@ -131,6 +132,36 @@ This will set the registration mode to admin_only.
 .. code-block:: console
 
     $ deisctl config controller set registrationMode="admin_only"
+
+.. _configure_default_permissions:
+
+Configuring Default Permissions
+-------------------------------
+These settings can be used to configure the default permissions for users.
+These settings are retroactive and affects all current and new users.
+
+All permission settings are boolean values, 1 for granted, 0 for denied.
+
+Settings Used by Permissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=========================================== =======
+setting                                     default
+=========================================== =======
+/deis/controller/permissions/apps           1
+/deis/controller/permissions/app_management 0
+/deis/controller/permissions/certs          1
+/deis/controller/permissions/config         1
+/deis/controller/permissions/domains        1
+/deis/controller/permissions/push           1
+/deis/controller/permissions/scale          1
+/deis/controller/permissions/run            1
+=========================================== =======
+
+For example, this command prevents normal users from creating apps.
+
+.. code-block:: console
+
+    $ deisctl config controller set permissions/apps=0
 
 Using a LDAP Auth
 -----------------

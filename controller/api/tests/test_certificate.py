@@ -4,6 +4,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import App, Certificate
@@ -19,7 +20,7 @@ class CertificateTest(TestCase):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
         self.user2 = User.objects.get(username='autotest2')
-        self.token2 = Token.objects.get(user=self.user).key
+        self.token2 = Token.objects.get(user=self.user2).key
         self.url = '/v1/certs'
         self.app = App.objects.create(owner=self.user, id='test-app')
         self.key = """-----BEGIN RSA PRIVATE KEY-----
@@ -143,3 +144,11 @@ thejiQz0ThCMBw7QMpVOiSvYAlQG0ATsRYwdTDqENIWKlerOLCSuxmbqe8XeDKhq
         url = '/v1/certs/*.example.com'
         response = self.client.delete(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 204)
+
+    @override_settings(DEFAULT_PERMISSIONS_CERTS=False)
+    def test_certs_permissions(self):
+        """Tests that normal users can be blocked from creating certificates."""
+        body = {'certificate': self.autotest_example_com_cert, 'key': self.key}
+        response = self.client.post(self.url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token2))
+        self.assertEqual(response.status_code, 403)

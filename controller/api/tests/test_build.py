@@ -11,6 +11,8 @@ import json
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 import mock
+from django.conf import settings
+from django.test.utils import override_settings
 from rest_framework.authtoken.models import Token
 
 from api.models import Build
@@ -27,6 +29,7 @@ class BuildTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.get(username='autotest')
         self.token = Token.objects.get(user=self.user).key
+        settings.DEFAULT_PERMISSIONS_APP_MANAGEMENT = False
 
     @mock.patch('requests.post', mock_status_ok)
     def test_build(self):
@@ -206,6 +209,7 @@ class BuildTest(TransactionTestCase):
                          response.data['app'], response.data['uuid'][:7]))
 
     @mock.patch('requests.post', mock_status_ok)
+    @override_settings(DEFAULT_PERMISSIONS_APPS=True)
     def test_admin_can_create_builds_on_other_apps(self):
         """If a user creates an application, an administrator should be able
         to push builds.
@@ -292,3 +296,31 @@ class BuildTest(TransactionTestCase):
                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 0)
+
+    @override_settings(DEFAULT_PERMISSIONS_PUSH=False)
+    def test_push_permission(self):
+        """
+        Test that push permission works
+        """
+
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+
+        collab = User.objects.get(username='autotest2')
+        token = Token.objects.get(user=collab).key
+
+        # create a new permission
+        url = "/v1/apps/{}/perms".format(app_id)
+        body = {'username': 'autotest2'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+
+        # collaborator cannot create build
+        url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example'}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(token))
+        self.assertEqual(response.status_code, 403)
