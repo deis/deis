@@ -13,5 +13,7 @@ To get started with Deis, first read :ref:`Understanding Deis <understanding_dei
 
 The full documentation tree can be seen :ref:`here <toctree>`.
 
+Please note that this documentation is for Deis Workflow (v1). For v2 documentation visit https://github.com/deis/workflow/
+
 .. image:: ../controller/web/static/img/deis-graphic.png
     :alt: Deis cover logo
