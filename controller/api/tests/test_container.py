@@ -667,3 +667,39 @@ class ContainerTest(TransactionTestCase):
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), container_set.filter(type='web', num=1).count())
+
+    def test_prune_old_containers(self):
+        url = '/v1/apps'
+        response = self.client.post(url, HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 201)
+        app_id = response.data['id']
+        # post a new build
+        build_url = "/v1/apps/{app_id}/builds".format(**locals())
+        body = {'image': 'autotest/example', 'sha': 'a'*40,
+                'procfile': json.dumps({'web': 'node server.js', 'worker': 'node worker.js'})}
+        response = self.client.post(build_url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        url = "/v1/apps/{app_id}/scale".format(**locals())
+        body = {'web': 4, 'worker': 8}
+        response = self.client.post(url, json.dumps(body), content_type='application/json',
+                                    HTTP_AUTHORIZATION='token {}'.format(self.token))
+        self.assertEqual(response.status_code, 204)
+        containers = App.objects.get(id=app_id).container_set.all()
+        self.assertEqual(containers.count(), 12)
+        # save a representation of this container set to compare against later
+        repr_map = map(repr, containers)
+        # create some duplicate containers
+        for i in range(5):
+            for c in containers:
+                n = c.clone(c.release)
+                n.save()
+        # recreate the queryset since iterating caused it to be cached
+        containers = App.objects.get(id=app_id).container_set.all()
+        # test that duplicate containers actually exist at this point
+        self.assertEqual(containers.count(), 72)
+        # call the purge_containers method
+        app = App.objects.get(id=app_id)
+        app._prune_containers()
+        # verify that earlier duplicate containers went away
+        self.assertEqual(containers.count(), 12)
+        self.assertQuerysetEqual(containers, repr_map)
