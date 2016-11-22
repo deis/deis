@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
+	"archive/tar"
 
 	"github.com/docker/docker/pkg/pools"
 	"github.com/docker/docker/pkg/system"

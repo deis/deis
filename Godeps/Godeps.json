@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/deis/deis",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.7.3",
 	"Packages": [
 		"./..."
 	],
@@ -245,11 +245,6 @@
 		},
 		{
 			"ImportPath": "github.com/docker/docker/utils",
-			"Comment": "v1.5.0",
-			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
-		},
-		{
-			"ImportPath": "github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar",
 			"Comment": "v1.5.0",
 			"Rev": "a8a31eff10544860d2188dddabdee4d727545796"
 		},

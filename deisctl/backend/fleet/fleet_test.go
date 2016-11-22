@@ -174,8 +174,6 @@ func (s *syncBuffer) Bytes() []byte {
 }
 
 func TestNewClient(t *testing.T) {
-	t.Parallel()
-
 	// set required flags
 	Flags.Endpoint = "http://127.0.0.1:4001"
 
