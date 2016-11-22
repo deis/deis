@@ -12,7 +12,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
+	"archive/tar"
 )
 
 const (

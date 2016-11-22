@@ -7,11 +7,12 @@ import (
 	"path"
 	"testing"
 
+	"archive/tar"
+
 	"github.com/docker/docker/daemon/graphdriver"
 	_ "github.com/docker/docker/daemon/graphdriver/vfs" // import the vfs driver so it is used in the tests
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/utils"
-	"github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 )
 
 const (
