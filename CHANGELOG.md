@@ -1,3 +1,26 @@
+### v1.13.3 -> v1.13.4
+
+#### Fixes
+
+ - [`c63ade6`](https://github.com/deis/deis/commit/c63ade6027870308f046f17ce3aab268d2fdc61e) Godeps,deisctl: serialize a unit test and fix a package import
+ - [`7fd534c`](https://github.com/deis/deis/commit/7fd534c0b16389960290eb149c97c869331140ad) models: prune old containers before deploy
+ - [`49b008c`](https://github.com/deis/deis/commit/49b008ccaaeca4a778dbf8010ec3cde41f9b2913) contrib/azure: update template to current API and images
+ - [`d5d51cd`](https://github.com/deis/deis/commit/d5d51cdbb5caec564877f514ed86b9547b856c6a) client: do not add top level command to cmdArgs
+ - [`4ade016`](https://github.com/deis/deis/commit/4ade01607b1cbe9c583e6491fd4cd3b8b9599a65) perms: user-only settings file permissions
+ - [`2381530`](https://github.com/deis/deis/commit/2381530543d3fec4cb472bae24a646a8c76cce0d) database/build.sh: refer to stable pv package location
+
+#### Documentation
+
+ - [`68fb9b4`](https://github.com/deis/deis/commit/68fb9b4ca0d73339324766f44343441017ce1309) layout: Update notice with URL for published v2 docs
+
+#### Maintenance
+
+ - [`9b83d00`](https://github.com/deis/deis/commit/9b83d00d5910bb6e98a9a7aec6a0667b8e195cb8) buildpacks: update several buildpacks
+ - [`b5a1c38`](https://github.com/deis/deis/commit/b5a1c3844eeff06f0d0a5ae0420aef17b81c0f31) community: add latest community meeting
+ - [`e5f349d`](https://github.com/deis/deis/commit/e5f349dd9fb090aa993ad74758b3bbf038d44d23) community: september 2016 community meeting
+ - [`3ce03a4`](https://github.com/deis/deis/commit/3ce03a4f6ccc07719ffe98b5522de2b8e422e1c8) router: upgrade nginx to 1.10.1 stable
+ - [`014ba61`](https://github.com/deis/deis/commit/014ba61294ffd9e3430e5f745cc1835e4c1524b4) buildpacks: update heroku-buildpack-go to v46
+
 ### v1.13.2 -> v1.13.3
 
 #### Features
