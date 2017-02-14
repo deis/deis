@@ -1,5 +1,5 @@
-| This repository (`deis/deis`) is home for the Deis v1 PaaS (based on CoreOS + Fleet). For more information about the latest version, based on Kubernetes, visit [`deis/workflow`](https://github.com/deis/workflow).
-|---|
+|![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Warning.svg/156px-Warning.svg.png) | This repository (`deis/deis`) is [no longer developed or maintained](https://deis.com/blog/2017/deis-paas-v1-takes-a-bow/). The Deis v1 PaaS based on CoreOS Container Linux and Fleet has been replaced by [Deis Workflow](https://github.com/deis/workflow) which is based on Kubernetes. |
+|---|---|
 
 # Deis v1 PaaS
 
