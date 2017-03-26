@@ -11,8 +11,13 @@ RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-d
 RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 \
     && chmod +x /usr/local/bin/confd
 
+# Add supervisord in order to start the services
+RUN apt-get install -y supervisor && mkdir -p /var/log/supervisor
+ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # define execution environment
-CMD ["/app/bin/boot"]
+# CMD ["/app/bin/boot"]
+CMD ["/usr/bin/supervisord", "-n"]
 EXPOSE 8000
 
 # define work environment
