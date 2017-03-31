@@ -145,4 +145,21 @@ if VPC_ID and VPC_SUBNETS and VPC_ZONES and len(VPC_SUBNETS.split(',')) == len(V
     template['Resources']['CoreOSServerAutoScale']['Properties']['VPCZoneIdentifier'] = VPC_PRIVATE_SUBNETS.split(',')
     template['Resources']['DeisWebELB']['Properties']['Subnets'] = VPC_SUBNETS.split(',')
 
+SSL_CERT_ID = os.getenv('SSL_CERT_ID', None)
+if SSL_CERT_ID:
+    template['Resources']['DeisWebELB']['Properties']['Listeners'] = [
+        {'LoadBalancerPort': '80',
+         'Protocol': 'HTTP',
+         'InstancePort': '80',
+         'InstanceProtocol': 'HTTP'},
+        {'LoadBalancerPort': '443',
+         'Protocol': 'HTTPS',
+         'SSLCertificateId': SSL_CERT_ID,
+         'InstancePort': '80',
+         'InstanceProtocol': 'HTTP'},
+        {'LoadBalancerPort': '2222',
+         'Protocol': 'TCP',
+         'InstancePort': '2222',
+         'InstanceProtocol': 'TCP'}]
+
 print json.dumps(template)
