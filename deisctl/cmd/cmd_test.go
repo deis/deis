@@ -54,6 +54,10 @@ func (backend *backendStub) RollingRestart(target string, wg *sync.WaitGroup, ou
 	backend.restartedUnits = append(backend.restartedUnits, target)
 }
 
+func (backend *backendStub) Doctor() error {
+	return nil
+}
+
 func (backend *backendStub) ListMachines() error {
 	return nil
 }

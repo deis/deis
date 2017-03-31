@@ -19,6 +19,7 @@ import (
 // DeisCtlClient manages Deis components, configuration, and related tasks.
 type DeisCtlClient interface {
 	Config(argv []string) error
+	Doctor(argv []string) error
 	Install(argv []string) error
 	Journal(argv []string) error
 	List(argv []string) error
@@ -376,6 +377,23 @@ Usage:
 	}
 
 	return cmd.Dock(target, vargs, c.Backend)
+}
+
+// Checks the health of the platform
+func (c *Client) Doctor(argv []string) error {
+	usage := `Checks the health of the platform.
+
+  Usage: deisctl doctor
+  `
+	// parse command-line arguments
+	if _, err := docopt.Parse(usage, argv, true, "", false); err != nil {
+		return err
+	}
+
+	return cmd.Doctor(c.Backend)
+	//@todo: check if platform is running
+	//@todo: check deisctl version against deis version
+	//@todo: check component image tags (use new machines command)
 }
 
 // Start activates the specified components.

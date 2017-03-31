@@ -47,6 +47,7 @@ Commands, use "deisctl help <command>" to learn more:
   uninstall         uninstall components
   upgrade-prep      prepare a running cluster for upgrade
   upgrade-takeover  allow an upgrade to gracefully takeover a running cluster
+  doctor            checks the health of the running Deis platform
 
 Options:
   -h --help                   show this help screen
@@ -128,6 +129,8 @@ Options:
 		err = c.UpgradeTakeover(argv)
 	case "rolling-restart":
 		err = c.RollingRestart(argv)
+	case "doctor":
+		err = c.Doctor(argv)
 	case "help":
 		fmt.Print(usage)
 		return 0

@@ -466,3 +466,8 @@ func SSH(target string, cmd []string, b backend.Backend) error {
 func Dock(target string, cmd []string, b backend.Backend) error {
 	return b.Dock(target, cmd)
 }
+
+// Doctor checks if the current platform is running and is healthy
+func Doctor(b backend.Backend) error {
+	return b.Doctor()
+}
