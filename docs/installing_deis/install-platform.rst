@@ -76,6 +76,7 @@ Once finished, run this command to provision the Deis platform:
 
 .. code-block:: console
 
+    $ deisctl refresh-units
     $ deisctl install platform
 
 You will see output like the following, which indicates that the units required to run Deis have
