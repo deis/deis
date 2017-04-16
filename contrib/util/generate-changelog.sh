@@ -36,6 +36,13 @@ subheading() {
     echo
 }
 
+summary() {
+  # show the merged pull requests
+  printf "####Merged pull Requests:\n"
+  git --no-pager log --oneline --merges "$FROM".."$TO"
+  printf "\n"
+}
+
 main() {
     # if REPOROOT is already in the environment, don't overload it and use that
     if [ -z "$REPOROOT" ];
@@ -62,6 +69,8 @@ main() {
     TO=${2:-"HEAD"}
 
     printf "### $FROM -> $TO\n\n"
+    # summary section of merged PR's
+    summary
 
     # Iterate over the types of messages specified
     for LEGALTYPE in $TYPES
