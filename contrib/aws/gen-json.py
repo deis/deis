@@ -4,6 +4,7 @@ import json
 import os
 import urllib2
 import yaml
+import copy
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--channel', help='the CoreOS channel to use', default='stable')
@@ -107,14 +108,24 @@ data['coreos']['units'] = new_units + data['coreos']['units']
 
 # Point to the right data directory
 data['coreos']['etcd2']['data-dir'] = '/media/etcd'
+data['coreos']['fleet']['metadata'] = data['coreos']['fleet']['metadata'] + ',environ=dev'
 
 header = ["#cloud-config", "---"]
 dump = yaml.dump(data, default_flow_style=False)
 
+#--
+# Point to the right dataProd directory
+dataProd = copy.deepcopy(data)
+dataProd['coreos']['fleet']['metadata'] = dataProd['coreos']['fleet']['metadata'] + ',environ=prod'
+dumpProd = yaml.dump(dataProd, default_flow_style=False)
+#--
+
 template = json.load(open(os.path.join(CURR_DIR, 'deis.template.json'), 'r'))
 
 template['Resources']['CoreOSServerLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = ["\n", header + dump.split("\n")]
-template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 3))
+template['Resources']['CoreOSServerProdLaunchConfig']['Properties']['UserData']['Fn::Base64']['Fn::Join'] = ["\n", header + dumpProd.split("\n")]
+template['Parameters']['ClusterSize']['Default'] = str(os.getenv('DEIS_NUM_INSTANCES', 2))
+template['Parameters']['ProdClusterSize']['Default'] = str(1)
 template['Mappings']['CoreOSAMIs'] = coreos_amis(args['channel'], args['version'])
 
 VPC_ID = os.getenv('VPC_ID', None)

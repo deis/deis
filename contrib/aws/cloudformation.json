@@ -1,6 +1,34 @@
 [
-    {
-        "ParameterKey":     "KeyPair",
-        "ParameterValue":   "deis"
-    }
+  {
+    "ParameterKey": "KeyPair",
+    "ParameterValue": "deis"
+  },
+  {
+    "ParameterKey": "EC2VirtualizationType",
+    "ParameterValue": "HVM"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "m3.medium"
+  },
+  {
+    "ParameterKey": "RootVolumeSize",
+    "ParameterValue": "12"
+  },
+  {
+    "ParameterKey": "DockerVolumeSize",
+    "ParameterValue": "100"
+  },
+  {
+    "ParameterKey": "EtcdVolumeSize",
+    "ParameterValue": "3"
+  },
+  {
+    "ParameterKey": "ClusterSize",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "ProdClusterSize",
+    "ParameterValue": "1"
+  }
 ]
