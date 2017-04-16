@@ -83,3 +83,20 @@ running that process.
 .. _`DockerHub`: https://registry.hub.docker.com/
 .. _`CMD instruction`: https://docs.docker.com/reference/builder/#cmd
 .. _`issue 1156`: https://github.com/deis/deis/issues/1156
+
+
+Building Docker Images with Deis/CoreOS
+=======================================
+
+When you start out with writing Dockerfiles, you need a place to test them - the local Deis cluster can be used
+for that.
+
+You will need to do these things:
+
+ 1. Use `coreos-cloudinit` to prepare CoreOS' docker.socket to listen to the docker client
+ 2. Stop docker.service for a single node in your cluster
+ 3. Restart docker.socker
+ 4. Start docker.service again
+ 5. Verify connectivity
+ 
+ 
