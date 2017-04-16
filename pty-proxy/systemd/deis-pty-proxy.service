@@ -1,0 +1,16 @@
+[Unit]
+Description=deis-pty-proxy
+Requires=etcd.service
+After=etcd.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=20m
+ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/pty-proxy`; docker history $IMAGE >/dev/null 2>&1 || docker pull $IMAGE"
+ExecStartPre=/bin/sh -c "docker inspect deis-pty-proxy >/dev/null 2>&1 && docker rm -f deis-pty-proxy || true"
+ExecStart=/usr/bin/docker run -e ETCD_HOST=${COREOS_PRIVATE_IPV4} deis/pty-proxy
+ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/pty-proxy` && docker run --name deis-pty-proxy --rm -p 5309:5309 -e PORT=5309 -e ETCD_HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
+ExecStopPost=/usr/bin/docker stop deis-pty-proxy
+
+[Install]
+WantedBy=multi-user.target
