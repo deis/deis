@@ -1,0 +1,216 @@
+heat_template_version: 2013-05-23
+
+description: Deploy a CoreOS cluster that tracks the Alpha Channel
+
+parameters:
+  count:
+    description: Number of CoreOS machines to deploy
+    type: number
+    default: 3
+    constraints:
+    - range:
+        min: 1
+        max: 12
+      description: Must be between 3 and 12 servers.
+  flavor:
+    type: string
+    default: OnMetal Compute v1
+    constraints:
+    - allowed_values:
+      - OnMetal Compute v1
+      - OnMetal I/O v1
+      - OnMetal Memory v1
+      description: |
+        Must be a valid Rackspace Cloud Server flavor for the region you have
+        selected to deploy into.
+  name:
+    type: string
+    description: Name of each CoreOS machine booted
+    default: CoreOS-alpha
+  etcd_discovery:
+    type: string
+    description: URL of etcd discovery
+  deis_version:
+    type: string
+    description: version of deis to install ( equiv to github branch/release)
+    default: master
+
+resources:
+
+  ssh_key:
+    type: "OS::Nova::KeyPair"
+    properties:
+      name: { get_param: name }
+      save_private_key: true
+
+  deis_nodes:
+    type: "OS::Heat::ResourceGroup"
+    properties:
+      count: { get_param: count }
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          key_name: { get_resource: ssh_key }
+          image: "64b92981-69c6-4e8a-828b-4a20a8db9adc"
+          flavor: { get_param: flavor }
+          name: { get_param: name }
+          user_data_format: RAW
+          config_drive: "true"
+          user_data:
+            str_replace:
+              template: |
+                #cloud-config
+                ---
+                coreos:
+                  etcd:
+                    # generate a new token for each unique cluster from https://discovery.etcd.io/new
+                    # uncomment the following line and replace it with your discovery URL
+                    addr: $private_ipv4:4001
+                    peer-addr: $private_ipv4:7001
+                    bind-addr: $private_ipv4
+                    peer-bind-addr: $private_ipv4
+                    discovery: %etcd_discovery%
+                  fleet:
+                  units:
+                  - name: stop-update-engine.service
+                    command: start
+                    content: |
+                      [Unit]
+                      Description=stop update-engine
+                      [Service]
+                      Type=oneshot
+                      ExecStart=/usr/bin/systemctl stop update-engine.service
+                      ExecStartPost=/usr/bin/systemctl mask update-engine.service
+                  - name: create-coreos-env.service
+                    command: start
+                    content: |
+                      [Unit]
+                      Description=creates coreos environment
+                      Before=fix-etcd-env.service
+
+                      [Service]
+                      Type=oneshot
+                      ExecStartPre=/bin/sh -c "echo COREOS_PUBLIC_IPV4=`ifconfig bond0.101 | grep 'inet ' | awk '{print $2}'` >> /etc/environment"
+                      ExecStart=/bin/sh -c "echo COREOS_PRIVATE_IPV4=`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'` >> /etc/environment"
+                  - name: fix-etcd-env.service
+                    command: start
+                    content: |
+                      [Unit]
+                      Description=fixes etcd service
+                      Before=etcd.service
+                
+                      [Service]
+                      Type=oneshot
+                      ExecStart=/bin/sh -c "sed -i \"s/=:/=`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`:/\" /run/systemd/system/etcd.service.d/20-cloudinit.conf"
+                      ExecStartPost=/bin/sh -c "echo Environment=\"ETCD_BIND_ADDR: `ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`\" >> /run/systemd/system/etcd.service.d/20-cloudinit.conf"
+                      ExecStartPost=/bin/sh -c "echo Environment=\"ETCD_PEER_ADDR: `ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`\" >> /run/systemd/system/etcd.service.d/20-cloudinit.conf"
+                      ExecStartPost=systemctl daemon-reload
+                      ExecStartPost=systemctl restart etcd
+                  - name: create-fleet-config.service
+                    command: start
+                    content: |
+                      [Unit]
+                      Description=creates fleet config, restarts fleet
+                      Before=etcd.service
+
+                      [Service]
+                      Type=oneshot
+                      ExecStartPre=/bin/mkdir -p /etc/fleet
+                      ExecStart=/bin/sh -c "/bin/echo etcd_servers=[\"http://`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`:4001\"] > /etc/fleet/fleet.conf"
+                      ExecStartPost=/bin/systemctl restart fleet"
+                  - name: install-deis.service
+                    command: start
+                    content: |
+                      [Unit]
+                      Description=Installs DEIS
+                      After=docker.service
+
+                      [Service]
+                      Type=oneshot
+                      ExecStartPre=/usr/bin/docker pull paulczar/deis-install:latest
+                      ExecStartPre=/bin/bash -c "sleep $(( ( RANDOM % 10 )  + 1 ))"
+                      ExecStart=/bin/sh -c "/usr/bin/docker run -t -i -e KEY=\"`< /run/deis/keys/deis`\" -e DEIS_NUM_ROUTERS=%deis_num_routers% -e ETCDCTL_PEERS=`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`:4001 -e VERSION=%deis_version% -e FLEETCTL_ENDPOINT=http://`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'`:4001 -e FLEETCTL_TUNNEL=`ifconfig bond0.401 | grep 'inet ' | awk '{print $2}'` paulczar/deis-install:latest"
+                  - name: etcd.service
+                    command: start
+                  - name: fleet.service
+                    command: start
+                write_files:
+                  - path: /run/deis/keys/deis
+                    permissions: 0600
+                    owner: core
+                    content: "%ssh_private_key%"
+                  - path: /etc/deis-release
+                    content: |
+                      DEIS_RELEASE=latest
+                  - path: /etc/motd
+                    content: " \e[31m* *    \e[34m*   \e[32m*****    \e[39mddddd   eeeeeee iiiiiii   ssss\n\e[31m*   *  \e[34m* *  \e[32m*   *     \e[39md   d   e    e    i     s    s\n \e[31m* *  \e[34m***** \e[32m*****     \e[39md    d  e         i    s\n\e[32m*****  \e[31m* *    \e[34m*       \e[39md     d e         i     s\n\e[32m*   * \e[31m*   *  \e[34m* *      \e[39md     d eee       i      sss\n\e[32m*****  \e[31m* *  \e[34m*****     \e[39md     d e         i         s\n  \e[34m*   \e[32m*****  \e[31m* *      \e[39md    d  e         i          s\n \e[34m* *  \e[32m*   * \e[31m*   *     \e[39md   d   e    e    i    s    s\n\e[34m***** \e[32m*****  \e[31m* *     \e[39mddddd   eeeeeee iiiiiii  ssss\n\n\e[39mWelcome to Deis\t\t\tPowered by Core\e[38;5;45mO\e[38;5;206mS\e[39m\n"
+                  - path: /etc/profile.d/nse-function.sh
+                    permissions: 0755
+                    content: |
+                      function nse() {
+                        sudo nsenter --pid --uts --mount --ipc --net --target $(docker inspect --format="{{ .State.Pid }}" $1)
+                      }
+                  - path: /run/deis/bin/get_image
+                    permissions: 0755
+                    content: |
+                      #!/bin/bash
+                      # usage: get_image <component_path>
+                      IMAGE=`etcdctl get $1/image 2>/dev/null`
+
+                      # if no image was set in etcd, we use the default plus the release string
+                      if [ $? -ne 0 ]; then
+                        RELEASE=`etcdctl get /deis/release 2>/dev/null`
+
+                        # if no release was set in etcd, use the default provisioned with the server
+                        if [ $? -ne 0 ]; then
+                          source /etc/deis-release
+                          RELEASE=$DEIS_RELEASE
+                        fi
+
+                        IMAGE=$1:$RELEASE
+                      fi
+
+                      # remove leading slash
+                      echo ${IMAGE#/}
+              params:
+                "%ssh_private_key%": { get_attr: [ssh_key, private_key] }
+                "%etcd_discovery%": { get_param: etcd_discovery }
+                "%deis_version%": { get_param: deis_version }
+                "%deis_num_routers%": { get_param: count }
+
+  deis_loadbalancer:
+    type: Rackspace::Cloud::LoadBalancer
+    properties:
+      name: { get_param: name }
+      nodes:
+      - addresses: { get_attr: [deis_nodes, accessIPv4]} # This is where the
+                                                       # wiring magic happens
+        port: 80
+        condition: ENABLED
+      healthMonitor:
+        attemptsBeforeDeactivation: 3
+        delay: 10
+        timeout: 120
+        type: HTTP
+        path: "/health-check"
+        statusRegex: "."
+      protocol: HTTP
+      port: 80
+      virtualIps:
+      - type: PUBLIC
+        ipVersion: IPV4
+
+outputs:
+  lb_public_ip:
+    description: The public IP address of the load balancer
+    value: { get_attr: [deis_loadbalancer, PublicIp]}
+  deis_node_ips:
+    description: The public IP address of the deis nodes
+    value: { get_attr: [deis_nodes, accessIPv4]}
+  deis_networks:
+    description: The networks of the deis nodes.
+    value: { get_attr: [deis_nodes, networks]}
+
+  private_key:
+    description: SSH Private Key
+    value: { get_attr: [ssh_key, private_key] }
