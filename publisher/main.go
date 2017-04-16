@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultRefreshTime time.Duration = 10 * time.Second
+	defaultRefreshTime time.Duration = 20 * time.Second
 	defaultEtcdTTL     time.Duration = defaultRefreshTime * 2
 	defaultHost                      = "127.0.0.1"
 	defaultDockerHost                = "unix:///var/run/docker.sock"
