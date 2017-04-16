@@ -1737,7 +1737,7 @@
  - [`c182966`](https://github.com/deis/deis/commit/c1829662a1f02eadf7902963f62207f22ffaf5f4) restart: add restart command for convenience
  - [`bf68a8e`](https://github.com/deis/deis/commit/bf68a8e64d9095ddbc151ca61fae5a868646aff7) journal: add journal support
  - [`65ee91e`](https://github.com/deis/deis/commit/65ee91eaafdebf672c78d3205e7354806ecb8922) deisctl: move server env variable to etcd
- - [`975ac6b`](https://github.com/deis/deis/commit/975ac6bb840bd492d1863564691598ed91233868) deisctl:  add new feautes and update core-os updatectl to updateservicectl
+ - [`975ac6b`](https://github.com/deis/deis/commit/975ac6bb840bd492d1863564691598ed91233868) deisctl:  add new features and update core-os updatectl to updateservicectl
  - [`b366679`](https://github.com/deis/deis/commit/b366679d4111b6b098f791ae9f559ed999c819e3) deisctl: get groupid and app id from etcd defaults to env variables
  - [`8509f01`](https://github.com/deis/deis/commit/8509f0147dcc8921b781ec438876eadbfa1b8783) deisctl: removed unneccessary code
  - [`558bfb0`](https://github.com/deis/deis/commit/558bfb0660ce1eea91625dfa8ae51f05bd928afe) deisctl:  add hooks and units dirs to constants
@@ -1747,7 +1747,7 @@
  - [`4c509b1`](https://github.com/deis/deis/commit/4c509b1055e629aab3eb743688b8da90d5a32fb0) deisctl:  change flag to string
  - [`5a5f859`](https://github.com/deis/deis/commit/5a5f85988b9b28a9b123b6bee611d36cf6db66b2) deisctl: fix package names
  - [`d07a923`](https://github.com/deis/deis/commit/d07a923d167535380441f3c1b7e86d2502cdfcf1) deisctl: updated command instance
- - [`cb18218`](https://github.com/deis/deis/commit/cb18218d3661ae94854166df759e59853273cd1b) deisctl: removed systemd and distibuted lock
+ - [`cb18218`](https://github.com/deis/deis/commit/cb18218d3661ae94854166df759e59853273cd1b) deisctl: removed systemd and distributed lock
  - [`82ccd66`](https://github.com/deis/deis/commit/82ccd6689aa9180e5d075840d64ba2068efb4803) deisctl: add utils for client instance functions
  - [`dcd22f1`](https://github.com/deis/deis/commit/dcd22f1b14571b9b65bfb4a7a9e11ec0b31bd19f) deisctl:  add update command and updatectl package
 
