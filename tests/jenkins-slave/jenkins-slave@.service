@@ -1,0 +1,18 @@
+[Unit]
+Description=deis-jenkins-slave
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=30m
+ExecStartPre=/bin/sh -c "docker history /deis/jenkins-slave >/dev/null || docker pull /deis/jenkins-slave"
+ExecStartPre=/bin/sh -c "docker inspect deis-jenkins-slave >/dev/null && docker rm -f deis-jenkins-slave || true"
+ExecStart=/bin/sh -c docker run --name deis-jenkins-slave --rm -e NODE_NAME=NODE_NAME -e NODE_SECRET=NODE_SECRET /deis/jenkins-slave"
+ExecStopPost=-/usr/bin/docker rm -f deis-jenkins-slave
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+[X-Fleet]
+Conflicts=deis-jenkins-slave@*.service
