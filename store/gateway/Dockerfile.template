@@ -4,6 +4,8 @@ ADD build.sh /tmp/build.sh
 
 RUN DOCKER_BUILD=true /tmp/build.sh
 
+ADD templates/ceph.conf /app/templates/ceph.conf
+
 WORKDIR /app
 EXPOSE 8888
 CMD ["/app/bin/boot"]
