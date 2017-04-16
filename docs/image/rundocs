@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ $GIT_REPO ]   ; then git clone $GIT_REPO /deis || echo "#### PROBLEM CLONING $GIT_REPO" ; fi
+cd /deis
+if [ $GIT_BRANCH ] ; then git checkout $GIT_BRANCH || echo "#### ERROR TO CHECKOUT TO BRANCH $GIT_BRANCH" ; fi
+cd /deis/docs
+pip install -r docs_requirements.txt
+make server
