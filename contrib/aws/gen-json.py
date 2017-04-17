@@ -4,10 +4,14 @@ import json
 import os
 import urllib2
 import yaml
+import subprocess
+
+CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--channel', help='the CoreOS channel to use', default='stable')
 parser.add_argument('--version', help='the CoreOS version to use', default='current')
+parser.add_argument('--updating', help='Indicates template is in update mode and does not make a new discovery url', action='store_true')
 args = vars(parser.parse_args())
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -78,6 +82,7 @@ ETCD_DROPIN = '''
   After=prepare-etcd-data-directory.service
 '''
 
+
 def coreos_amis(channel, version):
     url = "http://{channel}.release.core-os.net/amd64-usr/{version}/coreos_production_ami_all.json".format(channel=channel, version=version)
     try:
@@ -87,6 +92,21 @@ def coreos_amis(channel, version):
         raise
 
     return dict(map(lambda n: (n['name'], dict(PV=n['pv'], HVM=n['hvm'])), amis['amis']))
+
+
+def discovery_url():
+    # Ensure the cluster has the latest user-data
+    os.chdir(os.path.realpath(os.path.join(CURR_DIR, '..', '..', '..')))  # Just to get to the deis root
+    cmd = "make discovery-url"
+    _, err = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE).communicate()
+    if err:
+        print err
+        raise
+    os.chdir(CURR_DIR)
+
+if not args['updating']:
+    # Create a new discovery URL
+    discovery_url()
 
 new_units = [
     dict({'name': 'format-docker-volume.service', 'command': 'start', 'content': FORMAT_DOCKER_VOLUME}),
