@@ -19,12 +19,12 @@ class Migration(SchemaMigration):
 
         # Adding field 'Config.memory'
         db.add_column(u'api_config', 'memory',
-                      self.gf('json_field.fields.JSONField')(default={}, blank=True),
+                      self.gf('json_field.fields.JSONField')(default=u'{}', blank=True),
                       keep_default=False)
 
         # Adding field 'Config.cpu'
         db.add_column(u'api_config', 'cpu',
-                      self.gf('json_field.fields.JSONField')(default={}, blank=True),
+                      self.gf('json_field.fields.JSONField')(default=u'{}', blank=True),
                       keep_default=False)
 
 
