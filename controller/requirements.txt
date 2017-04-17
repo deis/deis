@@ -5,6 +5,7 @@ django-cors-headers==1.0.0
 # required for south migrations
 django-fsm==2.2.0
 django-guardian==1.2.5
+jsonfield==1.0.3
 django-json-field==0.5.7
 django-auth-ldap==1.2.5
 djangorestframework==3.0.5

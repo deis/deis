@@ -24,7 +24,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 from django.utils.encoding import python_2_unicode_compatible
 from docker.utils import utils as dockerutils
-from json_field.fields import JSONField
+from jsonfield import JSONField
 from OpenSSL import crypto
 import requests
 from rest_framework.authtoken.models import Token

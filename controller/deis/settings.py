@@ -145,7 +145,7 @@ INSTALLED_APPS = (
     # Third-party apps
     'django_auth_ldap',
     'guardian',
-    'json_field',
+    'jsonfield',
     'gunicorn',
     'rest_framework',
     'rest_framework.authtoken',
