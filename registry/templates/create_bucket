@@ -1,3 +1,4 @@
+{{ if exists "/deis/store/gateway" }}
 #!/usr/bin/env python
 
 import boto
@@ -37,3 +38,4 @@ if '.' in name:
 
 if conn.lookup(name) is None:
     conn.create_bucket(name)
+{{ end }}
