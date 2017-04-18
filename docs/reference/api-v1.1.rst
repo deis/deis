@@ -46,7 +46,8 @@ Optional Parameters:
 
     {
         "first_name": "test",
-        "last_name": "testerson"
+        "last_name": "testerson",
+        "token" : "abc123"
     }
 
 Example Response:
@@ -73,6 +74,82 @@ Example Response:
         "user_permissions": []
     }
 
+Create a Registration Token
+```````````````````````````
+
+.. note::
+
+    This command requires administrative privileges
+
+Example Request:
+
+.. code-block:: console
+
+    POST /v1/auth/register/tokens/ HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 200 OK
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
+
+    {"token": "abc123"}
+
+Delete a Registration Token
+```````````````````````````
+
+.. note::
+
+    This command requires administrative privileges
+
+Example Request:
+
+.. code-block:: console
+
+    DELETE /v1/auth/register/tokens/abc123/ HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
+
+Delete All Registration Tokens
+``````````````````````````````
+
+.. note::
+
+    This command requires administrative privileges
+
+Example Request:
+
+.. code-block:: console
+
+    DELETE /v1/auth/register/tokens/ HTTP/1.1
+    Host: deis.example.com
+    Content-Type: application/json
+    Authorization: token abc123
+
+Example Response:
+
+.. code-block:: console
+
+    HTTP/1.1 204 NO CONTENT
+    X_DEIS_API_VERSION: 1.1
+    X_DEIS_PLATFORM_VERSION: 1.4.1
+    Content-Type: application/json
 
 Log in
 ``````
