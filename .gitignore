@@ -1,3 +1,6 @@
+# ignore direnv envrc
+.envrc
+
 *.py[cod]
 
 # Packages
