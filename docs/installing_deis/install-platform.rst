@@ -57,6 +57,10 @@ hosts during ``deis run``:
 .. code-block:: console
 
     $ deisctl config platform set sshPrivateKey=~/.ssh/deis
+    
+.. note::
+
+    For Vagrant clusters: ``deisctl config platform set sshPrivateKey=~/.vagrant.d/insecure_private_key``
 
 .. note::
 
