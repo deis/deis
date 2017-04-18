@@ -57,7 +57,7 @@ var randomApp = GetRandomApp()
 func GetGlobalConfig() *DeisTestConfig {
 	authKey := os.Getenv("DEIS_TEST_AUTH_KEY")
 	if authKey == "" {
-		authKey = "deis"
+		authKey = "~/.ssh/deiskey"
 	}
 	hosts := os.Getenv("DEIS_TEST_HOSTS")
 	if hosts == "" {

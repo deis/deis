@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	keysAddCmd    = "keys:add ~/.ssh/{{.AuthKey}}.pub || true"
+	keysAddCmd    = "keys:add {{.AuthKey}}.pub || true"
 	keysListCmd   = "keys:list"
 	keysRemoveCmd = "keys:remove {{.AuthKey}} || true"
 )
@@ -22,7 +22,7 @@ func TestKeys(t *testing.T) {
 	keysListTest(t, params, true)
 }
 
-// Requires a ~/.ssh/deis-testkey to be set up:
+// Requires an ssh key to be set up:
 // $ ssh-keygen -q -t rsa -f ~/.ssh/deiskey -N '' -C deiskey
 func keysSetup(t *testing.T) *utils.DeisTestConfig {
 	cfg := utils.GetGlobalConfig()
@@ -31,7 +31,6 @@ func keysSetup(t *testing.T) *utils.DeisTestConfig {
 }
 
 func keysAddTest(t *testing.T, params *utils.DeisTestConfig) {
-	params.AuthKey = "deiskey"
 	utils.Execute(t, keysAddCmd, params, false, "")
 	utils.Execute(t, keysAddCmd, params, true,
 		"This field must be unique")

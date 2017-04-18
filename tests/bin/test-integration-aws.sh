@@ -64,7 +64,7 @@ log_phase "Provisioning $DEIS_NUM_INSTANCES-node CoreOS"
 if ! aws ec2 describe-key-pairs --key-names "deis" >/dev/null ; then
     echo "Importing $DEIS_TEST_AUTH_KEY keypair to EC2"
     aws ec2 import-key-pair --key-name deis \
-        --public-key-material file://~/.ssh/$DEIS_TEST_AUTH_KEY.pub \
+        --public-key-material file://$DEIS_TEST_AUTH_KEY.pub \
         --output text
 fi
 
