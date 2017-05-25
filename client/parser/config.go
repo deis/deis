@@ -90,7 +90,7 @@ Options:
 		return err
 	}
 
-	return cmd.ConfigSet(safeGetValue(args, "--app"), args["<var>=<value>"].([]string))
+	return cmd.ConfigSet(safeGetValue(args, "--app"), args["<var>=<value>"].([]string), false)
 }
 
 func configUnset(argv []string) error {
@@ -159,9 +159,11 @@ Usage: deis config:push [options]
 
 Options:
   -a --app=<app>
-    the uniquely identifiable name for the application.
+    the uniquely identifiable name for the application
   -p <path>, --path=<path>
     a path leading to an environment file [default: .env]
+  -l --lazy
+    Do nothing if config is equal do deployed one
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -170,5 +172,9 @@ Options:
 		return err
 	}
 
-	return cmd.ConfigPush(safeGetValue(args, "--app"), safeGetValue(args, "--path"))
+	app := safeGetValue(args, "--app")
+	path := safeGetValue(args, "--path")
+	lazy := args["--lazy"].(bool)
+
+	return cmd.ConfigPush(app, path, lazy)
 }

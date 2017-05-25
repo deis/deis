@@ -57,7 +57,7 @@ func ConfigList(appID string, oneLine bool) error {
 }
 
 // ConfigSet sets an app's config variables.
-func ConfigSet(appID string, configVars []string) error {
+func ConfigSet(appID string, configVars []string, checkDifference bool) error {
 	c, appID, err := load(appID)
 
 	if err != nil {
@@ -88,6 +88,23 @@ func ConfigSet(appID string, configVars []string) error {
 		}
 
 		configMap["SSH_KEY"] = base64.StdEncoding.EncodeToString([]byte(sshKey))
+	}
+
+	if checkDifference {
+		currentConfig, err := config.List(c, appID)
+
+		if err != nil {
+			return err
+		}
+
+		fmt.Print("Checking difference... ")
+
+		currentConfigMap := currentConfig.Values
+
+		if compareMaps(currentConfigMap, configMap) {
+			fmt.Print("no changes is detected\n\n")
+			return ConfigList(appID, false)
+		}
 	}
 
 	fmt.Print("Creating config... ")
@@ -202,7 +219,7 @@ func ConfigPull(appID string, interactive bool, overwrite bool) error {
 }
 
 // ConfigPush pushes an app's config from a file.
-func ConfigPush(appID string, fileName string) error {
+func ConfigPush(appID string, fileName string, checkDifference bool) error {
 	contents, err := ioutil.ReadFile(fileName)
 
 	if err != nil {
@@ -210,7 +227,7 @@ func ConfigPush(appID string, fileName string) error {
 	}
 
 	config := strings.Split(string(contents), "\n")
-	return ConfigSet(appID, config[:len(config)-1])
+	return ConfigSet(appID, config[:len(config)-1], checkDifference)
 }
 
 func parseConfig(configVars []string) map[string]interface{} {
@@ -237,4 +254,18 @@ func formatConfig(configVars map[string]interface{}) string {
 	}
 
 	return formattedConfig
+}
+
+func compareMaps(a map[string]string, b map[string]string) bool {
+	for ak, av := range a {
+		if b[ak] != av {
+			return false
+		}
+	}
+	for bk, bv := range b {
+		if a[bk] != bv {
+			return false
+		}
+	}
+	return true
 }
