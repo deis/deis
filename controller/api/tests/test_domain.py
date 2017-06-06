@@ -59,6 +59,7 @@ class DomainTest(TestCase):
             'w3.example.com',
             'MYDOMAIN.NET',
             'autotest.127.0.0.1.xip.io',
+            '*.wildcards.com',
         ]
         for domain in test_domains:
             body = {'domain': domain}
@@ -126,6 +127,8 @@ class DomainTest(TestCase):
             'domain1',
             '3333.com',
             'too.looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong',
+            'something.*.com',
+            '*.deisapp.local'
         ]
         for domain in test_domains:
             msg = "failed on \"{}\"".format(domain)
@@ -134,13 +137,36 @@ class DomainTest(TestCase):
                                         HTTP_AUTHORIZATION='token {}'.format(self.token))
             self.assertEqual(response.status_code, 400, msg)
 
-    def test_manage_domain_wildcard(self):
-        """Wildcards are not allowed for now."""
-        url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
-        body = {'domain': '*.deis.example.com'}
-        response = self.client.post(url, json.dumps(body), content_type='application/json',
+    def test_manage_domain_wildcard_clashes(self):
+        app_create_url = '/v1/apps'
+
+        app1_url = '/v1/apps/{app_id}/domains'.format(app_id=self.app_id)
+
+        response = self.client.post(app_create_url,
                                     HTTP_AUTHORIZATION='token {}'.format(self.token))
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
+        app2_url = '/v1/apps/{app_id}/domains'.format(app_id=response.data['id'])
+
+        user2 = User.objects.get(username='autotest2')
+        token2 = Token.objects.get(user=user2).key
+        response = self.client.post(app_create_url,
+                                    HTTP_AUTHORIZATION='token {}'.format(token2))
+        self.assertEqual(response.status_code, 201)
+        app3_url = '/v1/apps/{app_id}/domains'.format(app_id=response.data['id'])
+
+        test_params = (
+            (app1_url, '*.app.example.com', self.token, True),
+            (app2_url, 'whatever.app.example.com', self.token, True),
+            (app2_url, '*.whatever.app.example.com', self.token, True),
+            (app3_url, '*.example.com', token2, False),
+        )
+        for url, domain, token, expect_success in test_params:
+            body = {'domain': domain}
+            response = self.client.post(url, json.dumps(body),
+                                        content_type='application/json',
+                                        HTTP_AUTHORIZATION='token {}'.format(token))
+            self.assertEqual(response.status_code, 201 if expect_success else 400,
+                             "Failed on {}".format(domain))
 
     def test_admin_can_add_domains_to_other_apps(self):
         """If a non-admin user creates an app, an administrator should be able to add

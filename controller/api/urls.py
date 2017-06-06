@@ -45,7 +45,7 @@ urlpatterns = patterns(
     url(r"^apps/(?P<id>{})/containers/?".format(settings.APP_URL_REGEX),
         views.ContainerViewSet.as_view({'get': 'list'})),
     # application domains
-    url(r"^apps/(?P<id>{})/domains/(?P<domain>[-\._\w]+)/?".format(settings.APP_URL_REGEX),
+    url(r"^apps/(?P<id>{})/domains/(?P<domain>[-\._\w\*]+)/?".format(settings.APP_URL_REGEX),
         views.DomainViewSet.as_view({'delete': 'destroy'})),
     url(r"^apps/(?P<id>{})/domains/?".format(settings.APP_URL_REGEX),
         views.DomainViewSet.as_view({'post': 'create', 'get': 'list'})),

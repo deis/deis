@@ -13,7 +13,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from api import models
+from api import models, permissions
 
 
 PROCTYPE_MATCH = re.compile(r'^(?P<type>[a-z]+)')
@@ -298,10 +298,13 @@ class DomainSerializer(ModelSerializer):
         labels = value.split('.')
         if 'xip.io' in value:
             return value
-        if labels[0] == '*':
-            raise serializers.ValidationError(
-                'Adding a wildcard subdomain is currently not supported.')
         allowed = re.compile("^(?!-)[a-z0-9-]{1,63}(?<!-)$", re.IGNORECASE)
+        if labels[0] == '*':
+            labels.pop(0)
+            if labels == settings.DEIS_DOMAIN.split('.'):
+                raise serializers.ValidationError(
+                    "The wildcard domain {} would override the deis controller.".format(labels))
+
         for label in labels:
             match = allowed.match(label)
             if not match or '--' in label or label.isdigit() or \
@@ -310,7 +313,22 @@ class DomainSerializer(ModelSerializer):
         if models.Domain.objects.filter(domain=value).exists():
             raise serializers.ValidationError(
                 "The domain {} is already in use by another app".format(value))
+
+        self._check_for_domain_clashes(value)
+
         return value
+
+    def _check_for_domain_clashes(self, value):
+        domain_postfix = value.replace('*', '')
+
+        for domain in models.Domain.objects.all():
+            if domain.domain.endswith(domain_postfix):
+                if '*' in domain.domain or '*' in value:
+                    if not permissions.is_app_user(self.context['request'],
+                                                   domain.app):
+                        raise serializers.ValidationError(
+                            "The domain {} could clash with the domain {}".format(
+                                value, domain.domain))
 
 
 class CertificateSerializer(ModelSerializer):
