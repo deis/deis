@@ -20,9 +20,9 @@ curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-deis/
     && chmod +x /usr/local/bin/etcdctl
 
 # install confd
-CONFD_VERSION=0.10.0
+CONFD_VERSION=0.11.0
 curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v$CONFD_VERSION/confd-$CONFD_VERSION-linux-amd64 \
-	&& chmod +x /usr/local/bin/confd
+       && chmod +x /usr/local/bin/confd
 
 curl -sSL 'https://ceph.com/git/?p=ceph.git;a=blob_plain;f=keys/release.asc' | apt-key add -
 echo "deb http://ceph.com/debian-hammer trusty main" > /etc/apt/sources.list.d/ceph.list

@@ -8,8 +8,8 @@ RUN curl -sSL -o /usr/local/bin/etcdctl https://s3-us-west-2.amazonaws.com/get-d
     && chmod +x /usr/local/bin/etcdctl
 
 # install confd
-RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.10.0/confd-0.10.0-linux-amd64 \
-    && chmod +x /usr/local/bin/confd
+RUN curl -sSL -o /usr/local/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 \
+	&& chmod +x /usr/local/bin/confd
 
 ENV DOCKER_REGISTRY_CONFIG /docker-registry/config/config.yml
 ENV SETTINGS_FLAVOR deis
