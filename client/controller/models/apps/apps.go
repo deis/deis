@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/deis/deis/client/controller/api"
 	"github.com/deis/deis/client/controller/client"
@@ -87,7 +86,13 @@ func Logs(c *client.Client, appID string, lines int) (string, error) {
 		return "", err
 	}
 
-	return strings.Trim(body, `"`), nil
+	logs := ""
+
+	if err = json.Unmarshal([]byte(body), &logs); err != nil {
+		return "", err
+	}
+
+	return logs, nil
 }
 
 // Run one time command in an app.

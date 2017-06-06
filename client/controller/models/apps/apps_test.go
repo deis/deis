@@ -99,12 +99,12 @@ func (f *fakeHTTPServer) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.URL.Path == "/v1/apps/example-go/logs" && req.URL.RawQuery == "" && req.Method == "GET" {
-		res.Write([]byte("test\nfoo\nbar\n"))
+		res.Write([]byte("\"test\\nfoo\\nbar\\n\""))
 		return
 	}
 
 	if req.URL.Path == "/v1/apps/example-go/logs" && req.URL.RawQuery == "log_lines=1" && req.Method == "GET" {
-		res.Write([]byte("test\n"))
+		res.Write([]byte("\"test\\n\""))
 		return
 	}
 
