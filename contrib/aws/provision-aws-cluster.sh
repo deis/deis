@@ -170,15 +170,6 @@ until deisctl list >/dev/null; do
     let COUNTER=COUNTER+1
 done
 
-echo_green "Enabling proxy protocol"
-if ! deisctl config router set proxyProtocol=1; then
-    echo_red "# WARNING: Enabling proxy protocol failed."
-    echo_red "# Ensure that the private key in cloudformation.json is added to"
-    echo_red "# your ssh-agent, then enable proxy protocol before continuing:"
-    echo_red "#"
-    echo_red "# deisctl config router set proxyProtocol=1\n"
-fi
-
 echo_green "Your Deis cluster was deployed to AWS CloudFormation as stack "$STACK_NAME".\n"
 echo_green "Now run this command in your shell:"
 echo_green "export DEISCTL_TUNNEL=$FIRST_INSTANCE"

@@ -308,27 +308,18 @@
           { "Ref" : "Subnet1" },
           { "Ref" : "Subnet2" }
         ],
-        "Policies" : [{
-           "PolicyName" : "EnableProxyProtocol",
-           "PolicyType" : "ProxyProtocolPolicyType",
-           "Attributes" : [{
-              "Name"  : "ProxyProtocol",
-              "Value" : "true"
-           }],
-           "InstancePorts" : ["80", "443"]
-        }],
         "Listeners": [
           {
             "InstancePort": "80",
-            "InstanceProtocol": "TCP",
+            "InstanceProtocol": "HTTP",
             "LoadBalancerPort": "80",
-            "Protocol": "TCP"
+            "Protocol": "HTTP"
           },
           {
             "InstancePort": "443",
-            "InstanceProtocol": "TCP",
+            "InstanceProtocol": "HTTP",
             "LoadBalancerPort": "443",
-            "Protocol": "TCP"
+            "Protocol": "HTTP"
           },
           {
             "InstancePort": "2222",
