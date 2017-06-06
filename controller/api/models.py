@@ -1074,6 +1074,11 @@ class Key(UuidAuditedModel):
 
     def save(self, *args, **kwargs):
         self.fingerprint = fingerprint(self.public)
+
+        if _etcd_client:
+            _etcd_client.write(
+                '/deis/builder/users/{}/{}'.format(self.owner.username, self.fingerprint), self.public)
+
         return super(Key, self).save(*args, **kwargs)
 
 
@@ -1124,12 +1129,6 @@ def _log_cert_added(**kwargs):
 def _log_cert_removed(**kwargs):
     cert = kwargs['instance']
     logger.info("cert {} removed".format(cert))
-
-
-def _etcd_publish_key(**kwargs):
-    key = kwargs['instance']
-    _etcd_client.write('/deis/builder/users/{}/{}'.format(
-        key.owner.username, fingerprint(key.public)), key.public)
 
 
 def _etcd_purge_key(**kwargs):
@@ -1245,7 +1244,6 @@ _etcd_client = get_etcd_client()
 
 
 if _etcd_client:
-    post_save.connect(_etcd_publish_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_key, sender=Key, dispatch_uid='api.models')
     post_delete.connect(_etcd_purge_user, sender=get_user_model(), dispatch_uid='api.models')
     post_save.connect(_etcd_publish_domains, sender=Domain, dispatch_uid='api.models')
