@@ -13,7 +13,7 @@ import (
 var defaultLimit = -1
 
 func progress() chan bool {
-	frames := []string{"...", "o..", ".o.", "..o"}
+	frames := []string{"tro...", "lo..", ".lo.", "..lo"}
 	backspaces := strings.Repeat("\b", 3)
 	tick := time.Tick(400 * time.Millisecond)
 	quit := make(chan bool)
